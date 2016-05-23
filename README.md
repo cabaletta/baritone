@@ -34,7 +34,7 @@ augmented)
 # Example
 <pre lang="java">
 /** Red-black tree augmented by the sum of the values in the subtree. */
-public class SumNode extends RedBlackNode<SumNode> {
+public class SumNode extends RedBlackNode&lt;SumNode&gt; {
     public int value;
     public int sum;
 
