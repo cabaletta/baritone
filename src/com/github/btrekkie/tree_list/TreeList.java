@@ -57,7 +57,7 @@ public class TreeList<T> extends AbstractList<T> {
     }
 
     /**
-     * Returns the node for get(index).  Raises an IndexOutOfBoundsException if "index" is not in the range [0, size()).
+     * Returns the node for get(index).  Throws an IndexOutOfBoundsException if "index" is not in the range [0, size()).
      */
     private TreeListNode<T> getNode(int index) {
         if (index < 0 || index >= root.size) {

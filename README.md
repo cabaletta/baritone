@@ -22,6 +22,8 @@ augmented)
 * Tested in Java 6.0 and 7.0.  It might also work in Java 5.0.
 
 # Limitations
+* The values of the tree must be stored in the non-leaf nodes.  `RedBlackNode`
+  does not support use cases where the values must be stored in the leaf nodes.
 * Augmentations that depend on information stored in a node's ancestors are not
   (easily) supported.  For example, augmenting each node with the number of
   nodes in the left subtree is not (easily and efficiently) supported, because

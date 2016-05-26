@@ -8,10 +8,10 @@ import java.util.Comparator;
 import org.junit.Test;
 
 /**
- * Tests RedBlackNode.  Most of the testing for RedBlackNode takes place in TreeListTest, IntervalTreeTest, and
- * ArbitraryOrderCollectionTest, which test realistic use cases of RedBlackNode.  TreeListTest tests most of the
- * RedBlackNode methods, while IntervalTreeTest tests non-structural augmentation and the "insert" method,
- * ArbitraryOrderCollectionTest tests compareTo, and RedBlackNodeTest tests assertSubtreeIsValid() and
+ * Tests RedBlackNode.  Most of the testing for RedBlackNode takes place in TreeListTest, IntervalTreeTest,
+ * SubArrayMinTest, and ArbitraryOrderCollectionTest, which test realistic use cases of RedBlackNode.  TreeListTest
+ * tests most of the RedBlackNode methods, while IntervalTreeTest tests the "insert" method, SubArrayMinTest tests
+ * "lca", ArbitraryOrderCollectionTest tests compareTo, and RedBlackNodeTest tests assertSubtreeIsValid() and
  * assertOrderIsValid.
  */
 public class RedBlackNodeTest {

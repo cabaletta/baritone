@@ -7,7 +7,7 @@ class TreeListNode<T> extends RedBlackNode<TreeListNode<T>> {
     /** The element stored in the node.  The value is unspecified if this is a leaf node. */
     public T value;
 
-    /** The number of elements in the subtree rooted at this node, not counting leaf nodes, as in TreeList.leaf. */
+    /** The number of elements in the subtree rooted at this node. */
     public int size;
 
     public TreeListNode(T value) {

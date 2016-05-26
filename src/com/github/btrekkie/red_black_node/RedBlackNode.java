@@ -9,13 +9,15 @@ import java.util.Set;
 
 /**
  * A node in a red-black tree ( https://en.wikipedia.org/wiki/Red%E2%80%93black_tree ).  The RedBlackNode class provides
- * methods for performing various standard operations.  The leaf nodes in a tree are dummy nodes colored black that do
- * not contain any values.  It is recommended that all of the leaf nodes in a given tree be the same RedBlackNode
- * instance, to save space.  The root of an empty tree is a leaf node, as opposed to null.
+ * methods for performing various standard operations.
  *
  * Subclasses may add arbitrary information to the node.  For example, if we were to use a RedBlackNode subclass to
  * implement a sorted set, the subclass should have a field storing an element in the set.  Subclasses can augment the
  * tree with arbitrary information by overriding augment().
+ *
+ * The values of the tree are stored in the non-leaf nodes.  RedBlackNode does not support use cases where values must
+ * be stored in the leaf nodes.  It is recommended that all of the leaf nodes in a given tree be the same (black)
+ * RedBlackNode instance, to save space.  The root of an empty tree is a leaf node, as opposed to null.
  *
  * The internals of the node are exposed publicly, so clients can access or alter a node arbitrarily.  This gives
  * clients flexibility.  It is possible for a client to violate the red-black or BST properties.
@@ -539,6 +541,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * "left", "right", "parent", and "isBlack" fields.
      */
     public void removeWithoutGettingRoot() {
+        if (isLeaf()) {
+            throw new IllegalArgumentException("Attempted to remove a leaf node");
+        }
         N replacement;
         if (left.isLeaf() || right.isLeaf()) {
             replacement = null;
@@ -619,6 +624,10 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * @return The root of the resulting tree.
      */
     public N remove() {
+        if (isLeaf()) {
+            throw new IllegalArgumentException("Attempted to remove a leaf node");
+        }
+
         // Find an arbitrary non-leaf node in the tree other than this node
         N node;
         if (parent != null) {
