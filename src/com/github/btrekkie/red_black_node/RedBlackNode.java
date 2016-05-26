@@ -169,13 +169,13 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     }
 
     /**
-     * Performs a left rotation about this node.  This method assumes that !right.isLeaf().  It calls augment() on this
-     * node and on its resulting parent.
+     * Performs a left rotation about this node.  This method assumes that !isLeaf() && !right.isLeaf().  It calls
+     * augment() on this node and on its resulting parent.
      * @return The return value from calling augment() on the resulting parent.
      */
     public boolean rotateLeft() {
-        if (right.isLeaf()) {
-            throw new IllegalArgumentException("The right child is a leaf");
+        if (isLeaf() || right.isLeaf()) {
+            throw new IllegalArgumentException("The node or its right child is a leaf");
         }
         N newParent = right;
         right = newParent.left;
@@ -199,13 +199,13 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     }
 
     /**
-     * Performs a right rotation about this node.  This method assumes that !left.isLeaf().  It calls augment() on this
-     * node and on its resulting parent.
+     * Performs a right rotation about this node.  This method assumes that !isLeaf() && !left.isLeaf().  It calls
+     * augment() on this node and on its resulting parent.
      * @return The return value from calling augment() on the resulting parent.
      */
     public boolean rotateRight() {
-        if (left.isLeaf()) {
-            throw new IllegalArgumentException("The left child is a leaf");
+        if (isLeaf() || left.isLeaf()) {
+            throw new IllegalArgumentException("The node or its left child is a leaf");
         }
         N newParent = left;
         left = newParent.right;
@@ -231,9 +231,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Performs red-black insertion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
      * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
-     * red.  node.isRed must initially be true.  The method performs any rotations by calling rotateLeft() and
-     * rotateRight().  This method is more efficient than fixInsertion if "augment" is false or augment() might return
-     * false.
+     * red.  node.isRed must initially be true.  This method assumes that this is not a leaf node.  The method performs
+     * any rotations by calling rotateLeft() and rotateRight().  This method is more efficient than fixInsertion if
+     * "augment" is false or augment() might return false.
      * @param augment Whether to set the augmentation information for "node" and its ancestors, by calling augment().
      */
     public void fixInsertionWithoutGettingRoot(boolean augment) {
@@ -307,8 +307,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Performs red-black insertion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
      * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
-     * red.  node.isRed must initially be true.  The method performs any rotations by calling rotateLeft() and
-     * rotateRight().  This method is more efficient than fixInsertion() if augment() might return false.
+     * red.  node.isRed must initially be true.  This method assumes that this is not a leaf node.  The method performs
+     * any rotations by calling rotateLeft() and rotateRight().  This method is more efficient than fixInsertion() if
+     * augment() might return false.
      */
     public void fixInsertionWithoutGettingRoot() {
         fixInsertionWithoutGettingRoot(true);
@@ -317,8 +318,8 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Performs red-black insertion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
      * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
-     * red.  node.isRed must initially be true.  The method performs any rotations by calling rotateLeft() and
-     * rotateRight().
+     * red.  node.isRed must initially be true.  This method assumes that this is not a leaf node.  The method performs
+     * any rotations by calling rotateLeft() and rotateRight().
      * @param augment Whether to set the augmentation information for "node" and its ancestors, by calling augment().
      * @return The root of the resulting tree.
      */
@@ -330,8 +331,8 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Performs red-black insertion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
      * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
-     * red.  node.isRed must initially be true.  The method performs any rotations by calling rotateLeft() and
-     * rotateRight().
+     * red.  node.isRed must initially be true.  This method assumes that this is not a leaf node.  The method performs
+     * any rotations by calling rotateLeft() and rotateRight().
      * @return The root of the resulting tree.
      */
     public N fixInsertion() {
@@ -414,7 +415,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
 
     /**
      * Moves this node to its successor's former position in the tree and vice versa, i.e. sets the "left", "right",
-     * "parent", and isRed fields of each.
+     * "parent", and isRed fields of each.  This method assumes that this is not a leaf node.
      * @return The node with which we swapped.
      */
     private N swapWithSuccessor() {
@@ -462,7 +463,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Performs red-black deletion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
      * of red-black trees, except that all paths from the root to a leaf that pass through the sibling of this node have
-     * one fewer black node than all other root-to-leaf paths.
+     * one fewer black node than all other root-to-leaf paths.  This method assumes that this is not a leaf node.
      */
     private void fixSiblingDeletion() {
         RedBlackNode<N> sibling = this;
@@ -531,7 +532,8 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
 
     /**
      * Removes this node from the tree that contains it.  The effect of this method on the fields of this node is
-     * unspecified.  This method is more efficient than remove() if augment() might return false.
+     * unspecified.  This method assumes that this is not a leaf node.  This method is more efficient than remove() if
+     * augment() might return false.
      *
      * If the node has two children, we begin by moving the node's successor to its former position, by changing its
      * "left", "right", "parent", and "isBlack" fields.
@@ -609,7 +611,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
 
     /**
      * Removes this node from the tree that contains it.  The effect of this method on the fields of this node is
-     * unspecified.
+     * unspecified.  This method assumes that this is not a leaf node.
      *
      * If the node has two children, we begin by moving the node's successor to its former position, by changing its
      * "left", "right", "parent", and "isBlack" fields.
@@ -812,8 +814,10 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Splits the tree rooted at this node into two trees, so that the first element of the return value is the root of
      * a tree consisting of the nodes that were before the specified node, and the second element of the return value is
      * the root of a tree consisting of the nodes that were equal to or after the specified node.  This method assumes
-     * that this node is the root.  It takes O(log N) time.  It is considerably more efficient than removing all of the
-     * elements after splitNode and then creating a new tree from those nodes.
+     * that this node is the root.  It assumes that this is in the same tree as splitNode.  It takes O(log N) time.  It
+     * is considerably more efficient than removing all of the elements after splitNode and then creating a new tree
+     * from those nodes.
+     * @param The node at which to split the tree.
      * @return An array consisting of the resulting trees.
      */
     public N[] split(N splitNode) {
@@ -1020,14 +1024,65 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     }
 
     /**
+     * Returns the lowest common ancestor of this node and "other" - the node that is an ancestor of both and is not the
+     * parent of a node that is an ancestor of both.  Assumes that this is in the same tree as "other".  Assumes that
+     * neither "this" nor "other" is a leaf node.  This method may return "this" or "other".
+     */
+    public N lca(N other) {
+        if (isLeaf() || other.isLeaf()) {
+            throw new IllegalArgumentException("One of the nodes is a leaf node");
+        }
+
+        // Compute the depth of each node
+        int depth = 0;
+        for (N parent = this.parent; parent != null; parent = parent.parent) {
+            depth++;
+        }
+        int otherDepth = 0;
+        for (N parent = other.parent; parent != null; parent = parent.parent) {
+            otherDepth++;
+        }
+
+        // Go up to nodes of the same depth
+        @SuppressWarnings("unchecked")
+        N parent = (N)this;
+        N otherParent = other;
+        if (depth <= otherDepth) {
+            for (int i = otherDepth; i > depth; i--) {
+                otherParent = otherParent.parent;
+            }
+        } else {
+            for (int i = depth; i > otherDepth; i--) {
+                parent = parent.parent;
+            }
+        }
+
+        // Find the LCA
+        while (parent != otherParent) {
+            parent = parent.parent;
+            otherParent = otherParent.parent;
+        }
+        if (parent != null) {
+            return parent;
+        } else {
+            throw new IllegalArgumentException("The nodes do not belong to the same tree");
+        }
+    }
+
+    /**
      * Returns an integer comparing the position of this node in the tree that contains it with that of "other".
      * Returns a negative number if this is earlier, a positive number if this is later, and 0 if this is at the same
-     * position.  Assumes that this is in the same tree as "other".
+     * position.  Assumes that this is in the same tree as "other".  Assumes that neither "this" nor "other" is a leaf
+     * node.
      *
      * The base class's implementation takes O(log N) time.  If a RedBlackNode subclass stores a value used to order the
      * nodes, then it could override compareTo to compare the nodes' values, which would take O(1) time.
      */
     public int compareTo(N other) {
+        if (isLeaf() || other.isLeaf()) {
+            throw new IllegalArgumentException("One of the nodes is a leaf node");
+        }
+
         // The algorithm operates as follows: compare the depth of this node to that of "other".  If the depth of
         // "other" is greater, keep moving up from "other" until we find the ancestor at the same depth.  Then, keep
         // moving up from "this" and from that node until we reach the lowest common ancestor.  The node that arrived

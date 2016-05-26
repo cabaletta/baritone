@@ -6,8 +6,8 @@ augmented)
 
 # Features
 * Supports min, max, root, predecessor, successor, insert, remove, rotate,
-  split, concatenate, create balanced tree, and compare operations.  The running
-  time of each operation has optimal big O bounds.
+  split, concatenate, create balanced tree, LCA, and compare operations.  The
+  running time of each operation has optimal big O bounds.
 * Supports arbitrary augmentation by overriding `augment()`.  Examples of
   augmentation are the number of non-leaf nodes in a subtree and the sum of the
   values in a subtree.
