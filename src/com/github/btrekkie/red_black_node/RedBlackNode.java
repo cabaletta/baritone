@@ -232,10 +232,11 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Performs red-black insertion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
      * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
      * red.  node.isRed must initially be true.  The method performs any rotations by calling rotateLeft() and
-     * rotateRight().
+     * rotateRight().  This method is more efficient than fixInsertion if "augment" is false or augment() might return
+     * false.
      * @param augment Whether to set the augmentation information for "node" and its ancestors, by calling augment().
      */
-    public void fixInsertion(boolean augment) {
+    public void fixInsertionWithoutGettingRoot(boolean augment) {
         if (!isRed) {
             throw new IllegalArgumentException("The node must be red");
         }
@@ -307,10 +308,35 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Performs red-black insertion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
      * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
      * red.  node.isRed must initially be true.  The method performs any rotations by calling rotateLeft() and
-     * rotateRight().
+     * rotateRight().  This method is more efficient than fixInsertion() if augment() might return false.
      */
-    public void fixInsertion() {
-        fixInsertion(true);
+    public void fixInsertionWithoutGettingRoot() {
+        fixInsertionWithoutGettingRoot(true);
+    }
+
+    /**
+     * Performs red-black insertion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
+     * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
+     * red.  node.isRed must initially be true.  The method performs any rotations by calling rotateLeft() and
+     * rotateRight().
+     * @param augment Whether to set the augmentation information for "node" and its ancestors, by calling augment().
+     * @return The root of the resulting tree.
+     */
+    public N fixInsertion(boolean augment) {
+        fixInsertionWithoutGettingRoot(augment);
+        return root();
+    }
+
+    /**
+     * Performs red-black insertion fixup.  To be more precise, this fixes a tree that satisfies all of the requirements
+     * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
+     * red.  node.isRed must initially be true.  The method performs any rotations by calling rotateLeft() and
+     * rotateRight().
+     * @return The root of the resulting tree.
+     */
+    public N fixInsertion() {
+        fixInsertionWithoutGettingRoot(true);
+        return root();
     }
 
     /** Returns a Comparator that compares instances of N using their natural order, as in N.compare. */
@@ -383,8 +409,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             }
         }
         newNode.isRed = true;
-        newNode.fixInsertion();
-        return root();
+        return newNode.fixInsertion();
     }
 
     /**
@@ -757,9 +782,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
 
         // Perform insertion fixup
-        pivot.fixInsertion();
-
-        return pivot.root();
+        return pivot.fixInsertion();
     }
 
     /**
@@ -882,7 +905,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                     }
                     last = lastPivot.left;
                     lastParent = lastPivot;
-                    lastPivot.fixInsertion(false);
+                    lastPivot.fixInsertionWithoutGettingRoot(false);
                 }
                 lastPivot = node;
                 node = node.left;
@@ -925,7 +948,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                     }
                     first = firstPivot.right;
                     firstParent = firstPivot;
-                    firstPivot.fixInsertion(false);
+                    firstPivot.fixInsertionWithoutGettingRoot(false);
                 }
                 firstPivot = node;
                 node = node.right;
@@ -964,7 +987,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             }
             firstPivot.left = leaf;
             firstPivot.right = leaf;
-            firstPivot.fixInsertion(false);
+            firstPivot.fixInsertionWithoutGettingRoot(false);
             for (first = firstPivot; first.parent != null; first = first.parent) {
                 first.augment();
             }
@@ -982,7 +1005,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             }
             lastPivot.left = leaf;
             lastPivot.right = leaf;
-            lastPivot.fixInsertion(false);
+            lastPivot.fixInsertionWithoutGettingRoot(false);
             for (last = lastPivot; last.parent != null; last = last.parent) {
                 last.augment();
             }

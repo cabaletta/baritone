@@ -133,10 +133,7 @@ public class TreeList<T> extends AbstractList<T> {
             newNode.parent = node;
         }
 
-        newNode.fixInsertion();
-        while (root.parent != null) {
-            root = root.parent;
-        }
+        root = newNode.fixInsertion();
     }
 
     @Override
@@ -418,7 +415,7 @@ public class TreeList<T> extends AbstractList<T> {
             }
 
             prevNode = newNode;
-            newNode.fixInsertion();
+            root = newNode.fixInsertion();
             nextIndex++;
             haveModified = true;
             TreeList.this.modCount++;

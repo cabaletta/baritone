@@ -21,7 +21,7 @@ augmented)
   size.
 * Tested in Java 6.0 and 7.0.  It might also work in Java 5.0.
 
-# Limitations:
+# Limitations
 * Augmentations that depend on information stored in a node's ancestors are not
   (easily) supported.  For example, augmenting each node with the number of
   nodes in the left subtree is not (easily and efficiently) supported, because
