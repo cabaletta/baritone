@@ -342,7 +342,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         return root();
     }
 
-    /** Returns a Comparator that compares instances of N using their natural order, as in N.compare. */
+    /** Returns a Comparator that compares instances of N using their natural order, as in N.compareTo. */
     private Comparator<N> naturalOrder() {
         @SuppressWarnings("unchecked")
         Comparator<N> comparator = (Comparator<N>)NATURAL_ORDER;
@@ -537,8 +537,8 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * unspecified.  This method assumes that this is not a leaf node.  This method is more efficient than remove() if
      * augment() might return false.
      *
-     * If the node has two children, we begin by moving the node's successor to its former position, by changing its
-     * "left", "right", "parent", and "isBlack" fields.
+     * If the node has two children, we begin by moving the node's successor to its former position, by changing the
+     * successor's "left", "right", "parent", and isRed fields.
      */
     public void removeWithoutGettingRoot() {
         if (isLeaf()) {
@@ -612,14 +612,21 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                 }
             }
         }
+
+        // Clear any previously existing links, so that we're more likely to encounter an exception if we attempt to
+        // access the removed node
+        parent = null;
+        left = null;
+        right = null;
+        isRed = true;
     }
 
     /**
      * Removes this node from the tree that contains it.  The effect of this method on the fields of this node is
      * unspecified.  This method assumes that this is not a leaf node.
      *
-     * If the node has two children, we begin by moving the node's successor to its former position, by changing its
-     * "left", "right", "parent", and "isBlack" fields.
+     * If the node has two children, we begin by moving the node's successor to its former position, by changing the
+     * successor's "left", "right", "parent", and isRed fields.
      *
      * @return The root of the resulting tree.
      */
