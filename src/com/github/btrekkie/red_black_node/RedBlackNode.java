@@ -242,11 +242,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         if (!isRed) {
             throw new IllegalArgumentException("The node must be red");
         }
-        boolean changed;
+        boolean changed = augment;
         if (augment) {
-            changed = augment();
-        } else {
-            changed = false;
+            augment();
         }
 
         RedBlackNode<N> node = this;
@@ -569,7 +567,6 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                     parent.right = child;
                 }
             }
-            parent = null;
             child.isRed = false;
             if (child.parent != null) {
                 N parent;
@@ -590,7 +587,6 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                 parent.right = leaf;
                 sibling = parent.left;
             }
-            this.parent = null;
             if (!isRed) {
                 RedBlackNode<N> siblingNode = sibling;
                 siblingNode.fixSiblingDeletion();
