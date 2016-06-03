@@ -468,6 +468,8 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     private void fixSiblingDeletion() {
         RedBlackNode<N> sibling = this;
         boolean changed = true;
+        boolean haveAugmentedParent = false;
+        boolean haveAugmentedGrandparent = false;
         while (true) {
             N parent = sibling.parent;
             if (sibling.isRed) {
@@ -480,13 +482,15 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                     changed = parent.rotateLeft();
                     sibling = parent.right;
                 }
+                haveAugmentedParent = true;
+                haveAugmentedGrandparent = true;
             } else if (!sibling.left.isRed && !sibling.right.isRed) {
                 sibling.isRed = true;
                 if (parent.isRed) {
                     parent.isRed = false;
                     break;
                 } else {
-                    if (changed) {
+                    if (changed && !haveAugmentedParent) {
                         changed = parent.augment();
                     }
                     N grandparent = parent.parent;
@@ -497,6 +501,8 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                     } else {
                         sibling = grandparent.left;
                     }
+                    haveAugmentedParent = haveAugmentedGrandparent;
+                    haveAugmentedGrandparent = false;
                 }
             } else {
                 if (sibling == parent.left) {
@@ -517,14 +523,28 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                     sibling.right.isRed = false;
                     changed = parent.rotateLeft();
                 }
+                haveAugmentedParent = haveAugmentedGrandparent;
+                haveAugmentedGrandparent = false;
                 break;
             }
         }
 
-        if (changed) {
-            for (N parent = sibling.parent; parent != null; parent = parent.parent) {
-                if (!parent.augment()) {
-                    break;
+        N parent = sibling.parent;
+        if (changed && parent != null) {
+            if (!haveAugmentedParent) {
+                changed = parent.augment();
+            }
+            if (changed && parent.parent != null) {
+                parent = parent.parent;
+                if (!haveAugmentedGrandparent) {
+                    changed = parent.augment();
+                }
+                if (changed) {
+                    for (parent = parent.parent; parent != null; parent = parent.parent) {
+                        if (!parent.augment()) {
+                            break;
+                        }
+                    }
                 }
             }
         }
