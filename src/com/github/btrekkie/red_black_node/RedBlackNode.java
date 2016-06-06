@@ -24,6 +24,7 @@ import java.util.Set;
  *
  * @param <N> The type of node in the tree.  For example, we might have "class FooNode<T> extends
  *     RedBlackNode<FooNode<T>>".
+ * @author Bill Jacobs
  */
 public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Comparable<N> {
     /** A Comparator that compares Comparable elements using their natural order. */
@@ -720,6 +721,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             height++;
         }
         N node = createTree(nodes.iterator(), size, height, leaf);
+        node.parent = null;
         node.isRed = false;
         return node;
     }
