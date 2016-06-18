@@ -13,16 +13,16 @@ public class SubArrayMinTest {
         SubArrayMin sam = new SubArrayMin();
         sam.add(12);
         sam.add(42);
-        sam.add(16);
         sam.add(-3);
-        sam.add(8);
+        sam.add(16);
         sam.add(5);
+        sam.add(8);
         sam.add(4);
         assertEquals(-3, sam.min(0, 7));
-        assertEquals(12, sam.min(0, 3));
+        assertEquals(12, sam.min(0, 2));
         assertEquals(-3, sam.min(2, 4));
         assertEquals(12, sam.min(0, 1));
-        assertEquals(5, sam.min(4, 6));
+        assertEquals(5, sam.min(3, 6));
         assertEquals(4, sam.min(4, 7));
 
         sam = new SubArrayMin();

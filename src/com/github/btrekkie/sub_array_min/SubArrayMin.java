@@ -57,6 +57,9 @@ public class SubArrayMin {
 
         int min = Math.min(lca.value, Math.min(start.value, end.value));
         if (start != lca) {
+            if (start.right.min < min) {
+                min = start.right.min;
+            }
             for (SubArrayMinNode node = start; node.parent != lca; node = node.parent) {
                 if (node.parent.left == node) {
                     if (node.parent.value < min) {
@@ -69,6 +72,9 @@ public class SubArrayMin {
             }
         }
         if (end != lca) {
+            if (end.left.min < min) {
+                min = end.left.min;
+            }
             for (SubArrayMinNode node = end; node.parent != lca; node = node.parent) {
                 if (node.parent.right == node) {
                     if (node.parent.value < min) {

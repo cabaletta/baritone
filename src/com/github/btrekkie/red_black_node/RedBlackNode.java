@@ -360,7 +360,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * @param allowDuplicates Whether to insert newNode if there is an equal node in the tree.  To check whether we
      *     inserted newNode, check whether newNode.parent is null and the return value differs from newNode.
      * @param comparator A comparator indicating where to put the node.  If this is null, we use the nodes' natural
-     *     order, as in N.compare.
+     *     order, as in N.compareTo.
      * @return The root of the resulting tree.
      */
     public N insert(N newNode, boolean allowDuplicates, Comparator<? super N> comparator) {
@@ -829,10 +829,14 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * inserting all of the nodes in "last".
      */
     public N concatenate(N last) {
+        if (parent != null) {
+            throw new IllegalArgumentException("The node is not the root of a tree");
+        }
+        if (last.parent != null) {
+            throw new IllegalArgumentException("The node is not the root of a tree");
+        }
         if (isLeaf()) {
             return last;
-        } else if (parent != null) {
-            throw new IllegalArgumentException("This is not the root of a tree");
         } else if (last.isLeaf()) {
             @SuppressWarnings("unchecked")
             N nThis = (N)this;
@@ -1112,6 +1116,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * The base class's implementation takes O(log N) time.  If a RedBlackNode subclass stores a value used to order the
      * nodes, then it could override compareTo to compare the nodes' values, which would take O(1) time.
      */
+    @Override
     public int compareTo(N other) {
         if (isLeaf() || other.isLeaf()) {
             throw new IllegalArgumentException("One of the nodes is a leaf node");
@@ -1325,7 +1330,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * useful for debugging.  RedBlackNode subclasses may want to override assertSubtreeIsValid() to call
      * assertOrderIsValid.
      * @param comparator A comparator indicating how the nodes should be ordered.  If this is null, we use the nodes'
-     *     natural order, as in N.compare.
+     *     natural order, as in N.compareTo.
      */
     public void assertOrderIsValid(Comparator<? super N> comparator) {
         if (comparator == null) {
