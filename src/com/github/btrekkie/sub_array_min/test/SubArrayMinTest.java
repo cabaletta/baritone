@@ -27,12 +27,7 @@ public class SubArrayMinTest {
 
         sam = new SubArrayMin();
         for (int i = 0; i < 1000; i++) {
-            // Taken from http://stackoverflow.com/a/109025
-            int value1 = i - ((i >>> 1) & 0x55555555);
-            int value2 = (value1 & 0x33333333) + ((value1 >>> 2) & 0x33333333);
-            int setBitCount = (((value2 + (value2 >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24;
-
-            sam.add(-setBitCount);
+            sam.add(-Integer.bitCount(i));
         }
         assertEquals(0, sam.min(0, 1));
         assertEquals(-4, sam.min(0, 30));
