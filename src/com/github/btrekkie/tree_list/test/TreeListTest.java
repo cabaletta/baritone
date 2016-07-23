@@ -73,11 +73,6 @@ public class TreeListTest {
         assertEquals(null, list.get(5));
 
         list = new TreeList<Integer>();
-        list.add(7);
-        list.addAll(Collections.singleton(37));
-        assertEquals(Arrays.asList(7, 37), list);
-
-        list = new TreeList<Integer>();
         for (int i = 0; i < 200; i++) {
             list.add(i + 300);
         }
@@ -224,6 +219,11 @@ public class TreeListTest {
         assertEquals(14, list.get(3).intValue());
         assertEquals(15, list.get(0).intValue());
         assertEquals(5, list.get(11).intValue());
+
+        list = new TreeList<Integer>();
+        list.add(7);
+        list.addAll(Collections.singleton(37));
+        assertEquals(Arrays.asList(7, 37), list);
 
         list = new TreeList<Integer>();
         List<Integer> list2 = new ArrayList<Integer>(400);
