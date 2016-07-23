@@ -772,9 +772,10 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         N parent;
         if (firstBlackHeight <= lastBlackHeight) {
             parent = null;
-            while (lastBlackHeight > firstBlackHeight) {
+            int blackHeight = lastBlackHeight;
+            while (blackHeight > firstBlackHeight) {
                 if (!lastChild.isRed) {
-                    lastBlackHeight--;
+                    blackHeight--;
                 }
                 parent = lastChild;
                 lastChild = lastChild.left;
@@ -785,9 +786,10 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             }
         } else {
             parent = null;
-            while (firstBlackHeight > lastBlackHeight) {
+            int blackHeight = firstBlackHeight;
+            while (blackHeight > lastBlackHeight) {
                 if (!firstChild.isRed) {
-                    firstBlackHeight--;
+                    blackHeight--;
                 }
                 parent = firstChild;
                 firstChild = firstChild.right;
@@ -802,7 +804,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         pivot.isRed = true;
         pivot.parent = parent;
         if (parent != null) {
-            if (parent.left == lastChild) {
+            if (firstBlackHeight < lastBlackHeight) {
                 parent.left = pivot;
             } else {
                 parent.right = pivot;
