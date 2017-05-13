@@ -669,16 +669,17 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     }
 
     /**
-     * Returns the root of a perfectly height-balanced subtree containing the next "size" nodes from "iterator", in
-     * iteration order.  This method is responsible for setting the "left", "right", "parent", and isRed fields of the
-     * nodes, and calling augment() as appropriate.  It ignores the initial values of the "left", "right", "parent", and
-     * isRed fields.
+     * Returns the root of a perfectly height-balanced subtree containing the next "size" (non-leaf) nodes from
+     * "iterator", in iteration order.  This method is responsible for setting the "left", "right", "parent", and isRed
+     * fields of the nodes, and calling augment() as appropriate.  It ignores the initial values of the "left", "right",
+     * "parent", and isRed fields.
      * @param iterator The nodes.
      * @param size The number of nodes.
      * @param height The "height" of the subtree's root node above the deepest leaf in the tree that contains it.  Since
      *     insertion fixup is slow if there are too many red nodes and deleteion fixup is slow if there are too few red
      *     nodes, we compromise and have red nodes at every fourth level.  We color a node red iff its "height" is equal
      *     to 1 mod 4.
+     * @param leaf The leaf node.
      * @return The root of the subtree.
      */
     private static <N extends RedBlackNode<N>> N createTree(
@@ -740,8 +741,8 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         // If the black height of "first", where first = this, is less than or equal to that of "last", starting at the
         // root of "last", we keep going left until we reach a black node whose black height is equal to that of
         // "first".  Then, we make "pivot" the parent of that node and of "first", coloring it red, and perform
-        // insertion fixup on the pivot. If the black height of "first" is greater than that of "last", we do the mirror
-        // image of the above.
+        // insertion fixup on the pivot.  If the black height of "first" is greater than that of "last", we do the
+        // mirror image of the above.
 
         if (parent != null) {
             throw new IllegalArgumentException("This is not the root of a tree");
@@ -831,10 +832,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * inserting all of the nodes in "last".
      */
     public N concatenate(N last) {
-        if (parent != null) {
-            throw new IllegalArgumentException("The node is not the root of a tree");
-        }
-        if (last.parent != null) {
+        if (parent != null || last.parent != null) {
             throw new IllegalArgumentException("The node is not the root of a tree");
         }
         if (isLeaf()) {
@@ -1221,10 +1219,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         } else {
             int childBlackHeight;
             if (isRed) {
-                if (!left.isLeaf() && left.isRed) {
-                    throw new RuntimeException("A red node has a red child");
-                }
-                if (!right.isLeaf() && right.isRed) {
+                if ((!left.isLeaf() && left.isRed) || (!right.isLeaf() && right.isRed)) {
                     throw new RuntimeException("A red node has a red child");
                 }
                 childBlackHeight = blackHeight;

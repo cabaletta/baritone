@@ -398,7 +398,7 @@ public class TreeList<T> extends AbstractList<T> {
             }
 
             // Create the new node
-            TreeListNode<T> newNode = new TreeListNode<T>(value);;
+            TreeListNode<T> newNode = new TreeListNode<T>(value);
             newNode.left = leaf;
             newNode.right = leaf;
             newNode.isRed = true;
