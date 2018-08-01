@@ -167,12 +167,12 @@ public class SmeltingTask extends ManagerTick {
                 if (placeHeldBlockNearby()) {
                     return true;
                 }
-                BlockPos player = Minecraft.getMinecraft().player.getPosition0();
+                BlockPos player = Baritone.playerFeet;
                 if (Baritone.isAir(player.down()) || Baritone.isAir(player.up(2))) {
                     Out.gui("Placing down", Out.Mode.Debug);
-                    LookManager.lookAtBlock(Minecraft.getMinecraft().player.getPosition0().down(), true);
+                    LookManager.lookAtBlock(Baritone.playerFeet.down(), true);
                     MovementManager.jumping = true;
-                    if (Minecraft.getMinecraft().player.getPosition0().down().equals(Baritone.whatAreYouLookingAt()) || Minecraft.getMinecraft().player.getPosition0().down().down().equals(Baritone.whatAreYouLookingAt())) {
+                    if (Baritone.playerFeet.down().equals(Baritone.whatAreYouLookingAt()) || Baritone.playerFeet.down().down().equals(Baritone.whatAreYouLookingAt())) {
                         Minecraft.getMinecraft().rightClickMouse();
                     }
                     return true;

@@ -309,7 +309,7 @@ public class Memory extends Manager {
         for (Block block : blockMemory.keySet()) {
             blockMemory.get(block).recalcFurthest();
         }
-        BlockPos playerFeet = Minecraft.getMinecraft().player.getPosition0();
+        BlockPos playerFeet = Baritone.playerFeet;
         int X = playerFeet.getX();
         int Y = playerFeet.getY();
         int Z = playerFeet.getZ();
@@ -365,7 +365,7 @@ public class Memory extends Manager {
         for (String name : playerLocationMemory.keySet()) {
             if (name.contains(targetName) || targetName.contains(name)) {
                 Baritone.goal = new GoalBlock(playerLocationMemory.get(name));
-                findPathInNewThread(Minecraft.getMinecraft().player.getPosition0(), true);
+                findPathInNewThread(Baritone.playerFeet, true);
                 return "Pathing to " + name + " at " + goal;
             }
         }
@@ -375,7 +375,7 @@ public class Memory extends Manager {
          if (blah.contains(name) || name.contains(blah)) {
          BlockPos pos = new BlockPos(pl.posX, pl.posY, pl.posZ);
          goal = new GoalBlock(pos);
-         findPathInNewThread(Minecraft.getMinecraft().player.getPosition0(), true);
+         findPathInNewThread(Baritone.playerFeet, true);
          return "Pathing to " + pl.getName() + " at " + goal;
          }
          }*/

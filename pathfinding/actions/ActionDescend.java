@@ -35,6 +35,6 @@ public class ActionDescend extends ActionPlaceOrBreak {
     @Override
     protected boolean tick0() {//basically just hold down W until we are where we want to be
         MovementManager.moveTowardsBlock(to);
-        return Minecraft.getMinecraft().player.getPosition0().equals(to);
+        return Baritone.playerFeet.equals(to);
     }
 }

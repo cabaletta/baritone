@@ -5,10 +5,8 @@
  */
 package baritone.mining;
 
-import java.util.ArrayList;
-import baritone.ui.LookManager;
-import baritone.util.Memory;
 import baritone.Baritone;
+import baritone.inventory.CraftingTask;
 import baritone.movement.MovementManager;
 import baritone.pathfinding.actions.Action;
 import baritone.pathfinding.goals.Goal;
@@ -16,19 +14,20 @@ import baritone.pathfinding.goals.GoalBlock;
 import baritone.pathfinding.goals.GoalComposite;
 import baritone.pathfinding.goals.GoalTwoBlocks;
 import baritone.pathfinding.goals.GoalYLevel;
-import baritone.inventory.CraftingTask;
+import baritone.ui.LookManager;
 import baritone.util.Manager;
 import baritone.util.ManagerTick;
+import baritone.util.Memory;
 import baritone.util.Out;
+import java.util.ArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 /**
@@ -36,6 +35,7 @@ import net.minecraft.world.chunk.Chunk;
  * @author galdara
  */
 public class MickeyMine extends ManagerTick {
+
     public static final int Y_DIAMOND = 13;
     public static final int Y_IRON = 36;
     public static int yLevel = Y_DIAMOND;
@@ -53,6 +53,7 @@ public class MickeyMine extends ManagerTick {
     static final String[] ores = {"diamond", "iron", "coal", "gold", "emerald"};
     static final boolean[] enabled = {true, true, false, true, true};
     static boolean mightNeedToGoBackToPath = false;
+
     public static void notifyFullness(String item, boolean isFull) {
         if (item.equals("stone")) {
             return;
@@ -71,6 +72,7 @@ public class MickeyMine extends ManagerTick {
             calculateGoal();
         }
     }
+
     public static void toggleOre(String ore) {
         String lower = ore.toLowerCase();
         if (lower.trim().length() == 0) {
@@ -94,6 +96,7 @@ public class MickeyMine extends ManagerTick {
             calculateGoal();
         }
     }
+
     public static void calculateGoal() {
         goalBlocks = new ArrayList<Block>();
         for (int i = 0; i < ores.length; i++) {
@@ -109,6 +112,7 @@ public class MickeyMine extends ManagerTick {
             goalBlocks.add(block);
         }
     }
+
     public static void doMine() {
         if (goalBlocks == null) {
             calculateGoal();
@@ -128,6 +132,7 @@ public class MickeyMine extends ManagerTick {
             Manager.getManager(MickeyMine.class).cancel();
         }
     }
+
     public static boolean torch() {
         EntityPlayerSP p = Minecraft.getMinecraft().player;
         ItemStack[] inv = p.inventory.mainInventory;
@@ -144,17 +149,18 @@ public class MickeyMine extends ManagerTick {
         }
         return false;
     }
+
     public static void doBranchMine() {
         if (branchPosition == null) {
-            BlockPos player = Minecraft.getMinecraft().player.getPosition0();
+            BlockPos player = Baritone.playerFeet;
             branchPosition = new BlockPos(player.getX(), yLevel, player.getZ());
         }
         if (!Memory.blockLoaded(branchPosition)) {//if this starts before chunks load, this thing just goes on forever
             branchPosition = null;
             return;
         }
-        if (!branchPosition.equals(Minecraft.getMinecraft().player.getPosition0())) {
-            Out.gui("Should be at branch position " + branchPosition + " " + Minecraft.getMinecraft().player.getPosition0(), Out.Mode.Debug);
+        if (!branchPosition.equals(Baritone.playerFeet)) {
+            Out.gui("Should be at branch position " + branchPosition + " " + Baritone.playerFeet, Out.Mode.Debug);
             mightNeedToGoBackToPath = true;
         } else if (torch()) {
             if (LookManager.lookAtBlock(branchPosition.down(), true)) {
@@ -189,6 +195,7 @@ public class MickeyMine extends ManagerTick {
         }
         branchPosition = futureBranchPosition;
     }
+
     public static void doPriorityMine() {
         Goal[] toComposite = new Goal[priorityNeedsToBeMined.size()];
         for (int i = 0; i < toComposite.length; i++) {
@@ -196,13 +203,14 @@ public class MickeyMine extends ManagerTick {
         }
         Baritone.goal = new GoalComposite(toComposite);
         if (Baritone.currentPath == null && !Baritone.isPathFinding()) {
-            Baritone.findPathInNewThread(Minecraft.getMinecraft().player.getPosition0(), false);
+            Baritone.findPathInNewThread(Baritone.playerFeet, false);
         } else {
             addNearby();
         }
     }
+
     public static void addNearby() {
-        BlockPos playerFeet = Minecraft.getMinecraft().player.getPosition0();
+        BlockPos playerFeet = Baritone.playerFeet;
         int searchDist = 4;//why four? idk
         for (int x = playerFeet.getX() - searchDist; x <= playerFeet.getX() + searchDist; x++) {
             for (int y = playerFeet.getY() - searchDist; y <= playerFeet.getY() + searchDist; y++) {
@@ -217,14 +225,15 @@ public class MickeyMine extends ManagerTick {
             }
         }
     }
+
     public static void doNormalMine() {
         if (mightNeedToGoBackToPath) {
             Baritone.goal = new GoalBlock(branchPosition);
             if (Baritone.currentPath == null && !Baritone.isPathFinding()) {
-                Baritone.findPathInNewThread(Minecraft.getMinecraft().player.getPosition0(), false);
+                Baritone.findPathInNewThread(Baritone.playerFeet, false);
                 Out.gui("Pathing back to branch", Out.Mode.Standard);
             }
-            if (Minecraft.getMinecraft().player.getPosition0().equals(branchPosition)) {
+            if (Baritone.playerFeet.equals(branchPosition)) {
                 mightNeedToGoBackToPath = false;
                 Out.gui("I'm back", Out.Mode.Debug);
             }
@@ -242,7 +251,7 @@ public class MickeyMine extends ManagerTick {
                 Baritone.switchToBestTool();
                 MovementManager.isLeftClick = true;
                 Out.log("Looking");
-                if (Minecraft.getMinecraft().player.getPosition0().equals(branchPosition)) {
+                if (Baritone.playerFeet.equals(branchPosition)) {
                     Out.log("IN position");
                     if (Baritone.whatAreYouLookingAt() == null) {
                         Out.log("Can't see, going");
@@ -250,13 +259,13 @@ public class MickeyMine extends ManagerTick {
                     }
                 } else {
                     Out.log("Going to position");
-                    if (!Action.canWalkOn(Minecraft.getMinecraft().player.getPosition0().offset(Minecraft.getMinecraft().player.getHorizontalFacing()).down())) {
+                    if (!Action.canWalkOn(Baritone.playerFeet.offset(Minecraft.getMinecraft().player.getHorizontalFacing()).down())) {
                         Out.gui("About to fall off", Out.Mode.Debug);
                         mightNeedToGoBackToPath = true;
                         return;
                     }
                     MovementManager.moveTowardsBlock(branchPosition, false);
-                    if (Minecraft.getMinecraft().player.getPosition0().getY() != branchPosition.getY()) {
+                    if (Baritone.playerFeet.getY() != branchPosition.getY()) {
                         Out.gui("wrong Y coordinate", Out.Mode.Debug);
                         mightNeedToGoBackToPath = true;
                     }
@@ -265,6 +274,7 @@ public class MickeyMine extends ManagerTick {
         }
     }
     static double ticksSinceBlockMined = 0;
+
     public static void updateBlocksMined() {
         if (Baritone.currentPath == null) {
             ticksSinceBlockMined++;
@@ -274,7 +284,7 @@ public class MickeyMine extends ManagerTick {
         ArrayList<BlockPos> shouldBeRemoved = new ArrayList<BlockPos>();
         for (BlockPos isMined : needsToBeMined) {
             Block block = net.minecraft.client.Minecraft.getMinecraft().world.getBlockState(isMined).getBlock();
-            if (isGoalBlock(isMined) || block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.bedrock)) {
+            if (isGoalBlock(isMined) || block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
                 hasBeenMined.add(isMined);
                 shouldBeRemoved.add(isMined);
                 updateBlocks(isMined);
@@ -285,12 +295,13 @@ public class MickeyMine extends ManagerTick {
             needsToBeMined.remove(needsRemoval);
         }
     }
+
     public static void updatePriorityBlocksMined() {
         boolean wasEmpty = priorityNeedsToBeMined.isEmpty();
         ArrayList<BlockPos> shouldBeRemoved = new ArrayList<BlockPos>();
         for (BlockPos isMined : priorityNeedsToBeMined) {
             Block block = net.minecraft.client.Minecraft.getMinecraft().world.getBlockState(isMined).getBlock();
-            if (block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.bedrock)) {
+            if (block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
                 hasBeenMined.add(isMined);
                 shouldBeRemoved.add(isMined);
                 updateBlocks(isMined);
@@ -312,6 +323,7 @@ public class MickeyMine extends ManagerTick {
             }
         }
     }
+
     public static void updateBlocks(BlockPos blockPos) {
         for (int i = 0; i < 4; i++) {
             Out.log(blockPos.offset(miningFacing));
@@ -324,6 +336,7 @@ public class MickeyMine extends ManagerTick {
         addPriorityBlock(blockPos.up());
         addPriorityBlock(blockPos.down());
     }
+
     public static boolean addNormalBlock(BlockPos blockPos, boolean mainBranch) {
         if (!needsToBeMined.contains(blockPos)) {
             if (Action.avoidBreaking(blockPos) && mainBranch) {//who gives a crap if a side branch will hit lava? lol
@@ -336,6 +349,7 @@ public class MickeyMine extends ManagerTick {
         }
         return false;
     }
+
     public static boolean addPriorityBlock(BlockPos blockPos) {
         if (!priorityNeedsToBeMined.contains(blockPos) && isGoalBlock(blockPos)) {
             if (Action.avoidBreaking(blockPos)) {
@@ -360,12 +374,15 @@ public class MickeyMine extends ManagerTick {
         }
         return false;
     }
+
     public static boolean isGoalBlock(BlockPos blockPos) {
         return isGoalBlock(Minecraft.getMinecraft().world.getBlockState(blockPos).getBlock());
     }
+
     public static boolean isGoalBlock(Block block) {
         return goalBlocks.contains(block);
     }
+
     public static boolean isNull(Object object) {
         try {
             object.toString();
@@ -374,12 +391,15 @@ public class MickeyMine extends ManagerTick {
             return true;
         }
     }
+
     public static IntegerTuple tupleFromChunk(Chunk chunk) {
         return new IntegerTuple(chunk.xPosition, chunk.zPosition);
     }
+
     public static IntegerTuple tupleFromBlockPos(BlockPos blockPos) {
         return tupleFromChunk(Minecraft.getMinecraft().world.getChunkFromBlockCoords(blockPos));
     }
+
     @Override
     protected boolean onTick0() {
         if (tempDisable) {
@@ -389,11 +409,11 @@ public class MickeyMine extends ManagerTick {
         if (!isGoingToMine && !isMining) {
             Baritone.goal = new GoalYLevel(yLevel);
             if (Baritone.currentPath == null && !Baritone.isPathFinding()) {
-                Baritone.findPathInNewThread(Minecraft.getMinecraft().player.getPosition0(), true);
+                Baritone.findPathInNewThread(Baritone.playerFeet, true);
                 isGoingToMine = true;
             }
         }
-        if (isGoingToMine && Minecraft.getMinecraft().player.getPosition0().getY() == yLevel) {
+        if (isGoingToMine && Baritone.playerFeet.getY() == yLevel) {
             isGoingToMine = false;
             isMining = true;
         }
@@ -407,10 +427,12 @@ public class MickeyMine extends ManagerTick {
         Out.log("mickey done");
         return false;
     }
+
     @Override
     protected void onCancel() {
         onCancel1();
     }
+
     private static void onCancel1() {
         isGoingToMine = false;
         isMining = false;
@@ -420,25 +442,31 @@ public class MickeyMine extends ManagerTick {
         mightNeedToGoBackToPath = false;
         ticksSinceBlockMined = 0;
     }
+
     @Override
     protected void onStart() {
     }
+
     @Override
     protected void onTickPre() {
         tempDisable = false;
     }
 
     public static class IntegerTuple {//why not use the normal net.minecraft.util.Tuple? Because it doesn't implement equals or hashCode
+
         private final int a;
         private final int b;
+
         public IntegerTuple(int a, int b) {
             this.a = a;
             this.b = b;
         }
+
         @Override
         public String toString() {
             return a + "," + b;
         }
+
         @Override
         public int hashCode() {
             int hash = 3;
@@ -446,6 +474,7 @@ public class MickeyMine extends ManagerTick {
             hash = 73 * hash + this.b;
             return hash;
         }
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {

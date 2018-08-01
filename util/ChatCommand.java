@@ -342,12 +342,12 @@ public class ChatCommand {
     }
     public static String printtag(String message) throws IOException {
         Schematic sch = SchematicLoader.getLoader().loadFromFile(new File("/Users/galdara/Downloads/schematics/Bakery.schematic"));
-        Baritone.currentBuilder = new SchematicBuilder(sch, Minecraft.getMinecraft().player.getPosition0());
+        Baritone.currentBuilder = new SchematicBuilder(sch, Baritone.playerFeet);
         return "printed schematic to console.";
     }
     public static String samplebuild(String message) {
         int size = 5;
-        BlockPos pl = Minecraft.getMinecraft().player.getPosition0();
+        BlockPos pl = Baritone.playerFeet;
         BlockPos center = new BlockPos(pl.getX() - size / 2, pl.getY(), pl.getZ());
         Baritone.currentBuilder = new SchematicBuilder(new Schematic(Block.getBlockFromName("dirt"), size), center);
         return "ok";
@@ -357,7 +357,7 @@ public class ChatCommand {
             return "haha. no.";
         }
         int size = 5;
-        BlockPos pl = Minecraft.getMinecraft().player.getPosition0();
+        BlockPos pl = Baritone.playerFeet;
         BlockPos center = new BlockPos(pl.getX() - size, pl.getY(), pl.getZ() - size);
         Baritone.currentBuilder = new SchematicBuilder(new Schematic(Block.getBlockFromName("dirt"), size * 2 + 1, false, true), center);
         return "ok";

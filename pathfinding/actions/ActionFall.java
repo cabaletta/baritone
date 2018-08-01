@@ -29,7 +29,7 @@ public class ActionFall extends ActionPlaceOrBreak {
         if (numTicks > 10) {
             MovementManager.moveTowardsBlock(to);
         }
-        return Minecraft.getMinecraft().player.getPosition0().equals(to);
+        return Baritone.playerFeet.equals(to);
     }
     @Override
     protected double calculateCost(ToolSet ts) {

@@ -19,7 +19,7 @@ public class GoalGetToBlock extends GoalComposite{
         super(ajacentBlocks(goalPos = pos));
     }
     public GoalGetToBlock(){
-        this(Minecraft.getMinecraft().player.getPosition0());
+        this(Baritone.playerFeet);
     }
     public static BlockPos[] ajacentBlocks(BlockPos pos){
         BlockPos[] sides = new BlockPos[6];

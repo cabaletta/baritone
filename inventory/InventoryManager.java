@@ -241,8 +241,8 @@ public class InventoryManager extends Manager {
         BlockPos look = Baritone.whatAreYouLookingAt();
         boolean doThrowAway = true;
         if (look != null) {
-            int xDiff = look.getX() - Minecraft.getMinecraft().player.getPosition0().getX();
-            int zDiff = look.getZ() - Minecraft.getMinecraft().player.getPosition0().getZ();
+            int xDiff = look.getX() - Baritone.playerFeet.getX();
+            int zDiff = look.getZ() - Baritone.playerFeet.getZ();
             if (Math.abs(xDiff) + Math.abs(zDiff) <= 2) {
                 doThrowAway = false;//dont throw away if we are looking at a wall and we are close, because we'll probably just pick it right back up again
             }

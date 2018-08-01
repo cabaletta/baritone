@@ -112,7 +112,7 @@ public class Path {
         return best;
     }
     public void calculatePathPosition() {
-        BlockPos playerFeet = Minecraft.getMinecraft().player.getPosition0();
+        BlockPos playerFeet = Baritone.playerFeet;
         for (int i = 0; i < path.size(); i++) {
             if (playerFeet.equals(path.get(i))) {
                 pathPosition = i;

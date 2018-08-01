@@ -21,10 +21,10 @@ public class MCEdit extends Manager {
     static BlockPos pos1 = null;
     static BlockPos pos2 = null;
     public static String pos1(String s) {
-        return "Pos 1: " + (pos1 = Minecraft.getMinecraft().player.getPosition0());
+        return "Pos 1: " + (pos1 = Baritone.playerFeet);
     }
     public static String pos2(String s) {
-        return "Pos 2: " + (pos2 = Minecraft.getMinecraft().player.getPosition0());
+        return "Pos 2: " + (pos2 = Baritone.playerFeet);
     }
     public static String delete(String s) {
         Manager.getManager(MCEdit.class).toggle();

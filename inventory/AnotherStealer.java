@@ -152,7 +152,7 @@ public class AnotherStealer extends Manager {
         return;
     }
     public static BlockPos getAjacentChest() {
-        BlockPos[] pos = GoalGetToBlock.ajacentBlocks(Minecraft.getMinecraft().player.getPosition0());
+        BlockPos[] pos = GoalGetToBlock.ajacentBlocks(Baritone.playerFeet);
         WorldClient w = Minecraft.getMinecraft().world;
         for (BlockPos p : pos) {
             if (!alreadyStolenFrom.contains(p) && w.getBlockState(p).getBlock().equals(CHEST)) {

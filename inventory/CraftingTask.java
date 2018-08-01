@@ -216,19 +216,19 @@ public class CraftingTask extends ManagerTick {
             if (placeHeldBlockNearby()) {
                 return true;
             }
-            BlockPos player = Minecraft.getMinecraft().player.getPosition0();
+            BlockPos player = Baritone.playerFeet;
             if (Baritone.isAir(player.down()) || Baritone.isAir(player.up(2))) {
                 Out.gui("Placing down", Out.Mode.Debug);
-                LookManager.lookAtBlock(Minecraft.getMinecraft().player.getPosition0().down(), true);
+                LookManager.lookAtBlock(Baritone.playerFeet.down(), true);
                 MovementManager.jumping = true;
                 MovementManager.sneak = true;
-                if (Minecraft.getMinecraft().player.getPosition0().down().equals(Baritone.whatAreYouLookingAt()) || Minecraft.getMinecraft().player.getPosition0().down().down().equals(Baritone.whatAreYouLookingAt())) {
+                if (Baritone.playerFeet.down().equals(Baritone.whatAreYouLookingAt()) || Baritone.playerFeet.down().down().equals(Baritone.whatAreYouLookingAt())) {
                     Minecraft.getMinecraft().rightClickMouse();
                 }
                 return true;
             }
             /*
-             LookManager.lookAtBlock(Minecraft.getMinecraft().player.getPosition0().down().north(), true);
+             LookManager.lookAtBlock(Baritone.playerFeet.down().north(), true);
              LookManager.beSketchy();
              Baritone.forward = new Random().nextBoolean();
              Baritone.backward = new Random().nextBoolean();
@@ -247,7 +247,7 @@ public class CraftingTask extends ManagerTick {
         return false;
     }
     public static boolean placeHeldBlockNearby() {
-        BlockPos player = Minecraft.getMinecraft().player.getPosition0();
+        BlockPos player = Baritone.playerFeet;
         for (int x = player.getX() - 3; x <= player.getX() + 3; x++) {
             for (int y = player.getY() - 2; y <= player.getY() + 1; y++) {
                 for (int z = player.getZ() - 3; z <= player.getZ() + 3; z++) {

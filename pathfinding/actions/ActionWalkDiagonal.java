@@ -43,7 +43,7 @@ public class ActionWalkDiagonal extends ActionPlaceOrBreak {
         if (MovementManager.forward && !MovementManager.backward) {
             Minecraft.getMinecraft().player.setSprinting(true);
         }
-        return to.equals(Minecraft.getMinecraft().player.getPosition0());
+        return to.equals(Baritone.playerFeet);
     }
     @Override
     protected double calculateCost(ToolSet ts) {
