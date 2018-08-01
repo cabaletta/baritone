@@ -385,11 +385,11 @@ public class Baritone {
      */
     public static BlockPos whatAreYouLookingAt() {
         /*Minecraft mc = Minecraft.getMinecraft();
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
             return mc.objectMouseOver.getBlockPos();
         }
         return null;*/
-        throw new UnsupportedOperationException("need to figure out what MovingObjectPosition is in 1.12.2");
+        throw new UnsupportedOperationException("need to figure out what RayTraceResult is in 1.12.2");
     }
 
     public static void switchToBestTool() {
@@ -414,10 +414,10 @@ public class Baritone {
 
     public static Entity whatEntityAreYouLookingAt() {
         /*Minecraft mc = Minecraft.getMinecraft();
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) {
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
             return mc.objectMouseOver.entityHit;
         }*/
-        throw new UnsupportedOperationException("need to figure out what MovingObjectPosition is in 1.12.2");
+        throw new UnsupportedOperationException("need to figure out what RayTraceResult is in 1.12.2");
         //return null;
     }
 

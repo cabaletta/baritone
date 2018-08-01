@@ -5,25 +5,28 @@
  */
 package baritone.ui;
 
-import java.util.ArrayList;
-import java.util.Random;
+import baritone.Baritone;
 import baritone.pathfinding.goals.GoalXZ;
 import baritone.util.Manager;
-import net.minecraft.block.Block;
+import java.util.ArrayList;
+import java.util.Random;
 import net.minecraft.block.BlockFire;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 
 /**
  *
  * @author leijurv
  */
 public class LookManager extends Manager {
+
     public static boolean randomLooking = true;
     static final float MAX_YAW_CHANGE_PER_TICK = 360 / 20;
     static final float MAX_PITCH_CHANGE_PER_TICK = 360 / 20;
@@ -56,6 +59,7 @@ public class LookManager extends Manager {
      * desiredPitch
      */
     static boolean lookingPitch = false;
+
     public static void frame(float partialTicks) {
         //Out.log("Part: " + partialTicks);
         if (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().player == null) {
@@ -72,6 +76,7 @@ public class LookManager extends Manager {
      * Because I had to do it the janky way
      */
     private static final double[][] BLOCK_SIDE_MULTIPLIERS = {{0, 0.5, 0.5}, {1, 0.5, 0.5}, {0.5, 0, 0.5}, {0.5, 1, 0.5}, {0.5, 0.5, 0}, {0.5, 0.5, 1}};
+
     /**
      * Called by our code in order to look in the direction of the center of a
      * block
@@ -86,11 +91,12 @@ public class LookManager extends Manager {
         if (couldIReachCenter(p)) {
             return lookAtCenterOfBlock(p, alsoDoPitch);
         }
-        Block b = Baritone.get(p).getBlock();
+        IBlockState b = Baritone.get(p);
+        AxisAlignedBB bbox = b.getBoundingBox(Baritone.world, p);
         for (double[] mult : BLOCK_SIDE_MULTIPLIERS) {
-            double xDiff = b.getBlockBoundsMinX() * mult[0] + b.getBlockBoundsMaxX() * (1 - mult[0]);//lol
-            double yDiff = b.getBlockBoundsMinY() * mult[1] + b.getBlockBoundsMaxY() * (1 - mult[1]);
-            double zDiff = b.getBlockBoundsMinZ() * mult[2] + b.getBlockBoundsMaxZ() * (1 - mult[2]);
+            double xDiff = bbox.minX * mult[0] + bbox.maxX * (1 - mult[0]);//lol
+            double yDiff = bbox.minY * mult[1] + bbox.maxY * (1 - mult[1]);
+            double zDiff = bbox.minZ * mult[2] + bbox.maxZ * (1 - mult[2]);
             double x = p.getX() + xDiff;
             double y = p.getY() + yDiff;
             double z = p.getZ() + zDiff;
@@ -100,11 +106,13 @@ public class LookManager extends Manager {
         }
         return lookAtCenterOfBlock(p, alsoDoPitch);
     }
+
     public static boolean lookAtCenterOfBlock(BlockPos p, boolean alsoDoPitch) {
-        Block b = Baritone.get(p).getBlock();
-        double xDiff = (b.getBlockBoundsMinX() + b.getBlockBoundsMaxX()) / 2;
-        double yDiff = (b.getBlockBoundsMinY() + b.getBlockBoundsMaxY()) / 2;
-        double zDiff = (b.getBlockBoundsMinZ() + b.getBlockBoundsMaxZ()) / 2;
+        IBlockState b = Baritone.get(p);
+        AxisAlignedBB bbox = b.getBoundingBox(Baritone.world, p);
+        double xDiff = (bbox.minX + bbox.maxX) / 2;
+        double yDiff = (bbox.minY + bbox.maxY) / 2;
+        double zDiff = (bbox.minZ + bbox.maxZ) / 2;
         if (b instanceof BlockFire) {//look at bottom of fire when putting it out
             yDiff = 0;
         }
@@ -117,15 +125,17 @@ public class LookManager extends Manager {
      * The threshold for how close it tries to get to looking straight at things
      */
     public static final float ANGLE_THRESHOLD = 7;
+
     public static boolean couldIReach(BlockPos pos) {
         if (couldIReachCenter(pos)) {
             return true;
         }
-        Block b = Baritone.get(pos).getBlock();
+        IBlockState b = Baritone.get(pos);
+        AxisAlignedBB bbox = b.getBoundingBox(Baritone.world, pos);
         for (double[] mult : BLOCK_SIDE_MULTIPLIERS) {
-            double xDiff = b.getBlockBoundsMinX() * mult[0] + b.getBlockBoundsMaxX() * (1 - mult[0]);
-            double yDiff = b.getBlockBoundsMinY() * mult[1] + b.getBlockBoundsMaxY() * (1 - mult[1]);
-            double zDiff = b.getBlockBoundsMinZ() * mult[2] + b.getBlockBoundsMaxZ() * (1 - mult[2]);
+            double xDiff = bbox.minX * mult[0] + bbox.maxX * (1 - mult[0]);//lol
+            double yDiff = bbox.minY * mult[1] + bbox.maxY * (1 - mult[1]);
+            double zDiff = bbox.minZ * mult[2] + bbox.maxZ * (1 - mult[2]);
             double x = pos.getX() + xDiff;
             double y = pos.getY() + yDiff;
             double z = pos.getZ() + zDiff;
@@ -135,53 +145,62 @@ public class LookManager extends Manager {
         }
         return false;
     }
+
     public static boolean couldIReachCenter(BlockPos pos) {
         float[] pitchAndYaw = pitchAndYawToCenter(pos);
-        MovingObjectPosition blah = raytraceTowards(pitchAndYaw);
-        return blah != null && blah.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && blah.getBlockPos().equals(pos);
+        RayTraceResult blah = raytraceTowards(pitchAndYaw);
+        return blah != null && blah.typeOfHit == RayTraceResult.Type.BLOCK && blah.getBlockPos().equals(pos);
     }
+
     public static boolean couldIReach(BlockPos pos, EnumFacing dir) {
         BlockPos side = pos.offset(dir);
         double faceX = (pos.getX() + side.getX() + 1.0D) * 0.5D;
         double faceY = (pos.getY() + side.getY()) * 0.5D;
         double faceZ = (pos.getZ() + side.getZ() + 1.0D) * 0.5D;
-        MovingObjectPosition blah = raytraceTowards(faceX, faceY, faceZ);
-        return blah != null && blah.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && blah.getBlockPos().equals(pos) && blah.sideHit == dir;
+        RayTraceResult blah = raytraceTowards(faceX, faceY, faceZ);
+        return blah != null && blah.typeOfHit == RayTraceResult.Type.BLOCK && blah.getBlockPos().equals(pos) && blah.sideHit == dir;
     }
-    public static MovingObjectPosition raytraceTowards(double x, double y, double z) {
+
+    public static RayTraceResult raytraceTowards(double x, double y, double z) {
         return raytraceTowards(pitchAndYaw(x, y, z));
     }
-    public static MovingObjectPosition raytraceTowards(float[] pitchAndYaw) {
+
+    public static RayTraceResult raytraceTowards(float[] pitchAndYaw) {
         float yaw = pitchAndYaw[0];
         float pitch = pitchAndYaw[1];
         double blockReachDistance = (double) Minecraft.getMinecraft().playerController.getBlockReachDistance();
-        Vec3 vec3 = Minecraft.getMinecraft().player.getPositionEyes(1.0F);
-        Vec3 vec31 = getVectorForRotation(pitch, yaw);
-        Vec3 vec32 = vec3.addVector(vec31.xCoord * blockReachDistance, vec31.yCoord * blockReachDistance, vec31.zCoord * blockReachDistance);
-        MovingObjectPosition blah = Minecraft.getMinecraft().world.rayTraceBlocks(vec3, vec32, false, false, true);
+        Vec3d vec3 = Minecraft.getMinecraft().player.getPositionEyes(1.0F);
+        Vec3d vec31 = getVectorForRotation(pitch, yaw);
+        Vec3d vec32 = vec3.addVector(vec31.xCoord * blockReachDistance, vec31.yCoord * blockReachDistance, vec31.zCoord * blockReachDistance);
+        RayTraceResult blah = Minecraft.getMinecraft().world.rayTraceBlocks(vec3, vec32, false, false, true);
         return blah;
     }
+
     public static boolean couldIReachByLookingAt(BlockPos pos, double x, double y, double z) {
-        MovingObjectPosition blah = raytraceTowards(x, y, z);
-        return blah != null && blah.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && blah.getBlockPos().equals(pos);
+        RayTraceResult blah = raytraceTowards(x, y, z);
+        return blah != null && blah.typeOfHit == RayTraceResult.Type.BLOCK && blah.getBlockPos().equals(pos);
     }
-    public static Vec3 getVectorForRotation(float pitch, float yaw) {//shamelessly copied from Entity.java
+
+    public static Vec3d getVectorForRotation(float pitch, float yaw) {//shamelessly copied from Entity.java
         float f = MathHelper.cos(-yaw * 0.017453292F - (float) Math.PI);
         float f1 = MathHelper.sin(-yaw * 0.017453292F - (float) Math.PI);
         float f2 = -MathHelper.cos(-pitch * 0.017453292F);
         float f3 = MathHelper.sin(-pitch * 0.017453292F);
-        return new Vec3((double) (f1 * f2), (double) f3, (double) (f * f2));
+        return new Vec3d((double) (f1 * f2), (double) f3, (double) (f * f2));
     }
+
     public static GoalXZ fromAngleAndDirection(double distance) {
         double theta = ((double) Minecraft.getMinecraft().player.rotationYaw) * Math.PI / 180D;
         double x = Minecraft.getMinecraft().player.posX - Math.sin(theta) * distance;
         double z = Minecraft.getMinecraft().player.posZ + Math.cos(theta) * distance;
         return new GoalXZ((int) x, (int) z);
     }
+
     public static boolean lookingYaw() {
         return lookingYaw;
     }
     static double SPEED = 1000;
+
     /**
      * Smoothly moves between random pitches and yaws every second
      *
@@ -202,19 +221,22 @@ public class LookManager extends Manager {
         float second = prevSecond + frac * (nowSecond - prevSecond);
         return new float[]{first, second};
     }
+
     public static float[] pitchAndYawToCenter(BlockPos p) {
-        Block b = Baritone.get(p).getBlock();
-        double xDiff = (b.getBlockBoundsMinX() + b.getBlockBoundsMaxX()) / 2;
-        double yolo = (b.getBlockBoundsMinY() + b.getBlockBoundsMaxY()) / 2;
-        double zDiff = (b.getBlockBoundsMinZ() + b.getBlockBoundsMaxZ()) / 2;
+        IBlockState b = Baritone.get(p);
+        AxisAlignedBB bbox = b.getBoundingBox(Baritone.world, p);
+        double xDiff = (bbox.minX + bbox.maxX) / 2;
+        double yDiff = (bbox.minY + bbox.maxY) / 2;
+        double zDiff = (bbox.minZ + bbox.maxZ) / 2;
         if (b instanceof BlockFire) {//look at bottom of fire when putting it out
-            yolo = 0;
+            yDiff = 0;
         }
         double x = p.getX() + xDiff;
-        double y = p.getY() + yolo;
+        double y = p.getY() + yDiff;
         double z = p.getZ() + zDiff;
         return pitchAndYaw(x, y, z);
     }
+
     public static float[] pitchAndYaw(double x, double y, double z) {
         EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
         double yDiff = (thePlayer.posY + 1.62) - y;//lol
@@ -224,6 +246,7 @@ public class LookManager extends Manager {
         return new float[]{(float) (yaw * 180 / Math.PI), (float) (pitch * 180 / Math.PI)};
     }
     static ArrayList<Exception> sketchiness = new ArrayList<>();
+
     public static void setDesiredYaw(float y) {
         sketchiness.add(new Exception("Desired yaw already set!"));
         if (lookingYaw) {
@@ -236,6 +259,7 @@ public class LookManager extends Manager {
         desiredYaw = y;
         lookingYaw = true;
     }
+
     /**
      * Look at coordinates
      *
@@ -264,6 +288,7 @@ public class LookManager extends Manager {
         }
         return withinRange;
     }
+
     @Override
     public void onTickPre() {
         if (lookingYaw) {
@@ -276,6 +301,7 @@ public class LookManager extends Manager {
         sketchiness.clear();
         lookingPitch = false;
     }
+
     public static void nudgeToLevel() {
         EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
         if (!lookingPitch) {
@@ -286,6 +312,7 @@ public class LookManager extends Manager {
             }
         }
     }
+
     @Override
     public void onTickPost() {
         if (randomLooking) {
@@ -329,15 +356,19 @@ public class LookManager extends Manager {
             desiredNextPitch = Minecraft.getMinecraft().player.rotationPitch - pitchDistance;
         }
     }
+
     @Override
     protected void onTick() {
     }
+
     @Override
     protected void onCancel() {
     }
+
     @Override
     protected void onStart() {
     }
+
     @Override
     protected boolean onEnabled(boolean enabled) {
         return true;
