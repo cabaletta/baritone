@@ -8,10 +8,12 @@ package baritone.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -19,31 +21,35 @@ import net.minecraft.util.math.BlockPos;
  * @author avecowa
  */
 public class ToolSet {
+
     public ArrayList<Item> tools;
     public ArrayList<Byte> slots;
     public HashMap<Block, Byte> cache = new HashMap<Block, Byte>();
+
     public ToolSet(ArrayList<Item> tools, ArrayList<Byte> slots) {
         this.tools = tools;
         this.slots = slots;
     }
+
     public ToolSet() {
         EntityPlayerSP p = Minecraft.getMinecraft().player;
-        ItemStack[] inv = p.inventory.mainInventory;
+        NonNullList<ItemStack> inv = p.inventory.mainInventory;
         tools = new ArrayList<Item>();
         slots = new ArrayList<Byte>();
         //Out.log("inv: " + Arrays.toString(inv));
         boolean fnull = false;
         for (byte i = 0; i < 9; i++) {
-            if (!fnull || (inv[i] != null && inv[i].getItem().isItemTool(null))) {
-                tools.add(inv[i] != null ? inv[i].getItem() : null);
+            if (!fnull || (inv.get(i) != null && inv.get(i).getItem().isItemTool(null))) {
+                tools.add(inv.get(i) != null ? inv.get(i).getItem() : null);
                 slots.add(i);
-                fnull |= inv[i] == null || (!inv[i].getItem().isDamageable());
+                fnull |= inv.get(i) == null || (!inv.get(i).getItem().isDamageable());
             }
         }
     }
-    public Item getBestTool(Block b) {
-        if (cache.get(b) != null) {
-            return tools.get(cache.get(b));
+
+    public Item getBestTool(IBlockState b) {
+        if (cache.get(b.getBlock()) != null) {
+            return tools.get(cache.get(b.getBlock()));
         }
         byte best = 0;
         //Out.log("best: " + best);
@@ -62,12 +68,13 @@ public class ToolSet {
             }
         }
         //Out.log("best: " + best);
-        cache.put(b, best);
+        cache.put(b.getBlock(), best);
         return tools.get(best);
     }
-    public byte getBestSlot(Block b) {
-        if (cache.get(b) != null) {
-            return slots.get(cache.get(b));
+
+    public byte getBestSlot(IBlockState b) {
+        if (cache.get(b.getBlock()) != null) {
+            return slots.get(cache.get(b.getBlock()));
         }
         byte best = 0;
         //Out.log("best: " + best);
@@ -86,10 +93,11 @@ public class ToolSet {
             }
         }
         //Out.log("best: " + best);
-        cache.put(b, best);
+        cache.put(b.getBlock(), best);
         return slots.get(best);
     }
-    public double getStrVsBlock(Block b, BlockPos pos) {
+
+    public double getStrVsBlock(IBlockState b, BlockPos pos) {
         Item item = this.getBestTool(b);
         if (item == null) {
             item = Item.getByNameOrId("minecraft:apple");
@@ -97,7 +105,8 @@ public class ToolSet {
         float f = b.getBlockHardness(Minecraft.getMinecraft().world, pos);
         return f < 0.0F ? 0.0F : (!canHarvest(b, item) ? item.getStrVsBlock(new ItemStack(item), b) / f / 100.0F : item.getStrVsBlock(new ItemStack(item), b) / f / 30.0F);
     }
-    public boolean canHarvest(Block blockIn, Item item) {
+
+    public boolean canHarvest(IBlockState blockIn, Item item) {
         if (blockIn.getMaterial().isToolNotRequired()) {
             return true;
         } else {
