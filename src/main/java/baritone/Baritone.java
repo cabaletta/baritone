@@ -65,16 +65,6 @@ public class Baritone {
     public static long lastDeath = 0;
     public static SchematicBuilder currentBuilder = null;
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        String s = Autorun.class.getProtectionDomain().getCodeSource().getLocation().toString().substring(5) + "../../autorun/runmc.command";
-        if (s.contains("jar")) {
-            Autorun.start(args);
-            return;
-        }
-        Autorun.runprocess("/usr/local/bin/ant jar");
-        Autorun.runprocess("java -Djava.library.path=jars/versions/1.12.2/1.12.2-natives/ -jar dist/Baritone.jar");
-    }
-
     public static IBlockState get(BlockPos pos) { // wrappers for future 1.13 compat
         return world.getBlockState(pos);
     }
