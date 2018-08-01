@@ -101,8 +101,12 @@ public final class InputOverrideHandler implements Helper {
         /**
          * The use item input
          */
-        CLICK_RIGHT(mc.gameSettings.keyBindUseItem);
+        CLICK_RIGHT(mc.gameSettings.keyBindUseItem),
 
+        /**
+         * The jump input
+         */
+        JUMP(mc.gameSettings.keyBindJump);
         /**
          * The actual game {@link KeyBinding} being forced.
          */
