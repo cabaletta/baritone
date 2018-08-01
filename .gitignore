@@ -1,6 +1,8 @@
 .DS_Store
 **/*.swp
 
+/run
+
 # Gradle
 /build/
 .gradle/

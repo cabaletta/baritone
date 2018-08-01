@@ -31,6 +31,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 /**
@@ -380,12 +381,11 @@ public class Baritone {
      * @return the position of it
      */
     public static BlockPos whatAreYouLookingAt() {
-        /*Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getMinecraft();
         if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
             return mc.objectMouseOver.getBlockPos();
         }
-        return null;*/
-        throw new UnsupportedOperationException("need to figure out what RayTraceResult is in 1.12.2");
+        return null;
     }
 
     public static void switchToBestTool() {
@@ -409,12 +409,11 @@ public class Baritone {
     }
 
     public static Entity whatEntityAreYouLookingAt() {
-        /*Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getMinecraft();
         if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
             return mc.objectMouseOver.entityHit;
-        }*/
-        throw new UnsupportedOperationException("need to figure out what RayTraceResult is in 1.12.2");
-        //return null;
+        }
+        return null;
     }
 
     public static List<String> getDebugGui() {

@@ -125,7 +125,7 @@ public abstract class Action {
         Block b = state.getBlock();
         Material m = b.getMaterial(state);
         if (b instanceof BlockLiquid) {
-            throw new UnsupportedOperationException("TODO");
+            System.out.println("Need to fix get flow check!!!");
             //return BlockLiquid.getFlow(Minecraft.getMinecraft().world, pos, state) != -1000.0D;
         }
         return false;

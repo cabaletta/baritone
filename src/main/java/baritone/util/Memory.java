@@ -23,6 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -343,7 +344,7 @@ public class Memory extends Manager {
     public static final int SCAN_DIST = 50;
     public static void scanBlock(BlockPos pos) {
         Block block = Baritone.get(pos).getBlock();
-        if (air.equals(block)) {
+        if (Blocks.AIR.equals(block)) {
             return;
         }
         BlockMemory memory = getMemory(block);
