@@ -5,25 +5,23 @@
  */
 package baritone.ui;
 
-import java.awt.Color;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import baritone.Baritone;
 import baritone.pathfinding.Path;
 import baritone.pathfinding.PathFinder;
 import baritone.pathfinding.actions.Action;
-import baritone.util.FakeArrow;
+import java.awt.Color;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemBow;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.opengl.GL11;
 
@@ -32,6 +30,7 @@ import org.lwjgl.opengl.GL11;
  * @author leijurv
  */
 public class PathRenderer {
+
     public static void render(EntityPlayer player, float partialTicks) {
         if (Baritone.currentPath != null) {
             drawPath(Baritone.currentPath, player, partialTicks, Color.RED);
@@ -66,61 +65,8 @@ public class PathRenderer {
         } catch (Exception ex) {
             Logger.getLogger(PathRenderer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (!Baritone.sketchytracer) {
-            return;
-        }
-        try {
-            ItemStack holding = Minecraft.getMinecraft().player.inventory.mainInventory[Minecraft.getMinecraft().player.inventory.currentItem];
-            if (holding != null && (holding.getItem() instanceof ItemBow)) {
-                if (Minecraft.getMinecraft().player.getItemInUse() != null) {
-                    int i = holding.getItem().getMaxItemUseDuration(holding) - Minecraft.getMinecraft().player.getItemInUseCount();
-                    float f = (float) i / 20.0F;
-                    f = (f * f + f * 2.0F) / 3.0F;
-                    if ((double) f < 0.1D) {
-                        return;
-                    }
-                    if (f > 1.0F) {
-                        f = 1.0F;
-                    }
-                    drawBowStuff(player, partialTicks, f * 2);
-                } else {
-                    drawBowStuff(player, partialTicks, 2.0F);
-                }
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(PathRenderer.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
-    public static void drawBowStuff(EntityPlayer player, float partialTicks, float strength) {
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        FakeArrow ar1 = new FakeArrow(Minecraft.getMinecraft().world, Minecraft.getMinecraft().player, strength, partialTicks);
-        for (int i = 0; i < 200; i++) {
-            ar1.onUpdate();
-        }
-        Color color = ar1.didIHitAnEntity ? Color.RED : Color.BLACK;
-        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GL11.glLineWidth(3.0F);
-        GlStateManager.disableTexture2D();
-        GlStateManager.depthMask(false);
-        FakeArrow ar = new FakeArrow(Minecraft.getMinecraft().world, Minecraft.getMinecraft().player, strength, partialTicks);
-        double prevX = ar.posX;
-        double prevY = ar.posY;
-        double prevZ = ar.posZ;
-        for (int i = 0; i < 200; i++) {
-            ar.onUpdate();
-            double currX = ar.posX;
-            double currY = ar.posY;
-            double currZ = ar.posZ;
-            drawLine(Minecraft.getMinecraft().player, prevX - 0.5, prevY - 0.5, prevZ - 0.5, currX - 0.5, currY - 0.5, currZ - 0.5, partialTicks);
-            prevX = currX;
-            prevY = currY;
-            prevZ = currZ;
-        }
-        GlStateManager.depthMask(true);
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
-    }
+
     public static void drawPath(Path path, EntityPlayer player, float partialTicks, Color color) {
         /*for (BlockPos pos : path.path) {
          drawSelectionBox(player, pos, partialTicks, color);
@@ -183,9 +129,10 @@ public class PathRenderer {
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
     }
+
     public static void drawLine(EntityPlayer player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks) {
         Tessellator tessellator = Tessellator.getInstance();
-        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        BufferBuilder worldrenderer = tessellator.getBuffer();
         double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
@@ -197,6 +144,7 @@ public class PathRenderer {
         worldrenderer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
         tessellator.draw();
     }
+
     public static void drawSelectionBox(EntityPlayer player, BlockPos blockpos, float partialTicks, Color color) {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
@@ -206,17 +154,18 @@ public class PathRenderer {
         GlStateManager.depthMask(false);
         float f = 0.002F;
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
-        Block block = Baritone.get(blockpos).getBlock();
-        if (block.equals(Blocks.air)) {
-            block = Blocks.dirt;
+        IBlockState state = Baritone.get(blockpos);
+        Block block = state.getBlock();
+        if (block.equals(Blocks.AIR)) {
+            block = Blocks.DIRT;
         }
-        block.setBlockBoundsBasedOnState(Minecraft.getMinecraft().world, blockpos);
+        //block.setBlockBoundsBasedOnState(Minecraft.getMinecraft().world, blockpos);
         double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
-        AxisAlignedBB toDraw = block.getSelectedBoundingBox(Minecraft.getMinecraft().world, blockpos).expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D).offset(-d0, -d1, -d2);
+        AxisAlignedBB toDraw = block.getSelectedBoundingBox(state, Minecraft.getMinecraft().world, blockpos).expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D).offset(-d0, -d1, -d2);
         Tessellator tessellator = Tessellator.getInstance();
-        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        BufferBuilder worldrenderer = tessellator.getBuffer();
         worldrenderer.begin(3, DefaultVertexFormats.POSITION);
         worldrenderer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
         worldrenderer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
