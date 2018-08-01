@@ -5,12 +5,16 @@
  */
 package baritone.util;
 
-import baritone.inventory.AnotherStealer;
-import baritone.schematic.SchematicBuilder;
+import baritone.Baritone;
+import baritone.mining.MickeyMine;
+import baritone.pathfinding.goals.GoalBlock;
+import baritone.pathfinding.goals.GoalGetToBlock;
+import baritone.pathfinding.goals.GoalXZ;
+import baritone.pathfinding.goals.GoalYLevel;
 import baritone.schematic.Schematic;
+import baritone.schematic.SchematicBuilder;
 import baritone.schematic.SchematicLoader;
-import baritone.inventory.SmeltingTask;
-import baritone.inventory.CraftingTask;
+import baritone.ui.LookManager;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -19,24 +23,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Random;
-import baritone.movement.Combat;
-import baritone.strategy.EarlyGameStrategy;
-import baritone.ui.LookManager;
-import baritone.Baritone;
-import baritone.movement.Parkour;
-import baritone.mining.MickeyMine;
-import baritone.pathfinding.goals.GoalBlock;
-import baritone.pathfinding.goals.GoalGetToBlock;
-import baritone.pathfinding.goals.GoalXZ;
-import baritone.pathfinding.goals.GoalYLevel;
-import baritone.ui.AimBow;
-import baritone.ui.Screenshot;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -44,15 +34,18 @@ import net.minecraft.util.math.BlockPos;
  * @author avecowa
  */
 public class ChatCommand {
+
     private static WorldClient theWorld() {
         return Minecraft.getMinecraft().world;
     }
+
     private static EntityPlayerSP thePlayer() {
         return Minecraft.getMinecraft().player;
     }
     private static ArrayList<Field> fields;
     private static ArrayList<Method> methods;
     private static Method DONTYOUDARE;
+
     static {
         DONTYOUDARE = null;
 //        try {
@@ -67,10 +60,9 @@ public class ChatCommand {
         addMethods(ChatCommand.class);
         addMethods(MCEdit.class);
         addFields(Baritone.class);
-        addFields(Combat.class);
-        addFields(SmeltingTask.class);
         addFields(LookManager.class);
     }
+
     public static void addFields(Class<?> c) {
         Field[] temp = c.getFields();
         for (Field f : temp) {
@@ -79,6 +71,7 @@ public class ChatCommand {
             }
         }
     }
+
     public static void addMethods(Class<?> c) {
         Method[] temp = c.getDeclaredMethods();
         for (Method m : temp) {
@@ -87,6 +80,7 @@ public class ChatCommand {
             }
         }
     }
+
     public static boolean message(String message) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Out.log("MSG: " + message);
         String text = (message.charAt(0) == '/' ? message.substring(1) : message).trim();
@@ -109,6 +103,7 @@ public class ChatCommand {
         }
         return false;
     }
+
     public static String set(String message) throws IllegalArgumentException, IllegalAccessException {
         int argc = message.split(" ").length;
         if (argc <= 1) {
@@ -129,6 +124,7 @@ public class ChatCommand {
         }
         return "THATS NOT A THING";
     }
+
     public static String importfrom(String message) throws ClassNotFoundException {
         String[] args = message.split(" ");
         if (args.length != 3 || (!"m".equals(args[1]) && !"f".equals(args[1]))) {
@@ -142,77 +138,38 @@ public class ChatCommand {
         }
         return "Added from " + c;
     }
+
     public static String death(String message) {
         Baritone.goal = new GoalBlock(Baritone.death);
         return "Set goal to " + Baritone.goal;
     }
-    public static String craft(String message) {
-        String spec = message.substring(5).trim();
-        if (spec.length() > 0) {
-            String item = spec.split(" ")[0];
-            String amt = spec.split(" ")[1];
-            ItemStack stack = new ItemStack(Item.getByNameOrId(item), Integer.parseInt(amt));
-            Out.log(CraftingTask.findOrCreateCraftingTask(stack));
-        }
-        return "k";
-    }
-    public static String smelt(String message) {
-        String spec = message.substring(5).trim();
-        if (spec.length() > 0) {
-            String item = spec.split(" ")[0];
-            String amt = spec.split(" ")[1];
-            ItemStack stack = new ItemStack(Item.getByNameOrId(item), Integer.parseInt(amt));
-            new SmeltingTask(stack).begin();
-        } else {
-            new SmeltingTask(Minecraft.getMinecraft().player.getCurrentEquippedItem()).begin();
-        }
-        return "k";
-    }
-    public static String containeritem(String message) {
-        CraftingTask.getRecipeFromItem(thePlayer().getCurrentEquippedItem().getItem());
-        return "k";
-    }
+
     public static String ore(String message) {
         MickeyMine.toggleOre(message.substring(3).trim());
         return "";
     }
-    public static String parkour(String message) {
-        return "Parkour: " + Manager.toggle(Parkour.class);
-    }
+
     public static String mine(String message) {
         return "Mreow mine: " + Manager.toggle(MickeyMine.class);
     }
-    public static String fullauto(String message) {
-        return "Full Auto: " + Manager.toggle(EarlyGameStrategy.class);
-    }
-    public static String record(String message) {
-        return "Record: " + Manager.toggle(Screenshot.class);
-    }
+
     public static String wizard(String message) {
         return "YOURE A LIZARD HARRY " + (Baritone.isThereAnythingInProgress ^= true);
     }
+
     public static String actuallyTalk(String message) {
         Baritone.actuallyPutMessagesInChat ^= true;
         return "toggled to " + Baritone.actuallyPutMessagesInChat;
     }
+
     public static String allowPlaceOrBreak(String message) {
         return adventure(message);
     }
-    public static String arrowPearl(String message) {
-        if (AimBow.lastBlock != null) {
-            Baritone.goal = new GoalXZ(AimBow.lastBlock.getX(), AimBow.lastBlock.getZ());
-            Baritone.findPathInNewThread(false);
-            return "Aiming: Pathing to X" + AimBow.lastBlock.getX() + ", Z" + AimBow.lastBlock.getZ();
-        } else {
-            return "Aiming: You need to be holding a bow!";
-        }
-    }
+
     public static String adventure(String message) {
         return "allowBreakOrPlace: " + (Baritone.allowBreakOrPlace ^= true);
     }
-    public static String steal(String message) {
-        return stealer(message);
-    }
+
     public static String save(String message) {
         String t = message.substring(4).trim();
         if (Baritone.goal == null) {
@@ -224,9 +181,11 @@ public class ChatCommand {
         Memory.goalMemory.put(t, ((GoalBlock) Baritone.goal).pos());
         return "Saved " + Baritone.goal + " under " + t;
     }
+
     public static String load(String message) {
         return "Set goal to " + (Baritone.goal = new GoalBlock(Memory.goalMemory.get(message.substring(4).trim())));
     }
+
     public static String random(String message) {
         double dist = Double.parseDouble(message.substring("random direction".length()).trim());
         double ang = new Random().nextDouble() * Math.PI * 2;
@@ -237,30 +196,27 @@ public class ChatCommand {
         Baritone.goal = new GoalXZ(x, z);
         return "Set goal to " + Baritone.goal;
     }
+
     public static String findgo(String message) {
         return Memory.findGoCommand(message.substring(6).trim());
     }
+
     public static String find(String message) {
         return Memory.findCommand(message.substring(4).trim());
     }
+
     public static String look(String message) {
         LookManager.lookAtBlock(new BlockPos(0, 0, 0), true);
         return "";
     }
+
     public static String cancel(String message) {
         Baritone.cancelPath();
-        Combat.mobHunting = false;
-        Combat.mobKilling = false;
         Baritone.plsCancel = true;
-        for (Class c : Baritone.managers) {
-            Manager.cancel(c);
-        }
+        Manager.cancel(LookManager.class);
         return Baritone.isThereAnythingInProgress ? "Cancelled it, but btw I'm pathfinding right now" : "Cancelled it";
     }
-    public static String cancelfurnace(String message) {
-        SmeltingTask.clearInProgress();
-        return "k =)";
-    }
+
     public static String st(String message) {
         WorldClient theWorld = theWorld();
         EntityPlayerSP thePlayer = thePlayer();
@@ -270,14 +226,16 @@ public class ChatCommand {
         Out.gui(Baritone.info(playerFeet.up()), Out.Mode.Minimal);
         return "";
     }
+
     public static String setgoal(String message) {
         return goal(message);
     }
+
     public static String goal(String message) {
         Baritone.plsCancel = false;
         int ind = message.indexOf(' ') + 1;
         if (ind == 0) {
-            Baritone.goal = new GoalBlock(thePlayer().playerFeet());
+            Baritone.goal = new GoalBlock(Baritone.playerFeet);
             return "Set goal to " + Baritone.goal;
         }
         String[] strs = message.substring(ind).split(" ");
@@ -309,42 +267,45 @@ public class ChatCommand {
         }
         return "Set goal to " + Baritone.goal;
     }
+
     public static String gotoblock(String message) {
         return Memory.gotoCommand(message.substring(4).trim().toLowerCase());
     }
-    public static String kill(String message) {
-        return Combat.killCommand(message.substring(4).trim().toLowerCase());
-    }
+
     public static String player(String message) {
         return Memory.playerCommand(message.substring(6).trim());
     }
+
     public static String thisway(String message) {
         return "Set goal to " + (Baritone.goal = LookManager.fromAngleAndDirection(Double.parseDouble(message.substring(7).trim())));
     }
+
     public static String path(String message) {
         Baritone.plsCancel = false;
         String[] split = message.split(" ");
-        Baritone.findPathInNewThread(thePlayer().playerFeet(), split.length > 1 ? Boolean.parseBoolean(split[1]) : true);
+        Baritone.findPathInNewThread(Baritone.playerFeet, split.length > 1 ? Boolean.parseBoolean(split[1]) : true);
         return "";
     }
+
     public static String hardness(String message) {
         BlockPos bp = Baritone.whatAreYouLookingAt();
-        return bp == null ? "0" : (1 / theWorld().getBlockState(bp).getBlock().getPlayerRelativeBlockHardness(thePlayer(), theWorld(), Baritone.whatAreYouLookingAt())) + "";
+        return bp == null ? "0" : (1 / theWorld().getBlockState(bp).getBlock().getPlayerRelativeBlockHardness(theWorld().getBlockState(bp), thePlayer(), theWorld(), Baritone.whatAreYouLookingAt())) + "";
     }
+
     public static String info(String message) {
         return Baritone.info(Baritone.whatAreYouLookingAt());
     }
+
     public static String toggle(String message) throws IllegalArgumentException, IllegalAccessException {
         return set(message);
     }
-    public static String stealer(String message) {
-        return "stealer: " + Manager.toggle(AnotherStealer.class);
-    }
+
     public static String printtag(String message) throws IOException {
         Schematic sch = SchematicLoader.getLoader().loadFromFile(new File("/Users/galdara/Downloads/schematics/Bakery.schematic"));
         Baritone.currentBuilder = new SchematicBuilder(sch, Baritone.playerFeet);
         return "printed schematic to console.";
     }
+
     public static String samplebuild(String message) {
         int size = 5;
         BlockPos pl = Baritone.playerFeet;
@@ -352,21 +313,12 @@ public class ChatCommand {
         Baritone.currentBuilder = new SchematicBuilder(new Schematic(Block.getBlockFromName("dirt"), size), center);
         return "ok";
     }
-    public static String pinwheel(String message) {
-        if (true) {
-            return "haha. no.";
-        }
-        int size = 5;
-        BlockPos pl = Baritone.playerFeet;
-        BlockPos center = new BlockPos(pl.getX() - size, pl.getY(), pl.getZ() - size);
-        Baritone.currentBuilder = new SchematicBuilder(new Schematic(Block.getBlockFromName("dirt"), size * 2 + 1, false, true), center);
-        return "ok";
-    }
+
     public static String getToGoal(String message) {
         Baritone.plsCancel = false;
         int ind = message.indexOf(' ') + 1;
         if (ind == 0) {
-            Baritone.goal = new GoalGetToBlock(thePlayer().playerFeet());
+            Baritone.goal = new GoalGetToBlock(Baritone.playerFeet);
             return "Set goal to " + Baritone.goal;
         }
         String[] strs = message.substring(ind).split(" ");
@@ -392,10 +344,12 @@ public class ChatCommand {
         }
         return "Set goal to " + Baritone.goal;
     }
+
     public static String debug(String message) {
         Out.mode = Out.Mode.Debug;
         return "Set mode to debug";
     }
+
     public static String chatMode(String message) {
         String[] args = message.split(" ");
         if (args.length == 1) {

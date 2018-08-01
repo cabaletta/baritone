@@ -5,24 +5,25 @@
  */
 package baritone.schematic;
 
+import baritone.Baritone;
+import baritone.pathfinding.goals.GoalComposite;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map.Entry;
-import baritone.Baritone;
-import baritone.pathfinding.goals.GoalComposite;
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.math.BlockPos;
 
 /**
  *
  * @author leijurv
  */
 public class SchematicBuilder {
+
     ArrayList<Tuple<BlockPos, Block>> plan = new ArrayList();
     BlockPos offset;
     Schematic schematic;
+
     public SchematicBuilder(Schematic schematic, BlockPos offset) {
         this.schematic = schematic;
         this.offset = offset;
@@ -30,6 +31,7 @@ public class SchematicBuilder {
             plan.add(new Tuple(offset(entry.getKey()), entry.getValue()));
         }
     }
+
     public void tick() {
         HashSet<BlockPos> goal = getAllBlocksToPlaceShiftedUp();
         //Out.log("Ticking " + goal);
@@ -42,8 +44,9 @@ public class SchematicBuilder {
             //Out.gui("done building", Out.Mode.Standard);
         }
     }
+
     public HashSet<BlockPos> getAllBlocksToPlaceShiftedUp() {
-        HashSet<BlockPos> toPlace = new HashSet<BlockPos>();
+        HashSet<BlockPos> toPlace = new HashSet<>();
         Block air = Block.getBlockById(0);
         for (int y = 0; y < schematic.getHeight(); y++) {
             for (int x = 0; x < schematic.getWidth(); x++) {
@@ -63,6 +66,7 @@ public class SchematicBuilder {
         }
         return toPlace.isEmpty() ? null : toPlace;
     }
+
     private BlockPos offset(BlockPos original) {
         return new BlockPos(original.getX() + offset.getX(), original.getY() + offset.getY(), original.getZ() + offset.getZ());
     }

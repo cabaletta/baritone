@@ -5,7 +5,6 @@
  */
 package baritone;
 
-import baritone.movement.Combat;
 import baritone.movement.MovementManager;
 import baritone.pathfinding.Path;
 import baritone.pathfinding.PathFinder;
@@ -42,7 +41,6 @@ public class Baritone {
 
     public static BlockPos playerFeet = null;
     public static World world = null;
-
     public static boolean allowDiagonal = true;
     public static boolean farf5 = false;
     public static boolean slowPath = false;
@@ -151,7 +149,6 @@ public class Baritone {
         hasThrowaway = ActionPlaceOrBreak.hasthrowaway();
         ManagerTick.tickPath = true;
         Manager.tick(LookManager.class);
-
         BlockPos ts = whatAreYouLookingAt();
         if (ts != null) {
             Memory.scanBlock(ts);
@@ -277,7 +274,6 @@ public class Baritone {
      */
     public static void cancelPath() {
         nextPath = null;
-        Combat.target = null;
         currentBuilder = null;
         clearPath();
     }
@@ -397,18 +393,18 @@ public class Baritone {
         if (pos == null) {
             return;
         }
-        Block block = Baritone.get(pos).getBlock();
-        if (block.equals(Block.getBlockById(0))) {
+        IBlockState state = Baritone.get(pos);
+        if (state.getBlock().equals(Block.getBlockById(0))) {
             return;
         }
-        switchtotool(block);
+        switchtotool(state);
     }
 
-    public static void switchtotool(Block b) {
+    public static void switchtotool(IBlockState b) {
         Baritone.switchtotool(b, new ToolSet());
     }
 
-    public static void switchtotool(Block b, ToolSet ts) {
+    public static void switchtotool(IBlockState b, ToolSet ts) {
         Minecraft.getMinecraft().player.inventory.currentItem = ts.getBestSlot(b);
     }
 
@@ -429,7 +425,6 @@ public class Baritone {
         list.add("§5[§dBaritone§5]§f");
         Class<LookManager> c = LookManager.class;
         list.add("§r[§" + (Manager.enabled(c) ? "a" : "c") + c.getSimpleName() + "§r]");
-
         list.add("");
         list.add("Current goal: " + goal);
         list.add("");

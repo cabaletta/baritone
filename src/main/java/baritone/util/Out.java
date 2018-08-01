@@ -6,7 +6,7 @@
 package baritone.util;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.text.TextComponentString;
 
 /**
  * This class serves the purpose of filtering what messages get send to the chat
@@ -15,6 +15,7 @@ import net.minecraft.util.ChatComponentText;
  * @author avecowa
  */
 public class Out {
+
     /**
      * Out has an Mode at all times. The Mode determines behavior of of the
      * filter.
@@ -53,6 +54,7 @@ public class Out {
         Ludicrous
     }
     public static Mode mode = Mode.Standard;
+
     /**
      * Logs a message to the standard system output. Before writing it runs a
      * stacktrace and appends the class and line number of the calling method to
@@ -69,6 +71,7 @@ public class Out {
             chatRaw("§5[§dLog§5|§2" + trace + "§5]§f " + o.toString());
         }
     }
+
     /**
      * Prints a message to the client's chat GUI. Messages will not be displayed
      * if their Mode is a lower importance than the set mode.
@@ -104,9 +107,11 @@ public class Out {
             chatRaw(message);
         }
     }
+
     private static void chatRaw(String s) {
-        Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText(s));
+        Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(s));
     }
+
     private static String trace() {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         StackTraceElement trace = stack[3];

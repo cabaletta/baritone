@@ -5,6 +5,7 @@
  */
 package baritone.schematic;
 
+import baritone.util.Out;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import baritone.util.Out;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -25,8 +25,10 @@ import net.minecraft.util.math.BlockPos;
  * @author galdara
  */
 public class SchematicLoader {
+
     public static File schematicDir;
-    private static final HashMap<File, Schematic> cachedSchematics = new HashMap<File, Schematic>();
+    private static final HashMap<File, Schematic> cachedSchematics = new HashMap<>();
+
     private SchematicLoader() {
         schematicDir = new File(Minecraft.getMinecraft().mcDataDir, "schematics");
         schematicDir.mkdir();
@@ -43,9 +45,11 @@ public class SchematicLoader {
             }
         }
     }
+
     public static SchematicLoader getLoader() {
         return new SchematicLoader();
     }
+
     public final Schematic loadFromFile(File nbtFile) throws FileNotFoundException, IOException {
         if (cachedSchematics.containsKey(nbtFile)) {
             return cachedSchematics.get(nbtFile);
@@ -59,7 +63,7 @@ public class SchematicLoader {
         length = compound.getInteger("Length");
         byte[][][] blocks = new byte[width][height][length], data = new byte[width][height][length];
         byte[] rawBlocks = compound.getByteArray("Blocks");
-        HashMap<BlockPos, Block> blocksMap = new HashMap<BlockPos, Block>();
+        HashMap<BlockPos, Block> blocksMap = new HashMap<>();
         for (int y = 0; y < height; y++) {
             for (int z = 0; z < length; z++) {
                 for (int x = 0; x < width; x++) {

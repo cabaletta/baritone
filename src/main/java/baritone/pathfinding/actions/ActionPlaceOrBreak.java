@@ -130,7 +130,7 @@ public abstract class ActionPlaceOrBreak extends Action {
                  return false;
                  }*/
                 if (Baritone.whatAreYouLookingAt() != null) {
-                    Baritone.switchtotool(Baritone.get(Baritone.whatAreYouLookingAt()).getBlock());
+                    Baritone.switchtotool(Baritone.get(Baritone.whatAreYouLookingAt()));
                 }
                 MovementManager.isLeftClick = true;//hold down left click
                 if (canWalkThrough(positionsToBreak[i])) {
