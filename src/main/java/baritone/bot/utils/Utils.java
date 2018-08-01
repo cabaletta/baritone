@@ -9,7 +9,8 @@ import java.util.function.Supplier;
 public final class Utils {
 
     public static void ifConditionThen(Supplier<Boolean> condition, Runnable runnable) {
-        if (condition.get())
+        if (condition.get()) {
             runnable.run();
+        }
     }
 }
