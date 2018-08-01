@@ -392,11 +392,11 @@ public class MickeyMine extends ManagerTick {
     }
 
     public static IntegerTuple tupleFromChunk(Chunk chunk) {
-        return new IntegerTuple(chunk.xPosition, chunk.zPosition);
+        return new IntegerTuple(chunk.x, chunk.z);
     }
 
     public static IntegerTuple tupleFromBlockPos(BlockPos blockPos) {
-        return tupleFromChunk(Minecraft.getMinecraft().world.getChunkFromBlockCoords(blockPos));
+        return tupleFromChunk(Minecraft.getMinecraft().world.getChunk(blockPos));
     }
 
     @Override

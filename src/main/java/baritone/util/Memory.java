@@ -359,7 +359,7 @@ public class Memory extends Manager {
         return n;
     }
     public static boolean blockLoaded(BlockPos pos) {
-        return !(Minecraft.getMinecraft().world.getChunkFromBlockCoords(pos) instanceof EmptyChunk);
+        return !(Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk);
     }
     public static String gotoCommand(String targetName) {
         for (String name : playerLocationMemory.keySet()) {

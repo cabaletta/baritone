@@ -60,6 +60,7 @@ public class ToolSet {
                 item = Item.getByNameOrId("minecraft:apple");
             }
             //Out.log(inv[i]);
+
             float v = item.getStrVsBlock(new ItemStack(item), b);
             //Out.log("v: " + v);
             if (v > value) {

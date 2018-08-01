@@ -114,7 +114,7 @@ public class PathFinder {
                 if (actionCost >= Action.COST_INF) {
                     continue;
                 }
-                if (Minecraft.getMinecraft().world.getChunkFromBlockCoords(actionToGetToNeighbor.to) instanceof EmptyChunk) {
+                if (Minecraft.getMinecraft().world.getChunk(actionToGetToNeighbor.to) instanceof EmptyChunk) {
                     numEmptyChunk++;
                     continue;
                 }

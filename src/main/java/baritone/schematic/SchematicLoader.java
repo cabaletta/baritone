@@ -30,7 +30,7 @@ public class SchematicLoader {
     private static final HashMap<File, Schematic> cachedSchematics = new HashMap<>();
 
     private SchematicLoader() {
-        schematicDir = new File(Minecraft.getMinecraft().mcDataDir, "schematics");
+        schematicDir = new File(Minecraft.getMinecraft().gameDir, "schematics");
         schematicDir.mkdir();
         for (File file : schematicDir.listFiles(new FileFilter() {
             @Override

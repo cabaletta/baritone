@@ -54,3 +54,6 @@ nbproject/
 /updatenames.sh
 /src/minecraft/net
 /src/minecraft/mcp
+/classes
+
+*.class
