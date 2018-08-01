@@ -171,7 +171,7 @@ public class LookManager extends Manager {
         double blockReachDistance = (double) Minecraft.getMinecraft().playerController.getBlockReachDistance();
         Vec3d vec3 = Minecraft.getMinecraft().player.getPositionEyes(1.0F);
         Vec3d vec31 = getVectorForRotation(pitch, yaw);
-        Vec3d vec32 = vec3.addVector(vec31.xCoord * blockReachDistance, vec31.yCoord * blockReachDistance, vec31.zCoord * blockReachDistance);
+        Vec3d vec32 = vec3.add(vec31.x * blockReachDistance, vec31.y * blockReachDistance, vec31.z * blockReachDistance);
         RayTraceResult blah = Minecraft.getMinecraft().world.rayTraceBlocks(vec3, vec32, false, false, true);
         return blah;
     }
