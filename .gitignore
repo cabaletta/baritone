@@ -8,6 +8,7 @@
 .gradle/
 /classes/
 *.class
+/run/
 
 # IntelliJ Files
 .idea/
