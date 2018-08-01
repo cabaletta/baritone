@@ -1,6 +1,10 @@
 .DS_Store
 **/*.swp
 
+# Gradle
+/build/
+.gradle/
+
 # IntelliJ Files
 .idea/
 *.iml 
