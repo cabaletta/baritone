@@ -7,11 +7,12 @@ package baritone.movement;
 
 import baritone.Baritone;
 import baritone.ui.LookManager;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -42,17 +43,18 @@ public class MovementManager {
     }
 
     public static boolean moveTowardsBlock(BlockPos p, boolean rotate) {
-        Block b = Baritone.get(p).getBlock();
-        double xDiff = (b.getBlockBoundsMinX() + b.getBlockBoundsMaxX()) / 2;
-        double yolo = (b.getBlockBoundsMinY() + b.getBlockBoundsMaxY()) / 2;
-        double zDiff = (b.getBlockBoundsMinZ() + b.getBlockBoundsMaxZ()) / 2;
+        IBlockState b = Baritone.get(p);
+        AxisAlignedBB bbox = b.getBoundingBox(Baritone.world, p);
+        double xDiff = (bbox.minX + bbox.maxX) / 2;
+        double yDiff = (bbox.minY + bbox.maxY) / 2;
+        double zDiff = (bbox.minZ + bbox.maxZ) / 2;
         if (b instanceof BlockLadder || b instanceof BlockVine) {
             xDiff = 0.5;
-            yolo = 0.5;
+            yDiff = 0.5;
             zDiff = 0.5;
         }
         double x = p.getX() + xDiff;
-        double y = p.getY() + yolo;
+        double y = p.getY() + yDiff;
         double z = p.getZ() + zDiff;
         return moveTowardsCoords(x, y, z, rotate);
     }
@@ -213,8 +215,7 @@ public class MovementManager {
     }
 
     public static void rightClickMouse() {
-
-        Minecraft.getMinecraft().rightClickMouse();
+        //Minecraft.getMinecraft().rightClickMouse();
         throw new UnsupportedOperationException("Not public");
     }
 }
