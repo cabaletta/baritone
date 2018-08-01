@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemTool;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 
@@ -22,11 +23,11 @@ import net.minecraft.util.math.BlockPos;
  */
 public class ToolSet {
 
-    public ArrayList<Item> tools;
+    public ArrayList<ItemTool> tools;
     public ArrayList<Byte> slots;
     public HashMap<Block, Byte> cache = new HashMap<Block, Byte>();
 
-    public ToolSet(ArrayList<Item> tools, ArrayList<Byte> slots) {
+    public ToolSet(ArrayList<ItemTool> tools, ArrayList<Byte> slots) {
         this.tools = tools;
         this.slots = slots;
     }
@@ -34,13 +35,13 @@ public class ToolSet {
     public ToolSet() {
         EntityPlayerSP p = Minecraft.getMinecraft().player;
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
-        tools = new ArrayList<Item>();
+        tools = new ArrayList<ItemTool>();
         slots = new ArrayList<Byte>();
         //Out.log("inv: " + Arrays.toString(inv));
         boolean fnull = false;
         for (byte i = 0; i < 9; i++) {
-            if (!fnull || (inv.get(i) != null && inv.get(i).getItem().isItemTool(null))) {
-                tools.add(inv.get(i) != null ? inv.get(i).getItem() : null);
+            if (!fnull || (inv.get(i) != null && inv.get(i).getItem() instanceof ItemTool)) {
+                tools.add(inv.get(i) != null ? (ItemTool) inv.get(i).getItem() : null);
                 slots.add(i);
                 fnull |= inv.get(i) == null || (!inv.get(i).getItem().isDamageable());
             }
@@ -51,9 +52,13 @@ public class ToolSet {
         if (cache.get(b.getBlock()) != null) {
             return tools.get(cache.get(b.getBlock()));
         }
+        return tools.get(getBestToolIndex(b));
+    }
+
+    private byte getBestToolIndex(IBlockState b) {
         byte best = 0;
         //Out.log("best: " + best);
-        float value = 0;
+        float value = -1;
         for (byte i = 0; i < tools.size(); i++) {
             Item item = tools.get(i);
             if (item == null) {
@@ -61,41 +66,23 @@ public class ToolSet {
             }
             //Out.log(inv[i]);
 
-            float v = item.getStrVsBlock(new ItemStack(item), b);
+            float v = item.getDestroySpeed(new ItemStack(item), b);
             //Out.log("v: " + v);
-            if (v > value) {
+            if (v < value || value == -1) {
                 value = v;
                 best = i;
             }
         }
         //Out.log("best: " + best);
         cache.put(b.getBlock(), best);
-        return tools.get(best);
+        return best;
     }
 
     public byte getBestSlot(IBlockState b) {
         if (cache.get(b.getBlock()) != null) {
             return slots.get(cache.get(b.getBlock()));
         }
-        byte best = 0;
-        //Out.log("best: " + best);
-        float value = 0;
-        for (byte i = 0; i < tools.size(); i++) {
-            Item item = tools.get(i);
-            if (item == null) {
-                item = Item.getByNameOrId("minecraft:apple");
-            }
-            //Out.log(inv[i]);
-            float v = item.getStrVsBlock(new ItemStack(item), b);
-            //Out.log("v: " + v);
-            if (v > value) {
-                value = v;
-                best = i;
-            }
-        }
-        //Out.log("best: " + best);
-        cache.put(b.getBlock(), best);
-        return slots.get(best);
+        return slots.get(getBestToolIndex(b));
     }
 
     public double getStrVsBlock(IBlockState b, BlockPos pos) {
@@ -104,7 +91,7 @@ public class ToolSet {
             item = Item.getByNameOrId("minecraft:apple");
         }
         float f = b.getBlockHardness(Minecraft.getMinecraft().world, pos);
-        return f < 0.0F ? 0.0F : (!canHarvest(b, item) ? item.getStrVsBlock(new ItemStack(item), b) / f / 100.0F : item.getStrVsBlock(new ItemStack(item), b) / f / 30.0F);
+        return f < 0.0F ? 0.0F : (!canHarvest(b, item) ? item.getDestroySpeed(new ItemStack(item), b) / f / 100.0F : item.getDestroySpeed(new ItemStack(item), b) / f / 30.0F);
     }
 
     public boolean canHarvest(IBlockState blockIn, Item item) {
