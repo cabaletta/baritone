@@ -1,4 +1,11 @@
 .DS_Store
+**/*.swp
+
+# IntelliJ Files
+.idea/
+*.iml 
+
+# MCP Files
 /CHANGELOG
 /LICENSE.txt
 /bin/
