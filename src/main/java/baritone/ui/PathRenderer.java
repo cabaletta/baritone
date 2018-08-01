@@ -206,7 +206,7 @@ public class PathRenderer {
         GlStateManager.depthMask(false);
         float f = 0.002F;
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
-        Block block = Minecraft.getMinecraft().world.getBlockState(blockpos).getBlock();
+        Block block = Baritone.get(blockpos).getBlock();
         if (block.equals(Blocks.air)) {
             block = Blocks.dirt;
         }

@@ -50,7 +50,7 @@ public class SchematicBuilder {
                 for (int z = 0; z < schematic.getLength(); z++) {
                     BlockPos inSchematic = new BlockPos(x, y, z);
                     BlockPos inWorld = offset(inSchematic);
-                    Block current = Minecraft.getMinecraft().world.getBlockState(inWorld).getBlock();
+                    Block current = Baritone.get(inWorld).getBlock();
                     Block desired = schematic.getBlockFromBlockPos(inSchematic);
                     //Out.log(inSchematic + " " + current + " " + desired);
                     boolean currentlyAir = air.equals(current);

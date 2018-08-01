@@ -26,7 +26,7 @@ public class ActionDescend extends ActionPlaceOrBreak {
         if (!canWalkOn(positionsToPlace[0])) {
             return COST_INF;
         }
-        Block tmp1 = Minecraft.getMinecraft().world.getBlockState(to).getBlock();
+        Block tmp1 = Baritone.get(to).getBlock();
         if (tmp1 instanceof BlockLadder || tmp1 instanceof BlockVine) {
             return COST_INF;
         }

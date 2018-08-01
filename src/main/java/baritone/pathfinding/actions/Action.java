@@ -87,7 +87,7 @@ public abstract class Action {
 
     public double calculateCost0(ToolSet ts) {
         if (!(this instanceof ActionPillar) && !(this instanceof ActionBridge) && !(this instanceof ActionFall)) {
-            Block fromDown = Minecraft.getMinecraft().world.getBlockState(from.down()).getBlock();
+            Block fromDown = Baritone.get(from.down()).getBlock();
             if (fromDown instanceof BlockLadder || fromDown instanceof BlockVine) {
                 return COST_INF;
             }
@@ -112,7 +112,7 @@ public abstract class Action {
     }
 
     public static boolean isWater(BlockPos bp) {
-        return isWater(Minecraft.getMinecraft().world.getBlockState(bp).getBlock());
+        return isWater(Baritone.get(bp).getBlock());
     }
 
     public static boolean isLiquid(Block b) {
@@ -135,12 +135,12 @@ public abstract class Action {
     }
 
     public static boolean isLiquid(BlockPos p) {
-        return isLiquid(Minecraft.getMinecraft().world.getBlockState(p).getBlock());
+        return isLiquid(Baritone.get(p).getBlock());
     }
 
     public static boolean avoidBreaking(BlockPos pos) {
-        Block b = Minecraft.getMinecraft().world.getBlockState(pos).getBlock();
-        Block below = Minecraft.getMinecraft().world.getBlockState(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
+        Block b = Baritone.get(pos).getBlock();
+        Block below = Baritone.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
         return Block.getBlockFromName("minecraft:ice").equals(b)//ice becomes water, and water can mess up the path
                 || isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
                 || isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
@@ -157,7 +157,7 @@ public abstract class Action {
      * @return
      */
     public static boolean canWalkThrough(BlockPos pos) {
-        IBlockState state = Minecraft.getMinecraft().world.getBlockState(pos);
+        IBlockState state = Baritone.get(pos);
         Block block = state.getBlock();
         if (block instanceof BlockLilyPad || block instanceof BlockFire) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
@@ -172,7 +172,7 @@ public abstract class Action {
     }
 
     public static boolean avoidWalkingInto(BlockPos pos) {
-        Block block = Minecraft.getMinecraft().world.getBlockState(pos).getBlock();
+        Block block = Baritone.get(pos).getBlock();
         if (isLava(block)) {
             return true;
         }
@@ -191,7 +191,7 @@ public abstract class Action {
      * @return
      */
     public static boolean canWalkOn(BlockPos pos) {
-        IBlockState state = Minecraft.getMinecraft().world.getBlockState(pos);
+        IBlockState state = Baritone.get(pos);
         Block block = state.getBlock();
         if (block instanceof BlockLadder || block instanceof BlockVine) {
             return true;

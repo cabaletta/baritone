@@ -80,7 +80,7 @@ public class Path {
     public void showPathInStone() {
         IBlockState[] originalStates = new IBlockState[path.size()];
         for (int i = 0; i < path.size(); i++) {
-            originalStates[i] = Minecraft.getMinecraft().world.getBlockState(path.get(i));
+            originalStates[i] = Baritone.get(path.get(i));
             Minecraft.getMinecraft().world.setBlockState(path.get(i), Block.getBlockById(1).getDefaultState());
             try {
                 Thread.sleep(250);
@@ -163,7 +163,7 @@ public class Path {
         }
         if (!whereShouldIBe.equals(whereAmI)) {
             Out.log("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
-            if (!Blocks.air.equals(Minecraft.getMinecraft().world.getBlockState(thePlayer.getPosition0().down()))) {//do not skip if standing on air, because our position isn't stable to skip
+            if (!Blocks.air.equals(Baritone.get(thePlayer.getPosition0().down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 2 && i < path.size(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.get(i))) {
                         Out.gui("Skipping back " + (pathPosition - i) + " steps, to " + i, Out.Mode.Debug);
@@ -203,8 +203,8 @@ public class Path {
                     if (curr.amIGood() && next.amIGood()) {//nothing in the way
                         BlockPos cornerToCut1 = new BlockPos(next.to.getX() - next.from.getX() + curr.from.getX(), next.to.getY(), next.to.getZ() - next.from.getZ() + curr.from.getZ());
                         BlockPos cornerToCut2 = cornerToCut1.up();
-                        //Block corner1 = Minecraft.getMinecraft().world.getBlockState(cornerToCut1).getBlock();
-                        //Block corner2 = Minecraft.getMinecraft().world.getBlockState(cornerToCut2).getBlock();
+                        //Block corner1 = Baritone.get(cornerToCut1).getBlock();
+                        //Block corner2 = Baritone.get(cornerToCut2).getBlock();
                         //Out.gui("Cutting conner " + cornerToCut1 + " " + corner1, Out.Mode.Debug);
                         if (!Action.avoidWalkingInto(cornerToCut1) && !Action.avoidWalkingInto(cornerToCut2)) {
                             double x = (next.from.getX() + next.to.getX() + 1.0D) * 0.5D;

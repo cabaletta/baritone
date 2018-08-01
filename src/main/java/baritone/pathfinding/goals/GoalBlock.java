@@ -5,8 +5,8 @@
  */
 package baritone.pathfinding.goals;
 
+import baritone.Baritone;
 import baritone.pathfinding.actions.Action;
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -14,27 +14,34 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public class GoalBlock implements Goal {
+
     final int x, y, z;
+
     public GoalBlock() {
-        this(Minecraft.getMinecraft().player.playerFeet());
+        this(Baritone.playerFeet);
     }
+
     public GoalBlock(BlockPos pos) {
         this(pos.getX(), pos.getY(), pos.getZ());
     }
+
     public GoalBlock(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
+
     public BlockPos pos() {
         return new BlockPos(x, y, z);
     }
+
     @Override
     public boolean isInGoal(BlockPos pos) {
         return pos.getX() == this.x && pos.getY() == this.y && pos.getZ() == this.z;
     }
     static final double MIN = 20;
     static final double MAX = 150;
+
     @Override
     public double heuristic(BlockPos pos) {
         double xDiff = pos.getX() - this.x;
@@ -42,6 +49,7 @@ public class GoalBlock implements Goal {
         double zDiff = pos.getZ() - this.z;
         return calculate(xDiff, yDiff, zDiff);
     }
+
     public static double calculate(double xDiff, double yDiff, double zDiff) {
         double pythaDist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
         double heuristic = 0;
@@ -61,6 +69,7 @@ public class GoalBlock implements Goal {
         heuristic += GoalXZ.calculate(xDiff, zDiff, pythaDist);
         return heuristic;
     }
+
     @Override
     public String toString() {
         return "Goal{x=" + x + ",y=" + y + ",z=" + z + "}";

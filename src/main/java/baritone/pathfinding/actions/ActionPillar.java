@@ -29,10 +29,10 @@ public class ActionPillar extends ActionPlaceOrBreak {
     }
     @Override
     protected double calculateCost(ToolSet ts) {
-        Block fromDown = Minecraft.getMinecraft().world.getBlockState(from).getBlock();
+        Block fromDown = Baritone.get(from).getBlock();
         boolean ladder = fromDown instanceof BlockLadder || fromDown instanceof BlockVine;
         if (!ladder) {
-            Block d = Minecraft.getMinecraft().world.getBlockState(from.down()).getBlock();
+            Block d = Baritone.get(from.down()).getBlock();
             if (d instanceof BlockLadder || d instanceof BlockVine) {
                 return COST_INF;
             }
@@ -47,10 +47,10 @@ public class ActionPillar extends ActionPlaceOrBreak {
         }
         double hardness = getTotalHardnessOfBlocksToBreak(ts);
         if (hardness != 0) {
-            Block tmp = Minecraft.getMinecraft().world.getBlockState(from.up(2)).getBlock();
+            Block tmp = Baritone.get(from.up(2)).getBlock();
             if (tmp instanceof BlockLadder || tmp instanceof BlockVine) {
                 hardness = 0;
-            } else if (!canWalkOn(from.up(3)) || canWalkThrough(from.up(3)) || Minecraft.getMinecraft().world.getBlockState(from.up(3)).getBlock() instanceof BlockFalling) {//if the block above where we want to break is not a full block, don't do it
+            } else if (!canWalkOn(from.up(3)) || canWalkThrough(from.up(3)) || Baritone.get(from.up(3)).getBlock() instanceof BlockFalling) {//if the block above where we want to break is not a full block, don't do it
                 return COST_INF;
             }
         }
@@ -65,23 +65,23 @@ public class ActionPillar extends ActionPlaceOrBreak {
     }
     int numTicks = 0;
     public BlockPos getAgainst(BlockPos vine) {
-        if (Minecraft.getMinecraft().world.getBlockState(vine.north()).getBlock().isBlockNormalCube()) {
+        if (Baritone.get(vine.north()).getBlock().isBlockNormalCube()) {
             return vine.north();
         }
-        if (Minecraft.getMinecraft().world.getBlockState(vine.south()).getBlock().isBlockNormalCube()) {
+        if (Baritone.get(vine.south()).getBlock().isBlockNormalCube()) {
             return vine.south();
         }
-        if (Minecraft.getMinecraft().world.getBlockState(vine.east()).getBlock().isBlockNormalCube()) {
+        if (Baritone.get(vine.east()).getBlock().isBlockNormalCube()) {
             return vine.east();
         }
-        if (Minecraft.getMinecraft().world.getBlockState(vine.west()).getBlock().isBlockNormalCube()) {
+        if (Baritone.get(vine.west()).getBlock().isBlockNormalCube()) {
             return vine.west();
         }
         return null;
     }
     @Override
     protected boolean tick0() {
-        IBlockState fromDown = Minecraft.getMinecraft().world.getBlockState(from);
+        IBlockState fromDown = Baritone.get(from);
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
         if (!ladder && !LookManager.lookAtBlock(positionsToPlace[0], true)) {
@@ -121,7 +121,7 @@ public class ActionPillar extends ActionPlaceOrBreak {
             }
             if (!blockIsThere) {
                 Out.log("Block not there yet");
-                Block fr = Minecraft.getMinecraft().world.getBlockState(from).getBlock();
+                Block fr = Baritone.get(from).getBlock();
                 if (!(Baritone.isAir(from) || fr.isReplaceable(Minecraft.getMinecraft().world, from))) {
                     MovementManager.isLeftClick = true;
                     blockIsThere = false;

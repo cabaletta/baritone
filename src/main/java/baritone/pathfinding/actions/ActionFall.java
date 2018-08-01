@@ -36,7 +36,7 @@ public class ActionFall extends ActionPlaceOrBreak {
         if (!Baritone.allowVerticalMotion || !canWalkOn(to.down())) {
             return COST_INF;
         }
-        Block td = Minecraft.getMinecraft().world.getBlockState(to).getBlock();
+        Block td = Baritone.get(to).getBlock();
         boolean ladder = td instanceof BlockLadder || td instanceof BlockVine;
         if (ladder) {
             return LADDER_DOWN_ONE_COST;

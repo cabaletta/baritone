@@ -283,7 +283,7 @@ public class MickeyMine extends ManagerTick {
         }
         ArrayList<BlockPos> shouldBeRemoved = new ArrayList<BlockPos>();
         for (BlockPos isMined : needsToBeMined) {
-            Block block = net.minecraft.client.Minecraft.getMinecraft().world.getBlockState(isMined).getBlock();
+            Block block = net.minecraft.client.Baritone.get(isMined).getBlock();
             if (isGoalBlock(isMined) || block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
                 hasBeenMined.add(isMined);
                 shouldBeRemoved.add(isMined);
@@ -300,7 +300,7 @@ public class MickeyMine extends ManagerTick {
         boolean wasEmpty = priorityNeedsToBeMined.isEmpty();
         ArrayList<BlockPos> shouldBeRemoved = new ArrayList<BlockPos>();
         for (BlockPos isMined : priorityNeedsToBeMined) {
-            Block block = net.minecraft.client.Minecraft.getMinecraft().world.getBlockState(isMined).getBlock();
+            Block block = net.minecraft.client.Baritone.get(isMined).getBlock();
             if (block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
                 hasBeenMined.add(isMined);
                 shouldBeRemoved.add(isMined);
@@ -353,11 +353,11 @@ public class MickeyMine extends ManagerTick {
     public static boolean addPriorityBlock(BlockPos blockPos) {
         if (!priorityNeedsToBeMined.contains(blockPos) && isGoalBlock(blockPos)) {
             if (Action.avoidBreaking(blockPos)) {
-                Out.gui("Can't break " + Minecraft.getMinecraft().world.getBlockState(blockPos).getBlock() + " at " + blockPos + " because it's near lava", Out.Mode.Debug);
+                Out.gui("Can't break " + Baritone.get(blockPos).getBlock() + " at " + blockPos + " because it's near lava", Out.Mode.Debug);
                 return false;
             }
             priorityNeedsToBeMined.add(blockPos);
-            if (Block.getBlockFromName("minecraft:diamond_ore").equals(Minecraft.getMinecraft().world.getBlockState(blockPos).getBlock())) {
+            if (Block.getBlockFromName("minecraft:diamond_ore").equals(Baritone.get(blockPos).getBlock())) {
                 chunkHasDiamonds.add(tupleFromBlockPos(blockPos));
                 for (int x = -1; x <= 1; x++) {
                     for (int y = -1; y <= 1; y++) {
@@ -376,7 +376,7 @@ public class MickeyMine extends ManagerTick {
     }
 
     public static boolean isGoalBlock(BlockPos blockPos) {
-        return isGoalBlock(Minecraft.getMinecraft().world.getBlockState(blockPos).getBlock());
+        return isGoalBlock(Baritone.get(blockPos).getBlock());
     }
 
     public static boolean isGoalBlock(Block block) {

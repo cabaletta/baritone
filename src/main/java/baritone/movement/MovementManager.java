@@ -38,7 +38,7 @@ public class MovementManager {
         return moveTowardsBlock(p, true);
     }
     public static boolean moveTowardsBlock(BlockPos p, boolean rotate) {
-        Block b = Minecraft.getMinecraft().world.getBlockState(p).getBlock();
+        Block b = Baritone.get(p).getBlock();
         double xDiff = (b.getBlockBoundsMinX() + b.getBlockBoundsMaxX()) / 2;
         double yolo = (b.getBlockBoundsMinY() + b.getBlockBoundsMaxY()) / 2;
         double zDiff = (b.getBlockBoundsMinZ() + b.getBlockBoundsMaxZ()) / 2;

@@ -86,7 +86,7 @@ public class LookManager extends Manager {
         if (couldIReachCenter(p)) {
             return lookAtCenterOfBlock(p, alsoDoPitch);
         }
-        Block b = Minecraft.getMinecraft().world.getBlockState(p).getBlock();
+        Block b = Baritone.get(p).getBlock();
         for (double[] mult : BLOCK_SIDE_MULTIPLIERS) {
             double xDiff = b.getBlockBoundsMinX() * mult[0] + b.getBlockBoundsMaxX() * (1 - mult[0]);//lol
             double yDiff = b.getBlockBoundsMinY() * mult[1] + b.getBlockBoundsMaxY() * (1 - mult[1]);
@@ -101,7 +101,7 @@ public class LookManager extends Manager {
         return lookAtCenterOfBlock(p, alsoDoPitch);
     }
     public static boolean lookAtCenterOfBlock(BlockPos p, boolean alsoDoPitch) {
-        Block b = Minecraft.getMinecraft().world.getBlockState(p).getBlock();
+        Block b = Baritone.get(p).getBlock();
         double xDiff = (b.getBlockBoundsMinX() + b.getBlockBoundsMaxX()) / 2;
         double yDiff = (b.getBlockBoundsMinY() + b.getBlockBoundsMaxY()) / 2;
         double zDiff = (b.getBlockBoundsMinZ() + b.getBlockBoundsMaxZ()) / 2;
@@ -121,7 +121,7 @@ public class LookManager extends Manager {
         if (couldIReachCenter(pos)) {
             return true;
         }
-        Block b = Minecraft.getMinecraft().world.getBlockState(pos).getBlock();
+        Block b = Baritone.get(pos).getBlock();
         for (double[] mult : BLOCK_SIDE_MULTIPLIERS) {
             double xDiff = b.getBlockBoundsMinX() * mult[0] + b.getBlockBoundsMaxX() * (1 - mult[0]);
             double yDiff = b.getBlockBoundsMinY() * mult[1] + b.getBlockBoundsMaxY() * (1 - mult[1]);
@@ -203,7 +203,7 @@ public class LookManager extends Manager {
         return new float[]{first, second};
     }
     public static float[] pitchAndYawToCenter(BlockPos p) {
-        Block b = Minecraft.getMinecraft().world.getBlockState(p).getBlock();
+        Block b = Baritone.get(p).getBlock();
         double xDiff = (b.getBlockBoundsMinX() + b.getBlockBoundsMaxX()) / 2;
         double yolo = (b.getBlockBoundsMinY() + b.getBlockBoundsMaxY()) / 2;
         double zDiff = (b.getBlockBoundsMinZ() + b.getBlockBoundsMaxZ()) / 2;

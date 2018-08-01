@@ -36,7 +36,7 @@ public class MCEdit extends Manager {
             for (int y = Math.max(pos1.getY(), pos2.getY()); y >= Math.min(pos1.getY(), pos2.getY()); y--) {
                 for (int z = Math.min(pos1.getZ(), pos2.getZ()); z <= Math.max(pos1.getZ(), pos2.getZ()); z++) {
                     BlockPos po = new BlockPos(x, y, z);
-                    Block b = Minecraft.getMinecraft().world.getBlockState(po).getBlock();
+                    Block b = Baritone.get(po).getBlock();
                     if (!Blocks.air.equals(b)) {
                         toBreak.add(po);
                         if (toBreak.size() > 20) {

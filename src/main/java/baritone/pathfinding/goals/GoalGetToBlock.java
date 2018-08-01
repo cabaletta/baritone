@@ -5,25 +5,29 @@
  */
 package baritone.pathfinding.goals;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.BlockPos;
+import baritone.Baritone;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 
 /**
  *
  * @author avecowa
  */
-public class GoalGetToBlock extends GoalComposite{
+public class GoalGetToBlock extends GoalComposite {
+
     public static BlockPos goalPos;
+
     public GoalGetToBlock(BlockPos pos) {
         super(ajacentBlocks(goalPos = pos));
     }
-    public GoalGetToBlock(){
+
+    public GoalGetToBlock() {
         this(Baritone.playerFeet);
     }
-    public static BlockPos[] ajacentBlocks(BlockPos pos){
+
+    public static BlockPos[] ajacentBlocks(BlockPos pos) {
         BlockPos[] sides = new BlockPos[6];
-        for(int i = 0; i < 6; i++){
+        for (int i = 0; i < 6; i++) {
             sides[i] = pos.offset(EnumFacing.values()[i]);
         }
         return sides;

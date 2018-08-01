@@ -67,7 +67,7 @@ public class Memory extends Manager {
                 if (!loaded) {
                     //Out.gui("Too far away from " + pos + " to remember that it's " + block, true);
                 }
-                Block current = Minecraft.getMinecraft().world.getBlockState(pos).getBlock();
+                Block current = Baritone.get(pos).getBlock();
                 if (!current.equals(block) || !loaded) {
                     //Out.gui("Block at " + pos + " has changed from " + block + " to " + current + ". Removing from memory.", true);
                     knownPositions.remove(pos);
@@ -106,7 +106,7 @@ public class Memory extends Manager {
                 if (!blockLoaded(pos)) {
                     continue;
                 }
-                if (!block.equals(Minecraft.getMinecraft().world.getBlockState(pos).getBlock())) {
+                if (!block.equals(Baritone.get(pos).getBlock())) {
                     continue;
                 }
                 double d = distSq(pos);
@@ -256,9 +256,9 @@ public class Memory extends Manager {
                 String lower = "block{minecraft:" + b.toLowerCase() + "}";
                 if (type.toString().toLowerCase().equals(lower)) {
                     for (BlockPos pos : blockMemory.get(type).knownPositions) {
-                        if (type.equals(Minecraft.getMinecraft().world.getBlockState(pos).getBlock()) && !result.contains(pos)) {
+                        if (type.equals(Baritone.get(pos).getBlock()) && !result.contains(pos)) {
                             if (b.equals("stone")) {
-                                if (!type.getItemDropped(Minecraft.getMinecraft().world.getBlockState(pos), new Random(), 0).equals(Item.getByNameOrId("cobblestone"))) {
+                                if (!type.getItemDropped(Baritone.get(pos), new Random(), 0).equals(Item.getByNameOrId("cobblestone"))) {
                                     continue;
                                 }
                             }
@@ -342,7 +342,7 @@ public class Memory extends Manager {
     }
     public static final int SCAN_DIST = 50;
     public static void scanBlock(BlockPos pos) {
-        Block block = Minecraft.getMinecraft().world.getBlockState(pos).getBlock();
+        Block block = Baritone.get(pos).getBlock();
         if (air.equals(block)) {
             return;
         }

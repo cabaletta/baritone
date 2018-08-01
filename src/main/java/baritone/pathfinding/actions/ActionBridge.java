@@ -60,13 +60,13 @@ public class ActionBridge extends ActionPlaceOrBreak {
             return WC + getTotalHardnessOfBlocksToBreak(ts);
         } else {//this is a bridge, so we need to place a block
             //return 1000000;
-            Block f = Minecraft.getMinecraft().world.getBlockState(from.down()).getBlock();
+            Block f = Baritone.get(from.down()).getBlock();
             if (f instanceof BlockLadder || f instanceof BlockVine) {
                 return COST_INF;
             }
             if (blocksToPlace[0].equals(Block.getBlockById(0)) || (!isWater(blocksToPlace[0]) && blocksToPlace[0].isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
                 for (BlockPos against1 : against) {
-                    if (Minecraft.getMinecraft().world.getBlockState(against1).getBlock().isBlockNormalCube()) {
+                    if (Baritone.get(against1).getBlock().isBlockNormalCube()) {
                         return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
                     }
                 }
@@ -74,7 +74,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
                 return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
             }
             return COST_INF;
-            //Out.log("Can't walk on " + Minecraft.getMinecraft().world.getBlockState(positionsToPlace[0]).getBlock());
+            //Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());
         }
     }
     boolean wasTheBridgeBlockAlwaysThere = true;//did we have to place a bridge block or was it always there
@@ -93,10 +93,10 @@ public class ActionBridge extends ActionPlaceOrBreak {
         if (oneInTen == null) {
             oneInTen = new Random().nextInt(10) == 0;
         }
-        Block fd = Minecraft.getMinecraft().world.getBlockState(from.down()).getBlock();
+        Block fd = Baritone.get(from.down()).getBlock();
         boolean ladder = fd instanceof BlockLadder || fd instanceof BlockVine;
         boolean isTheBridgeBlockThere = canWalkOn(positionsToPlace[0]) || ladder;
-        //Out.log("is block there: " + isTheBridgeBlockThere + " block " + Minecraft.getMinecraft().world.getBlockState(positionsToPlace[0]).getBlock());
+        //Out.log("is block there: " + isTheBridgeBlockThere + " block " + Baritone.get(positionsToPlace[0]).getBlock());
         EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
         BlockPos whereAmI = new BlockPos(thePlayer.posX, thePlayer.posY, thePlayer.posZ);
         if (whereAmI.getY() != to.getY() && !ladder) {
@@ -128,7 +128,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
         } else {
             wasTheBridgeBlockAlwaysThere = false;
             for (BlockPos against1 : against) {
-                if (Minecraft.getMinecraft().world.getBlockState(against1).getBlock().isBlockNormalCube()) {
+                if (Baritone.get(against1).getBlock().isBlockNormalCube()) {
                     if (!switchtothrowaway(true)) {//get ready to place a throwaway block
                         return false;
                     }

@@ -53,13 +53,13 @@ public class ActionClimb extends ActionPlaceOrBreak {
                 return COST_INF;
             }
             for (BlockPos against1 : against) {
-                if (Minecraft.getMinecraft().world.getBlockState(against1).getBlock().isBlockNormalCube()) {
+                if (Baritone.get(against1).getBlock().isBlockNormalCube()) {
                     return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
                 }
             }
             return COST_INF;
         }
-        if (Minecraft.getMinecraft().world.getBlockState(from.up(3)).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
+        if (Baritone.get(from.up(3)).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
             return COST_INF;
         }
         return WALK_ONE_BLOCK_COST / 2 + Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST / 2) + getTotalHardnessOfBlocksToBreak(ts);//we walk half the block to get to the edge, then we walk the other half while simultaneously jumping (math.max because of how it's in parallel)
@@ -70,7 +70,7 @@ public class ActionClimb extends ActionPlaceOrBreak {
         EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
         if (!canWalkOn(positionsToPlace[0])) {
             for (int i = 0; i < against.length; i++) {
-                if (Minecraft.getMinecraft().world.getBlockState(against[i]).getBlock().isBlockNormalCube()) {
+                if (Baritone.get(against[i]).getBlock().isBlockNormalCube()) {
                     if (!switchtothrowaway(true)) {//get ready to place a throwaway block
                         return false;
                     }

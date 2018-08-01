@@ -5,22 +5,24 @@
  */
 package baritone.pathfinding.actions;
 
-import java.util.ArrayList;
+import baritone.Baritone;
+import baritone.inventory.SmeltingTask;
+import baritone.movement.MovementManager;
+import baritone.ui.LookManager;
+import baritone.util.Out;
 import baritone.util.ToolSet;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import baritone.ui.LookManager;
-import baritone.Baritone;
-import baritone.movement.MovementManager;
-import baritone.util.Out;
-import baritone.inventory.SmeltingTask;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -28,10 +30,12 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public abstract class ActionPlaceOrBreak extends Action {
+
     public final BlockPos[] positionsToBreak;//the positions that need to be broken before this action can ensue
     public final BlockPos[] positionsToPlace;//the positions where we need to place a block before this aciton can ensue
     public final Block[] blocksToBreak;//the blocks at those positions
     public final Block[] blocksToPlace;
+
     public ActionPlaceOrBreak(BlockPos start, BlockPos end, BlockPos[] toBreak, BlockPos[] toPlace) {
         super(start, end);
         this.positionsToBreak = toBreak;
@@ -39,16 +43,18 @@ public abstract class ActionPlaceOrBreak extends Action {
         blocksToBreak = new Block[positionsToBreak.length];
         blocksToPlace = new Block[positionsToPlace.length];
         for (int i = 0; i < blocksToBreak.length; i++) {
-            blocksToBreak[i] = Minecraft.getMinecraft().world.getBlockState(positionsToBreak[i]).getBlock();
+            blocksToBreak[i] = Baritone.get(positionsToBreak[i]).getBlock();
         }
         for (int i = 0; i < blocksToPlace.length; i++) {
-            blocksToPlace[i] = Minecraft.getMinecraft().world.getBlockState(positionsToPlace[i]).getBlock();
+            blocksToPlace[i] = Baritone.get(positionsToPlace[i]).getBlock();
         }
     }
+
     public double getTotalHardnessOfBlocksToBreak() {//of all the blocks we need to break before starting this action, what's the sum of how hard they are (phrasing)
         ToolSet ts = new ToolSet();
         return this.getTotalHardnessOfBlocksToBreak(ts);
     }
+
     public double getTotalHardnessOfBlocksToBreak(ToolSet ts) {
         double sum = 0;
         HashSet<BlockPos> toBreak = new HashSet();
@@ -64,7 +70,7 @@ public abstract class ActionPlaceOrBreak extends Action {
             }
         }
         for (BlockPos pos : toBreak) {
-            sum += getHardness(ts, Minecraft.getMinecraft().world.getBlockState(pos).getBlock(), pos);
+            sum += getHardness(ts, Baritone.get(pos), pos);
             if (sum >= COST_INF) {
                 return COST_INF;
             }
@@ -78,10 +84,12 @@ public abstract class ActionPlaceOrBreak extends Action {
         }
         return sum;
     }
+
     public static boolean canFall(BlockPos pos) {
-        return Minecraft.getMinecraft().world.getBlockState(pos).getBlock() instanceof BlockFalling;
+        return Baritone.get(pos).getBlock() instanceof BlockFalling;
     }
-    public static double getHardness(ToolSet ts, Block block, BlockPos position) {
+
+    public static double getHardness(ToolSet ts, IBlockState block, BlockPos position) {
         if (!block.equals(Block.getBlockById(0)) && !canWalkThrough(position)) {
             if (avoidBreaking(position)) {
                 return COST_INF;
@@ -97,10 +105,12 @@ public abstract class ActionPlaceOrBreak extends Action {
         }
         return 0;
     }
+
     @Override
     public String toString() {
         return this.getClass() + " place " + Arrays.asList(blocksToPlace) + " break " + Arrays.asList(blocksToBreak) + " cost " + cost(null) + " break cost " + getTotalHardnessOfBlocksToBreak();
     }
+
     @Override
     public boolean tick() {
         //breaking first
@@ -124,7 +134,7 @@ public abstract class ActionPlaceOrBreak extends Action {
                  return false;
                  }*/
                 if (Baritone.whatAreYouLookingAt() != null) {
-                    Baritone.switchtotool(Minecraft.getMinecraft().world.getBlockState(Baritone.whatAreYouLookingAt()).getBlock());
+                    Baritone.switchtotool(Baritone.get(Baritone.whatAreYouLookingAt()).getBlock());
                 }
                 MovementManager.isLeftClick = true;//hold down left click
                 if (canWalkThrough(positionsToBreak[i])) {
@@ -153,19 +163,21 @@ public abstract class ActionPlaceOrBreak extends Action {
     }
     //I dont want to make this static, because then it might be executed before Item gets initialized
     private static List<Item> ACCEPTABLE_THROWAWAY_ITEMS = null;
+
     private static void set() {
         if (ACCEPTABLE_THROWAWAY_ITEMS != null) {
             return;
         }
         ACCEPTABLE_THROWAWAY_ITEMS = Arrays.asList(new Item[]{Item.getByNameOrId("minecraft:dirt"), Item.getByNameOrId("minecraft:cobblestone")});
     }
+
     public static boolean switchtothrowaway(boolean message) {
         set();
         EntityPlayerSP p = Minecraft.getMinecraft().player;
-        ItemStack[] inv = p.inventory.mainInventory;
+        NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
-            ItemStack item = inv[i];
-            if (inv[i] == null) {
+            ItemStack item = inv.get(i);
+            if (item == null) {
                 item = new ItemStack(Item.getByNameOrId("minecraft:apple"));
             }
             if (ACCEPTABLE_THROWAWAY_ITEMS.contains(item.getItem())) {
@@ -178,13 +190,14 @@ public abstract class ActionPlaceOrBreak extends Action {
         }
         return false;
     }
+
     public static boolean hasthrowaway() {
         set();
         EntityPlayerSP p = Minecraft.getMinecraft().player;
-        ItemStack[] inv = p.inventory.mainInventory;
+        NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
-            ItemStack item = inv[i];
-            if (inv[i] == null) {
+            ItemStack item = inv.get(i);
+            if (item == null) {
                 item = new ItemStack(Item.getByNameOrId("minecraft:apple"));
             }
             if (ACCEPTABLE_THROWAWAY_ITEMS.contains(item.getItem())) {
@@ -193,6 +206,7 @@ public abstract class ActionPlaceOrBreak extends Action {
         }
         return false;
     }
+
     /**
      * Do the actual tick. This function can assume that all blocks in
      * positionsToBreak are now walk-through-able.
@@ -200,6 +214,7 @@ public abstract class ActionPlaceOrBreak extends Action {
      * @return
      */
     protected abstract boolean tick0();
+
     public ArrayList<BlockPos> toMine() {
         ArrayList<BlockPos> result = new ArrayList<>();
         for (BlockPos positionsToBreak1 : positionsToBreak) {
@@ -209,6 +224,7 @@ public abstract class ActionPlaceOrBreak extends Action {
         }
         return result;
     }
+
     public ArrayList<BlockPos> toPlace() {
         ArrayList<BlockPos> result = new ArrayList<>();
         for (BlockPos positionsToPlace1 : positionsToPlace) {

@@ -278,7 +278,7 @@ public class Baritone {
     }
 
     public static boolean isAir(BlockPos pos) {
-        return Minecraft.getMinecraft().world.getBlockState(pos).getBlock().equals(Block.getBlockById(0));
+        return Baritone.get(pos).getBlock().equals(Block.getBlockById(0));
     }
 
     public static void findPathInNewThread(final boolean talkAboutIt) {
@@ -392,7 +392,7 @@ public class Baritone {
         if (pos == null) {
             return;
         }
-        Block block = Minecraft.getMinecraft().world.getBlockState(pos).getBlock();
+        Block block = Baritone.get(pos).getBlock();
         if (block.equals(Block.getBlockById(0))) {
             return;
         }
