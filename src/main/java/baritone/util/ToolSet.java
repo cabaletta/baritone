@@ -12,6 +12,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.util.NonNullList;
@@ -40,10 +41,10 @@ public class ToolSet {
         //Out.log("inv: " + Arrays.toString(inv));
         boolean fnull = false;
         for (byte i = 0; i < 9; i++) {
-            if (!fnull || (inv.get(i) != null && inv.get(i).getItem() instanceof ItemTool)) {
-                tools.add(inv.get(i) != null ? (ItemTool) inv.get(i).getItem() : null);
+            if (!fnull || ((!(inv.get(i).getItem() instanceof ItemAir)) && inv.get(i).getItem() instanceof ItemTool)) {
+                tools.add((!(inv.get(i).getItem() instanceof ItemAir)) ? (ItemTool) inv.get(i).getItem() : null);
                 slots.add(i);
-                fnull |= inv.get(i) == null || (!inv.get(i).getItem().isDamageable());
+                fnull |= (inv.get(i).getItem() instanceof ItemAir) || (!inv.get(i).getItem().isDamageable());
             }
         }
     }
