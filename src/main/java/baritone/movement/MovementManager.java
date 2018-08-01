@@ -6,6 +6,7 @@
 package baritone.movement;
 
 import baritone.Baritone;
+import baritone.bot.InputOverrideHandler;
 import baritone.ui.LookManager;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
@@ -130,6 +131,17 @@ public class MovementManager {
         return isRightClick && rightPressTime >= -2;
     }
 
+    public static void tick(){
+        InputOverrideHandler handler = baritone.bot.Baritone.INSTANCE.getInputOverrideHandler();
+        handler.setInputForceState(InputOverrideHandler.Input.CLICK_LEFT, isLeftClick);
+        handler.setInputForceState(InputOverrideHandler.Input.CLICK_RIGHT, isRightClick);
+        handler.setInputForceState(InputOverrideHandler.Input.MOVE_FORWARD, forward);
+        handler.setInputForceState(InputOverrideHandler.Input.MOVE_BACK, backward);
+        handler.setInputForceState(InputOverrideHandler.Input.MOVE_LEFT, left);
+        handler.setInputForceState(InputOverrideHandler.Input.MOVE_RIGHT, right);
+        handler.setInputForceState(InputOverrideHandler.Input.JUMP, jumping);
+    }
+
     public static boolean moveTowardsCoords(double x, double y, double z) {
         return moveTowardsCoords(x, y, z, true);
     }
@@ -215,7 +227,9 @@ public class MovementManager {
     }
 
     public static void rightClickMouse() {
+        isRightClick=true;
+        //TODO fix
         //Minecraft.getMinecraft().rightClickMouse();
-        throw new UnsupportedOperationException("Not public");
+        //throw new UnsupportedOperationException("Not public");
     }
 }

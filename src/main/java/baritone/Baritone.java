@@ -237,6 +237,7 @@ public class Baritone {
             }
         }
         Manager.tick(LookManager.class, false);
+        MovementManager.tick();
     }
 
     public static boolean isPathFinding() {
