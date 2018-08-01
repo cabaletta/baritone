@@ -6,7 +6,6 @@
 package baritone.mining;
 
 import baritone.Baritone;
-import baritone.inventory.CraftingTask;
 import baritone.movement.MovementManager;
 import baritone.pathfinding.actions.Action;
 import baritone.pathfinding.goals.Goal;
@@ -27,6 +26,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
@@ -135,11 +135,10 @@ public class MickeyMine extends ManagerTick {
 
     public static boolean torch() {
         EntityPlayerSP p = Minecraft.getMinecraft().player;
-        ItemStack[] inv = p.inventory.mainInventory;
-        CraftingTask.ensureCraftingDesired(Item.getByNameOrId("minecraft:torch"), 32);
+        NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (int i = 0; i < 9; i++) {
-            ItemStack item = inv[i];
-            if (inv[i] == null) {
+            ItemStack item = inv.get(i);
+            if (item == null) {
                 continue;
             }
             if (item.getItem().equals(Item.getByNameOrId("minecraft:torch"))) {
@@ -164,7 +163,7 @@ public class MickeyMine extends ManagerTick {
             mightNeedToGoBackToPath = true;
         } else if (torch()) {
             if (LookManager.lookAtBlock(branchPosition.down(), true)) {
-                Minecraft.getMinecraft().rightClickMouse();
+                MovementManager.rightClickMouse();
             } else {
                 return;
             }
@@ -283,7 +282,7 @@ public class MickeyMine extends ManagerTick {
         }
         ArrayList<BlockPos> shouldBeRemoved = new ArrayList<BlockPos>();
         for (BlockPos isMined : needsToBeMined) {
-            Block block = net.minecraft.client.Baritone.get(isMined).getBlock();
+            Block block = Baritone.get(isMined).getBlock();
             if (isGoalBlock(isMined) || block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
                 hasBeenMined.add(isMined);
                 shouldBeRemoved.add(isMined);
@@ -300,7 +299,7 @@ public class MickeyMine extends ManagerTick {
         boolean wasEmpty = priorityNeedsToBeMined.isEmpty();
         ArrayList<BlockPos> shouldBeRemoved = new ArrayList<BlockPos>();
         for (BlockPos isMined : priorityNeedsToBeMined) {
-            Block block = net.minecraft.client.Baritone.get(isMined).getBlock();
+            Block block = Baritone.get(isMined).getBlock();
             if (block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
                 hasBeenMined.add(isMined);
                 shouldBeRemoved.add(isMined);
