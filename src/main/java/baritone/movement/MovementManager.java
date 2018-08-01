@@ -5,6 +5,7 @@
  */
 package baritone.movement;
 
+import baritone.Baritone;
 import baritone.ui.LookManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
@@ -18,6 +19,7 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public class MovementManager {
+
     public static boolean forward = false;
     public static int leftPressTime = 0;
     public static boolean isRightClick = false;
@@ -28,6 +30,7 @@ public class MovementManager {
     public static boolean sneak = false;
     public static boolean isLeftClick = false;
     public static boolean backward = false;
+
     /**
      * calls moveTowardsCoords on the center of this block
      *
@@ -37,6 +40,7 @@ public class MovementManager {
     public static boolean moveTowardsBlock(BlockPos p) {
         return moveTowardsBlock(p, true);
     }
+
     public static boolean moveTowardsBlock(BlockPos p, boolean rotate) {
         Block b = Baritone.get(p).getBlock();
         double xDiff = (b.getBlockBoundsMinX() + b.getBlockBoundsMaxX()) / 2;
@@ -52,6 +56,7 @@ public class MovementManager {
         double z = p.getZ() + zDiff;
         return moveTowardsCoords(x, y, z, rotate);
     }
+
     /**
      * Clears movement, but nothing else. Includes jumping and sneaking, but not
      * left clicking.
@@ -68,6 +73,7 @@ public class MovementManager {
         isLeftClick = false;
         //leftPressTime = 0;
     }
+
     /**
      * Do not question the logic. Called by Minecraft.java
      *
@@ -81,6 +87,7 @@ public class MovementManager {
             return true;
         }
     }
+
     /**
      * Called by our code
      */
@@ -88,6 +95,7 @@ public class MovementManager {
         leftPressTime = 0;
         isLeftClick = false;
     }
+
     /**
      * Do not question the logic. Called by Minecraft.java
      *
@@ -96,6 +104,7 @@ public class MovementManager {
     public static boolean getLeftIsPressed() {
         return isLeftClick && leftPressTime >= -2;
     }
+
     /**
      * Do not question the logic. Called by Minecraft.java
      *
@@ -109,6 +118,7 @@ public class MovementManager {
             return true;
         }
     }
+
     /**
      * Do not question the logic. Called by Minecraft.java
      *
@@ -117,9 +127,11 @@ public class MovementManager {
     public static boolean getRightIsPressed() {
         return isRightClick && rightPressTime >= -2;
     }
+
     public static boolean moveTowardsCoords(double x, double y, double z) {
         return moveTowardsCoords(x, y, z, true);
     }
+
     /**
      * Move towards coordinates, not necesarily forwards. e.g. if coordinates
      * are closest to being directly behind us, go backwards. This minimizes
@@ -198,5 +210,11 @@ public class MovementManager {
             return true;
         }
         return false;
+    }
+
+    public static void rightClickMouse() {
+
+        Minecraft.getMinecraft().rightClickMouse();
+        throw new UnsupportedOperationException("Not public");
     }
 }

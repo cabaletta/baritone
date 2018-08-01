@@ -5,19 +5,19 @@
  */
 package baritone.pathfinding;
 
-import baritone.pathfinding.goals.Goal;
-import baritone.pathfinding.actions.ActionBridge;
+import baritone.Baritone;
+import baritone.movement.MovementManager;
 import baritone.pathfinding.actions.Action;
+import baritone.pathfinding.actions.ActionBridge;
+import baritone.pathfinding.actions.ActionPlaceOrBreak;
+import baritone.pathfinding.goals.Goal;
+import baritone.ui.LookManager;
+import baritone.util.Out;
+import baritone.util.ToolSet;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import baritone.ui.LookManager;
-import baritone.Baritone;
-import baritone.movement.MovementManager;
-import baritone.pathfinding.actions.ActionPlaceOrBreak;
-import baritone.util.Out;
-import baritone.util.ToolSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -30,6 +30,7 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public class Path {
+
     public final BlockPos start;
     public final BlockPos end;
     public final Goal goal;
@@ -45,6 +46,7 @@ public class Path {
      *
      */
     public final int numNodes;
+
     Path(Node start, Node end, Goal goal, int numNodes) {
         this.numNodes = numNodes;
         this.start = start.pos;
@@ -74,6 +76,7 @@ public class Path {
          Out.log(actions.get(i) + ": " + xDiff + "," + yDiff + "," + zDiff);//print it all out
          }*/
     }
+
     /**
      * We don't really use this any more
      */
@@ -101,6 +104,7 @@ public class Path {
      * Where are we in the path? This is an index in the actions list
      */
     int pathPosition = 0;
+
     public double howFarAmIFromThePath(double x, double y, double z) {
         double best = -1;
         for (BlockPos pos : path) {
@@ -111,6 +115,7 @@ public class Path {
         }
         return best;
     }
+
     public void calculatePathPosition() {
         BlockPos playerFeet = Baritone.playerFeet;
         for (int i = 0; i < path.size(); i++) {
@@ -119,6 +124,7 @@ public class Path {
             }
         }
     }
+
     public static double distance(double x, double y, double z, BlockPos pos) {
         double xdiff = x - (pos.getX() + 0.5D);
         double ydiff = y - (pos.getY() + 0.5D);
@@ -148,6 +154,7 @@ public class Path {
      * action take too long
      */
     public boolean failed = false;
+
     public boolean tick() {
         if (pathPosition >= path.size()) {
             Baritone.clearPath();//stop bugging me, I'm done
@@ -155,7 +162,7 @@ public class Path {
         }
         BlockPos whereShouldIBe = path.get(pathPosition);
         EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
-        BlockPos whereAmI = thePlayer.getPosition0();
+        BlockPos whereAmI = Baritone.playerFeet;
         if (pathPosition == path.size() - 1) {
             Out.log("On last path position");
             Baritone.clearPath();
@@ -163,7 +170,7 @@ public class Path {
         }
         if (!whereShouldIBe.equals(whereAmI)) {
             Out.log("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
-            if (!Blocks.air.equals(Baritone.get(thePlayer.getPosition0().down()))) {//do not skip if standing on air, because our position isn't stable to skip
+            if (!Blocks.AIR.equals(Baritone.get(whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 2 && i < path.size(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.get(i))) {
                         Out.gui("Skipping back " + (pathPosition - i) + " steps, to " + i, Out.Mode.Debug);
@@ -248,6 +255,7 @@ public class Path {
         }
         return false;
     }
+
     public HashSet<BlockPos> toMine() {
         HashSet<BlockPos> tm = new HashSet<>();
         for (int i = pathPosition; i < actions.size(); i++) {
@@ -257,6 +265,7 @@ public class Path {
         }
         return tm;
     }
+
     public HashSet<BlockPos> toPlace() {
         HashSet<BlockPos> tp = new HashSet<>();
         for (int i = pathPosition; i < actions.size(); i++) {

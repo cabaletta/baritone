@@ -5,24 +5,26 @@
  */
 package baritone.pathfinding.actions;
 
-import java.util.Objects;
-import baritone.ui.LookManager;
 import baritone.Baritone;
 import baritone.movement.MovementManager;
+import baritone.ui.LookManager;
 import baritone.util.Out;
 import baritone.util.ToolSet;
+import java.util.Objects;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 
 /**
  *
  * @author leijurv
  */
 public class ActionClimb extends ActionPlaceOrBreak {
+
     BlockPos[] against = new BlockPos[3];
+
     public ActionClimb(BlockPos start, BlockPos end) {
         super(start, end, new BlockPos[]{end, start.up(2), end.up()}, new BlockPos[]{end.down()});
         BlockPos placementLocation = positionsToPlace[0];//end.down()
@@ -46,6 +48,7 @@ public class ActionClimb extends ActionPlaceOrBreak {
         //TODO: add ability to place against .down() as well as the cardinal directions
         //useful for when you are starting a staircase without anything to place against
     }
+
     @Override
     protected double calculateCost(ToolSet ts) {
         if (!canWalkOn(positionsToPlace[0])) {
@@ -53,7 +56,7 @@ public class ActionClimb extends ActionPlaceOrBreak {
                 return COST_INF;
             }
             for (BlockPos against1 : against) {
-                if (Baritone.get(against1).getBlock().isBlockNormalCube()) {
+                if (Baritone.isBlockNormalCube(against1)) {
                     return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
                 }
             }
@@ -65,12 +68,13 @@ public class ActionClimb extends ActionPlaceOrBreak {
         return WALK_ONE_BLOCK_COST / 2 + Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST / 2) + getTotalHardnessOfBlocksToBreak(ts);//we walk half the block to get to the edge, then we walk the other half while simultaneously jumping (math.max because of how it's in parallel)
     }
     int ticksWithoutPlacement = 0;
+
     @Override
     protected boolean tick0() {//basically just hold down W and space until we are where we want to be
         EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
         if (!canWalkOn(positionsToPlace[0])) {
             for (int i = 0; i < against.length; i++) {
-                if (Baritone.get(against[i]).getBlock().isBlockNormalCube()) {
+                if (Baritone.isBlockNormalCube(against[i])) {
                     if (!switchtothrowaway(true)) {//get ready to place a throwaway block
                         return false;
                     }
@@ -83,7 +87,7 @@ public class ActionClimb extends ActionPlaceOrBreak {
                         ticksWithoutPlacement++;
                         MovementManager.sneak = true;
                         if (Minecraft.getMinecraft().player.isSneaking()) {
-                            Minecraft.getMinecraft().rightClickMouse();
+                            MovementManager.rightClickMouse();
                         }
                         if (ticksWithoutPlacement > 20) {
                             MovementManager.backward = true;//we might be standing in the way, move back

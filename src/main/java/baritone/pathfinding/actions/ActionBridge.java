@@ -5,27 +5,29 @@
  */
 package baritone.pathfinding.actions;
 
-import java.util.Objects;
-import java.util.Random;
-import baritone.ui.LookManager;
 import baritone.Baritone;
 import baritone.movement.MovementManager;
+import baritone.ui.LookManager;
 import baritone.util.Out;
 import baritone.util.ToolSet;
+import java.util.Objects;
+import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 
 /**
  *
  * @author leijurv
  */
 public class ActionBridge extends ActionPlaceOrBreak {
+
     BlockPos[] against = new BlockPos[3];
+
     public ActionBridge(BlockPos from, BlockPos to) {
         super(from, to, new BlockPos[]{to.up(), to}, new BlockPos[]{to.down()});
         int i = 0;
@@ -47,6 +49,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
         }
         //note: do NOT add ability to place against .down().down()
     }
+
     @Override
     protected double calculateCost(ToolSet ts) {
         double WC = isWater(blocksToBreak[0]) || isWater(blocksToBreak[1]) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
@@ -66,7 +69,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
             }
             if (blocksToPlace[0].equals(Block.getBlockById(0)) || (!isWater(blocksToPlace[0]) && blocksToPlace[0].isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
                 for (BlockPos against1 : against) {
-                    if (Baritone.get(against1).getBlock().isBlockNormalCube()) {
+                    if (Baritone.isBlockNormalCube(against1)) {
                         return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
                     }
                 }
@@ -79,15 +82,19 @@ public class ActionBridge extends ActionPlaceOrBreak {
     }
     boolean wasTheBridgeBlockAlwaysThere = true;//did we have to place a bridge block or was it always there
     public Boolean oneInTen = null;//a one in ten chance
+
     public boolean amIGood() {
         return canWalkThrough(positionsToBreak[0]) && canWalkThrough(positionsToBreak[1]) && canWalkOn(positionsToPlace[0]);
     }
+
     public int dx() {
         return to.getX() - from.getX();
     }
+
     public int dz() {
         return to.getZ() - from.getZ();
     }
+
     @Override
     protected boolean tick0() {
         if (oneInTen == null) {
@@ -128,7 +135,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
         } else {
             wasTheBridgeBlockAlwaysThere = false;
             for (BlockPos against1 : against) {
-                if (Baritone.get(against1).getBlock().isBlockNormalCube()) {
+                if (Baritone.isBlockNormalCube(against1)) {
                     if (!switchtothrowaway(true)) {//get ready to place a throwaway block
                         return false;
                     }
@@ -140,7 +147,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                     if (Objects.equals(Baritone.whatAreYouLookingAt(), against1) && Minecraft.getMinecraft().player.isSneaking()) {
                         if (Baritone.whatAreYouLookingAt().offset(side).equals(positionsToPlace[0])) {
-                            Minecraft.getMinecraft().rightClickMouse();
+                            MovementManager.rightClickMouse();
                         } else {
                             Out.gui("Wrong. " + side + " " + Baritone.whatAreYouLookingAt().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);
                         }
@@ -163,7 +170,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
                 BlockPos goalLook = from.down();//this is the block we were just standing on, and the one we want to place against
                 MovementManager.backward = LookManager.lookAtCoords(faceX, faceY, faceZ, true);//if we are in the block, then we are off the edge of the previous looking backward, so we should be moving backward
                 if (Objects.equals(Baritone.whatAreYouLookingAt(), goalLook)) {
-                    Minecraft.getMinecraft().rightClickMouse();//wait to right click until we are able to place
+                    MovementManager.rightClickMouse();//wait to right click until we are able to place
                     return false;
                 }
                 Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());

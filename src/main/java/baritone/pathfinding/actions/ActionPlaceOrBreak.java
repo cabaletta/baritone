@@ -6,7 +6,6 @@
 package baritone.pathfinding.actions;
 
 import baritone.Baritone;
-import baritone.inventory.SmeltingTask;
 import baritone.movement.MovementManager;
 import baritone.ui.LookManager;
 import baritone.util.Out;
@@ -95,9 +94,6 @@ public abstract class ActionPlaceOrBreak extends Action {
                 return COST_INF;
             }
             if (!Baritone.allowBreakOrPlace) {
-                return COST_INF;
-            }
-            if (SmeltingTask.avoidBreaking(position)) {
                 return COST_INF;
             }
             double m = Block.getBlockFromName("minecraft:crafting_table").equals(block) ? 10 : 1;

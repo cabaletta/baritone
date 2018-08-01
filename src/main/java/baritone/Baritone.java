@@ -85,6 +85,11 @@ public class Baritone {
         return get(pos).getBlock();
     }
 
+    public static boolean isBlockNormalCube(BlockPos pos) {
+        IBlockState state = get(pos);
+        return state.getBlock().isBlockNormalCube(state);
+    }
+
     /**
      * Called by minecraft.java
      */

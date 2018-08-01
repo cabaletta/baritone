@@ -5,6 +5,7 @@
  */
 package baritone.pathfinding.actions;
 
+import baritone.Baritone;
 import baritone.util.Out;
 import baritone.util.ToolSet;
 import net.minecraft.block.Block;

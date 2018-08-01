@@ -5,9 +5,9 @@
  */
 package baritone.pathfinding.actions;
 
-import baritone.ui.LookManager;
 import baritone.Baritone;
 import baritone.movement.MovementManager;
+import baritone.ui.LookManager;
 import baritone.util.Out;
 import baritone.util.ToolSet;
 import net.minecraft.block.Block;
@@ -24,9 +24,11 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public class ActionPillar extends ActionPlaceOrBreak {
+
     public ActionPillar(BlockPos start) {
         super(start, start.up(), new BlockPos[]{start.up(2)}, new BlockPos[]{start});
     }
+
     @Override
     protected double calculateCost(ToolSet ts) {
         Block fromDown = Baritone.get(from).getBlock();
@@ -64,21 +66,23 @@ public class ActionPillar extends ActionPlaceOrBreak {
         }
     }
     int numTicks = 0;
+
     public BlockPos getAgainst(BlockPos vine) {
-        if (Baritone.get(vine.north()).getBlock().isBlockNormalCube()) {
+        if (Baritone.isBlockNormalCube(vine.north())) {
             return vine.north();
         }
-        if (Baritone.get(vine.south()).getBlock().isBlockNormalCube()) {
+        if (Baritone.isBlockNormalCube(vine.south())) {
             return vine.south();
         }
-        if (Baritone.get(vine.east()).getBlock().isBlockNormalCube()) {
+        if (Baritone.isBlockNormalCube(vine.east())) {
             return vine.east();
         }
-        if (Baritone.get(vine.west()).getBlock().isBlockNormalCube()) {
+        if (Baritone.isBlockNormalCube(vine.west())) {
             return vine.west();
         }
         return null;
     }
+
     @Override
     protected boolean tick0() {
         IBlockState fromDown = Baritone.get(from);
@@ -95,7 +99,7 @@ public class ActionPillar extends ActionPlaceOrBreak {
                 Out.gui("Unable to climb vines", Out.Mode.Standard);
                 return false;
             }
-            if (thePlayer.getPosition0().equals(against.up()) || thePlayer.getPosition0().equals(to)) {
+            if (Baritone.playerFeet.equals(against.up()) || Baritone.playerFeet.equals(to)) {
                 return true;
             }
             /*if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
@@ -126,7 +130,7 @@ public class ActionPillar extends ActionPlaceOrBreak {
                     MovementManager.isLeftClick = true;
                     blockIsThere = false;
                 } else if (Minecraft.getMinecraft().player.isSneaking()) {
-                    Minecraft.getMinecraft().rightClickMouse();//constantly right click
+                    MovementManager.rightClickMouse();//constantly right click
                 }
             }
         }
