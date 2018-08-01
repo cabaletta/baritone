@@ -151,7 +151,7 @@ public class Memory extends Manager {
     @Override
     public void onTick() {
         if (air == null) {
-            air = Block.getBlockById(0);
+            air = Blocks.AIR;
         }
         playersCurrentlyInRange.clear();
         for (EntityPlayer pl : Minecraft.getMinecraft().world.playerEntities) {

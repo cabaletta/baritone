@@ -67,7 +67,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
             if (f instanceof BlockLadder || f instanceof BlockVine) {
                 return COST_INF;
             }
-            if (blocksToPlace[0].equals(Block.getBlockById(0)) || (!isWater(blocksToPlace[0]) && blocksToPlace[0].isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
+            if (blocksToPlace[0].equals(Blocks.AIR) || (!isWater(blocksToPlace[0]) && blocksToPlace[0].isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
                 for (BlockPos against1 : against) {
                     if (Baritone.isBlockNormalCube(against1)) {
                         return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);

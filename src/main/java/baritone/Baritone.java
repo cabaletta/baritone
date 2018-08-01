@@ -271,7 +271,7 @@ public class Baritone {
     }
 
     public static boolean isAir(BlockPos pos) {
-        return Baritone.get(pos).getBlock().equals(Block.getBlockById(0));
+        return Baritone.get(pos).getBlock().equals(Blocks.AIR);
     }
 
     public static void findPathInNewThread(final boolean talkAboutIt) {
@@ -385,7 +385,7 @@ public class Baritone {
             return;
         }
         IBlockState state = Baritone.get(pos);
-        if (state.getBlock().equals(Block.getBlockById(0))) {
+        if (state.getBlock().equals(Blocks.AIR)) {
             return;
         }
         switchtotool(state);

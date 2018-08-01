@@ -89,7 +89,7 @@ public abstract class ActionPlaceOrBreak extends Action {
     }
 
     public static double getHardness(ToolSet ts, IBlockState block, BlockPos position) {
-        if (!block.equals(Block.getBlockById(0)) && !canWalkThrough(position)) {
+        if (!block.equals(Blocks.AIR) && !canWalkThrough(position)) {
             if (avoidBreaking(position)) {
                 return COST_INF;
             }

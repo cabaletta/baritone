@@ -283,7 +283,7 @@ public class MickeyMine extends ManagerTick {
         ArrayList<BlockPos> shouldBeRemoved = new ArrayList<BlockPos>();
         for (BlockPos isMined : needsToBeMined) {
             Block block = Baritone.get(isMined).getBlock();
-            if (isGoalBlock(isMined) || block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
+            if (isGoalBlock(isMined) || block.equals(Blocks.AIR) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
                 hasBeenMined.add(isMined);
                 shouldBeRemoved.add(isMined);
                 updateBlocks(isMined);
@@ -300,7 +300,7 @@ public class MickeyMine extends ManagerTick {
         ArrayList<BlockPos> shouldBeRemoved = new ArrayList<BlockPos>();
         for (BlockPos isMined : priorityNeedsToBeMined) {
             Block block = Baritone.get(isMined).getBlock();
-            if (block.equals(Block.getBlockById(0)) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
+            if (block.equals(Blocks.AIR) || block.equals(Block.getBlockFromName("minecraft:torch")) || block.equals(Blocks.BEDROCK)) {
                 hasBeenMined.add(isMined);
                 shouldBeRemoved.add(isMined);
                 updateBlocks(isMined);

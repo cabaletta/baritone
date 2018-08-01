@@ -47,7 +47,7 @@ public class SchematicBuilder {
 
     public HashSet<BlockPos> getAllBlocksToPlaceShiftedUp() {
         HashSet<BlockPos> toPlace = new HashSet<>();
-        Block air = Block.getBlockById(0);
+        Block air = Blocks.AIR;
         for (int y = 0; y < schematic.getHeight(); y++) {
             for (int x = 0; x < schematic.getWidth(); x++) {
                 for (int z = 0; z < schematic.getLength(); z++) {
