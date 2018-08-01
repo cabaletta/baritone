@@ -4,6 +4,8 @@
 # Gradle
 /build/
 .gradle/
+/classes/
+*.class
 
 # IntelliJ Files
 .idea/
@@ -54,6 +56,3 @@ nbproject/
 /updatenames.sh
 /src/minecraft/net
 /src/minecraft/mcp
-/classes
-
-*.class

@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "minebot.launch.mixins",
+  "package": "baritone.launch.mixins",
   "refmap": "mixins.client.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "verbose": false,

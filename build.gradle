@@ -33,9 +33,9 @@ apply plugin: 'org.spongepowered.mixin'
 minecraft {
     version = '1.12.2'
     mappings = 'snapshot_20180731'
-    tweakClass = 'baritone.launch.MinebotTweaker'
+    tweakClass = 'baritone.launch.BaritoneTweaker'
     runDir = 'run'
-    makeObfSourceJar = true
+    makeObfSourceJar = false
 }
 
 repositories {
