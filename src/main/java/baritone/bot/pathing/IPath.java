@@ -6,6 +6,10 @@ import java.util.Collection;
 import java.util.List;
 
 public interface IPath {
+    /**
+     *
+     */
+    List<BlockPos> movements();
 
     /**
      * All positions along the way.

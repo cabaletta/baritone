@@ -1,17 +1,17 @@
 package baritone.bot.pathing.action;
 
 import baritone.bot.InputOverrideHandler.Input;
-import baritone.bot.utils.DefaultHashMap;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ActionState {
 
     protected ActionStatus status;
     public ActionGoal goal;
-    protected final Map<Input, Boolean> inputState = new DefaultHashMap<>(false);
+    protected final Map<Input, Boolean> inputState = new HashMap<>();
 
     public ActionState setStatus(ActionStatus status) {
         this.status = status;
@@ -53,8 +53,12 @@ public class ActionState {
     }
 
     public ActionState setInput(Input input, boolean forced) {
-        this.inputState.put(input, forced);
+        inputState.put(input, forced);
         return this;
+    }
+
+    public boolean getInput(Input input) {
+        return inputState.getOrDefault(input, false);
     }
 
     public enum ActionStatus {
