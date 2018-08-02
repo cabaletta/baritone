@@ -1,4 +1,4 @@
-package baritone.bot.pathing.action;
+package baritone.bot.pathing.movement;
 
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.ToolSet;
@@ -13,7 +13,7 @@ import net.minecraft.util.math.BlockPos;
  *
  * @author leijurv
  */
-public interface ActionWorldHelper extends ActionCosts {
+public interface MovementHelper extends ActionCosts {
     Block waterFlowing = Block.getBlockById(8);
     Block waterStill = Block.getBlockById(9);
     Block lavaFlowing = Block.getBlockById(10);

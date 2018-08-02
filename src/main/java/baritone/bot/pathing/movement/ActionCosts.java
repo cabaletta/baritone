@@ -1,4 +1,4 @@
-package baritone.bot.pathing.action;
+package baritone.bot.pathing.movement;
 
 public interface ActionCosts {
     /**

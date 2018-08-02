@@ -1,4 +1,4 @@
-package baritone.bot.pathing.action;
+package baritone.bot.pathing.movement;
 
 import baritone.bot.InputOverrideHandler.Input;
 import net.minecraft.util.math.BlockPos;
@@ -7,22 +7,22 @@ import net.minecraft.util.math.Vec3d;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ActionState {
+public class MovementState {
 
-    protected ActionStatus status;
-    public ActionGoal goal;
+    protected MovementStatus status;
+    public MovementGoal goal;
     protected final Map<Input, Boolean> inputState = new HashMap<>();
 
-    public ActionState setStatus(ActionStatus status) {
+    public MovementState setStatus(MovementStatus status) {
         this.status = status;
         return this;
     }
 
-    public ActionStatus getStatus() {
+    public MovementStatus getStatus() {
         return status;
     }
 
-    public static class ActionGoal {
+    public static class MovementGoal {
         /**
          * Necessary movement to achieve
          * <p>
@@ -37,22 +37,22 @@ public class ActionState {
          */
         public Vec3d rotation;
 
-        public ActionGoal(BlockPos position, Vec3d rotation) {
+        public MovementGoal(BlockPos position, Vec3d rotation) {
             this.position = position;
             this.rotation = rotation;
         }
     }
 
-    public ActionGoal getGoal() {
+    public MovementGoal getGoal() {
         return goal;
     }
 
-    public ActionState setGoal(ActionGoal goal) {
+    public MovementState setGoal(MovementGoal goal) {
         this.goal = goal;
         return this;
     }
 
-    public ActionState setInput(Input input, boolean forced) {
+    public MovementState setInput(Input input, boolean forced) {
         inputState.put(input, forced);
         return this;
     }
@@ -61,7 +61,7 @@ public class ActionState {
         return inputState.getOrDefault(input, false);
     }
 
-    public enum ActionStatus {
+    public enum MovementStatus {
         WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED;
     }
 }
