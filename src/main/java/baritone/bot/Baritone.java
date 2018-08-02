@@ -1,7 +1,6 @@
 package baritone.bot;
 
 import baritone.bot.behavior.Behavior;
-import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,14 +43,6 @@ public enum Baritone {
 
         this.active = true;
         this.initialized = true;
-
-        new Reflections("baritone.bot.behavior.impl").getSubTypesOf(Behavior.class).forEach(c -> {
-            try {
-                behaviors.add(c.newInstance());
-            } catch (InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        });
     }
 
     public final boolean isInitialized() {

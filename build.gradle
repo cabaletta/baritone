@@ -48,7 +48,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.reflections:reflections:0.9.11'
     implementation ('org.spongepowered:mixin:0.7.8-SNAPSHOT') {
         // Mixin includes a lot of dependencies that are too up-to-date
         exclude module: 'launchwrapper'
