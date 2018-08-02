@@ -70,4 +70,9 @@ public class GoalBlock implements Goal {
         heuristic += GoalXZ.calculate(xDiff, zDiff, pythaDist);
         return heuristic;
     }
+    
+    @Override
+    public String toString() {
+        return "Goal{x=" + x + ",y=" + y + ",z=" + z + "}";
+    }
 }
