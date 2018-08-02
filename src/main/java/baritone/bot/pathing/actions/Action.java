@@ -2,12 +2,7 @@ package baritone.bot.pathing.actions;
 
 import baritone.bot.behavior.Behavior;
 import baritone.bot.utils.Utils;
-import net.minecraft.block.state.BlockStateBase;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.BlockWorldState;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 public abstract class Action extends Behavior {
@@ -15,7 +10,7 @@ public abstract class Action extends Behavior {
     protected ActionState currentState;
 
     Action(BlockPos dest) {
-        BlockPos playerEyePos = new BlockPos(player.posX, player.posY+1.62, player.posZ);
+        BlockPos playerEyePos = new BlockPos(player.posX, player.posY + player.getEyeHeight(), player.posZ);
         Tuple<Float, Float> desiredRotation = Utils.calcRotationFromCoords(
                 Utils.calcCenterFromCoords(dest, world),
                 playerEyePos);
