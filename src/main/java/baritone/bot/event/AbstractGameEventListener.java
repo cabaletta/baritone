@@ -1,6 +1,7 @@
 package baritone.bot.event;
 
 import baritone.bot.event.events.ChatEvent;
+import baritone.bot.event.events.ChunkEvent;
 
 /**
  * An implementation of {@link IGameEventListener} that has all methods
@@ -25,4 +26,7 @@ public interface AbstractGameEventListener extends IGameEventListener {
 
     @Override
     default void onSendChatMessage(ChatEvent event) {}
+
+    @Override
+    default void onChunkEvent(ChunkEvent event) {}
 }

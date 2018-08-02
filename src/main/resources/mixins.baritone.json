@@ -12,6 +12,7 @@
     "MixinGuiScreen",
     "MixinKeyBinding",
     "MixinMain",
-    "MixinMinecraft"
+    "MixinMinecraft",
+    "MixinWorldClient"
   ]
 }

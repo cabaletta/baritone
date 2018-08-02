@@ -3,6 +3,7 @@ package baritone.bot;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.event.IGameEventListener;
 import baritone.bot.event.events.ChatEvent;
+import baritone.bot.event.events.ChunkEvent;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
@@ -18,7 +19,7 @@ public final class GameEventHandler implements IGameEventListener {
 
     @Override
     public final void onTick() {
-        dispatchEventToBehaviors(behavior -> onTick());
+        dispatch(behavior -> onTick());
     }
 
     @Override
@@ -37,15 +38,20 @@ public final class GameEventHandler implements IGameEventListener {
             }
         }
 
-        dispatchEventToBehaviors(behavior -> onProcessKeyBinds());
+        dispatch(behavior -> onProcessKeyBinds());
     }
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
-        dispatchEventToBehaviors(behavior -> onSendChatMessage(event));
+        dispatch(behavior -> onSendChatMessage(event));
     }
 
-    private void dispatchEventToBehaviors(Consumer<Behavior> dispatchFunction) {
+    @Override
+    public void onChunkEvent(ChunkEvent event) {
+        dispatch(behavior -> onChunkEvent(event));
+    }
+
+    private void dispatch(Consumer<Behavior> dispatchFunction) {
         Baritone.INSTANCE.getBehaviors().stream().filter(Behavior::isEnabled).forEach(dispatchFunction);
     }
 }
