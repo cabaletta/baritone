@@ -97,7 +97,7 @@ public class PathFinder {
                 return new Path(startNode, currentNode, goal, numNodes);
             }
             //long constructStart = System.nanoTime();
-            Action[] possibleActions = getConnectedPositions(currentNodePos);//actions that we could take that start at myPos, in random order
+            Action[] possibleActions = getConnectedPositions(currentNodePos);//action that we could take that start at myPos, in random order
             shuffle(possibleActions);
             //long constructEnd = System.nanoTime();
             //System.out.println(constructEnd - constructStart);

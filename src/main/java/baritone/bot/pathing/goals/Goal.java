@@ -1,6 +1,6 @@
 package baritone.bot.pathing.goals;
 
-import baritone.bot.pathing.actions.ActionCosts;
+import baritone.bot.pathing.action.ActionCosts;
 import net.minecraft.util.math.BlockPos;
 
 /**

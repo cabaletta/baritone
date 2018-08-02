@@ -1,6 +1,6 @@
 package baritone.bot.pathing.movements;
 
-import baritone.bot.pathing.actions.Action;
+import baritone.bot.pathing.action.Action;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 public abstract class Movement {
 
     /**
-     * Flat list of ordered actions
+     * Flat list of ordered action
      */
     protected List<Action> actions;
 

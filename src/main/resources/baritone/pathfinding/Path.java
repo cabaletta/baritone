@@ -57,7 +57,7 @@ public class Path {
         }
         path.add(0, start.pos);
         /*Out.log("Final path: " + path);
-         Out.log("Final actions: " + actions);
+         Out.log("Final action: " + action);
          for (int i = 0; i < path.size() - 1; i++) {//print it all out
          int oldX = path.get(i).getX();
          int oldY = path.get(i).getY();
@@ -68,7 +68,7 @@ public class Path {
          int xDiff = newX - oldX;
          int yDiff = newY - oldY;
          int zDiff = newZ - oldZ;
-         Out.log(actions.get(i) + ": " + xDiff + "," + yDiff + "," + zDiff);//print it all out
+         Out.log(action.get(i) + ": " + xDiff + "," + yDiff + "," + zDiff);//print it all out
          }*/
     }
 
@@ -96,7 +96,7 @@ public class Path {
         }
     }
     /**
-     * Where are we in the path? This is an index in the actions list
+     * Where are we in the path? This is an index in the action list
      */
     int pathPosition = 0;
 
@@ -201,7 +201,7 @@ public class Path {
             if ((actions.get(pathPosition) instanceof ActionBridge) && (actions.get(pathPosition + 1) instanceof ActionBridge)) {
                 ActionBridge curr = (ActionBridge) actions.get(pathPosition);
                 ActionBridge next = (ActionBridge) actions.get(pathPosition + 1);
-                if (curr.dx() != next.dx() || curr.dz() != next.dz()) {//two actions are not parallel, so this is a right angle
+                if (curr.dx() != next.dx() || curr.dz() != next.dz()) {//two action are not parallel, so this is a right angle
                     if (curr.amIGood() && next.amIGood()) {//nothing in the way
                         BlockPos cornerToCut1 = new BlockPos(next.to.getX() - next.from.getX() + curr.from.getX(), next.to.getY(), next.to.getZ() - next.from.getZ() + curr.from.getZ());
                         BlockPos cornerToCut2 = cornerToCut1.up();

@@ -1,9 +1,8 @@
-package baritone.bot.pathing.actions;
+package baritone.bot.pathing.action.actions;
 
-import net.minecraft.client.entity.EntityPlayerSP;
+import baritone.bot.pathing.action.Action;
+import baritone.bot.pathing.action.ActionState;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.Optional;
 
 public class ActionAscend extends Action {
 
