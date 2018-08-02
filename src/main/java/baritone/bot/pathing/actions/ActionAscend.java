@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public class ActionAscend extends Action {
 
-    public ActionAscend(BlockPos destination) {
-
+    ActionAscend(BlockPos dest) {
+        super(dest);
     }
 
     @Override
