@@ -55,7 +55,7 @@ public interface ActionWorldHelper extends ActionCosts {
     static boolean avoidBreaking(BlockPos pos) {
         Block b = BlockStateInterface.get(pos).getBlock();
         Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
-        return Block.getBlockFromName("minecraft:ice").equals(b)//ice becomes water, and water can mess up the path
+        return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
                 || isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
                 || isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
                 || isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
