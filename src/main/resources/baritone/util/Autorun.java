@@ -7,11 +7,6 @@ import java.util.Arrays;
 import baritone.util.Out;
 import net.minecraft.client.main.Main;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  *
  * @author avecowa
