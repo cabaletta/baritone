@@ -1,7 +1,8 @@
 package baritone.bot;
 
 import baritone.bot.event.IGameEventListener;
-import baritone.Baritone;
+import net.minecraft.client.settings.KeyBinding;
+import org.lwjgl.input.Keyboard;
 
 /**
  * @author Brady
@@ -13,6 +14,23 @@ public final class GameEventHandler implements IGameEventListener {
 
     @Override
     public final void onTick() {
-    	Baritone.onTick();
+    	baritone.Baritone.onTick();
+    }
+
+    @Override
+    public void onProcessKeyBinds() {
+        InputOverrideHandler inputHandler = Baritone.INSTANCE.getInputOverrideHandler();
+
+        // Simulate the key being held down this tick
+        for (InputOverrideHandler.Input input : InputOverrideHandler.Input.values()) {
+            KeyBinding keyBinding = input.getKeyBinding();
+
+            if (inputHandler.isInputForcedDown(keyBinding) && !keyBinding.isKeyDown()) {
+                int keyCode = keyBinding.getKeyCode();
+
+                if (keyCode < Keyboard.KEYBOARD_SIZE)
+                    KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
+            }
+        }
     }
 }

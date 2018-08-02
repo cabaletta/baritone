@@ -25,7 +25,7 @@ public final class InputOverrideHandler implements Helper {
     private final Map<KeyBinding, Boolean> inputForceStateMap = new HashMap<>();
 
     /**
-     * Maps keycodes to whether or not we are forcing their state down
+     * Maps keycodes to whether or not we are forcing their state down.
      */
     private final Map<Integer, Boolean> keyCodeForceStateMap = new HashMap<>();
 
@@ -52,7 +52,7 @@ public final class InputOverrideHandler implements Helper {
     /**
      * A redirection in multiple places of {@link Keyboard#isKeyDown}.
      *
-     * @return Whether or not the specified key is down or overriden.
+     * @return Whether or not the specified key is down or overridden.
      */
     public boolean isKeyDown(int keyCode) {
         return Keyboard.isKeyDown(keyCode) || keyCodeForceStateMap.computeIfAbsent(keyCode, k -> false);

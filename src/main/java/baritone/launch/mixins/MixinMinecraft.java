@@ -57,6 +57,14 @@ public class MixinMinecraft {
         return Baritone.INSTANCE.getInputOverrideHandler().isKeyDown(keyCode);
     }
 
+    @Inject(
+            method = "processKeyBinds",
+            at = @At("HEAD")
+    )
+    private void runTickKeyboard(CallbackInfo ci) {
+        Baritone.INSTANCE.getGameEventHandler().onProcessKeyBinds();
+    }
+
     @Redirect(
             method = {
                     "setIngameFocus",

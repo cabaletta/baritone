@@ -9,7 +9,12 @@ import net.minecraft.client.Minecraft;
 public interface IGameEventListener {
 
     /**
-     * Run once per game tick from {@link Minecraft#runTick}.
+     * Run once per game tick from {@link Minecraft#runTick()}
      */
     void onTick();
+
+    /**
+     * Run once per game tick from {@link Minecraft#processKeyBinds()}
+     */
+    void onProcessKeyBinds();
 }
