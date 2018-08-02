@@ -128,7 +128,7 @@ public interface ActionWorldHelper extends ActionCosts {
             //if (!Baritone.allowBreakOrPlace) {
             //    return COST_INF;
             //}
-            double m = Block.getBlockFromName("minecraft:crafting_table").equals(block) ? 10 : 1;
+            double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1;
             return m / ts.getStrVsBlock(block, position) + BREAK_ONE_BLOCK_ADD;
         }
         return 0;
