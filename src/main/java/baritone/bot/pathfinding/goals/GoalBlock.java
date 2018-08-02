@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package baritone.pathfinding.goals;
+package baritone.bot.goals;
 
 import baritone.Baritone;
 import baritone.pathfinding.actions.Action;
@@ -39,6 +39,10 @@ public class GoalBlock implements Goal {
     public boolean isInGoal(BlockPos pos) {
         return pos.getX() == this.x && pos.getY() == this.y && pos.getZ() == this.z;
     }
+
+    /**
+     * The range over which to begin considering Y coordinate in the heuristic
+     */
     static final double MIN = 20;
     static final double MAX = 150;
 
@@ -55,6 +59,7 @@ public class GoalBlock implements Goal {
         double heuristic = 0;
         double baseline = (Action.PLACE_ONE_BLOCK_COST + Action.FALL_ONE_BLOCK_COST) * 32;
         if (pythaDist < MAX) {//if we are more than MAX away, ignore the Y coordinate. It really doesn't matter how far away your Y coordinate is if you X coordinate is 1000 blocks away.
+            //as we get closer, slowly reintroduce the Y coordinate as a heuristic cost
             double multiplier = pythaDist < MIN ? 1 : 1 - (pythaDist - MIN) / (MAX - MIN);
             if (yDiff < 0) {//pos.getY()-this.y<0 therefore pos.getY()<this.y, so target is above current
                 heuristic -= yDiff * (Action.PLACE_ONE_BLOCK_COST * 0.7 + Action.JUMP_ONE_BLOCK_COST);//target above current
@@ -66,6 +71,7 @@ public class GoalBlock implements Goal {
         } else {
             heuristic += baseline;
         }
+        //use the pythagorean and manhattan mixture from GoalXZ
         heuristic += GoalXZ.calculate(xDiff, zDiff, pythaDist);
         return heuristic;
     }

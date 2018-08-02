@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package baritone.pathfinding.goals;
+package baritone.bot.goals;
 
 import java.util.Arrays;
 import net.minecraft.util.math.BlockPos;
