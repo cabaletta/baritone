@@ -32,9 +32,13 @@ class Path implements IPath {
         this.path = new ArrayList<>();
         this.actions = new ArrayList<>();
         assemblePath(start, end);
+        sanityCheck();
     }
 
     private final void assemblePath(PathNode start, PathNode end) {
+        if (!path.isEmpty() || !actions.isEmpty()) {
+            throw new IllegalStateException();
+        }
         PathNode current = end;
         LinkedList<BlockPos> tempPath = new LinkedList<>();//repeatedly inserting to the beginning of an arraylist is O(n^2)
         LinkedList<Action> tempActions = new LinkedList<>();//instead, do it into a linked list, then convert at the end
@@ -51,8 +55,27 @@ class Path implements IPath {
         actions.addAll(tempActions);
     }
 
-    protected void sanityCheck() {
-
+    public void sanityCheck() {
+        if (!start.equals(path.get(0))) {
+            throw new IllegalStateException();
+        }
+        if (!end.equals(path.get(path.size() - 1))) {
+            throw new IllegalStateException();
+        }
+        if (path.size() != actions.size() + 1) {
+            throw new IllegalStateException();
+        }
+        for (int i = 0; i < path.size(); i++) {
+            BlockPos src = path.get(i);
+            BlockPos dest = path.get(i + 1);
+            Action action = actions.get(i);
+            if (!src.equals(action.getSrc())) {
+                throw new IllegalStateException();
+            }
+            if (!dest.equals(action.getDest())) {
+                throw new IllegalStateException();
+            }
+        }
     }
 
     @Override

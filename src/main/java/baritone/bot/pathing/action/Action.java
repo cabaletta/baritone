@@ -62,6 +62,14 @@ public abstract class Action implements AbstractGameEventListener, Helper, Actio
                 && currentState.getStatus() != ActionStatus.WAITING);
     }
 
+    public BlockPos getSrc() {
+        return null; // TODO
+    }
+
+    public BlockPos getDest() {
+        return null; // TODO
+    }
+
     /**
      * Calculate latest action state.
      * Gets called once a tick.
