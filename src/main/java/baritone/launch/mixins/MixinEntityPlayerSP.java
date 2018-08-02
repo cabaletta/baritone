@@ -1,13 +1,12 @@
 package baritone.launch.mixins;
 
-import baritone.util.ChatCommand;
+import baritone.bot.Baritone;
+import baritone.bot.event.events.ChatEvent;
 import net.minecraft.client.entity.EntityPlayerSP;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author Brady
@@ -22,11 +21,9 @@ public class MixinEntityPlayerSP {
             cancellable = true
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
-        try {
-            if (ChatCommand.message(msg))
-                ci.cancel();
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
+        ChatEvent event = new ChatEvent(msg);
+        Baritone.INSTANCE.getGameEventHandler().onSendChatMessage(event);
+        if (event.isCancelled())
+            ci.cancel();
     }
 }

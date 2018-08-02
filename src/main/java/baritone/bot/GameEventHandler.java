@@ -1,6 +1,7 @@
 package baritone.bot;
 
 import baritone.bot.event.IGameEventListener;
+import baritone.bot.event.events.ChatEvent;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
@@ -13,9 +14,7 @@ public final class GameEventHandler implements IGameEventListener {
     GameEventHandler() {}
 
     @Override
-    public final void onTick() {
-    	baritone.Baritone.onTick();
-    }
+    public final void onTick() {}
 
     @Override
     public void onProcessKeyBinds() {
@@ -33,4 +32,7 @@ public final class GameEventHandler implements IGameEventListener {
             }
         }
     }
+
+    @Override
+    public void onSendChatMessage(ChatEvent event) {}
 }
