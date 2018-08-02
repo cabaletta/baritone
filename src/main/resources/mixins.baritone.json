@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "verbose": false,
   "client": [
+    "MixinEntityPlayerSP",
     "MixinGameSettings",
     "MixinGuiContainer",
     "MixinGuiOverlayDebug",
