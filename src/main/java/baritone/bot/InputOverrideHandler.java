@@ -20,7 +20,7 @@ public final class InputOverrideHandler implements Helper {
     InputOverrideHandler() {}
 
     /**
-     * Maps keybinds to whether or not we are forcing their state down
+     * Maps keybinds to whether or not we are forcing their state down.
      */
     private final Map<KeyBinding, Boolean> inputForceStateMap = new HashMap<>();
 
