@@ -12,11 +12,9 @@ import net.minecraft.util.math.BlockPos;
 public interface Helper {
 
     Minecraft mc = Minecraft.getMinecraft();
-    EntityPlayerSP player = mc.player;
-    WorldClient world = mc.world;
 
     default BlockPos playerFeet() {
-        return new BlockPos(player.posX, player.posY, player.posZ);
+        return new BlockPos(mc.player.posX, mc.player.posY, mc.player.posZ);
     }
 
 }

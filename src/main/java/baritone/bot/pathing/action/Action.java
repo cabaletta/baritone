@@ -43,7 +43,7 @@ public abstract class Action implements AbstractGameEventListener, Helper, Actio
         ActionState latestState = calcState();
         Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 latestState.getGoal().rotation);
-        player.setPositionAndRotation(mc.player.posX, mc.player.posY, mc.player.posZ,
+        mc.player.setPositionAndRotation(mc.player.posX, mc.player.posY, mc.player.posZ,
                 rotation.getFirst(), rotation.getSecond());
         latestState.inputState.forEach((input, forced) -> {
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);

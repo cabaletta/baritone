@@ -9,7 +9,7 @@ import net.minecraft.util.math.BlockPos;
  * @author Brady
  * @since 8/1/2018 5:38 PM
  */
-public class PathExecution extends Behavior implements Helper {
+public class PathExecution extends Behavior {
     private static final double MAX_DIST_FROM_PATH = 2;
     private final IPath path;
 
@@ -25,7 +25,7 @@ public class PathExecution extends Behavior implements Helper {
             // and only increment it when the movement said it was done, not when it detected that the player feet had
             // moved into the next position
         } else {
-            Tuple<Double, BlockPos> closest = path.closestPathPos(player.posX, player.posY, player.posZ);
+            Tuple<Double, BlockPos> closest = path.closestPathPos(mc.player.posX, mc.player.posY, mc.player.posZ);
             if (closest.getFirst() > MAX_DIST_FROM_PATH) {
                 // TODO how to indicate failure? Exception?
             }
