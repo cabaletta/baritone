@@ -1,25 +1,33 @@
 package baritone.bot.pathing.action;
 
 import baritone.bot.Baritone;
-import baritone.bot.behavior.Behavior;
-import baritone.bot.pathing.action.ActionState.ActionStatus;
+import baritone.bot.event.AbstractGameEventListener;
+import baritone.bot.utils.Helper;
 import baritone.bot.utils.Utils;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
+import baritone.bot.pathing.action.ActionState.ActionStatus;
+import net.minecraft.util.math.Vec3d;
 
-public abstract class Action extends Behavior {
+public abstract class Action implements AbstractGameEventListener, Helper {
 
     protected ActionState currentState;
 
     public Action(BlockPos dest) {
-        BlockPos playerEyePos = new BlockPos(player.posX, player.posY + player.getEyeHeight(), player.posZ);
-        Tuple<Float, Float> desiredRotation = Utils.calcRotationFromCoords(
-                Utils.calcCenterFromCoords(dest, world),
-                playerEyePos);
+        this(Utils.calcCenterFromCoords(dest, mc.world));
+    }
 
-        // There's honestly not a good reason for this (Builder Pattern), I just believed strongly in it
+    public Action(Vec3d dest) {
+        this(dest, dest);
+    }
+
+    public Action(BlockPos dest, Vec3d rotationTarget) {
+        this(Utils.calcCenterFromCoords(dest, mc.world), rotationTarget);
+    }
+
+    public Action(Vec3d dest, Vec3d rotationTarget) {
         currentState = new ActionState()
-                .setGoal(new ActionState.ActionGoal(dest, desiredRotation))
+                .setGoal(new ActionState.ActionGoal(dest, rotationTarget))
                 .setStatus(ActionStatus.WAITING);
     }
 
@@ -36,8 +44,10 @@ public abstract class Action extends Behavior {
     @Override
     public void onTick() {
         ActionState latestState = calcState();
-        player.setPositionAndRotation(player.posX, player.posY, player.posZ,
-                latestState.getGoal().rotation.getFirst(), latestState.getGoal().rotation.getSecond());
+        Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+                latestState.getGoal().rotation);
+        player.setPositionAndRotation(mc.player.posX, mc.player.posY, mc.player.posZ,
+                rotation.getFirst(), rotation.getSecond());
         latestState.inputState.forEach((input, forced) -> {
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
         });

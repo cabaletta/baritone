@@ -1,8 +1,7 @@
 package baritone.bot.pathing.action;
 
 import baritone.bot.InputOverrideHandler.Input;
-import net.minecraft.util.Tuple;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,16 +27,16 @@ public class ActionState {
          * <p>
          * TODO: Decide desiredMovement type
          */
-        public BlockPos position;
+        public Vec3d position;
         /**
          * Yaw and pitch angles that must be matched
          * <p>
          * getFirst()  -> YAW
          * getSecond() -> PITCH
          */
-        public Tuple<Float, Float> rotation;
+        public Vec3d rotation;
 
-        public ActionGoal(BlockPos position, Tuple<Float, Float> rotation) {
+        public ActionGoal(Vec3d position, Vec3d rotation) {
             this.position = position;
             this.rotation = rotation;
         }
