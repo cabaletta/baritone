@@ -5,13 +5,14 @@
  */
 package baritone.bot.pathing.goals;
 
+import baritone.bot.pathing.actions.ActionCosts;
 import net.minecraft.util.math.BlockPos;
 
 /**
  * An abstract Goal for pathing, can be anything from a specific block to just a Y coordinate.
  * @author leijurv
  */
-public interface Goal {
+public interface Goal extends ActionCosts {
 
     /**
      * Returns whether or not the specified position
@@ -29,11 +30,4 @@ public interface Goal {
      * @return The estimate number of ticks to satisfy the goal
      */
     double heuristic(BlockPos pos);
-
-    /**
-     * Summarize the goal
-     * @return
-     */
-    @Override
-    String toString();
 }

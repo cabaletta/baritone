@@ -5,7 +5,6 @@
  */
 package baritone.bot.pathing.goals;
 
-import baritone.bot.pathing.actions.ActionCosts;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -70,7 +69,7 @@ public class GoalXZ implements Goal {
             diagonal = z;
         }
         diagonal *= sq;
-        return (diagonal + straight) * ActionCosts.WALK_ONE_BLOCK_COST;
+        return (diagonal + straight) * WALK_ONE_BLOCK_COST;
     }
 
     @Override

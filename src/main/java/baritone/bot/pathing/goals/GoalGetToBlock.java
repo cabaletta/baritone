@@ -15,13 +15,11 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GoalGetToBlock extends GoalComposite {
 
-    public static BlockPos goalPos;
-
     public GoalGetToBlock(BlockPos pos) {
-        super(ajacentBlocks(goalPos = pos));
+        super(adjacentBlocks(pos));
     }
 
-    public static BlockPos[] ajacentBlocks(BlockPos pos) {
+    private static BlockPos[] adjacentBlocks(BlockPos pos) {
         BlockPos[] sides = new BlockPos[6];
         for (int i = 0; i < 6; i++) {
             sides[i] = pos.offset(EnumFacing.values()[i]);
