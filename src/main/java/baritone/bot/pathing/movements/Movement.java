@@ -7,6 +7,9 @@ import java.util.List;
 
 public abstract class Movement {
 
+    /**
+     * Flat list of ordered actions
+     */
     protected List<Action> actions;
 
     /**
@@ -22,4 +25,11 @@ public abstract class Movement {
      * @return Movement's final block position
      */
     public abstract BlockPos getDest();
+
+    /**
+     * Calculate the movement's cost
+     *
+     * @return Cost
+     */
+    public abstract double calcCost();
 }

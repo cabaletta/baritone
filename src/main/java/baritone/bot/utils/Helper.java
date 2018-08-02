@@ -1,6 +1,8 @@
 package baritone.bot.utils;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.multiplayer.WorldClient;
 
 /**
  * @author Brady
@@ -9,4 +11,7 @@ import net.minecraft.client.Minecraft;
 public interface Helper {
 
     Minecraft mc = Minecraft.getMinecraft();
+    EntityPlayerSP player = mc.player;
+    WorldClient world = mc.world;
+
 }
