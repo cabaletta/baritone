@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 
 public class BlockStateInterface {
-    public static IBlockState get(BlockPos pos) { // wrappers for future 1.13 compat
+    public static IBlockState get(BlockPos pos) { // wrappers for future chunk caching capability
         return Minecraft.getMinecraft().world.getBlockState(pos);
     }
 
