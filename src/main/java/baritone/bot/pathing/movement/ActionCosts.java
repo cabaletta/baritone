@@ -16,11 +16,11 @@ public interface ActionCosts {
 
     /**
      * Doesn't include walking forwards, just the falling
-     *
+     * <p>
      * Based on a sketchy formula from minecraftwiki
-     *
+     * <p>
      * d(t) = 3.92 × (99 - 49.50×(0.98^t+1) - t)
-     *
+     * <p>
      * Solved in mathematica
      */
     double FALL_ONE_BLOCK_COST = 5.11354;

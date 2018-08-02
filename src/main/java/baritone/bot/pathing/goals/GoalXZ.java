@@ -37,9 +37,9 @@ public class GoalXZ implements Goal {
      }
      public static double calculateOld(double xDiff, double zDiff, double pythaDist) {
      double heuristic = 0;
-     heuristic += Math.abs(xDiff) * Action.WALK_ONE_BLOCK_COST * 1.1;//overestimate
-     heuristic += Math.abs(zDiff) * Action.WALK_ONE_BLOCK_COST * 1.1;
-     heuristic += pythaDist / 10 * Action.WALK_ONE_BLOCK_COST;
+     heuristic += Math.abs(xDiff) * Movement.WALK_ONE_BLOCK_COST * 1.1;//overestimate
+     heuristic += Math.abs(zDiff) * Movement.WALK_ONE_BLOCK_COST * 1.1;
+     heuristic += pythaDist / 10 * Movement.WALK_ONE_BLOCK_COST;
      return heuristic;
      }
      */

@@ -9,7 +9,9 @@ import net.minecraft.util.math.BlockPos;
  */
 public final class GameActionHandler {
 
-    GameActionHandler() {}
+    GameActionHandler() {
+    }
 
-    public final void onPlacedBlock(ItemStack stack, BlockPos pos) {}
+    public final void onPlacedBlock(ItemStack stack, BlockPos pos) {
+    }
 }

@@ -21,7 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 
-    @Shadow private int leftClickCounter;
+    @Shadow
+    private int leftClickCounter;
 
     @Inject(
             method = "init",

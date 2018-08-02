@@ -1,6 +1,6 @@
 package baritone.bot.pathing.calc;
 
-import baritone.bot.pathing.action.Action;
+import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.goals.Goal;
 import net.minecraft.util.math.BlockPos;
 
@@ -20,28 +20,28 @@ class Path implements IPath {
      * path.get(path.size()-1) equals end
      */
     public final ArrayList<BlockPos> path;
-    final ArrayList<Action> actions;
+    final ArrayList<Movement> movements;
 
     Path(PathNode start, PathNode end, Goal goal) {
         this.start = start.pos;
         this.end = end.pos;
         this.goal = goal;
         this.path = new ArrayList<>();
-        this.actions = new ArrayList<>();
+        this.movements = new ArrayList<>();
         assemblePath(start, end);
         sanityCheck();
     }
 
     private final void assemblePath(PathNode start, PathNode end) {
-        if (!path.isEmpty() || !actions.isEmpty()) {
+        if (!path.isEmpty() || !movements.isEmpty()) {
             throw new IllegalStateException();
         }
         PathNode current = end;
         LinkedList<BlockPos> tempPath = new LinkedList<>();//repeatedly inserting to the beginning of an arraylist is O(n^2)
-        LinkedList<Action> tempActions = new LinkedList<>();//instead, do it into a linked list, then convert at the end
+        LinkedList<Movement> tempMovements = new LinkedList<>();//instead, do it into a linked list, then convert at the end
         while (!current.equals(start)) {
             tempPath.addFirst(current.pos);
-            tempActions.addFirst(current.previousAction);
+            tempMovements.addFirst(current.previousMovement);
             current = current.previous;
         }
         tempPath.addFirst(start.pos);
@@ -49,7 +49,7 @@ class Path implements IPath {
         //inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         //to performantly do that conversion since it knows the length.
         path.addAll(tempPath);
-        actions.addAll(tempActions);
+        movements.addAll(tempMovements);
     }
 
     public void sanityCheck() {
@@ -59,25 +59,25 @@ class Path implements IPath {
         if (!end.equals(path.get(path.size() - 1))) {
             throw new IllegalStateException();
         }
-        if (path.size() != actions.size() + 1) {
+        if (path.size() != movements.size() + 1) {
             throw new IllegalStateException();
         }
         for (int i = 0; i < path.size(); i++) {
             BlockPos src = path.get(i);
             BlockPos dest = path.get(i + 1);
-            Action action = actions.get(i);
-            if (!src.equals(action.getSrc())) {
+            Movement movement = movements.get(i);
+            if (!src.equals(movement.getSrc())) {
                 throw new IllegalStateException();
             }
-            if (!dest.equals(action.getDest())) {
+            if (!dest.equals(movement.getDest())) {
                 throw new IllegalStateException();
             }
         }
     }
 
     @Override
-    public List<Action> actions() {
-        return Collections.unmodifiableList(actions);
+    public List<Movement> movements() {
+        return Collections.unmodifiableList(movements);
     }
 
     @Override

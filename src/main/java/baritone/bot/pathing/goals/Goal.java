@@ -1,10 +1,11 @@
 package baritone.bot.pathing.goals;
 
-import baritone.bot.pathing.action.ActionCosts;
+import baritone.bot.pathing.movement.ActionCosts;
 import net.minecraft.util.math.BlockPos;
 
 /**
  * An abstract Goal for pathing, can be anything from a specific block to just a Y coordinate.
+ *
  * @author leijurv
  */
 public interface Goal extends ActionCosts {
