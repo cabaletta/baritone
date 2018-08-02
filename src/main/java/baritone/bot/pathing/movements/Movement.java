@@ -8,7 +8,7 @@ import java.util.List;
 public abstract class Movement {
 
     /**
-     * Flat list of ordered action
+     * Flat list of ordered actions
      */
     protected List<Action> actions;
 
