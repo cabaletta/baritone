@@ -78,7 +78,7 @@ public class Out {
      * Out.mode is Debug or Ludicrous. Do not use a Mode.None or a
      * Mode.Ludicrous in this parameter.
      * @exception IllegalArgumentException This will only be triggered if a
-     * messages given with a req of Node or Ludicrous
+     * messages given with a req of PathNode or Ludicrous
      */
     public static void gui(Object o, Mode req) throws IllegalArgumentException {
         if (req.equals(Mode.None) || req.equals(Mode.Ludicrous)) {

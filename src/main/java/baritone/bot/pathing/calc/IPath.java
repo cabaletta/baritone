@@ -8,6 +8,9 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * @author leijurv
+ */
 public interface IPath {
     /**
      * Ordered list of movements to carry out.
