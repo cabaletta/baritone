@@ -3,6 +3,7 @@ package baritone.bot;
 import baritone.bot.behavior.Behavior;
 import org.reflections.Reflections;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,6 +40,7 @@ public enum Baritone {
         this.actionHandler = new GameActionHandler();
         this.gameEventHandler = new GameEventHandler();
         this.inputOverrideHandler = new InputOverrideHandler();
+        this.behaviors = new ArrayList<>();
 
         this.active = true;
         this.initialized = true;
