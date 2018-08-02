@@ -48,7 +48,7 @@ public interface IPath {
      * @return
      */
     default boolean isInPath(BlockPos currentPosition) {
-        return positions().stream().anyMatch(pos -> currentPosition.equals(pos));
+        return positions().contains(currentPosition);
     }
 
     default Tuple<Double, BlockPos> closestPathPos(double x, double y, double z) {
