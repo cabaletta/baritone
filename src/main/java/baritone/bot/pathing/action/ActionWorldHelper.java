@@ -38,13 +38,10 @@ public interface ActionWorldHelper extends ActionCosts {
         //return b != null && (waterFlowing.equals(b) || waterStill.equals(b) || lavaFlowing.equals(b) || lavaStill.equals(b));
     }
 
-    static boolean isFlowing(BlockPos pos, IBlockState state) {
-        Block b = state.getBlock();
-        if (b instanceof BlockLiquid) {
-            System.out.println("Need to fix get flow check!!!");
-            //return BlockLiquid.getFlow(Minecraft.getMinecraft().world, pos, state) != -1000.0D;
-        }
-        return false;
+    static boolean isFlowing(IBlockState state) {
+        return state.getBlock() instanceof BlockLiquid
+                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
+                && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 
     static boolean isLava(Block b) {
@@ -79,11 +76,11 @@ public interface ActionWorldHelper extends ActionCosts {
         if (block instanceof BlockLilyPad || block instanceof BlockFire) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
-        if (isFlowing(pos, state)) {
-            return false;//don't walk through flowing liquids
+        if (isFlowing(state)) {
+            return false; // Don't walk through flowing liquids
         }
         if (isLiquid(pos.up())) {
-            return false;//you could drown
+            return false; // You could drown
         }
         return block.isPassable(Minecraft.getMinecraft().world, pos);
     }
