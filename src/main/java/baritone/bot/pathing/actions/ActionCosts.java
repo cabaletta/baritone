@@ -1,4 +1,4 @@
-package baritone.bot.pathfinding.actions;
+package baritone.bot.pathing.actions;
 
 public final class ActionCosts {
     private ActionCosts() {}

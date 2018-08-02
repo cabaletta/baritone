@@ -8,7 +8,7 @@ package baritone.bot.goals;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * An abstract Goal for pathfinding, can be anything from a specific block to just a Y coordinate.
+ * An abstract Goal for pathing, can be anything from a specific block to just a Y coordinate.
  * @author leijurv
  */
 public interface Goal {

@@ -214,7 +214,7 @@ public class ChatCommand {
         Baritone.cancelPath();
         Baritone.plsCancel = true;
         Manager.cancel(LookManager.class);
-        return Baritone.isThereAnythingInProgress ? "Cancelled it, but btw I'm pathfinding right now" : "Cancelled it";
+        return Baritone.isThereAnythingInProgress ? "Cancelled it, but btw I'm pathing right now" : "Cancelled it";
     }
 
     public static String st(String message) {

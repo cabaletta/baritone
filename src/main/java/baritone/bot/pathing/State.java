@@ -1,4 +1,4 @@
-package baritone.bot.pathfinding;
+package baritone.bot.pathing;
 
 public class State {
 
