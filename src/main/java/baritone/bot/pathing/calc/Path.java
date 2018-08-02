@@ -4,10 +4,7 @@ import baritone.bot.pathing.action.Action;
 import baritone.bot.pathing.goals.Goal;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * A node based implementation of IPath
@@ -80,12 +77,12 @@ class Path implements IPath {
 
     @Override
     public List<Action> actions() {
-        return actions;
+        return Collections.unmodifiableList(actions);
     }
 
     @Override
     public List<BlockPos> positions() {
-        return path;
+        return Collections.unmodifiableList(path);
     }
 
     @Override
