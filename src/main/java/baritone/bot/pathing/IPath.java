@@ -64,12 +64,17 @@ public interface IPath {
     /**
      * Where does this path start
      */
-    BlockPos getSrc();
+    default BlockPos getSrc() {
+        return positions().get(0);
+    }
 
     /**
      * Where does this path end
      */
-    BlockPos getDest();
+    default BlockPos getDest() {
+        List<BlockPos> pos = positions();
+        return pos.get(pos.size() - 1);
+    }
 
     /**
      * For rendering purposes, what blocks should be highlighted in red
