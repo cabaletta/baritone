@@ -1,9 +1,11 @@
 package baritone.bot.pathing.action;
 
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -11,7 +13,7 @@ import net.minecraft.util.math.BlockPos;
  *
  * @author leijurv
  */
-public interface ActionWorldHelper {
+public interface ActionWorldHelper extends ActionCosts {
     Block waterFlowing = Block.getBlockById(8);
     Block waterStill = Block.getBlockById(9);
     Block lavaFlowing = Block.getBlockById(10);
@@ -115,5 +117,23 @@ public interface ActionWorldHelper {
             return isWater(pos.up());//you can only walk on water if there is water above it
         }
         return state.isBlockNormalCube() && !isLava(block);
+    }
+
+    static boolean canFall(BlockPos pos) {
+        return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
+    }
+
+    static double getHardness(ToolSet ts, IBlockState block, BlockPos position) {
+        if (!block.equals(Blocks.AIR) && !canWalkThrough(position)) {
+            if (avoidBreaking(position)) {
+                return COST_INF;
+            }
+            //if (!Baritone.allowBreakOrPlace) {
+            //    return COST_INF;
+            //}
+            double m = Block.getBlockFromName("minecraft:crafting_table").equals(block) ? 10 : 1;
+            return m / ts.getStrVsBlock(block, position) + BREAK_ONE_BLOCK_ADD;
+        }
+        return 0;
     }
 }

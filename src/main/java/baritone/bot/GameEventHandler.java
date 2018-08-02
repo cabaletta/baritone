@@ -4,7 +4,6 @@ import baritone.bot.behavior.Behavior;
 import baritone.bot.event.IGameEventListener;
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.ChunkEvent;
-import baritone.bot.pathing.action.ActionWorldHelper;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
@@ -22,9 +21,6 @@ public final class GameEventHandler implements IGameEventListener {
     @Override
     public final void onTick() {
         dispatch(behavior -> onTick());
-        while (true) {
-            System.out.println(ActionWorldHelper.lavaFlowing);
-        }
     }
 
     @Override
