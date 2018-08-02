@@ -1,5 +1,10 @@
 package baritone.bot;
 
+import baritone.bot.behavior.Behavior;
+import org.reflections.Reflections;
+
+import java.util.List;
+
 /**
  * @author Brady
  * @since 7/31/2018 10:50 PM
@@ -21,6 +26,7 @@ public enum Baritone {
     private GameActionHandler actionHandler;
     private GameEventHandler gameEventHandler;
     private InputOverrideHandler inputOverrideHandler;
+    private List<Behavior> behaviors;
 
     /**
      * Whether or not Baritone is active
@@ -36,6 +42,14 @@ public enum Baritone {
 
         this.active = true;
         this.initialized = true;
+
+        new Reflections("baritone.bot.behavior.impl").getSubTypesOf(Behavior.class).forEach(c -> {
+            try {
+                behaviors.add(c.newInstance());
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public final boolean isInitialized() {
@@ -60,6 +74,10 @@ public enum Baritone {
 
     public final InputOverrideHandler getInputOverrideHandler() {
         return this.inputOverrideHandler;
+    }
+
+    public final List<Behavior> getBehaviors() {
+        return this.behaviors;
     }
 
     public final boolean isActive() {
