@@ -3,6 +3,7 @@ package baritone.bot.utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * @author Brady
@@ -13,5 +14,9 @@ public interface Helper {
     Minecraft mc = Minecraft.getMinecraft();
     EntityPlayerSP player = mc.player;
     WorldClient world = mc.world;
+
+    default BlockPos playerFeet() {
+        return new BlockPos(player.posX, player.posY, player.posZ);
+    }
 
 }

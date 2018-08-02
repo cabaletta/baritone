@@ -30,4 +30,11 @@ public final class Utils {
                 orig.getY() + yDiff,
                 orig.getZ() + zDiff);
     }
+
+    public static double distanceToCenter(BlockPos pos, double x, double y, double z) {
+        double xdiff = x - (pos.getX() + 0.5D);
+        double ydiff = y - (pos.getY() + 0.5D);
+        double zdiff = z - (pos.getZ() + 0.5D);
+        return Math.sqrt(xdiff * xdiff + ydiff * ydiff + zdiff * zdiff);
+    }
 }

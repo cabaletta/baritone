@@ -2,10 +2,10 @@ package baritone.bot.pathing.action;
 
 import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
+import baritone.bot.pathing.action.ActionState.ActionStatus;
 import baritone.bot.utils.Utils;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
-import baritone.bot.pathing.action.ActionState.ActionStatus;
 
 public abstract class Action extends Behavior {
 
@@ -29,7 +29,9 @@ public abstract class Action extends Behavior {
      *
      * @return Cost
      */
-    public double cost() { return 0; }
+    public double cost() {
+        return 0;
+    }
 
     @Override
     public void onTick() {
@@ -41,13 +43,13 @@ public abstract class Action extends Behavior {
         });
         currentState = latestState;
 
-        if(isFinished())
+        if (isFinished())
             return;
     }
 
     public boolean isFinished() {
-        return(currentState.getStatus() != ActionStatus.RUNNING
-            && currentState.getStatus() != ActionStatus.WAITING);
+        return (currentState.getStatus() != ActionStatus.RUNNING
+                && currentState.getStatus() != ActionStatus.WAITING);
     }
 
     /**
