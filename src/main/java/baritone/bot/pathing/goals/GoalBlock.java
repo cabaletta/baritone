@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package baritone.bot.pathing.goals;
 
 import net.minecraft.util.math.BlockPos;
@@ -13,7 +8,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GoalBlock implements Goal {
 
-    final int x, y, z;
+    private final int x, y, z;
 
     public GoalBlock(BlockPos pos) {
         this(pos.getX(), pos.getY(), pos.getZ());
@@ -23,10 +18,6 @@ public class GoalBlock implements Goal {
         this.x = x;
         this.y = y;
         this.z = z;
-    }
-
-    public BlockPos pos() {
-        return new BlockPos(x, y, z);
     }
 
     @Override
@@ -46,6 +37,11 @@ public class GoalBlock implements Goal {
         double yDiff = pos.getY() - this.y;
         double zDiff = pos.getZ() - this.z;
         return calculate(xDiff, yDiff, zDiff);
+    }
+    
+    @Override
+    public String toString() {
+        return "Goal{x=" + x + ",y=" + y + ",z=" + z + "}";
     }
 
     public static double calculate(double xDiff, double yDiff, double zDiff) {
@@ -69,9 +65,8 @@ public class GoalBlock implements Goal {
         heuristic += GoalXZ.calculate(xDiff, zDiff, pythaDist);
         return heuristic;
     }
-    
-    @Override
-    public String toString() {
-        return "Goal{x=" + x + ",y=" + y + ",z=" + z + "}";
+
+    public BlockPos getGoalPos() {
+        return new BlockPos(x, y, z);
     }
 }

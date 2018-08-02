@@ -24,19 +24,11 @@ public class GoalComposite implements Goal {
     }
 
     public GoalComposite(BlockPos... blocks) {
-        goals = new Goal[blocks.length];
-        for (int i = 0; i < blocks.length; i++) {
-            goals[i] = new GoalBlock(blocks[i]);
-        }
+        this(Arrays.asList(blocks));
     }
 
     public GoalComposite(Collection<BlockPos> blocks) {
-        goals = new Goal[blocks.size()];
-        int i = 0;
-        for (BlockPos pos : blocks) {
-            goals[i] = new GoalBlock(pos);
-            i++;
-        }
+        this(blocks.stream().map(GoalBlock::new).toArray(Goal[]::new));
     }
 
     public Goal[] goals() {
