@@ -1,7 +1,7 @@
 package baritone.bot.pathing.calc;
 
+import baritone.bot.pathing.action.Action;
 import baritone.bot.pathing.goals.Goal;
-import baritone.bot.pathing.movements.Movement;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -23,34 +23,41 @@ class Path implements IPath {
      * path.get(path.size()-1) equals end
      */
     public final ArrayList<BlockPos> path;
-    final ArrayList<Movement> movements;
+    final ArrayList<Action> actions;
 
     Path(PathNode start, PathNode end, Goal goal) {
         this.start = start.pos;
         this.end = end.pos;
         this.goal = goal;
         this.path = new ArrayList<>();
-        this.movements = new ArrayList<>();
+        this.actions = new ArrayList<>();
         assemblePath(start, end);
     }
 
     private final void assemblePath(PathNode start, PathNode end) {
         PathNode current = end;
         LinkedList<BlockPos> tempPath = new LinkedList<>();//repeatedly inserting to the beginning of an arraylist is O(n^2)
-        LinkedList<Movement> tempMovements = new LinkedList<>();//instead, do it into a linked list, then convert at the end
+        LinkedList<Action> tempActions = new LinkedList<>();//instead, do it into a linked list, then convert at the end
         while (!current.equals(start)) {
             tempPath.addFirst(current.pos);
-            tempMovements.addFirst(current.previousMovement);
+            tempActions.addFirst(current.previousAction);
             current = current.previous;
         }
         tempPath.addFirst(start.pos);
+        //can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
+        //inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
+        //to performantly do that conversion since it knows the length.
         path.addAll(tempPath);
-        movements.addAll(tempMovements);
+        actions.addAll(tempActions);
+    }
+
+    protected void sanityCheck() {
+
     }
 
     @Override
-    public List<Movement> movements() {
-        return movements;
+    public List<Action> actions() {
+        return actions;
     }
 
     @Override

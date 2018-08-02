@@ -1,7 +1,7 @@
 package baritone.bot.pathing.calc;
 
+import baritone.bot.pathing.action.Action;
 import baritone.bot.pathing.goals.Goal;
-import baritone.bot.pathing.movements.Movement;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
@@ -19,7 +19,7 @@ class PathNode {
     // These three fields are mutable and are changed by PathFinder
     double cost;
     PathNode previous;
-    Movement previousMovement;
+    Action previousAction;
 
     /**
      * Is this a member of the open set in A*? (only used during pathfinding)
@@ -36,7 +36,7 @@ class PathNode {
         this.cost = Short.MAX_VALUE;
         this.goal = goal;
         this.estimatedCostToGoal = goal.heuristic(pos);
-        this.previousMovement = null;
+        this.previousAction = null;
         this.isOpen = false;
     }
 
@@ -48,7 +48,7 @@ class PathNode {
         hash = 3457689 * hash + this.pos.getX();
         hash = 8734625 * hash + this.pos.getY();
         hash = 2873465 * hash + this.pos.getZ();
-        hash = 3241543 * hash + Objects.hashCode(this.goal);
+        hash = 3241543 * hash + Objects.hashCode(this.goal);//don't call goal.hashcode. this calls objects hashcode to verify that the actual goal objects are == identical, which is important for node caching
         return hash;
     }
 

@@ -6,7 +6,6 @@ import baritone.util.ToolSet;
 import net.minecraft.util.math.BlockPos;
 
 /**
- *
  * @author leijurv
  */
 public class ActionDescendThree extends ActionPlaceOrBreak {

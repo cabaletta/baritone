@@ -1,6 +1,6 @@
 package baritone.bot.pathing.calc;
 
-import baritone.bot.pathing.movements.Movement;
+import baritone.bot.pathing.action.Action;
 import baritone.bot.utils.Utils;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
@@ -18,7 +18,7 @@ public interface IPath {
      * movements.get(i).getDest() should equal positions.get(i+1)
      * movements.size() should equal positions.size()-1
      */
-    List<Movement> movements();
+    List<Action> actions();
 
     /**
      * All positions along the way.
@@ -32,12 +32,12 @@ public interface IPath {
      * @param currentPosition the current position
      * @return
      */
-    default Movement subsequentMovement(BlockPos currentPosition) {
+    default Action subsequentAction(BlockPos currentPosition) {
         List<BlockPos> pos = positions();
-        List<Movement> moves = movements();
+        List<Action> actions = actions();
         for (int i = 0; i < pos.size(); i++) {
             if (currentPosition.equals(pos.get(i))) {
-                return moves.get(i);
+                return actions.get(i);
             }
         }
         throw new UnsupportedOperationException(currentPosition + " not in path");

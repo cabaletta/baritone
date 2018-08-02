@@ -2,14 +2,14 @@ package baritone.bot.pathing.action;
 
 import baritone.bot.Baritone;
 import baritone.bot.event.AbstractGameEventListener;
+import baritone.bot.pathing.action.ActionState.ActionStatus;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.Utils;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
-import baritone.bot.pathing.action.ActionState.ActionStatus;
 import net.minecraft.util.math.Vec3d;
 
-public abstract class Action implements AbstractGameEventListener, Helper {
+public abstract class Action implements AbstractGameEventListener, Helper, ActionWorldHelper {
 
     protected ActionState currentState;
 
