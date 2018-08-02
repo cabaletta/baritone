@@ -26,18 +26,9 @@ public class GoalComposite implements Goal {
         this(blocks.stream().map(GoalBlock::new).toArray(Goal[]::new));
     }
 
-    public Goal[] goals() {
-        return goals;
-    }
-
     @Override
     public boolean isInGoal(BlockPos pos) {
-        for (Goal g : goals) {
-            if (g.isInGoal(pos)) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.stream(this.goals).anyMatch(goal -> goal.isInGoal(pos));
     }
 
     @Override
@@ -52,5 +43,9 @@ public class GoalComposite implements Goal {
     @Override
     public String toString() {
         return "GoalComposite" + Arrays.toString(goals);
+    }
+
+    public Goal[] goals() {
+        return goals;
     }
 }
