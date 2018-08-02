@@ -5,7 +5,7 @@
  */
 package baritone.bot.pathing.goals;
 
-import baritone.pathfinding.actions.Action;
+import baritone.bot.pathing.actions.ActionCosts;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -13,8 +13,9 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public class GoalXZ implements Goal {
-    final int x;
-    final int z;
+
+    final int x, z;
+
     public GoalXZ(int x, int z) {
         this.x = x;
         this.z = z;
@@ -23,15 +24,18 @@ public class GoalXZ implements Goal {
     public boolean isInGoal(BlockPos pos) {
         return pos.getX() == x && pos.getZ() == z;
     }
+
     @Override
     public double heuristic(BlockPos pos) {//mostly copied from GoalBlock
         double xDiff = pos.getX() - this.x;
         double zDiff = pos.getZ() - this.z;
         return calculate(xDiff, zDiff);
     }
+
     public static double calculate(double xDiff, double zDiff) {
         return calculate(xDiff, zDiff, 0);
     }
+
     /*
      public static double calculate(double xDiff, double zDiff) {
      double pythaDist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
@@ -45,7 +49,9 @@ public class GoalXZ implements Goal {
      return heuristic;
      }
      */
+
     static final double sq = Math.sqrt(2);
+
     public static double calculate(double xDiff, double zDiff, double pythaDist) {
         //This is a combination of pythagorean and manhattan distance
         //It takes into account the fact that pathing can either walk diagonally or forwards
@@ -64,8 +70,9 @@ public class GoalXZ implements Goal {
             diagonal = z;
         }
         diagonal *= sq;
-        return (diagonal + straight) * Action.WALK_ONE_BLOCK_COST;
+        return (diagonal + straight) * ActionCosts.WALK_ONE_BLOCK_COST;
     }
+
     @Override
     public String toString() {
         return "Goal{x=" + x + ",z=" + z + "}";

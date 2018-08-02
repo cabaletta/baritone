@@ -16,16 +16,20 @@ import net.minecraft.util.math.BlockPos;
  * @author avecowa
  */
 public class GoalComposite implements Goal {
+
     public final Goal[] goals;
+
     public GoalComposite(Goal... goals) {
         this.goals = goals;
     }
+
     public GoalComposite(BlockPos... blocks) {
         goals = new Goal[blocks.length];
         for (int i = 0; i < blocks.length; i++) {
             goals[i] = new GoalBlock(blocks[i]);
         }
     }
+
     public GoalComposite(Collection<BlockPos> blocks) {
         goals = new Goal[blocks.size()];
         int i = 0;
@@ -34,9 +38,11 @@ public class GoalComposite implements Goal {
             i++;
         }
     }
+
     public Goal[] goals() {
         return goals;
     }
+
     @Override
     public boolean isInGoal(BlockPos pos) {
         for (Goal g : goals) {
@@ -46,6 +52,7 @@ public class GoalComposite implements Goal {
         }
         return false;
     }
+
     @Override
     public double heuristic(BlockPos pos) {
         double min = Double.MAX_VALUE;
@@ -54,6 +61,7 @@ public class GoalComposite implements Goal {
         }
         return min;
     }
+
     @Override
     public String toString() {
         return "GoalComposite" + Arrays.toString(goals);

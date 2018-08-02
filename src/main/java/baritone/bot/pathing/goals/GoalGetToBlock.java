@@ -5,7 +5,6 @@
  */
 package baritone.bot.pathing.goals;
 
-import baritone.Baritone;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -20,10 +19,6 @@ public class GoalGetToBlock extends GoalComposite {
 
     public GoalGetToBlock(BlockPos pos) {
         super(ajacentBlocks(goalPos = pos));
-    }
-
-    public GoalGetToBlock() {
-        this(Baritone.playerFeet);
     }
 
     public static BlockPos[] ajacentBlocks(BlockPos pos) {

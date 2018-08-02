@@ -12,25 +12,28 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public interface Goal {
+
     /**
-     * Does this position satisfy the goal?
+     * Returns whether or not the specified position
+     * meets the requirement for this goal based.
      *
-     * @param pos
-     * @return
+     * @param pos The position
+     * @return Whether or not it satisfies this goal
      */
-    public boolean isInGoal(BlockPos pos);
+    boolean isInGoal(BlockPos pos);
+
     /**
      * Estimate the number of ticks it will take to get to the goal
      *
-     * @param pos
-     * @return
+     * @param pos The
+     * @return The estimate number of ticks to satisfy the goal
      */
-    public double heuristic(BlockPos pos);
+    double heuristic(BlockPos pos);
 
     /**
      * Summarize the goal
      * @return
      */
     @Override
-    public String toString();
+    String toString();
 }

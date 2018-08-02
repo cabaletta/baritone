@@ -13,8 +13,11 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public class GoalRunAway implements Goal {
+
     public final BlockPos[] from;
+
     final double distanceSq;
+
     public GoalRunAway(double distance, BlockPos... from) {
         if (from.length == 0) {
             throw new IllegalArgumentException();
@@ -22,6 +25,7 @@ public class GoalRunAway implements Goal {
         this.from = from;
         this.distanceSq = distance * distance;
     }
+
     @Override
     public boolean isInGoal(BlockPos pos) {
         for (BlockPos p : from) {
@@ -34,6 +38,7 @@ public class GoalRunAway implements Goal {
         }
         return true;
     }
+
     @Override
     public double heuristic(BlockPos pos) {//mostly copied from GoalBlock
         double min = Double.MAX_VALUE;
@@ -45,6 +50,7 @@ public class GoalRunAway implements Goal {
         }
         return -min;
     }
+
     @Override
     public String toString() {
         return "GoalRunAwayFrom[" + Arrays.asList(from) + "]";

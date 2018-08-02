@@ -5,8 +5,7 @@
  */
 package baritone.bot.pathing.goals;
 
-import baritone.Baritone;
-import baritone.pathfinding.actions.Action;
+import baritone.bot.pathing.actions.ActionCosts;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -16,10 +15,6 @@ import net.minecraft.util.math.BlockPos;
 public class GoalBlock implements Goal {
 
     final int x, y, z;
-
-    public GoalBlock() {
-        this(Baritone.playerFeet);
-    }
 
     public GoalBlock(BlockPos pos) {
         this(pos.getX(), pos.getY(), pos.getZ());
@@ -57,14 +52,14 @@ public class GoalBlock implements Goal {
     public static double calculate(double xDiff, double yDiff, double zDiff) {
         double pythaDist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
         double heuristic = 0;
-        double baseline = (Action.PLACE_ONE_BLOCK_COST + Action.FALL_ONE_BLOCK_COST) * 32;
+        double baseline = (ActionCosts.PLACE_ONE_BLOCK_COST + ActionCosts.FALL_ONE_BLOCK_COST) * 32;
         if (pythaDist < MAX) {//if we are more than MAX away, ignore the Y coordinate. It really doesn't matter how far away your Y coordinate is if you X coordinate is 1000 blocks away.
             //as we get closer, slowly reintroduce the Y coordinate as a heuristic cost
             double multiplier = pythaDist < MIN ? 1 : 1 - (pythaDist - MIN) / (MAX - MIN);
             if (yDiff < 0) {//pos.getY()-this.y<0 therefore pos.getY()<this.y, so target is above current
-                heuristic -= yDiff * (Action.PLACE_ONE_BLOCK_COST * 0.7 + Action.JUMP_ONE_BLOCK_COST);//target above current
+                heuristic -= yDiff * (ActionCosts.PLACE_ONE_BLOCK_COST * 0.7 + ActionCosts.JUMP_ONE_BLOCK_COST);//target above current
             } else {
-                heuristic += yDiff * (10 + Action.FALL_ONE_BLOCK_COST);//target below current
+                heuristic += yDiff * (10 + ActionCosts.FALL_ONE_BLOCK_COST);//target below current
             }
             heuristic *= multiplier;
             heuristic += (1 - multiplier) * baseline;
@@ -74,10 +69,5 @@ public class GoalBlock implements Goal {
         //use the pythagorean and manhattan mixture from GoalXZ
         heuristic += GoalXZ.calculate(xDiff, zDiff, pythaDist);
         return heuristic;
-    }
-
-    @Override
-    public String toString() {
-        return "Goal{x=" + x + ",y=" + y + ",z=" + z + "}";
     }
 }
