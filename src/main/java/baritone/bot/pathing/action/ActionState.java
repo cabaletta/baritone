@@ -28,14 +28,14 @@ public class ActionState {
          * <p>
          * TODO: Decide desiredMovement type
          */
-        protected BlockPos position;
+        public BlockPos position;
         /**
          * Yaw and pitch angles that must be matched
          * <p>
          * getFirst()  -> YAW
          * getSecond() -> PITCH
          */
-        protected Tuple<Float, Float> rotation;
+        public Tuple<Float, Float> rotation;
 
         public ActionGoal(BlockPos position, Tuple<Float, Float> rotation) {
             this.position = position;
