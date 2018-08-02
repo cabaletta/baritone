@@ -1,6 +1,7 @@
 package baritone.bot.pathing.action;
 
 import baritone.bot.InputOverrideHandler.Input;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class ActionState {
          * <p>
          * TODO: Decide desiredMovement type
          */
-        public Vec3d position;
+        public BlockPos position;
         /**
          * Yaw and pitch angles that must be matched
          * <p>
@@ -36,7 +37,7 @@ public class ActionState {
          */
         public Vec3d rotation;
 
-        public ActionGoal(Vec3d position, Vec3d rotation) {
+        public ActionGoal(BlockPos position, Vec3d rotation) {
             this.position = position;
             this.rotation = rotation;
         }

@@ -12,20 +12,17 @@ import net.minecraft.util.math.Vec3d;
 public abstract class Action implements AbstractGameEventListener, Helper, ActionWorldHelper {
 
     protected ActionState currentState;
+    protected final BlockPos src;
+    protected final BlockPos dest;
 
-    public Action(BlockPos dest) {
-        this(Utils.calcCenterFromCoords(dest, mc.world));
+    protected Action(BlockPos src, BlockPos dest) {
+        this(src, dest, Utils.calcCenterFromCoords(dest, mc.world));
     }
 
-    public Action(Vec3d dest) {
-        this(dest, dest);
-    }
 
-    public Action(BlockPos dest, Vec3d rotationTarget) {
-        this(Utils.calcCenterFromCoords(dest, mc.world), rotationTarget);
-    }
-
-    public Action(Vec3d dest, Vec3d rotationTarget) {
+    protected Action(BlockPos src, BlockPos dest, Vec3d rotationTarget) {
+        this.src = src;
+        this.dest = dest;
         currentState = new ActionState()
                 .setGoal(new ActionState.ActionGoal(dest, rotationTarget))
                 .setStatus(ActionStatus.WAITING);
@@ -63,11 +60,11 @@ public abstract class Action implements AbstractGameEventListener, Helper, Actio
     }
 
     public BlockPos getSrc() {
-        return null; // TODO
+        return src;
     }
 
     public BlockPos getDest() {
-        return null; // TODO
+        return dest;
     }
 
     /**
