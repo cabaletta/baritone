@@ -1,6 +1,6 @@
 package baritone.bot.behavior;
 
-import baritone.bot.pathing.IPath;
+import baritone.bot.pathing.calc.IPath;
 import baritone.bot.pathing.movements.Movement;
 import baritone.bot.utils.Helper;
 import net.minecraft.util.Tuple;

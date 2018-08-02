@@ -1,4 +1,4 @@
-package baritone.bot.pathing;
+package baritone.bot.pathing.calc;
 
 import baritone.bot.pathing.movements.Movement;
 import baritone.bot.utils.Utils;
