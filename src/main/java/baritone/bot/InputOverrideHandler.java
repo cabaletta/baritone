@@ -1,5 +1,6 @@
 package baritone.bot;
 
+import baritone.bot.utils.DefaultHashMap;
 import baritone.bot.utils.Helper;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
@@ -22,12 +23,12 @@ public final class InputOverrideHandler implements Helper {
     /**
      * Maps keybinds to whether or not we are forcing their state down.
      */
-    private final Map<KeyBinding, Boolean> inputForceStateMap = new HashMap<>();
+    private final Map<KeyBinding, Boolean> inputForceStateMap = new DefaultHashMap<>(false);
 
     /**
      * Maps keycodes to whether or not we are forcing their state down.
      */
-    private final Map<Integer, Boolean> keyCodeForceStateMap = new HashMap<>();
+    private final Map<Integer, Boolean> keyCodeForceStateMap = new DefaultHashMap<>(false);
 
     /**
      * Returns whether or not we are forcing down the specified {@link KeyBinding}.
@@ -36,7 +37,7 @@ public final class InputOverrideHandler implements Helper {
      * @return Whether or not it is being forced down
      */
     public final boolean isInputForcedDown(KeyBinding key) {
-        return inputForceStateMap.computeIfAbsent(key, k -> false);
+        return inputForceStateMap.get(key);
     }
 
     /**
@@ -55,7 +56,7 @@ public final class InputOverrideHandler implements Helper {
      * @return Whether or not the specified key is down or overridden.
      */
     public boolean isKeyDown(int keyCode) {
-        return Keyboard.isKeyDown(keyCode) || keyCodeForceStateMap.computeIfAbsent(keyCode, k -> false);
+        return Keyboard.isKeyDown(keyCode) || keyCodeForceStateMap.get(keyCode);
     }
 
     /**
