@@ -26,8 +26,12 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @see <a href="https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit"></a>
      */
     protected static final double[] COEFFICIENTS = {1.5, 2, 2.5, 3, 4, 5, 10};
+    /**
+     * If a path goes less than 5 blocks and doesn't make it to its goal, it's not worth considering.
+     */
+    protected final static double MIN_DIST_PATH = 5;
 
-    public AbstractNodeCostSearch(BlockPos start, Goal goal) {
+    AbstractNodeCostSearch(BlockPos start, Goal goal) {
         this.start = start;
         this.goal = goal;
         this.map = new HashMap<>();
@@ -44,21 +48,22 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     protected abstract IPath calculate();
 
-    @Override
-    public boolean isFinished() {
-        return isFinished;
+    protected double distFromStart(PathNode n) {
+        int xDiff = n.pos.getX() - start.getX();
+        int yDiff = n.pos.getY() - start.getY();
+        int zDiff = n.pos.getZ() - start.getZ();
+        return Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
     }
 
-    @Override
-    public Goal getGoal() {
-        return goal;
+    protected PathNode getNodeAtPosition(BlockPos pos) {
+        PathNode alr = map.get(pos);
+        if (alr == null) {
+            PathNode node = new PathNode(pos, goal);
+            map.put(pos, node);
+            return node;
+        }
+        return alr;
     }
-
-    @Override
-    public BlockPos getStart() {
-        return start;
-    }
-
 
     @Override
     public Path bestPathSoFar() {
@@ -71,5 +76,20 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public Path pathToMostRecentNodeConsidered() {
         return mostRecentConsidered == null ? null : new Path(startNode, mostRecentConsidered, goal);
+    }
+
+    @Override
+    public final boolean isFinished() {
+        return isFinished;
+    }
+
+    @Override
+    public final Goal getGoal() {
+        return goal;
+    }
+
+    @Override
+    public final BlockPos getStart() {
+        return start;
     }
 }
