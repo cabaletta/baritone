@@ -1,6 +1,5 @@
 package baritone.bot.pathing.calc;
 
-import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.Movement;
 import net.minecraft.util.math.BlockPos;
@@ -33,8 +32,8 @@ class Path implements IPath {
         this.start = start.pos;
         this.end = end.pos;
         this.goal = goal;
-        this.path = new LinkedList<>();
-        this.movements = new LinkedList<>();
+        this.path = new ArrayList<>();
+        this.movements = new ArrayList<>();
         assemblePath(start, end);
         sanityCheck();
     }
