@@ -13,6 +13,10 @@ public interface ActionCosts {
     double LADDER_DOWN_ONE_COST = 20 / 3;
     double SNEAK_ONE_BLOCK_COST = 20 / 1.3;
     double SPRINT_ONE_BLOCK_COST = 20 / 5.612;
+    /**
+     * To walk off an edge you need to walk 0.5 to the edge then 0.3 to start falling off
+     */
+    double WALK_OFF_BLOCK_COST = WALK_ONE_BLOCK_COST * 0.8;
 
     /**
      * Doesn't include walking forwards, just the falling

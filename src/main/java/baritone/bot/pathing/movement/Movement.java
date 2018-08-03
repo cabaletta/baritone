@@ -17,14 +17,25 @@ public abstract class Movement implements AbstractGameEventListener, Helper, Mov
     protected MovementState currentState;
     protected final BlockPos src;
     protected final BlockPos dest;
+    /**
+     * The positions that need to be broken before this movement can ensue
+     */
+    public final BlockPos[] positionsToBreak;
+    /**
+     * The positions where we need to place a block before this movement can ensue
+     */
+    public final BlockPos[] positionsToPlace;
 
-    protected Movement(BlockPos src, BlockPos dest) {
+
+    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos[] toPlace) {
         this.src = src;
         this.dest = dest;
+        this.positionsToBreak = toBreak;
+        this.positionsToPlace = toPlace;
     }
 
-    protected Movement(BlockPos src, BlockPos dest, Vec3d rotationTarget) {
-        this(src, dest);
+    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos[] toPlace, Vec3d rotationTarget) {
+        this(src, dest, toBreak, toPlace);
         currentState = new MovementState()
                 .setLookDirection(rotationTarget)
                 .setStatus(MovementStatus.WAITING);

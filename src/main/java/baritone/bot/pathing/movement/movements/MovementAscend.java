@@ -9,18 +9,13 @@ import net.minecraft.util.math.BlockPos;
 public class MovementAscend extends Movement {
 
     public MovementAscend(BlockPos src, BlockPos dest) {
-        super(src, dest);
+        super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, new BlockPos[]{dest.down()});
     }
 
     @Override
     public double calculateCost(ToolSet ts) {
         throw new UnsupportedOperationException();
     }
-
-    //my suggestion: public MovementAscend(BlockPos src, BlockPos dest){
-    // super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, new BlockPos[]{dest.down()});
-    // This basically says that dest, src.up3 and dest.up need to be passable before this movement can start
-    // and that dest.down needs to be stand-on-able
 
     @Override
     public MovementState calcState() {

@@ -1,10 +1,11 @@
 package baritone.bot.pathing.calc;
 
-import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.goals.Goal;
+import baritone.bot.pathing.movement.Movement;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A node based implementation of IPath
@@ -87,11 +88,11 @@ class Path implements IPath {
 
     @Override
     public Collection<BlockPos> getBlocksToMine() {
-        return null;
+        return movements.stream().map(move -> move.positionsToBreak).flatMap(Arrays::stream).collect(Collectors.toCollection(HashSet::new));
     }
 
     @Override
     public Collection<BlockPos> getBlocksToPlace() {
-        return null;
+        return movements.stream().map(move -> move.positionsToPlace).flatMap(Arrays::stream).collect(Collectors.toCollection(HashSet::new));
     }
 }

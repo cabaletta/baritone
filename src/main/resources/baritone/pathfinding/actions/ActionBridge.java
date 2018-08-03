@@ -5,8 +5,6 @@ import baritone.movement.MovementManager;
 import baritone.ui.LookManager;
 import baritone.util.Out;
 import baritone.util.ToolSet;
-import java.util.Objects;
-import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
@@ -16,8 +14,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Objects;
+import java.util.Random;
+
 /**
- *
  * @author leijurv
  */
 public class ActionBridge extends ActionPlaceOrBreak {
@@ -76,6 +76,7 @@ public class ActionBridge extends ActionPlaceOrBreak {
             //Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());
         }
     }
+
     boolean wasTheBridgeBlockAlwaysThere = true;//did we have to place a bridge block or was it always there
     public Boolean oneInTen = null;//a one in ten chance
 
