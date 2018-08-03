@@ -1,4 +1,7 @@
-package baritone.bot.pathing.calc;
+package baritone.bot.pathing.openset;
+
+import baritone.bot.pathing.util.FibonacciHeap;
+import baritone.bot.pathing.calc.PathNode;
 
 /**
  * Wrapper adapter between FibonacciHeap and OpenSet
@@ -6,7 +9,7 @@ package baritone.bot.pathing.calc;
  * @author leijurv
  */
 public class FibonacciHeapOpenSet extends FibonacciHeap implements IOpenSet {
-    //isEmpty is already defined in FibonacciHeap
+
     @Override
     public void insert(PathNode node) {
         super.insert(node, node.combinedCost);

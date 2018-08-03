@@ -1,5 +1,5 @@
 //Source: https://github.com/nlfiedler/graphmaker/blob/master/core/src/com/bluemarsh/graphmaker/core/util/FibonacciHeap.java
-package baritone.bot.pathing.calc;
+package baritone.bot.pathing.util;
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in

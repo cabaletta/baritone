@@ -1,4 +1,6 @@
-package baritone.bot.pathing.calc;
+package baritone.bot.pathing.openset;
+
+import baritone.bot.pathing.calc.PathNode;
 
 /**
  * A linked list implementation of an open set. This is the original implementation from MineBot.

@@ -1,5 +1,6 @@
-package baritone.bot.pathing.calc;
+package baritone.bot.pathing.openset;
 
+import baritone.bot.pathing.calc.PathNode;
 import baritone.bot.pathing.goals.GoalBlock;
 import net.minecraft.util.math.BlockPos;
 import org.junit.Test;

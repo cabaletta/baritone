@@ -1,10 +1,24 @@
-package baritone.bot.pathing.calc;
+package baritone.bot.pathing.openset;
+
+import baritone.bot.pathing.calc.PathNode;
 
 import java.util.Arrays;
 
 public class BinaryHeapOpenSet implements IOpenSet {
+
+    /**
+     * The initial capacity of the heap (2^10)
+     */
     private static final int INITIAL_CAPACITY = 1024;
+
+    /**
+     * The array backing the heap
+     */
     private PathNode[] array;
+
+    /**
+     * The size of the heap
+     */
     private int size;
 
     public BinaryHeapOpenSet() {
@@ -16,6 +30,7 @@ public class BinaryHeapOpenSet implements IOpenSet {
         this.array = new PathNode[size];
     }
 
+    @Override
     public void insert(PathNode value) {
         if (size >= array.length - 1) {
             array = Arrays.copyOf(array, array.length * 2);
@@ -31,16 +46,12 @@ public class BinaryHeapOpenSet implements IOpenSet {
         }
     }
 
-    /**
-     * Returns true if the heap has no elements; false otherwise.
-     */
+    @Override
     public boolean isEmpty() {
         return size == 0;
     }
 
-    /**
-     * Removes and returns the minimum element in the heap.
-     */
+    @Override
     public PathNode removeLowest() {
         if (size == 0) {
             throw new IllegalStateException();
@@ -67,6 +78,12 @@ public class BinaryHeapOpenSet implements IOpenSet {
         return result;
     }
 
+    /**
+     * Swaps the elements at the specified indices.
+     *
+     * @param index1 The first index
+     * @param index2 The second index
+     */
     protected void swap(int index1, int index2) {
         PathNode tmp = array[index1];
         array[index1] = array[index2];

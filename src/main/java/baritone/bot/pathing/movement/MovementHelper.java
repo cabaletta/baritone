@@ -99,15 +99,10 @@ public interface MovementHelper extends ActionCosts {
         return block.isPassable(Minecraft.getMinecraft().world, pos);
     }
 
-    static boolean avoidWalkingInto(BlockPos pos) {
-        Block block = BlockStateInterface.get(pos).getBlock();
-        if (isLava(block)) {
-            return true;
-        }
-        if (block instanceof BlockCactus) {
-            return true;
-        }
-        return block instanceof BlockFire;
+    static boolean avoidWalkingInto(Block block) {
+        return isLava(block)
+                || block instanceof BlockCactus
+                || block instanceof BlockFire;
     }
 
     /**

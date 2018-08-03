@@ -29,5 +29,4 @@ public class MovementAscend extends Movement {
             latestState.setStatus(MovementState.MovementStatus.SUCCESS);
         return latestState;
     }
-
 }

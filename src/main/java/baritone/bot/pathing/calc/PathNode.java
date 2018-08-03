@@ -11,7 +11,8 @@ import java.util.Objects;
  *
  * @author leijurv
  */
-class PathNode {
+public class PathNode {
+
     /**
      * The position of this node
      */
