@@ -12,6 +12,7 @@ import java.util.List;
  * @author leijurv
  */
 public interface IPath {
+
     /**
      * Ordered list of movements to carry out.
      * movements.get(i).getSrc() should equal positions.get(i)
@@ -44,11 +45,13 @@ public interface IPath {
     }
 
     /**
-     * @param currentPosition
-     * @return
+     * Determines whether or not a position is within this path.
+     *
+     * @param pos The position to check
+     * @return Whether or not the specified position is in this class
      */
-    default boolean isInPath(BlockPos currentPosition) {
-        return positions().contains(currentPosition);
+    default boolean isInPath(BlockPos pos) {
+        return positions().contains(pos);
     }
 
     default Tuple<Double, BlockPos> closestPathPos(double x, double y, double z) {
