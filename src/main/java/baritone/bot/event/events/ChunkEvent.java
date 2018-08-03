@@ -24,15 +24,15 @@ public final class ChunkEvent {
     private final int x;
 
     /**
-     * The Chunk Y position.
+     * The Chunk Z position.
      */
-    private final int y;
+    private final int z;
 
-    public ChunkEvent(EventState state, Type type, int x, int y) {
+    public ChunkEvent(EventState state, Type type, int x, int z) {
         this.state = state;
         this.type = type;
         this.x = x;
-        this.y = y;
+        this.z = z;
     }
 
     /**
@@ -57,14 +57,27 @@ public final class ChunkEvent {
     }
 
     /**
-     * @return The Chunk Y position.
+     * @return The Chunk Z position.
      */
-    public final int getY() {
-        return this.y;
+    public final int getZ() {
+        return this.z;
     }
 
     public enum Type {
+
+        /**
+         * When the chunk is constructed.
+         */
         LOAD,
-        UNLOAD
+
+        /**
+         * When the chunk is deconstructed.
+         */
+        UNLOAD,
+
+        /**
+         * When the chunk is being populated with blocks, tile entities, etc.
+         */
+        POPULATE
     }
 }

@@ -20,13 +20,13 @@ public class MixinWorldClient {
             method = "doPreChunk",
             at = @At("HEAD")
     )
-    private void preDoPreChunk(int chunkX, int chunkY, boolean loadChunk, CallbackInfo ci) {
+    private void preDoPreChunk(int chunkX, int chunkZ, boolean loadChunk, CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onChunkEvent(
                 new ChunkEvent(
                         EventState.PRE,
                         loadChunk ? ChunkEvent.Type.LOAD : ChunkEvent.Type.UNLOAD,
                         chunkX,
-                        chunkY
+                        chunkZ
                 )
         );
     }
@@ -35,13 +35,13 @@ public class MixinWorldClient {
             method = "doPreChunk",
             at = @At("RETURN")
     )
-    private void postDoPreChunk(int chunkX, int chunkY, boolean loadChunk, CallbackInfo ci) {
+    private void postDoPreChunk(int chunkX, int chunkZ, boolean loadChunk, CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onChunkEvent(
                 new ChunkEvent(
                         EventState.POST,
                         loadChunk ? ChunkEvent.Type.LOAD : ChunkEvent.Type.UNLOAD,
                         chunkX,
-                        chunkY
+                        chunkZ
                 )
         );
     }

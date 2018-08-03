@@ -35,7 +35,7 @@ public interface IGameEventListener {
 
 
     /**
-     * Runs before and after whenever a chunk is either loaded or unloaded.
+     * Runs before and after whenever a chunk is either loaded, unloaded, or populated.
      *
      * @see WorldClient#doPreChunk(int, int, boolean)
      */
