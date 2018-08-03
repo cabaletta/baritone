@@ -1,5 +1,9 @@
 package baritone.bot.pathing.calc;
 
+<<<<<<< Updated upstream
+=======
+import baritone.bot.pathing.movement.Movement;
+>>>>>>> Stashed changes
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.Movement;
 import net.minecraft.util.math.BlockPos;

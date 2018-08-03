@@ -199,7 +199,7 @@ public abstract class Action {
     }
 
     /**
-     * Tick this action
+     * Tick this movement
      *
      * @return is it done
      */

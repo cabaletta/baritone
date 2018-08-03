@@ -57,7 +57,7 @@ public class Path {
         }
         path.add(0, start.pos);
         /*Out.log("Final path: " + path);
-         Out.log("Final action: " + action);
+         Out.log("Final movement: " + movement);
          for (int i = 0; i < path.size() - 1; i++) {//print it all out
          int oldX = path.get(i).getX();
          int oldY = path.get(i).getY();
@@ -68,7 +68,7 @@ public class Path {
          int xDiff = newX - oldX;
          int yDiff = newY - oldY;
          int zDiff = newZ - oldZ;
-         Out.log(action.get(i) + ": " + xDiff + "," + yDiff + "," + zDiff);//print it all out
+         Out.log(movement.get(i) + ": " + xDiff + "," + yDiff + "," + zDiff);//print it all out
          }*/
     }
 
@@ -96,7 +96,7 @@ public class Path {
         }
     }
     /**
-     * Where are we in the path? This is an index in the action list
+     * Where are we in the path? This is an index in the movement list
      */
     int pathPosition = 0;
 
@@ -141,12 +141,12 @@ public class Path {
      */
     static final int MAX_TICKS_AWAY = 20 * 10;
     /**
-     * How many ticks have elapsed on this action
+     * How many ticks have elapsed on this movement
      */
     int ticksOnCurrent = 0;
     /**
      * Did I fail, either by being too far away for too long, or by having an
-     * action take too long
+     * movement take too long
      */
     public boolean failed = false;
 
@@ -201,7 +201,7 @@ public class Path {
             if ((actions.get(pathPosition) instanceof ActionBridge) && (actions.get(pathPosition + 1) instanceof ActionBridge)) {
                 ActionBridge curr = (ActionBridge) actions.get(pathPosition);
                 ActionBridge next = (ActionBridge) actions.get(pathPosition + 1);
-                if (curr.dx() != next.dx() || curr.dz() != next.dz()) {//two action are not parallel, so this is a right angle
+                if (curr.dx() != next.dx() || curr.dz() != next.dz()) {//two movement are not parallel, so this is a right angle
                     if (curr.amIGood() && next.amIGood()) {//nothing in the way
                         BlockPos cornerToCut1 = new BlockPos(next.to.getX() - next.from.getX() + curr.from.getX(), next.to.getY(), next.to.getZ() - next.from.getZ() + curr.from.getZ());
                         BlockPos cornerToCut2 = cornerToCut1.up();
@@ -230,19 +230,19 @@ public class Path {
         MovementManager.clearMovement();
         Action action = actions.get(pathPosition);
         if (action.calculateCost0(new ToolSet()) >= Action.COST_INF) {
-            Out.gui("Something has changed in the world and this action has become impossible. Cancelling.", Out.Mode.Standard);
+            Out.gui("Something has changed in the world and this movement has become impossible. Cancelling.", Out.Mode.Standard);
             pathPosition = path.size() + 3;
             failed = true;
             return true;
         }
         if (action.tick()) {
-            Out.log("Action done, next path");
+            Out.log("Movement done, next path");
             pathPosition++;
             ticksOnCurrent = 0;
         } else {
             ticksOnCurrent++;
             if (ticksOnCurrent > action.cost(null) + 100) {
-                Out.gui("This action has taken too long (" + ticksOnCurrent + " ticks, expected " + action.cost(null) + "). Cancelling.", Out.Mode.Standard);
+                Out.gui("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + action.cost(null) + "). Cancelling.", Out.Mode.Standard);
                 pathPosition = path.size() + 3;
                 failed = true;
                 return true;

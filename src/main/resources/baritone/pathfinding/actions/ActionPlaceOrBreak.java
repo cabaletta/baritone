@@ -26,7 +26,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public abstract class ActionPlaceOrBreak extends Action {
 
-    public final BlockPos[] positionsToBreak;//the positions that need to be broken before this action can ensue
+    public final BlockPos[] positionsToBreak;//the positions that need to be broken before this movement can ensue
     public final BlockPos[] positionsToPlace;//the positions where we need to place a block before this aciton can ensue
     public final Block[] blocksToBreak;//the blocks at those positions
     public final Block[] blocksToPlace;
@@ -45,7 +45,7 @@ public abstract class ActionPlaceOrBreak extends Action {
         }
     }
 
-    public double getTotalHardnessOfBlocksToBreak() {//of all the blocks we need to break before starting this action, what's the sum of how hard they are (phrasing)
+    public double getTotalHardnessOfBlocksToBreak() {//of all the blocks we need to break before starting this movement, what's the sum of how hard they are (phrasing)
         ToolSet ts = new ToolSet();
         return this.getTotalHardnessOfBlocksToBreak(ts);
     }
@@ -148,7 +148,7 @@ public abstract class ActionPlaceOrBreak extends Action {
                 //one of the blocks that needs to be there isn't there
                 //so basically someone mined out our path from under us
                 //
-                //this doesn't really do anything, because all the cases for positionToPlace are handled in their respective action tick0s (e.g. pillar and bridge)
+                //this doesn't really do anything, because all the cases for positionToPlace are handled in their respective movement tick0s (e.g. pillar and bridge)
             }
         }
         return tick0();

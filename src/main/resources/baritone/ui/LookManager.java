@@ -33,24 +33,24 @@ public class LookManager extends Manager {
     static float desiredNextYaw = 0;
     static float desiredNextPitch = 0;
     /**
-     * The desired yaw, as set by whatever action is happening. Remember to also
+     * The desired yaw, as set by whatever movement is happening. Remember to also
      * set lookingYaw to true if you really want the yaw to change
      *
      */
     static float desiredYaw;
     /**
-     * The desired pitch, as set by whatever action is happening. Remember to
+     * The desired pitch, as set by whatever movement is happening. Remember to
      * also set lookingPitch to true if you really want the yaw to change
      *
      */
     static float desiredPitch;
     /**
-     * Set to true if the action wants the player's yaw to be moved towards
+     * Set to true if the movement wants the player's yaw to be moved towards
      * desiredYaw
      */
     static boolean lookingYaw = false;
     /**
-     * Set to true if the action wants the player's pitch to be moved towards
+     * Set to true if the movement wants the player's pitch to be moved towards
      * desiredPitch
      */
     static boolean lookingPitch = false;

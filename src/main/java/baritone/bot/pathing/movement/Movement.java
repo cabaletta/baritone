@@ -45,7 +45,7 @@ public abstract class Movement implements AbstractGameEventListener, Helper, Mov
 
     @Override
     public void onTick() {
-        MovementState latestState = calcState();
+        MovementState latestState = updateState();
         Optional<Vec3d> orientation = latestState.getGoal().rotation;
         if (orientation.isPresent()) {
             Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
@@ -60,6 +60,7 @@ public abstract class Movement implements AbstractGameEventListener, Helper, Mov
         currentState = latestState;
 
         if (isFinished())
+            onFinish();
             return;
     }
 
@@ -77,10 +78,15 @@ public abstract class Movement implements AbstractGameEventListener, Helper, Mov
     }
 
     /**
+     * Run cleanup on state finish
+     */
+    public abstract void onFinish();
+
+    /**
      * Calculate latest movement state.
      * Gets called once a tick.
      *
      * @return
      */
-    public abstract MovementState calcState();
+    public abstract MovementState updateState();
 }

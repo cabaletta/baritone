@@ -7,13 +7,13 @@ package baritone.bot.event.events.type;
 public enum EventState {
 
     /**
-     * Indicates that whatever action the event is being
+     * Indicates that whatever movement the event is being
      * dispatched as a result of is about to occur.
      */
     PRE,
 
     /**
-     * Indicates that whatever action the event is being
+     * Indicates that whatever movement the event is being
      * dispatched as a result of has already occured.
      */
     POST

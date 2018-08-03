@@ -18,7 +18,7 @@ public class MovementAscend extends Movement {
     }
 
     @Override
-    public MovementState calcState() {
+    public MovementState updateState() {
         MovementState latestState = currentState.setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
         if (playerFeet().equals(dest))
             latestState.setStatus(MovementState.MovementStatus.SUCCESS);

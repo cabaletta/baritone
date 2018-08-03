@@ -191,7 +191,7 @@ public class Baritone {
                 }
             } else {
                 if (Action.isWater(theWorld.getBlockState(playerFeet).getBlock())) {
-                    //if (Action.isWater(theWorld.getBlockState(playerFeet.down()).getBlock()) || !Action.canWalkOn(playerFeet.down()) || Action.isWater(theWorld.getBlockState(playerFeet.up()).getBlock())) {
+                    //if (Movement.isWater(theWorld.getBlockState(playerFeet.down()).getBlock()) || !Movement.canWalkOn(playerFeet.down()) || Movement.isWater(theWorld.getBlockState(playerFeet.up()).getBlock())) {
                     //if water is deeper than one block, or we can't walk on what's below the water, or our head is in water, jump
                     Out.log("Jumping because in water");
                     MovementManager.jumping = true;
