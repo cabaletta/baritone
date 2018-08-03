@@ -12,20 +12,43 @@ import java.util.Objects;
  * @author leijurv
  */
 class PathNode {
-
+    /**
+     * The position of this node
+     */
     final BlockPos pos;
-
+    
+    /**
+     * The goal it's going towards
+     */
     final Goal goal;
 
+    /**
+     * Cached, should always be equal to goal.heuristic(pos)
+     */
     final double estimatedCostToGoal;
 
-    // These three fields are mutable and are changed by PathFinder
+    /**
+     * Total cost of getting from start to here
+     * Mutable and changed by PathFinder
+     */
     double cost;
 
+    /**
+     * Should always be equal to estimatedCosttoGoal + cost
+     * Mutable and changed by PathFinder
+     */
     public double combinedCost;
 
+    /**
+     * In the graph search, what previous node contributed to the cost
+     * Mutable and changed by PathFinder
+     */
     PathNode previous;
 
+    /**
+     * In the graph search, what previous movement (edge) was taken to get to here
+     * Mutable and changed by PathFinder
+     */
     Movement previousMovement;
 
     /**
