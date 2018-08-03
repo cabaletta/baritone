@@ -30,13 +30,9 @@ class PathNode {
 
     /**
      * Is this a member of the open set in A*? (only used during pathfinding)
+     * Instead of doing a costly member check in the open set, cache membership in each node individually too.
      */
     boolean isOpen;
-
-    /**
-     * In the linked list of open nodes, which one is next? (only used during pathfinding)
-     */
-    PathNode nextOpen;
 
     public PathNode(BlockPos pos, Goal goal) {
         this.pos = pos;

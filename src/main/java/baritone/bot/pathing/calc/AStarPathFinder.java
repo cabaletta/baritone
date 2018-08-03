@@ -54,7 +54,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
             PathNode currentNode = openSet.removeLowest();
             mostRecentConsidered = currentNode;
             currentNode.isOpen = false;
-            currentNode.nextOpen = null;
             BlockPos currentNodePos = currentNode.pos;
             numNodes++;
             if (System.currentTimeMillis() > lastPrintout + 1000) {//print once a second

@@ -5,13 +5,15 @@ package baritone.bot.pathing.calc;
  * It has incredbly fast insert performance, at the cost of O(n) removeLowest.
  */
 public class LinkedListOpenSet implements IOpenSet {
-    private PathNode first = null;
+    private Node first = null;
 
     public boolean isEmpty() {
         return first == null;
     }
 
-    public void insert(PathNode node) {
+    public void insert(PathNode pathNode) {
+        Node node = new Node();
+        node.val = pathNode;
         node.nextOpen = first;
         first = node;
     }
@@ -20,18 +22,18 @@ public class LinkedListOpenSet implements IOpenSet {
         if (first == null) {
             return null;
         }
-        PathNode current = first.nextOpen;
+        Node current = first.nextOpen;
         if (current == null) {
-            PathNode n = first;
+            Node n = first;
             first = null;
-            return n;
+            return n.val;
         }
-        PathNode previous = first;
-        double bestValue = first.combinedCost;
-        PathNode bestNode = first;
-        PathNode beforeBest = null;
+        Node previous = first;
+        double bestValue = first.val.combinedCost;
+        Node bestNode = first;
+        Node beforeBest = null;
         while (current != null) {
-            double comp = current.combinedCost;
+            double comp = current.val.combinedCost;
             if (comp < bestValue) {
                 bestValue = comp;
                 bestNode = current;
@@ -42,9 +44,16 @@ public class LinkedListOpenSet implements IOpenSet {
         }
         if (beforeBest == null) {
             first = first.nextOpen;
-            return bestNode;
+            bestNode.nextOpen = null;
+            return bestNode.val;
         }
         beforeBest.nextOpen = bestNode.nextOpen;
-        return bestNode;
+        bestNode.nextOpen = null;
+        return bestNode.val;
+    }
+
+    public static class Node { //wrapper with next
+        Node nextOpen;
+        PathNode val;
     }
 }
