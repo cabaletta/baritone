@@ -14,28 +14,46 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public interface MovementHelper extends ActionCosts {
-    Block waterFlowing = Block.getBlockById(8);
-    Block waterStill = Block.getBlockById(9);
-    Block lavaFlowing = Block.getBlockById(10);
-    Block lavaStill = Block.getBlockById(11);
+
+    Block waterFlowing = Blocks.FLOWING_WATER;
+    Block waterStill   = Blocks.WATER;
+    Block lavaFlowing  = Blocks.FLOWING_LAVA;
+    Block lavaStill    = Blocks.LAVA;
 
     /**
-     * Is this block water? Includes both still and flowing
+     * Returns whether or not the specified block is
+     * water, regardless of whether or not it is flowing.
      *
-     * @param b
-     * @return
+     * @param b The block
+     * @return Whether or not the block is water
      */
     static boolean isWater(Block b) {
         return waterFlowing.equals(b) || waterStill.equals(b);
     }
 
+    /**
+     * Returns whether or not the block at the specified pos is
+     * water, regardless of whether or not it is flowing.
+     *
+     * @param bp The block pos
+     * @return Whether or not the block is water
+     */
     static boolean isWater(BlockPos bp) {
         return isWater(BlockStateInterface.get(bp).getBlock());
     }
 
+    /**
+     * Returns whether or not the specified block is any sort of liquid.
+     *
+     * @param b The block
+     * @return Whether or not the block is a liquid
+     */
     static boolean isLiquid(Block b) {
         return b instanceof BlockLiquid;
-        //return b != null && (waterFlowing.equals(b) || waterStill.equals(b) || lavaFlowing.equals(b) || lavaStill.equals(b));
+    }
+
+    static boolean isLiquid(BlockPos p) {
+        return isLiquid(BlockStateInterface.get(p).getBlock());
     }
 
     static boolean isFlowing(IBlockState state) {
@@ -46,10 +64,6 @@ public interface MovementHelper extends ActionCosts {
 
     static boolean isLava(Block b) {
         return lavaFlowing.equals(b) || lavaStill.equals(b);
-    }
-
-    static boolean isLiquid(BlockPos p) {
-        return isLiquid(BlockStateInterface.get(p).getBlock());
     }
 
     static boolean avoidBreaking(BlockPos pos) {

@@ -4,19 +4,29 @@ import baritone.bot.pathing.goals.Goal;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractNodeCostSearch implements IPathFinder {
 
-    //TODO this shouldn't be necessary!!
+    /**
+     * The currently running search task
+     *
+     * TODO: This shouldn't be necessary, investigate old purpose of this field and determine necessity.
+     */
     public static AbstractNodeCostSearch currentlyRunning = null;
 
-
     protected final BlockPos start;
+
     protected final Goal goal;
-    protected final HashMap<BlockPos, PathNode> map;
+
+    protected final Map<BlockPos, PathNode> map;
+
     protected PathNode startNode;
+
     protected PathNode mostRecentConsidered;
+
     protected PathNode[] bestSoFar;
+
     private volatile boolean isFinished;
 
     /**
@@ -37,38 +47,58 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         this.map = new HashMap<>();
     }
 
-    public synchronized IPath calculatePath() {
+    public synchronized IPath calculate() {
         if (isFinished) {
-            throw new IllegalStateException("Unable to re-use path finder");
+            throw new IllegalStateException("Path Finder is currently in use! Wait until complete to reuse!");
         }
-        IPath path = calculate();
+        IPath path = calculate0();
         isFinished = true;
         return path;
     }
 
-    protected abstract IPath calculate();
+    protected abstract IPath calculate0();
 
-    protected double distFromStart(PathNode n) {
+    /**
+     * Determines the distance squared from the specified node to the start
+     * node. Intended for use in distance comparison, rather than anything that
+     * considers the real distance value, hence the "sq".
+     *
+     * @see AbstractNodeCostSearch#getDistFromStart(PathNode)
+     *
+     * @param n A node
+     * @return The distance, squared
+     */
+    protected double getDistFromStartSq(PathNode n) {
         int xDiff = n.pos.getX() - start.getX();
         int yDiff = n.pos.getY() - start.getY();
         int zDiff = n.pos.getZ() - start.getZ();
-        return Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
+        return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
     }
 
+    /**
+     * Determines the distance from the specified node to this the node.
+     *
+     * @param n A node
+     * @return The distance
+     */
+    protected double getDistFromStart(PathNode n) {
+        return Math.sqrt(getDistFromStartSq(n));
+    }
+
+    /**
+     * Attempts to search the {@link BlockPos} to {@link PathNode} map
+     * for the node mapped to the specified pos. If no node is found,
+     * a new node is created.
+     *
+     * @param pos The pos to lookup
+     * @return The associated node
+     */
     protected PathNode getNodeAtPosition(BlockPos pos) {
-        //technically I think this could be map.computeIfAbsent(pos, pos -> new PathNode(pos, goal))
-        //but this is so core to the pathfinder that I'm wary of the lambda performance, hmmm
-        PathNode alr = map.get(pos);
-        if (alr == null) {
-            PathNode node = new PathNode(pos, goal);
-            map.put(pos, node);
-            return node;
-        }
-        return alr;
+        return map.computeIfAbsent(pos, p -> new PathNode(p, goal));
     }
 
     @Override
-    public Path bestPathSoFar() {
+    public IPath bestPathSoFar() {
         if (startNode == null || bestSoFar[0] == null) {
             return null;
         }
@@ -76,7 +106,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     }
 
     @Override
-    public Path pathToMostRecentNodeConsidered() {
+    public IPath pathToMostRecentNodeConsidered() {
         return mostRecentConsidered == null ? null : new Path(startNode, mostRecentConsidered, goal);
     }
 

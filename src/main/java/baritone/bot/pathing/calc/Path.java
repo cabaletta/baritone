@@ -14,10 +14,19 @@ import java.util.stream.Collectors;
  */
 class Path implements IPath {
 
+    /**
+     * The start position of this path
+     */
     public final BlockPos start;
 
+    /**
+     * The end position of this path
+     */
     public final BlockPos end;
 
+    /**
+     * The goal that this path is attempting to accomplish
+     */
     public final Goal goal;
 
     /**
@@ -38,6 +47,12 @@ class Path implements IPath {
         sanityCheck();
     }
 
+    /**
+     * Assembles this path given the start and end nodes.
+     *
+     * @param start The start node
+     * @param end The end node
+     */
     private void assemblePath(PathNode start, PathNode end) {
         if (!path.isEmpty() || !movements.isEmpty()) {
             throw new IllegalStateException();
@@ -95,7 +110,7 @@ class Path implements IPath {
     }
 
     @Override
-    public Collection<BlockPos> getBlocksToMine() {
+    public Collection<BlockPos> getBlocksToBreak() {
         return movements.stream().map(move -> move.positionsToBreak).flatMap(Arrays::stream).collect(Collectors.toCollection(HashSet::new));
     }
 

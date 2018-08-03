@@ -87,7 +87,7 @@ public interface IPath {
      *
      * @return an unordered collection of positions
      */
-    Collection<BlockPos> getBlocksToMine();
+    Collection<BlockPos> getBlocksToBreak();
 
     /**
      * For rendering purposes, what blocks should be highlighted in green

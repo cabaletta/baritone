@@ -1,6 +1,7 @@
 package baritone.bot.pathing.movement;
 
 public interface ActionCosts {
+
     /**
      * These costs are measured roughly in ticks btw
      * Blocks/Tick: 0.2806167m / tick

@@ -4,6 +4,7 @@ import baritone.bot.pathing.goals.Goal;
 import net.minecraft.util.math.BlockPos;
 
 public interface IPathFinder {
+
     BlockPos getStart();
 
     Goal getGoal();
@@ -11,21 +12,21 @@ public interface IPathFinder {
     /**
      * Calculate the path in full. Will take several seconds.
      *
-     * @return the final path
+     * @return The final path
      */
-    IPath calculatePath();
+    IPath calculate();
 
     /**
      * Intended to be called concurrently with calculatePath from a different thread to tell if it's finished yet
      *
-     * @return
+     * @return Whether or not this finder is finished
      */
     boolean isFinished();
 
     /**
      * Called for path rendering. Returns a path to the most recent node popped from the open set and considered.
      *
-     * @return the temporary path
+     * @return The temporary path
      */
     IPath pathToMostRecentNodeConsidered();
 
@@ -35,8 +36,7 @@ public interface IPathFinder {
      * That's almost always a safe assumption, but in the case of a nearly impossible path, it still works by providing
      * a theoretically plausible but practically unlikely path)
      *
-     * @return the temporary path
+     * @return The temporary path
      */
     IPath bestPathSoFar();
-
 }
