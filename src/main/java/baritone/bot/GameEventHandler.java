@@ -1,12 +1,9 @@
 package baritone.bot;
 
 import baritone.bot.behavior.Behavior;
-import baritone.bot.chunk.ChunkPacker;
 import baritone.bot.event.IGameEventListener;
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.ChunkEvent;
-import baritone.bot.event.events.type.EventState;
-import baritone.bot.utils.Helper;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
@@ -16,7 +13,7 @@ import java.util.function.Consumer;
  * @author Brady
  * @since 7/31/2018 11:04 PM
  */
-public final class GameEventHandler implements IGameEventListener, Helper {
+public final class GameEventHandler implements IGameEventListener {
 
     GameEventHandler() {}
 
@@ -52,10 +49,6 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     @Override
     public void onChunkEvent(ChunkEvent event) {
         dispatch(behavior -> onChunkEvent(event));
-
-        if (event.getState() == EventState.POST && event.getType() == ChunkEvent.Type.POPULATE) {
-            ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ())).write();
-        }
     }
 
     private void dispatch(Consumer<Behavior> dispatchFunction) {
