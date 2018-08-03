@@ -12,3 +12,4 @@ classes/
 # IntelliJ Files
 .idea/
 *.iml
+/logs/

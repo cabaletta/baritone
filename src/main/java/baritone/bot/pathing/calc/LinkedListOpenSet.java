@@ -1,7 +1,8 @@
 package baritone.bot.pathing.calc;
 
 /**
- *
+ * A linked list implementation of an open set. This is the original implementation from MineBot.
+ * It has incredbly fast insert performance, at the cost of O(n) removeLowest.
  */
 public class LinkedListOpenSet implements IOpenSet {
     private PathNode first = null;
@@ -26,11 +27,11 @@ public class LinkedListOpenSet implements IOpenSet {
             return n;
         }
         PathNode previous = first;
-        double bestValue = first.estimatedCostToGoal + first.cost;
+        double bestValue = first.combinedCost;
         PathNode bestNode = first;
         PathNode beforeBest = null;
         while (current != null) {
-            double comp = current.estimatedCostToGoal + current.cost;
+            double comp = current.combinedCost;
             if (comp < bestValue) {
                 bestValue = comp;
                 bestNode = current;

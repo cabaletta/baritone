@@ -9,7 +9,7 @@ public class FibonacciHeapOpenSet extends FibonacciHeap implements IOpenSet {
     //isEmpty is already defined in FibonacciHeap
     @Override
     public void insert(PathNode node) {
-        super.insert(node, node.estimatedCostToGoal + node.cost);
+        super.insert(node, node.combinedCost);
     }
 
     @Override

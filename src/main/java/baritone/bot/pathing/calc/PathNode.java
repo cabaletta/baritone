@@ -22,6 +22,8 @@ class PathNode {
     // These three fields are mutable and are changed by PathFinder
     double cost;
 
+    public double combinedCost;
+
     PathNode previous;
 
     Movement previousMovement;

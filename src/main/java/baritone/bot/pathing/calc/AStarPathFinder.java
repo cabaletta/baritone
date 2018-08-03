@@ -1,7 +1,8 @@
 package baritone.bot.pathing.calc;
 
 
-import baritone.Baritone;
+//import baritone.Baritone;
+
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
@@ -11,8 +12,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * The actual A* pathfinding
@@ -28,7 +27,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
     protected IPath calculate0() {
         startNode = getNodeAtPosition(start);
         startNode.cost = 0;
-        IOpenSet openSet = new LinkedListOpenSet();
+        startNode.combinedCost = startNode.estimatedCostToGoal;
+        IOpenSet openSet = new BinaryHeapOpenSet();
         startNode.isOpen = true;
         openSet.insert(startNode);
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
@@ -38,19 +38,19 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         }
         currentlyRunning = this;
         long startTime = System.currentTimeMillis();
-        long timeoutTime = startTime + (Baritone.slowPath ? 40000 : 4000);
+        long timeoutTime = startTime + /*(Baritone.slowPath ? 40000 : */4000/*)*/;
         long lastPrintout = 0;
         int numNodes = 0;
         ToolSet ts = new ToolSet();
         int numEmptyChunk = 0;
         while (!openSet.isEmpty() && numEmptyChunk < 50 && System.currentTimeMillis() < timeoutTime) {
-            if (Baritone.slowPath) {
+            /*if (Baritone.slowPath) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(AStarPathFinder.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }
+            }*/
             PathNode currentNode = openSet.removeLowest();
             mostRecentConsidered = currentNode;
             currentNode.isOpen = false;
@@ -89,6 +89,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                     neighbor.previous = currentNode;
                     neighbor.previousMovement = movementToGetToNeighbor;
                     neighbor.cost = tentativeCost;
+                    neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
                     if (!neighbor.isOpen) {
                         openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
                         neighbor.isOpen = true;
