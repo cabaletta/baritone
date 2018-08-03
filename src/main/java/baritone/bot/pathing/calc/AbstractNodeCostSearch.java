@@ -22,7 +22,8 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     /**
      * This is really complicated and hard to explain. I wrote a comment in the old version of MineBot but it was so
      * long it was easier as a Google Doc (because I could insert charts).
-     * https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit
+     *
+     * @see <a href="https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit></a>
      */
     protected static final double[] COEFFICIENTS = {1.5, 2, 2.5, 3, 4, 5, 10};
 
