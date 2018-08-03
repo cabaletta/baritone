@@ -6,11 +6,16 @@ import net.minecraft.util.math.BlockPos;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Any pathfinding algorithm that keeps track of nodes recursively by their cost (e.g. A*, dijkstra)
+ *
+ * @author leijurv
+ */
 public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     /**
      * The currently running search task
-     *
+     * <p>
      * TODO: This shouldn't be necessary, investigate old purpose of this field and determine necessity.
      */
     public static AbstractNodeCostSearch currentlyRunning = null;
@@ -63,10 +68,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * node. Intended for use in distance comparison, rather than anything that
      * considers the real distance value, hence the "sq".
      *
-     * @see AbstractNodeCostSearch#getDistFromStart(PathNode)
-     *
      * @param n A node
      * @return The distance, squared
+     * @see AbstractNodeCostSearch#getDistFromStart(PathNode)
      */
     protected double getDistFromStartSq(PathNode n) {
         int xDiff = n.pos.getX() - start.getX();

@@ -3,6 +3,11 @@ package baritone.bot.pathing.calc;
 import baritone.bot.pathing.goals.Goal;
 import net.minecraft.util.math.BlockPos;
 
+/**
+ * Generic path finder interface
+ *
+ * @author leijurv
+ */
 public interface IPathFinder {
 
     BlockPos getStart();
