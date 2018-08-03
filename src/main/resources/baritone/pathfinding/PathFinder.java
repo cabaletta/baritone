@@ -1,54 +1,51 @@
 package baritone.pathfinding;
 
+import baritone.Baritone;
+import baritone.pathfinding.actions.*;
 import baritone.pathfinding.goals.Goal;
-import baritone.pathfinding.actions.ActionDescendTwo;
-import baritone.pathfinding.actions.ActionBridge;
-import baritone.pathfinding.actions.ActionClimb;
-import baritone.pathfinding.actions.Action;
-import baritone.pathfinding.actions.ActionDescend;
-import baritone.pathfinding.actions.ActionFall;
-import baritone.pathfinding.actions.ActionPillar;
+import baritone.util.Out;
+import baritone.util.ToolSet;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.EmptyChunk;
+
 import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import baritone.Baritone;
-import baritone.pathfinding.actions.ActionDescendThree;
-import baritone.pathfinding.actions.ActionWalkDiagonal;
-import baritone.util.Out;
-import baritone.util.ToolSet;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.world.chunk.EmptyChunk;
 
 /**
- *
  * @author leijurv
  */
 public class PathFinder {
     final BlockPos start;
     final Goal goal;
     final HashMap<BlockPos, Node> map;
+
     public PathFinder(BlockPos start, Goal goal) {
         this.start = start;
         this.goal = goal;
         this.map = new HashMap<BlockPos, Node>();
     }
+
     static final double[] COEFFICIENTS = {1.5, 2, 2.5, 3, 4, 5, 10};
     public static PathFinder currentlyRunning = null;
     Node[] bestSoFar;
     Node startNode;
     Node mostRecentConsidered;
+
     public Path getTempSolution() {
         if (startNode == null || bestSoFar[0] == null) {
             return null;
         }
         return new Path(startNode, bestSoFar[0], goal, 0);
     }
+
     public Path getMostRecentNodeConsidered() {
         return mostRecentConsidered == null ? null : new Path(startNode, mostRecentConsidered, goal, 0);
     }
+
     /**
      * Do the actual path calculation. The returned path might not actually go
      * to goal, but it will get as close as I could get
@@ -159,13 +156,16 @@ public class PathFinder {
         currentlyRunning = null;
         return null;
     }
+
     private double distFromStart(Node n) {
         int xDiff = n.pos.getX() - start.getX();
         int yDiff = n.pos.getY() - start.getY();
         int zDiff = n.pos.getZ() - start.getZ();
         return Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
     }
+
     private final double MIN_DIST_PATH = 5;
+
     private Node getNodeAtPosition(BlockPos pos) {
         Node alr = map.get(pos);
         if (alr == null) {
@@ -175,6 +175,7 @@ public class PathFinder {
         }
         return alr;
     }
+
     private static Action[] getConnectedPositions(BlockPos pos) {
         int x = pos.getX();
         int y = pos.getY();
@@ -208,7 +209,9 @@ public class PathFinder {
         actions[25] = new ActionWalkDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST);
         return actions;
     }
+
     private final Random random = new Random();
+
     private void shuffle(Action[] list) {
         int len = list.length;
         for (int i = 0; i < len; i++) {
@@ -224,6 +227,7 @@ public class PathFinder {
      */
     private static class OpenSet {
         Node first = null;
+
         public Node removeLowest() {
             if (first == null) {
                 return null;
@@ -255,6 +259,7 @@ public class PathFinder {
             beforeBest.nextOpen = bestNode.nextOpen;
             return bestNode;
         }
+
         public void insert(Node node) {
             node.nextOpen = first;
             first = node;

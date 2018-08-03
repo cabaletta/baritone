@@ -56,6 +56,8 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     }
 
     protected PathNode getNodeAtPosition(BlockPos pos) {
+        //technically I think this could be map.computeIfAbsent(pos, pos -> new PathNode(pos, goal))
+        //but this is so core to the pathfinder that I'm wary of the lambda performance, hmmm
         PathNode alr = map.get(pos);
         if (alr == null) {
             PathNode node = new PathNode(pos, goal);
