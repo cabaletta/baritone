@@ -33,7 +33,7 @@ public class MovementAscend extends Movement {
                 return state;
             case WAITING:
             case RUNNING:
-                MovementState latestState = currentState.setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                MovementState latestState = state.setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
                 if (playerFeet().equals(dest))
                     latestState.setStatus(MovementStatus.SUCCESS);
             default:
