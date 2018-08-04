@@ -3,12 +3,15 @@ package baritone.bot.behavior;
 import baritone.bot.pathing.calc.IPath;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
+import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.ToolSet;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
+
+import static baritone.bot.pathing.movement.MovementState.MovementStatus.*;
 
 /**
  * Behavior to execute a precomputed path. Does not (yet) deal with path segmentation or stitching
@@ -116,8 +119,14 @@ public class PathExecution extends Behavior {
             failed = true;
             return;
         }
-        movement.onTick();
-        if (movement.isFinished()) {
+        MovementState.MovementStatus movementStatus = movement.update();
+        if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
+            System.out.println("Movement returns status " + movementStatus);
+            pathPosition = path.length() + 3;
+            failed = true;
+            return;
+        }
+        if (movementStatus == SUCCESS) {
             System.out.println("Movement done, next path");
             pathPosition++;
             ticksOnCurrent = 0;

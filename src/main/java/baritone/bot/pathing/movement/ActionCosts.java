@@ -1,11 +1,9 @@
 package baritone.bot.pathing.movement;
 
-public interface ActionCosts {
+public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
 
     /**
      * These costs are measured roughly in ticks btw
-     * Blocks/Tick: 0.2806167m / tick
-     * Tick/Block:  3.563579787t
      */
     double WALK_ONE_BLOCK_COST = 20 / 4.317;
     double WALK_ONE_IN_WATER_COST = 20 / 2.2;
@@ -18,19 +16,10 @@ public interface ActionCosts {
      * To walk off an edge you need to walk 0.5 to the edge then 0.3 to start falling off
      */
     double WALK_OFF_BLOCK_COST = WALK_ONE_BLOCK_COST * 0.8;
-
     /**
-     * Doesn't include walking forwards, just the falling
-     * <p>
-     * Based on a sketchy formula from minecraftwiki
-     * <p>
-     * d(t) = 3.92 × (99 - 49.50×(0.98^t+1) - t)
-     * <p>
-     * Solved in mathematica
+     * To walk the rest of the way to be centered on the new block
      */
-    double FALL_ONE_BLOCK_COST = 5.11354;
-    double FALL_TWO_BLOCK_COST = 7.28283;
-    double FALL_THREE_BLOCK_COST = 8.96862;
+    double CENTER_AFTER_FALL_COST = WALK_ONE_BLOCK_COST - WALK_OFF_BLOCK_COST;
 
     /**
      * It doesn't actually take ten ticks to place a block, this cost is so high
