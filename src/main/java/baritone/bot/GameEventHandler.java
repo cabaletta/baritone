@@ -15,11 +15,12 @@ import java.util.function.Consumer;
  */
 public final class GameEventHandler implements IGameEventListener {
 
-    GameEventHandler() {}
+    GameEventHandler() {
+    }
 
     @Override
     public final void onTick() {
-        dispatch(behavior -> onTick());
+        dispatch(Behavior::onTick);
     }
 
     @Override
@@ -38,17 +39,17 @@ public final class GameEventHandler implements IGameEventListener {
             }
         }
 
-        dispatch(behavior -> onProcessKeyBinds());
+        dispatch(Behavior::onProcessKeyBinds);
     }
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
-        dispatch(behavior -> onSendChatMessage(event));
+        dispatch(behavior -> behavior.onSendChatMessage(event));
     }
 
     @Override
     public void onChunkEvent(ChunkEvent event) {
-        dispatch(behavior -> onChunkEvent(event));
+        dispatch(behavior -> behavior.onChunkEvent(event));
     }
 
     private void dispatch(Consumer<Behavior> dispatchFunction) {
