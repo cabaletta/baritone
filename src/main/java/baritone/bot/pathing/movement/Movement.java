@@ -2,6 +2,7 @@ package baritone.bot.pathing.movement;
 
 import baritone.bot.Baritone;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
+import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 public abstract class Movement implements IMovement, Helper, MovementHelper {
 
-    protected MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
+    private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
     protected final BlockPos src;
 
     protected final BlockPos dest;
@@ -45,17 +46,17 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
     public abstract double calculateCost(ToolSet ts); // TODO pass in information like whether it's allowed to place throwaway blocks
 
     public MovementStatus update() {
-        if(isPrepared(state)) {
-            if (!currentState.isPresent()) {
-                currentState = Optional.of(new MovementState()
-                        .setStatus(MovementStatus.WAITING)
-                        .setGoal());
-            }
-        }
+//        if(isPrepared(state)) {
+//            if (!currentState.isPresent()) {
+//                currentState = Optional.of(new MovementState()
+//                        .setStatus(MovementStatus.WAITING)
+//                        .setGoal());
+//            }
+//        }
         if(isFinished()) {
 
         }
-        MovementState latestState = updateState();
+        MovementState latestState = updateState(currentState);
         Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 latestState.getGoal().rotation);
         mc.player.setPositionAndRotation(mc.player.posX, mc.player.posY, mc.player.posZ,
@@ -68,14 +69,21 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
 
         if (isFinished())
             onFinish();
-            return;
+
+        return currentState.getStatus();
     }
 
     private boolean prepare(MovementState state) {
+        if(state.getStatus() == MovementStatus.WAITING) {
+            return true;
+        }
         Optional<BlockPos> cruftPos;
         for(BlockPos blockPos : positionsToBreak) {
-            world().getBlockState(blockPos).getBlock()(world())
+            if(MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
+
+            }
         }
+        return true;
     }
 
     public boolean isFinished() {

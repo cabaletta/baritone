@@ -73,6 +73,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block b = BlockStateInterface.get(pos).getBlock();
         Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
         return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
+                || b instanceof BlockSilverfish
                 || isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
                 || isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
                 || isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
@@ -89,14 +90,13 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkThrough(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
-        if (block instanceof BlockLilyPad || block instanceof BlockFire) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
+        if (block instanceof BlockLilyPad
+                || block instanceof BlockFire
+                || block instanceof BlockTripWire) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
-        if (isFlowing(state)) {
+        if (isFlowing(state) || isLiquid(pos.up())) {
             return false; // Don't walk through flowing liquids
-        }
-        if (isLiquid(pos.up())) {
-            return false; // You could drown
         }
         return block.isPassable(Minecraft.getMinecraft().world, pos);
     }
@@ -104,7 +104,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean avoidWalkingInto(Block block) {
         return isLava(block)
                 || block instanceof BlockCactus
-                || block instanceof BlockFire;
+                || block instanceof BlockFire
+                || block instanceof BlockEndPortal
+                || block instanceof BlockWeb;
     }
 
     /**
@@ -122,7 +124,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
         if (isWater(block)) {
-            return isWater(pos.up());//you can only walk on water if there is water above it
+            return isWater(pos.up()); // You can only walk on water if there is water above it
         }
         return state.isBlockNormalCube() && !isLava(block);
     }
