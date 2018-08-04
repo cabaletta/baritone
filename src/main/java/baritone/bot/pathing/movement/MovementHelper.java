@@ -1,24 +1,27 @@
 package baritone.bot.pathing.movement;
 
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.Helper;
 import baritone.bot.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 
 /**
  * Static helpers for cost calculation
  *
  * @author leijurv
  */
-public interface MovementHelper extends ActionCosts {
+public interface MovementHelper extends ActionCosts, Helper {
 
     Block waterFlowing = Blocks.FLOWING_WATER;
-    Block waterStill   = Blocks.WATER;
-    Block lavaFlowing  = Blocks.FLOWING_LAVA;
-    Block lavaStill    = Blocks.LAVA;
+    Block waterStill = Blocks.WATER;
+    Block lavaFlowing = Blocks.FLOWING_LAVA;
+    Block lavaStill = Blocks.LAVA;
 
     /**
      * Returns whether or not the specified block is
@@ -84,8 +87,7 @@ public interface MovementHelper extends ActionCosts {
      * @param pos
      * @return
      */
-    static boolean canWalkThrough(BlockPos pos) {
-        IBlockState state = BlockStateInterface.get(pos);
+    static boolean canWalkThrough(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
         if (block instanceof BlockLilyPad || block instanceof BlockFire) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
@@ -129,8 +131,8 @@ public interface MovementHelper extends ActionCosts {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
-    static double getHardness(ToolSet ts, IBlockState block, BlockPos position) {
-        if (!block.equals(Blocks.AIR) && !canWalkThrough(position)) {
+    static double getMiningDurationTicks(ToolSet ts, IBlockState block, BlockPos position) {
+        if (!block.equals(Blocks.AIR) && !canWalkThrough(position, block)) {
             if (avoidBreaking(position)) {
                 return COST_INF;
             }
@@ -142,4 +144,65 @@ public interface MovementHelper extends ActionCosts {
         }
         return 0;
     }
+
+    /**
+     * The currently highlighted block.
+     * Updated once a tick by Minecraft.
+     *
+     * @return the position of the highlighted block, or null if no block is highlighted
+     */
+    static BlockPos whatAmILookingAt() {
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
+            return mc.objectMouseOver.getBlockPos();
+        }
+        return null;
+    }
+
+    /**
+     * The entity the player is currently looking at
+     *
+     * @return the entity object, or null if the player isn't looking at an entity
+     */
+    static Entity whatEntityAmILookingAt() {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
+            return mc.objectMouseOver.entityHit;
+        }
+        return null;
+    }
+
+    /**
+     * AutoTool
+     */
+    static void switchToBestTool() {
+        BlockPos pos = whatAmILookingAt();
+        if (pos == null) {
+            return;
+        }
+        IBlockState state = BlockStateInterface.get(pos);
+        if (state.getBlock().equals(Blocks.AIR)) {
+            return;
+        }
+        switchToBestToolFor(state);
+    }
+
+    /**
+     * AutoTool for a specific block
+     *
+     * @param b the blockstate to mine
+     */
+    static void switchToBestToolFor(IBlockState b) {
+        switchToBestToolFor(b, new ToolSet());
+    }
+
+    /**
+     * AutoTool for a specific block with precomputed ToolSet data
+     *
+     * @param b  the blockstate to mine
+     * @param ts previously calculated ToolSet
+     */
+    static void switchToBestToolFor(IBlockState b, ToolSet ts) {
+        Minecraft.getMinecraft().player.inventory.currentItem = ts.getBestSlot(b);
+    }
+
 }

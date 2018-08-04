@@ -9,7 +9,6 @@ import net.minecraft.block.BlockVine;
 import net.minecraft.util.math.BlockPos;
 
 /**
- *
  * @author leijurv
  */
 public class ActionDescend extends ActionPlaceOrBreak {
@@ -33,6 +32,6 @@ public class ActionDescend extends ActionPlaceOrBreak {
     @Override
     protected boolean tick0() {//basically just hold down W until we are where we want to be
         MovementManager.moveTowardsBlock(to);
-        return Baritone.playerFeet.equals(to);
+        return Baritone.playerFeet.equals(to); // TODO wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
     }
 }

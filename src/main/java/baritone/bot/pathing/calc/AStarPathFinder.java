@@ -3,11 +3,11 @@ package baritone.bot.pathing.calc;
 
 //import baritone.Baritone;
 
-import baritone.bot.pathing.openset.BinaryHeapOpenSet;
-import baritone.bot.pathing.openset.IOpenSet;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
+import baritone.bot.pathing.openset.BinaryHeapOpenSet;
+import baritone.bot.pathing.openset.IOpenSet;
 import baritone.bot.utils.ToolSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
@@ -72,16 +72,16 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
             //long constructEnd = System.nanoTime();
             //System.out.println(constructEnd - constructStart);
             for (Movement movementToGetToNeighbor : possibleMovements) {
+                if (Minecraft.getMinecraft().world.getChunk(movementToGetToNeighbor.getDest()) instanceof EmptyChunk) {
+                    numEmptyChunk++;
+                    continue;
+                }
                 //long costStart = System.nanoTime();
                 // TODO cache cost
                 double actionCost = movementToGetToNeighbor.calculateCost(ts);
                 //long costEnd = System.nanoTime();
                 //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
                 if (actionCost >= ActionCosts.COST_INF) {
-                    continue;
-                }
-                if (Minecraft.getMinecraft().world.getChunk(movementToGetToNeighbor.getDest()) instanceof EmptyChunk) {
-                    numEmptyChunk++;
                     continue;
                 }
                 PathNode neighbor = getNodeAtPosition(movementToGetToNeighbor.getDest());
