@@ -28,6 +28,15 @@ public interface IPath {
     List<BlockPos> positions();
 
     /**
+     * Number of positions in this path
+     *
+     * @return Number of positions in this path
+     */
+    default int length() {
+        return positions().size();
+    }
+
+    /**
      * What's the next step
      *
      * @param currentPosition the current position
