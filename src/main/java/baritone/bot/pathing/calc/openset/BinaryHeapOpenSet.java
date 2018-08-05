@@ -56,8 +56,9 @@ public class BinaryHeapOpenSet implements IOpenSet {
             throw new IllegalStateException();
         }
         PathNode result = array[1];
-        array[1] = array[size];
-        array[1].heapPosition = 1;
+        PathNode val = array[size];
+        array[1] = val;
+        val.heapPosition = 1;
         array[size] = null;
         size--;
         result.heapPosition = -1;
@@ -66,7 +67,6 @@ public class BinaryHeapOpenSet implements IOpenSet {
         }
         int index = 1;
         int smallerChild = 2;
-        PathNode val = array[index];
         double cost = val.combinedCost;
         do {
             int right = smallerChild + 1;
