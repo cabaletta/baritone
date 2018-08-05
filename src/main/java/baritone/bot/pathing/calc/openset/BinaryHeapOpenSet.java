@@ -61,35 +61,43 @@ public class BinaryHeapOpenSet implements IOpenSet {
         array[1].heapPosition = 1;
         array[size] = null;
         size--;
-        downHeap(1);
         result.heapPosition = -1;
+        if (size < 2) {
+            return result;
+        }
+        int index = 1;
+        int smallerChild = 2;
+        double cost = array[index].combinedCost;
+        do {
+            int right = smallerChild + 1;
+            double smallerChildCost = array[smallerChild].combinedCost;
+            if (right <= size) {
+                double rightChildCost = array[right].combinedCost;
+                if (smallerChildCost > rightChildCost) {
+                    smallerChild = right;
+                    smallerChildCost = rightChildCost;
+                }
+            }
+            if (cost <= smallerChildCost) {
+                break;
+            }
+            swap(index, smallerChild);
+            index = smallerChild;
+            smallerChild = index << 1;
+        } while (smallerChild <= size);
         return result;
     }
 
     private void upHeap(int index) {
         int parent = index >>> 1;
-        while (index > 1 && array[parent].combinedCost > array[index].combinedCost) {
+        double cost = array[index].combinedCost;
+        while (index > 1 && array[parent].combinedCost > cost) {
             swap(index, parent);
             index = parent;
             parent = index >>> 1;
         }
     }
 
-    private void downHeap(int index) {
-        int smallerChild = 2;
-        while (smallerChild <= size) {
-            int right = smallerChild + 1;
-            if (right <= size && array[smallerChild].combinedCost > array[right].combinedCost) {
-                smallerChild = right;
-            }
-            if (array[index].combinedCost <= array[smallerChild].combinedCost) {
-                break;
-            }
-            swap(index, smallerChild);
-            index = smallerChild;
-            smallerChild = index << 1;
-        }
-    }
 
     /**
      * Swaps the elements at the specified indices.
