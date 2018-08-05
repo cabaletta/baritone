@@ -87,7 +87,7 @@ class Path implements IPath {
         if (path.size() != movements.size() + 1) {
             throw new IllegalStateException("Size of path array is unexpected");
         }
-        for (int i = 0; i < path.size(); i++) {
+        for (int i = 0; i < path.size() - 1; i++) {
             BlockPos src = path.get(i);
             BlockPos dest = path.get(i + 1);
             Movement movement = movements.get(i);
