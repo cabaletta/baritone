@@ -6,6 +6,7 @@
   "verbose": false,
   "client": [
     "MixinEntityPlayerSP",
+    "MixinEntityRenderer",
     "MixinGameSettings",
     "MixinGuiContainer",
     "MixinGuiOverlayDebug",
