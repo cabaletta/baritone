@@ -1,4 +1,4 @@
-package baritone.bot.pathing.openset;
+package baritone.bot.pathing.calc.openset;
 
 import baritone.bot.pathing.calc.PathNode;
 
