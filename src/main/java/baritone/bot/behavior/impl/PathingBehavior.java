@@ -28,6 +28,9 @@ public class PathingBehavior extends Behavior {
     }
 
     public IPath getPath() {
+        if (current == null) {
+            return null;
+        }
         return current.getPath();
     }
 }
