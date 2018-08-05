@@ -1,5 +1,6 @@
 package baritone.bot.utils;
 
+import baritone.bot.behavior.impl.LookBehavior;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -17,6 +18,13 @@ public final class Utils {
         return calcRotationFromVec3d(vec3dFromBlockPos(orig), vec3dFromBlockPos(dest));
     }
 
+    /**
+     * Calculates rotation to given Vec<sub>dest</sub> from Vec<sub>orig</sub>
+     *
+     * @param orig
+     * @param dest
+     * @return Rotation Tuple {@link LookBehavior#target}
+     */
     public static Tuple<Float, Float> calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
         double yaw = Math.atan2(orig.x - dest.x, -orig.z + dest.z);
         double dist = Math.sqrt((orig.x - dest.x) * (orig.x - dest.x) + (-orig.x + dest.x) * (-orig.z + dest.z));
