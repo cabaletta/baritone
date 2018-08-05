@@ -1,6 +1,7 @@
 package baritone.launch.mixins;
 
 import baritone.bot.Baritone;
+import baritone.bot.event.events.RenderEvent;
 import net.minecraft.client.renderer.EntityRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,7 +19,7 @@ public class MixinEntityRenderer {
                     args = { "ldc=hand" }
             )
     )
-    private void renderWorldPass(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onRenderPass();
+    private void renderWorldPass(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
+        Baritone.INSTANCE.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
     }
 }
