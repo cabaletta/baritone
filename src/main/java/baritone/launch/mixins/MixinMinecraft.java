@@ -1,7 +1,10 @@
 package baritone.launch.mixins;
 
 import baritone.bot.Baritone;
+import baritone.bot.event.events.WorldEvent;
+import baritone.bot.event.events.type.EventState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -21,8 +24,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 
-    @Shadow
-    private int leftClickCounter;
+    @Shadow private int leftClickCounter;
+    @Shadow public WorldClient world;
 
     @Inject(
             method = "init",
@@ -98,5 +101,39 @@ public class MixinMinecraft {
         bot.getMemory().scanBlock(pos);
         bot.getMemory().scanBlock(pos.offset(mc.objectMouseOver.sideHit));
         bot.getActionHandler().onPlacedBlock(stack, pos);
+    }
+
+    @Inject(
+            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V",
+            at = @At("HEAD")
+    )
+    private void preLoadWorld(WorldClient world, String loadingMessage, CallbackInfo ci) {
+        // If we're unloading the world but one doesn't exist, ignore it
+        if (this.world == null && world == null)
+            return;
+
+        Baritone.INSTANCE.getGameEventHandler().onWorldEvent(
+                new WorldEvent(
+                        world,
+                        EventState.PRE
+                )
+        );
+    }
+
+    @Inject(
+            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V",
+            at = @At("RETURN")
+    )
+    private void postLoadWorld(WorldClient world, String loadingMessage, CallbackInfo ci) {
+        // If we're unloading the world but one doesn't exist, ignore it
+        if (this.world == null && world == null)
+            return;
+
+        Baritone.INSTANCE.getGameEventHandler().onWorldEvent(
+                new WorldEvent(
+                        world,
+                        EventState.POST
+                )
+        );
     }
 }
