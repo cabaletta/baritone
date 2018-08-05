@@ -12,7 +12,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Optional;
 
-public abstract class Movement implements IMovement, Helper, MovementHelper {
+public abstract class Movement implements Helper, MovementHelper {
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
     protected final BlockPos src;
@@ -45,6 +45,12 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
 
     public abstract double calculateCost(ToolSet ts); // TODO pass in information like whether it's allowed to place throwaway blocks
 
+    /**
+     * Handles the execution of the latest Movement
+     * State, and offers a Status to the calling class.
+     *
+     * @return Status
+     */
     public MovementStatus update() {
 //        if(isPrepared(state)) {
 //            if (!currentState.isPresent()) {
@@ -57,9 +63,9 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
 
         }
         MovementState latestState = updateState(currentState);
-        Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+        Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
                 latestState.getGoal().rotation);
-        mc.player.setPositionAndRotation(mc.player.posX, mc.player.posY, mc.player.posZ,
+        player().setPositionAndRotation(player().posX, player().posY, player().posZ,
                 rotation.getFirst(), rotation.getSecond());
         //TODO calculate movement inputs from latestState.getGoal().position
         latestState.inputState.forEach((input, forced) -> {
