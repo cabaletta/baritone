@@ -136,6 +136,6 @@ public final class CachedRegion implements ICachedChunkAccess {
     }
 
     private static Path getRegionFile(Path cacheDir, int regionX, int regionZ) {
-        return Paths.get(cacheDir.toString() + "\\r." + regionX + "." + regionZ + ".bcr");
+        return Paths.get(cacheDir.toString(), "r." + regionX + "." + regionZ + ".bcr");
     }
 }
