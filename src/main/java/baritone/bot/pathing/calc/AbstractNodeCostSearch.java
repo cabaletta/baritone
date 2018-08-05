@@ -1,6 +1,7 @@
 package baritone.bot.pathing.calc;
 
 import baritone.bot.pathing.goals.Goal;
+import baritone.bot.pathing.path.IPath;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;

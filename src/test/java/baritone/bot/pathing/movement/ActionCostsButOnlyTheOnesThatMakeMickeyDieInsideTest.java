@@ -12,7 +12,7 @@ public class ActionCostsButOnlyTheOnesThatMakeMickeyDieInsideTest {
         assertEquals(FALL_N_BLOCKS_COST.length, 257); // Fall 0 blocks through fall 256 blocks
         for (int i = 0; i < 257; i++) {
             double blocks = ticksToBlocks(FALL_N_BLOCKS_COST[i]);
-            assertEquals(blocks, i, 0.01);
+            assertEquals(blocks, i, 0.000000000001); // If you add another 0 the test fails at i=217 LOL
         }
     }
 

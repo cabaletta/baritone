@@ -1,4 +1,11 @@
 package baritone.bot.behavior;
 
-public class PathingBehavior {
+import baritone.bot.pathing.path.PathExecutor;
+
+public class PathingBehavior extends Behavior{
+    public static final PathingBehavior INSTANCE=new PathingBehavior();
+    private PathingBehavior(){}
+
+    private PathExecutor current;
+
 }

@@ -1,6 +1,6 @@
-package baritone.bot.behavior;
+package baritone.bot.pathing.path;
 
-import baritone.bot.pathing.calc.IPath;
+import baritone.bot.behavior.Behavior;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementState;
@@ -19,7 +19,7 @@ import static baritone.bot.pathing.movement.MovementState.MovementStatus.*;
  *
  * @author leijurv
  */
-public class PathExecution extends Behavior {
+public class PathExecutor extends Behavior {
     private static final double MAX_DIST_FROM_PATH = 2;
     private static final double MAX_TICKS_AWAY = 200; // ten seconds
     private final IPath path;
@@ -28,7 +28,7 @@ public class PathExecution extends Behavior {
     private int ticksOnCurrent;
     private boolean failed;
 
-    public PathExecution(IPath path) {
+    public PathExecutor(IPath path) {
         this.path = path;
         this.pathPosition = 0;
     }

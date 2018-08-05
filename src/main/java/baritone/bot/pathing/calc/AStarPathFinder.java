@@ -3,11 +3,12 @@ package baritone.bot.pathing.calc;
 
 //import baritone.Baritone;
 
+import baritone.bot.pathing.calc.openset.BinaryHeapOpenSet;
+import baritone.bot.pathing.calc.openset.IOpenSet;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
-import baritone.bot.pathing.calc.openset.BinaryHeapOpenSet;
-import baritone.bot.pathing.calc.openset.IOpenSet;
+import baritone.bot.pathing.path.IPath;
 import baritone.bot.utils.ToolSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
