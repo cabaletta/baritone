@@ -1,5 +1,6 @@
-package baritone.bot.behavior;
+package baritone.bot.behavior.impl;
 
+import baritone.bot.behavior.Behavior;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 
