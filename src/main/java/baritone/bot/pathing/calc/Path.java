@@ -1,6 +1,5 @@
 package baritone.bot.pathing.calc;
 
-import baritone.bot.pathing.calc.PathNode;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.path.IPath;
@@ -19,23 +18,23 @@ class Path implements IPath {
     /**
      * The start position of this path
      */
-    public final BlockPos start;
+    final BlockPos start;
 
     /**
      * The end position of this path
      */
-    public final BlockPos end;
+    final BlockPos end;
 
     /**
      * The goal that this path is attempting to accomplish
      */
-    public final Goal goal;
+    final Goal goal;
 
     /**
      * The blocks on the path. Guaranteed that path.get(0) equals start and
      * path.get(path.size()-1) equals end
      */
-    public final List<BlockPos> path;
+    final List<BlockPos> path;
 
     final List<Movement> movements;
 
@@ -53,7 +52,7 @@ class Path implements IPath {
      * Assembles this path given the start and end nodes.
      *
      * @param start The start node
-     * @param end The end node
+     * @param end   The end node
      */
     private void assemblePath(PathNode start, PathNode end) {
         if (!path.isEmpty() || !movements.isEmpty()) {
