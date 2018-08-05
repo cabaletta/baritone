@@ -34,7 +34,7 @@ public class MixinEntityPlayerSP {
                     target = "Lnet/minecraft/client/entity/AbstractClientPlayer;onUpdate()V"
             )
     )
-    public void onUpdate(CallbackInfo ci) {
-        
+    private void onUpdate(CallbackInfo ci) {
+        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate();
     }
 }

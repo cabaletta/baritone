@@ -13,13 +13,12 @@ public class MixinEntityRenderer {
     @Inject(
             method = "renderWorldPass",
             at = @At(
-                   value = "INVOKE_STRING",
-                   target = "Lnet/minecraft/profiler/Profiler;endStartSection(Ljava/lang/String;)V", args = { "ldc=hand" }
+                    value = "INVOKE_STRING",
+                    target = "Lnet/minecraft/profiler/Profiler;endStartSection(Ljava/lang/String;)V",
+                    args = { "ldc=hand" }
             )
     )
     private void renderWorldPass(CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onRenderPass();
     }
-
-
 }
