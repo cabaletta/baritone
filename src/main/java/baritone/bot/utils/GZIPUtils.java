@@ -1,8 +1,8 @@
 package baritone.bot.utils;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -24,10 +24,10 @@ public final class GZIPUtils {
         return byteStream.toByteArray();
     }
 
-    public static byte[] decompress(byte[] in) throws IOException {
+    public static byte[] decompress(InputStream in) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
-        try (GZIPInputStream gzipStream = new GZIPInputStream(new ByteArrayInputStream(in))) {
+        try (GZIPInputStream gzipStream = new GZIPInputStream(in)) {
             byte[] buffer = new byte[1024];
             int len;
             while ((len = gzipStream.read(buffer)) > 0) {

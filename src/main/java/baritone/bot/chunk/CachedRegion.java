@@ -3,13 +3,15 @@ package baritone.bot.chunk;
 import baritone.bot.pathing.util.PathingBlockType;
 import baritone.bot.utils.GZIPUtils;
 
-import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author Brady
@@ -19,7 +21,7 @@ public final class CachedRegion implements ICachedChunkAccess {
 
     /**
      * All of the chunks in this region. A 16x16 array of them.
-     *
+     * <p>
      * I would make these 32x32 regions to be in line with the Anvil format, but 16 is a nice number.
      */
     private final CachedChunk[][] chunks = new CachedChunk[32][32];
@@ -67,28 +69,24 @@ public final class CachedRegion implements ICachedChunkAccess {
             if (!Files.exists(path))
                 Files.createDirectories(path);
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(32 * 32 * CachedChunk.SIZE_IN_BYTES);
-            for (int z = 0; z < 32; z++) {
-                for (int x = 0; x < 32; x++) {
-                    CachedChunk chunk = this.chunks[x][z];
-                    if (chunk == null) {
-                        bos.write(CachedChunk.EMPTY_CHUNK);
-                    } else {
-                        byte[] chunkBytes = chunk.toByteArray();
-                        bos.write(chunkBytes);
-                        // Messy, but fills the empty 0s that should be trailing to fill up the space.
-                        bos.write(new byte[CachedChunk.SIZE_IN_BYTES - chunkBytes.length]);
-                    }
-                }
-            }
-
             Path regionFile = getRegionFile(path, this.x, this.z);
             if (!Files.exists(regionFile))
                 Files.createFile(regionFile);
-
-            byte[] compressed = GZIPUtils.compress(bos.toByteArray());
-            if (compressed != null)
-                Files.write(regionFile, compressed);
+            try (FileOutputStream fileOut = new FileOutputStream(regionFile.toFile()); GZIPOutputStream out = new GZIPOutputStream(fileOut)) {
+                for (int z = 0; z < 32; z++) {
+                    for (int x = 0; x < 32; x++) {
+                        CachedChunk chunk = this.chunks[x][z];
+                        if (chunk == null) {
+                            out.write(CachedChunk.EMPTY_CHUNK);
+                        } else {
+                            byte[] chunkBytes = chunk.toByteArray();
+                            out.write(chunkBytes);
+                            // Messy, but fills the empty 0s that should be trailing to fill up the space.
+                            out.write(new byte[CachedChunk.SIZE_IN_BYTES - chunkBytes.length]);
+                        }
+                    }
+                }
+            }
         } catch (IOException ignored) {}
     }
 
@@ -101,9 +99,11 @@ public final class CachedRegion implements ICachedChunkAccess {
             Path regionFile = getRegionFile(path, this.x, this.z);
             if (!Files.exists(regionFile))
                 return;
+            byte[] decompressed;
+            try (FileInputStream in = new FileInputStream(regionFile.toFile())) {
+                decompressed = GZIPUtils.decompress(in);
+            }
 
-            byte[] fileBytes = Files.readAllBytes(regionFile);
-            byte[] decompressed = GZIPUtils.decompress(fileBytes);
             if (decompressed == null)
                 return;
 
