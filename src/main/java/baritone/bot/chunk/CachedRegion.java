@@ -53,10 +53,11 @@ public final class CachedRegion implements ICachedChunkAccess {
     @Override
     public final void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
         CachedChunk chunk = this.getChunk(chunkX, chunkZ);
-        if (chunk == null)
+        if (chunk == null) {
             this.chunks[chunkX][chunkZ] = new CachedChunk(chunkX, chunkZ, data);
-        else
+        } else {
             chunk.updateContents(data);
+        }
     }
 
     private CachedChunk getChunk(int chunkX, int chunkZ) {
@@ -99,6 +100,7 @@ public final class CachedRegion implements ICachedChunkAccess {
             Path regionFile = getRegionFile(path, this.x, this.z);
             if (!Files.exists(regionFile))
                 return;
+
             byte[] decompressed;
             try (FileInputStream in = new FileInputStream(regionFile.toFile())) {
                 decompressed = GZIPUtils.decompress(in);
@@ -109,16 +111,26 @@ public final class CachedRegion implements ICachedChunkAccess {
 
             for (int z = 0; z < 32; z++) {
                 for (int x = 0; x < 32; x++) {
-                    CachedChunk chunk = this.chunks[x][z];
-                    if (chunk != null) {
-                        int index = (x + (z << 5)) * CachedChunk.SIZE_IN_BYTES;
-                        byte[] bytes = Arrays.copyOfRange(decompressed, index, index + CachedChunk.SIZE_IN_BYTES);
+                    int index = (x + (z << 5)) * CachedChunk.SIZE_IN_BYTES;
+                    byte[] bytes = Arrays.copyOfRange(decompressed, index, index + CachedChunk.SIZE_IN_BYTES);
+                    if (isAllZeros(bytes)) {
+                        this.chunks[x][z] = null;
+                    } else {
                         BitSet bits = BitSet.valueOf(bytes);
-                        chunk.updateContents(bits);
+                        updateCachedChunk(x, z, bits);
                     }
                 }
             }
         } catch (IOException ignored) {}
+    }
+
+    private static boolean isAllZeros(final byte[] array) {
+        for (byte b : array) {
+            if (b != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
