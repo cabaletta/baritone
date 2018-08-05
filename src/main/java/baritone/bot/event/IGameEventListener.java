@@ -2,6 +2,7 @@ package baritone.bot.event;
 
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.ChunkEvent;
+import baritone.bot.event.events.WorldEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -54,4 +55,11 @@ public interface IGameEventListener {
      * @see EntityRenderer#renderWorldPass(int, float, long)
      */
     void onRenderPass();
+
+    /**
+     * Runs before and after whenever a new world is loaded
+     *
+     * @see Minecraft#loadWorld(WorldClient, String)
+     */
+    void onWorldEvent(WorldEvent event);
 }

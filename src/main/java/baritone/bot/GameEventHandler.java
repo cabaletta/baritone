@@ -4,6 +4,7 @@ import baritone.bot.behavior.Behavior;
 import baritone.bot.event.IGameEventListener;
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.ChunkEvent;
+import baritone.bot.event.events.WorldEvent;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
@@ -54,12 +55,54 @@ public final class GameEventHandler implements IGameEventListener {
 
     @Override
     public void onChunkEvent(ChunkEvent event) {
+        /*
+
+        EventState state = event.getState();
+        ChunkEvent.Type type = event.getType();
+
+        boolean isPostPopulate = state == EventState.POST
+                && type == ChunkEvent.Type.POPULATE;
+
+        // Whenever the server sends us to another dimension, chunks are unloaded
+        // technically after the new world has been loaded, so we perform a check
+        // to make sure the chunk being unloaded is already loaded.
+        boolean isPreUnload = state == EventState.PRE
+                && type == ChunkEvent.Type.UNLOAD
+                && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
+
+        if (isPostPopulate || isPreUnload) {
+            CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
+                    world.updateCachedChunk(event.getX(), event.getZ(),
+                            ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ()))));
+        }
+        */
+
         dispatch(behavior -> behavior.onChunkEvent(event));
     }
 
     @Override
     public void onRenderPass() {
         dispatch(Behavior::onRenderPass);
+    }
+
+    @Override
+    public void onWorldEvent(WorldEvent event) {
+        /*
+        CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
+
+        switch (event.getState()) {
+            case PRE:
+                cache.ifWorldLoaded(CachedWorld::save);
+                break;
+            case POST:
+                cache.closeWorld();
+                if (event.getWorld() != null)
+                    cache.initWorld(event.getWorld());
+                break;
+        }
+        */
+
+        dispatch(behavior -> behavior.onWorldEvent(event));
     }
 
     private void dispatch(Consumer<Behavior> dispatchFunction) {
