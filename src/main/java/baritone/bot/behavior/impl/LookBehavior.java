@@ -23,11 +23,6 @@ public class LookBehavior extends Behavior {
      */
     private Optional<Tuple<Float, Float>> target = Optional.empty();
 
-    public void updateTarget(BlockPos blockPos) {
-        Utils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
-                Utils.calcCenterFromCoords(blockPos, world()));
-    }
-
     public void updateTarget(Tuple<Float, Float> target) {
         this.target = Optional.of(target);
     }
