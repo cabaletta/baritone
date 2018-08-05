@@ -36,10 +36,9 @@ public class BinaryHeapOpenSet implements IOpenSet {
             array = Arrays.copyOf(array, array.length * 2);
         }
         size++;
-        int index = size;
-        value.heapPosition = index;
-        array[index] = value;
-        upHeap(index);
+        value.heapPosition = size;
+        array[size] = value;
+        upHeap(size);
     }
 
     public void update(PathNode node) {
@@ -67,21 +66,28 @@ public class BinaryHeapOpenSet implements IOpenSet {
         }
         int index = 1;
         int smallerChild = 2;
-        double cost = array[index].combinedCost;
+        PathNode val = array[index];
+        double cost = val.combinedCost;
         do {
             int right = smallerChild + 1;
-            double smallerChildCost = array[smallerChild].combinedCost;
+            PathNode smallerChildNode = array[smallerChild];
+            double smallerChildCost = smallerChildNode.combinedCost;
             if (right <= size) {
-                double rightChildCost = array[right].combinedCost;
+                PathNode rightChildNode = array[right];
+                double rightChildCost = rightChildNode.combinedCost;
                 if (smallerChildCost > rightChildCost) {
                     smallerChild = right;
                     smallerChildCost = rightChildCost;
+                    smallerChildNode = rightChildNode;
                 }
             }
             if (cost <= smallerChildCost) {
                 break;
             }
-            swap(index, smallerChild);
+            array[index] = smallerChildNode;
+            array[smallerChild] = val;
+            val.heapPosition = smallerChild;
+            smallerChildNode.heapPosition = index;
             index = smallerChild;
             smallerChild = index << 1;
         } while (smallerChild <= size);
@@ -89,31 +95,18 @@ public class BinaryHeapOpenSet implements IOpenSet {
     }
 
     private void upHeap(int index) {
-        int parent = index >>> 1;
-        double cost = array[index].combinedCost;
-        while (index > 1 && array[parent].combinedCost > cost) {
-            swap(index, parent);
-            index = parent;
-            parent = index >>> 1;
+        int parentInd = index >>> 1;
+        PathNode val = array[index];
+        double cost = val.combinedCost;
+        PathNode parentNode = array[parentInd];
+        while (index > 1 && parentNode.combinedCost > cost) {
+            array[index] = parentNode;
+            array[parentInd] = val;
+            val.heapPosition = parentInd;
+            parentNode.heapPosition = index;
+            index = parentInd;
+            parentInd = index >>> 1;
+            parentNode = array[parentInd];
         }
     }
-
-
-    /**
-     * Swaps the elements at the specified indices.
-     *
-     * @param index1 The first index
-     * @param index2 The second index
-     */
-    protected void swap(int index1, int index2) {
-        //sanity checks, disabled because of performance hit
-        //if (array[index1].heapPosition != index1) throw new IllegalStateException();
-        //if (array[index2].heapPosition != index2) throw new IllegalStateException();
-        PathNode tmp = array[index1];
-        array[index1] = array[index2];
-        array[index2] = tmp;
-        tmp.heapPosition = index2;
-        array[index1].heapPosition = index1;
-    }
-
 }
