@@ -27,4 +27,11 @@ public interface IOpenSet {
      * @return The minimum element in the heap
      */
     PathNode removeLowest();
+
+    /**
+     * A faster path has been found to this node, decreasing its cost. Perform a decrease-key operation.
+     *
+     * @param node The node
+     */
+    void update(PathNode node);
 }

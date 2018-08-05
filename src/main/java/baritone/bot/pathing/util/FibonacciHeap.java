@@ -24,6 +24,8 @@ package baritone.bot.pathing.util;
  */
 //package com.bluemarsh.graphmaker.core.util;
 
+import baritone.bot.pathing.calc.PathNode;
+
 /**
  * This class implements a Fibonacci heap data structure. Much of the
  * code in this class is based on the algorithms in Chapter 21 of the
@@ -233,8 +235,9 @@ public class FibonacciHeap {
      * @param key key value associated with data object.
      * @return newly created heap node.
      */
-    public Node insert(Object x, double key) {
+    public Node insert(PathNode x, double key) {
         Node node = new Node(x, key);
+        x.parent = node;
         // concatenate node into min list
         if (min != null) {
             node.right = min;
@@ -271,7 +274,7 @@ public class FibonacciHeap {
      *
      * @return data object with the smallest key.
      */
-    public Object removeMin() {
+    public PathNode removeMin() {
         Node z = min;
         if (z == null) {
             return null;
@@ -329,7 +332,7 @@ public class FibonacciHeap {
         /**
          * Data object for this node, holds the key value.
          */
-        private Object data;
+        private PathNode data;
         /**
          * Key value for this node.
          */
@@ -368,7 +371,7 @@ public class FibonacciHeap {
          * @param data data object to associate with this node
          * @param key  key value for this data object
          */
-        public Node(Object data, double key) {
+        public Node(PathNode data, double key) {
             this.data = data;
             this.key = key;
             right = this;

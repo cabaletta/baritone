@@ -37,13 +37,13 @@ public class BinaryHeapOpenSet implements IOpenSet {
         }
         size++;
         int index = size;
+        value.heapPosition = index;
         array[index] = value;
-        int parent = index >>> 1;
-        while (index > 1 && array[parent].combinedCost > array[index].combinedCost) {
-            swap(index, parent);
-            index = parent;
-            parent = index >>> 1;
-        }
+        upHeap(index);
+    }
+
+    public void update(PathNode node) {
+        upHeap(node.heapPosition);
     }
 
     @Override
@@ -58,24 +58,37 @@ public class BinaryHeapOpenSet implements IOpenSet {
         }
         PathNode result = array[1];
         array[1] = array[size];
+        array[1].heapPosition = 1;
         array[size] = null;
         size--;
-        int index = 1;
+        downHeap(1);
+        result.heapPosition = -1;
+        return result;
+    }
+
+    private void upHeap(int index) {
+        int parent = index >>> 1;
+        while (index > 1 && array[parent].combinedCost > array[index].combinedCost) {
+            swap(index, parent);
+            index = parent;
+            parent = index >>> 1;
+        }
+    }
+
+    private void downHeap(int index) {
         int smallerChild = 2;
         while (smallerChild <= size) {
             int right = smallerChild + 1;
             if (right <= size && array[smallerChild].combinedCost > array[right].combinedCost) {
                 smallerChild = right;
             }
-            if (array[index].combinedCost > array[smallerChild].combinedCost) {
-                swap(index, smallerChild);
-            } else {
+            if (array[index].combinedCost <= array[smallerChild].combinedCost) {
                 break;
             }
+            swap(index, smallerChild);
             index = smallerChild;
             smallerChild = index << 1;
         }
-        return result;
     }
 
     /**
@@ -85,8 +98,14 @@ public class BinaryHeapOpenSet implements IOpenSet {
      * @param index2 The second index
      */
     protected void swap(int index1, int index2) {
+        //sanity checks, disabled because of performance hit
+        //if (array[index1].heapPosition != index1) throw new IllegalStateException();
+        //if (array[index2].heapPosition != index2) throw new IllegalStateException();
         PathNode tmp = array[index1];
         array[index1] = array[index2];
         array[index2] = tmp;
+        tmp.heapPosition = index2;
+        array[index1].heapPosition = index1;
     }
+
 }

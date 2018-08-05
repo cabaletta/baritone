@@ -9,10 +9,12 @@ import baritone.bot.pathing.calc.PathNode;
 public class LinkedListOpenSet implements IOpenSet {
     private Node first = null;
 
+    @Override
     public boolean isEmpty() {
         return first == null;
     }
 
+    @Override
     public void insert(PathNode pathNode) {
         Node node = new Node();
         node.val = pathNode;
@@ -20,6 +22,12 @@ public class LinkedListOpenSet implements IOpenSet {
         first = node;
     }
 
+    @Override
+    public void update(PathNode node) {
+
+    }
+
+    @Override
     public PathNode removeLowest() {
         if (first == null) {
             return null;

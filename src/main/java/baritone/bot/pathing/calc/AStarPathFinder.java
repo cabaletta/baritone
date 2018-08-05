@@ -1,8 +1,5 @@
 package baritone.bot.pathing.calc;
 
-
-//import baritone.Baritone;
-
 import baritone.bot.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.bot.pathing.calc.openset.IOpenSet;
 import baritone.bot.pathing.goals.Goal;
@@ -55,8 +52,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 }
             }*/
             PathNode currentNode = openSet.removeLowest();
-            mostRecentConsidered = currentNode;
             currentNode.isOpen = false;
+            mostRecentConsidered = currentNode;
             BlockPos currentNodePos = currentNode.pos;
             numNodes++;
             if (System.currentTimeMillis() > lastPrintout + 1000) {//print once a second
@@ -92,7 +89,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                     neighbor.previousMovement = movementToGetToNeighbor;
                     neighbor.cost = tentativeCost;
                     neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
-                    if (!neighbor.isOpen) {
+                    if (neighbor.isOpen) {
+                        openSet.update(neighbor);
+                    } else {
                         openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
                         neighbor.isOpen = true;
                     }

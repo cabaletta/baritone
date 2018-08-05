@@ -2,6 +2,7 @@ package baritone.bot.pathing.calc;
 
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.Movement;
+import baritone.bot.pathing.util.FibonacciHeap;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
@@ -17,7 +18,7 @@ public class PathNode {
      * The position of this node
      */
     final BlockPos pos;
-    
+
     /**
      * The goal it's going towards
      */
@@ -57,6 +58,9 @@ public class PathNode {
      * Instead of doing a costly member check in the open set, cache membership in each node individually too.
      */
     boolean isOpen;
+
+    public int heapPosition;
+    public FibonacciHeap.Node parent;
 
     public PathNode(BlockPos pos, Goal goal) {
         this.pos = pos;

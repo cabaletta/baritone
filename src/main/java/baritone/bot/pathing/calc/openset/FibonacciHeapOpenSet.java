@@ -1,7 +1,7 @@
 package baritone.bot.pathing.calc.openset;
 
-import baritone.bot.pathing.util.FibonacciHeap;
 import baritone.bot.pathing.calc.PathNode;
+import baritone.bot.pathing.util.FibonacciHeap;
 
 /**
  * Wrapper adapter between FibonacciHeap and OpenSet
@@ -17,6 +17,12 @@ public class FibonacciHeapOpenSet extends FibonacciHeap implements IOpenSet {
 
     @Override
     public PathNode removeLowest() {
-        return (PathNode) super.removeMin();
+        PathNode pn = super.removeMin();
+        pn.parent = null;
+        return pn;
+    }
+
+    public void update(PathNode node) {
+        super.decreaseKey(node.parent, node.combinedCost);
     }
 }
