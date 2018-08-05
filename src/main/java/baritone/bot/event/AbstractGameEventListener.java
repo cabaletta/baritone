@@ -7,7 +7,7 @@ import baritone.bot.event.events.WorldEvent;
 
 /**
  * An implementation of {@link IGameEventListener} that has all methods
- * overriden with empty bodies, allowing inheritors of this class to choose
+ * overridden with empty bodies, allowing inheritors of this class to choose
  * which events they would like to listen in on.
  *
  * Has no implementors at the moment, but will likely be used with the
