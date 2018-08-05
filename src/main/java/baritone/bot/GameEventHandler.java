@@ -24,6 +24,11 @@ public final class GameEventHandler implements IGameEventListener {
     }
 
     @Override
+    public void onRenderPass() {
+        dispatch(Behavior::onRenderPass);
+    }
+
+    @Override
     public void onProcessKeyBinds() {
         InputOverrideHandler inputHandler = Baritone.INSTANCE.getInputOverrideHandler();
 

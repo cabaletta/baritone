@@ -40,4 +40,9 @@ public interface IGameEventListener {
      * @see WorldClient#doPreChunk(int, int, boolean)
      */
     void onChunkEvent(ChunkEvent event);
+
+    /**
+     * Runs once each frame
+     */
+    void onRenderPass();
 }
