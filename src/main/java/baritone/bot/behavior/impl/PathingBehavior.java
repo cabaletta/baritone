@@ -3,7 +3,6 @@ package baritone.bot.behavior.impl;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.RenderEvent;
-import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
@@ -35,12 +34,12 @@ public class PathingBehavior extends Behavior {
     private Goal goal;
 
     @Override
-    public void onTick(TickEvent event) {
-        //System.out.println("Ticking");
+    public void onTick() {
+        // System.out.println("Ticking");
         if (current == null) {
             return;
         }
-        //current.onTick();
+        // current.onTick();
         if (current.failed() || current.finished()) {
             current = null;
         }
@@ -57,16 +56,12 @@ public class PathingBehavior extends Behavior {
         return current.getPath();
     }
 
-    private static void chatRaw(String s) {
-        Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(s));
-    }
-
     @Override
     public void onSendChatMessage(ChatEvent event) {
         String msg = event.getMessage();
         if (msg.equals("goal")) {
             goal = new GoalBlock(playerFeet());
-            chatRaw("Goal: " + goal);
+            displayChatMessageRaw("Goal: " + goal);
             event.cancel();
             return;
         }
@@ -85,33 +80,27 @@ public class PathingBehavior extends Behavior {
      * @param talkAboutIt
      */
     public void findPathInNewThread(final BlockPos start, final boolean talkAboutIt) {
-
-        new Thread() {
-            @Override
-            public void run() {
-                if (talkAboutIt) {
-
-                    chatRaw("Starting to search for path from " + start + " to " + goal);
-                }
-
-                try {
-                    IPath path = findPath(start);
-                    if (path != null) {
-                        current = new PathExecutor(path);
-                    }
-                } catch (Exception e) {
-                }
-                /*isThereAnythingInProgress = false;
-                if (!currentPath.goal.isInGoal(currentPath.end)) {
-                    if (talkAboutIt) {
-                        Out.gui("I couldn't get all the way to " + goal + ", but I'm going to get as close as I can. " + currentPath.numNodes + " nodes considered", Out.Mode.Standard);
-                    }
-                    planAhead();
-                } else if (talkAboutIt) {
-                    Out.gui("Finished finding a path from " + start + " to " + goal + ". " + currentPath.numNodes + " nodes considered", Out.Mode.Debug);
-                }*/
+        new Thread(() -> {
+            if (talkAboutIt) {
+                displayChatMessageRaw("Starting to search for path from " + start + " to " + goal);
             }
-        }.start();
+
+            try {
+                IPath path = findPath(start);
+                if (path != null) {
+                    current = new PathExecutor(path);
+                }
+            } catch (Exception ignored) {}
+            /*isThereAnythingInProgress = false;
+            if (!currentPath.goal.isInGoal(currentPath.end)) {
+                if (talkAboutIt) {
+                    Out.gui("I couldn't get all the way to " + goal + ", but I'm going to get as close as I can. " + currentPath.numNodes + " nodes considered", Out.Mode.Standard);
+                }
+                planAhead();
+            } else if (talkAboutIt) {
+                Out.gui("Finished finding a path from " + start + " to " + goal + ". " + currentPath.numNodes + " nodes considered", Out.Mode.Debug);
+            }*/
+        }).start();
     }
 
     /**
@@ -122,7 +111,7 @@ public class PathingBehavior extends Behavior {
      */
     private IPath findPath(BlockPos start) {
         if (goal == null) {
-            chatRaw("no goal");
+            displayChatMessageRaw("no goal");
             return null;
         }
         try {
@@ -137,8 +126,8 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        //System.out.println("Render passing");
-        //System.out.println(event.getPartialTicks());
+        // System.out.println("Render passing");
+        // System.out.println(event.getPartialTicks());
         drawPath(player(), event.getPartialTicks(), Color.RED);
     }
 
@@ -167,7 +156,7 @@ public class PathingBehavior extends Behavior {
             }
         }
 
-        //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
+        // GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
@@ -187,6 +176,4 @@ public class PathingBehavior extends Behavior {
         worldrenderer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
         tessellator.draw();
     }
-
-
 }
