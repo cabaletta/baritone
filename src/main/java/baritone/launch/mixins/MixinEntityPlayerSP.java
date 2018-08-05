@@ -26,4 +26,15 @@ public class MixinEntityPlayerSP {
         if (event.isCancelled())
             ci.cancel();
     }
+
+    @Inject(
+            method = "onUpdate",
+            at = @At(
+                    value = "INVOKE_ASSIGN",
+                    target = "Lnet/minecraft/client/entity/AbstractClientPlayer;onUpdate()V"
+            )
+    )
+    public void onUpdate(CallbackInfo ci) {
+        
+    }
 }

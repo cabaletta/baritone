@@ -24,8 +24,8 @@ public final class GameEventHandler implements IGameEventListener {
     }
 
     @Override
-    public void onRenderPass() {
-        dispatch(Behavior::onRenderPass);
+    public void onPlayerUpdate() {
+        dispatch(Behavior::onPlayerUpdate);
     }
 
     @Override
@@ -55,6 +55,11 @@ public final class GameEventHandler implements IGameEventListener {
     @Override
     public void onChunkEvent(ChunkEvent event) {
         dispatch(behavior -> behavior.onChunkEvent(event));
+    }
+
+    @Override
+    public void onRenderPass() {
+        dispatch(Behavior::onRenderPass);
     }
 
     private void dispatch(Consumer<Behavior> dispatchFunction) {

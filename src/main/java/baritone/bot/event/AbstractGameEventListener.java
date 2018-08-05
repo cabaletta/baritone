@@ -22,6 +22,9 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onTick() {}
 
     @Override
+    default void onPlayerUpdate() {}
+
+    @Override
     default void onProcessKeyBinds() {}
 
     @Override

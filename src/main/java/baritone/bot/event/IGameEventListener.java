@@ -5,6 +5,7 @@ import baritone.bot.event.events.ChunkEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.renderer.EntityRenderer;
 
 /**
  * @author Brady
@@ -18,6 +19,12 @@ public interface IGameEventListener {
      * @see Minecraft#runTick()
      */
     void onTick();
+
+    /**
+     * Run once per game tick from before the player rotation is sent to the server.
+     * @see EntityPlayerSP#onUpdate()
+     */
+    void onPlayerUpdate();
 
     /**
      * Run once per game tick from before keybinds are processed.
@@ -43,6 +50,8 @@ public interface IGameEventListener {
 
     /**
      * Runs once each frame
+     *
+     * @see EntityRenderer#renderWorldPass(int, float, long)
      */
     void onRenderPass();
 }
