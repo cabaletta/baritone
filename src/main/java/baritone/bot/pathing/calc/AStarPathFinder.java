@@ -39,19 +39,19 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         }
         currentlyRunning = this;
         long startTime = System.currentTimeMillis();
-        long timeoutTime = startTime + /*(Baritone.slowPath ? 40000 : */4000/*)*/;
+        boolean slowPath=true;
+        long timeoutTime = startTime + (slowPath ? 40000 :4000);
         long lastPrintout = 0;
         int numNodes = 0;
         ToolSet ts = new ToolSet();
         int numEmptyChunk = 0;
         while (!openSet.isEmpty() && numEmptyChunk < 50 && System.currentTimeMillis() < timeoutTime) {
-            /*if (Baritone.slowPath) {
+            if (slowPath) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(AStarPathFinder.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }*/
+            }
             PathNode currentNode = openSet.removeLowest();
             currentNode.isOpen = false;
             mostRecentConsidered = currentNode;
