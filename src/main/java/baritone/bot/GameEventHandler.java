@@ -4,6 +4,7 @@ import baritone.bot.behavior.Behavior;
 import baritone.bot.event.IGameEventListener;
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.ChunkEvent;
+import baritone.bot.event.events.RenderEvent;
 import baritone.bot.event.events.WorldEvent;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
@@ -16,8 +17,7 @@ import java.util.function.Consumer;
  */
 public final class GameEventHandler implements IGameEventListener {
 
-    GameEventHandler() {
-    }
+    GameEventHandler() {}
 
     @Override
     public final void onTick() {
@@ -81,8 +81,8 @@ public final class GameEventHandler implements IGameEventListener {
     }
 
     @Override
-    public void onRenderPass() {
-        dispatch(Behavior::onRenderPass);
+    public void onRenderPass(RenderEvent event) {
+        dispatch(behavior -> onRenderPass(event));
     }
 
     @Override

@@ -2,11 +2,13 @@ package baritone.bot.event;
 
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.ChunkEvent;
+import baritone.bot.event.events.RenderEvent;
 import baritone.bot.event.events.WorldEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.settings.GameSettings;
 
 /**
  * @author Brady
@@ -50,11 +52,13 @@ public interface IGameEventListener {
     void onChunkEvent(ChunkEvent event);
 
     /**
-     * Runs once each frame
+     * Runs once per world render pass. Two passes are made when {@link GameSettings#anaglyph} is on.
+     * <p>
+     * <b>Note:</b> {@link GameSettings#anaglyph} has been removed in Minecraft 1.13
      *
      * @see EntityRenderer#renderWorldPass(int, float, long)
      */
-    void onRenderPass();
+    void onRenderPass(RenderEvent event);
 
     /**
      * Runs before and after whenever a new world is loaded

@@ -13,7 +13,7 @@ public final class CachedChunk implements IBlockTypeAccess {
 
     /**
      * The size of the chunk data in bits. Equal to 16 KiB.
-     * <br>
+     * <p>
      * Chunks are 16x16x256, each block requires 2 bits.
      */
     public static final int SIZE = 2 * 16 * 16 * 256;
@@ -40,7 +40,7 @@ public final class CachedChunk implements IBlockTypeAccess {
 
     /**
      * The actual raw data of this packed chunk.
-     * <br>
+     * <p>
      * Each block is expressed as 2 bits giving a total of 16 KiB
      */
     private final BitSet data;
