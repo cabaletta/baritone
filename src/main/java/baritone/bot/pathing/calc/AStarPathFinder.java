@@ -5,6 +5,7 @@ import baritone.bot.pathing.calc.openset.IOpenSet;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
+import baritone.bot.pathing.movement.movements.MovementAscend;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.utils.ToolSet;
 import net.minecraft.client.Minecraft;
@@ -137,6 +138,15 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
+        Movement[] movements = new Movement[8];
+        movements[0] = new MovementAscend(pos, new BlockPos(x + 1, y, z));
+        movements[1] = new MovementAscend(pos, new BlockPos(x - 1, y, z));
+        movements[2] = new MovementAscend(pos, new BlockPos(x, y, z + 1));
+        movements[3] = new MovementAscend(pos, new BlockPos(x, y, z - 1));
+        movements[4] = new MovementAscend(pos, new BlockPos(x + 1, y + 1, z));
+        movements[5] = new MovementAscend(pos, new BlockPos(x - 1, y + 1, z));
+        movements[6] = new MovementAscend(pos, new BlockPos(x, y + 1, z + 1));
+        movements[7] = new MovementAscend(pos, new BlockPos(x, y + 1, z - 1));
         /*Action[] actions = new Action[26];
         actions[0] = new ActionPillar(pos);
         actions[1] = new ActionBridge(pos, new BlockPos(x + 1, y, z));
@@ -165,7 +175,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         actions[24] = new ActionWalkDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST);
         actions[25] = new ActionWalkDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST);
         return actions;*/
-        return null;
+        return movements;
     }
 
     private final Random random = new Random();

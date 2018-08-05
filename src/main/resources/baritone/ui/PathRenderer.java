@@ -4,9 +4,6 @@ import baritone.Baritone;
 import baritone.pathfinding.Path;
 import baritone.pathfinding.PathFinder;
 import baritone.pathfinding.actions.Action;
-import java.awt.Color;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -20,8 +17,11 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- *
  * @author leijurv
  */
 public class PathRenderer {
@@ -125,20 +125,6 @@ public class PathRenderer {
         GlStateManager.disableBlend();
     }
 
-    public static void drawLine(EntityPlayer player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
-        double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
-        double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
-        worldrenderer.begin(3, DefaultVertexFormats.POSITION);
-        worldrenderer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
-        worldrenderer.pos(bp2x + 0.5D - d0, bp2y + 0.5D - d1, bp2z + 0.5D - d2).endVertex();
-        worldrenderer.pos(bp2x + 0.5D - d0, bp2y + 0.53D - d1, bp2z + 0.5D - d2).endVertex();
-        worldrenderer.pos(bp1x + 0.5D - d0, bp1y + 0.53D - d1, bp1z + 0.5D - d2).endVertex();
-        worldrenderer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
-        tessellator.draw();
-    }
 
     public static void drawSelectionBox(EntityPlayer player, BlockPos blockpos, float partialTicks, Color color) {
         GlStateManager.enableBlend();

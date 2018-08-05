@@ -15,7 +15,7 @@ public class MovementAscend extends Movement {
 
     @Override
     public double calculateCost(ToolSet ts) {
-        throw new UnsupportedOperationException();
+        return 1;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class MovementAscend extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch(state.getStatus()) {
+        switch (state.getStatus()) {
             case PREPPING:
             case UNREACHABLE:
             case FAILED:
