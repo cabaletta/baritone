@@ -82,7 +82,7 @@ public final class GameEventHandler implements IGameEventListener {
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        dispatch(behavior -> onRenderPass(event));
+        dispatch(behavior -> behavior.onRenderPass(event));
     }
 
     @Override

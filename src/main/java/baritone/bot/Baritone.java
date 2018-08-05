@@ -1,6 +1,7 @@
 package baritone.bot;
 
 import baritone.bot.behavior.Behavior;
+import baritone.bot.behavior.impl.PathingBehavior;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ public enum Baritone {
         this.gameEventHandler = new GameEventHandler();
         this.inputOverrideHandler = new InputOverrideHandler();
         this.behaviors = new ArrayList<>();
+        behaviors.add(PathingBehavior.INSTANCE);
 
         this.active = true;
         this.initialized = true;

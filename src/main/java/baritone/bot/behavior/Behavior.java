@@ -14,7 +14,7 @@ public class Behavior implements AbstractGameEventListener, Helper {
     /**
      * Whether or not this behavior is enabled
      */
-    private boolean enabled;
+    private boolean enabled = true;
 
     /**
      * Toggles the enabled state of this {@link Behavior}.
@@ -51,7 +51,7 @@ public class Behavior implements AbstractGameEventListener, Helper {
      * that should always be active, given that the bot itself is
      * active.
      *
-     * @param oldState The old state
+     * @param oldState      The old state
      * @param proposedState The proposed state
      * @return The new  state
      */

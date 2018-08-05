@@ -1,6 +1,7 @@
 package baritone.bot.behavior.impl;
 
 import baritone.bot.behavior.Behavior;
+import baritone.bot.event.events.RenderEvent;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 
@@ -14,6 +15,7 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onTick() {
+        System.out.println("Ticking");
         if (current == null) {
             return;
         }
@@ -33,4 +35,11 @@ public class PathingBehavior extends Behavior {
         }
         return current.getPath();
     }
+
+    @Override
+    public void onRenderPass(RenderEvent event) {
+        System.out.println("Render passing");
+        System.out.println(event.getPartialTicks());
+    }
+
 }
