@@ -12,7 +12,7 @@ public class LookBehavior extends Behavior {
     public static final LookBehavior INSTANCE = new LookBehavior();
 
     public LookBehavior() {
-
+        target = Optional.empty();
     }
 
     /**
@@ -21,7 +21,7 @@ public class LookBehavior extends Behavior {
      * getFirst() -> yaw
      * getSecond() -> pitch
      */
-    private Optional<Tuple<Float, Float>> target = Optional.empty();
+    private Optional<Tuple<Float, Float>> target;
 
     public void updateTarget(Tuple<Float, Float> target) {
         this.target = Optional.of(target);
