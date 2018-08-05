@@ -1,9 +1,6 @@
 package baritone.bot.event;
 
-import baritone.bot.event.events.ChatEvent;
-import baritone.bot.event.events.ChunkEvent;
-import baritone.bot.event.events.RenderEvent;
-import baritone.bot.event.events.WorldEvent;
+import baritone.bot.event.events.*;
 
 /**
  * An implementation of {@link IGameEventListener} that has all methods
@@ -21,7 +18,7 @@ import baritone.bot.event.events.WorldEvent;
 public interface AbstractGameEventListener extends IGameEventListener {
 
     @Override
-    default void onTick() {}
+    default void onTick(TickEvent event) {}
 
     @Override
     default void onPlayerUpdate() {}

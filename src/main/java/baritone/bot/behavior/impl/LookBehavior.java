@@ -1,9 +1,7 @@
 package baritone.bot.behavior.impl;
 
 import baritone.bot.behavior.Behavior;
-import baritone.bot.utils.Utils;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Optional;
 

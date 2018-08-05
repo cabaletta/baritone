@@ -3,6 +3,7 @@ package baritone.bot.behavior.impl;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.RenderEvent;
+import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
@@ -34,7 +35,7 @@ public class PathingBehavior extends Behavior {
     private Goal goal;
 
     @Override
-    public void onTick() {
+    public void onTick(TickEvent event) {
         //System.out.println("Ticking");
         if (current == null) {
             return;
