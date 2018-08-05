@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 /**
  * @author Brady
@@ -18,7 +17,7 @@ public interface Helper {
         return mc.player;
     }
 
-    default World world() {
+    default WorldClient world() {
         return mc.world;
     }
 
