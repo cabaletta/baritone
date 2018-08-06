@@ -1,6 +1,7 @@
 package baritone.bot.utils;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -70,5 +71,10 @@ public class BlockStateInterface {
     public static boolean isAir(BlockPos pos) {
         return BlockStateInterface.getBlock(pos).equals(Blocks.AIR);
     }
+
+    static boolean canFall(BlockPos pos) {
+        return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
+    }
+
 
 }

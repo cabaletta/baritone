@@ -55,45 +55,6 @@ public abstract class Movement implements Helper, MovementHelper {
         return cost;
     }
 
-    public double getTotalHardnessOfBlocksToBreak(ToolSet ts) {
-        /*
-        double sum = 0;
-        HashSet<BlockPos> toBreak = new HashSet();
-        for (BlockPos positionsToBreak1 : positionsToBreak) {
-            toBreak.add(positionsToBreak1);
-            if (this instanceof ActionFall) {//if we are digging straight down, assume we have already broken the sand above us
-                continue;
-            }
-            BlockPos tmp = positionsToBreak1.up();
-            while (canFall(tmp)) {
-                toBreak.add(tmp);
-                tmp = tmp.up();
-            }
-        }
-        for (BlockPos pos : toBreak) {
-            sum += getHardness(ts, Baritone.get(pos), pos);
-            if (sum >= COST_INF) {
-                return COST_INF;
-            }
-        }
-        if (!Baritone.allowBreakOrPlace || !Baritone.hasThrowaway) {
-            for (int i = 0; i < blocksToPlace.length; i++) {
-                if (!canWalkOn(positionsToPlace[i])) {
-                    return COST_INF;
-                }
-            }
-        }*/
-        //^ the above implementation properly deals with falling blocks, TODO integrate
-        double sum = 0;
-        for (BlockPos pos : positionsToBreak) {
-            sum += MovementHelper.getMiningDurationTicks(ts, BlockStateInterface.get(pos), pos);
-            if (sum >= COST_INF) {
-                return COST_INF;
-            }
-        }
-        return sum;
-    }
-
     protected abstract double calculateCost(ToolSet ts); // TODO pass in information like whether it's allowed to place throwaway blocks
 
     public double recalculateCost() {
