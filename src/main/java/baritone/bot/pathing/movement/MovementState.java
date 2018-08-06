@@ -57,11 +57,11 @@ public class MovementState {
         }
 
         public final Optional<Vec3d> getPosition() {
-            return Optional.of(this.position);
+            return Optional.ofNullable(this.position);
         }
 
         public final Optional<Rotation> getRotation() {
-            return Optional.of(this.rotation);
+            return Optional.ofNullable(this.rotation);
         }
     }
 
