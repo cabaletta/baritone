@@ -89,9 +89,7 @@ public class PathingBehavior extends Behavior {
                 displayChatMessageRaw("Starting to search for path from " + start + " to " + goal);
             }
 
-            try {
-                findPath(start).map(PathExecutor::new).ifPresent(path -> current = path);
-            } catch (Exception ignored) {}
+            findPath(start).map(PathExecutor::new).ifPresent(path -> current = path);
             /*isThereAnythingInProgress = false;
             if (!currentPath.goal.isInGoal(currentPath.end)) {
                 if (talkAboutIt) {
