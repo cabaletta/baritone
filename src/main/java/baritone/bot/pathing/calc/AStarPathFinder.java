@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -21,12 +22,13 @@ import java.util.Random;
  * @author leijurv
  */
 public class AStarPathFinder extends AbstractNodeCostSearch {
+
     public AStarPathFinder(BlockPos start, Goal goal) {
         super(start, goal);
     }
 
     @Override
-    protected IPath calculate0() {
+    protected Optional<IPath> calculate0() {
         startNode = getNodeAtPosition(start);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
@@ -64,7 +66,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
             }
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
-                return new Path(startNode, currentNode, goal);
+                return Optional.of(new Path(startNode, currentNode, goal));
             }
             //long constructStart = System.nanoTime();
             Movement[] possibleMovements = getConnectedPositions(currentNodePos);//movement that we could take that start at myPos, in random order
@@ -125,13 +127,13 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 }
                 System.out.println("Path goes for " + dist + " blocks");
                 currentlyRunning = null;
-                return new Path(startNode, bestSoFar[i], goal);
+                return Optional.of(new Path(startNode, bestSoFar[i], goal));
             }
         }
         System.out.println("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks =(");
         System.out.println("No path found =(");
         currentlyRunning = null;
-        return null;
+        return Optional.empty();
     }
 
 

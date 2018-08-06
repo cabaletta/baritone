@@ -6,6 +6,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Any pathfinding algorithm that keeps track of nodes recursively by their cost (e.g. A*, dijkstra)
@@ -16,10 +17,8 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     /**
      * The currently running search task
-     * <p>
-     * TODO: This shouldn't be necessary, investigate old purpose of this field and determine necessity.
      */
-    public static AbstractNodeCostSearch currentlyRunning = null;
+    protected static AbstractNodeCostSearch currentlyRunning = null;
 
     protected final BlockPos start;
 
@@ -53,16 +52,16 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         this.map = new HashMap<>();
     }
 
-    public synchronized IPath calculate() {
+    public synchronized Optional<IPath> calculate() {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use! Wait until complete to reuse!");
         }
-        IPath path = calculate0();
+        Optional<IPath> path = calculate0();
         isFinished = true;
         return path;
     }
 
-    protected abstract IPath calculate0();
+    protected abstract Optional<IPath> calculate0();
 
     /**
      * Determines the distance squared from the specified node to the start
@@ -103,16 +102,16 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     }
 
     @Override
-    public IPath bestPathSoFar() {
-        if (startNode == null || bestSoFar[0] == null) {
-            return null;
-        }
-        return new Path(startNode, bestSoFar[0], goal);
+    public Optional<IPath> pathToMostRecentNodeConsidered() {
+        return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, goal));
     }
 
     @Override
-    public IPath pathToMostRecentNodeConsidered() {
-        return mostRecentConsidered == null ? null : new Path(startNode, mostRecentConsidered, goal);
+    public Optional<IPath> bestPathSoFar() {
+        if (startNode == null || bestSoFar[0] == null)
+            return Optional.empty();
+
+        return Optional.of(new Path(startNode, bestSoFar[0], goal));
     }
 
     @Override
@@ -128,5 +127,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public final BlockPos getStart() {
         return start;
+    }
+
+    public static Optional<AbstractNodeCostSearch> getCurrentlyRunning() {
+        return Optional.ofNullable(currentlyRunning);
     }
 }

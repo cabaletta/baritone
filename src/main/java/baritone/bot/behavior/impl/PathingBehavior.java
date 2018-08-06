@@ -28,6 +28,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Optional;
 
 public class PathingBehavior extends Behavior {
 
@@ -55,11 +56,8 @@ public class PathingBehavior extends Behavior {
         return current;
     }
 
-    public IPath getPath() {
-        if (current == null) {
-            return null;
-        }
-        return current.getPath();
+    public Optional<IPath> getPath() {
+        return Optional.ofNullable(current).map(PathExecutor::getPath);
     }
 
     @Override
@@ -92,10 +90,7 @@ public class PathingBehavior extends Behavior {
             }
 
             try {
-                IPath path = findPath(start);
-                if (path != null) {
-                    current = new PathExecutor(path);
-                }
+                findPath(start).map(PathExecutor::new).ifPresent(path -> current = path);
             } catch (Exception ignored) {}
             /*isThereAnythingInProgress = false;
             if (!currentPath.goal.isInGoal(currentPath.end)) {
@@ -115,18 +110,17 @@ public class PathingBehavior extends Behavior {
      * @param start
      * @return
      */
-    private IPath findPath(BlockPos start) {
+    private Optional<IPath> findPath(BlockPos start) {
         if (goal == null) {
             displayChatMessageRaw("no goal");
-            return null;
+            return Optional.empty();
         }
         try {
             IPathFinder pf = new AStarPathFinder(start, goal);
-            IPath path = pf.calculate();
-            return path;
+            return pf.calculate();
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -134,22 +128,21 @@ public class PathingBehavior extends Behavior {
     public void onRenderPass(RenderEvent event) {
         //System.out.println("Render passing");
         //System.out.println(event.getPartialTicks());
-        IPath path = getPath();
         float partialTicks = event.getPartialTicks();
-        if (path != null) {
-            drawPath(path, player(), partialTicks, Color.RED);
-        }
-        if (AbstractNodeCostSearch.currentlyRunning != null) {
-            IPath p = AbstractNodeCostSearch.currentlyRunning.bestPathSoFar();
-            if (p != null) {
+
+        // Render the current path, if there is one
+        getPath().ifPresent(path -> drawPath(path, player(), partialTicks, Color.RED));
+
+        // If there is a path calculation currently running, render the path calculation process
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
+            currentlyRunning.bestPathSoFar().ifPresent(p -> {
                 drawPath(p, player(), partialTicks, Color.BLUE);
-                IPath mr = AbstractNodeCostSearch.currentlyRunning.pathToMostRecentNodeConsidered();
-                if (mr != null) {
+                currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
                     drawPath(mr, player(), partialTicks, Color.CYAN);
                     drawSelectionBox(player(), mr.getDest(), partialTicks, Color.CYAN);
-                }
-            }
-        }
+                });
+            });
+        });
     }
 
     public void drawPath(IPath path, EntityPlayerSP player, float partialTicks, Color color) {

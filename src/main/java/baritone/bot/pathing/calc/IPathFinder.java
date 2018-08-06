@@ -4,6 +4,8 @@ import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.path.IPath;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Optional;
+
 /**
  * Generic path finder interface
  *
@@ -20,7 +22,7 @@ public interface IPathFinder {
      *
      * @return The final path
      */
-    IPath calculate();
+    Optional<IPath> calculate();
 
     /**
      * Intended to be called concurrently with calculatePath from a different thread to tell if it's finished yet
@@ -34,7 +36,7 @@ public interface IPathFinder {
      *
      * @return The temporary path
      */
-    IPath pathToMostRecentNodeConsidered();
+    Optional<IPath> pathToMostRecentNodeConsidered();
 
     /**
      * The best path so far, according to the most forgiving coefficient heuristic (the reason being that that path is
@@ -44,5 +46,5 @@ public interface IPathFinder {
      *
      * @return The temporary path
      */
-    IPath bestPathSoFar();
+    Optional<IPath> bestPathSoFar();
 }

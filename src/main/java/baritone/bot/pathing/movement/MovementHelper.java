@@ -11,6 +11,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 
+import java.util.Optional;
+
 /**
  * Static helpers for cost calculation
  *
@@ -153,41 +155,38 @@ public interface MovementHelper extends ActionCosts, Helper {
      * The currently highlighted block.
      * Updated once a tick by Minecraft.
      *
-     * @return the position of the highlighted block, or null if no block is highlighted
+     * @return the position of the highlighted block
      */
-    static BlockPos whatAmILookingAt() {
+    static Optional<BlockPos> whatAmILookingAt() {
         if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
-            return mc.objectMouseOver.getBlockPos();
+            return Optional.of(mc.objectMouseOver.getBlockPos());
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
      * The entity the player is currently looking at
      *
-     * @return the entity object, or null if the player isn't looking at an entity
+     * @return the entity object
      */
-    static Entity whatEntityAmILookingAt() {
-        Minecraft mc = Minecraft.getMinecraft();
+    static Optional<Entity> whatEntityAmILookingAt() {
         if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
-            return mc.objectMouseOver.entityHit;
+            return Optional.of(mc.objectMouseOver.entityHit);
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
      * AutoTool
      */
     static void switchToBestTool() {
-        BlockPos pos = whatAmILookingAt();
-        if (pos == null) {
-            return;
-        }
-        IBlockState state = BlockStateInterface.get(pos);
-        if (state.getBlock().equals(Blocks.AIR)) {
-            return;
-        }
-        switchToBestToolFor(state);
+        whatAmILookingAt().ifPresent(pos -> {
+            IBlockState state = BlockStateInterface.get(pos);
+            if (state.getBlock().equals(Blocks.AIR)) {
+                return;
+            }
+            switchToBestToolFor(state);
+        });
     }
 
     /**
@@ -206,11 +205,10 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ts previously calculated ToolSet
      */
     static void switchToBestToolFor(IBlockState b, ToolSet ts) {
-        Minecraft.getMinecraft().player.inventory.currentItem = ts.getBestSlot(b);
+        mc.player.inventory.currentItem = ts.getBestSlot(b);
     }
 
     static boolean isAir(BlockPos pos) {
         return BlockStateInterface.get(pos).getBlock().equals(Blocks.AIR);
     }
-
 }
