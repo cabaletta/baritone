@@ -7,8 +7,11 @@ import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.ToolSet;
+import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Optional;
 
 public class MovementAscend extends Movement {
     BlockPos[] against = new BlockPos[3];
@@ -59,13 +62,10 @@ public class MovementAscend extends Movement {
     }
 
     @Override
-    public void onFinish() {
-
-    }
-
-    @Override
     public MovementState updateState(MovementState state) {
+
         super.updateState(state);
+        System.out.println("Ticking with state " + state.getStatus());
         switch (state.getStatus()) {
             case PREPPING:
             case UNREACHABLE:
@@ -73,6 +73,8 @@ public class MovementAscend extends Movement {
                 return state;
             case WAITING:
             case RUNNING:
+                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromCoords(playerFeet(), positionsToBreak[0]))));
+
                 MovementState latestState = state.setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
                 if (playerFeet().equals(dest))
                     latestState.setStatus(MovementStatus.SUCCESS);
