@@ -42,11 +42,11 @@ public final class InputOverrideHandler implements Helper {
     /**
      * Sets whether or not the specified {@link Input} is being forced down.
      *
-     * @param input The {@link Input}
+     * @param input  The {@link Input}
      * @param forced Whether or not the state is being forced
      */
     public final void setInputForceState(Input input, boolean forced) {
-        if(!forced)
+        if (!forced)
             System.out.println(input);
         inputForceStateMap.put(input.getKeyBinding(), forced);
     }
@@ -64,7 +64,7 @@ public final class InputOverrideHandler implements Helper {
      * Sets whether or not the specified key code is being forced down.
      *
      * @param keyCode The key code
-     * @param forced Whether or not the state is being forced
+     * @param forced  Whether or not the state is being forced
      */
     public final void setKeyForceState(int keyCode, boolean forced) {
         keyCodeForceStateMap.put(keyCode, forced);
@@ -108,7 +108,13 @@ public final class InputOverrideHandler implements Helper {
         /**
          * The jump input
          */
-        JUMP(mc.gameSettings.keyBindJump);
+        JUMP(mc.gameSettings.keyBindJump),
+
+        /**
+         * The sneak input
+         */
+        SNEAK(mc.gameSettings.keyBindSneak);
+
         /**
          * The actual game {@link KeyBinding} being forced.
          */

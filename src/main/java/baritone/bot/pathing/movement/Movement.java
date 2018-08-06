@@ -6,11 +6,12 @@ import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
+import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
-import baritone.bot.utils.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static baritone.bot.InputOverrideHandler.Input;
@@ -131,7 +132,7 @@ public abstract class Movement implements Helper, MovementHelper {
             return true;
 
         for (BlockPos blockPos : positionsToBreak) {
-            if(!MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
+            if (!MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
                     state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
@@ -184,5 +185,25 @@ public abstract class Movement implements Helper, MovementHelper {
             state.setStatus(MovementStatus.WAITING);
         }
         return state;
+    }
+
+    public ArrayList<BlockPos> toBreak() {
+        ArrayList<BlockPos> result = new ArrayList<>();
+        for (BlockPos positionsToBreak1 : positionsToBreak) {
+            if (!MovementHelper.canWalkThrough(positionsToBreak1, BlockStateInterface.get(positionsToBreak1))) {
+                result.add(positionsToBreak1);
+            }
+        }
+        return result;
+    }
+
+    public ArrayList<BlockPos> toPlace() {
+        ArrayList<BlockPos> result = new ArrayList<>();
+        for (BlockPos positionsToPlace1 : positionsToPlace) {
+            if (!MovementHelper.canWalkOn(positionsToPlace1)) {
+                result.add(positionsToPlace1);
+            }
+        }
+        return result;
     }
 }

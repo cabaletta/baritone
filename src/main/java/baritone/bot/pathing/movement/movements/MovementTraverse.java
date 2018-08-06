@@ -1,6 +1,7 @@
 package baritone.bot.pathing.movement.movements;
 
 import baritone.bot.InputOverrideHandler;
+import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
@@ -14,7 +15,11 @@ import net.minecraft.block.BlockVine;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+
+import java.util.Objects;
 
 public class MovementTraverse extends Movement {
 
@@ -56,10 +61,6 @@ public class MovementTraverse extends Movement {
             //Out.log("Can't walk through " + blocksToBreak[0] + " (hardness" + hardness1 + ") or " + blocksToBreak[1] + " (hardness " + hardness2 + ")");
             return WC + getTotalHardnessOfBlocksToBreak(ts);
         } else {//this is a bridge, so we need to place a block
-            if (true) {
-                System.out.println(src + " " + dest);
-                return COST_INF;//TODO
-            }
             //return 1000000;
             Block f = BlockStateInterface.get(src.down()).getBlock();
             if (f instanceof BlockLadder || f instanceof BlockVine) {
@@ -80,6 +81,8 @@ public class MovementTraverse extends Movement {
         }
     }
 
+    boolean wasTheBridgeBlockAlwaysThere = true;//did we have to place a bridge block or was it always there
+
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
@@ -92,16 +95,86 @@ public class MovementTraverse extends Movement {
                 return state;
             case WAITING:
             case RUNNING:
-                if (playerFeet().equals(dest)) {
-                    state.setStatus(MovementState.MovementStatus.SUCCESS);
-                    return state;
-                }
-                Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()));
-                return state.setTarget(new MovementState.MovementTarget(rotationToBlock))
-                        .setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-
+                break;
             default:
                 return state;
         }
+        Block fd = BlockStateInterface.get(src.down()).getBlock();
+        boolean ladder = fd instanceof BlockLadder || fd instanceof BlockVine;
+        boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionsToPlace[0]) || ladder;
+        BlockPos whereAmI = playerFeet();
+        if (whereAmI.getY() != dest.getY() && !ladder) {
+            System.out.println("Wrong Y coordinate");
+            if (whereAmI.getY() < dest.getY()) {
+                state.setInput(InputOverrideHandler.Input.JUMP, true);
+            }
+            return state;
+        }
+        if (isTheBridgeBlockThere) {
+            if (playerFeet().equals(dest)) {
+                state.setStatus(MovementState.MovementStatus.SUCCESS);
+                return state;
+            }
+            if (wasTheBridgeBlockAlwaysThere) {
+                player().setSprinting(true);
+            }
+            Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()));
+            return state.setTarget(new MovementState.MovementTarget(rotationToBlock)).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+        } else {
+            wasTheBridgeBlockAlwaysThere = false;
+            for (BlockPos against1 : against) {
+                if (BlockStateInterface.get(against1).isBlockNormalCube()) {
+                    if (!MovementHelper.switchtothrowaway()) {//get ready to place a throwaway block
+                        displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
+                        return state;
+                    }
+                    state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                    double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
+                    double faceY = (dest.getY() + against1.getY()) * 0.5D;
+                    double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
+                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ))));
+
+                    EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
+                    if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && Minecraft.getMinecraft().player.isSneaking()) {
+                        if (LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
+                            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                        } else {
+                            //Out.gui("Wrong. " + side + " " + LookBehaviorUtils.getSelectedBlock().get().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);
+                        }
+                    }
+                    displayChatMessageRaw("Trying to look at " + against1 + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
+                    return state;
+                }
+            }
+            state.setInput(InputOverrideHandler.Input.SNEAK, true);
+            if (whereAmI.equals(dest)) {
+                //if we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
+                //Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
+                if (!MovementHelper.switchtothrowaway()) {//get ready to place a throwaway block
+                    displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
+                    return state;
+                }
+                double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;
+                double faceY = (dest.getY() + src.getY() - 1.0D) * 0.5D;
+                double faceZ = (dest.getZ() + src.getZ() + 1.0D) * 0.5D;
+                //faceX,faceY,faceZ is the middle of the face between from and to
+                BlockPos goalLook = src.down();//this is the block we were just standing on, and the one we want to place against
+                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ))));
+
+                state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), goalLook)) {
+                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);//wait to right click until we are able to place
+                    return state;
+                }
+                //Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
+                return state;
+            } else {
+                Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()));
+                return state.setTarget(new MovementState.MovementTarget(rotationToBlock)).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                //TODO MovementManager.moveTowardsBlock(to);//move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
+            }
+        }
+
     }
 }

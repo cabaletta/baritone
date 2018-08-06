@@ -42,7 +42,7 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onTick(TickEvent event) {
-        if(event.getType() == TickEvent.Type.OUT || current == null) {
+        if (event.getType() == TickEvent.Type.OUT || current == null) {
             return;
         }
         current.onTick(event);
@@ -137,6 +137,14 @@ public class PathingBehavior extends Behavior {
 
         // Render the current path, if there is one
         getPath().ifPresent(path -> drawPath(path, player(), partialTicks, Color.RED));
+        getPath().ifPresent(path -> {
+            for (BlockPos pos : path.getBlocksToBreak()) {
+                drawSelectionBox(player(), pos, partialTicks, Color.RED);
+            }
+            for (BlockPos pos : path.getBlocksToPlace()) {
+                drawSelectionBox(player(), pos, partialTicks, Color.GREEN);
+            }
+        });
 
         // If there is a path calculation currently running, render the path calculation process
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {

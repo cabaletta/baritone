@@ -7,11 +7,17 @@ import baritone.bot.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -82,6 +88,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
     }
 
+    static boolean canWalkOn(BlockPos pos) {
+        return canWalkOn(pos, BlockStateInterface.get(pos));
+    }
+
 
     static boolean canFall(BlockPos pos) {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
@@ -143,5 +153,32 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static void switchToBestToolFor(IBlockState b, ToolSet ts) {
         mc.player.inventory.currentItem = ts.getBestSlot(b);
+    }
+
+    static boolean switchtothrowaway() {
+        List<Item> ACCEPTABLE_THROWAWAY_ITEMS = Arrays.asList(new Item[]{Item.getByNameOrId("minecraft:dirt"), Item.getByNameOrId("minecraft:cobblestone")});
+        EntityPlayerSP p = Minecraft.getMinecraft().player;
+        NonNullList<ItemStack> inv = p.inventory.mainInventory;
+        for (byte i = 0; i < 9; i++) {
+            ItemStack item = inv.get(i);
+            if (ACCEPTABLE_THROWAWAY_ITEMS.contains(item.getItem())) {
+                p.inventory.currentItem = i;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean hasthrowaway() {
+        List<Item> ACCEPTABLE_THROWAWAY_ITEMS = Arrays.asList(new Item[]{Item.getByNameOrId("minecraft:dirt"), Item.getByNameOrId("minecraft:cobblestone")});
+        EntityPlayerSP p = Minecraft.getMinecraft().player;
+        NonNullList<ItemStack> inv = p.inventory.mainInventory;
+        for (byte i = 0; i < 9; i++) {
+            ItemStack item = inv.get(i);
+            if (ACCEPTABLE_THROWAWAY_ITEMS.contains(item.getItem())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

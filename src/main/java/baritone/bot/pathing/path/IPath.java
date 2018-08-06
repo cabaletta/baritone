@@ -5,8 +5,11 @@ import baritone.bot.utils.Utils;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author leijurv
@@ -96,14 +99,18 @@ public interface IPath {
      *
      * @return an unordered collection of positions
      */
-    Collection<BlockPos> getBlocksToBreak();
+    default Collection<BlockPos> getBlocksToBreak() {
+        return movements().stream().map(Movement::toBreak).flatMap(ArrayList::stream).collect(Collectors.toCollection(HashSet::new));
+    }
 
     /**
      * For rendering purposes, what blocks should be highlighted in green
      *
      * @return an unordered collection of positions
      */
-    Collection<BlockPos> getBlocksToPlace();
+    default Collection<BlockPos> getBlocksToPlace() {
+        return movements().stream().map(Movement::toPlace).flatMap(ArrayList::stream).collect(Collectors.toCollection(HashSet::new));
+    }
 
     int getNumNodesConsidered();
 }

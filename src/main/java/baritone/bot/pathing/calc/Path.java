@@ -5,8 +5,10 @@ import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.path.IPath;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A node based implementation of IPath
@@ -111,16 +113,6 @@ class Path implements IPath {
     @Override
     public List<BlockPos> positions() {
         return Collections.unmodifiableList(path);
-    }
-
-    @Override
-    public Collection<BlockPos> getBlocksToBreak() {
-        return movements.stream().map(move -> move.positionsToBreak).flatMap(Arrays::stream).collect(Collectors.toCollection(HashSet::new));
-    }
-
-    @Override
-    public Collection<BlockPos> getBlocksToPlace() {
-        return movements.stream().map(move -> move.positionsToPlace).flatMap(Arrays::stream).collect(Collectors.toCollection(HashSet::new));
     }
 
     @Override
