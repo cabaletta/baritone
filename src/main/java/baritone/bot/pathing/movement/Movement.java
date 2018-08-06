@@ -112,8 +112,11 @@ public abstract class Movement implements Helper, MovementHelper {
         MovementState latestState = updateState(currentState);
         latestState.getTarget().rotation.ifPresent(LookBehavior.INSTANCE::updateTarget);
         //TODO calculate movement inputs from latestState.getGoal().position
-        latestState.getTarget().position.ifPresent(null); // NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
-        latestState.inputState.forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
+        //latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
+        latestState.inputState.forEach((input, forced) -> {
+            Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
+            System.out.println(input + " AND " + forced);
+        });
         latestState.inputState.replaceAll((input, forced) -> false);
         currentState = latestState;
 
@@ -160,6 +163,8 @@ public abstract class Movement implements Helper, MovementHelper {
      * Run cleanup on state finish and declare success.
      */
     public void onFinish(MovementState state) {
+        state.inputState.replaceAll((input, forced) -> false);
+        state.inputState.forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
         state.setStatus(MovementStatus.SUCCESS);
     }
 

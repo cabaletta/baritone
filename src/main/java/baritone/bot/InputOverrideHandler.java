@@ -46,6 +46,8 @@ public final class InputOverrideHandler implements Helper {
      * @param forced Whether or not the state is being forced
      */
     public final void setInputForceState(Input input, boolean forced) {
+        if(!forced)
+            System.out.println(input);
         inputForceStateMap.put(input.getKeyBinding(), forced);
     }
 

@@ -11,8 +11,8 @@ import java.util.Optional;
 public class MovementState {
 
     private MovementStatus status;
-    private MovementTarget goal;
-    private MovementTarget target;
+    private MovementTarget goal = new MovementTarget(Optional.empty(), Optional.empty());
+    private MovementTarget target = new MovementTarget(Optional.empty(), Optional.empty());
     protected final Map<Input, Boolean> inputState = new HashMap<>();
 
     public MovementState setStatus(MovementStatus status) {

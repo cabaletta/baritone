@@ -93,10 +93,13 @@ public class MovementTraverse extends Movement {
                 return state;
             case WAITING:
             case RUNNING:
-                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromCoords(playerFeet(), positionsToBreak[0]))));
-                MovementState latestState = state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-                if (playerFeet().equals(dest))
-                    latestState.setStatus(MovementState.MovementStatus.SUCCESS);
+                if (playerFeet().equals(dest)) {
+                    state.setStatus(MovementState.MovementStatus.SUCCESS);
+                    return state;
+                }
+                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromCoords(playerFeet(), positionsToBreak[1])))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                return state;
+
             default:
                 return state;
         }

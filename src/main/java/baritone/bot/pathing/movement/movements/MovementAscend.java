@@ -73,11 +73,14 @@ public class MovementAscend extends Movement {
                 return state;
             case WAITING:
             case RUNNING:
-                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromCoords(playerFeet(), positionsToBreak[0]))));
+                if (playerFeet().equals(dest)) {
+                    state.setStatus(MovementStatus.SUCCESS);
+                    return state;
+                }
 
-                MovementState latestState = state.setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-                if (playerFeet().equals(dest))
-                    latestState.setStatus(MovementStatus.SUCCESS);
+                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromCoords(playerFeet(), positionsToBreak[0]))));
+                state.setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                return state;
             default:
                 return state;
         }

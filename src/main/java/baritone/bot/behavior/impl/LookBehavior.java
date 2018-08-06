@@ -1,6 +1,7 @@
 package baritone.bot.behavior.impl;
 
 import baritone.bot.behavior.Behavior;
+import baritone.bot.event.events.TickEvent;
 import baritone.bot.utils.Rotation;
 
 import java.util.Optional;
@@ -23,6 +24,11 @@ public class LookBehavior extends Behavior {
 
     public void updateTarget(Rotation target) {
         this.target = Optional.of(target);
+    }
+
+    @Override
+    public void onTick(TickEvent event) {
+        this.onPlayerUpdate();
     }
 
     @Override
