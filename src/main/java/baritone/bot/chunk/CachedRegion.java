@@ -20,9 +20,7 @@ import java.util.zip.GZIPOutputStream;
 public final class CachedRegion implements ICachedChunkAccess {
 
     /**
-     * All of the chunks in this region. A 16x16 array of them.
-     * <p>
-     * I would make these 32x32 regions to be in line with the Anvil format, but 16 is a nice number.
+     * All of the chunks in this region: A 32x32 array of them.
      */
     private final CachedChunk[][] chunks = new CachedChunk[32][32];
 
