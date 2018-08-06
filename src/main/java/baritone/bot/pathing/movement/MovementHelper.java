@@ -121,6 +121,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof BlockLadder || block instanceof BlockVine) {
             return true;
         }
+        if (block instanceof BlockAir) {
+            return false;
+        }
         if (isWater(block)) {
             return isWater(pos.up()); // You can only walk on water if there is water above it
         }

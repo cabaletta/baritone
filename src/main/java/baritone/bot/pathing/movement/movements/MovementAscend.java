@@ -49,6 +49,9 @@ public class MovementAscend extends Movement {
             if (!MovementHelper.isAir(positionsToPlace[0]) && !MovementHelper.isWater(positionsToPlace[0])) {
                 return COST_INF;
             }
+            if (true) {
+                return COST_INF;
+            }
             for (BlockPos against1 : against) {
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                     return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
