@@ -25,11 +25,11 @@ public final class Utils {
      * @param dest
      * @return Rotation Tuple {@link LookBehavior#target}
      */
-    public static Tuple<Float, Float> calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
+    public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
         double yaw = Math.atan2(orig.x - dest.x, -orig.z + dest.z);
         double dist = Math.sqrt((orig.x - dest.x) * (orig.x - dest.x) + (-orig.z + dest.z) * (-orig.z + dest.z));
         double pitch = Math.atan2(orig.y - dest.y, dist);
-        return new Tuple<>((float) (yaw * 180 / Math.PI),
+        return new Rotation((float) (yaw * 180 / Math.PI),
                 (float) (pitch * 180 / Math.PI));
     }
 

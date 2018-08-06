@@ -2,6 +2,7 @@ package baritone.bot.behavior.impl;
 
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
+import baritone.bot.utils.Rotation;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.Tuple;
@@ -34,7 +35,7 @@ public final class LookBehaviorUtils implements Helper{
         return new Vec3d((double) (f1 * f2), (double) f3, (double) (f * f2));
     }
 
-    public static Optional<Tuple<Float, Float>> reachable(BlockPos pos) {
+    public static Optional<Rotation> reachable(BlockPos pos) {
         Optional possibleRotation = reachableCenter(pos);
         if(possibleRotation.isPresent()) {
             return possibleRotation;
@@ -72,8 +73,8 @@ public final class LookBehaviorUtils implements Helper{
      * @param offset
      * @return
      */
-    protected static Optional<Tuple<Float, Float>> reachableRotation(BlockPos pos, Vec3d offset) {
-        Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+    protected static Optional<Rotation> reachableRotation(BlockPos pos, Vec3d offset) {
+        Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 offset);
         RayTraceResult result = raytraceTowards(rotation);
         if(result != null
@@ -88,8 +89,8 @@ public final class LookBehaviorUtils implements Helper{
      * @param pos
      * @return
      */
-    protected static Optional<Tuple<Float, Float>> reachableCenter(BlockPos pos) {
-        Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+    protected static Optional<Rotation> reachableCenter(BlockPos pos) {
+        Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 Utils.calcCenterFromCoords(pos, mc.world));
         RayTraceResult result = raytraceTowards(rotation);
         if(result != null

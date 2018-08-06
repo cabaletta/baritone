@@ -39,9 +39,9 @@ public class MovementState {
          */
         public Optional<Rotation> rotation;
 
-        public MovementTarget(Vec3d position, Rotation rotation) {
-            this.position = Optional.of(position);
-            this.rotation = Optional.of(rotation);
+        public MovementTarget(Optional<Vec3d> position, Optional<Rotation> rotation) {
+            this.position = position;
+            this.rotation = rotation;
         }
     }
 

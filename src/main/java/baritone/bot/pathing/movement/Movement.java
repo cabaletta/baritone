@@ -7,7 +7,7 @@ import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.ToolSet;
-import net.minecraft.util.Tuple;
+import baritone.bot.utils.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -132,12 +132,11 @@ public abstract class Movement implements Helper, MovementHelper {
         if (state.getStatus() == MovementStatus.WAITING) {
             return true;
         }
-        Optional<BlockPos> cruftPos;
-        for (BlockPos blockPos : positionsToBreak) {
-            if (MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
-                Optional<Tuple<Float, Float>> reachable = LookBehaviorUtils.reachable(blockPos);
+        for(BlockPos blockPos : positionsToBreak) {
+            if(MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
+                Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 reachable.ifPresent(rotation -> {
-                    state.setTarget(new MovementState.MovementTarget())
+                    state.setTarget(new MovementState.MovementTarget(Optional.empty(), reachable));
                     state.setInput(Input.CLICK_LEFT, true);
                 });
                 if (reachable.isPresent())
