@@ -134,9 +134,11 @@ public class PathingBehavior extends Behavior {
         //System.out.println("Render passing");
         //System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
+        long start = System.currentTimeMillis();
 
         // Render the current path, if there is one
         getPath().ifPresent(path -> drawPath(path, player(), partialTicks, Color.RED));
+        long split = System.currentTimeMillis();
         getPath().ifPresent(path -> {
             for (BlockPos pos : path.getBlocksToBreak()) {
                 drawSelectionBox(player(), pos, partialTicks, Color.RED);
@@ -156,6 +158,9 @@ public class PathingBehavior extends Behavior {
                 });
             });
         });
+        long end = System.currentTimeMillis();
+        if (end - start > 0)
+            System.out.println("Frame took " + (split - start) + " " + (end - split));
     }
 
     public void drawPath(IPath path, EntityPlayerSP player, float partialTicks, Color color) {

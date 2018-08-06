@@ -35,7 +35,7 @@ public class PathExecutor extends Behavior {
 
     @Override
     public void onTick(TickEvent event) {
-        if(event.getType() == TickEvent.Type.OUT) {
+        if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
         if (pathPosition >= path.length()) {
@@ -48,6 +48,7 @@ public class PathExecutor extends Behavior {
         BlockPos whereAmI = playerFeet();
         if (pathPosition == path.length() - 1) {
             System.out.println("On last path position -- done!");
+            pathPosition++;
             return;
         }
         if (!whereShouldIBe.equals(whereAmI)) {
@@ -116,6 +117,12 @@ public class PathExecutor extends Behavior {
                 }
             }
         }*/
+        for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
+            if (i >= 0 && i < path.movements().size()) {
+                path.movements().get(i).toBreakCached = null;
+                path.movements().get(i).toPlaceCached = null;
+            }
+        }
         Movement movement = path.movements().get(pathPosition);
         if (movement.recalculateCost() >= ActionCosts.COST_INF) {
             System.out.println("Something has changed in the world and this movement has become impossible. Cancelling.");

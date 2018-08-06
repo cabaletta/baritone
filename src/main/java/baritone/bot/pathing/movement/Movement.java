@@ -187,23 +187,34 @@ public abstract class Movement implements Helper, MovementHelper {
         return state;
     }
 
+    public ArrayList<BlockPos> toBreakCached = null;
+    public ArrayList<BlockPos> toPlaceCached = null;
+
     public ArrayList<BlockPos> toBreak() {
+        if (toBreakCached != null) {
+            return toBreakCached;
+        }
         ArrayList<BlockPos> result = new ArrayList<>();
         for (BlockPos positionsToBreak1 : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(positionsToBreak1, BlockStateInterface.get(positionsToBreak1))) {
                 result.add(positionsToBreak1);
             }
         }
+        toBreakCached = result;
         return result;
     }
 
     public ArrayList<BlockPos> toPlace() {
+        if (toPlaceCached != null) {
+            return toPlaceCached;
+        }
         ArrayList<BlockPos> result = new ArrayList<>();
         for (BlockPos positionsToPlace1 : positionsToPlace) {
             if (!MovementHelper.canWalkOn(positionsToPlace1)) {
                 result.add(positionsToPlace1);
             }
         }
+        toPlaceCached = result;
         return result;
     }
 }
