@@ -88,9 +88,15 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
+                if (actionCost <= 0) {
+                    throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " calculated implausible cost " + actionCost);
+                }
                 PathNode neighbor = getNodeAtPosition(movementToGetToNeighbor.getDest());
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
+                    if (tentativeCost < 0) {
+                        throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " overflowed into negative " + actionCost + " " + neighbor.cost + " " + tentativeCost);
+                    }
                     neighbor.previous = currentNode;
                     neighbor.previousMovement = movementToGetToNeighbor;
                     neighbor.cost = tentativeCost;
