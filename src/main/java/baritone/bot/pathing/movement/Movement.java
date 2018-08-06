@@ -132,7 +132,7 @@ public abstract class Movement implements Helper, MovementHelper {
             return true;
         }
         for(BlockPos blockPos : positionsToBreak) {
-            if(MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
+            if(!MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 reachable.ifPresent(rotation -> {
                     state.setTarget(new MovementState.MovementTarget(Optional.empty(), reachable))
