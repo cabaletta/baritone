@@ -46,6 +46,7 @@ public class BinaryHeapOpenSet implements IOpenSet {
         upHeap(size);
     }
 
+    @Override
     public void update(PathNode node) {
         upHeap(node.heapPosition);
     }
@@ -57,17 +58,19 @@ public class BinaryHeapOpenSet implements IOpenSet {
 
     @Override
     public PathNode removeLowest() {
-        if (size == 0) {
+        int s = --size;
+        if (s < 0) {
+            size++; // undo invalid decrement
             throw new IllegalStateException();
         }
-        PathNode result = array[1];
-        PathNode val = array[size];
-        array[1] = val;
+        PathNode[] arr = array;
+        PathNode result = arr[1];
+        PathNode val = arr[s + 1];
+        arr[1] = val;
         val.heapPosition = 1;
-        array[size] = null;
-        size--;
+        arr[s + 1] = null;
         result.heapPosition = -1;
-        if (size < 2) {
+        if (s < 2) {
             return result;
         }
         int index = 1;
@@ -75,27 +78,30 @@ public class BinaryHeapOpenSet implements IOpenSet {
         double cost = val.combinedCost;
         do {
             int right = smallerChild + 1;
-            PathNode smallerChildNode = array[smallerChild];
-            double smallerChildCost = smallerChildNode.combinedCost;
-            if (right <= size) {
-                PathNode rightChildNode = array[right];
+            PathNode smallerChildNode = arr[smallerChild];
+            double smallerChildCost;
+            if (right <= s) {
+                PathNode rightChildNode = arr[right];
+                smallerChildCost = smallerChildNode.combinedCost;
                 double rightChildCost = rightChildNode.combinedCost;
                 if (smallerChildCost > rightChildCost) {
                     smallerChild = right;
                     smallerChildCost = rightChildCost;
                     smallerChildNode = rightChildNode;
                 }
+            } else {
+                smallerChildCost = smallerChildNode.combinedCost;
             }
             if (cost <= smallerChildCost) {
                 break;
             }
-            array[index] = smallerChildNode;
-            array[smallerChild] = val;
+            arr[index] = smallerChildNode;
+            arr[smallerChild] = val;
             val.heapPosition = smallerChild;
             smallerChildNode.heapPosition = index;
             index = smallerChild;
             smallerChild = index << 1;
-        } while (smallerChild <= size);
+        } while (smallerChild <= s);
         return result;
     }
 
