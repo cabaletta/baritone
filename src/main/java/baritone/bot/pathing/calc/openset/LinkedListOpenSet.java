@@ -4,7 +4,9 @@ import baritone.bot.pathing.calc.PathNode;
 
 /**
  * A linked list implementation of an open set. This is the original implementation from MineBot.
- * It has incredbly fast insert performance, at the cost of O(n) removeLowest.
+ * It has incredibly fast insert performance, at the cost of O(n) removeLowest.
+ *
+ * @author leijurv
  */
 public class LinkedListOpenSet implements IOpenSet {
     private Node first = null;

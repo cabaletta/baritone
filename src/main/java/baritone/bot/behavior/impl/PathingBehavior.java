@@ -45,7 +45,7 @@ public class PathingBehavior extends Behavior {
         if (current == null) {
             return;
         }
-        // current.onTick();
+        current.onTick(event);
         if (current.failed() || current.finished()) {
             current = null;
         }

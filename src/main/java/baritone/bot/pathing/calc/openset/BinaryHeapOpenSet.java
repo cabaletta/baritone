@@ -4,6 +4,11 @@ import baritone.bot.pathing.calc.PathNode;
 
 import java.util.Arrays;
 
+/**
+ * A binary heap implementation of an open set. This is the one used in the AStarPathFinder.
+ *
+ * @author leijurv
+ */
 public class BinaryHeapOpenSet implements IOpenSet {
 
     /**

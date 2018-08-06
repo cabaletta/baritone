@@ -114,11 +114,9 @@ public interface MovementHelper extends ActionCosts, Helper {
      * through? Includes water because we know that we automatically jump on
      * lava
      *
-     * @param pos
      * @return
      */
-    static boolean canWalkOn(BlockPos pos) {
-        IBlockState state = BlockStateInterface.get(pos);
+    static boolean canWalkOn(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
         if (block instanceof BlockLadder || block instanceof BlockVine) {
             return true;
@@ -128,6 +126,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         return state.isBlockNormalCube() && !isLava(block);
     }
+
 
     static boolean canFall(BlockPos pos) {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
