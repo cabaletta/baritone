@@ -55,7 +55,7 @@ public class MovementDownward extends Movement {
         if (ladder) {
             return LADDER_DOWN_ONE_COST;
         } else {
-            return FALL_N_BLOCKS_COST[1] + getTotalHardnessOfBlocksToBreak(ts);
+            return FALL_N_BLOCKS_COST[1] + MovementHelper.getTotalHardnessOfBlocksToBreak(ts, positionsToBreak);
         }
     }
 }

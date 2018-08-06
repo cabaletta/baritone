@@ -52,7 +52,7 @@ public class MovementAscend extends Movement {
             }
             for (BlockPos against1 : against) {
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
-                    return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
+                    return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + PLACE_ONE_BLOCK_COST + MovementHelper.getTotalHardnessOfBlocksToBreak(ts, positionsToBreak);
                 }
             }
             return COST_INF;
@@ -60,7 +60,7 @@ public class MovementAscend extends Movement {
         if (BlockStateInterface.get(src.up(3)).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
             return COST_INF;
         }
-        return WALK_ONE_BLOCK_COST / 2 + Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST / 2) + getTotalHardnessOfBlocksToBreak(ts);//we walk half the block to get to the edge, then we walk the other half while simultaneously jumping (math.max because of how it's in parallel)
+        return WALK_ONE_BLOCK_COST / 2 + Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST / 2) + MovementHelper.getTotalHardnessOfBlocksToBreak(ts, positionsToBreak);//we walk half the block to get to the edge, then we walk the other half while simultaneously jumping (math.max because of how it's in parallel)
     }
 
     @Override

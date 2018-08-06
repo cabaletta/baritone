@@ -59,7 +59,7 @@ public class MovementTraverse extends Movement {
             //double hardness1 = blocksToBreak[0].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[0]);
             //double hardness2 = blocksToBreak[1].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[1]);
             //Out.log("Can't walk through " + blocksToBreak[0] + " (hardness" + hardness1 + ") or " + blocksToBreak[1] + " (hardness " + hardness2 + ")");
-            return WC + getTotalHardnessOfBlocksToBreak(ts);
+            return WC + MovementHelper.getTotalHardnessOfBlocksToBreak(ts, positionsToBreak);
         } else {//this is a bridge, so we need to place a block
             //return 1000000;
             Block f = BlockStateInterface.get(src.down()).getBlock();
@@ -70,11 +70,11 @@ public class MovementTraverse extends Movement {
             if (pp0.getBlock().equals(Blocks.AIR) || (!BlockStateInterface.isWater(pp0.getBlock()) && pp0.getBlock().isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
                 for (BlockPos against1 : against) {
                     if (BlockStateInterface.get(against1).isBlockNormalCube()) {
-                        return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
+                        return WC + PLACE_ONE_BLOCK_COST + MovementHelper.getTotalHardnessOfBlocksToBreak(ts, positionsToBreak);
                     }
                 }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
-                return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
+                return WC + PLACE_ONE_BLOCK_COST + MovementHelper.getTotalHardnessOfBlocksToBreak(ts, positionsToBreak);
             }
             return COST_INF;
             //Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());

@@ -9,6 +9,7 @@ import baritone.bot.pathing.calc.AbstractNodeCostSearch;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.goals.GoalBlock;
+import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 import baritone.bot.utils.BlockStateInterface;
@@ -140,11 +141,12 @@ public class PathingBehavior extends Behavior {
         getPath().ifPresent(path -> drawPath(path, player(), partialTicks, Color.RED));
         long split = System.currentTimeMillis();
         getPath().ifPresent(path -> {
-            for (BlockPos pos : path.getBlocksToBreak()) {
-                drawSelectionBox(player(), pos, partialTicks, Color.RED);
-            }
-            for (BlockPos pos : path.getBlocksToPlace()) {
-                drawSelectionBox(player(), pos, partialTicks, Color.GREEN);
+            for (Movement m : path.movements()) {
+                for (BlockPos pos : m.toPlace())
+                    drawSelectionBox(player(), pos, partialTicks, Color.GREEN);
+                for (BlockPos pos : m.toBreak()) {
+                    drawSelectionBox(player(), pos, partialTicks, Color.RED);
+                }
             }
         });
 
