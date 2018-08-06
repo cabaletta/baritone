@@ -1,6 +1,7 @@
 package baritone.launch.mixins;
 
 import baritone.bot.Baritone;
+import baritone.bot.event.events.TickEvent;
 import baritone.bot.event.events.WorldEvent;
 import baritone.bot.event.events.type.EventState;
 import net.minecraft.client.Minecraft;
@@ -47,7 +48,13 @@ public class MixinMinecraft {
             )
     )
     private void runTick(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onTick();
+        Minecraft mc = (Minecraft) (Object) this;
+        Baritone.INSTANCE.getGameEventHandler().onTick(new TickEvent(
+                EventState.PRE,
+                (mc.player != null && mc.world != null)
+                        ? TickEvent.Type.IN
+                        : TickEvent.Type.OUT
+        ));
     }
 
     @Redirect(

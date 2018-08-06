@@ -1,9 +1,6 @@
 package baritone.bot.event;
 
-import baritone.bot.event.events.ChatEvent;
-import baritone.bot.event.events.ChunkEvent;
-import baritone.bot.event.events.RenderEvent;
-import baritone.bot.event.events.WorldEvent;
+import baritone.bot.event.events.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -21,7 +18,7 @@ public interface IGameEventListener {
      *
      * @see Minecraft#runTick()
      */
-    void onTick();
+    void onTick(TickEvent event);
 
     /**
      * Run once per game tick from before the player rotation is sent to the server.

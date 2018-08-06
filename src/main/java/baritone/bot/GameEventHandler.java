@@ -2,10 +2,7 @@ package baritone.bot;
 
 import baritone.bot.behavior.Behavior;
 import baritone.bot.event.IGameEventListener;
-import baritone.bot.event.events.ChatEvent;
-import baritone.bot.event.events.ChunkEvent;
-import baritone.bot.event.events.RenderEvent;
-import baritone.bot.event.events.WorldEvent;
+import baritone.bot.event.events.*;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
@@ -20,8 +17,8 @@ public final class GameEventHandler implements IGameEventListener {
     GameEventHandler() {}
 
     @Override
-    public final void onTick() {
-        dispatch(Behavior::onTick);
+    public final void onTick(TickEvent event) {
+        dispatch(behavior -> behavior.onTick(event));
     }
 
     @Override

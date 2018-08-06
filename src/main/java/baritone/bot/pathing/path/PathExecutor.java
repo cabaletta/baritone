@@ -1,6 +1,7 @@
 package baritone.bot.pathing.path;
 
 import baritone.bot.behavior.Behavior;
+import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementState;
@@ -33,7 +34,8 @@ public class PathExecutor extends Behavior {
         this.pathPosition = 0;
     }
 
-    public void onTick() {
+    @Override
+    public void onTick(TickEvent event) {
         if (pathPosition >= path.length()) {
             //stop bugging me, I'm done
             //TODO Baritone.INSTANCE.behaviors.remove(this)

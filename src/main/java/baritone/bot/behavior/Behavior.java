@@ -47,7 +47,7 @@ public class Behavior implements AbstractGameEventListener, Helper {
     /**
      * Function to determine what the new enabled state of this
      * {@link Behavior} should be given the old state, and the
-     * proposed state. Intended to be overriden by behaviors
+     * proposed state. Intended to be overridden by behaviors
      * that should always be active, given that the bot itself is
      * active.
      *

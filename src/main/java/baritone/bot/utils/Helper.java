@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.util.text.TextComponentString;
 
 /**
  * @author Brady
@@ -18,7 +18,7 @@ public interface Helper {
         return mc.player;
     }
 
-    default World world() {
+    default WorldClient world() {
         return mc.world;
     }
 
@@ -26,4 +26,7 @@ public interface Helper {
         return new BlockPos(mc.player.posX, mc.player.posY, mc.player.posZ);
     }
 
+    default void displayChatMessageRaw(String message) {
+        mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentString(message));
+    }
 }
