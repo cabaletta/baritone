@@ -1,5 +1,6 @@
 package baritone.bot.behavior.impl;
 
+import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.Rotation;
@@ -11,7 +12,7 @@ import java.util.Optional;
 
 public final class LookBehaviorUtils implements Helper {
 
-     public static final Vec3d[] BLOCK_SIDE_MULTIPLIERS = new Vec3d[] {
+    public static final Vec3d[] BLOCK_SIDE_MULTIPLIERS = new Vec3d[]{
             new Vec3d(0, 0.5, 0.5),
             new Vec3d(1, 0.5, 0.5),
             new Vec3d(0.5, 0, 0.5),
@@ -35,6 +36,9 @@ public final class LookBehaviorUtils implements Helper {
     }
 
     public static Optional<Rotation> reachable(BlockPos pos) {
+        if (pos.equals(MovementHelper.whatAmILookingAt().orElse(null))) {
+            return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch));
+        }
         Optional<Rotation> possibleRotation = reachableCenter(pos);
         if (possibleRotation.isPresent())
             return possibleRotation;
@@ -67,6 +71,7 @@ public final class LookBehaviorUtils implements Helper {
 
     /**
      * Checks if coordinate is reachable with the given block-face rotation offset
+     *
      * @param pos
      * @param offset
      * @return
@@ -84,6 +89,7 @@ public final class LookBehaviorUtils implements Helper {
 
     /**
      * Checks if center of block at coordinate is reachable
+     *
      * @param pos
      * @return
      */
