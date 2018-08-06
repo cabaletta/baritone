@@ -14,6 +14,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Optional;
 
@@ -97,7 +98,7 @@ public class MovementTraverse extends Movement {
                     state.setStatus(MovementState.MovementStatus.SUCCESS);
                     return state;
                 }
-                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromCoords(playerFeet(), positionsToBreak[1])))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromVec3d(new Vec3d(player().posX, player().posY, player().posZ), Utils.calcCenterFromCoords(positionsToBreak[1], world()))))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
                 return state;
 
             default:

@@ -10,6 +10,7 @@ import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Optional;
 
@@ -78,7 +79,7 @@ public class MovementAscend extends Movement {
                     return state;
                 }
 
-                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromCoords(playerFeet(), positionsToBreak[0]))));
+                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromVec3d(new Vec3d(player().posX, player().posY, player().posZ), Utils.calcCenterFromCoords(positionsToBreak[1], world())))));
                 state.setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
                 return state;
             default:
