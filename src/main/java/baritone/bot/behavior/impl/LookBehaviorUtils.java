@@ -72,7 +72,7 @@ public final class LookBehaviorUtils implements Helper{
      * @param offset
      * @return
      */
-    public static Optional<Tuple<Float, Float>> reachableRotation(BlockPos pos, Vec3d offset) {
+    protected static Optional<Tuple<Float, Float>> reachableRotation(BlockPos pos, Vec3d offset) {
         Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 offset);
         RayTraceResult result = raytraceTowards(rotation);
@@ -88,7 +88,7 @@ public final class LookBehaviorUtils implements Helper{
      * @param pos
      * @return
      */
-    public static Optional<Tuple<Float, Float>> reachableCenter(BlockPos pos) {
+    protected static Optional<Tuple<Float, Float>> reachableCenter(BlockPos pos) {
         Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 Utils.calcCenterFromCoords(pos, mc.world));
         RayTraceResult result = raytraceTowards(rotation);
