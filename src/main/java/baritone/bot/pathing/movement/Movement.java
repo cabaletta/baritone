@@ -113,13 +113,12 @@ public abstract class Movement implements Helper, MovementHelper {
         latestState.getTarget().rotation.ifPresent(LookBehavior.INSTANCE::updateTarget);
         //TODO calculate movement inputs from latestState.getGoal().position
         latestState.getTarget().position.ifPresent(null); // NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
-        latestState.inputState.forEach((input, forced) -> {
-            Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
-        });
+        latestState.inputState.forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
+        latestState.inputState.replaceAll((input, forced) -> false);
         currentState = latestState;
 
         if (isFinished())
-            onFinish();
+            onFinish(latestState);
 
         return currentState.getStatus();
     }
@@ -133,8 +132,8 @@ public abstract class Movement implements Helper, MovementHelper {
             if(MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 reachable.ifPresent(rotation -> {
-                    state.setTarget(new MovementState.MovementTarget(Optional.empty(), reachable));
-                    state.setInput(Input.CLICK_LEFT, true);
+                    state.setTarget(new MovementState.MovementTarget(Optional.empty(), reachable))
+                            .setInput(Input.CLICK_LEFT, true);
                 });
                 if (reachable.isPresent())
                     return false;
@@ -158,9 +157,11 @@ public abstract class Movement implements Helper, MovementHelper {
     }
 
     /**
-     * Run cleanup on state finish
+     * Run cleanup on state finish and declare success.
      */
-    public abstract void onFinish();
+    public void onFinish(MovementState state) {
+        state.setStatus(MovementStatus.SUCCESS);
+    }
 
     /**
      * Calculate latest movement state.
@@ -172,7 +173,6 @@ public abstract class Movement implements Helper, MovementHelper {
         if (!prepared(state))
             return state.setStatus(MovementStatus.PREPPING);
         else if (state.getStatus() == MovementStatus.PREPPING) {
-            state.setInput(Input.CLICK_LEFT, false);
             state.setStatus(MovementStatus.WAITING);
         }
         return state;

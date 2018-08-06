@@ -58,8 +58,9 @@ public class MovementState {
         return target;
     }
 
-    public void setTarget(MovementTarget target) {
+    public MovementState setTarget(MovementTarget target) {
         this.target = target;
+        return this;
     }
 
     public MovementState setInput(Input input, boolean forced) {
@@ -72,6 +73,6 @@ public class MovementState {
     }
 
     public enum MovementStatus {
-        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED;
+        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED, FINISHING;
     }
 }
