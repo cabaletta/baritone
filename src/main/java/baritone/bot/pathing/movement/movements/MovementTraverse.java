@@ -46,7 +46,7 @@ public class MovementTraverse extends Movement {
     protected double calculateCost(ToolSet ts) {
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
-        double WC = MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
+        double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
         if (MovementHelper.canWalkOn(positionsToPlace[0], BlockStateInterface.get(positionsToPlace[0]))) {//this is a walk, not a bridge
             if (MovementHelper.canWalkThrough(positionsToBreak[0], pb0) && MovementHelper.canWalkThrough(positionsToBreak[1], pb1)) {
                 return WC;
@@ -66,7 +66,7 @@ public class MovementTraverse extends Movement {
                 return COST_INF;
             }
             IBlockState pp0 = BlockStateInterface.get(positionsToPlace[0]);
-            if (pp0.getBlock().equals(Blocks.AIR) || (!MovementHelper.isWater(pp0.getBlock()) && pp0.getBlock().isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
+            if (pp0.getBlock().equals(Blocks.AIR) || (!BlockStateInterface.isWater(pp0.getBlock()) && pp0.getBlock().isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
                 for (BlockPos against1 : against) {
                     if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                         return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);

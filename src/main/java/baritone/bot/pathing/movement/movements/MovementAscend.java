@@ -44,7 +44,7 @@ public class MovementAscend extends Movement {
     @Override
     protected double calculateCost(ToolSet ts) {
         if (!MovementHelper.canWalkOn(positionsToPlace[0], BlockStateInterface.get(positionsToPlace[0]))) {
-            if (!MovementHelper.isAir(positionsToPlace[0]) && !MovementHelper.isWater(positionsToPlace[0])) {
+            if (!BlockStateInterface.isAir(positionsToPlace[0]) && !BlockStateInterface.isWater(positionsToPlace[0])) {
                 return COST_INF;
             }
             if (true) {

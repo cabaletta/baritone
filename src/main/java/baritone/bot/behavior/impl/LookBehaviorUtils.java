@@ -36,7 +36,7 @@ public final class LookBehaviorUtils implements Helper {
     }
 
     public static Optional<Rotation> reachable(BlockPos pos) {
-        if (pos.equals(MovementHelper.whatAmILookingAt().orElse(null))) {
+        if (pos.equals(getSelectedBlock().orElse(null))) {
             return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch));
         }
         Optional<Rotation> possibleRotation = reachableCenter(pos);
@@ -101,6 +101,19 @@ public final class LookBehaviorUtils implements Helper {
                 && result.typeOfHit == RayTraceResult.Type.BLOCK
                 && result.getBlockPos().equals(pos))
             return Optional.of(rotation);
+        return Optional.empty();
+    }
+
+    /**
+     * The currently highlighted block.
+     * Updated once a tick by Minecraft.
+     *
+     * @return the position of the highlighted block
+     */
+    public static Optional<BlockPos> getSelectedBlock() {
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
+            return Optional.of(mc.objectMouseOver.getBlockPos());
+        }
         return Optional.empty();
     }
 

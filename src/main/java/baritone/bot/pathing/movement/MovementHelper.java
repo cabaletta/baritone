@@ -1,5 +1,6 @@
 package baritone.bot.pathing.movement;
 
+import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.ToolSet;
@@ -20,68 +21,17 @@ import java.util.Optional;
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
-    Block waterFlowing = Blocks.FLOWING_WATER;
-    Block waterStill = Blocks.WATER;
-    Block lavaFlowing = Blocks.FLOWING_LAVA;
-    Block lavaStill = Blocks.LAVA;
-
-    /**
-     * Returns whether or not the specified block is
-     * water, regardless of whether or not it is flowing.
-     *
-     * @param b The block
-     * @return Whether or not the block is water
-     */
-    static boolean isWater(Block b) {
-        return waterFlowing.equals(b) || waterStill.equals(b);
-    }
-
-    /**
-     * Returns whether or not the block at the specified pos is
-     * water, regardless of whether or not it is flowing.
-     *
-     * @param bp The block pos
-     * @return Whether or not the block is water
-     */
-    static boolean isWater(BlockPos bp) {
-        return isWater(BlockStateInterface.get(bp).getBlock());
-    }
-
-    /**
-     * Returns whether or not the specified block is any sort of liquid.
-     *
-     * @param b The block
-     * @return Whether or not the block is a liquid
-     */
-    static boolean isLiquid(Block b) {
-        return b instanceof BlockLiquid;
-    }
-
-    static boolean isLiquid(BlockPos p) {
-        return isLiquid(BlockStateInterface.get(p).getBlock());
-    }
-
-    static boolean isFlowing(IBlockState state) {
-        return state.getBlock() instanceof BlockLiquid
-                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
-                && state.getValue(BlockLiquid.LEVEL) != 0;
-    }
-
-    static boolean isLava(Block b) {
-        return lavaFlowing.equals(b) || lavaStill.equals(b);
-    }
-
     static boolean avoidBreaking(BlockPos pos) {
-        Block b = BlockStateInterface.get(pos).getBlock();
+        Block b = BlockStateInterface.getBlock(pos);
         Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
         return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish
-                || isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
-                || isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
-                || isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
-                || isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1))
-                || isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1))
-                || (!(b instanceof BlockLilyPad && isWater(below)) && isLiquid(below));//if it's a lilypad above water, it's ok to break, otherwise don't break if its liquid
+                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
+                || BlockStateInterface.isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
+                || BlockStateInterface.isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
+                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1))
+                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1))
+                || (!(b instanceof BlockLilyPad && BlockStateInterface.isWater(below)) && BlockStateInterface.isLiquid(below));//if it's a lilypad above water, it's ok to break, otherwise don't break if its liquid
     }
 
     /**
@@ -97,14 +47,14 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockTripWire) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
-        if (isFlowing(state) || isLiquid(pos.up())) {
+        if (BlockStateInterface.isFlowing(state) || BlockStateInterface.isLiquid(pos.up())) {
             return false; // Don't walk through flowing liquids
         }
-        return block.isPassable(Minecraft.getMinecraft().world, pos);
+        return block.isPassable(mc.world, pos);
     }
 
     static boolean avoidWalkingInto(Block block) {
-        return isLava(block)
+        return BlockStateInterface.isLava(block)
                 || block instanceof BlockCactus
                 || block instanceof BlockFire
                 || block instanceof BlockEndPortal
@@ -126,10 +76,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof BlockAir) {
             return false;
         }
-        if (isWater(block)) {
-            return isWater(pos.up()); // You can only walk on water if there is water above it
+        if (BlockStateInterface.isWater(block)) {
+            return BlockStateInterface.isWater(pos.up()); // You can only walk on water if there is water above it
         }
-        return state.isBlockNormalCube() && !isLava(block);
+        return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
     }
 
 
@@ -152,19 +102,6 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
-     * The currently highlighted block.
-     * Updated once a tick by Minecraft.
-     *
-     * @return the position of the highlighted block
-     */
-    static Optional<BlockPos> whatAmILookingAt() {
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
-            return Optional.of(mc.objectMouseOver.getBlockPos());
-        }
-        return Optional.empty();
-    }
-
-    /**
      * The entity the player is currently looking at
      *
      * @return the entity object
@@ -180,7 +117,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * AutoTool
      */
     static void switchToBestTool() {
-        whatAmILookingAt().ifPresent(pos -> {
+        LookBehaviorUtils.getSelectedBlock().ifPresent(pos -> {
             IBlockState state = BlockStateInterface.get(pos);
             if (state.getBlock().equals(Blocks.AIR)) {
                 return;
@@ -206,9 +143,5 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static void switchToBestToolFor(IBlockState b, ToolSet ts) {
         mc.player.inventory.currentItem = ts.getBestSlot(b);
-    }
-
-    static boolean isAir(BlockPos pos) {
-        return BlockStateInterface.get(pos).getBlock().equals(Blocks.AIR);
     }
 }

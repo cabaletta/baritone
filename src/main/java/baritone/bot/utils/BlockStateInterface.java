@@ -1,8 +1,10 @@
 package baritone.bot.utils;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 public class BlockStateInterface {
@@ -13,4 +15,60 @@ public class BlockStateInterface {
     public static Block getBlock(BlockPos pos) {
         return get(pos).getBlock();
     }
+
+    public static final Block waterFlowing = Blocks.FLOWING_WATER;
+    public static final Block waterStill = Blocks.WATER;
+    public static final Block lavaFlowing = Blocks.FLOWING_LAVA;
+    public static final Block lavaStill = Blocks.LAVA;
+
+    /**
+     * Returns whether or not the specified block is
+     * water, regardless of whether or not it is flowing.
+     *
+     * @param b The block
+     * @return Whether or not the block is water
+     */
+    public static boolean isWater(Block b) {
+        return waterFlowing.equals(b) || waterStill.equals(b);
+    }
+
+    /**
+     * Returns whether or not the block at the specified pos is
+     * water, regardless of whether or not it is flowing.
+     *
+     * @param bp The block pos
+     * @return Whether or not the block is water
+     */
+    public static boolean isWater(BlockPos bp) {
+        return isWater(BlockStateInterface.get(bp).getBlock());
+    }
+
+    public static boolean isLava(Block b) {
+        return lavaFlowing.equals(b) || lavaStill.equals(b);
+    }
+
+    /**
+     * Returns whether or not the specified block is any sort of liquid.
+     *
+     * @param b The block
+     * @return Whether or not the block is a liquid
+     */
+    public static boolean isLiquid(Block b) {
+        return b instanceof BlockLiquid;
+    }
+
+    public static boolean isLiquid(BlockPos p) {
+        return isLiquid(BlockStateInterface.get(p).getBlock());
+    }
+
+    public static boolean isFlowing(IBlockState state) {
+        return state.getBlock() instanceof BlockLiquid
+                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
+                && state.getValue(BlockLiquid.LEVEL) != 0;
+    }
+
+    public static boolean isAir(BlockPos pos) {
+        return BlockStateInterface.get(pos).getBlock().equals(Blocks.AIR);
+    }
+
 }

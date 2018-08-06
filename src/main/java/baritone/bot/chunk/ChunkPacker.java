@@ -2,6 +2,7 @@ package baritone.bot.chunk;
 
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.util.PathingBlockType;
+import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
@@ -43,7 +44,7 @@ public final class ChunkPacker implements Helper {
     private static PathingBlockType getPathingBlockType(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
 
-        if (MovementHelper.isWater(block)) {
+        if (BlockStateInterface.isWater(block)) {
             return PathingBlockType.WATER;
         }
 

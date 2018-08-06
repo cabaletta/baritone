@@ -1,5 +1,6 @@
 package baritone.bot.utils;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -32,7 +33,7 @@ public final class Utils {
     }
 
     public static Vec3d calcCenterFromCoords(BlockPos orig, World world) {
-        IBlockState b = world.getBlockState(orig);
+        IBlockState b = BlockStateInterface.get(orig);
         AxisAlignedBB bbox = b.getBoundingBox(world, orig);
         double xDiff = (bbox.minX + bbox.maxX) / 2;
         double yDiff = (bbox.minY + bbox.maxY) / 2;
