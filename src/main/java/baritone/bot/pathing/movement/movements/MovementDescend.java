@@ -4,6 +4,7 @@ import baritone.bot.InputOverrideHandler;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
+import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
@@ -40,12 +41,13 @@ public class MovementDescend extends Movement {
             case FAILED:
                 return state;
             case WAITING:
+                state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
 
                 if (playerFeet.equals(dest) && player().posY - playerFeet.getY() < 0.01) {
                     // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
-                    state.setStatus(MovementState.MovementStatus.SUCCESS);
+                    state.setStatus(MovementStatus.SUCCESS);
                     return state;
                 }
                 Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[1], world()));
