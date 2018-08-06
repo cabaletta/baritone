@@ -8,6 +8,8 @@ public class LookBehavior extends Behavior {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
 
+    private LookBehavior() {}
+
     /**
      * Target's values are as follows:
      *
