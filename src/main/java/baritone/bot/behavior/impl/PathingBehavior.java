@@ -102,8 +102,11 @@ public class PathingBehavior extends Behavior {
                 }
                 planAhead();
             } else if (talkAboutIt) {
-                Out.gui("Finished finding a path from " + start + " to " + goal + ". " + currentPath.numNodes + " nodes considered", Out.Mode.Debug);
+                Out.gui(, Out.Mode.Debug);
             }*/
+            if (talkAboutIt && current != null && current.getPath() != null) {
+                displayChatMessageRaw("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+            }
         }).start();
     }
 

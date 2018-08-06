@@ -104,4 +104,6 @@ public interface IPath {
      * @return an unordered collection of positions
      */
     Collection<BlockPos> getBlocksToPlace();
+
+    int getNumNodesConsidered();
 }

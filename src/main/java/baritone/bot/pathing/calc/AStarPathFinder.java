@@ -67,7 +67,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
             }
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
-                return Optional.of(new Path(startNode, currentNode, goal));
+                return Optional.of(new Path(startNode, currentNode, goal, numNodes));
             }
             //long constructStart = System.nanoTime();
             Movement[] possibleMovements = getConnectedPositions(currentNodePos);//movement that we could take that start at myPos, in random order
@@ -128,7 +128,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 }
                 System.out.println("Path goes for " + dist + " blocks");
                 currentlyRunning = null;
-                return Optional.of(new Path(startNode, bestSoFar[i], goal));
+                return Optional.of(new Path(startNode, bestSoFar[i], goal, numNodes));
             }
         }
         System.out.println("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks =(");

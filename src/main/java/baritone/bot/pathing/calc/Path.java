@@ -38,10 +38,13 @@ class Path implements IPath {
 
     final List<Movement> movements;
 
-    Path(PathNode start, PathNode end, Goal goal) {
+    private final int numNodes;
+
+    Path(PathNode start, PathNode end, Goal goal, int numNodes) {
         this.start = start.pos;
         this.end = end.pos;
         this.goal = goal;
+        this.numNodes = numNodes;
         this.path = new ArrayList<>();
         this.movements = new ArrayList<>();
         assemblePath(start, end);
@@ -118,5 +121,10 @@ class Path implements IPath {
     @Override
     public Collection<BlockPos> getBlocksToPlace() {
         return movements.stream().map(move -> move.positionsToPlace).flatMap(Arrays::stream).collect(Collectors.toCollection(HashSet::new));
+    }
+
+    @Override
+    public int getNumNodesConsidered() {
+        return numNodes;
     }
 }

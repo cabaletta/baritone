@@ -9,10 +9,6 @@ import baritone.pathfinding.goals.Goal;
 import baritone.ui.LookManager;
 import baritone.util.Out;
 import baritone.util.ToolSet;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -20,8 +16,12 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- *
  * @author leijurv
  */
 public class Path {
@@ -38,9 +38,8 @@ public class Path {
     /**
      * note that this ISN'T the number of nodes in this path, it's actually the
      * number of nodes used to calculate this path. this is here for idk why
-     *
      */
-    public final int numNodes;
+    private final int numNodes;
 
     Path(Node start, Node end, Goal goal, int numNodes) {
         this.numNodes = numNodes;
@@ -95,6 +94,7 @@ public class Path {
             Minecraft.getMinecraft().world.setBlockState(path.get(i), originalStates[i]);
         }
     }
+
     /**
      * Where are we in the path? This is an index in the movement list
      */
@@ -126,6 +126,7 @@ public class Path {
         double zdiff = z - (pos.getZ() + 0.5D);
         return Math.sqrt(xdiff * xdiff + ydiff * ydiff + zdiff * zdiff);
     }
+
     /**
      * How many ticks have I been more than MAX_DISTANCE_FROM_PATH away from the
      * path
