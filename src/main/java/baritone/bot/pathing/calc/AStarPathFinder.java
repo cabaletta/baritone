@@ -7,6 +7,7 @@ import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.movements.MovementAscend;
 import baritone.bot.pathing.movement.movements.MovementDescend;
+import baritone.bot.pathing.movement.movements.MovementFall;
 import baritone.bot.pathing.movement.movements.MovementTraverse;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.utils.ToolSet;
@@ -149,7 +150,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        Movement[] movements = new Movement[12];
+        Movement[] movements = new Movement[13];
         movements[0] = new MovementTraverse(pos, new BlockPos(x + 1, y, z));
         movements[1] = new MovementTraverse(pos, new BlockPos(x - 1, y, z));
         movements[2] = new MovementTraverse(pos, new BlockPos(x, y, z + 1));
@@ -162,6 +163,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         movements[9] = new MovementDescend(pos, new BlockPos(x - 1, y - 1, z));
         movements[10] = new MovementDescend(pos, new BlockPos(x, y - 1, z + 1));
         movements[11] = new MovementDescend(pos, new BlockPos(x, y - 1, z - 1));
+        movements[12] = new MovementFall(pos);
         /*Action[] actions = new Action[26];
         actions[0] = new ActionPillar(pos);
         actions[1] = new ActionBridge(pos, new BlockPos(x + 1, y, z));
