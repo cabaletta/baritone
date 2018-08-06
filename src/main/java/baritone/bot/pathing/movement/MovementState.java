@@ -73,6 +73,6 @@ public class MovementState {
     }
 
     public enum MovementStatus {
-        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED, FINISHING;
+        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED, CANCELED;
     }
 }

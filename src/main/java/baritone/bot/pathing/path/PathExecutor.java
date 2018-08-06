@@ -135,6 +135,7 @@ public class PathExecutor extends Behavior {
             ticksOnCurrent++;
             if (ticksOnCurrent > movement.recalculateCost() + 100) {
                 System.out.println("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + movement.getCost(null) + "). Cancelling.");
+                movement.cancel();
                 pathPosition = path.length() + 3;
                 failed = true;
                 return;

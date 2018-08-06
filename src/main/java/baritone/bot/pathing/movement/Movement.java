@@ -168,6 +168,12 @@ public abstract class Movement implements Helper, MovementHelper {
         state.setStatus(MovementStatus.SUCCESS);
     }
 
+    public void cancel() {
+        currentState.inputState.replaceAll((input, forced) -> false);
+        currentState.inputState.forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
+        currentState.setStatus(MovementStatus.CANCELED);
+    }
+
     /**
      * Calculate latest movement state.
      * Gets called once a tick.
