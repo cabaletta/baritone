@@ -1,8 +1,6 @@
 package baritone.bot.utils;
 
-import baritone.bot.behavior.impl.LookBehavior;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -14,7 +12,7 @@ import net.minecraft.world.World;
  */
 public final class Utils {
 
-    public static Tuple<Float, Float> calcRotationFromCoords(BlockPos orig, BlockPos dest) {
+    public static Rotation calcRotationFromCoords(BlockPos orig, BlockPos dest) {
         return calcRotationFromVec3d(vec3dFromBlockPos(orig), vec3dFromBlockPos(dest));
     }
 
@@ -23,7 +21,7 @@ public final class Utils {
      *
      * @param orig
      * @param dest
-     * @return Rotation Tuple {@link LookBehavior#target}
+     * @return Rotation {@link Rotation}
      */
     public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
         double yaw = Math.atan2(orig.x - dest.x, -orig.z + dest.z);

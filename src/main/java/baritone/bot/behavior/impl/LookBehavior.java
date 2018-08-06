@@ -1,7 +1,7 @@
 package baritone.bot.behavior.impl;
 
 import baritone.bot.behavior.Behavior;
-import net.minecraft.util.Tuple;
+import baritone.bot.utils.Rotation;
 
 import java.util.Optional;
 
@@ -9,7 +9,7 @@ public class LookBehavior extends Behavior {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
 
-    public LookBehavior() {
+    private LookBehavior() {
         target = Optional.empty();
     }
 
@@ -19,9 +19,9 @@ public class LookBehavior extends Behavior {
      * getFirst() -> yaw
      * getSecond() -> pitch
      */
-    private Optional<Tuple<Float, Float>> target;
+    private Optional<Rotation> target;
 
-    public void updateTarget(Tuple<Float, Float> target) {
+    public void updateTarget(Rotation target) {
         this.target = Optional.of(target);
     }
 

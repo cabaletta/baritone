@@ -5,7 +5,6 @@ import baritone.bot.utils.Helper;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.*;
 
 import java.util.Optional;
@@ -27,7 +26,7 @@ public final class LookBehaviorUtils implements Helper{
      * @param rotation {@link LookBehavior#target}
      * @return vector of the rotation
      */
-    public static Vec3d calcVec3dFromRotation(Tuple<Float, Float> rotation) {
+    public static Vec3d calcVec3dFromRotation(Rotation rotation) {
         float f = MathHelper.cos(-rotation.getFirst() * 0.017453292F - (float) Math.PI);
         float f1 = MathHelper.sin(-rotation.getFirst() * 0.017453292F - (float) Math.PI);
         float f2 = -MathHelper.cos(-rotation.getSecond() * 0.017453292F);
@@ -57,7 +56,7 @@ public final class LookBehaviorUtils implements Helper{
         return Optional.empty();
     }
 
-    private static RayTraceResult raytraceTowards(Tuple<Float, Float> rotation) {
+    private static RayTraceResult raytraceTowards(Rotation rotation) {
         double blockReachDistance = (double) mc.playerController.getBlockReachDistance();
         Vec3d vec3 = mc.player.getPositionEyes(1.0F);
         Vec3d vec31 = calcVec3dFromRotation(rotation);
