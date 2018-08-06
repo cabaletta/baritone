@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 
 /**
@@ -24,6 +25,10 @@ public interface Helper {
 
     default BlockPos playerFeet() {
         return new BlockPos(mc.player.posX, mc.player.posY, mc.player.posZ);
+    }
+
+    default Vec3d playerHead() {
+        return new Vec3d(mc.player.posX, mc.player.posY + mc.player.getEyeHeight(), mc.player.posZ);
     }
 
     default void displayChatMessageRaw(String message) {

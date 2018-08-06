@@ -9,9 +9,9 @@ import net.minecraft.util.math.*;
 
 import java.util.Optional;
 
-public final class LookBehaviorUtils implements Helper{
+public final class LookBehaviorUtils implements Helper {
 
-     public static final Vec3d[] BLOCK_SIDE_MULTIPLIERS = new Vec3d[]{
+     public static final Vec3d[] BLOCK_SIDE_MULTIPLIERS = new Vec3d[] {
             new Vec3d(0, 0.5, 0.5),
             new Vec3d(1, 0.5, 0.5),
             new Vec3d(0.5, 0, 0.5),
@@ -35,10 +35,10 @@ public final class LookBehaviorUtils implements Helper{
     }
 
     public static Optional<Rotation> reachable(BlockPos pos) {
-        Optional possibleRotation = reachableCenter(pos);
-        if(possibleRotation.isPresent()) {
+        Optional<Rotation> possibleRotation = reachableCenter(pos);
+        if (possibleRotation.isPresent())
             return possibleRotation;
-        }
+
         IBlockState bstate = BlockStateInterface.get(pos);
         AxisAlignedBB bbox = bstate.getBoundingBox(mc.world, pos);
         for (Vec3d vecMult : BLOCK_SIDE_MULTIPLIERS) {
@@ -49,14 +49,13 @@ public final class LookBehaviorUtils implements Helper{
             double y = pos.getY() + yDiff;
             double z = pos.getZ() + zDiff;
             possibleRotation = reachableRotation(pos, new Vec3d(x, y, z));
-            if (possibleRotation.isPresent()) {
+            if (possibleRotation.isPresent())
                 return possibleRotation;
-            }
         }
         return Optional.empty();
     }
 
-    private static RayTraceResult raytraceTowards(Rotation rotation) {
+    private static RayTraceResult rayTraceTowards(Rotation rotation) {
         double blockReachDistance = (double) mc.playerController.getBlockReachDistance();
         Vec3d vec3 = mc.player.getPositionEyes(1.0F);
         Vec3d vec31 = calcVec3dFromRotation(rotation);
@@ -75,8 +74,8 @@ public final class LookBehaviorUtils implements Helper{
     protected static Optional<Rotation> reachableRotation(BlockPos pos, Vec3d offset) {
         Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 offset);
-        RayTraceResult result = raytraceTowards(rotation);
-        if(result != null
+        RayTraceResult result = rayTraceTowards(rotation);
+        if (result != null
                 && result.typeOfHit == RayTraceResult.Type.BLOCK
                 && result.getBlockPos().equals(pos))
             return Optional.of(rotation);
@@ -91,13 +90,12 @@ public final class LookBehaviorUtils implements Helper{
     protected static Optional<Rotation> reachableCenter(BlockPos pos) {
         Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 Utils.calcCenterFromCoords(pos, mc.world));
-        RayTraceResult result = raytraceTowards(rotation);
-        if(result != null
+        RayTraceResult result = rayTraceTowards(rotation);
+        if (result != null
                 && result.typeOfHit == RayTraceResult.Type.BLOCK
                 && result.getBlockPos().equals(pos))
             return Optional.of(rotation);
         return Optional.empty();
-
     }
 
 }

@@ -152,11 +152,11 @@ public class LookManager extends Manager {
         double faceX = (pos.getX() + side.getX() + 1.0D) * 0.5D;
         double faceY = (pos.getY() + side.getY()) * 0.5D;
         double faceZ = (pos.getZ() + side.getZ() + 1.0D) * 0.5D;
-        RayTraceResult blah = raytraceTowards(faceX, faceY, faceZ);
+        RayTraceResult blah = rayTraceTowards(faceX, faceY, faceZ);
         return blah != null && blah.typeOfHit == RayTraceResult.Type.BLOCK && blah.getBlockPos().equals(pos) && blah.sideHit == dir;
     }
 
-    public static RayTraceResult raytraceTowards(double x, double y, double z) {
+    public static RayTraceResult rayTraceTowards(double x, double y, double z) {
         return raytraceTowards(pitchAndYaw(x, y, z));
     }
 

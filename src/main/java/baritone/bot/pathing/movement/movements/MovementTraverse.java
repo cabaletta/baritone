@@ -5,6 +5,7 @@ import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.Block;
@@ -14,9 +15,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-
-import java.util.Optional;
 
 public class MovementTraverse extends Movement {
 
@@ -98,8 +96,9 @@ public class MovementTraverse extends Movement {
                     state.setStatus(MovementState.MovementStatus.SUCCESS);
                     return state;
                 }
-                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromVec3d(new Vec3d(player().posX, player().posY + 1.62, player().posZ), Utils.calcCenterFromCoords(positionsToBreak[0], world()))))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-                return state;
+                Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()));
+                return state.setTarget(new MovementState.MovementTarget(rotationToBlock))
+                        .setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
 
             default:
                 return state;

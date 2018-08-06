@@ -108,11 +108,10 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return Status
      */
     public MovementStatus update() {
-
         MovementState latestState = updateState(currentState);
-        latestState.getTarget().rotation.ifPresent(LookBehavior.INSTANCE::updateTarget);
-        //TODO calculate movement inputs from latestState.getGoal().position
-        //latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
+        latestState.getTarget().getRotation().ifPresent(LookBehavior.INSTANCE::updateTarget);
+        // TODO: calculate movement inputs from latestState.getGoal().position
+        // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
         latestState.inputState.forEach((input, forced) -> {
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
             System.out.println(input + " AND " + forced);
@@ -128,18 +127,16 @@ public abstract class Movement implements Helper, MovementHelper {
 
 
     private boolean prepared(MovementState state) {
-        if (state.getStatus() == MovementStatus.WAITING) {
+        if (state.getStatus() == MovementStatus.WAITING)
             return true;
-        }
-        for(BlockPos blockPos : positionsToBreak) {
+
+        for (BlockPos blockPos : positionsToBreak) {
             if(!MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
-                reachable.ifPresent(rotation -> {
-                    state.setTarget(new MovementState.MovementTarget(Optional.empty(), reachable))
-                            .setInput(Input.CLICK_LEFT, true);
-                });
-                if (reachable.isPresent())
+                if (reachable.isPresent()) {
+                    state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
                     return false;
+                }
             }
         }
         return true;

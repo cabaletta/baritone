@@ -4,15 +4,9 @@ import baritone.bot.behavior.Behavior;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.utils.Rotation;
 
-import java.util.Optional;
-
 public class LookBehavior extends Behavior {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
-
-    private LookBehavior() {
-        target = Optional.empty();
-    }
 
     /**
      * Target's values are as follows:
@@ -20,10 +14,10 @@ public class LookBehavior extends Behavior {
      * getFirst() -> yaw
      * getSecond() -> pitch
      */
-    private Optional<Rotation> target;
+    private Rotation target;
 
     public void updateTarget(Rotation target) {
-        this.target = Optional.of(target);
+        this.target = target;
     }
 
     @Override
@@ -33,11 +27,10 @@ public class LookBehavior extends Behavior {
 
     @Override
     public void onPlayerUpdate() {
-        if(target.isPresent()) {
-            player().setPositionAndRotation(player().posX, player().posY, player().posZ,
-                    target.get().getFirst(), target.get().getSecond());
-            target = Optional.empty();
+        if (target != null) {
+            player().rotationYaw = target.getFirst();
+            player().rotationPitch = target.getSecond();
+            target = null;
         }
     }
-
 }

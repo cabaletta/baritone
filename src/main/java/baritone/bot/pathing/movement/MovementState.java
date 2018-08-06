@@ -11,8 +11,8 @@ import java.util.Optional;
 public class MovementState {
 
     private MovementStatus status;
-    private MovementTarget goal = new MovementTarget(Optional.empty(), Optional.empty());
-    private MovementTarget target = new MovementTarget(Optional.empty(), Optional.empty());
+    private MovementTarget goal = new MovementTarget();
+    private MovementTarget target = new MovementTarget();
     protected final Map<Input, Boolean> inputState = new HashMap<>();
 
     public MovementState setStatus(MovementStatus status) {
@@ -30,18 +30,38 @@ public class MovementState {
          * <p>
          * TODO: Decide desiredMovement type
          */
-        public Optional<Vec3d> position;
+        public Vec3d position;
         /**
          * Yaw and pitch angles that must be matched
          * <p>
          * getFirst()  -> YAW
          * getSecond() -> PITCH
          */
-        public Optional<Rotation> rotation;
+        public Rotation rotation;
 
-        public MovementTarget(Optional<Vec3d> position, Optional<Rotation> rotation) {
+        public MovementTarget() {
+            this(null, null);
+        }
+
+        public MovementTarget(Vec3d position) {
+            this(position, null);
+        }
+
+        public MovementTarget(Rotation rotation) {
+            this(null, rotation);
+        }
+
+        public MovementTarget(Vec3d position, Rotation rotation) {
             this.position = position;
             this.rotation = rotation;
+        }
+
+        public final Optional<Vec3d> getPosition() {
+            return Optional.of(this.position);
+        }
+
+        public final Optional<Rotation> getRotation() {
+            return Optional.of(this.rotation);
         }
     }
 
