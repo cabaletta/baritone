@@ -1,18 +1,19 @@
 package baritone.bot.pathing.movement;
 
 import baritone.bot.InputOverrideHandler.Input;
+import baritone.bot.utils.Rotation;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class MovementState {
 
     private MovementStatus status;
-    private MovementGoal goal;
+    private MovementTarget goal;
+    private MovementTarget target;
     protected final Map<Input, Boolean> inputState = new HashMap<>();
-
-    private Vec3d interme;
 
     public MovementState setStatus(MovementStatus status) {
         this.status = status;
@@ -23,34 +24,42 @@ public class MovementState {
         return status;
     }
 
-    public static class MovementGoal {
+    public static class MovementTarget {
         /**
          * Necessary movement to achieve
          * <p>
          * TODO: Decide desiredMovement type
          */
-        public Vec3d position;
+        public Optional<Vec3d> position;
         /**
          * Yaw and pitch angles that must be matched
          * <p>
          * getFirst()  -> YAW
          * getSecond() -> PITCH
          */
-        public Vec3d rotation;
+        public Optional<Rotation> rotation;
 
-        public MovementGoal(Vec3d position, Vec3d rotation) {
-            this.position = position;
-            this.rotation = rotation;
+        public MovementTarget(Vec3d position, Rotation rotation) {
+            this.position = Optional.of(position);
+            this.rotation = Optional.of(rotation);
         }
     }
 
-    public MovementGoal getGoal() {
+    public MovementTarget getGoal() {
         return goal;
     }
 
-    public MovementState setGoal(MovementGoal goal) {
+    public MovementState setGoal(MovementTarget goal) {
         this.goal = goal;
         return this;
+    }
+
+    public MovementTarget getTarget() {
+        return target;
+    }
+
+    public void setTarget(MovementTarget target) {
+        this.target = target;
     }
 
     public MovementState setInput(Input input, boolean forced) {
