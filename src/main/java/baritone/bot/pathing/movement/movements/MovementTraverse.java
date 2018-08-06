@@ -6,7 +6,6 @@ import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.Block;
@@ -118,8 +117,8 @@ public class MovementTraverse extends Movement {
             if (wasTheBridgeBlockAlwaysThere) {
                 player().setSprinting(true);
             }
-            Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()));
-            return state.setTarget(new MovementState.MovementTarget(rotationToBlock)).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+            moveTowards(positionsToBreak[0]);
+            return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
             for (BlockPos against1 : against) {
@@ -170,8 +169,8 @@ public class MovementTraverse extends Movement {
                 //Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
                 return state;
             } else {
-                Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()));
-                return state.setTarget(new MovementState.MovementTarget(rotationToBlock)).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                moveTowards(positionsToBreak[0]);
+                return state;
                 //TODO MovementManager.moveTowardsBlock(to);//move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
             }
         }

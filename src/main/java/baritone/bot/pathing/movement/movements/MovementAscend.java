@@ -6,9 +6,7 @@ import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
-import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.util.math.BlockPos;
 
@@ -80,9 +78,8 @@ public class MovementAscend extends Movement {
                     state.setStatus(MovementStatus.SUCCESS);
                     return state;
                 }
-                Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()));
-                return state.setTarget(new MovementState.MovementTarget(rotationToBlock))
-                        .setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                moveTowards(positionsToBreak[0]);
+                return state.setInput(InputOverrideHandler.Input.JUMP, true);
             default:
                 return state;
         }

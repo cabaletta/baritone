@@ -1,13 +1,11 @@
 package baritone.bot.pathing.movement;
 
 import baritone.bot.Baritone;
+import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehavior;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
-import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.Helper;
-import baritone.bot.utils.Rotation;
-import baritone.bot.utils.ToolSet;
+import baritone.bot.utils.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -177,5 +175,9 @@ public abstract class Movement implements Helper, MovementHelper {
         }
         toPlaceCached = result;
         return result;
+    }
+
+    protected void moveTowards(BlockPos pos) {
+        currentState.setTarget(new MovementState.MovementTarget(new Rotation(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(pos, world())).getFirst(), player().rotationPitch))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }
 }

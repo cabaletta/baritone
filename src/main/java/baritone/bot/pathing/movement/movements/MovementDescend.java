@@ -1,14 +1,11 @@
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.InputOverrideHandler;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
-import baritone.bot.utils.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
@@ -50,8 +47,8 @@ public class MovementDescend extends Movement {
                     state.setStatus(MovementStatus.SUCCESS);
                     return state;
                 }
-                Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[1], world()));
-                return state.setTarget(new MovementState.MovementTarget(rotationToBlock)).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                moveTowards(positionsToBreak[1]);
+                return state;
             default:
                 return state;
         }
