@@ -1,6 +1,9 @@
 package baritone.bot.pathing.movement;
 
 import baritone.bot.Baritone;
+import baritone.bot.InputOverrideHandler;
+import baritone.bot.behavior.impl.LookBehavior;
+import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
@@ -11,6 +14,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Optional;
+
+import static baritone.bot.InputOverrideHandler.*;
 
 public abstract class Movement implements Helper, MovementHelper {
 
@@ -52,22 +57,10 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return Status
      */
     public MovementStatus update() {
-//        if(isPrepared(state)) {
-//            if (!currentState.isPresent()) {
-//                currentState = Optional.of(new MovementState()
-//                        .setStatus(MovementStatus.WAITING)
-//                        .setGoal());
-//            }
-//        }
-        if(isFinished()) {
-
-        }
         MovementState latestState = updateState(currentState);
-        Tuple<Float, Float> rotation = Utils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
-                latestState.getGoal().rotation);
-        player().setPositionAndRotation(player().posX, player().posY, player().posZ,
-                rotation.getFirst(), rotation.getSecond());
+        latestState.getTarget().rotation.ifPresent(LookBehavior.INSTANCE::updateTarget);
         //TODO calculate movement inputs from latestState.getGoal().position
+        latestState.getTarget().position.ifPresent(null); // NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
         latestState.inputState.forEach((input, forced) -> {
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
         });
@@ -79,14 +72,20 @@ public abstract class Movement implements Helper, MovementHelper {
         return currentState.getStatus();
     }
 
-    private boolean prepare(MovementState state) {
+    private boolean prepared(MovementState state) {
         if(state.getStatus() == MovementStatus.WAITING) {
             return true;
         }
         Optional<BlockPos> cruftPos;
         for(BlockPos blockPos : positionsToBreak) {
             if(MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
-
+                Optional<Tuple<Float, Float>> reachable = LookBehaviorUtils.reachable(blockPos);
+                reachable.ifPresent(rotation -> {
+                    state.setTarget(new MovementState.MovementTarget())
+                    state.setInput(Input.CLICK_LEFT, true);
+                });
+                if (reachable.isPresent())
+                    return false;
             }
         }
         return true;
@@ -94,6 +93,7 @@ public abstract class Movement implements Helper, MovementHelper {
 
     public boolean isFinished() {
         return (currentState.getStatus() != MovementStatus.RUNNING
+                && currentState.getStatus() != MovementStatus.PREPPING
                 && currentState.getStatus() != MovementStatus.WAITING);
     }
 
@@ -117,8 +117,11 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return
      */
     public MovementState updateState(MovementState state) {
-        if(!prepare(state))
+        if(!prepared(state))
             return state.setStatus(MovementStatus.PREPPING);
+        else if(state.getStatus() == MovementStatus.PREPPING) {
+            state.setInput(Input.CLICK_LEFT, false);
+        }
         return state;
     }
 }
