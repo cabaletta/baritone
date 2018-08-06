@@ -35,6 +35,9 @@ public class PathExecutor extends Behavior {
 
     @Override
     public void onTick(TickEvent event) {
+        if(event.getType() == TickEvent.Type.OUT) {
+            return;
+        }
         if (pathPosition >= path.length()) {
             //stop bugging me, I'm done
             //TODO Baritone.INSTANCE.behaviors.remove(this)

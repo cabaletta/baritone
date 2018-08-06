@@ -13,6 +13,14 @@ public final class TickEvent {
         this.type = type;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public EventState getState() {
+        return state;
+    }
+
 
     public enum Type {
         /**
