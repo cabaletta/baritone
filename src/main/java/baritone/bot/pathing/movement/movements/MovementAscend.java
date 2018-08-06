@@ -79,7 +79,7 @@ public class MovementAscend extends Movement {
                     return state;
                 }
 
-                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromVec3d(new Vec3d(player().posX, player().posY, player().posZ), Utils.calcCenterFromCoords(positionsToBreak[1], world())))));
+                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromVec3d(new Vec3d(player().posX, player().posY + 1.62, player().posZ), Utils.calcCenterFromCoords(positionsToBreak[1], world())))));
                 state.setInput(InputOverrideHandler.Input.JUMP, true).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
                 return state;
             default:

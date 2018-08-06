@@ -98,7 +98,7 @@ public class MovementTraverse extends Movement {
                     state.setStatus(MovementState.MovementStatus.SUCCESS);
                     return state;
                 }
-                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromVec3d(new Vec3d(player().posX, player().posY, player().posZ), Utils.calcCenterFromCoords(positionsToBreak[0], world()))))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                state.setTarget(new MovementState.MovementTarget(Optional.empty(), Optional.of(Utils.calcRotationFromVec3d(new Vec3d(player().posX, player().posY + 1.62, player().posZ), Utils.calcCenterFromCoords(positionsToBreak[0], world()))))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
                 return state;
 
             default:
