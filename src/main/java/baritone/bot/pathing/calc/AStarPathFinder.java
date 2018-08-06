@@ -39,8 +39,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         }
         currentlyRunning = this;
         long startTime = System.currentTimeMillis();
-        boolean slowPath=true;
-        long timeoutTime = startTime + (slowPath ? 40000 :4000);
+        boolean slowPath = true;
+        long timeoutTime = startTime + (slowPath ? 40000 : 4000);
         long lastPrintout = 0;
         int numNodes = 0;
         ToolSet ts = new ToolSet();
@@ -77,7 +77,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 }
                 //long costStart = System.nanoTime();
                 // TODO cache cost
-                double actionCost = movementToGetToNeighbor.calculateCost(ts);
+                double actionCost = movementToGetToNeighbor.getCost(ts);
                 //long costEnd = System.nanoTime();
                 //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
                 if (actionCost >= ActionCosts.COST_INF) {

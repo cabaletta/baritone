@@ -6,7 +6,6 @@ import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.ToolSet;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
@@ -115,7 +114,7 @@ public class PathExecutor extends Behavior {
             }
         }*/
         Movement movement = path.movements().get(pathPosition);
-        if (movement.calculateCost(new ToolSet()) >= ActionCosts.COST_INF) {
+        if (movement.recalculateCost() >= ActionCosts.COST_INF) {
             System.out.println("Something has changed in the world and this movement has become impossible. Cancelling.");
             pathPosition = path.length() + 3;
             failed = true;
@@ -134,8 +133,8 @@ public class PathExecutor extends Behavior {
             ticksOnCurrent = 0;
         } else {
             ticksOnCurrent++;
-            if (ticksOnCurrent > movement.calculateCost(new ToolSet()) + 100) {
-                System.out.println("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + movement.calculateCost(new ToolSet()) + "). Cancelling.");
+            if (ticksOnCurrent > movement.recalculateCost() + 100) {
+                System.out.println("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + movement.getCost(null) + "). Cancelling.");
                 pathPosition = path.length() + 3;
                 failed = true;
                 return;

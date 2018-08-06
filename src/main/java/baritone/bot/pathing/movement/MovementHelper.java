@@ -207,4 +207,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         Minecraft.getMinecraft().player.inventory.currentItem = ts.getBestSlot(b);
     }
 
+    static boolean isAir(BlockPos pos) {
+        return BlockStateInterface.get(pos).getBlock().equals(Blocks.AIR);
+    }
+
 }
