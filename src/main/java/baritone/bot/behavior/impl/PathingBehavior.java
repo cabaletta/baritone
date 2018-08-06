@@ -74,6 +74,11 @@ public class PathingBehavior extends Behavior {
             event.cancel();
             return;
         }
+        if (msg.toLowerCase().equals("slowpath")) {
+            AStarPathFinder.slowPath ^= true;
+            event.cancel();
+            return;
+        }
 
     }
 

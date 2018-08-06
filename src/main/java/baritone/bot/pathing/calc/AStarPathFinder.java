@@ -23,6 +23,8 @@ import java.util.Random;
  */
 public class AStarPathFinder extends AbstractNodeCostSearch {
 
+    public static boolean slowPath = false;
+
     public AStarPathFinder(BlockPos start, Goal goal) {
         super(start, goal);
     }
@@ -42,7 +44,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         }
         currentlyRunning = this;
         long startTime = System.currentTimeMillis();
-        boolean slowPath = true;
         long timeoutTime = startTime + (slowPath ? 40000 : 4000);
         long lastPrintout = 0;
         int numNodes = 0;
