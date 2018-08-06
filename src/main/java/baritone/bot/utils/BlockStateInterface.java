@@ -40,7 +40,7 @@ public class BlockStateInterface {
      * @return Whether or not the block is water
      */
     public static boolean isWater(BlockPos bp) {
-        return isWater(BlockStateInterface.get(bp).getBlock());
+        return isWater(BlockStateInterface.getBlock(bp));
     }
 
     public static boolean isLava(Block b) {
@@ -58,7 +58,7 @@ public class BlockStateInterface {
     }
 
     public static boolean isLiquid(BlockPos p) {
-        return isLiquid(BlockStateInterface.get(p).getBlock());
+        return isLiquid(BlockStateInterface.getBlock(p));
     }
 
     public static boolean isFlowing(IBlockState state) {
@@ -68,7 +68,7 @@ public class BlockStateInterface {
     }
 
     public static boolean isAir(BlockPos pos) {
-        return BlockStateInterface.get(pos).getBlock().equals(Blocks.AIR);
+        return BlockStateInterface.getBlock(pos).equals(Blocks.AIR);
     }
 
 }
