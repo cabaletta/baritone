@@ -42,8 +42,7 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onTick(TickEvent event) {
-        // System.out.println("Ticking");
-        if (current == null) {
+        if(event.getType() == TickEvent.Type.OUT || current == null) {
             return;
         }
         current.onTick(event);
