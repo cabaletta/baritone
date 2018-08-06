@@ -43,9 +43,6 @@ public abstract class Movement implements Helper, MovementHelper {
 
     protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos[] toPlace, Vec3d rotationTarget) {
         this(src, dest, toBreak, toPlace);
-//        currentState = new MovementState()
-//                .setGoal(new )
-//                .setStatus(MovementStatus.WAITING);
     }
 
     public double getCost(ToolSet ts) {
@@ -172,11 +169,11 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return
      */
     public MovementState updateState(MovementState state) {
-
         if (!prepared(state))
             return state.setStatus(MovementStatus.PREPPING);
         else if (state.getStatus() == MovementStatus.PREPPING) {
             state.setInput(Input.CLICK_LEFT, false);
+            state.setStatus(MovementStatus.WAITING);
         }
         return state;
     }
