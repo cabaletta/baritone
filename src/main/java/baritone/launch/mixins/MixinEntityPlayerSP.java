@@ -30,8 +30,10 @@ public class MixinEntityPlayerSP {
     @Inject(
             method = "onUpdate",
             at = @At(
-                    value = "INVOKE_ASSIGN",
-                    target = "Lnet/minecraft/client/entity/AbstractClientPlayer;onUpdate()V"
+                    value = "INVOKE",
+                    target = "net/minecraft/client/entity/EntityPlayerSP.isRiding()Z",
+                    shift = At.Shift.BY,
+                    by = -3
             )
     )
     private void onUpdate(CallbackInfo ci) {
