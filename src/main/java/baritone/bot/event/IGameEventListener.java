@@ -1,11 +1,14 @@
 package baritone.bot.event;
 
 import baritone.bot.event.events.*;
+import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
 
 /**
  * @author Brady
@@ -40,7 +43,6 @@ public interface IGameEventListener {
      */
     void onSendChatMessage(ChatEvent event);
 
-
     /**
      * Runs before and after whenever a chunk is either loaded, unloaded, or populated.
      *
@@ -63,4 +65,18 @@ public interface IGameEventListener {
      * @see Minecraft#loadWorld(WorldClient, String)
      */
     void onWorldEvent(WorldEvent event);
+
+    /**
+     * Runs before a outbound packet is sent
+     *
+     * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
+     */
+    void onSendPacket(PacketEvent event);
+
+    /**
+     * Runs before an inbound packet is processed
+     *
+     * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
+     */
+    void onReceivePacket(PacketEvent event);
 }

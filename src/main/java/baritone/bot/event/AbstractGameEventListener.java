@@ -7,9 +7,6 @@ import baritone.bot.event.events.*;
  * overridden with empty bodies, allowing inheritors of this class to choose
  * which events they would like to listen in on.
  *
- * Has no implementors at the moment, but will likely be used with the
- * manager/behavior system is ported over to the new system.
- *
  * @see IGameEventListener
  *
  * @author Brady
@@ -37,4 +34,10 @@ public interface AbstractGameEventListener extends IGameEventListener {
 
     @Override
     default void onWorldEvent(WorldEvent event) {}
+
+    @Override
+    default void onSendPacket(PacketEvent event) {}
+
+    @Override
+    default void onReceivePacket(PacketEvent event) {}
 }
