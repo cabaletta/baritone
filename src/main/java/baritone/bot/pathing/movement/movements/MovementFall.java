@@ -2,15 +2,11 @@ package baritone.bot.pathing.movement.movements;
 
 import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
-import baritone.bot.pathing.movement.ActionCosts;
-import baritone.bot.pathing.movement.Movement;
-import baritone.bot.pathing.movement.MovementHelper;
-import baritone.bot.pathing.movement.MovementState;
+import baritone.bot.pathing.movement.*;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.pathing.movement.MovementState.MovementTarget;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Rotation;
-import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBucket;
@@ -25,7 +21,7 @@ public class MovementFall extends Movement {
     }
 
     @Override
-    protected double calculateCost(ToolSet ts) {
+    protected double calculateCost(CalculationContext context) {
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             return COST_INF;
         }
@@ -33,7 +29,7 @@ public class MovementFall extends Movement {
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
             placeBucketCost = ActionCosts.PLACE_ONE_BLOCK_COST;
         }
-        double cost = getTotalHardnessOfBlocksToBreak(ts);
+        double cost = getTotalHardnessOfBlocksToBreak(context.getToolSet());
         if (cost != 0) {
             return COST_INF;
         }

@@ -2,11 +2,11 @@ package baritone.bot.pathing.movement.movements;
 
 import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
+import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
@@ -48,7 +48,7 @@ public class MovementTraverse extends Movement {
     }
 
     @Override
-    protected double calculateCost(ToolSet ts) {
+    protected double calculateCost(CalculationContext context) {
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
         double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
@@ -59,7 +59,7 @@ public class MovementTraverse extends Movement {
             //double hardness1 = blocksToBreak[0].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[0]);
             //double hardness2 = blocksToBreak[1].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[1]);
             //Out.log("Can't walk through " + blocksToBreak[0] + " (hardness" + hardness1 + ") or " + blocksToBreak[1] + " (hardness " + hardness2 + ")");
-            return WC + getTotalHardnessOfBlocksToBreak(ts);
+            return WC + getTotalHardnessOfBlocksToBreak(context.getToolSet());
         } else {//this is a bridge, so we need to place a block
             //return 1000000;
             Block f = BlockStateInterface.get(src.down()).getBlock();
@@ -70,11 +70,11 @@ public class MovementTraverse extends Movement {
             if (pp0.getBlock().equals(Blocks.AIR) || (!BlockStateInterface.isWater(pp0.getBlock()) && pp0.getBlock().isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
                 for (BlockPos against1 : against) {
                     if (BlockStateInterface.get(against1).isBlockNormalCube()) {
-                        return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
+                        return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
                     }
                 }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
-                return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(ts);
+                return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
             }
             return COST_INF;
             //Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());

@@ -1,12 +1,12 @@
 package baritone.bot.pathing.movement.movements;
 
 import baritone.bot.InputOverrideHandler;
+import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.ToolSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
@@ -19,7 +19,7 @@ public class MovementDescend extends Movement {
     }
 
     @Override
-    protected double calculateCost(ToolSet ts) {
+    protected double calculateCost(CalculationContext context) {
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             return COST_INF;
         }
@@ -27,7 +27,8 @@ public class MovementDescend extends Movement {
         if (tmp1 instanceof BlockLadder || tmp1 instanceof BlockVine) {
             return COST_INF;
         }
-        return WALK_ONE_BLOCK_COST * 0.8 + Math.max(FALL_N_BLOCKS_COST[1], WALK_ONE_BLOCK_COST * 0.2) + getTotalHardnessOfBlocksToBreak(ts);//we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
+        // we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
+        return WALK_ONE_BLOCK_COST * 0.8 + Math.max(FALL_N_BLOCKS_COST[1], WALK_ONE_BLOCK_COST * 0.2) + getTotalHardnessOfBlocksToBreak(context.getToolSet());
     }
 
     @Override

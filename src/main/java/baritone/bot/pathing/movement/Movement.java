@@ -45,17 +45,16 @@ public abstract class Movement implements Helper, MovementHelper {
         this(src, dest, toBreak, toPlace);
     }
 
-    public double getCost(ToolSet ts) {
+    public double getCost(CalculationContext context) {
         if (cost == null) {
-            if (ts == null) {
-                ts = new ToolSet();
-            }
-            cost = calculateCost(ts);
+            if (context == null)
+                context = new CalculationContext();
+            cost = calculateCost(context);
         }
         return cost;
     }
 
-    protected abstract double calculateCost(ToolSet ts); // TODO pass in information like whether it's allowed to place throwaway blocks
+    protected abstract double calculateCost(CalculationContext context); // TODO pass in information like whether it's allowed to place throwaway blocks
 
     public double recalculateCost() {
         cost = null;

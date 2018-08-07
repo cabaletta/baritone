@@ -1,10 +1,10 @@
 package baritone.bot.pathing.movement.movements;
 
+import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.ToolSet;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -46,8 +46,8 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    protected double calculateCost(ToolSet ts) {
-        if (getTotalHardnessOfBlocksToBreak(ts) != 0) {
+    protected double calculateCost(CalculationContext context) {
+        if (getTotalHardnessOfBlocksToBreak(context.getToolSet()) != 0) {
             return COST_INF;
         }
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {

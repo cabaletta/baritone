@@ -1,10 +1,10 @@
 package baritone.bot.pathing.movement.movements;
 
+import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.ToolSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
@@ -16,6 +16,20 @@ public class MovementDownward extends Movement {
 
     public MovementDownward(BlockPos start) {
         super(start, start.down(), new BlockPos[]{start.down()}, new BlockPos[0]);
+    }
+
+    @Override
+    protected double calculateCost(CalculationContext context) {
+        if (!MovementHelper.canWalkOn(dest.down())) {
+            return COST_INF;
+        }
+        Block td = BlockStateInterface.get(dest).getBlock();
+        boolean ladder = td instanceof BlockLadder || td instanceof BlockVine;
+        if (ladder) {
+            return LADDER_DOWN_ONE_COST;
+        } else {
+            return FALL_N_BLOCKS_COST[1] + getTotalHardnessOfBlocksToBreak(context.getToolSet());
+        }
     }
 
     @Override
@@ -44,20 +58,6 @@ public class MovementDownward extends Movement {
                 return state;
             default:
                 return state;
-        }
-    }
-
-    @Override
-    protected double calculateCost(ToolSet ts) {
-        if (!MovementHelper.canWalkOn(dest.down())) {
-            return COST_INF;
-        }
-        Block td = BlockStateInterface.get(dest).getBlock();
-        boolean ladder = td instanceof BlockLadder || td instanceof BlockVine;
-        if (ladder) {
-            return LADDER_DOWN_ONE_COST;
-        } else {
-            return FALL_N_BLOCKS_COST[1] + getTotalHardnessOfBlocksToBreak(ts);
         }
     }
 }

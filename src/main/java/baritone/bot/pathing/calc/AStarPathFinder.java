@@ -4,6 +4,7 @@ import baritone.bot.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.bot.pathing.calc.openset.IOpenSet;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.ActionCosts;
+import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.movements.MovementAscend;
@@ -88,7 +89,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 }
                 //long costStart = System.nanoTime();
                 // TODO cache cost
-                double actionCost = movementToGetToNeighbor.getCost(ts);
+                double actionCost = movementToGetToNeighbor.getCost(new CalculationContext(ts));
                 //long costEnd = System.nanoTime();
                 //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
                 if (actionCost >= ActionCosts.COST_INF) {
