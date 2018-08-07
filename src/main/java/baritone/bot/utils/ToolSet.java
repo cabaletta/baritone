@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
@@ -22,6 +23,8 @@ import java.util.Map;
  * @author avecowa
  */
 public class ToolSet {
+
+    private static final Item FALLBACK_ITEM = Items.APPLE;
 
     /**
      * A list of tools on the hotbar that should be considered.
@@ -83,7 +86,7 @@ public class ToolSet {
         for (byte i = 0; i < tools.size(); i++) {
             Item item = tools.get(i);
             if (item == null) {
-                item = Item.getByNameOrId("minecraft:apple");
+                item = FALLBACK_ITEM;
             }
             float v = item.getDestroySpeed(new ItemStack(item), b);
             if (v < value || value == -1) {
@@ -118,7 +121,7 @@ public class ToolSet {
     public double getStrVsBlock(IBlockState b, BlockPos pos) {
         Item item = this.getBestTool(b);
         if (item == null) {
-            item = Item.getByNameOrId("minecraft:apple");
+            item = FALLBACK_ITEM;
         }
         float f = b.getBlockHardness(Minecraft.getMinecraft().world, pos);
         return f < 0.0F ? 0.0F : (!canHarvest(b, item) ? item.getDestroySpeed(new ItemStack(item), b) / f / 100.0F : item.getDestroySpeed(new ItemStack(item), b) / f / 30.0F);
