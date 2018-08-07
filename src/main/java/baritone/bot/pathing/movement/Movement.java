@@ -5,10 +5,7 @@ import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehavior;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
-import baritone.bot.utils.Helper;
-import baritone.bot.utils.Rotation;
-import baritone.bot.utils.ToolSet;
-import baritone.bot.utils.Utils;
+import baritone.bot.utils.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -72,6 +69,9 @@ public abstract class Movement implements Helper, MovementHelper {
      */
     public MovementStatus update() {
         MovementState latestState = updateState(currentState);
+        if (BlockStateInterface.isLiquid(playerFeet())) {
+            latestState.setInput(Input.JUMP, true);
+        }
         latestState.getTarget().getRotation().ifPresent(LookBehavior.INSTANCE::updateTarget);
         // TODO: calculate movement inputs from latestState.getGoal().position
         // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
