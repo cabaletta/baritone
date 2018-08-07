@@ -49,17 +49,13 @@ public class BlockStateInterface {
     }
 
     /**
-     * Returns whether or not the specified block is any sort of liquid.
+     * Returns whether or not the specified pos has a liquid
      *
-     * @param b The block
+     * @param p The pos
      * @return Whether or not the block is a liquid
      */
-    public static boolean isLiquid(Block b) {
-        return b instanceof BlockLiquid;
-    }
-
     public static boolean isLiquid(BlockPos p) {
-        return isLiquid(BlockStateInterface.getBlock(p));
+        return BlockStateInterface.getBlock(p) instanceof BlockLiquid;
     }
 
     public static boolean isFlowing(IBlockState state) {

@@ -91,7 +91,7 @@ public abstract class Movement implements Helper, MovementHelper {
             return true;
 
         for (BlockPos blockPos : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(blockPos, BlockStateInterface.get(blockPos))) {
+            if (!MovementHelper.canWalkThrough(blockPos)) {
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
                     state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
@@ -163,7 +163,7 @@ public abstract class Movement implements Helper, MovementHelper {
         //^ the above implementation properly deals with falling blocks, TODO integrate
         double sum = 0;
         for (BlockPos pos : positionsToBreak) {
-            sum += MovementHelper.getMiningDurationTicks(ts, BlockStateInterface.get(pos), pos);
+            sum += MovementHelper.getMiningDurationTicks(ts, pos);
             if (sum >= COST_INF) {
                 return COST_INF;
             }
@@ -196,7 +196,7 @@ public abstract class Movement implements Helper, MovementHelper {
         }
         ArrayList<BlockPos> result = new ArrayList<>();
         for (BlockPos positionToBreak : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(positionToBreak, BlockStateInterface.get(positionToBreak))) {
+            if (!MovementHelper.canWalkThrough(positionToBreak)) {
                 result.add(positionToBreak);
             }
         }

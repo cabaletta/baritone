@@ -51,8 +51,8 @@ public class MovementTraverse extends Movement {
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
         double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
-        if (MovementHelper.canWalkOn(positionsToPlace[0], BlockStateInterface.get(positionsToPlace[0]))) {//this is a walk, not a bridge
-            if (MovementHelper.canWalkThrough(positionsToBreak[0], pb0) && MovementHelper.canWalkThrough(positionsToBreak[1], pb1)) {
+        if (MovementHelper.canWalkOn(positionsToPlace[0])) {//this is a walk, not a bridge
+            if (MovementHelper.canWalkThrough(positionsToBreak[0]) && MovementHelper.canWalkThrough(positionsToBreak[1])) {
                 return WC;
             }
             //double hardness1 = blocksToBreak[0].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[0]);

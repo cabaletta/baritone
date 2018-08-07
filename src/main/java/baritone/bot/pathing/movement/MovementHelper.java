@@ -34,7 +34,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockPos pos) {
         Block b = BlockStateInterface.getBlock(pos);
-        Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
+        BlockPos below = new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ());
         return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
@@ -51,7 +51,8 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param pos
      * @return
      */
-    static boolean canWalkThrough(BlockPos pos, IBlockState state) {
+    static boolean canWalkThrough(BlockPos pos) {
+        IBlockState state = BlockStateInterface.get(pos);
         Block block = state.getBlock();
         if (block instanceof BlockLilyPad
                 || block instanceof BlockFire
@@ -79,7 +80,8 @@ public interface MovementHelper extends ActionCosts, Helper {
      *
      * @return
      */
-    static boolean canWalkOn(BlockPos pos, IBlockState state) {
+    static boolean canWalkOn(BlockPos pos) {
+        IBlockState state = BlockStateInterface.get(pos);
         Block block = state.getBlock();
         if (block instanceof BlockLadder || block instanceof BlockVine) {
             return true;
@@ -93,18 +95,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
     }
 
-
-    static boolean canWalkOn(BlockPos pos) {
-        return canWalkOn(pos, BlockStateInterface.get(pos));
-    }
-
-
     static boolean canFall(BlockPos pos) {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
-    static double getMiningDurationTicks(ToolSet ts, IBlockState block, BlockPos position) {
-        if (!block.equals(Blocks.AIR) && !canWalkThrough(position, block)) {
+    static double getMiningDurationTicks(ToolSet ts, BlockPos position) {
+        IBlockState state = BlockStateInterface.get(position);
+        Block block = state.getBlock();
+        if (!block.equals(Blocks.AIR) && !canWalkThrough(position)) {
             if (avoidBreaking(position)) {
                 return COST_INF;
             }
@@ -112,7 +110,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             //    return COST_INF;
             //}
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1;
-            return m / ts.getStrVsBlock(block, position) + BREAK_ONE_BLOCK_ADD;
+            return m / ts.getStrVsBlock(state, position) + BREAK_ONE_BLOCK_ADD;
         }
         return 0;
     }
