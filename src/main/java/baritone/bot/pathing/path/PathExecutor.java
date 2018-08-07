@@ -1,5 +1,6 @@
 package baritone.bot.pathing.path;
 
+import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.movement.ActionCosts;
@@ -141,6 +142,7 @@ public class PathExecutor extends Behavior {
             System.out.println("Movement done, next path");
             pathPosition++;
             ticksOnCurrent = 0;
+            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             onTick(event);
         } else {
             ticksOnCurrent++;
