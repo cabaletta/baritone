@@ -12,12 +12,9 @@ import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
-import net.minecraft.block.BlockAir;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -73,9 +70,10 @@ public class MovementFall extends Movement {
                     if(!player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER)))) {
                         state.setStatus(MovementStatus.UNREACHABLE);
                     }
+                    player().inventory.currentItem = player().inventory.getSlotFor(new ItemStack(new ItemBucket(Blocks.WATER)));
                     LookBehaviorUtils.reachable(dest).ifPresent(rotation ->
-                            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
-                                    .setTarget(new MovementTarget(rotation))
+                                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
+                                        .setTarget(new MovementTarget(rotation))
                     );
                 } else {
                     Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world()));

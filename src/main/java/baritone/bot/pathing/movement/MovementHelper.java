@@ -200,11 +200,10 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (onto.getY() <= 0) {
                 break;
             }
-            IBlockState fallOn = BlockStateInterface.get(onto);
-            if (fallOn.getBlock() instanceof BlockAir) {
+            if (BlockStateInterface.isAir(onto)) {
                 continue;
             }
-            if (BlockStateInterface.isWater(fallOn.getBlock())) {
+            if (BlockStateInterface.isWater(onto)) {
                 return new MovementFall(pos, onto);
             }
             if (MovementHelper.canWalkOn(onto)) {
