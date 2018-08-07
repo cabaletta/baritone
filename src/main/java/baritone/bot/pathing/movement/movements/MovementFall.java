@@ -69,6 +69,7 @@ public class MovementFall extends Movement {
                 if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
                     if (!player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER)))) {
                         state.setStatus(MovementStatus.UNREACHABLE);
+                        return state;
                     }
                     player().inventory.currentItem = player().inventory.getSlotFor(new ItemStack(new ItemBucket(Blocks.WATER)));
                     LookBehaviorUtils.reachable(dest).ifPresent(rotation ->
