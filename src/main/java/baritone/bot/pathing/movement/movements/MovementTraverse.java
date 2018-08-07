@@ -141,7 +141,7 @@ public class MovementTraverse extends Movement {
                             //Out.gui("Wrong. " + side + " " + LookBehaviorUtils.getSelectedBlock().get().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);
                         }
                     }
-                    displayChatMessageRaw("Trying to look at " + against1 + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
+                    System.out.println("Trying to look at " + against1 + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
                     return state;
                 }
             }

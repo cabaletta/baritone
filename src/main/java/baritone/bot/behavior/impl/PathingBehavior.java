@@ -161,8 +161,8 @@ public class PathingBehavior extends Behavior {
             });
         });
         long end = System.currentTimeMillis();
-        if (end - start > 0)
-            System.out.println("Frame took " + (split - start) + " " + (end - split));
+        // if (end - start > 0)
+        //   System.out.println("Frame took " + (split - start) + " " + (end - split));
     }
 
     public void drawPath(IPath path, EntityPlayerSP player, float partialTicks, Color color) {

@@ -5,10 +5,14 @@ import baritone.bot.pathing.calc.openset.IOpenSet;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
-import baritone.bot.pathing.movement.movements.*;
+import baritone.bot.pathing.movement.movements.MovementAscend;
+import baritone.bot.pathing.movement.movements.MovementDownward;
+import baritone.bot.pathing.movement.movements.MovementFall;
+import baritone.bot.pathing.movement.movements.MovementTraverse;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.utils.ToolSet;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -74,6 +78,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
             //long constructEnd = System.nanoTime();
             //System.out.println(constructEnd - constructStart);
             for (Movement movementToGetToNeighbor : possibleMovements) {
+                if (movementToGetToNeighbor == null) {
+                    continue;
+                }
                 if (Minecraft.getMinecraft().world.getChunk(movementToGetToNeighbor.getDest()) instanceof EmptyChunk) {
                     numEmptyChunk++;
                     continue;
@@ -147,7 +154,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        Movement[] movements = new Movement[21];
+        Movement[] movements = new Movement[13];
         movements[0] = new MovementTraverse(pos, new BlockPos(x + 1, y, z));
         movements[1] = new MovementTraverse(pos, new BlockPos(x - 1, y, z));
         movements[2] = new MovementTraverse(pos, new BlockPos(x, y, z + 1));
@@ -156,19 +163,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         movements[5] = new MovementAscend(pos, new BlockPos(x - 1, y + 1, z));
         movements[6] = new MovementAscend(pos, new BlockPos(x, y + 1, z + 1));
         movements[7] = new MovementAscend(pos, new BlockPos(x, y + 1, z - 1));
-        movements[8] = new MovementDescend(pos, new BlockPos(x + 1, y - 1, z));
-        movements[9] = new MovementDescend(pos, new BlockPos(x - 1, y - 1, z));
-        movements[10] = new MovementDescend(pos, new BlockPos(x, y - 1, z + 1));
-        movements[11] = new MovementDescend(pos, new BlockPos(x, y - 1, z - 1));
+        movements[8] = MovementFall.generateMovementFallOrDescend(pos, EnumFacing.NORTH);
+        movements[9] = MovementFall.generateMovementFallOrDescend(pos, EnumFacing.SOUTH);
+        movements[10] = MovementFall.generateMovementFallOrDescend(pos, EnumFacing.EAST);
+        movements[11] = MovementFall.generateMovementFallOrDescend(pos, EnumFacing.WEST);
         movements[12] = new MovementDownward(pos);
-        movements[13] = new MovementFall(pos, new BlockPos(x, y - 2, z - 1));
-        movements[14] = new MovementFall(pos, new BlockPos(x, y - 2, z + 1));
-        movements[15] = new MovementFall(pos, new BlockPos(x - 1, y - 2, z));
-        movements[16] = new MovementFall(pos, new BlockPos(x + 1, y - 2, z));
-        movements[17] = new MovementFall(pos, new BlockPos(x, y - 3, z - 1));
-        movements[18] = new MovementFall(pos, new BlockPos(x, y - 3, z + 1));
-        movements[19] = new MovementFall(pos, new BlockPos(x - 1, y - 3, z));
-        movements[20] = new MovementFall(pos, new BlockPos(x + 1, y - 3, z));
         /*Action[] actions = new Action[26];
         actions[0] = new ActionPillar(pos);
         actions[1] = new ActionBridge(pos, new BlockPos(x + 1, y, z));

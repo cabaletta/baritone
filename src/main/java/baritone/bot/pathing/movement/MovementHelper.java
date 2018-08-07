@@ -80,8 +80,8 @@ public interface MovementHelper extends ActionCosts, Helper {
      *
      * @return
      */
-    static boolean canWalkOn(BlockPos pos) {
-        IBlockState state = BlockStateInterface.get(pos);
+    static boolean canWalkOn(BlockPos pos, IBlockState state) {
+
         Block block = state.getBlock();
         if (block instanceof BlockLadder || block instanceof BlockVine) {
             return true;
@@ -93,6 +93,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             return BlockStateInterface.isWater(pos.up()); // You can only walk on water if there is water above it
         }
         return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
+    }
+
+    static boolean canWalkOn(BlockPos pos) {
+        IBlockState state = BlockStateInterface.get(pos);
+        return canWalkOn(pos, state);
     }
 
     static boolean canFall(BlockPos pos) {

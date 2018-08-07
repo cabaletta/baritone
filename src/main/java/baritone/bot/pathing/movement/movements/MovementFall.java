@@ -12,9 +12,12 @@ import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
+import net.minecraft.block.BlockAir;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -35,6 +38,41 @@ public class MovementFall extends Movement {
 
     public MovementFall(BlockPos src, BlockPos dest) {
         super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[]{dest.down()});
+    }
+
+    public static Movement generateMovementFallOrDescend(BlockPos pos, EnumFacing direction) {
+        BlockPos dest = pos.offset(direction);
+        BlockPos destUp = dest.up();
+        BlockPos destDown = dest.down();
+        for (int i = 0; i < 4; i++) {
+            if (!(BlockStateInterface.get(destUp.down(i)).getBlock() instanceof BlockAir)) {
+                //if any of these four aren't air, that means that a fall N isn't possible
+                //so try a movementdescend
+
+                //if all four of them are air, a movementdescend isn't possible anyway
+                return new MovementDescend(pos, destDown);
+            }
+        }
+        // we're clear for a fall 2
+        // let's see how far we can fall
+        for (int fallHeight = 3; true; fallHeight++) {
+            BlockPos onto = dest.down(fallHeight);
+            if (onto.getY() <= 0) {
+                break;
+            }
+            IBlockState fallOn = BlockStateInterface.get(onto);
+            if (fallOn.getBlock() instanceof BlockAir) {
+                continue;
+            }
+            if (BlockStateInterface.isWater(fallOn.getBlock())) {
+                return new MovementFall(pos, onto);
+            }
+            if (MovementHelper.canWalkOn(onto)) {
+                return new MovementFall(pos, onto);
+            }
+            break;
+        }
+        return null;
     }
 
     @Override
