@@ -67,13 +67,13 @@ public class MovementFall extends Movement {
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
                 if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
-                    if(!player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER)))) {
+                    if (!player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER)))) {
                         state.setStatus(MovementStatus.UNREACHABLE);
                     }
                     player().inventory.currentItem = player().inventory.getSlotFor(new ItemStack(new ItemBucket(Blocks.WATER)));
                     LookBehaviorUtils.reachable(dest).ifPresent(rotation ->
-                                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
-                                        .setTarget(new MovementTarget(rotation))
+                            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
+                                    .setTarget(new MovementTarget(rotation))
                     );
                 } else {
                     Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world()));

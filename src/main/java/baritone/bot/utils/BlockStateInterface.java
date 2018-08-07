@@ -70,6 +70,10 @@ public class BlockStateInterface {
         return BlockStateInterface.getBlock(pos).equals(Blocks.AIR);
     }
 
+    public static boolean isAir(IBlockState state) {
+        return state.getBlock().equals(Blocks.AIR);
+    }
+
     static boolean canFall(BlockPos pos) {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }

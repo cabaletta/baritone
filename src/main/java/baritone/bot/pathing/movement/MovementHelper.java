@@ -56,6 +56,10 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkThrough(BlockPos pos) {
         IBlockState state = BlockStateInterface.get(pos);
+        return canWalkThrough(pos, state);
+    }
+
+    static boolean canWalkThrough(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
         if (block instanceof BlockLilyPad
                 || block instanceof BlockFire
@@ -193,6 +197,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return new MovementDescend(pos, destDown);
             }
         }
+        System.out.println(dest + " descend distance!");
         // we're clear for a fall 2
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {
@@ -200,14 +205,15 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (onto.getY() <= 0) {
                 break;
             }
-            if (BlockStateInterface.isAir(onto)) {
+            IBlockState ontoBlock = BlockStateInterface.get(onto);
+            if (BlockStateInterface.isWater(ontoBlock.getBlock())) {
+                return new MovementFall(pos, onto);
+            }
+            if (canWalkThrough(onto, ontoBlock)) {
                 continue;
             }
-            if (BlockStateInterface.isWater(onto)) {
-                return new MovementFall(pos, onto);
-            }
-            if (MovementHelper.canWalkOn(onto)) {
-                return new MovementFall(pos, onto);
+            if (canWalkOn(onto, ontoBlock)) {
+                return new MovementFall(pos, onto.up());
             }
             break;
         }
