@@ -25,8 +25,8 @@ public class MovementFall extends Movement {
         int diffX = src.getX() - dest.getX();
         int diffZ = src.getZ() - dest.getZ();
         int diffY = src.getY() - dest.getY();
-        toBreak = new BlockPos[diffY + 1];
-        for(int i = 0; i < toBreak.length; i++ ) {
+        toBreak = new BlockPos[diffY + 2];
+        for (int i = 0; i < toBreak.length; i++) {
             toBreak[i] = new BlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ);
         }
         return toBreak;
@@ -39,20 +39,25 @@ public class MovementFall extends Movement {
 
     @Override
     protected double calculateCost(ToolSet ts) {
-        if(!MovementHelper.canWalkOn(positionsToPlace[0], BlockStateInterface.get(positionsToPlace[0]))) {
+        if (!MovementHelper.canWalkOn(positionsToPlace[0], BlockStateInterface.get(positionsToPlace[0]))) {
             return COST_INF;
         }
         double placeBucketCost = 0.0;
-        if(!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
+        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
             placeBucketCost = ActionCosts.PLACE_ONE_BLOCK_COST;
         }
-        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + getTotalHardnessOfBlocksToBreak(ts) + placeBucketCost;
+        double cost = getTotalHardnessOfBlocksToBreak(ts);
+        if (cost != 0) {
+            return COST_INF;
+        }
+        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + cost + placeBucketCost;
     }
 
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch(state.getStatus()) {
+
+        switch (state.getStatus()) {
             case PREPPING:
             case UNREACHABLE:
             case FAILED:
@@ -61,16 +66,16 @@ public class MovementFall extends Movement {
                 state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
-                if(src.getY() - dest.getY() > 3 && !BlockStateInterface.isWater(dest) && !player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER)))) {
+                if (src.getY() - dest.getY() > 3 && !BlockStateInterface.isWater(dest) && !player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER)))) {
                     return state.setStatus(MovementStatus.UNREACHABLE);
                 }
-                if(playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01 || BlockStateInterface.isWater(dest)))
+                if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01 || BlockStateInterface.isWater(dest)))
                     return state.setStatus(MovementStatus.SUCCESS);
                 Vec3d destCenter = Utils.calcCenterFromCoords(dest, world());
-                if(Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
+                if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
                     state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
                 }
-                if(!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
+                if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
                     LookBehaviorUtils.reachable(dest).ifPresent(rotation ->
                             state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
                                     .setTarget(new MovementTarget(rotation))

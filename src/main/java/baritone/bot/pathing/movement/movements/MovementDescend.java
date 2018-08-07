@@ -1,5 +1,6 @@
 package baritone.bot.pathing.movement.movements;
 
+import baritone.bot.InputOverrideHandler;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
@@ -46,7 +47,21 @@ public class MovementDescend extends Movement {
                     state.setStatus(MovementStatus.SUCCESS);
                     return state;
                 }
-                moveTowards(positionsToBreak[1]);
+                double diffX = player().posX - (dest.getX() + 0.5);
+                double diffZ = player().posZ - (dest.getZ() + 0.5);
+                double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
+                if (!playerFeet.equals(dest) || ab > 0.3) {
+                    BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
+                    double diffX2 = player().posX - (fakeDest.getX() + 0.5);
+                    double diffZ2 = player().posZ - (fakeDest.getZ() + 0.5);
+                    double d = Math.sqrt(diffX2 * diffX2 + diffZ2 * diffZ2);
+                    if (d > ab)
+                        moveTowards(fakeDest);
+                    else {
+                        state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
+                        state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                    }
+                }
                 return state;
             default:
                 return state;
