@@ -115,7 +115,7 @@ public class MovementTraverse extends Movement {
                 return state;
             }
             if (wasTheBridgeBlockAlwaysThere) {
-                player().setSprinting(true);
+                //player().setSprinting(true);
             }
             moveTowards(positionsToBreak[0]);
             return state;
