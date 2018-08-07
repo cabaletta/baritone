@@ -29,6 +29,11 @@ public final class InputOverrideHandler implements Helper {
      */
     private final Map<Integer, Boolean> keyCodeForceStateMap = new HashMap<>();
 
+    public final void clearAllKeys() {
+        inputForceStateMap.clear();
+        keyCodeForceStateMap.clear();
+    }
+
     /**
      * Returns whether or not we are forcing down the specified {@link KeyBinding}.
      *

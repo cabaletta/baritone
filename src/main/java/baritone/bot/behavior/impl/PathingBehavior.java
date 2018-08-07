@@ -1,5 +1,6 @@
 package baritone.bot.behavior.impl;
 
+import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.RenderEvent;
@@ -49,6 +50,8 @@ public class PathingBehavior extends Behavior {
         current.onTick(event);
         if (current.failed() || current.finished()) {
             current = null;
+            if (!goal.isInGoal(playerFeet()))
+                findPathInNewThread(playerFeet(), true);
         }
     }
 
@@ -77,6 +80,13 @@ public class PathingBehavior extends Behavior {
         if (msg.toLowerCase().equals("slowpath")) {
             AStarPathFinder.slowPath ^= true;
             event.cancel();
+            return;
+        }
+        if (msg.toLowerCase().equals("cancel")) {
+            current = null;
+            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+            event.cancel();
+            displayChatMessageRaw("ok canceled");
             return;
         }
 
