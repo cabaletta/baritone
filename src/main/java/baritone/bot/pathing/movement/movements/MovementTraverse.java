@@ -131,7 +131,7 @@ public class MovementTraverse extends Movement {
                     double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + against1.getY()) * 0.5D;
                     double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ))));
+                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
 
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                     if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && Minecraft.getMinecraft().player.isSneaking()) {
@@ -158,7 +158,7 @@ public class MovementTraverse extends Movement {
                 double faceZ = (dest.getZ() + src.getZ() + 1.0D) * 0.5D;
                 //faceX,faceY,faceZ is the middle of the face between from and to
                 BlockPos goalLook = src.down();//this is the block we were just standing on, and the one we want to place against
-                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ))));
+                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
 
                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);

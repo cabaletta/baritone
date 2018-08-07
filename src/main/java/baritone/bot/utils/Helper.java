@@ -24,11 +24,15 @@ public interface Helper {
     }
 
     default BlockPos playerFeet() {
-        return new BlockPos(mc.player.posX, mc.player.posY, mc.player.posZ);
+        return new BlockPos(player().posX, player().posY, player().posZ);
     }
 
     default Vec3d playerHead() {
-        return new Vec3d(mc.player.posX, mc.player.posY + mc.player.getEyeHeight(), mc.player.posZ);
+        return new Vec3d(player().posX, player().posY + player().getEyeHeight(), player().posZ);
+    }
+
+    default Rotation playerRotations() {
+        return new Rotation(player().rotationYaw, player().rotationPitch);
     }
 
     default void displayChatMessageRaw(String message) {

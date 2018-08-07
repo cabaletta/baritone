@@ -178,6 +178,6 @@ public abstract class Movement implements Helper, MovementHelper {
     }
 
     protected void moveTowards(BlockPos pos) {
-        currentState.setTarget(new MovementState.MovementTarget(new Rotation(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(pos, world())).getFirst(), player().rotationPitch))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+        currentState.setTarget(new MovementState.MovementTarget(new Rotation(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(pos, world()), playerRotations()).getFirst(), player().rotationPitch))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }
 }

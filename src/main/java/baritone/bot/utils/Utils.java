@@ -1,9 +1,9 @@
 package baritone.bot.utils;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -32,6 +32,17 @@ public final class Utils {
                 (float) (pitch * 180 / Math.PI));
     }
 
+    /**
+     * Calculates rotation to given Vec<sub>dest</sub> from Vec<sub>orig</sub>
+     *
+     * @param orig
+     * @param dest
+     * @return Rotation {@link Rotation}
+     */
+    public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest, Rotation current) {
+        return wrapAnglesToRelative(current, calcRotationFromVec3d(orig, dest));
+    }
+
     public static Vec3d calcCenterFromCoords(BlockPos orig, World world) {
         IBlockState b = BlockStateInterface.get(orig);
         AxisAlignedBB bbox = b.getBoundingBox(world, orig);
@@ -41,6 +52,13 @@ public final class Utils {
         return new Vec3d(orig.getX() + xDiff,
                 orig.getY() + yDiff,
                 orig.getZ() + zDiff);
+    }
+
+    public static Rotation wrapAnglesToRelative(Rotation current, Rotation target) {
+        return new Rotation(
+                MathHelper.wrapDegrees(target.getFirst() - current.getFirst()) + current.getFirst(),
+                MathHelper.wrapDegrees(target.getSecond() - current.getSecond()) + current.getSecond()
+        );
     }
 
     public static Vec3d vec3dFromBlockPos(BlockPos orig) {
