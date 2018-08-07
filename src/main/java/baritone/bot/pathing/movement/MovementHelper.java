@@ -27,6 +27,11 @@ import java.util.Optional;
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
+    List<Item> ACCEPTABLE_THROWAWAY_ITEMS = Arrays.asList(
+            Item.getItemFromBlock(Blocks.DIRT),
+            Item.getItemFromBlock(Blocks.COBBLESTONE)
+    );
+
     static boolean avoidBreaking(BlockPos pos) {
         Block b = BlockStateInterface.getBlock(pos);
         Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
@@ -157,7 +162,6 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean switchtothrowaway() {
-        List<Item> ACCEPTABLE_THROWAWAY_ITEMS = Arrays.asList(new Item[]{Item.getByNameOrId("minecraft:dirt"), Item.getByNameOrId("minecraft:cobblestone")});
         EntityPlayerSP p = Minecraft.getMinecraft().player;
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
@@ -171,7 +175,6 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean hasthrowaway() {
-        List<Item> ACCEPTABLE_THROWAWAY_ITEMS = Arrays.asList(new Item[]{Item.getByNameOrId("minecraft:dirt"), Item.getByNameOrId("minecraft:cobblestone")});
         EntityPlayerSP p = Minecraft.getMinecraft().player;
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
