@@ -141,6 +141,7 @@ public class PathExecutor extends Behavior {
             System.out.println("Movement done, next path");
             pathPosition++;
             ticksOnCurrent = 0;
+            onTick(event);
         } else {
             ticksOnCurrent++;
             if (ticksOnCurrent > movement.recalculateCost() + 100) {
