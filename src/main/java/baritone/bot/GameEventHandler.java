@@ -102,6 +102,16 @@ public final class GameEventHandler implements IGameEventListener {
         dispatch(behavior -> behavior.onWorldEvent(event));
     }
 
+    @Override
+    public void onSendPacket(PacketEvent event) {
+        dispatch(behavior -> behavior.onSendPacket(event));
+    }
+
+    @Override
+    public void onReceivePacket(PacketEvent event) {
+        dispatch(behavior -> behavior.onReceivePacket(event));
+    }
+
     private void dispatch(Consumer<Behavior> dispatchFunction) {
         Baritone.INSTANCE.getBehaviors().stream().filter(Behavior::isEnabled).forEach(dispatchFunction);
     }

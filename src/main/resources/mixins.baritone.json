@@ -15,6 +15,7 @@
     "MixinMain",
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",
+    "MixinNetworkManager",
     "MixinWorldClient",
 
     "accessor.IAnvilChunkLoader",
