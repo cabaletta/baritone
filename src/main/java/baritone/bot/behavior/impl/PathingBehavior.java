@@ -10,6 +10,7 @@ import baritone.bot.pathing.calc.AbstractNodeCostSearch;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.goals.GoalBlock;
+import baritone.bot.pathing.goals.GoalXZ;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
@@ -89,7 +90,19 @@ public class PathingBehavior extends Behavior {
             displayChatMessageRaw("ok canceled");
             return;
         }
+        if (msg.toLowerCase().startsWith("thisway")) {
+            goal = fromAngleAndDirection(Double.parseDouble(msg.substring(7).trim()));
+            displayChatMessageRaw("Goal: " + goal);
+            event.cancel();
+            return;
+        }
+    }
 
+    public GoalXZ fromAngleAndDirection(double distance) {
+        double theta = ((double) player().rotationYaw) * Math.PI / 180D;
+        double x = player().posX - Math.sin(theta) * distance;
+        double z = player().posZ + Math.cos(theta) * distance;
+        return new GoalXZ((int) x, (int) z);
     }
 
     /**
