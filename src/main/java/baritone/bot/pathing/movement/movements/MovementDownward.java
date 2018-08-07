@@ -32,7 +32,11 @@ public class MovementDownward extends Movement {
                     state.setStatus(MovementState.MovementStatus.SUCCESS);
                     return state;
                 }
-                if (numTicks++ < 10) {
+                double diffX = player().posX - (dest.getX() + 0.5);
+                double diffZ = player().posZ - (dest.getZ() + 0.5);
+                double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
+
+                if (numTicks++ < 10 && ab < 0.2) {
                     return state;
                 }
                 moveTowards(positionsToBreak[0]);
