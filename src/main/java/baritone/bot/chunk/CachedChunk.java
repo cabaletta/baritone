@@ -46,7 +46,7 @@ public final class CachedChunk implements IBlockTypeAccess {
     private final BitSet data;
 
     CachedChunk(int x, int z, BitSet data) {
-        if (data.size() != SIZE)
+        if (data.size() > SIZE)
             throw new IllegalArgumentException("BitSet of invalid length provided");
 
         this.x = x;
