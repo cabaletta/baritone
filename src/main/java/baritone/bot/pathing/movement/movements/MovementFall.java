@@ -39,7 +39,7 @@ public class MovementFall extends Movement {
 
     @Override
     protected double calculateCost(ToolSet ts) {
-        if (!MovementHelper.canWalkOn(positionsToPlace[0], BlockStateInterface.get(positionsToPlace[0]))) {
+        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             return COST_INF;
         }
         double placeBucketCost = 0.0;

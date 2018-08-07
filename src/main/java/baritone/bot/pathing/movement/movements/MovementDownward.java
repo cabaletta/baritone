@@ -44,7 +44,7 @@ public class MovementDownward extends Movement {
 
     @Override
     protected double calculateCost(ToolSet ts) {
-        if (!MovementHelper.canWalkOn(dest.down(), BlockStateInterface.get(dest.down()))) {
+        if (!MovementHelper.canWalkOn(dest.down())) {
             return COST_INF;
         }
         Block td = BlockStateInterface.get(dest).getBlock();
