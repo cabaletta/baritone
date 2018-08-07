@@ -20,21 +20,8 @@ import net.minecraft.util.math.Vec3d;
 
 public class MovementFall extends Movement {
 
-    private static BlockPos[] buildPositionsToBreak(BlockPos src, BlockPos dest) {
-        BlockPos[] toBreak;
-        int diffX = src.getX() - dest.getX();
-        int diffZ = src.getZ() - dest.getZ();
-        int diffY = src.getY() - dest.getY();
-        toBreak = new BlockPos[diffY + 2];
-        for (int i = 0; i < toBreak.length; i++) {
-            toBreak[i] = new BlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ);
-        }
-        return toBreak;
-    }
-
-
     public MovementFall(BlockPos src, BlockPos dest) {
-        super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[]{dest.down()});
+        super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[] { dest.down() });
     }
 
     @Override
@@ -92,4 +79,15 @@ public class MovementFall extends Movement {
         }
     }
 
+    private static BlockPos[] buildPositionsToBreak(BlockPos src, BlockPos dest) {
+        BlockPos[] toBreak;
+        int diffX = src.getX() - dest.getX();
+        int diffZ = src.getZ() - dest.getZ();
+        int diffY = src.getY() - dest.getY();
+        toBreak = new BlockPos[diffY + 2];
+        for (int i = 0; i < toBreak.length; i++) {
+            toBreak[i] = new BlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ);
+        }
+        return toBreak;
+    }
 }

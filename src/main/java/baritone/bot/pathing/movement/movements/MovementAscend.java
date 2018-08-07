@@ -11,31 +11,28 @@ import net.minecraft.block.BlockFalling;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementAscend extends Movement {
-    BlockPos[] against = new BlockPos[3];
+
+    private BlockPos[] against = new BlockPos[3];
 
     public MovementAscend(BlockPos src, BlockPos dest) {
-        super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, new BlockPos[]{dest.down()});
+        super(src, dest, new BlockPos[] { dest, src.up(2), dest.up() }, new BlockPos[] { dest.down() });
 
-        BlockPos placementLocation = positionsToPlace[0];//end.down()
+        BlockPos placementLocation = positionsToPlace[0]; // dest.down()
         int i = 0;
-        if (!placementLocation.north().equals(src)) {
-            against[i] = placementLocation.north();
-            i++;
-        }
-        if (!placementLocation.south().equals(src)) {
-            against[i] = placementLocation.south();
-            i++;
-        }
-        if (!placementLocation.east().equals(src)) {
-            against[i] = placementLocation.east();
-            i++;
-        }
-        if (!placementLocation.west().equals(src)) {
+        if (!placementLocation.north().equals(src))
+            against[i++] = placementLocation.north();
+
+        if (!placementLocation.south().equals(src))
+            against[i++] = placementLocation.south();
+
+        if (!placementLocation.east().equals(src))
+            against[i++] = placementLocation.east();
+
+        if (!placementLocation.west().equals(src))
             against[i] = placementLocation.west();
-            i++;
-        }
-        //TODO: add ability to place against .down() as well as the cardinal directions
-        //useful for when you are starting a staircase without anything to place against
+
+        // TODO: add ability to place against .down() as well as the cardinal directions
+        // useful for when you are starting a staircase without anything to place against
         // Counterpoint to the above TODO ^ you should move then pillar instead of ascend
     }
 

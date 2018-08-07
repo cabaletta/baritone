@@ -13,7 +13,7 @@ public class MovementState {
     private MovementStatus status;
     private MovementTarget goal = new MovementTarget();
     private MovementTarget target = new MovementTarget();
-    protected final Map<Input, Boolean> inputState = new HashMap<>();
+    private final Map<Input, Boolean> inputState = new HashMap<>();
 
     public MovementState setStatus(MovementStatus status) {
         this.status = status;
@@ -24,13 +24,50 @@ public class MovementState {
         return status;
     }
 
+    public MovementTarget getGoal() {
+        return this.goal;
+    }
+
+    public MovementState setGoal(MovementTarget goal) {
+        this.goal = goal;
+        return this;
+    }
+
+    public MovementTarget getTarget() {
+        return this.target;
+    }
+
+    public MovementState setTarget(MovementTarget target) {
+        this.target = target;
+        return this;
+    }
+
+    public MovementState setInput(Input input, boolean forced) {
+        this.inputState.put(input, forced);
+        return this;
+    }
+
+    public boolean getInput(Input input) {
+        return this.inputState.getOrDefault(input, false);
+    }
+
+    public Map<Input, Boolean> getInputStates() {
+        return this.inputState;
+    }
+
+    public enum MovementStatus {
+        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED, CANCELED
+    }
+
     public static class MovementTarget {
+
         /**
          * Necessary movement to achieve
          * <p>
          * TODO: Decide desiredMovement type
          */
         public Vec3d position;
+
         /**
          * Yaw and pitch angles that must be matched
          * <p>
@@ -63,36 +100,5 @@ public class MovementState {
         public final Optional<Rotation> getRotation() {
             return Optional.ofNullable(this.rotation);
         }
-    }
-
-    public MovementTarget getGoal() {
-        return goal;
-    }
-
-    public MovementState setGoal(MovementTarget goal) {
-        this.goal = goal;
-        return this;
-    }
-
-    public MovementTarget getTarget() {
-        return target;
-    }
-
-    public MovementState setTarget(MovementTarget target) {
-        this.target = target;
-        return this;
-    }
-
-    public MovementState setInput(Input input, boolean forced) {
-        inputState.put(input, forced);
-        return this;
-    }
-
-    public boolean getInput(Input input) {
-        return inputState.getOrDefault(input, false);
-    }
-
-    public enum MovementStatus {
-        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED, CANCELED;
     }
 }

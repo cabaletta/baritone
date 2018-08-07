@@ -17,6 +17,7 @@ import static baritone.bot.InputOverrideHandler.Input;
 public abstract class Movement implements Helper, MovementHelper {
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
+
     protected final BlockPos src;
 
     protected final BlockPos dest;
@@ -24,12 +25,12 @@ public abstract class Movement implements Helper, MovementHelper {
     /**
      * The positions that need to be broken before this movement can ensue
      */
-    public final BlockPos[] positionsToBreak;
+    protected final BlockPos[] positionsToBreak;
 
     /**
      * The positions where we need to place a block before this movement can ensue
      */
-    public final BlockPos[] positionsToPlace;
+    protected final BlockPos[] positionsToPlace;
 
     private Double cost;
 
@@ -75,11 +76,11 @@ public abstract class Movement implements Helper, MovementHelper {
         latestState.getTarget().getRotation().ifPresent(LookBehavior.INSTANCE::updateTarget);
         // TODO: calculate movement inputs from latestState.getGoal().position
         // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
-        latestState.inputState.forEach((input, forced) -> {
+        latestState.getInputStates().forEach((input, forced) -> {
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
             System.out.println(input + " AND " + forced);
         });
-        latestState.inputState.replaceAll((input, forced) -> false);
+        latestState.getInputStates().replaceAll((input, forced) -> false);
         currentState = latestState;
 
         if (isFinished())
@@ -87,7 +88,6 @@ public abstract class Movement implements Helper, MovementHelper {
 
         return currentState.getStatus();
     }
-
 
     private boolean prepared(MovementState state) {
         if (state.getStatus() == MovementStatus.WAITING)
@@ -123,14 +123,14 @@ public abstract class Movement implements Helper, MovementHelper {
      * Run cleanup on state finish and declare success.
      */
     public void onFinish(MovementState state) {
-        state.inputState.replaceAll((input, forced) -> false);
-        state.inputState.forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
+        state.getInputStates().replaceAll((input, forced) -> false);
+        state.getInputStates().forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
         state.setStatus(MovementStatus.SUCCESS);
     }
 
     public void cancel() {
-        currentState.inputState.replaceAll((input, forced) -> false);
-        currentState.inputState.forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
+        currentState.getInputStates().replaceAll((input, forced) -> false);
+        currentState.getInputStates().forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
         currentState.setStatus(MovementStatus.CANCELED);
     }
 

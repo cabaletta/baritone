@@ -11,11 +11,12 @@ import net.minecraft.block.BlockVine;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDownward extends Movement {
+
+    private int numTicks = 0;
+
     public MovementDownward(BlockPos start) {
         super(start, start.down(), new BlockPos[]{start.down()}, new BlockPos[0]);
     }
-
-    int numTicks = 0;
 
     @Override
     public MovementState updateState(MovementState state) {

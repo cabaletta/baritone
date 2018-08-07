@@ -13,8 +13,9 @@ import net.minecraft.block.BlockVine;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDescend extends Movement {
+
     public MovementDescend(BlockPos start, BlockPos end) {
-        super(start, end, new BlockPos[]{end.up(2), end.up(), end}, new BlockPos[]{end.down()});
+        super(start, end, new BlockPos[] { end.up(2), end.up(), end }, new BlockPos[] { end.down() });
     }
 
     @Override

@@ -22,27 +22,28 @@ import java.util.Objects;
 
 public class MovementTraverse extends Movement {
 
-    BlockPos[] against = new BlockPos[3];
+    private BlockPos[] against = new BlockPos[3];
+
+    /**
+     * Did we have to place a bridge block or was it always there
+     */
+    private boolean wasTheBridgeBlockAlwaysThere = true;
 
     public MovementTraverse(BlockPos from, BlockPos to) {
         super(from, to, new BlockPos[]{to.up(), to}, new BlockPos[]{to.down()});
         int i = 0;
-        if (!to.north().equals(from)) {
-            against[i] = to.north().down();
-            i++;
-        }
-        if (!to.south().equals(from)) {
-            against[i] = to.south().down();
-            i++;
-        }
-        if (!to.east().equals(from)) {
-            against[i] = to.east().down();
-            i++;
-        }
-        if (!to.west().equals(from)) {
+        if (!to.north().equals(from))
+            against[i++] = to.north().down();
+
+        if (!to.south().equals(from))
+            against[i++] = to.south().down();
+
+        if (!to.east().equals(from))
+            against[i++] = to.east().down();
+
+        if (!to.west().equals(from))
             against[i] = to.west().down();
-            i++;
-        }
+
         //note: do NOT add ability to place against .down().down()
     }
 
@@ -80,8 +81,6 @@ public class MovementTraverse extends Movement {
         }
     }
 
-    boolean wasTheBridgeBlockAlwaysThere = true;//did we have to place a bridge block or was it always there
-
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
@@ -115,7 +114,7 @@ public class MovementTraverse extends Movement {
                 return state;
             }
             if (wasTheBridgeBlockAlwaysThere) {
-                //player().setSprinting(true);
+                // player().setSprinting(true);
             }
             moveTowards(positionsToBreak[0]);
             return state;
@@ -123,7 +122,7 @@ public class MovementTraverse extends Movement {
             wasTheBridgeBlockAlwaysThere = false;
             for (BlockPos against1 : against) {
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
-                    if (!MovementHelper.switchtothrowaway()) {//get ready to place a throwaway block
+                    if (!MovementHelper.switchtothrowaway()) { // get ready to place a throwaway block
                         displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
                         return state;
                     }
@@ -138,7 +137,7 @@ public class MovementTraverse extends Movement {
                         if (LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
                             state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                         } else {
-                            //Out.gui("Wrong. " + side + " " + LookBehaviorUtils.getSelectedBlock().get().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);
+                            // Out.gui("Wrong. " + side + " " + LookBehaviorUtils.getSelectedBlock().get().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);
                         }
                     }
                     System.out.println("Trying to look at " + against1 + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
@@ -147,33 +146,32 @@ public class MovementTraverse extends Movement {
             }
             state.setInput(InputOverrideHandler.Input.SNEAK, true);
             if (whereAmI.equals(dest)) {
-                //if we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
-                //Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
-                if (!MovementHelper.switchtothrowaway()) {//get ready to place a throwaway block
+                // if we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
+                // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
+                if (!MovementHelper.switchtothrowaway()) {// get ready to place a throwaway block
                     displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
                     return state;
                 }
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;
                 double faceY = (dest.getY() + src.getY() - 1.0D) * 0.5D;
                 double faceZ = (dest.getZ() + src.getZ() + 1.0D) * 0.5D;
-                //faceX,faceY,faceZ is the middle of the face between from and to
-                BlockPos goalLook = src.down();//this is the block we were just standing on, and the one we want to place against
+                // faceX, faceY, faceZ is the middle of the face between from and to
+                BlockPos goalLook = src.down(); // this is the block we were just standing on, and the one we want to place against
                 state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
 
                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);
                 if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), goalLook)) {
-                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);//wait to right click until we are able to place
+                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                     return state;
                 }
-                //Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
+                // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
                 return state;
             } else {
                 moveTowards(positionsToBreak[0]);
                 return state;
-                //TODO MovementManager.moveTowardsBlock(to);//move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
+                // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
             }
         }
-
     }
 }

@@ -9,9 +9,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDiagonal extends Movement {
+
     public MovementDiagonal(BlockPos start, EnumFacing dir1, EnumFacing dir2) {
         this(start, start.offset(dir1), start.offset(dir2), dir2);
-        //super(start, start.offset(dir1).offset(dir2), new BlockPos[]{start.offset(dir1), start.offset(dir1).up(), start.offset(dir2), start.offset(dir2).up(), start.offset(dir1).offset(dir2), start.offset(dir1).offset(dir2).up()}, new BlockPos[]{start.offset(dir1).offset(dir2).down()});
+        // super(start, start.offset(dir1).offset(dir2), new BlockPos[]{start.offset(dir1), start.offset(dir1).up(), start.offset(dir2), start.offset(dir2).up(), start.offset(dir1).offset(dir2), start.offset(dir1).offset(dir2).up()}, new BlockPos[]{start.offset(dir1).offset(dir2).down()});
     }
 
     public MovementDiagonal(BlockPos start, BlockPos dir1, BlockPos dir2, EnumFacing drr2) {
@@ -19,7 +20,7 @@ public class MovementDiagonal extends Movement {
     }
 
     public MovementDiagonal(BlockPos start, BlockPos end, BlockPos dir1, BlockPos dir2) {
-        super(start, end, new BlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()}, new BlockPos[]{end.down()});
+        super(start, end, new BlockPos[] { dir1, dir1.up(), dir2, dir2.up(), end, end.up() }, new BlockPos[] { end.down() });
     }
 
     @Override
