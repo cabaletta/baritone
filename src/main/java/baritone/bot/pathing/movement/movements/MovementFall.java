@@ -12,6 +12,9 @@ import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.ToolSet;
 import baritone.bot.utils.Utils;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemBucket;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -43,7 +46,7 @@ public class MovementFall extends Movement {
         if(!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
             placeBucketCost = ActionCosts.PLACE_ONE_BLOCK_COST;
         }
-        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + MovementHelper.getTotalHardnessOfBlocksToBreak(ts, positionsToBreak) + placeBucketCost;
+        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + getTotalHardnessOfBlocksToBreak(ts) + placeBucketCost;
     }
 
     @Override
@@ -58,6 +61,9 @@ public class MovementFall extends Movement {
                 state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
+                if(src.getY() - dest.getY() > 3 && !BlockStateInterface.isWater(dest) && !player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER)))) {
+                    return state.setStatus(MovementStatus.UNREACHABLE);
+                }
                 if(playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01 || BlockStateInterface.isWater(dest)))
                     return state.setStatus(MovementStatus.SUCCESS);
                 Vec3d destCenter = Utils.calcCenterFromCoords(dest, world());

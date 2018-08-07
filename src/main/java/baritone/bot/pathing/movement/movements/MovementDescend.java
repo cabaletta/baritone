@@ -25,13 +25,12 @@ public class MovementDescend extends Movement {
         if (tmp1 instanceof BlockLadder || tmp1 instanceof BlockVine) {
             return COST_INF;
         }
-        return WALK_ONE_BLOCK_COST * 0.8 + Math.max(FALL_N_BLOCKS_COST[1], WALK_ONE_BLOCK_COST * 0.2) + MovementHelper.getTotalHardnessOfBlocksToBreak(ts, positionsToBreak);//we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
+        return WALK_ONE_BLOCK_COST * 0.8 + Math.max(FALL_N_BLOCKS_COST[1], WALK_ONE_BLOCK_COST * 0.2) + getTotalHardnessOfBlocksToBreak(ts);//we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
     }
 
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        System.out.println("Ticking with state " + state.getStatus());
         switch (state.getStatus()) {
             case PREPPING:
             case UNREACHABLE:

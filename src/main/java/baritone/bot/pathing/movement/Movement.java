@@ -131,6 +131,47 @@ public abstract class Movement implements Helper, MovementHelper {
         currentState.setStatus(MovementStatus.CANCELED);
     }
 
+
+    public double getTotalHardnessOfBlocksToBreak(ToolSet ts) {
+        /*
+        double sum = 0;
+        HashSet<BlockPos> toBreak = new HashSet();
+        for (BlockPos positionsToBreak1 : positionsToBreak) {
+            toBreak.add(positionsToBreak1);
+            if (this instanceof ActionFall) {//if we are digging straight down, assume we have already broken the sand above us
+                continue;
+            }
+            BlockPos tmp = positionsToBreak1.up();
+            while (canFall(tmp)) {
+                toBreak.add(tmp);
+                tmp = tmp.up();
+            }
+        }
+        for (BlockPos pos : toBreak) {
+            sum += getHardness(ts, Baritone.get(pos), pos);
+            if (sum >= COST_INF) {
+                return COST_INF;
+            }
+        }
+        if (!Baritone.allowBreakOrPlace || !Baritone.hasThrowaway) {
+            for (int i = 0; i < blocksToPlace.length; i++) {
+                if (!canWalkOn(positionsToPlace[i])) {
+                    return COST_INF;
+                }
+            }
+        }*/
+        //^ the above implementation properly deals with falling blocks, TODO integrate
+        double sum = 0;
+        for (BlockPos pos : positionsToBreak) {
+            sum += MovementHelper.getMiningDurationTicks(ts, BlockStateInterface.get(pos), pos);
+            if (sum >= COST_INF) {
+                return COST_INF;
+            }
+        }
+        return sum;
+    }
+
+
     /**
      * Calculate latest movement state.
      * Gets called once a tick.
@@ -154,9 +195,9 @@ public abstract class Movement implements Helper, MovementHelper {
             return toBreakCached;
         }
         ArrayList<BlockPos> result = new ArrayList<>();
-        for (BlockPos positionsToBreak1 : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(positionsToBreak1, BlockStateInterface.get(positionsToBreak1))) {
-                result.add(positionsToBreak1);
+        for (BlockPos positionToBreak : positionsToBreak) {
+            if (!MovementHelper.canWalkThrough(positionToBreak, BlockStateInterface.get(positionToBreak))) {
+                result.add(positionToBreak);
             }
         }
         toBreakCached = result;
@@ -168,9 +209,9 @@ public abstract class Movement implements Helper, MovementHelper {
             return toPlaceCached;
         }
         ArrayList<BlockPos> result = new ArrayList<>();
-        for (BlockPos positionsToPlace1 : positionsToPlace) {
-            if (!MovementHelper.canWalkOn(positionsToPlace1)) {
-                result.add(positionsToPlace1);
+        for (BlockPos positionToBreak : positionsToPlace) {
+            if (!MovementHelper.canWalkOn(positionToBreak)) {
+                result.add(positionToBreak);
             }
         }
         toPlaceCached = result;
@@ -178,6 +219,7 @@ public abstract class Movement implements Helper, MovementHelper {
     }
 
     protected void moveTowards(BlockPos pos) {
-        currentState.setTarget(new MovementState.MovementTarget(new Rotation(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(pos, world()), playerRotations()).getFirst(), player().rotationPitch))).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+        currentState.setTarget(new MovementState.MovementTarget(new Rotation(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(pos, world()), playerRotations()).getFirst(), player().rotationPitch)))
+                .setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }
 }
