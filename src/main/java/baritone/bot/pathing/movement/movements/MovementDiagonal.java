@@ -40,7 +40,7 @@ public class MovementDiagonal extends Movement {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
             return state;
         }
-        moveTowards(positionsToBreak[0]);
+        moveTowards(dest);
         return state;
     }
 
