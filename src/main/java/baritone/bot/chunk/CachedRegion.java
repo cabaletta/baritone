@@ -43,7 +43,7 @@ public final class CachedRegion implements ICachedChunkAccess {
     public final PathingBlockType getBlockType(int x, int y, int z) {
         CachedChunk chunk = this.getChunk(x >> 4, z >> 4);
         if (chunk != null) {
-            return chunk.getBlockType(x, y, z);
+            return chunk.getBlockType(x & 15, y, z & 15);
         }
         return null;
     }
