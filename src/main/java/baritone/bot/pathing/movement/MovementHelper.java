@@ -35,7 +35,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.List;
@@ -204,7 +203,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static MovementState moveTowards(MovementState state, BlockPos pos) {
         return state.setTarget(new MovementTarget(new Rotation(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5),
+                Utils.getBlockPosCenter(pos),
                 new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getFirst(), mc.player.rotationPitch))
         ).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }

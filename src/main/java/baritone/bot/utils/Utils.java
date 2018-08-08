@@ -42,7 +42,7 @@ public final class Utils {
      * @return Rotation {@link Rotation}
      */
     public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
-        double[] delta = { orig.x - dest.x, orig.y - dest.y, orig.z - dest.z };
+        double[] delta = {orig.x - dest.x, orig.y - dest.y, orig.z - dest.z};
         double yaw = Math.atan2(delta[0], -delta[2]);
         double dist = Math.sqrt(delta[0] * delta[0] + delta[2] * delta[2]);
         double pitch = Math.atan2(delta[1], dist);
@@ -72,6 +72,10 @@ public final class Utils {
         return new Vec3d(orig.getX() + xDiff,
                 orig.getY() + yDiff,
                 orig.getZ() + zDiff);
+    }
+
+    public static Vec3d getBlockPosCenter(BlockPos pos) {
+        return new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
     }
 
     public static Rotation wrapAnglesToRelative(Rotation current, Rotation target) {
