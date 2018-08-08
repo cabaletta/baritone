@@ -19,12 +19,15 @@ package baritone.launch.mixins;
 
 import baritone.bot.Baritone;
 import baritone.bot.event.events.PacketEvent;
+import baritone.bot.event.events.type.EventState;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -34,14 +37,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @since 8/6/2018 9:30 PM
  */
 @Mixin(NetworkManager.class)
-public class MixinNetworkManager {
+public abstract class MixinNetworkManager {
+
+    @Shadow private Channel channel;
+
+    @Shadow protected abstract void channelRead0(ChannelHandlerContext p_channelRead0_1_, Packet<?> p_channelRead0_2_) throws Exception;
 
     @Inject(
             method = "dispatchPacket",
             at = @At("HEAD")
     )
-    private void dispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void >>[] futureListeners, CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(inPacket));
+    private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void >>[] futureListeners, CallbackInfo ci) {
+        Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.PRE, inPacket));
+    }
+
+    @Inject(
+            method = "dispatchPacket",
+            at = @At("RETURN")
+    )
+    private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void >>[] futureListeners, CallbackInfo ci) {
+        Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.POST, inPacket));
     }
 
     @Inject(
@@ -49,9 +64,20 @@ public class MixinNetworkManager {
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/network/Packet.processPacket(Lnet/minecraft/network/INetHandler;)V"
-            )
+            ),
+            remap = false
     )
     private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(packet));
+        Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.PRE, packet));
+    }
+
+    @Inject(
+            method = "channelRead0",
+            at = @At("RETURN"),
+            remap = false
+    )
+    private void postProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
+        if (this.channel.isOpen())
+            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.POST, packet));
     }
 }

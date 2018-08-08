@@ -19,6 +19,7 @@ package baritone.bot;
 
 import baritone.bot.behavior.Behavior;
 import baritone.bot.behavior.impl.LookBehavior;
+import baritone.bot.behavior.impl.MemoryBehavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public enum Baritone {
         this.behaviors = new ArrayList<>();
         behaviors.add(PathingBehavior.INSTANCE);
         behaviors.add(LookBehavior.INSTANCE);
+        behaviors.add(MemoryBehavior.INSTANCE);
 
         this.active = true;
         this.initialized = true;

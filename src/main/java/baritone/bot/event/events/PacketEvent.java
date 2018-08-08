@@ -17,6 +17,7 @@
 
 package baritone.bot.event.events;
 
+import baritone.bot.event.events.type.EventState;
 import net.minecraft.network.Packet;
 
 /**
@@ -25,13 +26,25 @@ import net.minecraft.network.Packet;
  */
 public final class PacketEvent {
 
+    private final EventState state;
+
     private final Packet<?> packet;
 
-    public PacketEvent(Packet<?> packet) {
+    public PacketEvent(EventState state, Packet<?> packet) {
+        this.state = state;
         this.packet = packet;
+    }
+
+    public final EventState getState() {
+        return this.state;
     }
 
     public final Packet<?> getPacket() {
         return this.packet;
+    }
+
+    @SuppressWarnings("unchecked")
+    public final <T extends Packet<?>> T cast() {
+        return (T) this.packet;
     }
 }
