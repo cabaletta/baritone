@@ -26,7 +26,7 @@ import net.minecraft.item.ItemStack;
  * @author Brady
  * @since 8/7/2018 4:30 PM
  */
-public class CalculationContext extends Helper {
+public class CalculationContext implements Helper {
 
     private final ToolSet toolSet;
     private final boolean hasWaterBucket;
