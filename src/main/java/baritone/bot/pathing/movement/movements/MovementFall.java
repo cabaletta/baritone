@@ -32,7 +32,7 @@ import net.minecraft.util.math.Vec3d;
 
 public class MovementFall extends Movement {
 
-    private static final ItemStack WATER_BUCKET_STACK = new ItemStack(Items.WATER_BUCKET);
+    private static final ItemStack STACK_WATER_BUCKET = new ItemStack(Items.WATER_BUCKET);
 
     public MovementFall(BlockPos src, BlockPos dest) {
         super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[] { dest.down() });
@@ -68,11 +68,11 @@ public class MovementFall extends Movement {
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
                 if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
-                    if (!player().inventory.hasItemStack(WATER_BUCKET_STACK) || world().provider.isNether()) {
+                    if (!player().inventory.hasItemStack(STACK_WATER_BUCKET) || world().provider.isNether()) {
                         state.setStatus(MovementStatus.UNREACHABLE);
                         return state;
                     }
-                    player().inventory.currentItem = player().inventory.getSlotFor(WATER_BUCKET_STACK);
+                    player().inventory.currentItem = player().inventory.getSlotFor(STACK_WATER_BUCKET);
                     LookBehaviorUtils.reachable(dest).ifPresent(rotation ->
                             state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
                                     .setTarget(new MovementTarget(rotation))
