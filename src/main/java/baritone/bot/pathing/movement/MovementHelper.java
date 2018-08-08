@@ -210,15 +210,13 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static Movement generateMovementFallOrDescend(BlockPos pos, EnumFacing direction, CalculationContext calcContext) {
         BlockPos dest = pos.offset(direction);
-        BlockPos destUp = dest.up();
-        BlockPos destDown = dest.down();
         for (int i = 0; i < 4; i++) {
-            if (!(BlockStateInterface.get(destUp.down(i)).getBlock() instanceof BlockAir)) {
+            if (!(BlockStateInterface.get(dest.down(i - 1)).getBlock() instanceof BlockAir)) {
                 //if any of these four aren't air, that means that a fall N isn't possible
                 //so try a movementdescend
 
                 //if all four of them are air, a movementdescend isn't possible anyway
-                return new MovementDescend(pos, destDown);
+                return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
             }
         }
         // we're clear for a fall 2
