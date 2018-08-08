@@ -221,7 +221,6 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return new MovementDescend(pos, destDown);
             }
         }
-        System.out.println(dest + " descend distance!");
         // we're clear for a fall 2
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {
