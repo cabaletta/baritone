@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.BitSet;
+import java.util.function.Consumer;
 
 /**
  * @author Brady
@@ -83,11 +84,18 @@ public final class CachedWorld implements ICachedChunkAccess {
      * @param regionZ The region Z coordinate
      * @return The region located at the specified coordinates
      */
-    private CachedRegion getOrCreateRegion(int regionX, int regionZ) {
+    CachedRegion getOrCreateRegion(int regionX, int regionZ) {
         return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
             CachedRegion newRegion = new CachedRegion(regionX, regionZ);
             newRegion.load(this.directory);
             return newRegion;
+        });
+    }
+
+    public void forEachRegion(Consumer<CachedRegion> consumer) {
+        this.cachedRegions.forEach((id, r) -> {
+            if (r != null)
+                consumer.accept(r);
         });
     }
 

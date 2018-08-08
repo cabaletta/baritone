@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -60,6 +61,17 @@ public final class CachedRegion implements ICachedChunkAccess {
 
     private CachedChunk getChunk(int chunkX, int chunkZ) {
         return this.chunks[chunkX][chunkZ];
+    }
+
+    public void forEachChunk(Consumer<CachedChunk> consumer) {
+        for (int x = 0; x < 32; x++) {
+            for (int z = 0; z < 32; z++) {
+                CachedChunk chunk = getChunk(x, z);
+                if (chunk != null) {
+                    consumer.accept(chunk);
+                }
+            }
+        }
     }
 
     public final void save(String directory) {

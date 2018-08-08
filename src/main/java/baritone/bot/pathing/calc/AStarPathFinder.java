@@ -1,5 +1,6 @@
 package baritone.bot.pathing.calc;
 
+import baritone.bot.chunk.CachedWorldProvider;
 import baritone.bot.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.bot.pathing.calc.openset.IOpenSet;
 import baritone.bot.pathing.goals.Goal;
@@ -83,7 +84,13 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 if (movementToGetToNeighbor == null) {
                     continue;
                 }
-                if (Minecraft.getMinecraft().world.getChunk(movementToGetToNeighbor.getDest()) instanceof EmptyChunk) {
+
+                boolean isPositionCached = false;
+                if (CachedWorldProvider.INSTANCE.getCurrentWorld() != null)
+                    if (CachedWorldProvider.INSTANCE.getCurrentWorld().getBlockType(movementToGetToNeighbor.getDest()) != null)
+                        isPositionCached = true;
+
+                if (Minecraft.getMinecraft().world.getChunk(movementToGetToNeighbor.getDest()) instanceof EmptyChunk && !isPositionCached) {
                     numEmptyChunk++;
                     continue;
                 }

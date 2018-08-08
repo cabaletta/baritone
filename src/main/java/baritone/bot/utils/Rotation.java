@@ -4,7 +4,7 @@ import net.minecraft.util.Tuple;
 
 public class Rotation extends Tuple<Float, Float> {
 
-    public Rotation(Float yaw, Float pitch) {
+    public Rotation(float yaw, float pitch) {
         super(yaw, pitch);
     }
 }

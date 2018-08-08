@@ -1,10 +1,20 @@
 package baritone.bot;
 
 import baritone.bot.behavior.Behavior;
+import baritone.bot.chunk.CachedWorld;
+import baritone.bot.chunk.CachedWorldProvider;
+import baritone.bot.chunk.ChunkPacker;
 import baritone.bot.event.IGameEventListener;
 import baritone.bot.event.events.*;
+import baritone.bot.event.events.type.EventState;
+import baritone.bot.utils.Helper;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import java.util.function.Consumer;
 
@@ -12,7 +22,7 @@ import java.util.function.Consumer;
  * @author Brady
  * @since 7/31/2018 11:04 PM
  */
-public final class GameEventHandler implements IGameEventListener {
+public final class GameEventHandler implements IGameEventListener, Helper {
 
     GameEventHandler() {}
 
@@ -52,8 +62,6 @@ public final class GameEventHandler implements IGameEventListener {
 
     @Override
     public void onChunkEvent(ChunkEvent event) {
-        /*
-
         EventState state = event.getState();
         ChunkEvent.Type type = event.getType();
 
@@ -72,19 +80,23 @@ public final class GameEventHandler implements IGameEventListener {
                     world.updateCachedChunk(event.getX(), event.getZ(),
                             ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ()))));
         }
-        */
 
         dispatch(behavior -> behavior.onChunkEvent(event));
     }
 
     @Override
     public void onRenderPass(RenderEvent event) {
+        /*
+        CachedWorldProvider.INSTANCE.ifWorldLoaded(world -> world.forEachRegion(region -> region.forEachChunk(chunk -> {
+            drawChunkLine(region.getX() * 512 + chunk.getX() * 16, region.getZ() * 512 + chunk.getZ() * 16, event.getPartialTicks());
+        })));
+        */
+
         dispatch(behavior -> behavior.onRenderPass(event));
     }
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        /*
         CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
 
         switch (event.getState()) {
@@ -97,7 +109,6 @@ public final class GameEventHandler implements IGameEventListener {
                     cache.initWorld(event.getWorld());
                 break;
         }
-        */
 
         dispatch(behavior -> behavior.onWorldEvent(event));
     }
@@ -114,5 +125,28 @@ public final class GameEventHandler implements IGameEventListener {
 
     private void dispatch(Consumer<Behavior> dispatchFunction) {
         Baritone.INSTANCE.getBehaviors().stream().filter(Behavior::isEnabled).forEach(dispatchFunction);
+    }
+
+    private void drawChunkLine(int posX, int posZ, float partialTicks) {
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.color(1.0F, 1.0F, 0.0F, 0.4F);
+        GL11.glLineWidth(2.0F);
+        GlStateManager.disableTexture2D();
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        double d0 = mc.getRenderManager().viewerPosX;
+        double d1 = mc.getRenderManager().viewerPosY;
+        double d2 = mc.getRenderManager().viewerPosZ;
+        buffer.begin(3, DefaultVertexFormats.POSITION);
+        buffer.pos(posX - d0, 0 - d1, posZ - d2).endVertex();
+        buffer.pos(posX - d0, 256 - d1, posZ - d2).endVertex();
+        tessellator.draw();
+
+        GlStateManager.enableDepth();
+        GlStateManager.depthMask(true);
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
     }
 }

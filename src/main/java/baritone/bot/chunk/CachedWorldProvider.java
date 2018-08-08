@@ -14,6 +14,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Brady
@@ -22,6 +24,8 @@ import java.util.function.Consumer;
 public enum CachedWorldProvider implements Helper {
 
     INSTANCE;
+
+    private static final Pattern REGION_REGEX = Pattern.compile("r\\.(-?[0-9]+)\\.(-?[0-9]+)\\.bcr");
 
     private final Map<String, CachedWorld> singlePlayerWorldCache = new HashMap<>();
 
@@ -47,6 +51,20 @@ public enum CachedWorldProvider implements Helper {
             }
 
             this.currentWorld = this.singlePlayerWorldCache.computeIfAbsent(dir.toString(), CachedWorld::new);
+
+            try {
+                Files.list(dir).forEach(path -> {
+                    String file = path.getFileName().toString();
+                    Matcher matcher = REGION_REGEX.matcher(file);
+                    if (matcher.matches()) {
+                        int rx = Integer.parseInt(matcher.group(1));
+                        int ry = Integer.parseInt(matcher.group(2));
+                        // Recognize the region for when we load from file
+                        this.currentWorld.getOrCreateRegion(rx, ry);
+                    }
+                });
+            } catch (Exception ignored) {}
+
             this.currentWorld.load();
         }
         // TODO: Store server worlds

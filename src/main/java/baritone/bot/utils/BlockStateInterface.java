@@ -1,16 +1,47 @@
 package baritone.bot.utils;
 
+import baritone.bot.chunk.CachedWorld;
+import baritone.bot.chunk.CachedWorldProvider;
+import baritone.bot.pathing.util.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.Chunk;
 
-public class BlockStateInterface {
+public class BlockStateInterface implements Helper {
+
     public static IBlockState get(BlockPos pos) { // wrappers for future chunk caching capability
-        return Minecraft.getMinecraft().world.getBlockState(pos);
+
+        // Invalid vertical position
+        if (pos.getY() < 0 || pos.getY() >= 256)
+            return Blocks.AIR.getDefaultState();
+
+        Chunk chunk = mc.world.getChunk(pos);
+        if (chunk.isLoaded()) {
+            return chunk.getBlockState(pos);
+        } else {
+            CachedWorld world = CachedWorldProvider.INSTANCE.getCurrentWorld();
+            if (world != null) {
+                PathingBlockType type = world.getBlockType(pos);
+                if (type != null) {
+                    switch (type) {
+                        case AIR:
+                            return Blocks.AIR.getDefaultState();
+                        case WATER:
+                            return Blocks.WATER.getDefaultState();
+                        case AVOID:
+                            return Blocks.LAVA.getDefaultState();
+                        case SOLID:
+                            return Blocks.OBSIDIAN.getDefaultState();
+                    }
+                }
+            }
+        }
+
+        return Blocks.AIR.getDefaultState();
     }
 
     public static Block getBlock(BlockPos pos) {
