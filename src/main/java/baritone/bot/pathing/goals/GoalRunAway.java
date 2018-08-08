@@ -21,7 +21,7 @@ import java.util.Arrays;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * Useful for automated combat (etreating specifically)
+ * Useful for automated combat (retreating specifically)
  * @author leijurv
  */
 public class GoalRunAway implements Goal {

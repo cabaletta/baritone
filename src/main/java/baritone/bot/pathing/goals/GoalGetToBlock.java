@@ -21,8 +21,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * Don't get into the block, but get directly adjacent to it.
- * Useful for chests.
+ * Don't get into the block, but get directly adjacent to it. Useful for chests.
+ *
  * @author avecowa
  */
 public class GoalGetToBlock extends GoalComposite {

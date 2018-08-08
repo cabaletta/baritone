@@ -26,7 +26,20 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GoalBlock implements Goal {
 
-    private final int x, y, z;
+    /**
+     * The X block position of this goal
+     */
+    private final int x;
+
+    /**
+     * The Y block position of this goal
+     */
+    private final int y;
+
+    /**
+     * The Z block position of this goal
+     */
+    private final int z;
 
     public GoalBlock(BlockPos pos) {
         this(pos.getX(), pos.getY(), pos.getZ());
@@ -44,10 +57,14 @@ public class GoalBlock implements Goal {
     }
 
     /**
-     * The range over which to begin considering Y coordinate in the heuristic
+     * The min range value over which to begin considering Y coordinate in the heuristic
      */
-    static final double MIN = 20;
-    static final double MAX = 150;
+    private static final double MIN = 20;
+
+    /**
+     * The max range value over which to begin considering Y coordinate in the heuristic
+     */
+    private static final double MAX = 150;
 
     @Override
     public double heuristic(BlockPos pos) {
@@ -60,6 +77,13 @@ public class GoalBlock implements Goal {
     @Override
     public String toString() {
         return "Goal{x=" + x + ",y=" + y + ",z=" + z + "}";
+    }
+
+    /**
+     * @return The position of this goal as a {@link BlockPos}
+     */
+    public BlockPos getGoalPos() {
+        return new BlockPos(x, y, z);
     }
 
     public static double calculate(double xDiff, double yDiff, double zDiff) {
@@ -82,9 +106,5 @@ public class GoalBlock implements Goal {
         //use the pythagorean and manhattan mixture from GoalXZ
         heuristic += GoalXZ.calculate(xDiff, zDiff, pythaDist);
         return heuristic;
-    }
-
-    public BlockPos getGoalPos() {
-        return new BlockPos(x, y, z);
     }
 }
