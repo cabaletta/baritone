@@ -58,7 +58,7 @@ public class MovementDiagonal extends Movement {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
             return state;
         }
-        moveTowards(dest);
+        MovementHelper.moveTowards(state, dest);
         return state;
     }
 

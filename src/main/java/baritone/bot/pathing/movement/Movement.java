@@ -236,9 +236,4 @@ public abstract class Movement implements Helper, MovementHelper {
         toPlaceCached = result;
         return result;
     }
-
-    protected void moveTowards(BlockPos pos) {
-        currentState.setTarget(new MovementState.MovementTarget(new Rotation(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), playerRotations()).getFirst(), player().rotationPitch)))
-                .setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-    }
 }

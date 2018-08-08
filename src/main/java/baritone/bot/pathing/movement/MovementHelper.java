@@ -17,12 +17,12 @@
 
 package baritone.bot.pathing.movement;
 
+import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
+import baritone.bot.pathing.movement.MovementState.MovementTarget;
 import baritone.bot.pathing.movement.movements.MovementDescend;
 import baritone.bot.pathing.movement.movements.MovementFall;
-import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.Helper;
-import baritone.bot.utils.ToolSet;
+import baritone.bot.utils.*;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -35,6 +35,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.List;
@@ -199,6 +200,13 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
         }
         return false;
+    }
+
+    static MovementState moveTowards(MovementState state, BlockPos pos) {
+        return state.setTarget(new MovementTarget(new Rotation(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+                new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5),
+                new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getFirst(), mc.player.rotationPitch))
+        ).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }
 
     static Movement generateMovementFallOrDescend(BlockPos pos, EnumFacing direction) {

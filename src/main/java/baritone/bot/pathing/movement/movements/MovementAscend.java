@@ -93,7 +93,7 @@ public class MovementAscend extends Movement {
                     state.setStatus(MovementStatus.SUCCESS);
                     return state;
                 }
-                moveTowards(positionsToBreak[0]);
+                MovementHelper.moveTowards(state, positionsToBreak[0]);
                 return state.setInput(InputOverrideHandler.Input.JUMP, true);
             default:
                 return state;

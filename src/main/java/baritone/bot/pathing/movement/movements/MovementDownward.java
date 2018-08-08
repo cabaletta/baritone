@@ -71,7 +71,7 @@ public class MovementDownward extends Movement {
                 if (numTicks++ < 10 && ab < 0.2) {
                     return state;
                 }
-                moveTowards(positionsToBreak[0]);
+                MovementHelper.moveTowards(state, positionsToBreak[0]);
                 return state;
             default:
                 return state;

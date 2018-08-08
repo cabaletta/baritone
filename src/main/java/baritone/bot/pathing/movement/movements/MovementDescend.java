@@ -75,7 +75,7 @@ public class MovementDescend extends Movement {
                     double diffZ2 = player().posZ - (fakeDest.getZ() + 0.5);
                     double d = Math.sqrt(diffX2 * diffX2 + diffZ2 * diffZ2);
                     if (d > ab)
-                        moveTowards(fakeDest);
+                        MovementHelper.moveTowards(state, fakeDest);
                     else {
                         state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
                         state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);

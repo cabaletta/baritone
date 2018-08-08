@@ -133,7 +133,7 @@ public class MovementTraverse extends Movement {
             if (wasTheBridgeBlockAlwaysThere) {
                 // player().setSprinting(true);
             }
-            moveTowards(positionsToBreak[0]);
+            MovementHelper.moveTowards(state, positionsToBreak[0]);
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
@@ -185,7 +185,7 @@ public class MovementTraverse extends Movement {
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
                 return state;
             } else {
-                moveTowards(positionsToBreak[0]);
+                MovementHelper.moveTowards(state, positionsToBreak[0]);
                 return state;
                 // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
             }
