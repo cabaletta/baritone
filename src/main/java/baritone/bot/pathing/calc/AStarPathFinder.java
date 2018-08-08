@@ -163,24 +163,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        Movement[] movements = new Movement[17];
-        movements[0] = new MovementTraverse(pos, new BlockPos(x + 1, y, z));
-        movements[1] = new MovementTraverse(pos, new BlockPos(x - 1, y, z));
-        movements[2] = new MovementTraverse(pos, new BlockPos(x, y, z + 1));
-        movements[3] = new MovementTraverse(pos, new BlockPos(x, y, z - 1));
-        movements[4] = new MovementAscend(pos, new BlockPos(x + 1, y + 1, z));
-        movements[5] = new MovementAscend(pos, new BlockPos(x - 1, y + 1, z));
-        movements[6] = new MovementAscend(pos, new BlockPos(x, y + 1, z + 1));
-        movements[7] = new MovementAscend(pos, new BlockPos(x, y + 1, z - 1));
-        movements[8] = MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.NORTH);
-        movements[9] = MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.SOUTH);
-        movements[10] = MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.EAST);
-        movements[11] = MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.WEST);
-        movements[12] = new MovementDownward(pos);
-        movements[13] = new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST);
-        movements[14] = new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST);
-        movements[15] = new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST);
-        movements[16] = new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST);
         /*Action[] actions = new Action[26];
         actions[0] = new ActionPillar(pos);
         actions[1] = new ActionBridge(pos, new BlockPos(x + 1, y, z));
@@ -209,7 +191,25 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         actions[24] = new ActionWalkDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST);
         actions[25] = new ActionWalkDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST);
         return actions;*/
-        return movements;
+        return new Movement[] {
+                new MovementTraverse(pos, new BlockPos(x + 1, y, z)),
+                new MovementTraverse(pos, new BlockPos(x - 1, y, z)),
+                new MovementTraverse(pos, new BlockPos(x, y, z + 1)),
+                new MovementTraverse(pos, new BlockPos(x, y, z - 1)),
+                new MovementAscend(pos, new BlockPos(x + 1, y + 1, z)),
+                new MovementAscend(pos, new BlockPos(x - 1, y + 1, z)),
+                new MovementAscend(pos, new BlockPos(x, y + 1, z + 1)),
+                new MovementAscend(pos, new BlockPos(x, y + 1, z - 1)),
+                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.NORTH),
+                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.SOUTH),
+                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.EAST),
+                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.WEST),
+                new MovementDownward(pos),
+                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
+                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),
+                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
+                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST)
+        };
     }
 
     private final Random random = new Random();
