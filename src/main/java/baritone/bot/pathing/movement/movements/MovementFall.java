@@ -72,7 +72,7 @@ public class MovementFall extends Movement {
                 BlockPos playerFeet = playerFeet();
                 Optional<Rotation> targetRotation = Optional.empty();
                 if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3 && !playerFeet.equals(dest)) {
-                    if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) {
+                    if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) { // TODO check if water bucket is on hotbar or main inventory
                         state.setStatus(MovementStatus.UNREACHABLE);
                         return state;
                     } else if (playerFeet().getY() - dest.getY() < mc.playerController.getBlockReachDistance()) {
@@ -80,7 +80,7 @@ public class MovementFall extends Movement {
                         targetRotation = LookBehaviorUtils.reachable(dest.down());
                     }
                 }
-                if(targetRotation.isPresent())
+                if (targetRotation.isPresent())
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
                             .setTarget(new MovementTarget(targetRotation.get()));
                 else

@@ -37,7 +37,7 @@ public class CalculationContext implements Helper {
 
     public CalculationContext(ToolSet toolSet) {
         this.toolSet = toolSet;
-        this.hasWaterBucket = player().inventory.hasItemStack(new ItemStack(Items.WATER_BUCKET));
+        this.hasWaterBucket = player().inventory.hasItemStack(new ItemStack(Items.WATER_BUCKET)); // TODO check if water bucket is on hotbar or main inventory
     }
 
     public ToolSet getToolSet() {
