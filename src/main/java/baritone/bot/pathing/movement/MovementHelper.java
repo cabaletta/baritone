@@ -223,7 +223,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {
             BlockPos onto = dest.down(fallHeight);
-            if (onto.getY() <= 0) {
+            if (onto.getY() < 0) {
                 break;
             }
             IBlockState ontoBlock = BlockStateInterface.get(onto);
