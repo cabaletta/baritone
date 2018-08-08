@@ -25,11 +25,14 @@ public final class Utils {
      * @return Rotation {@link Rotation}
      */
     public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
-        double yaw = Math.atan2(orig.x - dest.x, -orig.z + dest.z);
-        double dist = Math.sqrt((orig.x - dest.x) * (orig.x - dest.x) + (-orig.z + dest.z) * (-orig.z + dest.z));
-        double pitch = Math.atan2(orig.y - dest.y, dist);
-        return new Rotation((float) (yaw * 180 / Math.PI),
-                (float) (pitch * 180 / Math.PI));
+        double[] delta = { orig.x - dest.x, orig.y - dest.y, orig.z - dest.z };
+        double yaw = Math.atan2(delta[0], -delta[2]);
+        double dist = Math.sqrt(delta[0] * delta[0] + delta[2] * delta[2]);
+        double pitch = Math.atan2(delta[1], dist);
+        return new Rotation(
+                (float) radToDeg(yaw),
+                (float) radToDeg(pitch)
+        );
     }
 
     /**
@@ -70,5 +73,13 @@ public final class Utils {
         double ydiff = y - (pos.getY() + 0.5D);
         double zdiff = z - (pos.getZ() + 0.5D);
         return Math.sqrt(xdiff * xdiff + ydiff * ydiff + zdiff * zdiff);
+    }
+
+    public static double degToRad(double deg) {
+        return deg * Math.PI / 180.0;
+    }
+
+    public static double radToDeg(double rad) {
+        return rad * 180.0 / Math.PI;
     }
 }
