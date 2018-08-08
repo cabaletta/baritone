@@ -32,7 +32,8 @@ import net.minecraft.util.math.Vec3d;
 
 public class MovementFall extends Movement {
 
-    private static final ItemStack STACK_WATER_BUCKET = new ItemStack(Items.WATER_BUCKET);
+    private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
+    private static final ItemStack STACK_BUCKET_AIR = new ItemStack(Items.BUCKET);
 
     public MovementFall(BlockPos src, BlockPos dest) {
         super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[] { dest.down() });
@@ -67,12 +68,12 @@ public class MovementFall extends Movement {
                 state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
-                if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
-                    if (!player().inventory.hasItemStack(STACK_WATER_BUCKET) || world().provider.isNether()) {
+                if (!BlockStateInterface.isWater(dest) && playerFeet().getY() - dest.getY() > 3) {
+                    if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) {
                         state.setStatus(MovementStatus.UNREACHABLE);
                         return state;
                     }
-                    player().inventory.currentItem = player().inventory.getSlotFor(STACK_WATER_BUCKET);
+                    player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
                     LookBehaviorUtils.reachable(dest).ifPresent(rotation ->
                             state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
                                     .setTarget(new MovementTarget(rotation))
@@ -81,8 +82,13 @@ public class MovementFall extends Movement {
                     Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world()));
                     state.setTarget(new MovementTarget(rotationToBlock));
                 }
-                if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01 || BlockStateInterface.isWater(dest)))
+                if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
+                        || (BlockStateInterface.isWater(dest) && !player().inventory.hasItemStack(STACK_BUCKET_AIR)))) {
+                    if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_AIR)) {
+                        return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                    }
                     return state.setStatus(MovementStatus.SUCCESS);
+                }
                 Vec3d destCenter = Utils.calcCenterFromCoords(dest, world());
                 if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
                     state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
