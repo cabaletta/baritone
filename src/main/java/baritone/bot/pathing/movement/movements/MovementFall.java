@@ -25,13 +25,14 @@ import baritone.bot.pathing.movement.MovementState.MovementTarget;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.Utils;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemBucket;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 public class MovementFall extends Movement {
+
+    private static final ItemStack WATER_BUCKET_STACK = new ItemStack(Items.WATER_BUCKET);
 
     public MovementFall(BlockPos src, BlockPos dest) {
         super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[] { dest.down() });
@@ -67,11 +68,11 @@ public class MovementFall extends Movement {
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
                 if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
-                    if (!player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER))) || world().provider.isNether()) {
+                    if (!player().inventory.hasItemStack(WATER_BUCKET_STACK) || world().provider.isNether()) {
                         state.setStatus(MovementStatus.UNREACHABLE);
                         return state;
                     }
-                    player().inventory.currentItem = player().inventory.getSlotFor(new ItemStack(new ItemBucket(Blocks.WATER)));
+                    player().inventory.currentItem = player().inventory.getSlotFor(WATER_BUCKET_STACK);
                     LookBehaviorUtils.reachable(dest).ifPresent(rotation ->
                             state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
                                     .setTarget(new MovementTarget(rotation))
