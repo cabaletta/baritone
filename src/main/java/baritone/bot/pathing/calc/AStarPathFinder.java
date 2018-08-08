@@ -47,7 +47,6 @@ import baritone.bot.pathing.movement.movements.MovementDiagonal;
 import baritone.bot.pathing.movement.movements.MovementDownward;
 import baritone.bot.pathing.movement.movements.MovementTraverse;
 import baritone.bot.pathing.path.IPath;
-import baritone.bot.utils.ToolSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -87,7 +86,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
         long timeoutTime = startTime + (slowPath ? 40000 : 4000);
         long lastPrintout = 0;
         int numNodes = 0;
-        ToolSet ts = new ToolSet();
+        CalculationContext calcContext = new CalculationContext();
         int numEmptyChunk = 0;
         while (!openSet.isEmpty() && numEmptyChunk < 50 && System.currentTimeMillis() < timeoutTime) {
             if (slowPath) {
@@ -110,7 +109,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 return Optional.of(new Path(startNode, currentNode, goal, numNodes));
             }
             //long constructStart = System.nanoTime();
-            Movement[] possibleMovements = getConnectedPositions(currentNodePos);//movement that we could take that start at myPos, in random order
+            Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at myPos, in random order
             shuffle(possibleMovements);
             //long constructEnd = System.nanoTime();
             //System.out.println(constructEnd - constructStart);
@@ -130,7 +129,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 }
                 //long costStart = System.nanoTime();
                 // TODO cache cost
-                double actionCost = movementToGetToNeighbor.getCost(new CalculationContext(ts));
+                double actionCost = movementToGetToNeighbor.getCost(calcContext);
                 //long costEnd = System.nanoTime();
                 //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
                 if (actionCost >= ActionCosts.COST_INF) {
@@ -193,39 +192,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
     }
 
 
-    private static Movement[] getConnectedPositions(BlockPos pos) {
+    private static Movement[] getConnectedPositions(BlockPos pos, CalculationContext calcContext) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        /*Action[] actions = new Action[26];
-        actions[0] = new ActionPillar(pos);
-        actions[1] = new ActionBridge(pos, new BlockPos(x + 1, y, z));
-        actions[2] = new ActionBridge(pos, new BlockPos(x - 1, y, z));
-        actions[3] = new ActionBridge(pos, new BlockPos(x, y, z + 1));
-        actions[4] = new ActionBridge(pos, new BlockPos(x, y, z - 1));
-        actions[5] = new ActionClimb(pos, new BlockPos(x + 1, y + 1, z));
-        actions[6] = new ActionClimb(pos, new BlockPos(x - 1, y + 1, z));
-        actions[7] = new ActionClimb(pos, new BlockPos(x, y + 1, z + 1));
-        actions[8] = new ActionClimb(pos, new BlockPos(x, y + 1, z - 1));
-        actions[9] = new ActionDescend(pos, new BlockPos(x, y - 1, z - 1));
-        actions[10] = new ActionDescend(pos, new BlockPos(x, y - 1, z + 1));
-        actions[11] = new ActionDescend(pos, new BlockPos(x - 1, y - 1, z));
-        actions[12] = new ActionDescend(pos, new BlockPos(x + 1, y - 1, z));
-        actions[13] = new ActionFall(pos);
-        actions[14] = new ActionDescendTwo(pos, new BlockPos(x, y - 2, z - 1));
-        actions[15] = new ActionDescendTwo(pos, new BlockPos(x, y - 2, z + 1));
-        actions[16] = new ActionDescendTwo(pos, new BlockPos(x - 1, y - 2, z));
-        actions[17] = new ActionDescendTwo(pos, new BlockPos(x + 1, y - 2, z));
-        actions[18] = new ActionDescendThree(pos, new BlockPos(x, y - 3, z - 1));
-        actions[19] = new ActionDescendThree(pos, new BlockPos(x, y - 3, z + 1));
-        actions[20] = new ActionDescendThree(pos, new BlockPos(x - 1, y - 3, z));
-        actions[21] = new ActionDescendThree(pos, new BlockPos(x + 1, y - 3, z));
-        actions[22] = new ActionWalkDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST);
-        actions[23] = new ActionWalkDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST);
-        actions[24] = new ActionWalkDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST);
-        actions[25] = new ActionWalkDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST);
-        return actions;*/
-        return new Movement[] {
+        return new Movement[]{
                 new MovementTraverse(pos, new BlockPos(x + 1, y, z)),
                 new MovementTraverse(pos, new BlockPos(x - 1, y, z)),
                 new MovementTraverse(pos, new BlockPos(x, y, z + 1)),
@@ -234,10 +205,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
                 new MovementAscend(pos, new BlockPos(x - 1, y + 1, z)),
                 new MovementAscend(pos, new BlockPos(x, y + 1, z + 1)),
                 new MovementAscend(pos, new BlockPos(x, y + 1, z - 1)),
-                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.NORTH),
-                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.SOUTH),
-                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.EAST),
-                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.WEST),
+                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.NORTH, calcContext),
+                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.SOUTH, calcContext),
+                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.EAST, calcContext),
+                MovementHelper.generateMovementFallOrDescend(pos, EnumFacing.WEST, calcContext),
                 new MovementDownward(pos),
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),

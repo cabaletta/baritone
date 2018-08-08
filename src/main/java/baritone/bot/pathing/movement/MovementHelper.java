@@ -208,7 +208,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         ).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }
 
-    static Movement generateMovementFallOrDescend(BlockPos pos, EnumFacing direction) {
+    static Movement generateMovementFallOrDescend(BlockPos pos, EnumFacing direction, CalculationContext calcContext) {
         BlockPos dest = pos.offset(direction);
         BlockPos destUp = dest.up();
         BlockPos destDown = dest.down();
@@ -236,7 +236,12 @@ public interface MovementHelper extends ActionCosts, Helper {
                 continue;
             }
             if (canWalkOn(onto, ontoBlock)) {
-                return new MovementFall(pos, onto.up());
+                if (calcContext.hasWaterBucket() || fallHeight <= 4) {
+                    // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
+                    return new MovementFall(pos, onto.up());
+                } else {
+                    return null;
+                }
             }
             break;
         }

@@ -17,15 +17,19 @@
 
 package baritone.bot.pathing.movement;
 
+import baritone.bot.utils.Helper;
 import baritone.bot.utils.ToolSet;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 
 /**
  * @author Brady
  * @since 8/7/2018 4:30 PM
  */
-public class CalculationContext {
+public class CalculationContext extends Helper {
 
     private final ToolSet toolSet;
+    private final boolean hasWaterBucket;
 
     public CalculationContext() {
         this(new ToolSet());
@@ -33,9 +37,14 @@ public class CalculationContext {
 
     public CalculationContext(ToolSet toolSet) {
         this.toolSet = toolSet;
+        this.hasWaterBucket = player().inventory.hasItemStack(new ItemStack(Items.WATER_BUCKET));
     }
 
     public ToolSet getToolSet() {
         return this.toolSet;
+    }
+
+    public boolean hasWaterBucket() {
+        return hasWaterBucket;
     }
 }
