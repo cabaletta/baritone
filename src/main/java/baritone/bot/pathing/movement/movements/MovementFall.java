@@ -36,7 +36,7 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_AIR = new ItemStack(Items.BUCKET);
 
     public MovementFall(BlockPos src, BlockPos dest) {
-        super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[] { dest.down() });
+        super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[]{dest.down()});
     }
 
     @Override
@@ -83,7 +83,7 @@ public class MovementFall extends Movement {
                     state.setTarget(new MovementTarget(rotationToBlock));
                 }
                 if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
-                        || (BlockStateInterface.isWater(dest) && !player().inventory.hasItemStack(STACK_BUCKET_AIR)))) {
+                        || (BlockStateInterface.isWater(dest)))) {
                     if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_AIR)) {
                         return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                     }
