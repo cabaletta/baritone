@@ -90,6 +90,7 @@ public class MovementFall extends Movement {
                 if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
                         || BlockStateInterface.isWater(dest))) {
                     if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_AIR)) {
+                        player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_AIR);
                         return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                     }
                     return state.setStatus(MovementStatus.SUCCESS);
