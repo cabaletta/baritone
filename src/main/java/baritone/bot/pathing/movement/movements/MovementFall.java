@@ -67,7 +67,7 @@ public class MovementFall extends Movement {
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
                 if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
-                    if (!player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER)))) {
+                    if (!player().inventory.hasItemStack(new ItemStack(new ItemBucket(Blocks.WATER))) || world().provider.isNether()) {
                         state.setStatus(MovementStatus.UNREACHABLE);
                         return state;
                     }
