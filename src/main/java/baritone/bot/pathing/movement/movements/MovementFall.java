@@ -30,6 +30,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Optional;
+
 public class MovementFall extends Movement {
 
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
@@ -68,22 +70,24 @@ public class MovementFall extends Movement {
                 state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
-                if (!BlockStateInterface.isWater(dest) && playerFeet().getY() - dest.getY() > 3) {
+                Optional<Rotation> targetRotation = Optional.empty();
+                if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3 && !playerFeet.equals(dest)) {
                     if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) {
                         state.setStatus(MovementStatus.UNREACHABLE);
                         return state;
+                    } else if (playerFeet().getY() - dest.getY() < mc.playerController.getBlockReachDistance()) {
+                        player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
+                        targetRotation = LookBehaviorUtils.reachable(dest.down());
                     }
-                    player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
-                    LookBehaviorUtils.reachable(dest).ifPresent(rotation ->
-                            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
-                                    .setTarget(new MovementTarget(rotation))
-                    );
-                } else {
-                    Rotation rotationToBlock = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world()));
-                    state.setTarget(new MovementTarget(rotationToBlock));
                 }
+                if(targetRotation.isPresent())
+                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
+                            .setTarget(new MovementTarget(targetRotation.get()));
+                else
+                    state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world()))));
+
                 if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
-                        || (BlockStateInterface.isWater(dest)))) {
+                        || BlockStateInterface.isWater(dest))) {
                     if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_AIR)) {
                         return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                     }
