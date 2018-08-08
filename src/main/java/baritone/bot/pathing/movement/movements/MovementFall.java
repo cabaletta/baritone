@@ -80,12 +80,12 @@ public class MovementFall extends Movement {
                         targetRotation = LookBehaviorUtils.reachable(dest.down());
                     }
                 }
-                if (targetRotation.isPresent())
+                if (targetRotation.isPresent()) {
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
                             .setTarget(new MovementTarget(targetRotation.get()));
-                else
+                } else {
                     state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world()))));
-
+                }
                 if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
                         || BlockStateInterface.isWater(dest))) {
                     if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_AIR)) {
