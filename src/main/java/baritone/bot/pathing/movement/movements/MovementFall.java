@@ -75,7 +75,8 @@ public class MovementFall extends Movement {
                     if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) { // TODO check if water bucket is on hotbar or main inventory
                         state.setStatus(MovementStatus.UNREACHABLE);
                         return state;
-                    } else if (playerFeet().getY() - dest.getY() < mc.playerController.getBlockReachDistance()) {
+                    }
+                    if (playerFeet().getY() - dest.getY() < mc.playerController.getBlockReachDistance()) {
                         player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
                         targetRotation = LookBehaviorUtils.reachable(dest.down());
                     }
