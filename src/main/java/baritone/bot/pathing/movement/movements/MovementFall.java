@@ -85,7 +85,7 @@ public class MovementFall extends Movement {
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
                             .setTarget(new MovementTarget(targetRotation.get()));
                 } else {
-                    state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world()))));
+                    state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest))));
                 }
                 if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
                         || BlockStateInterface.isWater(dest))) {
