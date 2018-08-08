@@ -9,7 +9,6 @@
     "MixinEntityRenderer",
     "MixinGameSettings",
     "MixinGuiContainer",
-    "MixinGuiOverlayDebug",
     "MixinGuiScreen",
     "MixinKeyBinding",
     "MixinMain",

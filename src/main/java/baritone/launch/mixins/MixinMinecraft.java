@@ -23,9 +23,6 @@ import baritone.bot.event.events.WorldEvent;
 import baritone.bot.event.events.type.EventState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -33,7 +30,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
  * @author Brady
@@ -108,23 +104,6 @@ public class MixinMinecraft {
     private void setLeftClickCounter(Minecraft mc, int value) {
         if (!Baritone.INSTANCE.isInitialized() || !Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown(mc.gameSettings.keyBindAttack))
             this.leftClickCounter = value;
-    }
-
-    @Inject(
-            method = "rightClickMouse",
-            at = @At(
-                    value = "INVOKE_ASSIGN",
-                    target = "net/minecraft/client/entity/EntityPlayerSP.swingArm(Lnet/minecraft/util/EnumHand;)V"
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD
-    )
-    private void postSwingArm(CallbackInfo ci, ItemStack stack, BlockPos pos, int stackCount, EnumActionResult result) {
-        Minecraft mc = (Minecraft) (Object) this;
-        Baritone bot = Baritone.INSTANCE;
-
-        bot.getMemory().scanBlock(pos);
-        bot.getMemory().scanBlock(pos.offset(mc.objectMouseOver.sideHit));
-        bot.getActionHandler().onPlacedBlock(stack, pos);
     }
 
     @Inject(

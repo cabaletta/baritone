@@ -41,9 +41,6 @@ public enum Baritone {
      */
     private boolean initialized;
 
-    private Memory memory;
-    private HookStateManager hookStateManager;
-    private GameActionHandler actionHandler;
     private GameEventHandler gameEventHandler;
     private InputOverrideHandler inputOverrideHandler;
     private List<Behavior> behaviors;
@@ -54,9 +51,6 @@ public enum Baritone {
     private boolean active;
 
     public void init() {
-        this.memory = new Memory();
-        this.hookStateManager = new HookStateManager();
-        this.actionHandler = new GameActionHandler();
         this.gameEventHandler = new GameEventHandler();
         this.inputOverrideHandler = new InputOverrideHandler();
         this.behaviors = new ArrayList<>();
@@ -70,18 +64,6 @@ public enum Baritone {
 
     public final boolean isInitialized() {
         return this.initialized;
-    }
-
-    public final Memory getMemory() {
-        return this.memory;
-    }
-
-    public final HookStateManager getHookStateManager() {
-        return this.hookStateManager;
-    }
-
-    public final GameActionHandler getActionHandler() {
-        return this.actionHandler;
     }
 
     public final GameEventHandler getGameEventHandler() {
