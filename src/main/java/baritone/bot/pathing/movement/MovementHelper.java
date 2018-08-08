@@ -83,7 +83,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockTripWire) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
-        if (BlockStateInterface.isFlowing(pos) || BlockStateInterface.isLiquid(pos.up())) {
+        if (BlockStateInterface.isFlowing(state) || BlockStateInterface.isLiquid(pos.up())) {
             return false; // Don't walk through flowing liquids
         }
         return block.isPassable(mc.world, pos);

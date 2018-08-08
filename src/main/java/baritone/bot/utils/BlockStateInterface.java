@@ -106,9 +106,8 @@ public class BlockStateInterface implements Helper {
         return BlockStateInterface.getBlock(p) instanceof BlockLiquid;
     }
 
-    public static boolean isFlowing(BlockPos pos) {
+    public static boolean isFlowing(IBlockState state) {
         // Will be IFluidState in 1.13
-        IBlockState state = BlockStateInterface.get(pos);
         return state.getBlock() instanceof BlockLiquid
                 && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
                 && state.getValue(BlockLiquid.LEVEL) != 0;
