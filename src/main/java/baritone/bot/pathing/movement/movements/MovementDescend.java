@@ -32,7 +32,7 @@ import net.minecraft.util.math.BlockPos;
 public class MovementDescend extends Movement {
 
     public MovementDescend(BlockPos start, BlockPos end) {
-        super(start, end, new BlockPos[] { end.up(2), end.up(), end }, new BlockPos[] { end.down() });
+        super(start, end, new BlockPos[]{end.up(2), end.up(), end}, new BlockPos[]{end.down()});
     }
 
     @Override
@@ -61,7 +61,7 @@ public class MovementDescend extends Movement {
             case RUNNING:
                 BlockPos playerFeet = playerFeet();
 
-                if (playerFeet.equals(dest) && player().posY - playerFeet.getY() < 0.01) {
+                if (playerFeet.equals(dest) && (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.01)) {
                     // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
                     state.setStatus(MovementStatus.SUCCESS);
                     return state;
@@ -74,9 +74,8 @@ public class MovementDescend extends Movement {
                     double diffX2 = player().posX - (fakeDest.getX() + 0.5);
                     double diffZ2 = player().posZ - (fakeDest.getZ() + 0.5);
                     double d = Math.sqrt(diffX2 * diffX2 + diffZ2 * diffZ2);
-                    if (d > ab)
-                        MovementHelper.moveTowards(state, fakeDest);
-                    else {
+                    MovementHelper.moveTowards(state, fakeDest);
+                    if (d <= ab) {
                         state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
                         state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                     }
