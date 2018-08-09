@@ -281,7 +281,7 @@ public class PathingBehavior extends Behavior {
         double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
-        AxisAlignedBB toDraw = block.getSelectedBoundingBox(state, Minecraft.getMinecraft().world, blockpos).expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D).offset(-d0, -d1, -d2);
+        AxisAlignedBB toDraw = state.getSelectedBoundingBox(Minecraft.getMinecraft().world, blockpos).expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D).offset(-d0, -d1, -d2);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(3, DefaultVertexFormats.POSITION);
