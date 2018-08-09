@@ -221,6 +221,8 @@ public class PathingBehavior extends Behavior {
 
         List<BlockPos> positions = path.positions();
         int next;
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
         for (int i = startIndex; i < positions.size() - 1; i = next) {
             BlockPos start = positions.get(i);
 
@@ -237,17 +239,17 @@ public class PathingBehavior extends Behavior {
             double x2 = end.getX();
             double y2 = end.getY();
             double z2 = end.getZ();
-            drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks);
+            drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks, buffer);
         }
+        tessellator.draw();
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
     }
 
-    public static void drawLine(EntityPlayer player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+    public static void drawLine(EntityPlayer player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks, BufferBuilder buffer) {
+
         double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
@@ -257,7 +259,7 @@ public class PathingBehavior extends Behavior {
         buffer.pos(bp2x + 0.5D - d0, bp2y + 0.53D - d1, bp2z + 0.5D - d2).endVertex();
         buffer.pos(bp1x + 0.5D - d0, bp1y + 0.53D - d1, bp1z + 0.5D - d2).endVertex();
         buffer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
-        tessellator.draw();
+
     }
 
     public static void drawManySelectionBoxes(EntityPlayer player, Collection<BlockPos> positions, float partialTicks, Color color) {
