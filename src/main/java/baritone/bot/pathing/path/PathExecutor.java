@@ -177,6 +177,10 @@ public class PathExecutor extends Behavior {
         }
     }
 
+    public int getPosition() {
+        return pathPosition;
+    }
+
     public IPath getPath() {
         return path;
     }

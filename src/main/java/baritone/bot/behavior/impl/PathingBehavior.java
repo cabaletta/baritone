@@ -178,7 +178,10 @@ public class PathingBehavior extends Behavior {
         long start = System.currentTimeMillis();
 
         // Render the current path, if there is one
-        getPath().ifPresent(path -> drawPath(path, player(), partialTicks, Color.RED));
+        if (current != null && current.getPath() != null) {
+            int renderBegin = Math.max(current.getPosition() - 3, 0);
+            drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED);
+        }
         long split = System.currentTimeMillis();
         getPath().ifPresent(path -> {
             for (Movement m : path.movements()) {
@@ -193,9 +196,9 @@ public class PathingBehavior extends Behavior {
         // If there is a path calculation currently running, render the path calculation process
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(p, player(), partialTicks, Color.BLUE);
+                drawPath(p, 0, player(), partialTicks, Color.BLUE);
                 currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-                    drawPath(mr, player(), partialTicks, Color.CYAN);
+                    drawPath(mr, 0, player(), partialTicks, Color.CYAN);
                     drawSelectionBox(player(), mr.getDest(), partialTicks, Color.CYAN);
                 });
             });
@@ -209,7 +212,7 @@ public class PathingBehavior extends Behavior {
         return new BlockPos(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
     }
 
-    public void drawPath(IPath path, EntityPlayerSP player, float partialTicks, Color color) {
+    public void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color) {
 
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
@@ -221,7 +224,7 @@ public class PathingBehavior extends Behavior {
 
         List<BlockPos> positions = path.positions();
         int next;
-        for (int i = 0; i < positions.size() - 1; i = next) {
+        for (int i = startIndex; i < positions.size() - 1; i = next) {
             BlockPos start = positions.get(i);
 
             next = i + 1;
