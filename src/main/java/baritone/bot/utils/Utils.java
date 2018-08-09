@@ -30,6 +30,16 @@ import net.minecraft.world.World;
  */
 public final class Utils {
 
+    /**
+     * Constant that a degree value is multiplied by to get the equivalent radian value
+     */
+    public static final double DEG_TO_RAD = Math.PI / 180.0;
+
+    /**
+     * Constant that a radian value is multiplied by to get the equivalent degree value
+     */
+    public static final double RAD_TO_DEG = 180.0 / Math.PI;
+
     public static Rotation calcRotationFromCoords(BlockPos orig, BlockPos dest) {
         return calcRotationFromVec3d(vec3dFromBlockPos(orig), vec3dFromBlockPos(dest));
     }
@@ -69,9 +79,11 @@ public final class Utils {
         double xDiff = (bbox.minX + bbox.maxX) / 2;
         double yDiff = (bbox.minY + bbox.maxY) / 2;
         double zDiff = (bbox.minZ + bbox.maxZ) / 2;
-        return new Vec3d(orig.getX() + xDiff,
+        return new Vec3d(
+                orig.getX() + xDiff,
                 orig.getY() + yDiff,
-                orig.getZ() + zDiff);
+                orig.getZ() + zDiff
+        );
     }
 
     public static Vec3d getBlockPosCenter(BlockPos pos) {
@@ -97,10 +109,14 @@ public final class Utils {
     }
 
     public static double degToRad(double deg) {
-        return deg * Math.PI / 180.0;
+        return deg * DEG_TO_RAD;
     }
 
     public static double radToDeg(double rad) {
-        return rad * 180.0 / Math.PI;
+        return rad * RAD_TO_DEG;
+    }
+
+    public static BlockPos diff(BlockPos a, BlockPos b) {
+        return new BlockPos(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
     }
 }

@@ -17,7 +17,9 @@
 
 package baritone.bot.pathing.goals;
 
+import baritone.bot.utils.Utils;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Useful for long-range goals that don't have a specific Y level.
@@ -52,6 +54,11 @@ public class GoalXZ implements Goal {
         double xDiff = pos.getX() - this.x;
         double zDiff = pos.getZ() - this.z;
         return calculate(xDiff, zDiff);
+    }
+
+    @Override
+    public String toString() {
+        return "Goal{x=" + x + ",z=" + z + "}";
     }
 
     public static double calculate(double xDiff, double zDiff) {
@@ -93,8 +100,10 @@ public class GoalXZ implements Goal {
         return (diagonal + straight) * WALK_ONE_BLOCK_COST;
     }
 
-    @Override
-    public String toString() {
-        return "Goal{x=" + x + ",z=" + z + "}";
+    public static GoalXZ fromDirection(Vec3d origin, float yaw, double distance) {
+        double theta = Utils.degToRad(yaw);
+        double x = origin.x - Math.sin(theta) * distance;
+        double z = origin.z + Math.cos(theta) * distance;
+        return new GoalXZ((int) x, (int) z);
     }
 }

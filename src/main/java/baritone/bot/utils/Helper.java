@@ -50,6 +50,10 @@ public interface Helper {
         return new BlockPos(player().posX, player().posY, player().posZ);
     }
 
+    default Vec3d playerFeetAsVec() {
+        return new Vec3d(player().posX, player().posY, player().posZ);
+    }
+
     default Vec3d playerHead() {
         return new Vec3d(player().posX, player().posY + player().getEyeHeight(), player().posZ);
     }

@@ -30,25 +30,11 @@ import baritone.bot.pathing.goals.GoalBlock;
 import baritone.bot.pathing.goals.GoalXZ;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
-import baritone.bot.utils.BlockStateInterface;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.AxisAlignedBB;
+import baritone.bot.utils.PathRenderer;
 import net.minecraft.util.math.BlockPos;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 public class PathingBehavior extends Behavior {
@@ -72,14 +58,6 @@ public class PathingBehavior extends Behavior {
             if (!goal.isInGoal(playerFeet()))
                 findPathInNewThread(playerFeet(), true);
         }
-    }
-
-    public PathExecutor getExecutor() {
-        return current;
-    }
-
-    public Optional<IPath> getPath() {
-        return Optional.ofNullable(current).map(PathExecutor::getPath);
     }
 
     @Override
@@ -109,18 +87,19 @@ public class PathingBehavior extends Behavior {
             return;
         }
         if (msg.toLowerCase().startsWith("thisway")) {
-            goal = fromAngleAndDirection(Double.parseDouble(msg.substring(7).trim()));
+            goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
             displayChatMessageRaw("Goal: " + goal);
             event.cancel();
             return;
         }
     }
 
-    public GoalXZ fromAngleAndDirection(double distance) {
-        double theta = ((double) player().rotationYaw) * Math.PI / 180D;
-        double x = player().posX - Math.sin(theta) * distance;
-        double z = player().posZ + Math.cos(theta) * distance;
-        return new GoalXZ((int) x, (int) z);
+    public PathExecutor getExecutor() {
+        return current;
+    }
+
+    public Optional<IPath> getPath() {
+        return Optional.ofNullable(current).map(PathExecutor::getPath);
     }
 
     /**
@@ -136,7 +115,8 @@ public class PathingBehavior extends Behavior {
             }
 
             findPath(start).map(PathExecutor::new).ifPresent(path -> current = path);
-            /*isThereAnythingInProgress = false;
+            /*
+            isThereAnythingInProgress = false;
             if (!currentPath.goal.isInGoal(currentPath.end)) {
                 if (talkAboutIt) {
                     Out.gui("I couldn't get all the way to " + goal + ", but I'm going to get as close as I can. " + currentPath.numNodes + " nodes considered", Out.Mode.Standard);
@@ -144,7 +124,8 @@ public class PathingBehavior extends Behavior {
                 planAhead();
             } else if (talkAboutIt) {
                 Out.gui(, Out.Mode.Debug);
-            }*/
+            }
+            */
             if (talkAboutIt && current != null && current.getPath() != null) {
                 displayChatMessageRaw("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
             }
@@ -173,29 +154,31 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        //System.out.println("Render passing");
-        //System.out.println(event.getPartialTicks());
+        // System.out.println("Render passing");
+        // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
         long start = System.nanoTime();
 
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED);
+            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED);
         }
+
         long split = System.nanoTime();
         if (current != null) {
-            drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Color.RED);
-            drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Color.GREEN);
+            PathRenderer.drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Color.RED);
+            PathRenderer.drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Color.GREEN);
         }
 
         // If there is a path calculation currently running, render the path calculation process
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(p, 0, player(), partialTicks, Color.BLUE);
+                PathRenderer.drawPath(p, 0, player(), partialTicks, Color.BLUE);
                 currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-                    drawPath(mr, 0, player(), partialTicks, Color.CYAN);
-                    drawManySelectionBoxes(player(), Arrays.asList(mr.getDest()), partialTicks, Color.CYAN);
+
+                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Color.CYAN);
+                    PathRenderer.drawManySelectionBoxes(player(), Arrays.asList(mr.getDest()), partialTicks, Color.CYAN);
                 });
             });
         });
@@ -203,118 +186,6 @@ public class PathingBehavior extends Behavior {
         //System.out.println((end - split) + " " + (split - start));
         // if (end - start > 0)
         //   System.out.println("Frame took " + (split - start) + " " + (end - split));
-    }
 
-    private static BlockPos diff(BlockPos a, BlockPos b) {
-        return new BlockPos(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
-    }
-
-    public void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color) {
-
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GL11.glLineWidth(3.0F);
-        GlStateManager.disableTexture2D();
-        GlStateManager.depthMask(false);
-
-
-        List<BlockPos> positions = path.positions();
-        int next;
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
-        for (int i = startIndex; i < positions.size() - 1; i = next) {
-            BlockPos start = positions.get(i);
-
-            next = i + 1;
-            BlockPos end = positions.get(next);
-            BlockPos direction = diff(start, end);
-            while (next + 1 < positions.size() && direction.equals(diff(end, positions.get(next + 1)))) {
-                next++;
-                end = positions.get(next);
-            }
-            double x1 = start.getX();
-            double y1 = start.getY();
-            double z1 = start.getZ();
-            double x2 = end.getX();
-            double y2 = end.getY();
-            double z2 = end.getZ();
-            drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks, buffer);
-        }
-        tessellator.draw();
-        //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
-        GlStateManager.depthMask(true);
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
-    }
-
-    public static void drawLine(EntityPlayer player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks, BufferBuilder buffer) {
-
-        double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
-        double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
-        double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
-        buffer.begin(3, DefaultVertexFormats.POSITION);
-        buffer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
-        buffer.pos(bp2x + 0.5D - d0, bp2y + 0.5D - d1, bp2z + 0.5D - d2).endVertex();
-        buffer.pos(bp2x + 0.5D - d0, bp2y + 0.53D - d1, bp2z + 0.5D - d2).endVertex();
-        buffer.pos(bp1x + 0.5D - d0, bp1y + 0.53D - d1, bp1z + 0.5D - d2).endVertex();
-        buffer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
-
-    }
-
-    public static void drawManySelectionBoxes(EntityPlayer player, Collection<BlockPos> positions, float partialTicks, Color color) {
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GL11.glLineWidth(5.0F);
-        GlStateManager.disableTexture2D();
-        GlStateManager.depthMask(false);
-        float f = 0.002F;
-        //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
-
-        double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
-        double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
-        double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
-        for (BlockPos pos : positions) {
-            IBlockState state = BlockStateInterface.get(pos);
-            Block block = state.getBlock();
-            AxisAlignedBB toDraw;
-            if (block.equals(Blocks.AIR)) {
-                toDraw = Blocks.DIRT.getSelectedBoundingBox(state, Minecraft.getMinecraft().world, pos);
-            } else {
-                toDraw = state.getSelectedBoundingBox(Minecraft.getMinecraft().world, pos);
-            }
-            toDraw = toDraw.expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D).offset(-d0, -d1, -d2);
-            buffer.begin(3, DefaultVertexFormats.POSITION);
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            tessellator.draw();
-            buffer.begin(3, DefaultVertexFormats.POSITION);
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            tessellator.draw();
-            buffer.begin(1, DefaultVertexFormats.POSITION);
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-        }
-
-        tessellator.draw();
-        GlStateManager.depthMask(true);
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
     }
 }

@@ -17,7 +17,6 @@
 
 package baritone.bot.behavior.impl;
 
-import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.Rotation;
@@ -27,15 +26,20 @@ import net.minecraft.util.math.*;
 
 import java.util.Optional;
 
+import static baritone.bot.utils.Utils.DEG_TO_RAD;
+
 public final class LookBehaviorUtils implements Helper {
 
-    public static final Vec3d[] BLOCK_SIDE_MULTIPLIERS = new Vec3d[]{
-            new Vec3d(0, 0.5, 0.5),
-            new Vec3d(1, 0.5, 0.5),
-            new Vec3d(0.5, 0, 0.5),
-            new Vec3d(0.5, 1, 0.5),
-            new Vec3d(0.5, 0.5, 0),
-            new Vec3d(0.5, 0.5, 1)
+    /**
+     * Offsets from the root block position to the center of each side.
+     */
+    private static final Vec3d[] BLOCK_SIDE_MULTIPLIERS = new Vec3d[] {
+            new Vec3d(0.5, 0, 0.5), // Down
+            new Vec3d(0.5, 1, 0.5), // Up
+            new Vec3d(0.5, 0.5, 0), // North
+            new Vec3d(0.5, 0.5, 1), // South
+            new Vec3d(0, 0.5, 0.5), // West
+            new Vec3d(1, 0.5, 0.5)  // East
     };
 
     /**
@@ -45,10 +49,10 @@ public final class LookBehaviorUtils implements Helper {
      * @return vector of the rotation
      */
     public static Vec3d calcVec3dFromRotation(Rotation rotation) {
-        float f = MathHelper.cos(-rotation.getFirst() * 0.017453292F - (float) Math.PI);
-        float f1 = MathHelper.sin(-rotation.getFirst() * 0.017453292F - (float) Math.PI);
-        float f2 = -MathHelper.cos(-rotation.getSecond() * 0.017453292F);
-        float f3 = MathHelper.sin(-rotation.getSecond() * 0.017453292F);
+        float f = MathHelper.cos(-rotation.getFirst() * (float) DEG_TO_RAD - (float) Math.PI);
+        float f1 = MathHelper.sin(-rotation.getFirst() * (float) DEG_TO_RAD - (float) Math.PI);
+        float f2 = -MathHelper.cos(-rotation.getSecond() * (float) DEG_TO_RAD);
+        float f3 = MathHelper.sin(-rotation.getSecond() * (float) DEG_TO_RAD);
         return new Vec3d((double) (f1 * f2), (double) f3, (double) (f * f2));
     }
 
@@ -60,16 +64,13 @@ public final class LookBehaviorUtils implements Helper {
         if (possibleRotation.isPresent())
             return possibleRotation;
 
-        IBlockState bstate = BlockStateInterface.get(pos);
-        AxisAlignedBB bbox = bstate.getBoundingBox(mc.world, pos);
-        for (Vec3d vecMult : BLOCK_SIDE_MULTIPLIERS) {
-            double xDiff = bbox.minX * vecMult.x + bbox.maxX * (1 - vecMult.x);//lol
-            double yDiff = bbox.minY * vecMult.y + bbox.maxY * (1 - vecMult.y);
-            double zDiff = bbox.minZ * vecMult.z + bbox.maxZ * (1 - vecMult.z);
-            double x = pos.getX() + xDiff;
-            double y = pos.getY() + yDiff;
-            double z = pos.getZ() + zDiff;
-            possibleRotation = reachableRotation(pos, new Vec3d(x, y, z));
+        IBlockState state = BlockStateInterface.get(pos);
+        AxisAlignedBB aabb = state.getBoundingBox(mc.world, pos);
+        for (Vec3d sideOffset : BLOCK_SIDE_MULTIPLIERS) {
+            double xDiff = aabb.minX * sideOffset.x + aabb.maxX * (1 - sideOffset.x);
+            double yDiff = aabb.minY * sideOffset.y + aabb.maxY * (1 - sideOffset.y);
+            double zDiff = aabb.minZ * sideOffset.z + aabb.maxZ * (1 - sideOffset.z);
+            possibleRotation = reachableOffset(pos, new Vec3d(pos).add(xDiff, yDiff, zDiff));
             if (possibleRotation.isPresent())
                 return possibleRotation;
         }
@@ -77,25 +78,26 @@ public final class LookBehaviorUtils implements Helper {
     }
 
     private static RayTraceResult rayTraceTowards(Rotation rotation) {
-        double blockReachDistance = (double) mc.playerController.getBlockReachDistance();
-        Vec3d vec3 = mc.player.getPositionEyes(1.0F);
-        Vec3d vec31 = calcVec3dFromRotation(rotation);
-        Vec3d vec32 = vec3.add(vec31.x * blockReachDistance,
-                vec31.y * blockReachDistance,
-                vec31.z * blockReachDistance);
-        return mc.world.rayTraceBlocks(vec3, vec32, false, false, true);
+        double blockReachDistance = mc.playerController.getBlockReachDistance();
+        Vec3d start = mc.player.getPositionEyes(1.0F);
+        Vec3d direction = calcVec3dFromRotation(rotation);
+        Vec3d end = start.add(
+                direction.x * blockReachDistance,
+                direction.y * blockReachDistance,
+                direction.z * blockReachDistance
+        );
+        return mc.world.rayTraceBlocks(start, end, false, false, true);
     }
 
     /**
      * Checks if coordinate is reachable with the given block-face rotation offset
      *
      * @param pos
-     * @param offset
+     * @param offsetPos
      * @return
      */
-    protected static Optional<Rotation> reachableRotation(BlockPos pos, Vec3d offset) {
-        Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                offset);
+    protected static Optional<Rotation> reachableOffset(BlockPos pos, Vec3d offsetPos) {
+        Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F), offsetPos);
         RayTraceResult result = rayTraceTowards(rotation);
         if (result != null
                 && result.typeOfHit == RayTraceResult.Type.BLOCK
@@ -111,14 +113,7 @@ public final class LookBehaviorUtils implements Helper {
      * @return
      */
     protected static Optional<Rotation> reachableCenter(BlockPos pos) {
-        Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                Utils.calcCenterFromCoords(pos, mc.world));
-        RayTraceResult result = rayTraceTowards(rotation);
-        if (result != null
-                && result.typeOfHit == RayTraceResult.Type.BLOCK
-                && result.getBlockPos().equals(pos))
-            return Optional.of(rotation);
-        return Optional.empty();
+        return reachableOffset(pos, Utils.calcCenterFromCoords(pos, mc.world));
     }
 
     /**
@@ -133,5 +128,4 @@ public final class LookBehaviorUtils implements Helper {
         }
         return Optional.empty();
     }
-
 }
