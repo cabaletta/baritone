@@ -205,6 +205,10 @@ public class PathingBehavior extends Behavior {
         //   System.out.println("Frame took " + (split - start) + " " + (end - split));
     }
 
+    private static BlockPos diff(BlockPos a, BlockPos b) {
+        return new BlockPos(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
+    }
+
     public void drawPath(IPath path, EntityPlayerSP player, float partialTicks, Color color) {
 
         GlStateManager.enableBlend();
@@ -216,15 +220,23 @@ public class PathingBehavior extends Behavior {
 
 
         List<BlockPos> positions = path.positions();
-        for (int i = 0; i < positions.size() - 1; i++) {
-            BlockPos a = positions.get(i);
-            BlockPos b = positions.get(i + 1);
-            double x1 = a.getX();
-            double y1 = a.getY();
-            double z1 = a.getZ();
-            double x2 = b.getX();
-            double y2 = b.getY();
-            double z2 = b.getZ();
+        int next;
+        for (int i = 0; i < positions.size() - 1; i = next) {
+            BlockPos start = positions.get(i);
+
+            next = i + 1;
+            BlockPos end = positions.get(next);
+            BlockPos direction = diff(start, end);
+            while (next + 1 < positions.size() && direction.equals(diff(end, positions.get(next + 1)))) {
+                next++;
+                end = positions.get(next);
+            }
+            double x1 = start.getX();
+            double y1 = start.getY();
+            double z1 = start.getZ();
+            double x2 = end.getX();
+            double y2 = end.getY();
+            double z2 = end.getZ();
             drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks);
         }
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
