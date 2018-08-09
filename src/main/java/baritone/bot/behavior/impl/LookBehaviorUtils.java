@@ -70,7 +70,7 @@ public final class LookBehaviorUtils implements Helper {
             double xDiff = aabb.minX * sideOffset.x + aabb.maxX * (1 - sideOffset.x);
             double yDiff = aabb.minY * sideOffset.y + aabb.maxY * (1 - sideOffset.y);
             double zDiff = aabb.minZ * sideOffset.z + aabb.maxZ * (1 - sideOffset.z);
-            possibleRotation = reachableRotation(pos, new Vec3d(pos).add(xDiff, yDiff, zDiff));
+            possibleRotation = reachableOffset(pos, new Vec3d(pos).add(xDiff, yDiff, zDiff));
             if (possibleRotation.isPresent())
                 return possibleRotation;
         }
@@ -96,7 +96,7 @@ public final class LookBehaviorUtils implements Helper {
      * @param offsetPos
      * @return
      */
-    protected static Optional<Rotation> reachableRotation(BlockPos pos, Vec3d offsetPos) {
+    protected static Optional<Rotation> reachableOffset(BlockPos pos, Vec3d offsetPos) {
         Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F), offsetPos);
         RayTraceResult result = rayTraceTowards(rotation);
         if (result != null
@@ -113,13 +113,7 @@ public final class LookBehaviorUtils implements Helper {
      * @return
      */
     protected static Optional<Rotation> reachableCenter(BlockPos pos) {
-        Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F), Utils.calcCenterFromCoords(pos, mc.world));
-        RayTraceResult result = rayTraceTowards(rotation);
-        if (result != null
-                && result.typeOfHit == RayTraceResult.Type.BLOCK
-                && result.getBlockPos().equals(pos))
-            return Optional.of(rotation);
-        return Optional.empty();
+        return reachableOffset(pos, Utils.calcCenterFromCoords(pos, mc.world));
     }
 
     /**

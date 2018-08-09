@@ -79,9 +79,11 @@ public final class Utils {
         double xDiff = (bbox.minX + bbox.maxX) / 2;
         double yDiff = (bbox.minY + bbox.maxY) / 2;
         double zDiff = (bbox.minZ + bbox.maxZ) / 2;
-        return new Vec3d(orig.getX() + xDiff,
+        return new Vec3d(
+                orig.getX() + xDiff,
                 orig.getY() + yDiff,
-                orig.getZ() + zDiff);
+                orig.getZ() + zDiff
+        );
     }
 
     public static Vec3d getBlockPosCenter(BlockPos pos) {
