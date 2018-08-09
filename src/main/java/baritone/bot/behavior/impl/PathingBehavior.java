@@ -108,18 +108,11 @@ public class PathingBehavior extends Behavior {
             return;
         }
         if (msg.toLowerCase().startsWith("thisway")) {
-            goal = fromAngleAndDirection(Double.parseDouble(msg.substring(7).trim()));
+            goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
             displayChatMessageRaw("Goal: " + goal);
             event.cancel();
             return;
         }
-    }
-
-    public GoalXZ fromAngleAndDirection(double distance) {
-        double theta = ((double) player().rotationYaw) * Math.PI / 180D;
-        double x = player().posX - Math.sin(theta) * distance;
-        double z = player().posZ + Math.cos(theta) * distance;
-        return new GoalXZ((int) x, (int) z);
     }
 
     /**
