@@ -19,10 +19,16 @@ package baritone.bot.utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.client.gui.GuiUtilRenderComponents;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+
+import java.util.List;
 
 /**
  * @author Brady
@@ -53,6 +59,14 @@ public interface Helper {
     }
 
     default void displayChatMessageRaw(String message) {
-        mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentString(message));
+        GuiNewChat gui = mc.ingameGUI.getChatGUI();
+        int normalMaxWidth = MathHelper.floor((float) gui.getChatWidth() / gui.getChatScale());
+        int widthWithStyleFormat = normalMaxWidth - 2;
+        List<ITextComponent> list = GuiUtilRenderComponents.splitText(new TextComponentString("§5[§dBaritone§5]§7 " + message), widthWithStyleFormat,
+                this.mc.fontRenderer, false, true);
+        for (ITextComponent component : list) {
+
+            gui.printChatMessage(new TextComponentString("§7" + component.getUnformattedText()));
+        }
     }
 }

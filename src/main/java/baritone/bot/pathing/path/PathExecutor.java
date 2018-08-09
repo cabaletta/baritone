@@ -24,6 +24,7 @@ import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.Helper;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
@@ -37,7 +38,7 @@ import static baritone.bot.pathing.movement.MovementState.MovementStatus.*;
  *
  * @author leijurv
  */
-public class PathExecutor extends Behavior {
+public class PathExecutor extends Behavior implements Helper {
     private static final double MAX_DIST_FROM_PATH = 2;
     private static final double MAX_TICKS_AWAY = 200; // ten seconds
     private final IPath path;
@@ -65,7 +66,7 @@ public class PathExecutor extends Behavior {
         EntityPlayerSP thePlayer = mc.player;
         BlockPos whereAmI = playerFeet();
         if (pathPosition == path.length() - 1) {
-            System.out.println("On last path position -- done!");
+            displayChatMessageRaw("On last position, ending this path.");
             pathPosition++;
             return;
         }
@@ -74,14 +75,14 @@ public class PathExecutor extends Behavior {
             if (!Blocks.AIR.equals(BlockStateInterface.getBlock(whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 2 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.positions().get(i))) {
-                        System.out.println("Skipping back " + (pathPosition - i) + " steps, to " + i);
+                        displayChatMessageRaw("Skipping back " + (pathPosition - i) + " steps, to " + i);
                         pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
                         return;
                     }
                 }
                 for (int i = pathPosition + 2; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
                     if (whereAmI.equals(path.positions().get(i))) {
-                        System.out.println("Skipping forward " + (i - pathPosition) + " steps, to " + i);
+                        displayChatMessageRaw("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                         pathPosition = i - 1;
                         return;
                     }
@@ -94,9 +95,10 @@ public class PathExecutor extends Behavior {
             ticksAway++;
             System.out.println("FAR AWAY FROM PATH FOR " + ticksAway + " TICKS. Current distance: " + distanceFromPath + ". Threshold: " + MAX_DIST_FROM_PATH);
             if (ticksAway > MAX_TICKS_AWAY) {
-                System.out.println("Too far away from path for too long, cancelling path");
+                displayChatMessageRaw("Too far away from path for too long, cancelling path");
                 System.out.println("Too many ticks");
                 pathPosition = path.length() + 3;
+                Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                 failed = true;
                 return;
             }
@@ -143,16 +145,18 @@ public class PathExecutor extends Behavior {
         }
         Movement movement = path.movements().get(pathPosition);
         if (movement.recalculateCost() >= ActionCosts.COST_INF) {
-            System.out.println("Something has changed in the world and this movement has become impossible. Cancelling.");
+            displayChatMessageRaw("Something has changed in the world and this movement has become impossible. Cancelling.");
             pathPosition = path.length() + 3;
             failed = true;
+            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             return;
         }
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
-            System.out.println("Movement returns status " + movementStatus);
+            displayChatMessageRaw("Movement returns status " + movementStatus);
             pathPosition = path.length() + 3;
             failed = true;
+            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             return;
         }
         if (movementStatus == SUCCESS) {
@@ -164,8 +168,9 @@ public class PathExecutor extends Behavior {
         } else {
             ticksOnCurrent++;
             if (ticksOnCurrent > movement.recalculateCost() + 100) {
-                System.out.println("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + movement.getCost(null) + "). Cancelling.");
+                displayChatMessageRaw("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + movement.getCost(null) + "). Cancelling.");
                 movement.cancel();
+                Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                 pathPosition = path.length() + 3;
                 failed = true;
                 return;
