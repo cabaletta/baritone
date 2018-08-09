@@ -25,12 +25,23 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GoalXZ implements Goal {
 
-    final int x, z;
+    private static final double SQRT_2 = Math.sqrt(2);
+
+    /**
+     * The X block position of this goal
+     */
+    private final int x;
+
+    /**
+     * The Z block position of this goal
+     */
+    private final int z;
 
     public GoalXZ(int x, int z) {
         this.x = x;
         this.z = z;
     }
+
     @Override
     public boolean isInGoal(BlockPos pos) {
         return pos.getX() == x && pos.getZ() == z;
@@ -61,8 +72,6 @@ public class GoalXZ implements Goal {
      }
      */
 
-    static final double sq = Math.sqrt(2);
-
     public static double calculate(double xDiff, double zDiff, double pythaDist) {
         //This is a combination of pythagorean and manhattan distance
         //It takes into account the fact that pathing can either walk diagonally or forwards
@@ -80,7 +89,7 @@ public class GoalXZ implements Goal {
             straight = x - z;
             diagonal = z;
         }
-        diagonal *= sq;
+        diagonal *= SQRT_2;
         return (diagonal + straight) * WALK_ONE_BLOCK_COST;
     }
 

@@ -21,11 +21,15 @@ import net.minecraft.util.math.BlockPos;
 
 /**
  * Useful for mining (getting to diamond / iron level)
+ *
  * @author leijurv
  */
 public class GoalYLevel implements Goal {
 
-    final int level;
+    /**
+     * The target Y level
+     */
+    private final int level;
 
     public GoalYLevel(int level) {
         this.level = level;
@@ -38,8 +42,9 @@ public class GoalYLevel implements Goal {
 
     @Override
     public double heuristic(BlockPos pos) {
-        return 20 * Math.abs(pos.getY() - level);//the number 20 was chosen somewhat randomly.
-        //TODO fix that
+        // The number 20 was chosen somewhat randomly.
+        // TODO fix that ^
+        return 20 * Math.abs(pos.getY() - level);
     }
 
     @Override

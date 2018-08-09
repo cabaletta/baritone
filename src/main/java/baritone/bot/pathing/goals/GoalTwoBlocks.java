@@ -20,13 +20,27 @@ package baritone.bot.pathing.goals;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * Useful if the goal is just to mine a block.
- * This goal gets either the player's feet or head into the desired block.
+ * Useful if the goal is just to mine a block. This goal will be satisfied if the specified
+ * {@link BlockPos} is at to or above the specified position for this goal.
+ *
  * @author leijurv
  */
 public class GoalTwoBlocks implements Goal {
 
-    final int x, y, z;
+    /**
+     * The X block position of this goal
+     */
+    private final int x;
+
+    /**
+     * The Y block position of this goal
+     */
+    private final int y;
+
+    /**
+     * The Z block position of this goal
+     */
+    private final int z;
 
     public GoalTwoBlocks(BlockPos pos) {
         this(pos.getX(), pos.getY(), pos.getZ());
