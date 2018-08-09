@@ -29,6 +29,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import static baritone.bot.pathing.movement.MovementState.MovementStatus.*;
 
 /**
@@ -45,6 +49,9 @@ public class PathExecutor extends Behavior {
     private int ticksAway;
     private int ticksOnCurrent;
     private boolean failed;
+    private boolean recalcBP = true;
+    private HashSet<BlockPos> toBreak = new HashSet<>();
+    private HashSet<BlockPos> toPlace = new HashSet<>();
 
     public PathExecutor(IPath path) {
         this.path = path;
@@ -136,11 +143,38 @@ public class PathExecutor extends Behavior {
                 }
             }
         }*/
+        long start = System.currentTimeMillis();
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i >= 0 && i < path.movements().size()) {
-                path.movements().get(i).toBreakCached = null;
-                path.movements().get(i).toPlaceCached = null;
+                Movement m = path.movements().get(i);
+                HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak());
+                HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace());
+                m.toBreakCached = null;
+                m.toPlaceCached = null;
+                m.toBreak();
+                m.toPlace();
+                if (!prevBreak.equals(new HashSet<>(m.toBreak()))) {
+                    recalcBP = true;
+                }
+                if (!prevPlace.equals(new HashSet<>(m.toPlace()))) {
+                    recalcBP = true;
+                }
             }
+        }
+        if (recalcBP) {
+            HashSet<BlockPos> newBreak = new HashSet<>();
+            HashSet<BlockPos> newPlace = new HashSet<>();
+            for (int i = 0; i < path.movements().size(); i++) {
+                newBreak.addAll(path.movements().get(i).toBreak());
+                newPlace.addAll(path.movements().get(i).toPlace());
+            }
+            toBreak = newBreak;
+            toPlace = newPlace;
+            recalcBP = false;
+        }
+        long end = System.currentTimeMillis();
+        if (end - start > 0) {
+            displayChatMessageRaw("Recalculating break and place took " + (end - start) + "ms");
         }
         Movement movement = path.movements().get(pathPosition);
         if (movement.recalculateCost() >= ActionCosts.COST_INF) {
@@ -191,5 +225,13 @@ public class PathExecutor extends Behavior {
 
     public boolean finished() {
         return pathPosition >= path.length();
+    }
+
+    public Set<BlockPos> toBreak() {
+        return Collections.unmodifiableSet(toBreak);
+    }
+
+    public Set<BlockPos> toPlace() {
+        return Collections.unmodifiableSet(toPlace);
     }
 }
