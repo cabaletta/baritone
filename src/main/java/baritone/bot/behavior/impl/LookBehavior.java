@@ -28,7 +28,7 @@ public class LookBehavior extends Behavior {
 
     /**
      * Target's values are as follows:
-     *
+     * <p>
      * getFirst() -> yaw
      * getSecond() -> pitch
      */
@@ -42,8 +42,21 @@ public class LookBehavior extends Behavior {
     public void onPlayerUpdate() {
         if (target != null) {
             player().rotationYaw = target.getFirst();
-            player().rotationPitch = target.getSecond();
+            float oldPitch = player().rotationPitch;
+            float desiredPitch = target.getSecond();
+            player().rotationPitch = desiredPitch;
+            if (desiredPitch == oldPitch) {
+                nudgeToLevel();
+            }
             target = null;
+        }
+    }
+
+    private void nudgeToLevel() {
+        if (player().rotationPitch < -20) {
+            player().rotationPitch++;
+        } else if (player().rotationPitch > 10) {
+            player().rotationPitch--;
         }
     }
 }
