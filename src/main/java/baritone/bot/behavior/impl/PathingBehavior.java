@@ -28,6 +28,7 @@ import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.goals.GoalBlock;
 import baritone.bot.pathing.goals.GoalXZ;
+import baritone.bot.pathing.goals.GoalYLevel;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 import baritone.bot.utils.PathRenderer;
@@ -63,10 +64,32 @@ public class PathingBehavior extends Behavior {
     @Override
     public void onSendChatMessage(ChatEvent event) {
         String msg = event.getMessage();
-        if (msg.equals("goal")) {
-            goal = new GoalBlock(playerFeet());
-            displayChatMessageRaw("Goal: " + goal);
+        if (msg.toLowerCase().startsWith("goal")) {
             event.cancel();
+            String[] params = msg.toLowerCase().substring(4).trim().split(" ");
+            try {
+                switch (params.length) {
+                    case 0:
+                        goal = new GoalBlock(playerFeet());
+                        break;
+                    case 1:
+                        goal = new GoalYLevel(Integer.parseInt(params[0]));
+                        break;
+                    case 2:
+                        goal = new GoalXZ(Integer.parseInt(params[0]), Integer.parseInt(params[1]));
+                        break;
+                    case 3:
+                        goal = new GoalBlock(new BlockPos(Integer.parseInt(params[0]), Integer.parseInt(params[1]), Integer.parseInt(params[2])));
+                        break;
+                    default:
+                        displayChatMessageRaw("unable to understand lol");
+                        return;
+                }
+            } catch (NumberFormatException ex) {
+                displayChatMessageRaw("unable to parse integer " + ex);
+                return;
+            }
+            displayChatMessageRaw("Goal: " + goal);
             return;
         }
         if (msg.equals("path")) {
@@ -127,7 +150,7 @@ public class PathingBehavior extends Behavior {
             }
             */
             if (talkAboutIt && current != null && current.getPath() != null) {
-                displayChatMessageRaw("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                displayChatMessageRaw("Finished finding a path from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
             }
         }).start();
     }

@@ -174,7 +174,7 @@ public class PathExecutor extends Behavior {
         }
         long end = System.currentTimeMillis();
         if (end - start > 0) {
-            displayChatMessageRaw("Recalculating break and place took " + (end - start) + "ms");
+            //displayChatMessageRaw("Recalculating break and place took " + (end - start) + "ms");
         }
         Movement movement = path.movements().get(pathPosition);
         if (movement.recalculateCost() >= ActionCosts.COST_INF) {
