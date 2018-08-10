@@ -44,12 +44,5 @@ public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieI
      */
     double PLACE_ONE_BLOCK_COST = 20;
 
-    /**
-     * Add this to the cost of breaking any block. The cost of breaking any
-     * block is calculated as the number of ticks that block takes to break with
-     * the tools you have. You add this because there's always a little overhead
-     * (e.g. looking at the block)
-     */
-    double BREAK_ONE_BLOCK_ADD = 4;
     double COST_INF = 1000000;
 }

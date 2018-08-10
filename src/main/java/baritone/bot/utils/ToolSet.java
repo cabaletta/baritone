@@ -39,26 +39,26 @@ import java.util.Map;
  *
  * @author avecowa
  */
-public class ToolSet {
-
-    private static final Item FALLBACK_ITEM = Items.APPLE;
+public class ToolSet implements Helper {
 
     /**
      * A list of tools on the hotbar that should be considered.
      * Note that if there are no tools on the hotbar this list will still have one (null) entry.
      */
-    List<ItemTool> tools;
+    private List<ItemTool> tools;
+
     /**
      * A mapping from the tools array to what hotbar slots the tool is actually in.
      * tools.get(i) will be on your hotbar in slot slots.get(i)
      */
-    List<Byte> slots;
+    private List<Byte> slots;
+
     /**
      * A mapping from a block to which tool index is best for it.
      * The values in this map are *not* hotbar slots indexes, they need to be looked up in slots
      * in order to be converted into hotbar slots.
      */
-    Map<Block, Byte> cache = new HashMap<>();
+    private Map<Block, Byte> cache = new HashMap<>();
 
     /**
      * Create a toolset from the current player's inventory (but don't calculate any hardness values just yet)
@@ -81,14 +81,11 @@ public class ToolSet {
     /**
      * A caching wrapper around getBestToolIndex
      *
-     * @param b the blockstate to be mined
+     * @param state the blockstate to be mined
      * @return get which tool on the hotbar is best for mining it
      */
-    public Item getBestTool(IBlockState b) {
-        if (cache.get(b.getBlock()) != null) {
-            return tools.get(cache.get(b.getBlock()));
-        }
-        return tools.get(getBestToolIndex(b));
+    public Item getBestTool(IBlockState state) {
+        return tools.get(cache.computeIfAbsent(state.getBlock(), block -> getBestToolIndex(state)));
     }
 
     /**
@@ -102,60 +99,51 @@ public class ToolSet {
         float value = -1;
         for (byte i = 0; i < tools.size(); i++) {
             Item item = tools.get(i);
-            if (item == null) {
-                item = FALLBACK_ITEM;
-            }
+            if (item == null)
+                continue;
+
             float v = item.getDestroySpeed(new ItemStack(item), b);
             if (v < value || value == -1) {
                 value = v;
                 best = i;
             }
         }
-        cache.put(b.getBlock(), best);
         return best;
     }
 
     /**
      * Get which hotbar slot should be selected for fastest mining
      *
-     * @param b the blockstate to be mined
+     * @param state the blockstate to be mined
      * @return a byte indicating which hotbar slot worked best
      */
-    public byte getBestSlot(IBlockState b) {
-        if (cache.get(b.getBlock()) != null) {
-            return slots.get(cache.get(b.getBlock()));
-        }
-        return slots.get(getBestToolIndex(b));
+    public byte getBestSlot(IBlockState state) {
+        return slots.get(cache.computeIfAbsent(state.getBlock(), block -> getBestToolIndex(state)));
     }
 
     /**
      * Using the best tool on the hotbar, how long would it take to mine this block
      *
-     * @param b   the blockstate to be mined
+     * @param state the blockstate to be mined
      * @param pos the blockpos to be mined
      * @return how long it would take in ticks
      */
-    public double getStrVsBlock(IBlockState b, BlockPos pos) {
-        Item item = this.getBestTool(b);
-        if (item == null) {
-            item = FALLBACK_ITEM;
-        }
-        float f = b.getBlockHardness(Minecraft.getMinecraft().world, pos);
-        return f < 0.0F ? 0.0F : (!canHarvest(b, item) ? item.getDestroySpeed(new ItemStack(item), b) / f / 100.0F : item.getDestroySpeed(new ItemStack(item), b) / f / 30.0F);
-    }
+    public double getStrVsBlock(IBlockState state, BlockPos pos) {
+        // Calculate the slot with the best item
+        byte slot = this.getBestSlot(state);
 
-    /**
-     * Whether a tool can be efficiently used against a block
-     *
-     * @param blockIn the blockstate to be mined
-     * @param item    the tool to be used
-     * @return whether or not this tool would help
-     */
-    public boolean canHarvest(IBlockState blockIn, Item item) {
-        if (blockIn.getMaterial().isToolNotRequired()) {
-            return true;
-        } else {
-            return new ItemStack(item).canHarvestBlock(blockIn);
-        }
+        // Save the old current slot
+        int oldSlot = player().inventory.currentItem;
+
+        // Set the best slot
+        player().inventory.currentItem = slot;
+
+        // Calculate the relative hardness of the block to the player
+        float hardness = state.getPlayerRelativeBlockHardness(player(), world(), pos);
+
+        // Restore the old slot
+        player().inventory.currentItem = oldSlot;
+
+        return hardness;
     }
 }

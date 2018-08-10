@@ -139,7 +139,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             //    return COST_INF;
             //}
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1;
-            return m / ts.getStrVsBlock(state, position) + BREAK_ONE_BLOCK_ADD;
+            return m / ts.getStrVsBlock(state, position);
         }
         return 0;
     }
