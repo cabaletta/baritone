@@ -18,7 +18,6 @@
 package baritone.bot.utils;
 
 import baritone.bot.pathing.path.IPath;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -36,8 +35,7 @@ import java.awt.*;
 import java.util.Collection;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.GL_LINES;
-import static org.lwjgl.opengl.GL11.GL_LINE_STRIP;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author Brady
@@ -47,13 +45,12 @@ public final class PathRenderer implements Helper {
 
     private PathRenderer() {}
 
-    private static BlockPos diff(BlockPos a, BlockPos b) {
-        return new BlockPos(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
-    }
+    private static final Tessellator TESSELLATOR = Tessellator.getInstance();
+    private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
 
     public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color) {
         GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
         GL11.glLineWidth(3.0F);
         GlStateManager.disableTexture2D();
@@ -61,14 +58,13 @@ public final class PathRenderer implements Helper {
         List<BlockPos> positions = path.positions();
         int next;
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
         for (int i = startIndex; i < positions.size() - 1; i = next) {
             BlockPos start = positions.get(i);
 
             next = i + 1;
             BlockPos end = positions.get(next);
-            BlockPos direction = diff(start, end);
-            while (next + 1 < positions.size() && direction.equals(diff(end, positions.get(next + 1)))) {
+            BlockPos direction = Utils.diff(start, end);
+            while (next + 1 < positions.size() && direction.equals(Utils.diff(end, positions.get(next + 1)))) {
                 next++;
                 end = positions.get(next);
             }
@@ -78,7 +74,7 @@ public final class PathRenderer implements Helper {
             double x2 = end.getX();
             double y2 = end.getY();
             double z2 = end.getZ();
-            drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks, buffer);
+            drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks);
             tessellator.draw();
         }
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
@@ -87,16 +83,16 @@ public final class PathRenderer implements Helper {
         GlStateManager.disableBlend();
     }
 
-    public static void drawLine(EntityPlayer player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks, BufferBuilder buffer) {
+    public static void drawLine(EntityPlayer player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks) {
         double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
-        buffer.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-        buffer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
-        buffer.pos(bp2x + 0.5D - d0, bp2y + 0.5D - d1, bp2z + 0.5D - d2).endVertex();
-        buffer.pos(bp2x + 0.5D - d0, bp2y + 0.53D - d1, bp2z + 0.5D - d2).endVertex();
-        buffer.pos(bp1x + 0.5D - d0, bp1y + 0.53D - d1, bp1z + 0.5D - d2).endVertex();
-        buffer.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
+        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
+        BUFFER.pos(bp2x + 0.5D - d0, bp2y + 0.5D - d1, bp2z + 0.5D - d2).endVertex();
+        BUFFER.pos(bp2x + 0.5D - d0, bp2y + 0.53D - d1, bp2z + 0.5D - d2).endVertex();
+        BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.53D - d1, bp1z + 0.5D - d2).endVertex();
+        BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
     }
 
     public static void drawManySelectionBoxes(EntityPlayer player, Collection<BlockPos> positions, float partialTicks, Color color) {
@@ -106,49 +102,46 @@ public final class PathRenderer implements Helper {
         GL11.glLineWidth(5.0F);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
-        float f = 0.002F;
+        float expand = 0.002F;
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
 
-        double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
-        double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
-        double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
-        for (BlockPos pos : positions) {
+        double renderPosX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
+        double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
+        double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
+        positions.forEach(pos -> {
             IBlockState state = BlockStateInterface.get(pos);
-            Block block = state.getBlock();
             AxisAlignedBB toDraw;
-            if (block.equals(Blocks.AIR)) {
-                toDraw = Blocks.DIRT.getSelectedBoundingBox(state, Minecraft.getMinecraft().world, pos);
+            if (state.getBlock().equals(Blocks.AIR)) {
+                toDraw = Blocks.DIRT.getDefaultState().getSelectedBoundingBox(Minecraft.getMinecraft().world, pos);
             } else {
                 toDraw = state.getSelectedBoundingBox(Minecraft.getMinecraft().world, pos);
             }
-            toDraw = toDraw.expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D).offset(-d0, -d1, -d2);
-            buffer.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            tessellator.draw();
-            buffer.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            tessellator.draw();
-            buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-            buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-            tessellator.draw();
-        }
+            toDraw = toDraw.expand(expand, expand, expand).offset(-renderPosX, -renderPosY, -renderPosZ);
+            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+            TESSELLATOR.draw();
+            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+            TESSELLATOR.draw();
+            BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
+            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+            TESSELLATOR.draw();
+        });
 
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
