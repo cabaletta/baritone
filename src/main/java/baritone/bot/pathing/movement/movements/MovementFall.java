@@ -60,7 +60,6 @@ public class MovementFall extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-
         switch (state.getStatus()) {
             case PREPPING:
             case UNREACHABLE:

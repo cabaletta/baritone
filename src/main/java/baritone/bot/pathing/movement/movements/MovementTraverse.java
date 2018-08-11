@@ -101,8 +101,6 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        System.out.println("Ticking with state " + state.getStatus());
-        System.out.println(state.getTarget().rotation);
         switch (state.getStatus()) {
             case PREPPING:
             case UNREACHABLE:
