@@ -19,6 +19,7 @@ package baritone.bot.pathing.movement;
 
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.ToolSet;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
@@ -27,6 +28,8 @@ import net.minecraft.item.ItemStack;
  * @since 8/7/2018 4:30 PM
  */
 public class CalculationContext implements Helper {
+
+    private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
     private final ToolSet toolSet;
     private final boolean hasWaterBucket;
@@ -37,7 +40,7 @@ public class CalculationContext implements Helper {
 
     public CalculationContext(ToolSet toolSet) {
         this.toolSet = toolSet;
-        this.hasWaterBucket = player().inventory.hasItemStack(new ItemStack(Items.WATER_BUCKET)); // TODO check if water bucket is on hotbar or main inventory
+        this.hasWaterBucket = InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER));
     }
 
     public ToolSet getToolSet() {

@@ -35,7 +35,7 @@ import java.util.Optional;
 public class MovementFall extends Movement {
 
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
-    private static final ItemStack STACK_BUCKET_AIR = new ItemStack(Items.BUCKET);
+    private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
     public MovementFall(BlockPos src, BlockPos dest) {
         super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[]{dest.down()});
@@ -89,8 +89,8 @@ public class MovementFall extends Movement {
                 }
                 if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
                         || BlockStateInterface.isWater(dest))) {
-                    if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_AIR)) {
-                        player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_AIR);
+                    if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_EMPTY)) {
+                        player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                         if (player().motionY >= 0) {
                             return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                         } else {
