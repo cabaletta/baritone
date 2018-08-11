@@ -33,6 +33,7 @@ public class CalculationContext implements Helper {
 
     private final ToolSet toolSet;
     private final boolean hasWaterBucket;
+    private final boolean hasThrowaway;
 
     public CalculationContext() {
         this(new ToolSet());
@@ -41,6 +42,7 @@ public class CalculationContext implements Helper {
     public CalculationContext(ToolSet toolSet) {
         this.toolSet = toolSet;
         this.hasWaterBucket = InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
+        this.hasThrowaway = MovementHelper.throwaway(false);
     }
 
     public ToolSet getToolSet() {
@@ -49,5 +51,9 @@ public class CalculationContext implements Helper {
 
     public boolean hasWaterBucket() {
         return hasWaterBucket;
+    }
+
+    public boolean hasThrowaway() {
+        return hasThrowaway;
     }
 }

@@ -49,7 +49,8 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     List<Item> ACCEPTABLE_THROWAWAY_ITEMS = Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
-            Item.getItemFromBlock(Blocks.COBBLESTONE)
+            Item.getItemFromBlock(Blocks.COBBLESTONE),
+            Item.getItemFromBlock(Blocks.NETHERRACK)
     );
 
     static boolean avoidBreaking(BlockPos pos) {
@@ -94,7 +95,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockCactus
                 || block instanceof BlockFire
                 || block instanceof BlockEndPortal
-                || block instanceof BlockWeb;
+                || block instanceof BlockWeb
+                || block instanceof BlockMagma;
     }
 
     /**
@@ -115,6 +117,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         if (BlockStateInterface.isWater(block)) {
             return BlockStateInterface.isWater(pos.up()); // You can only walk on water if there is water above it
+        }
+        if (block.equals(Blocks.MAGMA)) {
+            return false;
         }
         return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
     }
@@ -188,13 +193,15 @@ public interface MovementHelper extends ActionCosts, Helper {
         mc.player.inventory.currentItem = ts.getBestSlot(b);
     }
 
-    static boolean switchtothrowaway() {
+    static boolean throwaway(boolean select) {
         EntityPlayerSP p = Minecraft.getMinecraft().player;
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);
             if (ACCEPTABLE_THROWAWAY_ITEMS.contains(item.getItem())) {
-                p.inventory.currentItem = i;
+                if (select) {
+                    p.inventory.currentItem = i;
+                }
                 return true;
             }
         }
@@ -244,17 +251,5 @@ public interface MovementHelper extends ActionCosts, Helper {
             break;
         }
         return null;
-    }
-
-    static boolean hasthrowaway() {
-        EntityPlayerSP p = Minecraft.getMinecraft().player;
-        NonNullList<ItemStack> inv = p.inventory.mainInventory;
-        for (byte i = 0; i < 9; i++) {
-            ItemStack item = inv.get(i);
-            if (ACCEPTABLE_THROWAWAY_ITEMS.contains(item.getItem())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

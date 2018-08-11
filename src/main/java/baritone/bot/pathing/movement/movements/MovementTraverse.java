@@ -85,6 +85,9 @@ public class MovementTraverse extends Movement {
             }
             IBlockState pp0 = BlockStateInterface.get(positionsToPlace[0]);
             if (pp0.getBlock().equals(Blocks.AIR) || (!BlockStateInterface.isWater(pp0.getBlock()) && pp0.getBlock().isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
+                if (!context.hasThrowaway()) {
+                    return COST_INF;
+                }
                 for (BlockPos against1 : against) {
                     if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                         return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
@@ -137,7 +140,7 @@ public class MovementTraverse extends Movement {
             wasTheBridgeBlockAlwaysThere = false;
             for (BlockPos against1 : against) {
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
-                    if (!MovementHelper.switchtothrowaway()) { // get ready to place a throwaway block
+                    if (!MovementHelper.throwaway(true)) { // get ready to place a throwaway block
                         displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
                         return state;
                     }
@@ -163,7 +166,7 @@ public class MovementTraverse extends Movement {
             if (whereAmI.equals(dest)) {
                 // if we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
-                if (!MovementHelper.switchtothrowaway()) {// get ready to place a throwaway block
+                if (!MovementHelper.throwaway(true)) {// get ready to place a throwaway block
                     displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
                     return state;
                 }

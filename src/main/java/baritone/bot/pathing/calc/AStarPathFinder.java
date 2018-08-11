@@ -47,6 +47,7 @@ import baritone.bot.pathing.movement.movements.MovementDiagonal;
 import baritone.bot.pathing.movement.movements.MovementDownward;
 import baritone.bot.pathing.movement.movements.MovementTraverse;
 import baritone.bot.pathing.path.IPath;
+import baritone.bot.utils.Helper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -60,7 +61,7 @@ import java.util.Random;
  *
  * @author leijurv
  */
-public class AStarPathFinder extends AbstractNodeCostSearch {
+public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
     public static boolean slowPath = false;
 
@@ -186,7 +187,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch {
             }
         }
         System.out.println("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks =(");
-        System.out.println("No path found =(");
+        displayChatMessageRaw("No path found =(");
         currentlyRunning = null;
         return Optional.empty();
     }
