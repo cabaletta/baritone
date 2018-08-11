@@ -130,8 +130,8 @@ public class MovementTraverse extends Movement {
                 state.setStatus(MovementState.MovementStatus.SUCCESS);
                 return state;
             }
-            if (wasTheBridgeBlockAlwaysThere) {
-                // player().setSprinting(true);
+            if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
+                player().setSprinting(true);
             }
             MovementHelper.moveTowards(state, positionsToBreak[0]);
             return state;

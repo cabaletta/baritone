@@ -18,11 +18,13 @@
 package baritone.bot.pathing.movement;
 
 import baritone.bot.Baritone;
-import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehavior;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
-import baritone.bot.utils.*;
+import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.Helper;
+import baritone.bot.utils.Rotation;
+import baritone.bot.utils.ToolSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -85,6 +87,7 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return Status
      */
     public MovementStatus update() {
+        player().setSprinting(false);
         MovementState latestState = updateState(currentState);
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);

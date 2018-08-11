@@ -88,7 +88,9 @@ public class PathExecutor extends Behavior {
                 }
                 for (int i = pathPosition + 2; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
                     if (whereAmI.equals(path.positions().get(i))) {
-                        displayChatMessageRaw("Skipping forward " + (i - pathPosition) + " steps, to " + i);
+                        if (i - pathPosition > 2) {
+                            displayChatMessageRaw("Skipping forward " + (i - pathPosition) + " steps, to " + i);
+                        }
                         pathPosition = i - 1;
                         return;
                     }

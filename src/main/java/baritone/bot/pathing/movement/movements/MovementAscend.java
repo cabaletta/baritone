@@ -32,7 +32,7 @@ public class MovementAscend extends Movement {
     private BlockPos[] against = new BlockPos[3];
 
     public MovementAscend(BlockPos src, BlockPos dest) {
-        super(src, dest, new BlockPos[] { dest, src.up(2), dest.up() }, new BlockPos[] { dest.down() });
+        super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, new BlockPos[]{dest.down()});
 
         BlockPos placementLocation = positionsToPlace[0]; // dest.down()
         int i = 0;
@@ -79,7 +79,6 @@ public class MovementAscend extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        System.out.println("Ticking with state " + state.getStatus());
         // TODO incorporate some behavior from ActionClimb (specifically how it waited until it was at most 1.2 blocks away before starting to jump
         // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
         switch (state.getStatus()) {
