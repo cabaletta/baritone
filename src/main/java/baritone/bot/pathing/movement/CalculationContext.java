@@ -40,7 +40,7 @@ public class CalculationContext implements Helper {
 
     public CalculationContext(ToolSet toolSet) {
         this.toolSet = toolSet;
-        this.hasWaterBucket = InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER));
+        this.hasWaterBucket = InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
     }
 
     public ToolSet getToolSet() {
