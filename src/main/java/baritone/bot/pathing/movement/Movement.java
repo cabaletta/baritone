@@ -97,7 +97,6 @@ public abstract class Movement implements Helper, MovementHelper {
         // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
         latestState.getInputStates().forEach((input, forced) -> {
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
-            System.out.println(input + " AND " + forced);
         });
         latestState.getInputStates().replaceAll((input, forced) -> false);
         currentState = latestState;
