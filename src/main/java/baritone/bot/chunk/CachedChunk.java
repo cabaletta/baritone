@@ -63,8 +63,7 @@ public final class CachedChunk implements IBlockTypeAccess {
     private final BitSet data;
 
     CachedChunk(int x, int z, BitSet data) {
-        if (data.size() > SIZE)
-            throw new IllegalArgumentException("BitSet of invalid length provided");
+        validateSize(data);
 
         this.x = x;
         this.z = z;
@@ -78,8 +77,7 @@ public final class CachedChunk implements IBlockTypeAccess {
     }
 
     void updateContents(BitSet data) {
-        if (data.size() > SIZE)
-            throw new IllegalArgumentException("BitSet of invalid length provided");
+        validateSize(data);
 
         for (int i = 0; i < data.length(); i++)
             this.data.set(i, data.get(i));
@@ -116,5 +114,18 @@ public final class CachedChunk implements IBlockTypeAccess {
      */
     public static int getPositionIndex(int x, int y, int z) {
         return (x + (z << 4) + (y << 8)) * 2;
+    }
+
+    /**
+     * Validates the size of an input {@link BitSet} containing the raw
+     * packed chunk data. Sizes that exceed {@link CachedChunk#SIZE} are
+     * considered invalid, and thus, an exception will be thrown.
+     *
+     * @param data The raw data
+     * @throws IllegalArgumentException if the bitset size exceeds the maximum size
+     */
+    private static void validateSize(BitSet data) {
+        if (data.size() > SIZE)
+            throw new IllegalArgumentException("BitSet of invalid length provided");
     }
 }
