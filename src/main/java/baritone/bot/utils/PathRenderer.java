@@ -29,7 +29,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.util.Collection;
@@ -52,7 +51,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GL11.glLineWidth(3.0F);
+        GlStateManager.glLineWidth(3.0F);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         List<BlockPos> positions = path.positions();
@@ -99,7 +98,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GL11.glLineWidth(5.0F);
+        GlStateManager.glLineWidth(5.0F);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         float expand = 0.002F;

@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This serves as a replacement to the old {@code MovementManager}'s
- * input overriding capabilities. It is vastly more extensible in the
- * inputs that can be overriden.
+ * An interface with the game's control system allowing the ability to
+ * force down certain controls, having the same effect as if we were actually
+ * physically forcing down the assigned key.
  *
  * @author Brady
  * @since 7/31/2018 11:20 PM

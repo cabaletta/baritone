@@ -17,7 +17,7 @@
 
 package baritone.bot.behavior;
 
-import baritone.bot.event.AbstractGameEventListener;
+import baritone.bot.event.listener.AbstractGameEventListener;
 import baritone.bot.utils.Helper;
 
 /**
