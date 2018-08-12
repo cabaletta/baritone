@@ -22,6 +22,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.GuiUtilRenderComponents;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -47,7 +48,11 @@ public interface Helper {
     }
 
     default BlockPos playerFeet() {
-        return new BlockPos(player().posX, player().posY, player().posZ);
+        BlockPos feet = new BlockPos(player().posX, player().posY, player().posZ);
+        if (BlockStateInterface.get(feet).getBlock().equals(Blocks.SOUL_SAND) && player().posY > feet.getY() + 0.874999) {
+            return feet.up();
+        }
+        return feet;
     }
 
     default Vec3d playerFeetAsVec() {
