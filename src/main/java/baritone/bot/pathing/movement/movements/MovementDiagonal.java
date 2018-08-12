@@ -27,6 +27,8 @@ import net.minecraft.util.math.BlockPos;
 
 public class MovementDiagonal extends Movement {
 
+    private static final double SQRT_2 = Math.sqrt(2);
+
     public MovementDiagonal(BlockPos start, EnumFacing dir1, EnumFacing dir2) {
         this(start, start.offset(dir1), start.offset(dir2), dir2);
         // super(start, start.offset(dir1).offset(dir2), new BlockPos[]{start.offset(dir1), start.offset(dir1).up(), start.offset(dir2), start.offset(dir2).up(), start.offset(dir1).offset(dir2), start.offset(dir1).offset(dir2).up()}, new BlockPos[]{start.offset(dir1).offset(dir2).down()});
@@ -67,12 +69,43 @@ public class MovementDiagonal extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (getTotalHardnessOfBlocksToBreak(context.getToolSet()) != 0) {
+        double lastPos = MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[4]) + MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[5]);
+        if (lastPos != 0) {
             return COST_INF;
         }
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             return COST_INF;
         }
-        return Math.sqrt(2) * (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST);
+        double optionA = MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[1]);
+        double optionB = MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[2]) + MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[3]);
+        if (optionA != 0 && optionB != 0) {
+            return COST_INF;
+        }
+        if (optionA == 0) {
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(positionsToBreak[2]))) {
+                return COST_INF;
+            }
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(positionsToBreak[3]))) {
+                return COST_INF;
+            }
+        }
+        if (optionB == 0) {
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(positionsToBreak[0]))) {
+                return COST_INF;
+            }
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(positionsToBreak[1]))) {
+                return COST_INF;
+            }
+        }
+        double multiplier = 1;
+        if (optionA != 0 || optionB != 0) {
+            multiplier = 1.5;
+        }
+        return multiplier * SQRT_2 * (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST);
+    }
+
+    @Override
+    protected boolean prepared(MovementState state) {
+        return true;
     }
 }

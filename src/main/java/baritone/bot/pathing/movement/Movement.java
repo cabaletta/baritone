@@ -107,7 +107,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return currentState.getStatus();
     }
 
-    private boolean prepared(MovementState state) {
+    protected boolean prepared(MovementState state) {
         if (state.getStatus() == MovementStatus.WAITING)
             return true;
 
