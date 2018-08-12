@@ -52,6 +52,7 @@ public class PathExecutor extends Behavior {
     private boolean recalcBP = true;
     private HashSet<BlockPos> toBreak = new HashSet<>();
     private HashSet<BlockPos> toPlace = new HashSet<>();
+    private HashSet<BlockPos> toWalkInto = new HashSet<>();
 
     public PathExecutor(IPath path) {
         this.path = path;
@@ -151,14 +152,17 @@ public class PathExecutor extends Behavior {
                 Movement m = path.movements().get(i);
                 HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak());
                 HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace());
+                HashSet<BlockPos> prevWalkInto = new HashSet<>(m.toWalkInto());
                 m.toBreakCached = null;
                 m.toPlaceCached = null;
-                m.toBreak();
-                m.toPlace();
+                m.toWalkIntoCached = null;
                 if (!prevBreak.equals(new HashSet<>(m.toBreak()))) {
                     recalcBP = true;
                 }
                 if (!prevPlace.equals(new HashSet<>(m.toPlace()))) {
+                    recalcBP = true;
+                }
+                if (!prevWalkInto.equals(new HashSet<>(m.toWalkInto()))) {
                     recalcBP = true;
                 }
             }
@@ -166,12 +170,15 @@ public class PathExecutor extends Behavior {
         if (recalcBP) {
             HashSet<BlockPos> newBreak = new HashSet<>();
             HashSet<BlockPos> newPlace = new HashSet<>();
+            HashSet<BlockPos> newWalkInto = new HashSet<>();
             for (int i = 0; i < path.movements().size(); i++) {
                 newBreak.addAll(path.movements().get(i).toBreak());
                 newPlace.addAll(path.movements().get(i).toPlace());
+                newWalkInto.addAll(path.movements().get(i).toWalkInto());
             }
             toBreak = newBreak;
             toPlace = newPlace;
+            toWalkInto = newWalkInto;
             recalcBP = false;
         }
         long end = System.currentTimeMillis();
@@ -235,5 +242,9 @@ public class PathExecutor extends Behavior {
 
     public Set<BlockPos> toPlace() {
         return Collections.unmodifiableSet(toPlace);
+    }
+
+    public Set<BlockPos> toWalkInto() {
+        return Collections.unmodifiableSet(toWalkInto);
     }
 }

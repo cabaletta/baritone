@@ -26,6 +26,8 @@ import net.minecraft.block.BlockMagma;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+
 public class MovementDiagonal extends Movement {
 
     private static final double SQRT_2 = Math.sqrt(2);
@@ -114,5 +116,35 @@ public class MovementDiagonal extends Movement {
     @Override
     protected boolean prepared(MovementState state) {
         return true;
+    }
+
+    @Override
+    public ArrayList<BlockPos> toBreak() {
+        if (toBreakCached != null) {
+            return toBreakCached;
+        }
+        ArrayList<BlockPos> result = new ArrayList<>();
+        for (int i = 4; i < 6; i++) {
+            if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
+                result.add(positionsToBreak[i]);
+            }
+        }
+        toBreakCached = result;
+        return result;
+    }
+
+    @Override
+    public ArrayList<BlockPos> toWalkInto() {
+        if (toWalkIntoCached == null) {
+            toWalkIntoCached = new ArrayList<>();
+        }
+        ArrayList<BlockPos> result = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
+                result.add(positionsToBreak[i]);
+            }
+        }
+        toWalkIntoCached = result;
+        return toWalkIntoCached;
     }
 }

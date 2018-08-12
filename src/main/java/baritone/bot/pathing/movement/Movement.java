@@ -218,6 +218,7 @@ public abstract class Movement implements Helper, MovementHelper {
 
     public ArrayList<BlockPos> toBreakCached = null;
     public ArrayList<BlockPos> toPlaceCached = null;
+    public ArrayList<BlockPos> toWalkIntoCached = null;
 
     public ArrayList<BlockPos> toBreak() {
         if (toBreakCached != null) {
@@ -245,5 +246,12 @@ public abstract class Movement implements Helper, MovementHelper {
         }
         toPlaceCached = result;
         return result;
+    }
+
+    public ArrayList<BlockPos> toWalkInto() {
+        if (toWalkIntoCached == null) {
+            toWalkIntoCached = new ArrayList<>();
+        }
+        return toWalkIntoCached;
     }
 }

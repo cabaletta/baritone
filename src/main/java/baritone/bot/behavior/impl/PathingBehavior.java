@@ -195,6 +195,7 @@ public class PathingBehavior extends Behavior {
         if (current != null) {
             PathRenderer.drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Color.RED);
             PathRenderer.drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Color.GREEN);
+            PathRenderer.drawManySelectionBoxes(player(), current.toWalkInto(), partialTicks, Color.MAGENTA);
         }
 
         // If there is a path calculation currently running, render the path calculation process
