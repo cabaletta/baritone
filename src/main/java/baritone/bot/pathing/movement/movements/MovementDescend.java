@@ -48,6 +48,8 @@ public class MovementDescend extends Movement {
         return WALK_ONE_BLOCK_COST * 0.8 + Math.max(FALL_N_BLOCKS_COST[1], WALK_ONE_BLOCK_COST * 0.2) + getTotalHardnessOfBlocksToBreak(context.getToolSet());
     }
 
+    int numTicks = 0;
+
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
@@ -75,7 +77,7 @@ public class MovementDescend extends Movement {
                     double diffZ2 = player().posZ - (fakeDest.getZ() + 0.5);
                     double d = Math.sqrt(diffX2 * diffX2 + diffZ2 * diffZ2);
                     MovementHelper.moveTowards(state, fakeDest);
-                    if (d <= ab) {
+                    if (d <= ab && numTicks++ < 10) {
                         state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
                         state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                     }
