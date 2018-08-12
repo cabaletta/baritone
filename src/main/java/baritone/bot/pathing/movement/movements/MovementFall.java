@@ -50,11 +50,10 @@ public class MovementFall extends Movement {
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
             placeBucketCost = ActionCosts.PLACE_ONE_BLOCK_COST;
         }
-        double cost = getTotalHardnessOfBlocksToBreak(context.getToolSet());
-        if (cost != 0) {
+        if (getTotalHardnessOfBlocksToBreak(context.getToolSet()) != 0) {
             return COST_INF;
         }
-        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + cost + placeBucketCost;
+        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost;
     }
 
     @Override
@@ -75,7 +74,7 @@ public class MovementFall extends Movement {
                         state.setStatus(MovementStatus.UNREACHABLE);
                         return state;
                     }
-                    if (playerFeet().getY() - dest.getY() < mc.playerController.getBlockReachDistance()) {
+                    if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
                         player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
                         targetRotation = LookBehaviorUtils.reachable(dest.down());
                     }

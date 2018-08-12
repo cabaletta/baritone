@@ -17,6 +17,7 @@
 
 package baritone.bot.utils;
 
+import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -79,6 +80,10 @@ public final class Utils {
         double xDiff = (bbox.minX + bbox.maxX) / 2;
         double yDiff = (bbox.minY + bbox.maxY) / 2;
         double zDiff = (bbox.minZ + bbox.maxZ) / 2;
+        if (b.getBlock() instanceof BlockFire) {//look at bottom of fire when putting it out
+            yDiff = 0;
+        }
+        System.out.println(xDiff + " " + yDiff + " " + zDiff);
         return new Vec3d(
                 orig.getX() + xDiff,
                 orig.getY() + yDiff,

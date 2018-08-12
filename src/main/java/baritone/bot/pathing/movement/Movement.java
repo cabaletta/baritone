@@ -111,14 +111,22 @@ public abstract class Movement implements Helper, MovementHelper {
         if (state.getStatus() == MovementStatus.WAITING)
             return true;
 
+        boolean somethingInTheWay = false;
         for (BlockPos blockPos : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(blockPos)) {
+                somethingInTheWay = true;
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
                     state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
             }
+        }
+        if (somethingInTheWay) {
+            // There's a block or blocks that we can't walk through, but we have no target rotation to reach any
+            // So don't return true, actually set state to unreachable
+            state.setStatus(MovementStatus.UNREACHABLE);
+            return true;
         }
         return true;
     }

@@ -21,6 +21,7 @@ import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.Utils;
+import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.*;
 
@@ -61,6 +62,7 @@ public final class LookBehaviorUtils implements Helper {
             return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch + 0.0001f));
         }
         Optional<Rotation> possibleRotation = reachableCenter(pos);
+        System.out.println("center: " + possibleRotation);
         if (possibleRotation.isPresent())
             return possibleRotation;
 
@@ -99,10 +101,17 @@ public final class LookBehaviorUtils implements Helper {
     protected static Optional<Rotation> reachableOffset(BlockPos pos, Vec3d offsetPos) {
         Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F), offsetPos);
         RayTraceResult result = rayTraceTowards(rotation);
-        if (result != null
-                && result.typeOfHit == RayTraceResult.Type.BLOCK
-                && result.getBlockPos().equals(pos))
-            return Optional.of(rotation);
+        System.out.println(result);
+        if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
+            if (result.getBlockPos().equals(pos)) {
+                return Optional.of(rotation);
+            }
+            if (BlockStateInterface.get(pos).getBlock() instanceof BlockFire) {
+                if (result.getBlockPos().equals(pos.down())) {
+                    return Optional.of(rotation);
+                }
+            }
+        }
         return Optional.empty();
     }
 
