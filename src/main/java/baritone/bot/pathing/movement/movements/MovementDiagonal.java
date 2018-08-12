@@ -22,6 +22,7 @@ import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
+import net.minecraft.block.BlockMagma;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -74,6 +75,12 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
+            return COST_INF;
+        }
+        if (BlockStateInterface.get(positionsToBreak[2].down()).getBlock() instanceof BlockMagma) {
+            return COST_INF;
+        }
+        if (BlockStateInterface.get(positionsToBreak[4].down()).getBlock() instanceof BlockMagma) {
             return COST_INF;
         }
         double optionA = MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[1]);
