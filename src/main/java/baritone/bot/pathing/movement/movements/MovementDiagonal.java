@@ -99,7 +99,7 @@ public class MovementDiagonal extends Movement {
         }
         double multiplier = 1;
         if (optionA != 0 || optionB != 0) {
-            multiplier = 1.5; // TODO tune
+            multiplier = SQRT_2 - 0.001; // TODO tune
         }
         return multiplier * SQRT_2 * (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST);
     }
