@@ -58,7 +58,7 @@ public final class LookBehaviorUtils implements Helper {
 
     public static Optional<Rotation> reachable(BlockPos pos) {
         if (pos.equals(getSelectedBlock().orElse(null))) {
-            return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch + 0.000001f));
+            return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch + 0.0001f));
         }
         Optional<Rotation> possibleRotation = reachableCenter(pos);
         if (possibleRotation.isPresent())
