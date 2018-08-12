@@ -26,7 +26,7 @@ public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieI
     double WALK_ONE_IN_WATER_COST = 20 / 2.2;
     double JUMP_ONE_BLOCK_COST = 5.72854;//see below calculation for fall. 1.25 blocks
     double LADDER_UP_ONE_COST = 20 / 2.35;
-    double LADDER_DOWN_ONE_COST = 20 / 3;
+    double LADDER_DOWN_ONE_COST = 20 / 3.0;
     double SNEAK_ONE_BLOCK_COST = 20 / 1.3;
     double SPRINT_ONE_BLOCK_COST = 20 / 5.612;
     /**
