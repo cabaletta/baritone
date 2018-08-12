@@ -133,6 +133,7 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
+        state.setInput(InputOverrideHandler.Input.JUMP, true);
         //double flatDistToNext = Math.abs(to.getX() - from.getX()) * Math.abs((to.getX() + 0.5D) - thePlayer.posX) + Math.abs(to.getZ() - from.getZ()) * Math.abs((to.getZ() + 0.5D) - thePlayer.posZ);
         //boolean pointingInCorrectDirection = MovementManager.moveTowardsBlock(to);
         //MovementManager.jumping = flatDistToNext < 1.2 && pointingInCorrectDirection;
