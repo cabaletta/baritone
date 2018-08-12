@@ -175,7 +175,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 bestDist = dist;
             }
             if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                System.out.println("A* cost coefficient " + COEFFICIENTS[i]);
+                displayChatMessageRaw("A* cost coefficient " + COEFFICIENTS[i]);
                 if (COEFFICIENTS[i] >= 3) {
                     System.out.println("Warning: cost coefficient is greater than three! Probably means that");
                     System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");
@@ -186,7 +186,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 return Optional.of(new Path(startNode, bestSoFar[i], goal, numNodes));
             }
         }
-        System.out.println("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks =(");
+        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks =(");
         displayChatMessageRaw("No path found =(");
         currentlyRunning = null;
         return Optional.empty();

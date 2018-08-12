@@ -33,7 +33,7 @@ public final class LookBehaviorUtils implements Helper {
     /**
      * Offsets from the root block position to the center of each side.
      */
-    private static final Vec3d[] BLOCK_SIDE_MULTIPLIERS = new Vec3d[] {
+    private static final Vec3d[] BLOCK_SIDE_MULTIPLIERS = new Vec3d[]{
             new Vec3d(0.5, 0, 0.5), // Down
             new Vec3d(0.5, 1, 0.5), // Up
             new Vec3d(0.5, 0.5, 0), // North
@@ -58,7 +58,7 @@ public final class LookBehaviorUtils implements Helper {
 
     public static Optional<Rotation> reachable(BlockPos pos) {
         if (pos.equals(getSelectedBlock().orElse(null))) {
-            return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch));
+            return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch + 0.000001f));
         }
         Optional<Rotation> possibleRotation = reachableCenter(pos);
         if (possibleRotation.isPresent())
