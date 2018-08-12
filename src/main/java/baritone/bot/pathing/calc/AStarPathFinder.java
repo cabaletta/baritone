@@ -42,10 +42,7 @@ import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
-import baritone.bot.pathing.movement.movements.MovementAscend;
-import baritone.bot.pathing.movement.movements.MovementDiagonal;
-import baritone.bot.pathing.movement.movements.MovementDownward;
-import baritone.bot.pathing.movement.movements.MovementTraverse;
+import baritone.bot.pathing.movement.movements.*;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.utils.Helper;
 import net.minecraft.client.Minecraft;
@@ -214,7 +211,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),
                 new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
-                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST)
+                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST),
+                new MovementPillar(pos)
         };
     }
 
