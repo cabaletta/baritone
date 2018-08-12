@@ -18,18 +18,27 @@
 package baritone.bot.pathing.movement.movements;
 
 import baritone.bot.InputOverrideHandler;
+import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+
+import java.util.Objects;
 
 public class MovementAscend extends Movement {
 
     private BlockPos[] against = new BlockPos[3];
+    private int ticksWithoutPlacement = 0;
 
     public MovementAscend(BlockPos src, BlockPos dest) {
         super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, new BlockPos[]{dest.down()});
@@ -59,9 +68,6 @@ public class MovementAscend extends Movement {
             if (!BlockStateInterface.isAir(positionsToPlace[0]) && !BlockStateInterface.isWater(positionsToPlace[0])) {
                 return COST_INF;
             }
-            if (true) {
-                return COST_INF;
-            }
             for (BlockPos against1 : against) {
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                     return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
@@ -88,14 +94,52 @@ public class MovementAscend extends Movement {
                 return state;
             case WAITING:
             case RUNNING:
-                if (playerFeet().equals(dest)) {
-                    state.setStatus(MovementStatus.SUCCESS);
-                    return state;
-                }
-                MovementHelper.moveTowards(state, positionsToBreak[0]);
-                return state.setInput(InputOverrideHandler.Input.JUMP, true);
+                break;
             default:
                 return state;
         }
+        if (playerFeet().equals(dest)) {
+            state.setStatus(MovementStatus.SUCCESS);
+            return state;
+        }
+
+        EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
+        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
+            for (int i = 0; i < against.length; i++) {
+                if (BlockStateInterface.get(against[i]).isBlockNormalCube()) {
+                    if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
+                        return state.setStatus(MovementStatus.UNREACHABLE);
+                    }
+                    double faceX = (dest.getX() + against[i].getX() + 1.0D) * 0.5D;
+                    double faceY = (dest.getY() + against[i].getY()) * 0.5D;
+                    double faceZ = (dest.getZ() + against[i].getZ() + 1.0D) * 0.5D;
+                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
+
+                    EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
+                    if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against[i]) && LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
+                        ticksWithoutPlacement++;
+                        state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                        if (Minecraft.getMinecraft().player.isSneaking()) {
+                            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                        }
+                        if (ticksWithoutPlacement > 20) {
+                            state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);//we might be standing in the way, move back
+                        }
+                    }
+                    System.out.println("Trying to look at " + against[i] + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
+                    return state;
+                }
+            }
+            return state.setStatus(MovementStatus.UNREACHABLE);
+        }
+        //double flatDistToNext = Math.abs(to.getX() - from.getX()) * Math.abs((to.getX() + 0.5D) - thePlayer.posX) + Math.abs(to.getZ() - from.getZ()) * Math.abs((to.getZ() + 0.5D) - thePlayer.posZ);
+        //boolean pointingInCorrectDirection = MovementManager.moveTowardsBlock(to);
+        //MovementManager.jumping = flatDistToNext < 1.2 && pointingInCorrectDirection;
+        //once we are pointing the right way and moving, start jumping
+        //this is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
+        //also wait until we are close enough, because we might jump and hit our head on an adjacent block
+        //return Baritone.playerFeet.equals(to);
+
+        return state;
     }
 }

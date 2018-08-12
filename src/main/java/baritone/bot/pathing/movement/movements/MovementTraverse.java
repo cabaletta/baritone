@@ -142,7 +142,7 @@ public class MovementTraverse extends Movement {
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                     if (!MovementHelper.throwaway(true)) { // get ready to place a throwaway block
                         displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
-                        return state;
+                        return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                     }
                     state.setInput(InputOverrideHandler.Input.SNEAK, true);
                     double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
@@ -168,7 +168,7 @@ public class MovementTraverse extends Movement {
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
                 if (!MovementHelper.throwaway(true)) {// get ready to place a throwaway block
                     displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
-                    return state;
+                    return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                 }
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;
                 double faceY = (dest.getY() + src.getY() - 1.0D) * 0.5D;
