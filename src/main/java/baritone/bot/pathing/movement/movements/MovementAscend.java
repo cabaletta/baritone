@@ -28,7 +28,6 @@ import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -103,7 +102,6 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             for (int i = 0; i < against.length; i++) {
                 if (BlockStateInterface.get(against[i]).isBlockNormalCube()) {
@@ -114,12 +112,11 @@ public class MovementAscend extends Movement {
                     double faceY = (dest.getY() + against[i].getY()) * 0.5D;
                     double faceZ = (dest.getZ() + against[i].getZ() + 1.0D) * 0.5D;
                     state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
-
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                     if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against[i]) && LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
                         ticksWithoutPlacement++;
                         state.setInput(InputOverrideHandler.Input.SNEAK, true);
-                        if (Minecraft.getMinecraft().player.isSneaking()) {
+                        if (player().isSneaking()) {
                             state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                         }
                         if (ticksWithoutPlacement > 20) {
@@ -134,6 +131,8 @@ public class MovementAscend extends Movement {
         }
         MovementHelper.moveTowards(state, dest);
         state.setInput(InputOverrideHandler.Input.JUMP, true);
+
+        // TODO check if the below actually helps or hurts, it's weird
         //double flatDistToNext = Math.abs(to.getX() - from.getX()) * Math.abs((to.getX() + 0.5D) - thePlayer.posX) + Math.abs(to.getZ() - from.getZ()) * Math.abs((to.getZ() + 0.5D) - thePlayer.posZ);
         //boolean pointingInCorrectDirection = MovementManager.moveTowardsBlock(to);
         //MovementManager.jumping = flatDistToNext < 1.2 && pointingInCorrectDirection;

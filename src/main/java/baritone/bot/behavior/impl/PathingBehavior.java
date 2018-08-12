@@ -67,6 +67,9 @@ public class PathingBehavior extends Behavior {
         if (msg.toLowerCase().startsWith("goal")) {
             event.cancel();
             String[] params = msg.toLowerCase().substring(4).trim().split(" ");
+            if (params[0].equals("")) {
+                params = new String[]{};
+            }
             try {
                 switch (params.length) {
                     case 0:
