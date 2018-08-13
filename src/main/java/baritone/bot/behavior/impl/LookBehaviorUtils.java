@@ -59,6 +59,14 @@ public final class LookBehaviorUtils implements Helper {
 
     public static Optional<Rotation> reachable(BlockPos pos) {
         if (pos.equals(getSelectedBlock().orElse(null))) {
+            /*
+             * why add 0.0001?
+             * to indicate that we actually have a desired pitch
+             * the way we indicate that the pitch can be whatever and we only care about the yaw
+             * is by setting the desired pitch to the current pitch
+             * setting the desired pitch to the current pitch + 0.0001 means that we do have a desired pitch, it's
+             * just what it currently is
+             */
             return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch + 0.0001f));
         }
         Optional<Rotation> possibleRotation = reachableCenter(pos);
