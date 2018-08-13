@@ -23,6 +23,8 @@ import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
 import net.minecraft.block.BlockMagma;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -76,8 +78,15 @@ public class MovementDiagonal extends Movement {
         if (lastPos != 0) {
             return COST_INF;
         }
-        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
+        IBlockState destWalkOn = BlockStateInterface.get(positionsToPlace[0]);
+        if (!MovementHelper.canWalkOn(positionsToPlace[0], destWalkOn)) {
             return COST_INF;
+        }
+        double multiplier = 1;
+        if (destWalkOn.getBlock().equals(Blocks.SOUL_SAND)) {
+            multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
+        } else if (BlockStateInterface.get(src).getBlock().equals(Blocks.SOUL_SAND)) {
+            multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
         }
         if (BlockStateInterface.get(positionsToBreak[2].down()).getBlock() instanceof BlockMagma) {
             return COST_INF;
@@ -106,9 +115,8 @@ public class MovementDiagonal extends Movement {
                 return COST_INF;
             }
         }
-        double multiplier = 1;
         if (optionA != 0 || optionB != 0) {
-            multiplier = SQRT_2 - 0.001; // TODO tune
+            multiplier *= SQRT_2 - 0.001; // TODO tune
         }
         return multiplier * SQRT_2 * (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST);
     }
