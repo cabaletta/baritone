@@ -103,7 +103,7 @@ public class ToolSet implements Helper {
                 continue;
 
             float v = item.getDestroySpeed(new ItemStack(item), b);
-            if (v < value || value == -1) {
+            if (v > value || value == -1) {
                 value = v;
                 best = i;
             }
