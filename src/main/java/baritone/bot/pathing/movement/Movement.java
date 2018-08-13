@@ -117,6 +117,7 @@ public abstract class Movement implements Helper, MovementHelper {
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
+                    player().inventory.currentItem = new ToolSet().getBestSlot(BlockStateInterface.get(blockPos));
                     state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
