@@ -73,7 +73,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return cost;
     }
 
-    protected abstract double calculateCost(CalculationContext context); // TODO pass in information like whether it's allowed to place throwaway blocks
+    protected abstract double calculateCost(CalculationContext context);
 
     public double recalculateCost() {
         cost = null;
