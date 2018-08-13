@@ -81,10 +81,10 @@ public class MovementDiagonal extends Movement {
         if (!MovementHelper.canWalkOn(positionsToPlace[0], destWalkOn)) {
             return COST_INF;
         }
-        double multiplier = 1;
+        double multiplier = WALK_ONE_BLOCK_COST;
         if (destWalkOn.getBlock().equals(Blocks.SOUL_SAND)) {
             multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
-        } else if (BlockStateInterface.get(src).getBlock().equals(Blocks.SOUL_SAND)) {
+        } else if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
             multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
         }
         if (BlockStateInterface.get(positionsToBreak[2].down()).getBlock() instanceof BlockMagma) {
@@ -117,7 +117,15 @@ public class MovementDiagonal extends Movement {
         if (optionA != 0 || optionB != 0) {
             multiplier *= SQRT_2 - 0.001; // TODO tune
         }
-        return multiplier * SQRT_2 * (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST);
+        if (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest)) {
+            multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
+        }
+        if (multiplier == WALK_ONE_BLOCK_COST) {
+            // if we aren't edging around anything, and we aren't in water or soul sand
+            // we can sprint =D
+            multiplier = SPRINT_ONE_BLOCK_COST;
+        }
+        return multiplier * SQRT_2;
     }
 
     @Override

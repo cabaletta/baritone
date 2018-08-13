@@ -68,13 +68,18 @@ public class MovementTraverse extends Movement {
     protected double calculateCost(CalculationContext context) {
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
-        double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
         IBlockState destOn = BlockStateInterface.get(positionsToPlace[0]);
         if (MovementHelper.canWalkOn(positionsToPlace[0], destOn)) {//this is a walk, not a bridge
+            double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
             if (destOn.getBlock().equals(Blocks.SOUL_SAND)) {
-                WC *= SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;
+                WC *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
             }
             if (MovementHelper.canWalkThrough(positionsToBreak[0]) && MovementHelper.canWalkThrough(positionsToBreak[1])) {
+                if (WC == WALK_ONE_BLOCK_COST) {
+                    // if there's nothing in the way, and this isn't water or soul sand, and we aren't sneak placing
+                    // we can sprint =D
+                    WC = SPRINT_ONE_BLOCK_COST;
+                }
                 return WC;
             }
             //double hardness1 = blocksToBreak[0].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[0]);
@@ -92,12 +97,13 @@ public class MovementTraverse extends Movement {
                 if (!context.hasThrowaway()) {
                     return COST_INF;
                 }
+                double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
                 for (BlockPos against1 : against) {
                     if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                         return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
                     }
                 }
-                if(BlockStateInterface.get(src).getBlock().equals(Blocks.SOUL_SAND)){
+                if (BlockStateInterface.get(src).getBlock().equals(Blocks.SOUL_SAND)) {
                     return COST_INF; // can't sneak and backplace against soul sand =/
                 }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
