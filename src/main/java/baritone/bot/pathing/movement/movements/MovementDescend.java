@@ -76,13 +76,16 @@ public class MovementDescend extends Movement {
                 double diffX = player().posX - (dest.getX() + 0.5);
                 double diffZ = player().posZ - (dest.getZ() + 0.5);
                 double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
-                if (!playerFeet.equals(dest) || ab > 0.3) {
+                double x = player().posX - (src.getX() + 0.5);
+                double z = player().posZ - (src.getZ() + 0.5);
+                double fromStart = Math.sqrt(x * x + z * z);
+                if (!playerFeet.equals(dest) || ab > 0.2) {
                     BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
                     double diffX2 = player().posX - (fakeDest.getX() + 0.5);
                     double diffZ2 = player().posZ - (fakeDest.getZ() + 0.5);
                     double d = Math.sqrt(diffX2 * diffX2 + diffZ2 * diffZ2);
                     MovementHelper.moveTowards(state, fakeDest);
-                    if (d <= ab && numTicks++ < 10) {
+                    if (fromStart > 1.2 && numTicks++ < 10) {
                         state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
                         state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                     }
