@@ -86,7 +86,7 @@ public class MovementAscend extends Movement {
         }
         double halfWalk = WALK_ONE_BLOCK_COST / 2;
         if (toPlace.getBlock().equals(Blocks.SOUL_SAND)) {
-            halfWalk *= SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;
+            halfWalk *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
         }
         // we walk half the block to get to the edge, then we walk the other half while simultaneously jumping (math.max because of how it's in parallel)
         return halfWalk + Math.max(JUMP_ONE_BLOCK_COST, halfWalk) + getTotalHardnessOfBlocksToBreak(context.getToolSet());

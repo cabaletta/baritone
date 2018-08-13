@@ -74,8 +74,7 @@ public class MovementDiagonal extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        double lastPos = MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[4]) + MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[5]);
-        if (lastPos != 0) {
+        if (!MovementHelper.canWalkThrough(positionsToBreak[4]) || !MovementHelper.canWalkThrough(positionsToBreak[5])) {
             return COST_INF;
         }
         IBlockState destWalkOn = BlockStateInterface.get(positionsToPlace[0]);
