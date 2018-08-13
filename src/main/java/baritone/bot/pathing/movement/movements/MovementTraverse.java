@@ -97,6 +97,9 @@ public class MovementTraverse extends Movement {
                         return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
                     }
                 }
+                if(BlockStateInterface.get(src).getBlock().equals(Blocks.SOUL_SAND)){
+                    return COST_INF; // can't sneak and backplace against soul sand =/
+                }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
                 return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
             }
