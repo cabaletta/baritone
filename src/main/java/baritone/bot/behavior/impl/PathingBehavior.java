@@ -79,6 +79,7 @@ public class PathingBehavior extends Behavior {
                     next = null;
                 }
                 if (next != null) {
+                    displayChatMessageRaw("Continuing on to planned next path");
                     current = next;
                     next = null;
                     return;
@@ -99,6 +100,7 @@ public class PathingBehavior extends Behavior {
                 if (next != null) {
                     if (next.getPath().positions().contains(playerFeet())) {
                         // jump directly onto the next path
+                        displayChatMessageRaw("Splicing into planned next path early...");
                         current = next;
                         next = null;
                         return;

@@ -81,7 +81,6 @@ public class PathExecutor implements Helper {
         EntityPlayerSP thePlayer = mc.player;
         BlockPos whereAmI = playerFeet();
         if (pathPosition == path.length() - 1) {
-            displayChatMessageRaw("On last position, ending this path.");
             pathPosition++;
             return true;
         }
