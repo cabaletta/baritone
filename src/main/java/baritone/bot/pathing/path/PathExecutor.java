@@ -48,6 +48,8 @@ public class PathExecutor extends Behavior {
     private int pathPosition;
     private int ticksAway;
     private int ticksOnCurrent;
+    private Double currentMovementInitialCostEstimate;
+    private Integer costEstimateIndex;
     private boolean failed;
     private boolean recalcBP = true;
     private HashSet<BlockPos> toBreak = new HashSet<>();
@@ -171,7 +173,7 @@ public class PathExecutor extends Behavior {
             HashSet<BlockPos> newBreak = new HashSet<>();
             HashSet<BlockPos> newPlace = new HashSet<>();
             HashSet<BlockPos> newWalkInto = new HashSet<>();
-            for (int i = 0; i < path.movements().size(); i++) {
+            for (int i = pathPosition; i < path.movements().size(); i++) {
                 newBreak.addAll(path.movements().get(i).toBreak());
                 newPlace.addAll(path.movements().get(i).toPlace());
                 newWalkInto.addAll(path.movements().get(i).toWalkInto());
@@ -186,12 +188,17 @@ public class PathExecutor extends Behavior {
             //displayChatMessageRaw("Recalculating break and place took " + (end - start) + "ms");
         }
         Movement movement = path.movements().get(pathPosition);
-        if (movement.recalculateCost() >= ActionCosts.COST_INF) {
+        double currentCost = movement.recalculateCost();
+        if (currentCost >= ActionCosts.COST_INF) {
             displayChatMessageRaw("Something has changed in the world and this movement has become impossible. Cancelling.");
             pathPosition = path.length() + 3;
             failed = true;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             return;
+        }
+        if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
+            costEstimateIndex = pathPosition;
+            currentMovementInitialCostEstimate = currentCost; // do this only once, when the movement starts
         }
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
@@ -209,7 +216,11 @@ public class PathExecutor extends Behavior {
             onTick(event);
         } else {
             ticksOnCurrent++;
-            if (ticksOnCurrent > movement.recalculateCost() + 100) {
+            if (ticksOnCurrent > currentMovementInitialCostEstimate + 100) {
+                // only fail if the total time has exceeded the initial estimate
+                // as you break the blocks required, the remaining cost goes down, to the point where
+                // ticksOnCurrent is greater than recalculateCost + 1000
+                // this is why we cache cost at the beginning, and don't recalculate for this comparison every tick
                 displayChatMessageRaw("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + movement.getCost(null) + "). Cancelling.");
                 movement.cancel();
                 Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();

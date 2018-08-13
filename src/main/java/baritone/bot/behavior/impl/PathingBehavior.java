@@ -45,6 +45,7 @@ public class PathingBehavior extends Behavior {
     private PathingBehavior() {}
 
     private PathExecutor current;
+    private PathExecutor next;
 
     private Goal goal;
 

@@ -17,16 +17,13 @@
 
 package baritone.bot.pathing.path;
 
+import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.utils.Utils;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author leijurv
@@ -111,22 +108,13 @@ public interface IPath {
         return pos.get(pos.size() - 1);
     }
 
-    /**
-     * For rendering purposes, what blocks should be highlighted in red
-     *
-     * @return an unordered collection of positions
-     */
-    default Collection<BlockPos> getBlocksToBreak() {
-        return movements().stream().map(Movement::toBreak).flatMap(ArrayList::stream).collect(Collectors.toCollection(HashSet::new));
-    }
-
-    /**
-     * For rendering purposes, what blocks should be highlighted in green
-     *
-     * @return an unordered collection of positions
-     */
-    default Collection<BlockPos> getBlocksToPlace() {
-        return movements().stream().map(Movement::toPlace).flatMap(ArrayList::stream).collect(Collectors.toCollection(HashSet::new));
+    default double ticksRemaining(int pathPosition) {
+        double sum = 0;
+        CalculationContext ctx = new CalculationContext();
+        for (int i = pathPosition; i < movements().size(); i++) {
+            sum += movements().get(i).getCost(ctx);
+        }
+        return sum;
     }
 
     int getNumNodesConsidered();
