@@ -50,10 +50,17 @@ public class MovementFall extends Movement {
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
             placeBucketCost = ActionCosts.PLACE_ONE_BLOCK_COST;
         }
-        if (getTotalHardnessOfBlocksToBreak(context.getToolSet()) != 0) {
+        double frontTwo = MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[1]);
+        if (frontTwo >= COST_INF) {
             return COST_INF;
         }
-        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost;
+        for (int i = 2; i < positionsToBreak.length; i++) {
+            if (MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[i]) > 0) {
+                //can't break while falling
+                return COST_INF;
+            }
+        }
+        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost + frontTwo;
     }
 
     @Override
