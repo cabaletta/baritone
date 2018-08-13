@@ -27,6 +27,7 @@ import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -63,8 +64,13 @@ public class MovementAscend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
-            if (!BlockStateInterface.isAir(positionsToPlace[0]) && !BlockStateInterface.isWater(positionsToPlace[0])) {
+        IBlockState toPlace = BlockStateInterface.get(positionsToPlace[0]);
+        if (!MovementHelper.canWalkOn(positionsToPlace[0], toPlace)) {
+            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock())) {
+                // TODO replace this check with isReplacable or similar
+                return COST_INF;
+            }
+            if (!context.hasThrowaway()) {
                 return COST_INF;
             }
             for (BlockPos against1 : against) {
