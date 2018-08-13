@@ -277,6 +277,9 @@ public class PathingBehavior extends Behavior {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
             PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED);
         }
+        if (next != null && next.getPath() != null) {
+            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.GREEN);
+        }
 
         long split = System.nanoTime();
         if (current != null) {
