@@ -116,10 +116,10 @@ public class PathingBehavior extends Behavior {
                     // and this path dosen't get us all the way there
                     return;
                 }
-                if (current.getPath().ticksRemainingFrom(current.getPosition()) < 100) {
+                if (current.getPath().ticksRemainingFrom(current.getPosition()) < 200) {
                     // and this path has 5 seconds or less left
                     displayChatMessageRaw("Path almost over; planning ahead");
-                    findPathInNewThread(current.getPath().getDest(), true);
+                    findPathInNewThread(current.getPath().getDest(), false);
                 }
             }
         }
