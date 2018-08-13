@@ -18,12 +18,12 @@
 package baritone.bot.pathing.path;
 
 import baritone.bot.Baritone;
-import baritone.bot.behavior.Behavior;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.Helper;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
@@ -41,7 +41,7 @@ import static baritone.bot.pathing.movement.MovementState.MovementStatus.*;
  *
  * @author leijurv
  */
-public class PathExecutor extends Behavior {
+public class PathExecutor implements Helper {
     private static final double MAX_DIST_FROM_PATH = 2;
     private static final double MAX_TICKS_AWAY = 200; // ten seconds
     private final IPath path;
@@ -61,15 +61,21 @@ public class PathExecutor extends Behavior {
         this.pathPosition = 0;
     }
 
-    @Override
-    public void onTick(TickEvent event) {
+    /**
+     * Tick this executor
+     *
+     * @param event
+     * @return True if a movement just finished (and the player is therefore in a "stable" state, like,
+     * not sneaking out over lava), false otherwise
+     */
+    public boolean onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
-            return;
+            throw new IllegalStateException();
         }
         if (pathPosition >= path.length()) {
             //stop bugging me, I'm done
             //TODO Baritone.INSTANCE.behaviors.remove(this)
-            return;
+            return true;
         }
         BlockPos whereShouldIBe = path.positions().get(pathPosition);
         EntityPlayerSP thePlayer = mc.player;
@@ -77,7 +83,7 @@ public class PathExecutor extends Behavior {
         if (pathPosition == path.length() - 1) {
             displayChatMessageRaw("On last position, ending this path.");
             pathPosition++;
-            return;
+            return true;
         }
         if (!whereShouldIBe.equals(whereAmI)) {
             System.out.println("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
@@ -86,7 +92,7 @@ public class PathExecutor extends Behavior {
                     if (whereAmI.equals(path.positions().get(i))) {
                         displayChatMessageRaw("Skipping back " + (pathPosition - i) + " steps, to " + i);
                         pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
-                        return;
+                        return false;
                     }
                 }
                 for (int i = pathPosition + 2; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
@@ -95,7 +101,7 @@ public class PathExecutor extends Behavior {
                             displayChatMessageRaw("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                         }
                         pathPosition = i - 1;
-                        return;
+                        return false;
                     }
                 }
             }
@@ -111,7 +117,7 @@ public class PathExecutor extends Behavior {
                 pathPosition = path.length() + 3;
                 Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                 failed = true;
-                return;
+                return false;
             }
         } else {
             ticksAway = 0;
@@ -194,7 +200,7 @@ public class PathExecutor extends Behavior {
             pathPosition = path.length() + 3;
             failed = true;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-            return;
+            return true;
         }
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
             costEstimateIndex = pathPosition;
@@ -206,7 +212,7 @@ public class PathExecutor extends Behavior {
             pathPosition = path.length() + 3;
             failed = true;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-            return;
+            return true;
         }
         if (movementStatus == SUCCESS) {
             System.out.println("Movement done, next path");
@@ -214,6 +220,7 @@ public class PathExecutor extends Behavior {
             ticksOnCurrent = 0;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             onTick(event);
+            return true;
         } else {
             ticksOnCurrent++;
             if (ticksOnCurrent > currentMovementInitialCostEstimate + 100) {
@@ -226,9 +233,10 @@ public class PathExecutor extends Behavior {
                 Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                 pathPosition = path.length() + 3;
                 failed = true;
-                return;
+                return true;
             }
         }
+        return false; // movement is in progress
     }
 
     public int getPosition() {

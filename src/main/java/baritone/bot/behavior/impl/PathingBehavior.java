@@ -49,16 +49,79 @@ public class PathingBehavior extends Behavior {
 
     private Goal goal;
 
+    private volatile boolean isPathCalcInProgress;
+    private final Object pathCalcLock = new Object();
+
+    private final Object pathPlanLock = new Object();
+
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT || current == null) {
             return;
         }
-        current.onTick(event);
-        if (current.failed() || current.finished()) {
-            current = null;
-            if (!goal.isInGoal(playerFeet()))
-                findPathInNewThread(playerFeet(), true);
+        boolean safe = current.onTick(event);
+        synchronized (pathPlanLock) {
+            if (current.failed() || current.finished()) {
+                current = null;
+                if (next != null && !next.getPath().positions().contains(playerFeet())) {
+                    // if the current path failed, we may not actually be on the next one, so make sure
+                    displayChatMessageRaw("Discarding next path as it does not contain current position");
+                    // for example if we had a nicely planned ahead path that starts where current ends
+                    // that's all fine and good
+                    // but if we fail in the middle of current
+                    // we're nowhere close to our planned ahead path
+                    // so need to discard it sadly.
+                    next = null;
+                }
+                if (next != null) {
+                    current = next;
+                    next = null;
+                    return;
+                }
+                if (goal.isInGoal(playerFeet())) {
+                    return;
+                }
+                // at this point, current just ended, but we aren't in the goal and have no plan for the future
+                synchronized (pathCalcLock) {
+                    if (isPathCalcInProgress) {
+                        // if we aren't calculating right now
+                        return;
+                    }
+                    findPathInNewThread(playerFeet(), true);
+                }
+                return;
+            }
+            // at this point, we know current is in progress
+            if (safe) {
+                // a movement just ended
+                if (next != null) {
+                    if (next.getPath().positions().contains(playerFeet())) {
+                        // jump directly onto the next path
+                        current = next;
+                        next = null;
+                        return;
+                    }
+                }
+            }
+            synchronized (pathCalcLock) {
+                if (isPathCalcInProgress) {
+                    // if we aren't calculating right now
+                    return;
+                }
+                if (next != null) {
+                    // and we have no plan for what to do next
+                    return;
+                }
+                if (goal.isInGoal(current.getPath().getDest())) {
+                    // and this path dosen't get us all the way there
+                    return;
+                }
+                if (current.getPath().ticksRemainingFrom(current.getPosition()) < 100) {
+                    // and this path has 5 seconds or less left
+                    displayChatMessageRaw("Path almost over; planning ahead");
+                    findPathInNewThread(current.getPath().getDest(), true);
+                }
+            }
         }
     }
 
@@ -136,12 +199,30 @@ public class PathingBehavior extends Behavior {
      * @param talkAboutIt
      */
     public void findPathInNewThread(final BlockPos start, final boolean talkAboutIt) {
+        synchronized (pathCalcLock) {
+            if (isPathCalcInProgress) {
+                throw new IllegalStateException("Already doing it");
+            }
+            isPathCalcInProgress = true;
+        }
         new Thread(() -> {
             if (talkAboutIt) {
                 displayChatMessageRaw("Starting to search for path from " + start + " to " + goal);
             }
 
-            findPath(start).map(PathExecutor::new).ifPresent(path -> current = path);
+            findPath(start).map(PathExecutor::new).ifPresent(path -> {
+                synchronized (pathPlanLock) {
+                    if (current == null) {
+                        current = path;
+                    } else {
+                        if (next == null) {
+                            next = path;
+                        } else {
+                            throw new IllegalStateException("I have no idea what to do with this path");
+                        }
+                    }
+                }
+            });
             /*
             isThereAnythingInProgress = false;
             if (!currentPath.goal.isInGoal(currentPath.end)) {
@@ -155,6 +236,9 @@ public class PathingBehavior extends Behavior {
             */
             if (talkAboutIt && current != null && current.getPath() != null) {
                 displayChatMessageRaw("Finished finding a path from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+            }
+            synchronized (pathCalcLock) {
+                isPathCalcInProgress = false;
             }
         }).start();
     }

@@ -17,7 +17,6 @@
 
 package baritone.bot.pathing.path;
 
-import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.utils.Utils;
 import net.minecraft.util.Tuple;
@@ -108,11 +107,11 @@ public interface IPath {
         return pos.get(pos.size() - 1);
     }
 
-    default double ticksRemaining(int pathPosition) {
+    default double ticksRemainingFrom(int pathPosition) {
         double sum = 0;
-        CalculationContext ctx = new CalculationContext();
+        //this is fast because we aren't requesting recalculation, it's just cached
         for (int i = pathPosition; i < movements().size(); i++) {
-            sum += movements().get(i).getCost(ctx);
+            sum += movements().get(i).getCost(null);
         }
         return sum;
     }
