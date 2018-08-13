@@ -27,6 +27,7 @@ import baritone.bot.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDescend extends Movement {
@@ -45,7 +46,11 @@ public class MovementDescend extends Movement {
             return COST_INF;
         }
         // we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
-        return WALK_ONE_BLOCK_COST * 0.8 + Math.max(FALL_N_BLOCKS_COST[1], WALK_ONE_BLOCK_COST * 0.2) + getTotalHardnessOfBlocksToBreak(context.getToolSet());
+        double walk = WALK_OFF_BLOCK_COST;
+        if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
+            walk *= WALK_ONE_BLOCK_COST / SNEAK_ONE_BLOCK_COST;
+        }
+        return walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST) + getTotalHardnessOfBlocksToBreak(context.getToolSet());
     }
 
     int numTicks = 0;

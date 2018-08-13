@@ -29,6 +29,7 @@ import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -83,8 +84,12 @@ public class MovementAscend extends Movement {
         if (BlockStateInterface.get(src.up(3)).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
             return COST_INF;
         }
+        double halfWalk = WALK_ONE_BLOCK_COST / 2;
+        if (toPlace.getBlock().equals(Blocks.SOUL_SAND)) {
+            halfWalk *= SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;
+        }
         // we walk half the block to get to the edge, then we walk the other half while simultaneously jumping (math.max because of how it's in parallel)
-        return WALK_ONE_BLOCK_COST / 2 + Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST / 2) + getTotalHardnessOfBlocksToBreak(context.getToolSet());
+        return halfWalk + Math.max(JUMP_ONE_BLOCK_COST, halfWalk) + getTotalHardnessOfBlocksToBreak(context.getToolSet());
     }
 
     @Override
