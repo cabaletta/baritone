@@ -279,6 +279,10 @@ public class PathingBehavior extends Behavior {
         float partialTicks = event.getPartialTicks();
         long start = System.nanoTime();
 
+        PathExecutor current = this.current; // this should prevent most race conditions?
+        PathExecutor next = this.next; // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
+        // TODO is this enough, or do we need to acquire a lock here?
+
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
