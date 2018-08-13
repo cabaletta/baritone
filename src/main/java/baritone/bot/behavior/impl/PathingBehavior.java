@@ -63,6 +63,11 @@ public class PathingBehavior extends Behavior {
         synchronized (pathPlanLock) {
             if (current.failed() || current.finished()) {
                 current = null;
+                if (goal.isInGoal(playerFeet())) {
+                    displayChatMessageRaw("All done. At " + goal);
+                    next = null;
+                    return;
+                }
                 if (next != null && !next.getPath().positions().contains(playerFeet())) {
                     // if the current path failed, we may not actually be on the next one, so make sure
                     displayChatMessageRaw("Discarding next path as it does not contain current position");
@@ -76,9 +81,6 @@ public class PathingBehavior extends Behavior {
                 if (next != null) {
                     current = next;
                     next = null;
-                    return;
-                }
-                if (goal.isInGoal(playerFeet())) {
                     return;
                 }
                 // at this point, current just ended, but we aren't in the goal and have no plan for the future
@@ -118,7 +120,7 @@ public class PathingBehavior extends Behavior {
                 }
                 if (current.getPath().ticksRemainingFrom(current.getPosition()) < 200) {
                     // and this path has 5 seconds or less left
-                    displayChatMessageRaw("Path almost over; planning ahead");
+                    displayChatMessageRaw("Path almost over. Planning ahead...");
                     findPathInNewThread(current.getPath().getDest(), false);
                 }
             }
@@ -210,7 +212,7 @@ public class PathingBehavior extends Behavior {
                 displayChatMessageRaw("Starting to search for path from " + start + " to " + goal);
             }
 
-            findPath(start).map(PathExecutor::new).ifPresent(path -> {
+            findPath(start).map(IPath::cutoffAtLoadedChunks).map(PathExecutor::new).ifPresent(path -> {
                 synchronized (pathPlanLock) {
                     if (current == null) {
                         current = path;

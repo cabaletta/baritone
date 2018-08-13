@@ -18,16 +18,19 @@
 package baritone.bot.pathing.path;
 
 import baritone.bot.pathing.movement.Movement;
+import baritone.bot.utils.Helper;
 import baritone.bot.utils.Utils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.List;
 
 /**
  * @author leijurv
  */
-public interface IPath {
+public interface IPath extends Helper {
 
     /**
      * Ordered list of movements to carry out.
@@ -117,4 +120,18 @@ public interface IPath {
     }
 
     int getNumNodesConsidered();
+
+    default IPath cutoffAtLoadedChunks() {
+        for (int i = 0; i < positions().size(); i++) {
+            BlockPos pos = positions().get(i);
+            if (Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk) {
+                displayChatMessageRaw("Cutting off path at edge of loaded chunks");
+                displayChatMessageRaw("Length decreased by " + (positions().size() - i - 1));
+                return new CutoffPath(this, i);
+            }
+        }
+        displayChatMessageRaw("Path ends within loaded chunks");
+        return this;
+    }
+
 }
