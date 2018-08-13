@@ -98,7 +98,7 @@ public class GoalXZ implements Goal {
             diagonal = z;
         }
         diagonal *= SQRT_2;
-        return (diagonal + straight) * 4;
+        return (diagonal + straight) * 4; // big TODO tune
     }
 
     public static GoalXZ fromDirection(Vec3d origin, float yaw, double distance) {

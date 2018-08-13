@@ -22,7 +22,7 @@ public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieI
     /**
      * These costs are measured roughly in ticks btw
      */
-    double WALK_ONE_BLOCK_COST = 20 / 4.317; // // 4.633
+    double WALK_ONE_BLOCK_COST = 20 / 4.317; // 4.633
     double WALK_ONE_IN_WATER_COST = 20 / 2.2;
     double JUMP_ONE_BLOCK_COST = 5.72854;//see below calculation for fall. 1.25 blocks
     double LADDER_UP_ONE_COST = 20 / 2.35;
