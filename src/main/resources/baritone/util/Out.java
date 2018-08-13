@@ -38,7 +38,7 @@ public class Out {
          * This mode signifies that all messages should be sent to the chat.
          * This mode should not exclude any messages Additionally, if this is
          * set all messages will begin with a file trace:
-         * "baritone.util.Out:44\tMessage"
+         * "baritone.pathing.Out:44\tMessage"
          */
         Debug,
         /**

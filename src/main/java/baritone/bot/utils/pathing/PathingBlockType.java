@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.pathing.util;
+package baritone.bot.utils.pathing;
 
 /**
  * @author Brady

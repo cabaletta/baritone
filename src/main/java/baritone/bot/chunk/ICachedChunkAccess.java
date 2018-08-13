@@ -17,7 +17,7 @@
 
 package baritone.bot.chunk;
 
-import baritone.bot.pathing.util.IBlockTypeAccess;
+import baritone.bot.utils.pathing.IBlockTypeAccess;
 
 import java.util.BitSet;
 

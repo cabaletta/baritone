@@ -19,7 +19,6 @@ package baritone.bot.pathing.calc;
 
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.Movement;
-import baritone.bot.pathing.util.FibonacciHeap;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
@@ -76,8 +75,10 @@ public class PathNode {
      */
     boolean isOpen;
 
+    /**
+     * Where is this node in the array flattenization of the binary heap? Needed for decrease-key operations.
+     */
     public int heapPosition;
-    public FibonacciHeap.Node parent;
 
     public PathNode(BlockPos pos, Goal goal) {
         this.pos = pos;

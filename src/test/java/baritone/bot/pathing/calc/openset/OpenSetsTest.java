@@ -65,7 +65,7 @@ public class OpenSetsTest {
         System.out.println("Testing size " + size);
         // Include LinkedListOpenSet even though it's not performant because I absolutely trust that it behaves properly
         // I'm really testing the heap implementations against it as the ground truth
-        IOpenSet[] test = new IOpenSet[]{new BinaryHeapOpenSet(), new LinkedListOpenSet(), new FibonacciHeapOpenSet()};
+        IOpenSet[] test = new IOpenSet[]{new BinaryHeapOpenSet(), new LinkedListOpenSet()};
         for (IOpenSet set : test) {
             assertTrue(set.isEmpty());
         }

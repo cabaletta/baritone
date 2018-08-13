@@ -446,7 +446,7 @@ public class MickeyMine extends ManagerTick {
         tempDisable = false;
     }
 
-    public static class IntegerTuple {//why not use the normal net.minecraft.util.Tuple? Because it doesn't implement equals or hashCode
+    public static class IntegerTuple {//why not use the normal net.minecraft.pathing.Tuple? Because it doesn't implement equals or hashCode
 
         private final int a;
         private final int b;

@@ -18,7 +18,7 @@
 package baritone.bot.chunk;
 
 import baritone.bot.pathing.movement.MovementHelper;
-import baritone.bot.pathing.util.PathingBlockType;
+import baritone.bot.utils.pathing.PathingBlockType;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import net.minecraft.block.Block;

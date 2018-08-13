@@ -17,7 +17,7 @@
 
 package baritone.bot.chunk;
 
-import baritone.bot.pathing.util.PathingBlockType;
+import baritone.bot.utils.pathing.PathingBlockType;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 

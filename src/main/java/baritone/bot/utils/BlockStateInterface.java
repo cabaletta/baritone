@@ -19,7 +19,7 @@ package baritone.bot.utils;
 
 import baritone.bot.chunk.CachedWorld;
 import baritone.bot.chunk.CachedWorldProvider;
-import baritone.bot.pathing.util.PathingBlockType;
+import baritone.bot.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
