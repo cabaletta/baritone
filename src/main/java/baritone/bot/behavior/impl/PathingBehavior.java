@@ -56,7 +56,12 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onTick(TickEvent event) {
-        if (event.getType() == TickEvent.Type.OUT || current == null) {
+        if (event.getType() == TickEvent.Type.OUT) {
+            current = null;
+            next = null;
+            return;
+        }
+        if (current == null) {
             return;
         }
         boolean safe = current.onTick(event);
