@@ -22,13 +22,13 @@ public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieI
     /**
      * These costs are measured roughly in ticks btw
      */
-    double WALK_ONE_BLOCK_COST = 20 / 4.317;
+    double WALK_ONE_BLOCK_COST = 20 / 4.317; // // 4.633
     double WALK_ONE_IN_WATER_COST = 20 / 2.2;
     double JUMP_ONE_BLOCK_COST = 5.72854;//see below calculation for fall. 1.25 blocks
     double LADDER_UP_ONE_COST = 20 / 2.35;
     double LADDER_DOWN_ONE_COST = 20 / 3.0;
     double SNEAK_ONE_BLOCK_COST = 20 / 1.3;
-    double SPRINT_ONE_BLOCK_COST = 20 / 5.612;
+    double SPRINT_ONE_BLOCK_COST = 20 / 5.612; // 3.564
     /**
      * To walk off an edge you need to walk 0.5 to the edge then 0.3 to start falling off
      */

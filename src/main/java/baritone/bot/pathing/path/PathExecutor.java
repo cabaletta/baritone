@@ -91,6 +91,7 @@ public class PathExecutor implements Helper {
                     if (whereAmI.equals(path.positions().get(i))) {
                         displayChatMessageRaw("Skipping back " + (pathPosition - i) + " steps, to " + i);
                         pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
+                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                         return false;
                     }
                 }
@@ -100,6 +101,7 @@ public class PathExecutor implements Helper {
                             displayChatMessageRaw("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                         }
                         pathPosition = i - 1;
+                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                         return false;
                     }
                 }

@@ -23,6 +23,7 @@ import net.minecraft.util.math.Vec3d;
 
 /**
  * Useful for long-range goals that don't have a specific Y level.
+ *
  * @author leijurv
  */
 public class GoalXZ implements Goal {
@@ -97,7 +98,7 @@ public class GoalXZ implements Goal {
             diagonal = z;
         }
         diagonal *= SQRT_2;
-        return (diagonal + straight) * WALK_ONE_BLOCK_COST;
+        return (diagonal + straight) * 4;
     }
 
     public static GoalXZ fromDirection(Vec3d origin, float yaw, double distance) {
