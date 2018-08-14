@@ -18,7 +18,6 @@
 package baritone.bot;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
@@ -45,10 +44,11 @@ public class Settings {
     public class Setting<T> {
         public T value;
         private String name;
-        private Class<? extends T> klass;
+        private final Class<T> klass;
 
-        private <V extends T> Setting(V value) {
+        private Setting(T value) {
             this.value = value;
+            this.klass = (Class<T>) value.getClass();
         }
 
         public final T get() {
@@ -70,41 +70,31 @@ public class Settings {
         Field[] temp = getClass().getFields();
         HashMap<String, Setting<?>> tmpByName = new HashMap<>();
         List<Setting<?>> tmpAll = new ArrayList<>();
-        for (Field field : temp) {
-            if (field.getType().equals(Setting.class)) {
-                try {
-                    ParameterizedType param = (ParameterizedType) field.getGenericType();
-                    Class settingType = (Class<? extends Object>) param.getActualTypeArguments()[0];
-                    // can't always do field.get(this).value.getClass() because default value might be null
+        try {
+            for (Field field : temp) {
+                if (field.getType().equals(Setting.class)) {
                     Setting<?> setting = (Setting<? extends Object>) field.get(this);
-                    if (setting.value != null) {
-                        if (setting.value.getClass() != settingType) {
-                            throw new IllegalStateException("Generic mismatch" + setting.value + " " + setting.value.getClass() + " " + settingType);
-                        }
-                    }
                     String name = field.getName();
                     setting.name = name;
-                    setting.klass = settingType;
                     if (tmpByName.containsKey(name)) {
                         throw new IllegalStateException("Duplicate setting name");
                     }
                     tmpByName.put(name, setting);
                     tmpAll.add(setting);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
                 }
-
             }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
         byName = Collections.unmodifiableMap(tmpByName);
         allSettings = Collections.unmodifiableList(tmpAll);
     }
 
-    public <T, V extends T> List<Setting<V>> getByValueType(Class<T> klass) {
-        ArrayList<Setting<V>> result = new ArrayList<>();
+    public <T> List<Setting<T>> getByValueType(Class<T> klass) {
+        ArrayList<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
             if (setting.klass.equals(klass)) {
-                result.add((Setting<V>) setting);
+                result.add((Setting<T>) setting);
             }
         }
         return result;
