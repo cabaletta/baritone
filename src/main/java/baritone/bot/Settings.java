@@ -55,6 +55,9 @@ public class Settings {
         private final Class<T> klass;
 
         private Setting(T value) {
+            if (value == null) {
+                throw new IllegalArgumentException("Cannot determine value type class from null");
+            }
             this.value = value;
             this.klass = (Class<T>) value.getClass();
         }
