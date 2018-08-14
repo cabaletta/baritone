@@ -33,6 +33,7 @@ public class Settings {
     public boolean chatDebug = true;
     public boolean chatControl = true;
     public boolean fadePath = true;
+    public boolean slowPath = false;
 
     Settings() {
 

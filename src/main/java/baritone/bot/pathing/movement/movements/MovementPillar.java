@@ -34,8 +34,8 @@ import net.minecraft.util.math.BlockPos;
 public class MovementPillar extends Movement {
     private int numTicks = 0;
 
-    public MovementPillar(BlockPos start) {
-        super(start, start.up(), new BlockPos[]{start.up(2)}, new BlockPos[]{start});
+    public MovementPillar(BlockPos start, BlockPos end) {
+        super(start, end, new BlockPos[]{start.up(2)}, new BlockPos[]{start});
     }
 
     @Override

@@ -21,7 +21,6 @@ import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.events.ChatEvent;
-import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.goals.GoalBlock;
 import baritone.bot.pathing.goals.GoalXZ;
@@ -84,7 +83,7 @@ public class ExampleBaritoneControl extends Behavior {
             return;
         }
         if (msg.toLowerCase().equals("slowpath")) {
-            AStarPathFinder.slowPath ^= true;
+            Baritone.settings().slowPath ^= true;
             event.cancel();
             return;
         }

@@ -19,6 +19,7 @@ package baritone.bot.pathing.calc;
 
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.path.IPath;
+import baritone.bot.utils.pathing.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
@@ -37,11 +38,11 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      */
     protected static AbstractNodeCostSearch currentlyRunning = null;
 
-    protected final BlockPos start;
+    protected final BetterBlockPos start;
 
     protected final Goal goal;
 
-    protected final Map<BlockPos, PathNode> map;
+    protected final Map<BetterBlockPos, PathNode> map;
 
     protected PathNode startNode;
 
@@ -64,14 +65,14 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     protected final static double MIN_DIST_PATH = 5;
 
     AbstractNodeCostSearch(BlockPos start, Goal goal) {
-        this.start = start;
+        this.start = new BetterBlockPos(start.getX(), start.getY(), start.getZ());
         this.goal = goal;
         this.map = new HashMap<>();
     }
 
     public synchronized Optional<IPath> calculate() {
         if (isFinished) {
-            throw new IllegalStateException("Path Finder is currently in use! Wait until complete to reuse!");
+            throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
         Optional<IPath> path = calculate0();
         isFinished = true;
@@ -114,7 +115,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @param pos The pos to lookup
      * @return The associated node
      */
-    protected PathNode getNodeAtPosition(BlockPos pos) {
+    protected PathNode getNodeAtPosition(BetterBlockPos pos) {
         return map.computeIfAbsent(pos, p -> new PathNode(p, goal));
     }
 

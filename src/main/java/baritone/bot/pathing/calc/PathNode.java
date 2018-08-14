@@ -19,7 +19,7 @@ package baritone.bot.pathing.calc;
 
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.Movement;
-import net.minecraft.util.math.BlockPos;
+import baritone.bot.utils.pathing.BetterBlockPos;
 
 /**
  * A node in the path, containing the cost and steps to get to it.
@@ -31,7 +31,7 @@ public class PathNode {
     /**
      * The position of this node
      */
-    final BlockPos pos;
+    final BetterBlockPos pos;
 
     /**
      * The goal it's going towards
@@ -78,9 +78,7 @@ public class PathNode {
      */
     public int heapPosition;
 
-    public final int hashCode;
-
-    public PathNode(BlockPos pos, Goal goal) {
+    public PathNode(BetterBlockPos pos, Goal goal) {
         this.pos = pos;
         this.previous = null;
         this.cost = Short.MAX_VALUE;
@@ -88,7 +86,6 @@ public class PathNode {
         this.estimatedCostToGoal = goal.heuristic(pos);
         this.previousMovement = null;
         this.isOpen = false;
-        this.hashCode = calcHashCode();
     }
 
     /**
@@ -99,25 +96,6 @@ public class PathNode {
     @Override
     public int hashCode() {
         throw new IllegalStateException();
-    }
-
-    private final int calcHashCode() {
-        /*
-         * This is the hashcode implementation of Vec3i, the superclass of BlockPos
-         *
-         *   public int hashCode() {
-         *       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
-         *   }
-         *
-         *   That is terrible and has tons of collisions and makes the HashMap terribly inefficient.
-         *
-         *   That's why we grab out the X, Y, Z and calculate our own hashcode
-         */
-        int hash = 3241;
-        hash = 3457689 * hash + this.pos.getX();
-        hash = 8734625 * hash + this.pos.getY();
-        hash = 2873465 * hash + this.pos.getZ();
-        return hash;
     }
 
     @Override

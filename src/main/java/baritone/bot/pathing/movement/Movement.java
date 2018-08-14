@@ -21,7 +21,9 @@ import baritone.bot.Baritone;
 import baritone.bot.behavior.impl.LookBehavior;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
-import baritone.bot.pathing.movement.movements.*;
+import baritone.bot.pathing.movement.movements.MovementDownward;
+import baritone.bot.pathing.movement.movements.MovementPillar;
+import baritone.bot.pathing.movement.movements.MovementTraverse;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.Rotation;
@@ -77,7 +79,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return cost;
     }
 
-    private double calculateCost0(CalculationContext context){
+    private double calculateCost0(CalculationContext context) {
         if (!(this instanceof MovementPillar) && !(this instanceof MovementTraverse) && !(this instanceof MovementDownward)) {
             Block fromDown = BlockStateInterface.get(src.down()).getBlock();
             if (fromDown instanceof BlockLadder || fromDown instanceof BlockVine) {
