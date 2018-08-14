@@ -17,7 +17,6 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
@@ -25,6 +24,7 @@ import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -93,31 +93,19 @@ public class MovementAscend extends Movement {
     }
 
     @Override
-    public MovementState updateState(MovementState state) {
-        super.updateState(state);
+    public void run(MovementState state) {
         // TODO incorporate some behavior from ActionClimb (specifically how it waited until it was at most 1.2 blocks away before starting to jump
         // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
-        switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
-            case WAITING:
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementStatus.SUCCESS);
-            return state;
+            return;
         }
-
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             for (BlockPos anAgainst : against) {
                 if (BlockStateInterface.get(anAgainst).isBlockNormalCube()) {
                     if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
-                        return state.setStatus(MovementStatus.UNREACHABLE);
+                        state.setStatus(MovementStatus.UNREACHABLE);
+                        return;
                     }
                     double faceX = (dest.getX() + anAgainst.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + anAgainst.getY()) * 0.5D;
@@ -135,14 +123,14 @@ public class MovementAscend extends Movement {
                         }
                     }
                     System.out.println("Trying to look at " + anAgainst + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
-                    return state;
+                    return;
                 }
             }
-            return state.setStatus(MovementStatus.UNREACHABLE);
+            state.setStatus(MovementStatus.UNREACHABLE);
+            return;
         }
         MovementHelper.moveTowards(state, dest);
         state.setInput(InputOverrideHandler.Input.JUMP, true);
-
         // TODO check if the below actually helps or hurts, it's weird
         //double flatDistToNext = Math.abs(to.getX() - from.getX()) * Math.abs((to.getX() + 0.5D) - thePlayer.posX) + Math.abs(to.getZ() - from.getZ()) * Math.abs((to.getZ() + 0.5D) - thePlayer.posZ);
         //boolean pointingInCorrectDirection = MovementManager.moveTowardsBlock(to);
@@ -151,7 +139,5 @@ public class MovementAscend extends Movement {
         //this is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
         //also wait until we are close enough, because we might jump and hit our head on an adjacent block
         //return Baritone.playerFeet.equals(to);
-
-        return state;
     }
 }

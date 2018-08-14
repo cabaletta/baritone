@@ -104,7 +104,8 @@ public abstract class Movement implements Helper, MovementHelper {
      */
     public MovementStatus update() {
         player().setSprinting(false);
-        MovementState latestState = updateState(currentState);
+        updateState(currentState);
+        MovementState latestState = currentState;
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
         }
@@ -122,6 +123,13 @@ public abstract class Movement implements Helper, MovementHelper {
 
         return currentState.getStatus();
     }
+
+    /**
+     * Once the Movement has been prepared and is ready to run, do so
+     *
+     * @param state
+     */
+    protected abstract void run(MovementState state);
 
     protected boolean prepared(MovementState state) {
         if (state.getStatus() == MovementStatus.WAITING)
@@ -230,6 +238,18 @@ public abstract class Movement implements Helper, MovementHelper {
         else if (state.getStatus() == MovementStatus.PREPPING) {
             state.setStatus(MovementStatus.WAITING);
         }
+        switch (state.getStatus()) {
+            case PREPPING:
+            case UNREACHABLE:
+            case FAILED:
+                return state;
+            case WAITING:
+            case RUNNING:
+                break;
+            default:
+                return state;
+        }
+        run(state);
         return state;
     }
 

@@ -48,28 +48,15 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public MovementState updateState(MovementState state) {
-        super.updateState(state);
-        switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
-            case WAITING:
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
+    public void run(MovementState state) {
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
-            return state;
+            return;
         }
         if (!BlockStateInterface.isLiquid(playerFeet())) {
             player().setSprinting(true);
         }
         MovementHelper.moveTowards(state, dest);
-        return state;
     }
 
     @Override
