@@ -56,7 +56,7 @@ public class MovementDescend extends Movement {
     int numTicks = 0;
 
     @Override
-    public void run(MovementState state) {
+    public void onRunning(MovementState state) {
         BlockPos playerFeet = playerFeet();
         if (playerFeet.equals(dest)) {
             if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.01) {

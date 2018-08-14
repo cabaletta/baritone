@@ -93,7 +93,7 @@ public class MovementAscend extends Movement {
     }
 
     @Override
-    public void run(MovementState state) {
+    public void onRunning(MovementState state) {
         // TODO incorporate some behavior from ActionClimb (specifically how it waited until it was at most 1.2 blocks away before starting to jump
         // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
         if (playerFeet().equals(dest)) {

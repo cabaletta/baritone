@@ -50,7 +50,7 @@ public class MovementDownward extends Movement {
     }
 
     @Override
-    public void run(MovementState state) {
+    public void onRunning(MovementState state) {
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
             return;

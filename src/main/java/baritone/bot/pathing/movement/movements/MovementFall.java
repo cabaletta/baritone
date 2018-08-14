@@ -64,7 +64,7 @@ public class MovementFall extends Movement {
     }
 
     @Override
-    public void run(MovementState state) {
+    public void onRunning(MovementState state) {
         BlockPos playerFeet = playerFeet();
         Optional<Rotation> targetRotation = Optional.empty();
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3 && !playerFeet.equals(dest)) {

@@ -104,7 +104,21 @@ public abstract class Movement implements Helper, MovementHelper {
      */
     public MovementStatus update() {
         player().setSprinting(false);
-        updateState(currentState);
+        switch (currentState.getStatus()) {
+            case PREPPING:
+                onPrepping(currentState);
+                break;
+            case WAITING:
+            case RUNNING:
+                onRunning(currentState);
+                break;
+            case SUCCESS:
+            case FAILED:
+            case CANCELED:
+            case UNREACHABLE:
+                onFinished(currentState);
+                break;
+        }
         MovementState latestState = currentState;
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
@@ -119,22 +133,12 @@ public abstract class Movement implements Helper, MovementHelper {
         currentState = latestState;
 
         if (isFinished())
-            onFinish(latestState);
+            onFinished(latestState);
 
         return currentState.getStatus();
     }
 
-    /**
-     * Once the Movement has been prepared and is ready to run, do so
-     *
-     * @param state
-     */
-    protected abstract void run(MovementState state);
-
-    protected boolean prepared(MovementState state) {
-        if (state.getStatus() == MovementStatus.WAITING)
-            return true;
-
+    protected void onPrepping(MovementState state) {
         boolean somethingInTheWay = false;
         for (BlockPos blockPos : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(blockPos)) {
@@ -143,7 +147,7 @@ public abstract class Movement implements Helper, MovementHelper {
                 if (reachable.isPresent()) {
                     player().inventory.currentItem = new ToolSet().getBestSlot(BlockStateInterface.get(blockPos));
                     state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
-                    return false;
+                    return; // still prepping
                 }
             }
         }
@@ -151,9 +155,17 @@ public abstract class Movement implements Helper, MovementHelper {
             // There's a block or blocks that we can't walk through, but we have no target rotation to reach any
             // So don't return true, actually set state to unreachable
             state.setStatus(MovementStatus.UNREACHABLE);
-            return true;
         }
-        return true;
+        state.setStatus(MovementStatus.WAITING);
+    }
+
+    /**
+     * Once the Movement has been prepared and is ready to onRunning, do so
+     *
+     * @param state
+     */
+    protected void onRunning(MovementState state) {
+
     }
 
     public boolean isFinished() {
@@ -173,7 +185,7 @@ public abstract class Movement implements Helper, MovementHelper {
     /**
      * Run cleanup on state finish and declare success.
      */
-    public void onFinish(MovementState state) {
+    public void onFinished(MovementState state) {
         state.getInputStates().replaceAll((input, forced) -> false);
         state.getInputStates().forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
         state.setStatus(MovementStatus.SUCCESS);
@@ -223,34 +235,6 @@ public abstract class Movement implements Helper, MovementHelper {
             }
         }
         return sum;
-    }
-
-
-    /**
-     * Calculate latest movement state.
-     * Gets called once a tick.
-     *
-     * @return
-     */
-    public MovementState updateState(MovementState state) {
-        if (!prepared(state))
-            return state.setStatus(MovementStatus.PREPPING);
-        else if (state.getStatus() == MovementStatus.PREPPING) {
-            state.setStatus(MovementStatus.WAITING);
-        }
-        switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
-            case WAITING:
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
-        run(state);
-        return state;
     }
 
     public ArrayList<BlockPos> toBreakCached = null;

@@ -115,7 +115,7 @@ public class MovementTraverse extends Movement {
     }
 
     @Override
-    public void run(MovementState state) {
+    public void onRunning(MovementState state) {
         Block fd = BlockStateInterface.get(src.down()).getBlock();
         boolean ladder = fd instanceof BlockLadder || fd instanceof BlockVine;
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionsToPlace[0]) || ladder;

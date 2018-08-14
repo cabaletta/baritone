@@ -96,7 +96,7 @@ public class MovementPillar extends Movement {
     }
 
     @Override
-    public void run(MovementState state) {
+    public void onRunning(MovementState state) {
         IBlockState fromDown = BlockStateInterface.get(src);
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;

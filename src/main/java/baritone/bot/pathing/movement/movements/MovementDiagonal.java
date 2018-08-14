@@ -48,7 +48,7 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public void run(MovementState state) {
+    public void onRunning(MovementState state) {
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
             return;
@@ -116,8 +116,8 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    protected boolean prepared(MovementState state) {
-        return true;
+    protected void onPrepping(MovementState state) {
+        state.setStatus(MovementState.MovementStatus.WAITING);
     }
 
     @Override
