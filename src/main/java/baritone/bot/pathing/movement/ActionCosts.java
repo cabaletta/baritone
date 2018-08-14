@@ -44,5 +44,9 @@ public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieI
      */
     double PLACE_ONE_BLOCK_COST = 20;
 
+    /**
+     * don't make this Double.MAX_VALUE because it's added to other things, maybe other COST_INFs,
+     * and that would make it overflow to negative
+     */
     double COST_INF = 1000000;
 }
