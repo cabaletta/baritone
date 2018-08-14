@@ -19,7 +19,7 @@ package baritone.bot.pathing.calc.openset;
 
 import baritone.bot.pathing.calc.PathNode;
 import baritone.bot.pathing.goals.GoalBlock;
-import net.minecraft.util.math.BlockPos;
+import baritone.bot.utils.pathing.BetterBlockPos;
 import org.junit.Test;
 
 import java.util.*;
@@ -73,7 +73,7 @@ public class OpenSetsTest {
         // generate the pathnodes that we'll be testing the sets on
         PathNode[] toInsert = new PathNode[size];
         for (int i = 0; i < size; i++) {
-            PathNode pn = new PathNode(new BlockPos(0, 0, 0), new GoalBlock(new BlockPos(0, 0, 0)));
+            PathNode pn = new PathNode(new BetterBlockPos(0, 0, 0), new GoalBlock(new BetterBlockPos(0, 0, 0)));
             pn.combinedCost = Math.random();
             toInsert[i] = pn;
         }
