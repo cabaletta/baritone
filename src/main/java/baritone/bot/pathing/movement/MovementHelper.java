@@ -138,10 +138,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         IBlockState state = BlockStateInterface.get(position);
         Block block = state.getBlock();
         if (!block.equals(Blocks.AIR) && !canWalkThrough(position)) {
-            if (avoidBreaking(position)) {
+            if (!Baritone.settings().allowBreak) {
                 return COST_INF;
             }
-            if (!Baritone.settings().allowBreak) {
+            if (avoidBreaking(position)) {
                 return COST_INF;
             }
             //if (!Baritone.allowBreakOrPlace) {
