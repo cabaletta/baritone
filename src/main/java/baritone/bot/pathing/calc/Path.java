@@ -17,7 +17,6 @@
 
 package baritone.bot.pathing.calc;
 
-import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.path.IPath;
 import net.minecraft.util.math.BlockPos;
@@ -45,11 +44,6 @@ class Path implements IPath {
     final BlockPos end;
 
     /**
-     * The goal that this path is attempting to accomplish
-     */
-    final Goal goal;
-
-    /**
      * The blocks on the path. Guaranteed that path.get(0) equals start and
      * path.get(path.size()-1) equals end
      */
@@ -59,10 +53,9 @@ class Path implements IPath {
 
     private final int numNodes;
 
-    Path(PathNode start, PathNode end, Goal goal, int numNodes) {
+    Path(PathNode start, PathNode end, int numNodes) {
         this.start = start.pos;
         this.end = end.pos;
-        this.goal = goal;
         this.numNodes = numNodes;
         this.path = new ArrayList<>();
         this.movements = new ArrayList<>();

@@ -121,7 +121,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     @Override
     public Optional<IPath> pathToMostRecentNodeConsidered() {
-        return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, goal, 0));
+        return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0));
     }
 
     @Override
@@ -129,7 +129,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         if (startNode == null || bestSoFar[0] == null)
             return Optional.empty();
 
-        return Optional.of(new Path(startNode, bestSoFar[0], goal, 0));
+        return Optional.of(new Path(startNode, bestSoFar[0], 0));
     }
 
     @Override
