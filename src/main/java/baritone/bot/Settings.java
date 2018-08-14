@@ -31,6 +31,7 @@ public class Settings {
     public int planningTickLookAhead = 150;
     public boolean renderPath = true;
     public boolean chatDebug = true;
+    public boolean chatControl = true;
 
     Settings() {
 

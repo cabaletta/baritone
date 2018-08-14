@@ -21,6 +21,7 @@ import baritone.bot.Baritone;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.event.events.WorldEvent;
 import baritone.bot.event.events.type.EventState;
+import baritone.bot.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import org.spongepowered.asm.lib.Opcodes;
@@ -47,6 +48,7 @@ public class MixinMinecraft {
     )
     private void init(CallbackInfo ci) {
         Baritone.INSTANCE.init();
+        ExampleBaritoneControl.INSTANCE.initAndRegister();
     }
 
     @Inject(

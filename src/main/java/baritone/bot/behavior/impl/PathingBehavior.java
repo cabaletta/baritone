@@ -135,63 +135,8 @@ public class PathingBehavior extends Behavior {
         }
     }
 
-    @Override
-    public void onSendChatMessage(ChatEvent event) {
-        String msg = event.getMessage();
-        if (msg.toLowerCase().startsWith("goal")) {
-            event.cancel();
-            String[] params = msg.toLowerCase().substring(4).trim().split(" ");
-            if (params[0].equals("")) {
-                params = new String[]{};
-            }
-            try {
-                switch (params.length) {
-                    case 0:
-                        goal = new GoalBlock(playerFeet());
-                        break;
-                    case 1:
-                        goal = new GoalYLevel(Integer.parseInt(params[0]));
-                        break;
-                    case 2:
-                        goal = new GoalXZ(Integer.parseInt(params[0]), Integer.parseInt(params[1]));
-                        break;
-                    case 3:
-                        goal = new GoalBlock(new BlockPos(Integer.parseInt(params[0]), Integer.parseInt(params[1]), Integer.parseInt(params[2])));
-                        break;
-                    default:
-                        displayChatMessageRaw("unable to understand lol");
-                        return;
-                }
-            } catch (NumberFormatException ex) {
-                displayChatMessageRaw("unable to parse integer " + ex);
-                return;
-            }
-            displayChatMessageRaw("Goal: " + goal);
-            return;
-        }
-        if (msg.equals("path")) {
-            findPathInNewThread(playerFeet(), true);
-            event.cancel();
-            return;
-        }
-        if (msg.toLowerCase().equals("slowpath")) {
-            AStarPathFinder.slowPath ^= true;
-            event.cancel();
-            return;
-        }
-        if (msg.toLowerCase().equals("cancel")) {
-            current = null;
-            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-            event.cancel();
-            displayChatMessageRaw("ok canceled");
-            return;
-        }
-        if (msg.toLowerCase().startsWith("thisway")) {
-            goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-            displayChatMessageRaw("Goal: " + goal);
-            event.cancel();
-            return;
-        }
+    public void setGoal(Goal goal) {
+        this.goal = goal;
     }
 
     public PathExecutor getExecutor() {
@@ -202,13 +147,28 @@ public class PathingBehavior extends Behavior {
         return Optional.ofNullable(current).map(PathExecutor::getPath);
     }
 
+    public void cancel() {
+        current = null;
+        next = null;
+        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+    }
+
+    public void path() {
+        synchronized (pathCalcLock) {
+            if (isPathCalcInProgress) {
+                return;
+            }
+            findPathInNewThread(playerFeet(), true);
+        }
+    }
+
     /**
      * In a new thread, pathfind to target blockpos
      *
      * @param start
      * @param talkAboutIt
      */
-    public void findPathInNewThread(final BlockPos start, final boolean talkAboutIt) {
+    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt) {
         synchronized (pathCalcLock) {
             if (isPathCalcInProgress) {
                 throw new IllegalStateException("Already doing it");

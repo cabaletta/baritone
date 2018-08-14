@@ -44,7 +44,7 @@ public enum Baritone {
 
     private GameEventHandler gameEventHandler;
     private InputOverrideHandler inputOverrideHandler;
-    private Settings settings = new Settings();
+    private Settings settings;
     private List<Behavior> behaviors;
 
     /**
@@ -52,9 +52,13 @@ public enum Baritone {
      */
     private boolean active;
 
-    public void init() {
+    public synchronized void init() {
+        if (initialized) {
+            return;
+        }
         this.gameEventHandler = new GameEventHandler();
         this.inputOverrideHandler = new InputOverrideHandler();
+        this.settings = new Settings();
         this.behaviors = new ArrayList<>();
         behaviors.add(PathingBehavior.INSTANCE);
         behaviors.add(LookBehavior.INSTANCE);
@@ -78,6 +82,10 @@ public enum Baritone {
 
     public final List<Behavior> getBehaviors() {
         return this.behaviors;
+    }
+
+    public void registerBehavior(Behavior behavior) {
+        this.behaviors.add(behavior);
     }
 
     public final boolean isActive() {
