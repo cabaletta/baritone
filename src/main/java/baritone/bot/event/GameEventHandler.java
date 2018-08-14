@@ -108,10 +108,12 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 && type == ChunkEvent.Type.UNLOAD
                 && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
-        if (isPostPopulate || isPreUnload) {
-            CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
-                    world.updateCachedChunk(event.getX(), event.getZ(),
-                            ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ()))));
+        if (Baritone.settings().chuckCaching) {
+            if (isPostPopulate || isPreUnload) {
+                CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
+                        world.updateCachedChunk(event.getX(), event.getZ(),
+                                ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ()))));
+            }
         }
 
         dispatch(behavior -> behavior.onChunkEvent(event));
