@@ -117,7 +117,7 @@ public class MovementDiagonal extends Movement {
 
     @Override
     protected void onPrepping(MovementState state) {
-        state.setStatus(MovementState.MovementStatus.WAITING);
+        state.setStatus(MovementState.MovementStatus.RUNNING);
     }
 
     @Override
