@@ -211,8 +211,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         return false;
     }
 
-    static MovementState moveTowards(MovementState state, BlockPos pos) {
-        return state.setTarget(new MovementTarget(new Rotation(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+    static void moveTowards(MovementState state, BlockPos pos) {
+        state.setTarget(new MovementTarget(new Rotation(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                 Utils.getBlockPosCenter(pos),
                 new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getFirst(), mc.player.rotationPitch))
         ).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);

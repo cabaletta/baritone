@@ -114,17 +114,17 @@ public class MovementAscend extends Movement {
         }
 
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
-            for (int i = 0; i < against.length; i++) {
-                if (BlockStateInterface.get(against[i]).isBlockNormalCube()) {
+            for (BlockPos anAgainst : against) {
+                if (BlockStateInterface.get(anAgainst).isBlockNormalCube()) {
                     if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
                         return state.setStatus(MovementStatus.UNREACHABLE);
                     }
-                    double faceX = (dest.getX() + against[i].getX() + 1.0D) * 0.5D;
-                    double faceY = (dest.getY() + against[i].getY()) * 0.5D;
-                    double faceZ = (dest.getZ() + against[i].getZ() + 1.0D) * 0.5D;
+                    double faceX = (dest.getX() + anAgainst.getX() + 1.0D) * 0.5D;
+                    double faceY = (dest.getY() + anAgainst.getY()) * 0.5D;
+                    double faceZ = (dest.getZ() + anAgainst.getZ() + 1.0D) * 0.5D;
                     state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against[i]) && LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
+                    if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), anAgainst) && LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
                         ticksWithoutPlacement++;
                         state.setInput(InputOverrideHandler.Input.SNEAK, true);
                         if (player().isSneaking()) {
@@ -134,7 +134,7 @@ public class MovementAscend extends Movement {
                             state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);//we might be standing in the way, move back
                         }
                     }
-                    System.out.println("Trying to look at " + against[i] + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
+                    System.out.println("Trying to look at " + anAgainst + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
                     return state;
                 }
             }

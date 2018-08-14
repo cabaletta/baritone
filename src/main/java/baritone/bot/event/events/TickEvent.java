@@ -18,7 +18,6 @@
 package baritone.bot.event.events;
 
 import baritone.bot.event.events.type.EventState;
-import javafx.event.EventType;
 
 public final class TickEvent {
 

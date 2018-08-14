@@ -19,16 +19,12 @@ package baritone.bot.behavior.impl;
 
 import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
-import baritone.bot.event.events.ChatEvent;
 import baritone.bot.event.events.RenderEvent;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.calc.AbstractNodeCostSearch;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
-import baritone.bot.pathing.goals.GoalBlock;
-import baritone.bot.pathing.goals.GoalXZ;
-import baritone.bot.pathing.goals.GoalYLevel;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 import baritone.bot.utils.PathRenderer;

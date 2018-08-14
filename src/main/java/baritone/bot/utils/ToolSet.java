@@ -21,7 +21,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
@@ -125,7 +124,7 @@ public class ToolSet implements Helper {
      * Using the best tool on the hotbar, how long would it take to mine this block
      *
      * @param state the blockstate to be mined
-     * @param pos the blockpos to be mined
+     * @param pos   the blockpos to be mined
      * @return how long it would take in ticks
      */
     public double getStrVsBlock(IBlockState state, BlockPos pos) {

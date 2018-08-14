@@ -92,7 +92,7 @@ public class BetterBlockPos extends BlockPos {
     @Override
     public BlockPos up(int amt) {
         // see comment in up()
-        return new BetterBlockPos(x, y + amt, z);
+        return amt == 0 ? this : new BetterBlockPos(x, y + amt, z);
     }
 
     @Override
