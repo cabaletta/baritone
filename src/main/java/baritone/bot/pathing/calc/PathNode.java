@@ -108,10 +108,14 @@ public class PathNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof PathNode))
-            return false;
+        // GOTTA GO FAST
+        // ALL THESE CHECKS ARE FOR PEOPLE WHO WANT SLOW CODE
+        // SKRT SKRT
+        //if (obj == null || !(obj instanceof PathNode))
+        //    return false;
 
-        final PathNode other = (PathNode) obj;
-        return Objects.equals(this.pos, other.pos) && Objects.equals(this.goal, other.goal);
+        //final PathNode other = (PathNode) obj;
+        //return Objects.equals(this.pos, other.pos) && Objects.equals(this.goal, other.goal);
+        return this.pos.equals(((PathNode) obj).pos);
     }
 }
