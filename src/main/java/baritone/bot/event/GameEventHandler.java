@@ -130,17 +130,19 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
+        if (Baritone.settings().chuckCaching) {
+            CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
 
-        switch (event.getState()) {
-            case PRE:
-                cache.ifWorldLoaded(CachedWorld::save);
-                break;
-            case POST:
-                cache.closeWorld();
-                if (event.getWorld() != null)
-                    cache.initWorld(event.getWorld());
-                break;
+            switch (event.getState()) {
+                case PRE:
+                    cache.ifWorldLoaded(CachedWorld::save);
+                    break;
+                case POST:
+                    cache.closeWorld();
+                    if (event.getWorld() != null)
+                        cache.initWorld(event.getWorld());
+                    break;
+            }
         }
 
         dispatch(behavior -> behavior.onWorldEvent(event));

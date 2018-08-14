@@ -29,6 +29,8 @@ public class Settings {
     public boolean chuckCaching = false;
     public boolean allowWaterBucketFall = true;
     public int planningTickLookAhead = 150;
+    public boolean renderPath = true;
+    public boolean chatDebug = true;
 
     Settings() {
 

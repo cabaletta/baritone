@@ -34,6 +34,7 @@
 
 package baritone.bot.pathing.calc;
 
+import baritone.bot.Baritone;
 import baritone.bot.chunk.CachedWorldProvider;
 import baritone.bot.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.bot.pathing.calc.openset.IOpenSet;
@@ -86,6 +87,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         int numNodes = 0;
         CalculationContext calcContext = new CalculationContext();
         int numEmptyChunk = 0;
+        boolean cache = Baritone.settings().chuckCaching;
         while (!openSet.isEmpty() && numEmptyChunk < 50 && System.currentTimeMillis() < timeoutTime) {
             if (slowPath) {
                 try {
@@ -117,11 +119,14 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 }
 
                 boolean isPositionCached = false;
-                if (CachedWorldProvider.INSTANCE.getCurrentWorld() != null)
-                    if (CachedWorldProvider.INSTANCE.getCurrentWorld().getBlockType(movementToGetToNeighbor.getDest()) != null)
-                        isPositionCached = true;
-
-                if (Minecraft.getMinecraft().world.getChunk(movementToGetToNeighbor.getDest()) instanceof EmptyChunk && !isPositionCached) {
+                if (cache) {
+                    if (CachedWorldProvider.INSTANCE.getCurrentWorld() != null) {
+                        if (CachedWorldProvider.INSTANCE.getCurrentWorld().getBlockType(movementToGetToNeighbor.getDest()) != null) {
+                            isPositionCached = true;
+                        }
+                    }
+                }
+                if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(movementToGetToNeighbor.getDest()) instanceof EmptyChunk) {
                     numEmptyChunk++;
                     continue;
                 }

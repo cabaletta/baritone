@@ -17,6 +17,7 @@
 
 package baritone.bot.utils;
 
+import baritone.bot.Baritone;
 import baritone.bot.chunk.CachedWorld;
 import baritone.bot.chunk.CachedWorldProvider;
 import baritone.bot.utils.pathing.PathingBlockType;
@@ -39,7 +40,8 @@ public class BlockStateInterface implements Helper {
         Chunk chunk = mc.world.getChunk(pos);
         if (chunk.isLoaded()) {
             return chunk.getBlockState(pos);
-        } else {
+        }
+        if(Baritone.settings().chuckCaching) {
             CachedWorld world = CachedWorldProvider.INSTANCE.getCurrentWorld();
             if (world != null) {
                 PathingBlockType type = world.getBlockType(pos);

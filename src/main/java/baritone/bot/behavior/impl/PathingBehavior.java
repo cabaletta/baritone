@@ -42,7 +42,8 @@ public class PathingBehavior extends Behavior {
 
     public static final PathingBehavior INSTANCE = new PathingBehavior();
 
-    private PathingBehavior() {}
+    private PathingBehavior() {
+    }
 
     private PathExecutor current;
     private PathExecutor next;
@@ -274,6 +275,9 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onRenderPass(RenderEvent event) {
+        if (!Baritone.settings().renderPath) {
+            return;
+        }
         // System.out.println("Render passing");
         // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
