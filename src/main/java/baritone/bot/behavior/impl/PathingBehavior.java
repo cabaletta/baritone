@@ -135,9 +135,11 @@ public class PathingBehavior extends Behavior {
         this.goal = goal;
     }
 
-    public PathExecutor getExecutor() {
+    public PathExecutor getCurrent() {
         return current;
     }
+
+    public PathExecutor getNext() {return next;}
 
     public Optional<IPath> getPath() {
         return Optional.ofNullable(current).map(PathExecutor::getPath);
