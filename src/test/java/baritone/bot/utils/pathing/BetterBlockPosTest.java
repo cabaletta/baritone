@@ -24,9 +24,15 @@ public class BetterBlockPosTest {
 
     @Test
     public void benchMulti() {
+        System.out.println("Benching up()");
         for (int i = 0; i < 10; i++) {
             // eliminate any advantage to going first
             benchOne();
+        }
+        System.out.println("Benching up(int)");
+        for (int i = 0; i < 10; i++) {
+            // eliminate any advantage to going first
+            benchN();
         }
     }
 
@@ -51,6 +57,40 @@ public class BetterBlockPosTest {
         long before2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
             pos2.up();
+        }
+        long after2 = System.currentTimeMillis();
+        System.out.println((after1 - before1) + " " + (after2 - before2));
+    }
+
+    public void benchN() {
+        BlockPos pos = new BlockPos(1, 2, 3);
+        BetterBlockPos pos2 = new BetterBlockPos(1, 2, 3);
+        try {
+            Thread.sleep(1000); // give GC some time
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        long before1 = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            pos.up(0);
+            pos.up(1);
+            pos.up(2);
+            pos.up(3);
+            pos.up(4);
+        }
+        long after1 = System.currentTimeMillis();
+        try {
+            Thread.sleep(1000); // give GC some time
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        long before2 = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            pos2.up(0);
+            pos2.up(1);
+            pos2.up(2);
+            pos2.up(3);
+            pos2.up(4);
         }
         long after2 = System.currentTimeMillis();
         System.out.println((after1 - before1) + " " + (after2 - before2));
