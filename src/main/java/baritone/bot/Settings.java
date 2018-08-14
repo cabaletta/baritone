@@ -32,6 +32,7 @@ public class Settings {
     public boolean renderPath = true;
     public boolean chatDebug = true;
     public boolean chatControl = true;
+    public boolean fadePath = true;
 
     Settings() {
 

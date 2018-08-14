@@ -42,12 +42,13 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public final class PathRenderer implements Helper {
 
-    private PathRenderer() {}
+    private PathRenderer() {
+    }
 
     private static final Tessellator TESSELLATOR = Tessellator.getInstance();
     private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
 
-    public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color) {
+    public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart, int fadeEnd) {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
@@ -57,13 +58,16 @@ public final class PathRenderer implements Helper {
         List<BlockPos> positions = path.positions();
         int next;
         Tessellator tessellator = Tessellator.getInstance();
+        fadeStart+=startIndex;
+        fadeEnd+=startIndex;
         for (int i = startIndex; i < positions.size() - 1; i = next) {
             BlockPos start = positions.get(i);
 
             next = i + 1;
             BlockPos end = positions.get(next);
+
             BlockPos direction = Utils.diff(start, end);
-            while (next + 1 < positions.size() && direction.equals(Utils.diff(end, positions.get(next + 1)))) {
+            while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) && direction.equals(Utils.diff(end, positions.get(next + 1)))) {
                 next++;
                 end = positions.get(next);
             }
@@ -73,6 +77,19 @@ public final class PathRenderer implements Helper {
             double x2 = end.getX();
             double y2 = end.getY();
             double z2 = end.getZ();
+            if (fadeOut) {
+
+                float alpha;
+                if (i <= fadeStart) {
+                    alpha = 0.4F;
+                } else {
+                    if (i > fadeEnd) {
+                        break;
+                    }
+                    alpha = 0.4F * (1.0F - (float)(i - fadeStart) / (float)(fadeEnd - fadeStart));
+                }
+                GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], alpha);
+            }
             drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks);
             tessellator.draw();
         }

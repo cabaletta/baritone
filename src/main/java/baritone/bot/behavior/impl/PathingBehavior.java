@@ -250,10 +250,10 @@ public class PathingBehavior extends Behavior {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED);
+            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED, Baritone.settings().fadePath, 10, 20);
         }
         if (next != null && next.getPath() != null) {
-            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.GREEN);
+            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.GREEN, Baritone.settings().fadePath, 10, 20);
         }
 
         long split = System.nanoTime();
@@ -266,10 +266,10 @@ public class PathingBehavior extends Behavior {
         // If there is a path calculation currently running, render the path calculation process
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                PathRenderer.drawPath(p, 0, player(), partialTicks, Color.BLUE);
+                PathRenderer.drawPath(p, 0, player(), partialTicks, Color.BLUE, Baritone.settings().fadePath, 10, 20);
                 currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
 
-                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Color.CYAN);
+                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Color.CYAN, Baritone.settings().fadePath, 10, 20);
                     PathRenderer.drawManySelectionBoxes(player(), Arrays.asList(mr.getDest()), partialTicks, Color.CYAN);
                 });
             });
