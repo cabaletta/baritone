@@ -44,7 +44,7 @@ public enum Baritone {
 
     private GameEventHandler gameEventHandler;
     private InputOverrideHandler inputOverrideHandler;
-    private Settings settings;
+    private Settings settings = new Settings();
     private List<Behavior> behaviors;
 
     /**
