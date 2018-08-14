@@ -44,6 +44,7 @@ public enum Baritone {
 
     private GameEventHandler gameEventHandler;
     private InputOverrideHandler inputOverrideHandler;
+    private Settings settings;
     private List<Behavior> behaviors;
 
     /**
@@ -81,5 +82,13 @@ public enum Baritone {
 
     public final boolean isActive() {
         return this.active;
+    }
+
+    public final Settings getSettings() {
+        return this.settings;
+    }
+
+    public static Settings settings() {
+        return Baritone.INSTANCE.settings; // yolo
     }
 }

@@ -125,7 +125,7 @@ public class PathingBehavior extends Behavior {
                     // and this path dosen't get us all the way there
                     return;
                 }
-                if (current.getPath().ticksRemainingFrom(current.getPosition()) < 150) {
+                if (current.getPath().ticksRemainingFrom(current.getPosition()) < Baritone.settings().planningTickLookAhead) {
                     // and this path has 5 seconds or less left
                     displayChatMessageRaw("Path almost over. Planning ahead...");
                     findPathInNewThread(current.getPath().getDest(), false);

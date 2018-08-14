@@ -17,6 +17,7 @@
 
 package baritone.bot.pathing.goals;
 
+import baritone.bot.Baritone;
 import baritone.bot.utils.Utils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -98,7 +99,7 @@ public class GoalXZ implements Goal {
             diagonal = z;
         }
         diagonal *= SQRT_2;
-        return (diagonal + straight) * 4; // big TODO tune
+        return (diagonal + straight) * Baritone.settings().costHeuristic; // big TODO tune
     }
 
     public static GoalXZ fromDirection(Vec3d origin, float yaw, double distance) {
