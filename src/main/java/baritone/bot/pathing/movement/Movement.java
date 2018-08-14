@@ -265,7 +265,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return result;
     }
 
-    public ArrayList<BlockPos> toWalkInto() {
+    public ArrayList<BlockPos> toWalkInto() { // overridden by movementdiagonal
         if (toWalkIntoCached == null) {
             toWalkIntoCached = new ArrayList<>();
         }
