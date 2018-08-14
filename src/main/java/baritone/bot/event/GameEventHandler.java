@@ -108,10 +108,12 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 && type == ChunkEvent.Type.UNLOAD
                 && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
-        if (isPostPopulate || isPreUnload) {
-            CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
-                    world.updateCachedChunk(event.getX(), event.getZ(),
-                            ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ()))));
+        if (Baritone.settings().chuckCaching) {
+            if (isPostPopulate || isPreUnload) {
+                CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
+                        world.updateCachedChunk(event.getX(), event.getZ(),
+                                ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ()))));
+            }
         }
 
         dispatch(behavior -> behavior.onChunkEvent(event));
@@ -130,17 +132,19 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
+        if (Baritone.settings().chuckCaching) {
+            CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
 
-        switch (event.getState()) {
-            case PRE:
-                cache.ifWorldLoaded(CachedWorld::save);
-                break;
-            case POST:
-                cache.closeWorld();
-                if (event.getWorld() != null)
-                    cache.initWorld(event.getWorld());
-                break;
+            switch (event.getState()) {
+                case PRE:
+                    cache.ifWorldLoaded(CachedWorld::save);
+                    break;
+                case POST:
+                    cache.closeWorld();
+                    if (event.getWorld() != null)
+                        cache.initWorld(event.getWorld());
+                    break;
+            }
         }
 
         dispatch(behavior -> behavior.onWorldEvent(event));

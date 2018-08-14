@@ -17,6 +17,7 @@
 
 package baritone.bot.pathing.movement;
 
+import baritone.bot.Baritone;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.ToolSet;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -41,8 +42,8 @@ public class CalculationContext implements Helper {
 
     public CalculationContext(ToolSet toolSet) {
         this.toolSet = toolSet;
-        this.hasWaterBucket = InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
-        this.hasThrowaway = MovementHelper.throwaway(false);
+        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
+        this.hasThrowaway = Baritone.settings().allowPlaceThrowaway && MovementHelper.throwaway(false);
     }
 
     public ToolSet getToolSet() {

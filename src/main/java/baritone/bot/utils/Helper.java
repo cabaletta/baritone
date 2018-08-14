@@ -17,6 +17,7 @@
 
 package baritone.bot.utils;
 
+import baritone.bot.Baritone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiNewChat;
@@ -69,6 +70,11 @@ public interface Helper {
     }
 
     default void displayChatMessageRaw(String message) {
+        if (!Baritone.settings().chatDebug) {
+            System.out.println("Suppressed debug message:");
+            System.out.println(message);
+            return;
+        }
         GuiNewChat gui = mc.ingameGUI.getChatGUI();
         int normalMaxWidth = MathHelper.floor((float) gui.getChatWidth() / gui.getChatScale());
         int widthWithStyleFormat = normalMaxWidth - 2;

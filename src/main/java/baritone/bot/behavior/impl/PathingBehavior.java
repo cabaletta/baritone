@@ -42,7 +42,8 @@ public class PathingBehavior extends Behavior {
 
     public static final PathingBehavior INSTANCE = new PathingBehavior();
 
-    private PathingBehavior() {}
+    private PathingBehavior() {
+    }
 
     private PathExecutor current;
     private PathExecutor next;
@@ -125,7 +126,7 @@ public class PathingBehavior extends Behavior {
                     // and this path dosen't get us all the way there
                     return;
                 }
-                if (current.getPath().ticksRemainingFrom(current.getPosition()) < 150) {
+                if (current.getPath().ticksRemainingFrom(current.getPosition()) < Baritone.settings().planningTickLookAhead) {
                     // and this path has 5 seconds or less left
                     displayChatMessageRaw("Path almost over. Planning ahead...");
                     findPathInNewThread(current.getPath().getDest(), false);
@@ -274,6 +275,9 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onRenderPass(RenderEvent event) {
+        if (!Baritone.settings().renderPath) {
+            return;
+        }
         // System.out.println("Render passing");
         // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();

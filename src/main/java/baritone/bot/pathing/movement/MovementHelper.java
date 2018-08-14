@@ -17,6 +17,7 @@
 
 package baritone.bot.pathing.movement;
 
+import baritone.bot.Baritone;
 import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.MovementState.MovementTarget;
@@ -137,6 +138,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         IBlockState state = BlockStateInterface.get(position);
         Block block = state.getBlock();
         if (!block.equals(Blocks.AIR) && !canWalkThrough(position)) {
+            if (!Baritone.settings().allowBreak) {
+                return COST_INF;
+            }
             if (avoidBreaking(position)) {
                 return COST_INF;
             }
