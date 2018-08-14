@@ -35,15 +35,15 @@
 package baritone.bot.event;
 
 import baritone.bot.Baritone;
-import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.chunk.CachedWorld;
 import baritone.bot.chunk.CachedWorldProvider;
 import baritone.bot.chunk.ChunkPacker;
-import baritone.bot.event.listener.IGameEventListener;
 import baritone.bot.event.events.*;
 import baritone.bot.event.events.type.EventState;
+import baritone.bot.event.listener.IGameEventListener;
 import baritone.bot.utils.Helper;
+import baritone.bot.utils.InputOverrideHandler;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -108,7 +108,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 && type == ChunkEvent.Type.UNLOAD
                 && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
-        if (Baritone.settings().chuckCaching) {
+        if (Baritone.settings().chuckCaching.get()) {
             if (isPostPopulate || isPreUnload) {
                 CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
                         world.updateCachedChunk(event.getX(), event.getZ(),
@@ -132,7 +132,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        if (Baritone.settings().chuckCaching) {
+        if (Baritone.settings().chuckCaching.get()) {
             CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
 
             switch (event.getState()) {

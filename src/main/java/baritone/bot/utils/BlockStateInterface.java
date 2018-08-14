@@ -41,7 +41,7 @@ public class BlockStateInterface implements Helper {
         if (chunk.isLoaded()) {
             return chunk.getBlockState(pos);
         }
-        if(Baritone.settings().chuckCaching) {
+        if (Baritone.settings().chuckCaching.get()) {
             CachedWorld world = CachedWorldProvider.INSTANCE.getCurrentWorld();
             if (world != null) {
                 PathingBlockType type = world.getBlockType(pos);

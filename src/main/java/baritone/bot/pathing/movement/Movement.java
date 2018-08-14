@@ -37,7 +37,7 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import static baritone.bot.InputOverrideHandler.Input;
+import static baritone.bot.utils.InputOverrideHandler.Input;
 
 public abstract class Movement implements Helper, MovementHelper {
 

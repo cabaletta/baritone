@@ -68,7 +68,7 @@ public interface Helper {
     }
 
     default void displayChatMessageRaw(String message) {
-        if (!Baritone.settings().chatDebug) {
+        if (!Baritone.settings().chatDebug.get()) {
             System.out.println("Suppressed debug message:");
             System.out.println(message);
             return;

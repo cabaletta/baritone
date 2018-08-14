@@ -1,7 +1,7 @@
 package baritone.movement;
 
 import baritone.Baritone;
-import baritone.bot.InputOverrideHandler;
+import baritone.bot.utils.InputOverrideHandler;
 import baritone.ui.LookManager;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;

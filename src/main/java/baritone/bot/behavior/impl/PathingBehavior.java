@@ -122,7 +122,7 @@ public class PathingBehavior extends Behavior {
                     // and this path dosen't get us all the way there
                     return;
                 }
-                if (current.getPath().ticksRemainingFrom(current.getPosition()) < Baritone.settings().planningTickLookAhead) {
+                if (current.getPath().ticksRemainingFrom(current.getPosition()) < Baritone.settings().planningTickLookAhead.get()) {
                     // and this path has 5 seconds or less left
                     displayChatMessageRaw("Path almost over. Planning ahead...");
                     findPathInNewThread(current.getPath().getDest(), false);
@@ -231,7 +231,7 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        if (!Baritone.settings().renderPath) {
+        if (!Baritone.settings().renderPath.get()) {
             return;
         }
         // System.out.println("Render passing");
@@ -246,10 +246,10 @@ public class PathingBehavior extends Behavior {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED, Baritone.settings().fadePath, 10, 20);
+            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED, Baritone.settings().fadePath.get(), 10, 20);
         }
         if (next != null && next.getPath() != null) {
-            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.GREEN, Baritone.settings().fadePath, 10, 20);
+            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.GREEN, Baritone.settings().fadePath.get(), 10, 20);
         }
 
         long split = System.nanoTime();
@@ -262,10 +262,10 @@ public class PathingBehavior extends Behavior {
         // If there is a path calculation currently running, render the path calculation process
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                PathRenderer.drawPath(p, 0, player(), partialTicks, Color.BLUE, Baritone.settings().fadePath, 10, 20);
+                PathRenderer.drawPath(p, 0, player(), partialTicks, Color.BLUE, Baritone.settings().fadePath.get(), 10, 20);
                 currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
 
-                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Color.CYAN, Baritone.settings().fadePath, 10, 20);
+                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Color.CYAN, Baritone.settings().fadePath.get(), 10, 20);
                     PathRenderer.drawManySelectionBoxes(player(), Collections.singletonList(mr.getDest()), partialTicks, Color.CYAN);
                 });
             });

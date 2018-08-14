@@ -17,7 +17,7 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.InputOverrideHandler;
+import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;

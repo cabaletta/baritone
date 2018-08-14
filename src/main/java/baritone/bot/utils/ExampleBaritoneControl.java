@@ -18,6 +18,7 @@
 package baritone.bot.utils;
 
 import baritone.bot.Baritone;
+import baritone.bot.Settings;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.events.ChatEvent;
@@ -26,6 +27,8 @@ import baritone.bot.pathing.goals.GoalBlock;
 import baritone.bot.pathing.goals.GoalXZ;
 import baritone.bot.pathing.goals.GoalYLevel;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
 
 public class ExampleBaritoneControl extends Behavior {
     public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
@@ -40,7 +43,7 @@ public class ExampleBaritoneControl extends Behavior {
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
-        if (!Baritone.settings().chatControl) {
+        if (!Baritone.settings().chatControl.get()) {
             return;
         }
         String msg = event.getMessage();
@@ -82,11 +85,6 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("slowpath")) {
-            Baritone.settings().slowPath ^= true;
-            event.cancel();
-            return;
-        }
         if (msg.toLowerCase().equals("cancel")) {
             PathingBehavior.INSTANCE.cancel();
             event.cancel();
@@ -99,6 +97,15 @@ public class ExampleBaritoneControl extends Behavior {
             displayChatMessageRaw("Goal: " + goal);
             event.cancel();
             return;
+        }
+        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getByValueType(Boolean.class);
+        for (Settings.Setting<Boolean> setting : toggleable) {
+            if (msg.toLowerCase().equals(setting.getName().toLowerCase())) {
+                setting.value ^= true;
+                event.cancel();
+                displayChatMessageRaw("Toggled " + setting.getName() + " to " + setting.value);
+                return;
+            }
         }
     }
 }
