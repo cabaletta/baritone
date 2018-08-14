@@ -66,42 +66,41 @@ public class MovementDescend extends Movement {
             case WAITING:
                 state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
-                BlockPos playerFeet = playerFeet();
-
-                if (playerFeet.equals(dest)) {
-                    if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.01) {
-                        // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
-                        state.setStatus(MovementStatus.SUCCESS);
-                        return state;
-                    } else {
-                        System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
-                    }
-                }
-                double diffX = player().posX - (dest.getX() + 0.5);
-                double diffZ = player().posZ - (dest.getZ() + 0.5);
-                double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
-                double x = player().posX - (src.getX() + 0.5);
-                double z = player().posZ - (src.getZ() + 0.5);
-                double fromStart = Math.sqrt(x * x + z * z);
-                if (!playerFeet.equals(dest) || ab > 0.25) {
-                    BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
-                    double diffX2 = player().posX - (fakeDest.getX() + 0.5);
-                    double diffZ2 = player().posZ - (fakeDest.getZ() + 0.5);
-                    double d = Math.sqrt(diffX2 * diffX2 + diffZ2 * diffZ2);
-                    if (numTicks++ < 20) {
-                        MovementHelper.moveTowards(state, fakeDest);
-                        if (fromStart > 1.25) {
-                            state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
-                            state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
-                        }
-                    } else {
-                        MovementHelper.moveTowards(state, dest);
-                    }
-                }
-                return state;
+                break;
             default:
                 return state;
         }
+        BlockPos playerFeet = playerFeet();
+        if (playerFeet.equals(dest)) {
+            if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.01) {
+                // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
+                state.setStatus(MovementStatus.SUCCESS);
+                return state;
+            } else {
+                System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
+            }
+        }
+        double diffX = player().posX - (dest.getX() + 0.5);
+        double diffZ = player().posZ - (dest.getZ() + 0.5);
+        double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
+        double x = player().posX - (src.getX() + 0.5);
+        double z = player().posZ - (src.getZ() + 0.5);
+        double fromStart = Math.sqrt(x * x + z * z);
+        if (!playerFeet.equals(dest) || ab > 0.25) {
+            BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
+            double diffX2 = player().posX - (fakeDest.getX() + 0.5);
+            double diffZ2 = player().posZ - (fakeDest.getZ() + 0.5);
+            double d = Math.sqrt(diffX2 * diffX2 + diffZ2 * diffZ2);
+            if (numTicks++ < 20) {
+                MovementHelper.moveTowards(state, fakeDest);
+                if (fromStart > 1.25) {
+                    state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
+                    state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                }
+            } else {
+                MovementHelper.moveTowards(state, dest);
+            }
+        }
+        return state;
     }
-
 }

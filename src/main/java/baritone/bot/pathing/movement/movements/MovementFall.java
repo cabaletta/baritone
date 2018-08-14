@@ -74,44 +74,45 @@ public class MovementFall extends Movement {
             case WAITING:
                 state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
-                BlockPos playerFeet = playerFeet();
-                Optional<Rotation> targetRotation = Optional.empty();
-                if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3 && !playerFeet.equals(dest)) {
-                    if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) { // TODO check if water bucket is on hotbar or main inventory
-                        state.setStatus(MovementStatus.UNREACHABLE);
-                        return state;
-                    }
-                    if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
-                        player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
-                        targetRotation = LookBehaviorUtils.reachable(dest.down());
-                    }
-                }
-                if (targetRotation.isPresent()) {
-                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
-                            .setTarget(new MovementTarget(targetRotation.get()));
-                } else {
-                    state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest))));
-                }
-                if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
-                        || BlockStateInterface.isWater(dest))) {
-                    if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_EMPTY)) {
-                        player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
-                        if (player().motionY >= 0) {
-                            return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                        } else {
-                            return state;
-                        }
-                    }
-                    return state.setStatus(MovementStatus.SUCCESS);
-                }
-                Vec3d destCenter = Utils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
-                if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
-                    state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-                }
-                return state;
+                break;
             default:
                 return state;
         }
+        BlockPos playerFeet = playerFeet();
+        Optional<Rotation> targetRotation = Optional.empty();
+        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3 && !playerFeet.equals(dest)) {
+            if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) { // TODO check if water bucket is on hotbar or main inventory
+                state.setStatus(MovementStatus.UNREACHABLE);
+                return state;
+            }
+            if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
+                player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
+                targetRotation = LookBehaviorUtils.reachable(dest.down());
+            }
+        }
+        if (targetRotation.isPresent()) {
+            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
+                    .setTarget(new MovementTarget(targetRotation.get()));
+        } else {
+            state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest))));
+        }
+        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
+                || BlockStateInterface.isWater(dest))) {
+            if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_EMPTY)) {
+                player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
+                if (player().motionY >= 0) {
+                    return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                } else {
+                    return state;
+                }
+            }
+            return state.setStatus(MovementStatus.SUCCESS);
+        }
+        Vec3d destCenter = Utils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
+        if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
+            state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+        }
+        return state;
     }
 
     private static BlockPos[] buildPositionsToBreak(BlockPos src, BlockPos dest) {

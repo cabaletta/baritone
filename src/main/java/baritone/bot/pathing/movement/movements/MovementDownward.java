@@ -59,21 +59,22 @@ public class MovementDownward extends Movement {
                 return state;
             case WAITING:
             case RUNNING:
-                if (playerFeet().equals(dest)) {
-                    state.setStatus(MovementState.MovementStatus.SUCCESS);
-                    return state;
-                }
-                double diffX = player().posX - (dest.getX() + 0.5);
-                double diffZ = player().posZ - (dest.getZ() + 0.5);
-                double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-                if (numTicks++ < 10 && ab < 0.2) {
-                    return state;
-                }
-                MovementHelper.moveTowards(state, positionsToBreak[0]);
-                return state;
+                break;
             default:
                 return state;
         }
+        if (playerFeet().equals(dest)) {
+            state.setStatus(MovementState.MovementStatus.SUCCESS);
+            return state;
+        }
+        double diffX = player().posX - (dest.getX() + 0.5);
+        double diffZ = player().posZ - (dest.getZ() + 0.5);
+        double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
+
+        if (numTicks++ < 10 && ab < 0.2) {
+            return state;
+        }
+        MovementHelper.moveTowards(state, positionsToBreak[0]);
+        return state;
     }
 }
