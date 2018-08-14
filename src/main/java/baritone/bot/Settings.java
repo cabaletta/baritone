@@ -67,6 +67,10 @@ public class Settings {
             return name;
         }
 
+        public Class<T> getValueClass() {
+            return klass;
+        }
+
         public String toString() {
             return name + ": " + value;
         }
