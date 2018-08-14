@@ -31,7 +31,7 @@ import baritone.bot.utils.PathRenderer;
 import net.minecraft.util.math.BlockPos;
 
 import java.awt.*;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 public class PathingBehavior extends Behavior {
@@ -266,7 +266,7 @@ public class PathingBehavior extends Behavior {
                 currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
 
                     PathRenderer.drawPath(mr, 0, player(), partialTicks, Color.CYAN, Baritone.settings().fadePath, 10, 20);
-                    PathRenderer.drawManySelectionBoxes(player(), Arrays.asList(mr.getDest()), partialTicks, Color.CYAN);
+                    PathRenderer.drawManySelectionBoxes(player(), Collections.singletonList(mr.getDest()), partialTicks, Color.CYAN);
                 });
             });
         });
