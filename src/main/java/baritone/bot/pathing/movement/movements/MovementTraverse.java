@@ -17,13 +17,13 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
@@ -115,19 +115,7 @@ public class MovementTraverse extends Movement {
     }
 
     @Override
-    public MovementState updateState(MovementState state) {
-        super.updateState(state);
-        switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
-            case WAITING:
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
+    public void onRunning(MovementState state) {
         Block fd = BlockStateInterface.get(src.down()).getBlock();
         boolean ladder = fd instanceof BlockLadder || fd instanceof BlockVine;
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionsToPlace[0]) || ladder;
@@ -137,25 +125,25 @@ public class MovementTraverse extends Movement {
             if (whereAmI.getY() < dest.getY()) {
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
             }
-            return state;
+            return;
         }
         if (isTheBridgeBlockThere) {
             if (playerFeet().equals(dest)) {
                 state.setStatus(MovementState.MovementStatus.SUCCESS);
-                return state;
+                return;
             }
             if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
                 player().setSprinting(true);
             }
             MovementHelper.moveTowards(state, positionsToBreak[0]);
-            return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
             for (BlockPos against1 : against) {
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                     if (!MovementHelper.throwaway(true)) { // get ready to place a throwaway block
                         displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
-                        return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                        state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                        return;
                     }
                     state.setInput(InputOverrideHandler.Input.SNEAK, true);
                     double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
@@ -172,7 +160,7 @@ public class MovementTraverse extends Movement {
                         }
                     }
                     System.out.println("Trying to look at " + against1 + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
-                    return state;
+                    return;
                 }
             }
             state.setInput(InputOverrideHandler.Input.SNEAK, true);
@@ -181,7 +169,8 @@ public class MovementTraverse extends Movement {
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
                 if (!MovementHelper.throwaway(true)) {// get ready to place a throwaway block
                     displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
-                    return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                    state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                    return;
                 }
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;
                 double faceY = (dest.getY() + src.getY() - 1.0D) * 0.5D;
@@ -194,13 +183,10 @@ public class MovementTraverse extends Movement {
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);
                 if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), goalLook)) {
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true); // wait to right click until we are able to place
-                    return state;
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
-                return state;
             } else {
                 MovementHelper.moveTowards(state, positionsToBreak[0]);
-                return state;
                 // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
             }
         }

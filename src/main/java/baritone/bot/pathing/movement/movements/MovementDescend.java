@@ -17,13 +17,13 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.InputOverrideHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
@@ -56,26 +56,13 @@ public class MovementDescend extends Movement {
     int numTicks = 0;
 
     @Override
-    public MovementState updateState(MovementState state) {
-        super.updateState(state);
-        switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
-            case WAITING:
-                state.setStatus(MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
+    public void onRunning(MovementState state) {
         BlockPos playerFeet = playerFeet();
         if (playerFeet.equals(dest)) {
             if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.01) {
                 // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
                 state.setStatus(MovementStatus.SUCCESS);
-                return state;
+                return;
             } else {
                 System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
             }
@@ -101,6 +88,5 @@ public class MovementDescend extends Movement {
                 MovementHelper.moveTowards(state, dest);
             }
         }
-        return state;
     }
 }
