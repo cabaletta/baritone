@@ -87,7 +87,48 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (BlockStateInterface.isFlowing(state) || BlockStateInterface.isLiquid(pos.up())) {
             return false; // Don't walk through flowing liquids
         }
+        if (block instanceof BlockDoor) {
+            return true; // we can just open the door
+        }
         return block.isPassable(mc.world, pos);
+    }
+
+    static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
+        IBlockState door = BlockStateInterface.get(doorPos);
+        if (!(door.getBlock() instanceof BlockDoor)) {
+            return true;
+        }
+        String facing = door.getValue(BlockDoor.FACING).getName();
+        boolean open = door.getValue(BlockDoor.OPEN).booleanValue();
+        /**
+         * yes this is dumb
+         * change it if you want
+         */
+        String playerFacing = "";
+        if (playerPos.equals(doorPos)) {
+            return false;
+        }
+        if (playerPos.north().equals(doorPos) || playerPos.south().equals(doorPos)) {
+            playerFacing = "northsouth";
+        } else if (playerPos.east().equals(doorPos) || playerPos.west().equals(doorPos)){
+            playerFacing = "eastwest";
+        } else {
+            return true;
+        }
+
+        if (facing == "north" || facing == "south") {
+            if (open) {
+                return playerFacing == "northsouth";
+            } else {
+                return playerFacing == "eastwest";
+            }
+        } else {
+            if (open) {
+                return playerFacing == "eastwest";
+            } else {
+                return playerFacing == "northsouth";
+            }
+        }
     }
 
     static boolean avoidWalkingInto(Block block) {

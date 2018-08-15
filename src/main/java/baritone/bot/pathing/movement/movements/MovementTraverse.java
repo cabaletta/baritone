@@ -26,6 +26,7 @@ import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
 import net.minecraft.block.state.IBlockState;
@@ -49,6 +50,7 @@ public class MovementTraverse extends Movement {
     public MovementTraverse(BlockPos from, BlockPos to) {
         super(from, to, new BlockPos[]{to.up(), to}, new BlockPos[]{to.down()});
         int i = 0;
+
         if (!to.north().equals(from))
             against[i++] = to.north().down();
 
@@ -130,6 +132,22 @@ public class MovementTraverse extends Movement {
         }
         Block fd = BlockStateInterface.get(src.down()).getBlock();
         boolean ladder = fd instanceof BlockLadder || fd instanceof BlockVine;
+        IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
+        IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
+        boolean door = BlockStateInterface.get(src).getBlock() instanceof BlockDoor || pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor;
+        if (door) {
+            boolean isDoorActuallyBlockingUs = false;
+            Block srcBlock = BlockStateInterface.get(src).getBlock();
+            if (srcBlock instanceof BlockDoor && !MovementHelper.isDoorPassable(src, dest)) {
+                isDoorActuallyBlockingUs = true;
+            } else if (pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(dest, src)) {
+                isDoorActuallyBlockingUs = true;
+            }
+            if (isDoorActuallyBlockingUs) {
+                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                return state;
+            }
+        }
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionsToPlace[0]) || ladder;
         BlockPos whereAmI = playerFeet();
         if (whereAmI.getY() != dest.getY() && !ladder) {
