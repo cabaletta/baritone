@@ -83,7 +83,6 @@ public final class Utils {
         if (b.getBlock() instanceof BlockFire) {//look at bottom of fire when putting it out
             yDiff = 0;
         }
-        System.out.println(xDiff + " " + yDiff + " " + zDiff);
         return new Vec3d(
                 orig.getX() + xDiff,
                 orig.getY() + yDiff,

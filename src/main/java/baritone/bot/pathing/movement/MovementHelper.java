@@ -100,7 +100,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         if (playerPos.north().equals(doorPos) || playerPos.south().equals(doorPos)) {
             playerFacing = "northsouth";
-        } else if (playerPos.east().equals(doorPos) || playerPos.west().equals(doorPos)){
+        } else if (playerPos.east().equals(doorPos) || playerPos.west().equals(doorPos)) {
             playerFacing = "eastwest";
         } else {
             return true;
@@ -174,9 +174,6 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (avoidBreaking(position)) {
                 return COST_INF;
             }
-            //if (!Baritone.allowBreakOrPlace) {
-            //    return COST_INF;
-            //}
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1;
             return m / ts.getStrVsBlock(state, position);
         }

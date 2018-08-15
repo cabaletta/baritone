@@ -140,6 +140,7 @@ public class MovementTraverse extends Movement {
                 isDoorActuallyBlockingUs = true;
             }
             if (isDoorActuallyBlockingUs) {
+                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()))));
                 state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 return state;
             }
