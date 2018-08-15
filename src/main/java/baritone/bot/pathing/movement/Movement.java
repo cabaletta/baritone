@@ -104,7 +104,8 @@ public abstract class Movement implements Helper, MovementHelper {
      */
     public MovementStatus update() {
         player().setSprinting(false);
-        MovementState latestState = updateState(currentState);
+        updateState(currentState);
+        MovementState latestState = currentState;
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
         }
@@ -115,7 +116,6 @@ public abstract class Movement implements Helper, MovementHelper {
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
         });
         latestState.getInputStates().replaceAll((input, forced) -> false);
-        currentState = latestState;
 
         if (isFinished())
             onFinish(latestState);
@@ -224,13 +224,14 @@ public abstract class Movement implements Helper, MovementHelper {
      *
      * @return
      */
-    public MovementState updateState(MovementState state) {
-        if (!prepared(state))
-            return state.setStatus(MovementStatus.PREPPING);
-        else if (state.getStatus() == MovementStatus.PREPPING) {
+    public void updateState(MovementState state) {
+        if (!prepared(state)) {
+            state.setStatus(MovementStatus.PREPPING);
+            return;
+        }
+        if (state.getStatus() == MovementStatus.PREPPING) {
             state.setStatus(MovementStatus.WAITING);
         }
-        return state;
     }
 
     public ArrayList<BlockPos> toBreakCached = null;

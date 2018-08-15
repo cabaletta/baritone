@@ -56,7 +56,7 @@ public class MovementDescend extends Movement {
     int numTicks = 0;
 
     @Override
-    public MovementState updateState(MovementState state) {
+    public void updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
             case WAITING:
@@ -64,14 +64,14 @@ public class MovementDescend extends Movement {
             case RUNNING:
                 break;
             default:
-                return state;
+                return;
         }
         BlockPos playerFeet = playerFeet();
         if (playerFeet.equals(dest)) {
             if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.01) {
                 // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
                 state.setStatus(MovementStatus.SUCCESS);
-                return state;
+                return;
             } else {
                 System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
             }
@@ -97,6 +97,5 @@ public class MovementDescend extends Movement {
                 MovementHelper.moveTowards(state, dest);
             }
         }
-        return state;
     }
 }

@@ -64,7 +64,7 @@ public class MovementFall extends Movement {
     }
 
     @Override
-    public MovementState updateState(MovementState state) {
+    public void updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
             case WAITING:
@@ -72,14 +72,14 @@ public class MovementFall extends Movement {
             case RUNNING:
                 break;
             default:
-                return state;
+                return;
         }
         BlockPos playerFeet = playerFeet();
         Optional<Rotation> targetRotation = Optional.empty();
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3 && !playerFeet.equals(dest)) {
             if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) { // TODO check if water bucket is on hotbar or main inventory
                 state.setStatus(MovementStatus.UNREACHABLE);
-                return state;
+                return;
             }
             if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
@@ -97,18 +97,17 @@ public class MovementFall extends Movement {
             if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_EMPTY)) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                 if (player().motionY >= 0) {
-                    return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                } else {
-                    return state;
+                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
+                return;
             }
-            return state.setStatus(MovementStatus.SUCCESS);
+            state.setStatus(MovementStatus.SUCCESS);
+            return;
         }
         Vec3d destCenter = Utils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
         if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
             state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
         }
-        return state;
     }
 
     private static BlockPos[] buildPositionsToBreak(BlockPos src, BlockPos dest) {

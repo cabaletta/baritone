@@ -96,14 +96,14 @@ public class MovementPillar extends Movement {
     }
 
     @Override
-    public MovementState updateState(MovementState state) {
+    public void updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
             case WAITING:
             case RUNNING:
                 break;
             default:
-                return state;
+                return;
         }
         IBlockState fromDown = BlockStateInterface.get(src);
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
@@ -120,21 +120,21 @@ public class MovementPillar extends Movement {
             if (against == null) {
                 displayChatMessageRaw("Unable to climb vines");
                 state.setStatus(MovementState.MovementStatus.UNREACHABLE);
-                return state;
+                return;
             }
             if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
                 state.setStatus(MovementState.MovementStatus.SUCCESS);
-                return state;
+                return;
             }
             /*if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
              Baritone.moveTowardsBlock(from);
              }*/
             MovementHelper.moveTowards(state, against);
-            return state;
+            return;
         } else {
             if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
                 state.setStatus(MovementState.MovementStatus.UNREACHABLE);
-                return state;
+                return;
             }
             numTicks++;
             state.setInput(InputOverrideHandler.Input.JUMP, thePlayer.posY < dest.getY()); //if our Y coordinate is above our goal, stop jumping
@@ -162,8 +162,6 @@ public class MovementPillar extends Movement {
         }
         if (playerFeet().equals(dest) && blockIsThere) {//if we are at our goal and the block below us is placed
             state.setStatus(MovementState.MovementStatus.SUCCESS);
-            return state;//we are done
         }
-        return state;
     }
 }

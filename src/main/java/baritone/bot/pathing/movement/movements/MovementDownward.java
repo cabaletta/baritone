@@ -50,27 +50,26 @@ public class MovementDownward extends Movement {
     }
 
     @Override
-    public MovementState updateState(MovementState state) {
+    public void updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
             case WAITING:
             case RUNNING:
                 break;
             default:
-                return state;
+                return;
         }
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
-            return state;
+            return;
         }
         double diffX = player().posX - (dest.getX() + 0.5);
         double diffZ = player().posZ - (dest.getZ() + 0.5);
         double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
 
         if (numTicks++ < 10 && ab < 0.2) {
-            return state;
+            return;
         }
         MovementHelper.moveTowards(state, positionsToBreak[0]);
-        return state;
     }
 }
