@@ -93,7 +93,7 @@ public class MovementAscend extends Movement {
     }
 
     @Override
-    public MovementState updateState(MovementState state) {
+    public void updateState(MovementState state) {
         super.updateState(state);
         // TODO incorporate some behavior from ActionClimb (specifically how it waited until it was at most 1.2 blocks away before starting to jump
         // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
@@ -102,18 +102,19 @@ public class MovementAscend extends Movement {
             case RUNNING:
                 break;
             default:
-                return state;
+                return;
         }
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementStatus.SUCCESS);
-            return state;
+            return;
         }
 
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             for (BlockPos anAgainst : against) {
                 if (BlockStateInterface.get(anAgainst).isBlockNormalCube()) {
                     if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
-                        return state.setStatus(MovementStatus.UNREACHABLE);
+                        state.setStatus(MovementStatus.UNREACHABLE);
+                        return;
                     }
                     double faceX = (dest.getX() + anAgainst.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + anAgainst.getY()) * 0.5D;
@@ -131,10 +132,11 @@ public class MovementAscend extends Movement {
                         }
                     }
                     System.out.println("Trying to look at " + anAgainst + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
-                    return state;
+                    return;
                 }
             }
-            return state.setStatus(MovementStatus.UNREACHABLE);
+            state.setStatus(MovementStatus.UNREACHABLE);
+            return;
         }
         MovementHelper.moveTowards(state, dest);
         state.setInput(InputOverrideHandler.Input.JUMP, true);
@@ -147,7 +149,5 @@ public class MovementAscend extends Movement {
         //this is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
         //also wait until we are close enough, because we might jump and hit our head on an adjacent block
         //return Baritone.playerFeet.equals(to);
-
-        return state;
     }
 }
