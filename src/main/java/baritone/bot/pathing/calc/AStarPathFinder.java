@@ -81,14 +81,15 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         }
         currentlyRunning = this;
         long startTime = System.currentTimeMillis();
-        long timeoutTime = startTime + (Baritone.settings().slowPath ? 40000 : 4000);
+        boolean slowPath = Baritone.settings().slowPath.get();
+        long timeoutTime = startTime + (slowPath ? 40000 : 4000);
         long lastPrintout = 0;
         int numNodes = 0;
         CalculationContext calcContext = new CalculationContext();
         int numEmptyChunk = 0;
-        boolean cache = Baritone.settings().chuckCaching;
+        boolean cache = Baritone.settings().chuckCaching.get();
         while (!openSet.isEmpty() && numEmptyChunk < 50 && System.currentTimeMillis() < timeoutTime) {
-            if (Baritone.settings().slowPath) {
+            if (slowPath) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {

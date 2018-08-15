@@ -18,7 +18,6 @@
 package baritone.bot.pathing.movement;
 
 import baritone.bot.Baritone;
-import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.MovementState.MovementTarget;
 import baritone.bot.pathing.movement.movements.MovementDescend;
@@ -30,14 +29,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -46,12 +42,6 @@ import java.util.Optional;
  * @author leijurv
  */
 public interface MovementHelper extends ActionCosts, Helper {
-
-    List<Item> ACCEPTABLE_THROWAWAY_ITEMS = Arrays.asList(
-            Item.getItemFromBlock(Blocks.DIRT),
-            Item.getItemFromBlock(Blocks.COBBLESTONE),
-            Item.getItemFromBlock(Blocks.NETHERRACK)
-    );
 
     static boolean avoidBreaking(BlockPos pos) {
         Block b = BlockStateInterface.getBlock(pos);
@@ -178,7 +168,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         IBlockState state = BlockStateInterface.get(position);
         Block block = state.getBlock();
         if (!block.equals(Blocks.AIR) && !canWalkThrough(position)) {
-            if (!Baritone.settings().allowBreak) {
+            if (!Baritone.settings().allowBreak.get()) {
                 return COST_INF;
             }
             if (avoidBreaking(position)) {
@@ -242,7 +232,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);
-            if (ACCEPTABLE_THROWAWAY_ITEMS.contains(item.getItem())) {
+            if (Baritone.settings().acceptableThrowAwayItems.get().contains(item.getItem())) {
                 if (select) {
                     p.inventory.currentItem = i;
                 }

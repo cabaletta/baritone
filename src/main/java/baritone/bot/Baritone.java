@@ -22,6 +22,7 @@ import baritone.bot.behavior.impl.LookBehavior;
 import baritone.bot.behavior.impl.MemoryBehavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.GameEventHandler;
+import baritone.bot.utils.InputOverrideHandler;
 
 import java.util.ArrayList;
 import java.util.List;

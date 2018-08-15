@@ -17,7 +17,7 @@
 
 package baritone.bot.pathing.movement;
 
-import baritone.bot.InputOverrideHandler.Input;
+import baritone.bot.utils.InputOverrideHandler.Input;
 import baritone.bot.utils.Rotation;
 import net.minecraft.util.math.Vec3d;
 

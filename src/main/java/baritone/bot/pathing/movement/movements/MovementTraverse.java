@@ -17,13 +17,13 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoor;
@@ -120,10 +120,6 @@ public class MovementTraverse extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
             case WAITING:
             case RUNNING:
                 break;

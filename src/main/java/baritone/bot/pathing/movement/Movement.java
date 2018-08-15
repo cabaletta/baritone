@@ -37,7 +37,7 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import static baritone.bot.InputOverrideHandler.Input;
+import static baritone.bot.utils.InputOverrideHandler.Input;
 
 public abstract class Movement implements Helper, MovementHelper {
 
@@ -265,7 +265,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return result;
     }
 
-    public ArrayList<BlockPos> toWalkInto() {
+    public ArrayList<BlockPos> toWalkInto() { // overridden by movementdiagonal
         if (toWalkIntoCached == null) {
             toWalkIntoCached = new ArrayList<>();
         }

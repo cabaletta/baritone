@@ -42,8 +42,8 @@ public class CalculationContext implements Helper {
 
     public CalculationContext(ToolSet toolSet) {
         this.toolSet = toolSet;
-        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
-        this.hasThrowaway = Baritone.settings().allowPlaceThrowaway && MovementHelper.throwaway(false);
+        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
+        this.hasThrowaway = Baritone.settings().allowPlaceThrowaway.get() && MovementHelper.throwaway(false);
     }
 
     public ToolSet getToolSet() {

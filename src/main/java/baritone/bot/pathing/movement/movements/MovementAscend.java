@@ -17,7 +17,6 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
@@ -25,6 +24,7 @@ import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -98,10 +98,6 @@ public class MovementAscend extends Movement {
         // TODO incorporate some behavior from ActionClimb (specifically how it waited until it was at most 1.2 blocks away before starting to jump
         // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
         switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
             case WAITING:
             case RUNNING:
                 break;

@@ -17,13 +17,13 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.InputOverrideHandler;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.InputOverrideHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
@@ -59,10 +59,6 @@ public class MovementDescend extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
             case WAITING:
                 state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
