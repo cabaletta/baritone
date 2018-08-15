@@ -53,10 +53,6 @@ public class MovementDownward extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
             case WAITING:
             case RUNNING:
                 break;

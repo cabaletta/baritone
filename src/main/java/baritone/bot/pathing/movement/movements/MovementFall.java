@@ -17,12 +17,12 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.*;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.pathing.movement.MovementState.MovementTarget;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.Utils;
 import net.minecraft.init.Items;
@@ -67,10 +67,6 @@ public class MovementFall extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
             case WAITING:
                 state.setStatus(MovementStatus.RUNNING);
             case RUNNING:

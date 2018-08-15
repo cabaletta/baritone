@@ -17,12 +17,12 @@
 
 package baritone.bot.pathing.movement.movements;
 
-import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.utils.BlockStateInterface;
+import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.Utils;
 import net.minecraft.block.*;
@@ -99,10 +99,6 @@ public class MovementPillar extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         switch (state.getStatus()) {
-            case PREPPING:
-            case UNREACHABLE:
-            case FAILED:
-                return state;
             case WAITING:
             case RUNNING:
                 break;
