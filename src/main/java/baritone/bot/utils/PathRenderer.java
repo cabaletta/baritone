@@ -58,8 +58,8 @@ public final class PathRenderer implements Helper {
         List<BlockPos> positions = path.positions();
         int next;
         Tessellator tessellator = Tessellator.getInstance();
-        fadeStart+=startIndex;
-        fadeEnd+=startIndex;
+        fadeStart += startIndex;
+        fadeEnd += startIndex;
         for (int i = startIndex; i < positions.size() - 1; i = next) {
             BlockPos start = positions.get(i);
 
@@ -86,7 +86,7 @@ public final class PathRenderer implements Helper {
                     if (i > fadeEnd) {
                         break;
                     }
-                    alpha = 0.4F * (1.0F - (float)(i - fadeStart) / (float)(fadeEnd - fadeStart));
+                    alpha = 0.4F * (1.0F - (float) (i - fadeStart) / (float) (fadeEnd - fadeStart));
                 }
                 GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], alpha);
             }
@@ -158,6 +158,62 @@ public final class PathRenderer implements Helper {
             BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
             TESSELLATOR.draw();
         });
+
+        GlStateManager.depthMask(true);
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
+    }
+
+    public static void drawLitDankGoalBox(EntityPlayer player, BlockPos goal, float partialTicks, Color color) {
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
+        GlStateManager.glLineWidth(5.0F);
+        GlStateManager.disableTexture2D();
+        GlStateManager.depthMask(false);
+        float expand = 0.002F;
+        double renderPosX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
+        double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
+        double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
+
+        double minX = goal.getX() + 0.002 - renderPosX;
+        double maxX = goal.getX() + 1 - 0.002 - renderPosX;
+        double minZ = goal.getZ() + 0.002 - renderPosZ;
+        double maxZ = goal.getZ() + 1 - 0.002 - renderPosZ;
+        double y = Math.sin((System.currentTimeMillis() % 2000L) / 2000F * Math.PI * 2);
+        double y1 = 1 + y + goal.getY() - renderPosY;
+        double y2 = 1 - y + goal.getY() - renderPosY;
+        double minY = goal.getY() - renderPosY;
+        double maxY = minY + 2;
+
+
+        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        BUFFER.pos(minX, y1, minZ).endVertex();
+        BUFFER.pos(maxX, y1, minZ).endVertex();
+        BUFFER.pos(maxX, y1, maxZ).endVertex();
+        BUFFER.pos(minX, y1, maxZ).endVertex();
+        BUFFER.pos(minX, y1, minZ).endVertex();
+        TESSELLATOR.draw();
+
+        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        BUFFER.pos(minX, y2, minZ).endVertex();
+        BUFFER.pos(maxX, y2, minZ).endVertex();
+        BUFFER.pos(maxX, y2, maxZ).endVertex();
+        BUFFER.pos(minX, y2, maxZ).endVertex();
+        BUFFER.pos(minX, y2, minZ).endVertex();
+        TESSELLATOR.draw();
+
+        BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
+        BUFFER.pos(minX, minY, minZ).endVertex();
+        BUFFER.pos(minX, maxY, minZ).endVertex();
+        BUFFER.pos(maxX, minY, minZ).endVertex();
+        BUFFER.pos(maxX, maxY, minZ).endVertex();
+        BUFFER.pos(maxX, minY, maxZ).endVertex();
+        BUFFER.pos(maxX, maxY, maxZ).endVertex();
+        BUFFER.pos(minX, minY, maxZ).endVertex();
+        BUFFER.pos(minX, maxY, maxZ).endVertex();
+        TESSELLATOR.draw();
+
 
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();

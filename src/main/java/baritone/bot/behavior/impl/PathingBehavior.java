@@ -25,6 +25,7 @@ import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.calc.AbstractNodeCostSearch;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
+import baritone.bot.pathing.goals.GoalBlock;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 import baritone.bot.utils.PathRenderer;
@@ -198,19 +199,13 @@ public class PathingBehavior extends Behavior {
                     }
                 }
             });
-            /*
-            isThereAnythingInProgress = false;
-            if (!currentPath.goal.isInGoal(currentPath.end)) {
-                if (talkAboutIt) {
-                    Out.gui("I couldn't get all the way to " + goal + ", but I'm going to get as close as I can. " + currentPath.numNodes + " nodes considered", Out.Mode.Standard);
-                }
-                planAhead();
-            } else if (talkAboutIt) {
-                Out.gui(, Out.Mode.Debug);
-            }
-            */
             if (talkAboutIt && current != null && current.getPath() != null) {
-                displayChatMessageRaw("Finished finding a path from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                if (goal.isInGoal(current.getPath().getDest())) {
+                    displayChatMessageRaw("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                } else {
+                    displayChatMessageRaw("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+
+                }
             }
             synchronized (pathCalcLock) {
                 isPathCalcInProgress = false;
@@ -240,13 +235,18 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        if (!Baritone.settings().renderPath.get()) {
-            return;
-        }
         // System.out.println("Render passing");
         // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
+        if (goal instanceof GoalBlock && Baritone.settings().renderGoal.value) {
+            PathRenderer.drawLitDankGoalBox(player(), ((GoalBlock) goal).getGoalPos(), partialTicks, Color.GREEN);
+        }
+        if (!Baritone.settings().renderPath.get()) {
+            return;
+        }
+
         long start = System.nanoTime();
+
 
         PathExecutor current = this.current; // this should prevent most race conditions?
         PathExecutor next = this.next; // like, now it's not possible for current!=null to be true, then suddenly false because of another thread

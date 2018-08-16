@@ -45,6 +45,7 @@ public class Settings {
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK)
     ));
+    public Setting<Boolean> renderGoal = new Setting<>(true);
 
     public final Map<String, Setting<?>> byName;
     public final List<Setting<?>> allSettings;
