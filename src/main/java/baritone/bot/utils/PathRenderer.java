@@ -18,6 +18,7 @@
 package baritone.bot.utils;
 
 import baritone.bot.pathing.path.IPath;
+import baritone.bot.utils.pathing.BetterBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -55,7 +56,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.glLineWidth(3.0F);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
-        List<BlockPos> positions = path.positions();
+        List<BetterBlockPos> positions = path.positions();
         int next;
         Tessellator tessellator = Tessellator.getInstance();
         fadeStart += startIndex;

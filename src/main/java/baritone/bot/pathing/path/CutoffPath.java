@@ -18,14 +18,14 @@
 package baritone.bot.pathing.path;
 
 import baritone.bot.pathing.movement.Movement;
-import net.minecraft.util.math.BlockPos;
+import baritone.bot.utils.pathing.BetterBlockPos;
 
 import java.util.Collections;
 import java.util.List;
 
 public class CutoffPath implements IPath {
 
-    final List<BlockPos> path;
+    final List<BetterBlockPos> path;
 
     final List<Movement> movements;
 
@@ -43,7 +43,7 @@ public class CutoffPath implements IPath {
     }
 
     @Override
-    public List<BlockPos> positions() {
+    public List<BetterBlockPos> positions() {
         return Collections.unmodifiableList(path);
     }
 
