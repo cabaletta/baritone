@@ -25,7 +25,6 @@ import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.calc.AbstractNodeCostSearch;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
-import baritone.bot.pathing.goals.GoalBlock;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 import baritone.bot.utils.PathRenderer;
@@ -244,8 +243,8 @@ public class PathingBehavior extends Behavior {
         // System.out.println("Render passing");
         // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
-        if (goal instanceof GoalBlock && Baritone.settings().renderGoal.value) {
-            PathRenderer.drawLitDankGoalBox(player(), ((GoalBlock) goal).getGoalPos(), partialTicks, Color.GREEN);
+        if (goal != null && Baritone.settings().renderGoal.value) {
+            PathRenderer.drawLitDankGoalBox(player(), goal, partialTicks, Color.GREEN);
         }
         if (!Baritone.settings().renderPath.get()) {
             return;

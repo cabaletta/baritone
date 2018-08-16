@@ -51,6 +51,8 @@ public class Settings {
     public Setting<Boolean> renderGoal = new Setting<>(true);
     public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);
+    public Setting<Float> pathRenderLineWidth = new Setting<>(5F);
+    public Setting<Float> goalRenderLineWidth = new Setting<>(3F);
 
     public final Map<String, Setting<?>> byName;
     public final List<Setting<?>> allSettings;

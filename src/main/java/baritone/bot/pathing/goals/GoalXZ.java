@@ -108,4 +108,12 @@ public class GoalXZ implements Goal {
         double z = origin.z + Math.cos(theta) * distance;
         return new GoalXZ((int) x, (int) z);
     }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getZ() {
+        return z;
+    }
 }

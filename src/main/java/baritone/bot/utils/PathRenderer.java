@@ -17,6 +17,10 @@
 
 package baritone.bot.utils;
 
+import baritone.bot.Baritone;
+import baritone.bot.pathing.goals.Goal;
+import baritone.bot.pathing.goals.GoalBlock;
+import baritone.bot.pathing.goals.GoalXZ;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.utils.pathing.BetterBlockPos;
 import net.minecraft.block.state.IBlockState;
@@ -53,7 +57,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.glLineWidth(3.0F);
+        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidth.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         List<BetterBlockPos> positions = path.positions();
@@ -116,7 +120,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.glLineWidth(5.0F);
+        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidth.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         float expand = 0.002F;
@@ -165,11 +169,11 @@ public final class PathRenderer implements Helper {
         GlStateManager.disableBlend();
     }
 
-    public static void drawLitDankGoalBox(EntityPlayer player, BlockPos goal, float partialTicks, Color color) {
+    public static void drawLitDankGoalBox(EntityPlayer player, Goal goal, float partialTicks, Color color) {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
-        GlStateManager.glLineWidth(5.0F);
+        GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidth.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         float expand = 0.002F;
@@ -177,32 +181,61 @@ public final class PathRenderer implements Helper {
         double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
 
-        double minX = goal.getX() + 0.002 - renderPosX;
-        double maxX = goal.getX() + 1 - 0.002 - renderPosX;
-        double minZ = goal.getZ() + 0.002 - renderPosZ;
-        double maxZ = goal.getZ() + 1 - 0.002 - renderPosZ;
-        double y = Math.sin((System.currentTimeMillis() % 2000L) / 2000F * Math.PI * 2);
-        double y1 = 1 + y + goal.getY() - renderPosY;
-        double y2 = 1 - y + goal.getY() - renderPosY;
-        double minY = goal.getY() - renderPosY;
-        double maxY = minY + 2;
+        double minX;
+        double maxX;
+        double minZ;
+        double maxZ;
+        double minY;
+        double maxY;
+        double y1;
+        double y2;
+        if (goal instanceof GoalBlock) {
+            BlockPos goalPos = ((GoalBlock) goal).getGoalPos();
+            minX = goalPos.getX() + 0.002 - renderPosX;
+            maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
+            minZ = goalPos.getZ() + 0.002 - renderPosZ;
+            maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
+            double y = Math.sin((System.currentTimeMillis() % 2000L) / 2000F * Math.PI * 2);
+            y1 = 1 + y + goalPos.getY() - renderPosY;
+            y2 = 1 - y + goalPos.getY() - renderPosY;
+            minY = goalPos.getY() - renderPosY;
+            maxY = minY + 2;
+        } else if (goal instanceof GoalXZ) {
+            GoalXZ goalPos = (GoalXZ) goal;
 
+            minX = goalPos.getX() + 0.002 - renderPosX;
+            maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
+            minZ = goalPos.getZ() + 0.002 - renderPosZ;
+            maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
 
-        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-        BUFFER.pos(minX, y1, minZ).endVertex();
-        BUFFER.pos(maxX, y1, minZ).endVertex();
-        BUFFER.pos(maxX, y1, maxZ).endVertex();
-        BUFFER.pos(minX, y1, maxZ).endVertex();
-        BUFFER.pos(minX, y1, minZ).endVertex();
-        TESSELLATOR.draw();
+            y1 = 0;
+            y2 = 0;
+            minY = 0 - renderPosY;
+            maxY = 256 - renderPosY;
+        } else {
+            // TODO GoalComposite
+            return;
+        }
 
-        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-        BUFFER.pos(minX, y2, minZ).endVertex();
-        BUFFER.pos(maxX, y2, minZ).endVertex();
-        BUFFER.pos(maxX, y2, maxZ).endVertex();
-        BUFFER.pos(minX, y2, maxZ).endVertex();
-        BUFFER.pos(minX, y2, minZ).endVertex();
-        TESSELLATOR.draw();
+        if (y1 != 0) {
+            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+            BUFFER.pos(minX, y1, minZ).endVertex();
+            BUFFER.pos(maxX, y1, minZ).endVertex();
+            BUFFER.pos(maxX, y1, maxZ).endVertex();
+            BUFFER.pos(minX, y1, maxZ).endVertex();
+            BUFFER.pos(minX, y1, minZ).endVertex();
+            TESSELLATOR.draw();
+        }
+
+        if (y2 != 0) {
+            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+            BUFFER.pos(minX, y2, minZ).endVertex();
+            BUFFER.pos(maxX, y2, minZ).endVertex();
+            BUFFER.pos(maxX, y2, maxZ).endVertex();
+            BUFFER.pos(minX, y2, maxZ).endVertex();
+            BUFFER.pos(minX, y2, minZ).endVertex();
+            TESSELLATOR.draw();
+        }
 
         BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
         BUFFER.pos(minX, minY, minZ).endVertex();
