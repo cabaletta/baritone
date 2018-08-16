@@ -20,6 +20,7 @@ package baritone.bot.pathing.path;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.Utils;
+import baritone.bot.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
@@ -44,7 +45,7 @@ public interface IPath extends Helper {
      * All positions along the way.
      * Should begin with the same as getSrc and end with the same as getDest
      */
-    List<BlockPos> positions();
+    List<BetterBlockPos> positions();
 
     /**
      * Number of positions in this path
@@ -62,7 +63,7 @@ public interface IPath extends Helper {
      * @return
      */
     default Movement subsequentMovement(BlockPos currentPosition) {
-        List<BlockPos> pos = positions();
+        List<BetterBlockPos> pos = positions();
         List<Movement> movements = movements();
         for (int i = 0; i < pos.size(); i++) {
             if (currentPosition.equals(pos.get(i))) {
@@ -98,15 +99,15 @@ public interface IPath extends Helper {
     /**
      * Where does this path start
      */
-    default BlockPos getSrc() {
+    default BetterBlockPos getSrc() {
         return positions().get(0);
     }
 
     /**
      * Where does this path end
      */
-    default BlockPos getDest() {
-        List<BlockPos> pos = positions();
+    default BetterBlockPos getDest() {
+        List<BetterBlockPos> pos = positions();
         return pos.get(pos.size() - 1);
     }
 

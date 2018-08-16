@@ -35,17 +35,22 @@ public class Settings {
     public Setting<Boolean> chuckCaching = new Setting<>(false);
     public Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
     public Setting<Integer> planningTickLookAhead = new Setting<>(150);
-    public Setting<Boolean> renderPath = new Setting<>(true);
     public Setting<Boolean> chatDebug = new Setting<>(true);
     public Setting<Boolean> chatControl = new Setting<>(true); // probably false in impact
+    public Setting<Boolean> renderPath = new Setting<>(true);
     public Setting<Boolean> fadePath = new Setting<>(false); // give this a better name in the UI, like "better path fps" idk
+    public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
     public Setting<Boolean> slowPath = new Setting<>(false);
+    public Setting<Number> slowPathTimeDelayMS = new Setting<>(100L);
+    public Setting<Number> slowPathTimeoutMS = new Setting<>(40000L);
     public Setting<List<Item>> acceptableThrowAwayItems = new Setting<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK)
     ));
     public Setting<Boolean> renderGoal = new Setting<>(true);
+    public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
+    public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);
 
     public final Map<String, Setting<?>> byName;
     public final List<Setting<?>> allSettings;
@@ -63,8 +68,8 @@ public class Settings {
             this.klass = (Class<T>) value.getClass();
         }
 
-        public final T get() {
-            return value;
+        public final <K extends T> K get() {
+            return (K) value;
         }
 
         public final String getName() {

@@ -93,7 +93,7 @@ public class PathingBehavior extends Behavior {
                         // if we aren't calculating right now
                         return;
                     }
-                    findPathInNewThread(playerFeet(), true);
+                    findPathInNewThread(playerFeet(), true, Optional.empty());
                 }
                 return;
             }
@@ -126,7 +126,7 @@ public class PathingBehavior extends Behavior {
                 if (ticksRemainingInSegment().get() < Baritone.settings().planningTickLookAhead.get()) {
                     // and this path has 5 seconds or less left
                     displayChatMessageRaw("Path almost over. Planning ahead...");
-                    findPathInNewThread(current.getPath().getDest(), false);
+                    findPathInNewThread(current.getPath().getDest(), false, Optional.of(current.getPath()));
                 }
             }
         }
@@ -160,11 +160,17 @@ public class PathingBehavior extends Behavior {
     }
 
     public void path() {
-        synchronized (pathCalcLock) {
-            if (isPathCalcInProgress) {
+        synchronized (pathPlanLock) {
+            if (current != null) {
+                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
                 return;
             }
-            findPathInNewThread(playerFeet(), true);
+            synchronized (pathCalcLock) {
+                if (isPathCalcInProgress) {
+                    return;
+                }
+                findPathInNewThread(playerFeet(), true, Optional.empty());
+            }
         }
     }
 
@@ -174,7 +180,7 @@ public class PathingBehavior extends Behavior {
      * @param start
      * @param talkAboutIt
      */
-    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt) {
+    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt, final Optional<IPath> previous) {
         synchronized (pathCalcLock) {
             if (isPathCalcInProgress) {
                 throw new IllegalStateException("Already doing it");
@@ -186,7 +192,7 @@ public class PathingBehavior extends Behavior {
                 displayChatMessageRaw("Starting to search for path from " + start + " to " + goal);
             }
 
-            findPath(start).map(IPath::cutoffAtLoadedChunks).map(PathExecutor::new).ifPresent(path -> {
+            findPath(start, previous).map(IPath::cutoffAtLoadedChunks).map(PathExecutor::new).ifPresent(path -> {
                 synchronized (pathPlanLock) {
                     if (current == null) {
                         current = path;
@@ -219,13 +225,13 @@ public class PathingBehavior extends Behavior {
      * @param start
      * @return
      */
-    private Optional<IPath> findPath(BlockPos start) {
+    private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous) {
         if (goal == null) {
             displayChatMessageRaw("no goal");
             return Optional.empty();
         }
         try {
-            IPathFinder pf = new AStarPathFinder(start, goal);
+            IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
             return pf.calculate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -251,6 +257,7 @@ public class PathingBehavior extends Behavior {
         PathExecutor current = this.current; // this should prevent most race conditions?
         PathExecutor next = this.next; // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
         // TODO is this enough, or do we need to acquire a lock here?
+        // TODO benchmark synchronized in render loop
 
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {

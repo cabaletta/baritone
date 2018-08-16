@@ -52,6 +52,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Random;
 
@@ -62,8 +64,11 @@ import java.util.Random;
  */
 public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
-    public AStarPathFinder(BlockPos start, Goal goal) {
+    private final Optional<HashSet<BetterBlockPos>> favoredPositions;
+
+    public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BetterBlockPos>> favoredPositions) {
         super(start, goal);
+        this.favoredPositions = favoredPositions.map(HashSet::new); // <-- okay this is epic
     }
 
     @Override
@@ -72,26 +77,30 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         IOpenSet openSet = new BinaryHeapOpenSet();
-        startNode.isOpen = true;
         openSet.insert(startNode);
+        startNode.isOpen = true;
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
         double[] bestHeuristicSoFar = new double[COEFFICIENTS.length];
         for (int i = 0; i < bestHeuristicSoFar.length; i++) {
             bestHeuristicSoFar[i] = Double.MAX_VALUE;
         }
+        CalculationContext calcContext = new CalculationContext();
+        HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
         currentlyRunning = this;
         long startTime = System.currentTimeMillis();
         boolean slowPath = Baritone.settings().slowPath.get();
-        long timeoutTime = startTime + (slowPath ? 40000 : 4000);
+        long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
         long lastPrintout = 0;
         int numNodes = 0;
-        CalculationContext calcContext = new CalculationContext();
         int numEmptyChunk = 0;
+        boolean favoring = favoredPositions.isPresent(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         boolean cache = Baritone.settings().chuckCaching.get();
-        while (!openSet.isEmpty() && numEmptyChunk < 50 && System.currentTimeMillis() < timeoutTime) {
+        int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get();
+        double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
+        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime) {
             if (slowPath) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(Baritone.settings().slowPathTimeDelayMS.<Long>get());
                 } catch (InterruptedException ex) {
                 }
             }
@@ -109,7 +118,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 return Optional.of(new Path(startNode, currentNode, numNodes));
             }
             //long constructStart = System.nanoTime();
-            Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at myPos, in random order
+            Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos, in random order
             shuffle(possibleMovements);
             //long constructEnd = System.nanoTime();
             //System.out.println(constructEnd - constructStart);
@@ -117,16 +126,16 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 if (movementToGetToNeighbor == null) {
                     continue;
                 }
-
+                BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
                 boolean isPositionCached = false;
                 if (cache) {
                     if (CachedWorldProvider.INSTANCE.getCurrentWorld() != null) {
-                        if (CachedWorldProvider.INSTANCE.getCurrentWorld().getBlockType(movementToGetToNeighbor.getDest()) != null) {
+                        if (CachedWorldProvider.INSTANCE.getCurrentWorld().getBlockType(dest) != null) {
                             isPositionCached = true;
                         }
                     }
                 }
-                if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(movementToGetToNeighbor.getDest()) instanceof EmptyChunk) {
+                if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk) {
                     numEmptyChunk++;
                     continue;
                 }
@@ -141,7 +150,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 if (actionCost <= 0) {
                     throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " calculated implausible cost " + actionCost);
                 }
-                PathNode neighbor = getNodeAtPosition((BetterBlockPos) movementToGetToNeighbor.getDest());
+                if (favoring && favored.contains(dest)) {
+                    actionCost *= favorCoeff;
+                }
+                PathNode neighbor = getNodeAtPosition(dest);
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
                     if (tentativeCost < 0) {
