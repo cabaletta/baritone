@@ -60,7 +60,11 @@ public class ExampleBaritoneControl extends Behavior {
                         goal = new GoalBlock(playerFeet());
                         break;
                     case 1:
-                        goal = new GoalYLevel(Integer.parseInt(params[0]));
+                        if (params[0].equals("clear") || params[0].equals("none")) {
+                            goal = null;
+                        } else {
+                            goal = new GoalYLevel(Integer.parseInt(params[0]));
+                        }
                         break;
                     case 2:
                         goal = new GoalXZ(Integer.parseInt(params[0]), Integer.parseInt(params[1]));

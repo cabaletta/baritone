@@ -65,7 +65,7 @@ public class PathingBehavior extends Behavior {
         synchronized (pathPlanLock) {
             if (current.failed() || current.finished()) {
                 current = null;
-                if (goal.isInGoal(playerFeet())) {
+                if (goal == null || goal.isInGoal(playerFeet())) {
                     displayChatMessageRaw("All done. At " + goal);
                     next = null;
                     return;
@@ -118,7 +118,7 @@ public class PathingBehavior extends Behavior {
                     // and we have no plan for what to do next
                     return;
                 }
-                if (goal.isInGoal(current.getPath().getDest())) {
+                if (goal == null || goal.isInGoal(current.getPath().getDest())) {
                     // and this path dosen't get us all the way there
                     return;
                 }
@@ -205,7 +205,7 @@ public class PathingBehavior extends Behavior {
                 }
             });
             if (talkAboutIt && current != null && current.getPath() != null) {
-                if (goal.isInGoal(current.getPath().getDest())) {
+                if (goal == null || goal.isInGoal(current.getPath().getDest())) {
                     displayChatMessageRaw("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
                 } else {
                     displayChatMessageRaw("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
@@ -233,6 +233,7 @@ public class PathingBehavior extends Behavior {
             IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
             return pf.calculate();
         } catch (Exception e) {
+            displayChatMessageRaw("Exception: " + e);
             e.printStackTrace();
             return Optional.empty();
         }
