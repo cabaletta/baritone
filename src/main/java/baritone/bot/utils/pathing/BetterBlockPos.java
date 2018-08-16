@@ -62,6 +62,9 @@ public class BetterBlockPos extends BlockPos {
 
     @Override
     public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
         if (o instanceof BetterBlockPos) {
             BetterBlockPos oth = (BetterBlockPos) o;
             if (oth.hashCode != hashCode) {
