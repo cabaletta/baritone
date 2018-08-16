@@ -25,6 +25,7 @@ import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.utils.Rotation;
 import baritone.bot.utils.Utils;
+import net.minecraft.block.Block;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -83,7 +84,7 @@ public class MovementFall extends Movement {
             }
             if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
-                targetRotation = LookBehaviorUtils.reachable(dest.down());
+                targetRotation = LookBehaviorUtils.reachable((BlockStateInterface.get(dest).getCollisionBoundingBox(mc.world, dest) == Block.NULL_AABB) ? dest : dest.down());
             }
         }
         if (targetRotation.isPresent()) {
