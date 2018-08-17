@@ -78,11 +78,15 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         double multiplier = WALK_ONE_BLOCK_COST;
+
+        // for either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock().equals(Blocks.SOUL_SAND)) {
-            multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
-        } else if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
-            multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
+            multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
+        if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
+            multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+        }
+
         if (BlockStateInterface.get(positionsToBreak[2].down()).getBlock() instanceof BlockMagma) {
             return COST_INF;
         }
@@ -110,11 +114,14 @@ public class MovementDiagonal extends Movement {
                 return COST_INF;
             }
         }
+        if (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest)) {
+            // ignore previous multiplier
+            // whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
+            // not even touching the blocks below
+            multiplier = WALK_ONE_IN_WATER_COST;
+        }
         if (optionA != 0 || optionB != 0) {
             multiplier *= SQRT_2 - 0.001; // TODO tune
-        }
-        if (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest)) {
-            multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
         }
         if (multiplier == WALK_ONE_BLOCK_COST && context.canSprint()) {
             // if we aren't edging around anything, and we aren't in water or soul sand

@@ -20,6 +20,23 @@ package baritone.bot.pathing.movement;
 public interface ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
     double[] FALL_N_BLOCKS_COST = generateFallNBlocksCost();
 
+    double FALL_1_25_BLOCKS_COST = distanceToTicks(1.25);
+    double FALL_0_25_BLOCKS_COST = distanceToTicks(0.25);
+    /**
+     * When you hit space, you get enough upward velocity to go 1.25 blocks
+     * Then, you fall the remaining 0.25 to get on the surface, on block higher.
+     * Since parabolas are symmetric, the amount of time it takes to ascend up from 1 to 1.25
+     * will be the same amount of time that it takes to fall back down from 1.25 to 1.
+     * And the same applies to the overall shape, if it takes X ticks to fall back down 1.25 blocks,
+     * it will take X ticks to reach the peak of your 1.25 block leap.
+     * Therefore, the part of your jump from y=0 to y=1.25 takes distanceToTicks(1.25) ticks,
+     * and the sub-part from y=1 to y=1.25 takes distanceToTicks(0.25) ticks.
+     * Therefore, the other sub-part, from y=0 to y-1, takes distanceToTicks(1.25)-distanceToTicks(0.25) ticks.
+     * That's why JUMP_ONE_BLOCK_COST = FALL_1_25_BLOCKS_COST - FALL_0_25_BLOCKS_COST
+     */
+    double JUMP_ONE_BLOCK_COST = FALL_1_25_BLOCKS_COST - FALL_0_25_BLOCKS_COST;
+
+
     static double[] generateFallNBlocksCost() {
         double[] costs = new double[257];
         for (int i = 0; i < 257; i++) {

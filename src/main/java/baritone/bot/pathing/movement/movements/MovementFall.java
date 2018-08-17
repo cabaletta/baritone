@@ -49,6 +49,9 @@ public class MovementFall extends Movement {
         }
         double placeBucketCost = 0.0;
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
+            if (!context.hasWaterBucket()) {
+                return COST_INF;
+            }
             placeBucketCost = ActionCosts.PLACE_ONE_BLOCK_COST;
         }
         double frontTwo = MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[1]);
@@ -56,6 +59,11 @@ public class MovementFall extends Movement {
             return COST_INF;
         }
         for (int i = 2; i < positionsToBreak.length; i++) {
+            // TODO is this the right check here?
+            // miningDurationTicks is all right, but shouldn't it be canWalkThrough instead?
+            // lilypads (i think?) are 0 ticks to mine, but they definitely cause fall damage
+            // same thing for falling through water... we can't actually do that
+            // and falling through signs is possible, but they do have a mining duration, right?
             if (MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[i]) > 0) {
                 //can't break while falling
                 return COST_INF;

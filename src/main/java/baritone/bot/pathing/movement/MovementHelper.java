@@ -43,8 +43,8 @@ import java.util.Optional;
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
-    static boolean avoidBreaking(BlockPos pos) {
-        Block b = BlockStateInterface.getBlock(pos);
+    static boolean avoidBreaking(BlockPos pos, IBlockState state) {
+        Block b = state.getBlock();
         BlockPos below = new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ());
         return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish
@@ -63,8 +63,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @return
      */
     static boolean canWalkThrough(BlockPos pos) {
-        IBlockState state = BlockStateInterface.get(pos);
-        return canWalkThrough(pos, state);
+        return canWalkThrough(pos, BlockStateInterface.get(pos));
     }
 
     static boolean canWalkThrough(BlockPos pos, IBlockState state) {
@@ -126,21 +125,20 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockCactus
                 || block instanceof BlockFire
                 || block instanceof BlockEndPortal
-                || block instanceof BlockWeb
-                || block instanceof BlockMagma;
+                || block instanceof BlockWeb;
     }
 
     /**
      * Can I walk on this block without anything weird happening like me falling
      * through? Includes water because we know that we automatically jump on
-     * lava
+     * water
      *
      * @return
      */
     static boolean canWalkOn(BlockPos pos, IBlockState state) {
 
         Block block = state.getBlock();
-        if (block instanceof BlockLadder || block instanceof BlockVine) {
+        if (block instanceof BlockLadder || block instanceof BlockVine) { // TODO reconsider this
             return true;
         }
         if (block instanceof BlockAir) {
@@ -149,15 +147,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (BlockStateInterface.isWater(block)) {
             return BlockStateInterface.isWater(pos.up()); // You can only walk on water if there is water above it
         }
-        if (block.equals(Blocks.MAGMA)) {
+        if (Blocks.MAGMA.equals(block)) {
             return false;
         }
         return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
     }
 
     static boolean canWalkOn(BlockPos pos) {
-        IBlockState state = BlockStateInterface.get(pos);
-        return canWalkOn(pos, state);
+        return canWalkOn(pos, BlockStateInterface.get(pos));
     }
 
     static boolean canFall(BlockPos pos) {
@@ -166,12 +163,16 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(ToolSet ts, BlockPos position) {
         IBlockState state = BlockStateInterface.get(position);
+        return getMiningDurationTicks(ts, position, state);
+    }
+
+    static double getMiningDurationTicks(ToolSet ts, BlockPos position, IBlockState state) {
         Block block = state.getBlock();
-        if (!block.equals(Blocks.AIR) && !canWalkThrough(position)) {
+        if (!block.equals(Blocks.AIR) && !canWalkThrough(position, state)) {
             if (!Baritone.settings().allowBreak.get()) {
                 return COST_INF;
             }
-            if (avoidBreaking(position)) {
+            if (avoidBreaking(position, state)) {
                 return COST_INF;
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1;

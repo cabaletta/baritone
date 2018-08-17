@@ -151,6 +151,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " calculated implausible cost " + actionCost);
                 }
                 if (favoring && favored.contains(dest)) {
+                    // see issue #18
                     actionCost *= favorCoeff;
                 }
                 PathNode neighbor = getNodeAtPosition(dest);

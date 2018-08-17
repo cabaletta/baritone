@@ -151,7 +151,12 @@ public final class InputOverrideHandler implements Helper {
         /**
          * The sneak input
          */
-        SNEAK(mc.gameSettings.keyBindSneak);
+        SNEAK(mc.gameSettings.keyBindSneak),
+
+        /**
+         * The sprint input
+         */
+        SPRINT(mc.gameSettings.keyBindSprint);
 
         /**
          * The actual game {@link KeyBinding} being forced.

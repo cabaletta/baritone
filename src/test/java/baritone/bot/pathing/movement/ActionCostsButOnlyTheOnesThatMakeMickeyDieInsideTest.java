@@ -19,8 +19,7 @@ package baritone.bot.pathing.movement;
 
 import org.junit.Test;
 
-import static baritone.bot.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside.FALL_N_BLOCKS_COST;
-import static baritone.bot.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside.velocity;
+import static baritone.bot.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside.*;
 import static org.junit.Assert.assertEquals;
 
 public class ActionCostsButOnlyTheOnesThatMakeMickeyDieInsideTest {
@@ -31,6 +30,9 @@ public class ActionCostsButOnlyTheOnesThatMakeMickeyDieInsideTest {
             double blocks = ticksToBlocks(FALL_N_BLOCKS_COST[i]);
             assertEquals(blocks, i, 0.000000000001); // If you add another 0 the test fails at i=217 LOL
         }
+        assertEquals(FALL_1_25_BLOCKS_COST, 6.2344, 0.00001);
+        assertEquals(FALL_0_25_BLOCKS_COST, 3.0710, 0.00001);
+        assertEquals(JUMP_ONE_BLOCK_COST, 3.1634, 0.00001);
     }
 
     public double ticksToBlocks(double ticks) {

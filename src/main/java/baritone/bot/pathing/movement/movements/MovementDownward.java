@@ -25,6 +25,7 @@ import baritone.bot.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDownward extends Movement {
@@ -40,12 +41,13 @@ public class MovementDownward extends Movement {
         if (!MovementHelper.canWalkOn(dest.down())) {
             return COST_INF;
         }
-        Block td = BlockStateInterface.get(dest).getBlock();
+        IBlockState d = BlockStateInterface.get(dest);
+        Block td = d.getBlock();
         boolean ladder = td instanceof BlockLadder || td instanceof BlockVine;
         if (ladder) {
             return LADDER_DOWN_ONE_COST;
         } else {
-            return FALL_N_BLOCKS_COST[1] + getTotalHardnessOfBlocksToBreak(context.getToolSet());
+            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context.getToolSet(), dest, d);
         }
     }
 

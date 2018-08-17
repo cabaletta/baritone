@@ -72,9 +72,16 @@ public class MovementTraverse extends Movement {
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
         IBlockState destOn = BlockStateInterface.get(positionsToPlace[0]);
         if (MovementHelper.canWalkOn(positionsToPlace[0], destOn)) {//this is a walk, not a bridge
-            double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
-            if (destOn.getBlock().equals(Blocks.SOUL_SAND)) {
-                WC *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
+            double WC = WALK_ONE_BLOCK_COST;
+            if (BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock())) {
+                WC = WALK_ONE_IN_WATER_COST;
+            } else {
+                if (Blocks.SOUL_SAND.equals(destOn.getBlock())) {
+                    WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+                }
+                if (Blocks.SOUL_SAND.equals(BlockStateInterface.get(src.down()).getBlock())) {
+                    WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+                }
             }
             if (MovementHelper.canWalkThrough(positionsToBreak[0]) && MovementHelper.canWalkThrough(positionsToBreak[1])) {
                 if (WC == WALK_ONE_BLOCK_COST && context.canSprint()) {
@@ -89,9 +96,8 @@ public class MovementTraverse extends Movement {
             //Out.log("Can't walk through " + blocksToBreak[0] + " (hardness" + hardness1 + ") or " + blocksToBreak[1] + " (hardness " + hardness2 + ")");
             return WC + getTotalHardnessOfBlocksToBreak(context.getToolSet());
         } else {//this is a bridge, so we need to place a block
-            //return 1000000;
-            Block f = BlockStateInterface.get(src.down()).getBlock();
-            if (f instanceof BlockLadder || f instanceof BlockVine) {
+            Block srcDown = BlockStateInterface.get(src.down()).getBlock();
+            if (srcDown instanceof BlockLadder || srcDown instanceof BlockVine) {
                 return COST_INF;
             }
             IBlockState pp0 = BlockStateInterface.get(positionsToPlace[0]);

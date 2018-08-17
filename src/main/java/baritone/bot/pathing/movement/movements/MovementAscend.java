@@ -26,6 +26,7 @@ import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.InputOverrideHandler;
 import baritone.bot.utils.Utils;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -82,14 +83,29 @@ public class MovementAscend extends Movement {
             return COST_INF;
         }
         if (BlockStateInterface.get(src.up(3)).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
-            return COST_INF;
+            // HOWEVER, we assume that we're standing in the start position
+            // that means that src and src.up(1) are both air
+            // maybe they aren't now, but they will be by the time this starts
+            Block srcUp = BlockStateInterface.get(src.up(1)).getBlock();
+            Block srcUp2 = BlockStateInterface.get(src.up(2)).getBlock();
+            if (!(srcUp instanceof BlockFalling) || !(srcUp2 instanceof BlockFalling)) {
+                // if both of those are BlockFalling, that means that by standing on src
+                // (the presupposition of this Movement)
+                // we have necessarily already cleared the entire BlockFalling stack
+                // on top of our head
+
+                // but if either of them aren't BlockFalling, that means we're still in suffocation danger
+                // so don't do it
+                return COST_INF;
+            }
         }
-        double halfWalk = WALK_ONE_BLOCK_COST / 2;
+        // TODO maybe change behavior if src.down() is soul sand?
+        double walk = WALK_ONE_BLOCK_COST;
         if (toPlace.getBlock().equals(Blocks.SOUL_SAND)) {
-            halfWalk *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
+            walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
         }
-        // we walk half the block to get to the edge, then we walk the other half while simultaneously jumping (math.max because of how it's in parallel)
-        return halfWalk + Math.max(JUMP_ONE_BLOCK_COST, halfWalk) + getTotalHardnessOfBlocksToBreak(context.getToolSet());
+        // we hit space immediately on entering this action
+        return Math.max(JUMP_ONE_BLOCK_COST, walk) + getTotalHardnessOfBlocksToBreak(context.getToolSet());
     }
 
     @Override
