@@ -35,15 +35,18 @@ public class CalculationContext implements Helper {
     private final ToolSet toolSet;
     private final boolean hasWaterBucket;
     private final boolean hasThrowaway;
+    private final boolean canSprint;
 
     public CalculationContext() {
         this(new ToolSet());
     }
 
     public CalculationContext(ToolSet toolSet) {
+        player().setSprinting(true);
         this.toolSet = toolSet;
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
         this.hasThrowaway = Baritone.settings().allowPlaceThrowaway.get() && MovementHelper.throwaway(false);
+        this.canSprint = Baritone.settings().allowSprint.get() && player().getFoodStats().getFoodLevel() > 6;
     }
 
     public ToolSet getToolSet() {
@@ -56,5 +59,9 @@ public class CalculationContext implements Helper {
 
     public boolean hasThrowaway() {
         return hasThrowaway;
+    }
+
+    public boolean canSprint() {
+        return canSprint;
     }
 }

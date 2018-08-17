@@ -116,7 +116,7 @@ public class MovementDiagonal extends Movement {
         if (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest)) {
             multiplier *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
         }
-        if (multiplier == WALK_ONE_BLOCK_COST) {
+        if (multiplier == WALK_ONE_BLOCK_COST && context.canSprint()) {
             // if we aren't edging around anything, and we aren't in water or soul sand
             // we can sprint =D
             multiplier = SPRINT_ONE_BLOCK_COST;

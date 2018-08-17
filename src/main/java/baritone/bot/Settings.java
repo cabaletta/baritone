@@ -31,6 +31,7 @@ import java.util.*;
 public class Settings {
     public Setting<Boolean> allowBreak = new Setting<>(true);
     public Setting<Boolean> allowPlaceThrowaway = new Setting<>(true);
+    public Setting<Boolean> allowSprint = new Setting<>(true);
     public Setting<Double> costHeuristic = new <Double>Setting<Double>(4D);
     public Setting<Boolean> chuckCaching = new Setting<>(false);
     public Setting<Boolean> allowWaterBucketFall = new Setting<>(true);

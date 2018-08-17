@@ -77,7 +77,7 @@ public class MovementTraverse extends Movement {
                 WC *= WALK_ONE_IN_WATER_COST / WALK_ONE_BLOCK_COST;
             }
             if (MovementHelper.canWalkThrough(positionsToBreak[0]) && MovementHelper.canWalkThrough(positionsToBreak[1])) {
-                if (WC == WALK_ONE_BLOCK_COST) {
+                if (WC == WALK_ONE_BLOCK_COST && context.canSprint()) {
                     // if there's nothing in the way, and this isn't water or soul sand, and we aren't sneak placing
                     // we can sprint =D
                     WC = SPRINT_ONE_BLOCK_COST;
