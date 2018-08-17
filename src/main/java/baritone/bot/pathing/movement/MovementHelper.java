@@ -70,7 +70,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block block = state.getBlock();
         if (block instanceof BlockLilyPad
                 || block instanceof BlockFire
-                || block instanceof BlockTripWire) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
+                || block instanceof BlockTripWire
+                || block instanceof BlockWeb
+                || block instanceof BlockEndPortal) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
         if (BlockStateInterface.isFlowing(state) || BlockStateInterface.isLiquid(pos.up())) {
