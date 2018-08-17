@@ -65,6 +65,9 @@ public class MovementPillar extends Movement {
                 BlockPos chkPos = src.up(3);
                 IBlockState check = BlockStateInterface.get(chkPos);
                 if (!MovementHelper.canWalkOn(chkPos, check) || MovementHelper.canWalkThrough(chkPos, check) || check.getBlock() instanceof BlockFalling) {//if the block above where we want to break is not a full block, don't do it
+                    // TODO why does canWalkThrough mean this action is COST_INF?
+                    // BlockFalling makes sense, and !canWalkOn deals with weird cases like if it were lava
+                    // but I don't understand why canWalkThrough makes it impossible
                     return COST_INF;
                 }
             }

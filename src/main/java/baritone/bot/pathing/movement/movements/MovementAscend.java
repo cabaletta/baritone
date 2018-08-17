@@ -98,6 +98,10 @@ public class MovementAscend extends Movement {
                 // so don't do it
                 return COST_INF;
             }
+            // you may think we only need to check srcUp2, not srcUp
+            // however, in the scenario where glitchy world gen where unsupported sand / gravel generates
+            // it's possible srcUp is AIR from the start, and srcUp2 is falling
+            // and in that scenario, when we arrive and break srcUp2, that lets srcUp3 fall on us and suffocate us
         }
         // TODO maybe change behavior if src.down() is soul sand?
         double walk = WALK_ONE_BLOCK_COST;
