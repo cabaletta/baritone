@@ -22,8 +22,13 @@ import baritone.bot.behavior.impl.LookBehavior;
 import baritone.bot.behavior.impl.MemoryBehavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.GameEventHandler;
+import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.utils.InputOverrideHandler;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +72,40 @@ public enum Baritone {
 
         this.active = true;
         this.initialized = true;
+        Field[] temp = Blocks.class.getFields();
+        try {
+            for (Field field : temp) {
+                if (field.getType().equals(Block.class)) {
+                    Block block = (Block) field.get(null);
+                    System.out.print(block);
+                    IBlockState state = block.getDefaultState();
+                    System.out.print(',');
+                    try {
+                        if (MovementHelper.canWalkThrough(null, state)) {
+                            System.out.print("true");
+                        } else {
+                            System.out.print("false");
+                        }
+                    } catch (Exception e) {
+                        System.out.print("unknown");
+                    }
+                    System.out.print(',');
+                    try {
+                        if (MovementHelper.canWalkOn(null, state)) {
+                            System.out.print("true");
+                        } else {
+                            System.out.print("false");
+                        }
+                    } catch (Exception e) {
+                        System.out.print("unknown");
+                    }
+
+                    System.out.println();
+                }
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public final boolean isInitialized() {
