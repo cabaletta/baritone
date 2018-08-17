@@ -56,6 +56,7 @@ public class Settings {
     ));
     public Setting<Boolean> renderGoal = new Setting<>(true);
     public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
+    public Setting<Boolean> backtrackCostFavor = new Setting<>(true);
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);  // see issue #18
     public Setting<Float> pathRenderLineWidth = new Setting<>(5F);
     public Setting<Float> goalRenderLineWidth = new Setting<>(3F);
