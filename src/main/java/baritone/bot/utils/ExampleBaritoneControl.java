@@ -22,12 +22,20 @@ import baritone.bot.Settings;
 import baritone.bot.behavior.Behavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.events.ChatEvent;
+import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.goals.GoalBlock;
 import baritone.bot.pathing.goals.GoalXZ;
 import baritone.bot.pathing.goals.GoalYLevel;
+import baritone.bot.pathing.movement.ActionCosts;
+import baritone.bot.pathing.movement.CalculationContext;
+import baritone.bot.pathing.movement.Movement;
+import baritone.bot.utils.pathing.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class ExampleBaritoneControl extends Behavior {
@@ -102,9 +110,25 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
+        if (msg.toLowerCase().equals("costs")) {
+            Movement[] movements = AStarPathFinder.getConnectedPositions(new BetterBlockPos(playerFeet()), new CalculationContext());
+            ArrayList<Movement> moves = new ArrayList<>(Arrays.asList(movements));
+            moves.sort(Comparator.comparingDouble(movement -> movement.getCost(new CalculationContext())));
+            for (Movement move : moves) {
+                String[] parts = move.getClass().toString().split("\\.");
+                double cost = move.getCost(new CalculationContext());
+                String strCost = cost + "";
+                if (cost >= ActionCosts.COST_INF) {
+                    strCost = "IMPOSSIBLE";
+                }
+                displayChatMessageRaw(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
+            }
+            event.cancel();
+            return;
+        }
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getByValueType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
-            if (msg.toLowerCase().equals(setting.getName().toLowerCase())) {
+            if (msg.equalsIgnoreCase(setting.getName())) {
                 setting.value ^= true;
                 event.cancel();
                 displayChatMessageRaw("Toggled " + setting.getName() + " to " + setting.value);

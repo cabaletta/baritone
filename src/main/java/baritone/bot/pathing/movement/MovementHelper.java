@@ -138,9 +138,14 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @return
      */
     static boolean canWalkOn(BlockPos pos, IBlockState state) {
-
         Block block = state.getBlock();
         if (block instanceof BlockLadder || block instanceof BlockVine) { // TODO reconsider this
+            return true;
+        }
+        if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
+            return true;
+        }
+        if (Blocks.FARMLAND.equals(block) || Blocks.GRASS_PATH.equals(block)) {
             return true;
         }
         if (block instanceof BlockAir) {

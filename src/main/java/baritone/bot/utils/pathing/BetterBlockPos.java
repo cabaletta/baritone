@@ -55,6 +55,10 @@ public class BetterBlockPos extends BlockPos {
         this.hashCode = hash;
     }
 
+    public BetterBlockPos(BlockPos pos) {
+        this(pos.getX(), pos.getY(), pos.getZ());
+    }
+
     @Override
     public int hashCode() {
         return hashCode;

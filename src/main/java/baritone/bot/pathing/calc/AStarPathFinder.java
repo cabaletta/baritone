@@ -208,7 +208,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
     }
 
 
-    private static Movement[] getConnectedPositions(BetterBlockPos pos, CalculationContext calcContext) {
+    public static Movement[] getConnectedPositions(BetterBlockPos pos, CalculationContext calcContext) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
