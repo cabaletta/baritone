@@ -36,6 +36,8 @@ public class CalculationContext implements Helper {
     private final boolean hasWaterBucket;
     private final boolean hasThrowaway;
     private final boolean canSprint;
+    private final double placeBlockCost;
+    private final boolean allowBreak;
 
     public CalculationContext() {
         this(new ToolSet());
@@ -44,9 +46,14 @@ public class CalculationContext implements Helper {
     public CalculationContext(ToolSet toolSet) {
         player().setSprinting(true);
         this.toolSet = toolSet;
-        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
         this.hasThrowaway = Baritone.settings().allowPlaceThrowaway.get() && MovementHelper.throwaway(false);
+        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
         this.canSprint = Baritone.settings().allowSprint.get() && player().getFoodStats().getFoodLevel() > 6;
+        this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
+        this.allowBreak = Baritone.settings().allowBreak.get();
+        // why cache these things here, why not let the movements just get directly from settings?
+        // because if some movements are calculated one way and others are calculated another way,
+        // then you get a wildly inconsistent path that isn't optimal for either scenario.
     }
 
     public ToolSet getToolSet() {
@@ -63,5 +70,13 @@ public class CalculationContext implements Helper {
 
     public boolean canSprint() {
         return canSprint;
+    }
+
+    public double placeBlockCost() {
+        return placeBlockCost;
+    }
+
+    public boolean allowBreak() {
+        return allowBreak;
     }
 }

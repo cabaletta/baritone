@@ -56,7 +56,7 @@ public class MovementPillar extends Movement {
                 return COST_INF;
             }
         }
-        double hardness = getTotalHardnessOfBlocksToBreak(context.getToolSet());
+        double hardness = getTotalHardnessOfBlocksToBreak(context);
         if (hardness != 0) {
             Block tmp = BlockStateInterface.get(src.up(2)).getBlock();
             if (tmp instanceof BlockLadder || tmp instanceof BlockVine) {
@@ -78,7 +78,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             return LADDER_UP_ONE_COST + hardness;
         } else {
-            return JUMP_ONE_BLOCK_COST + PLACE_ONE_BLOCK_COST + hardness;
+            return JUMP_ONE_BLOCK_COST + context.placeBlockCost() + hardness;
         }
     }
 

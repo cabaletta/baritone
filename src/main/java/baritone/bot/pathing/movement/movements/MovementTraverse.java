@@ -94,7 +94,7 @@ public class MovementTraverse extends Movement {
             //double hardness1 = blocksToBreak[0].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[0]);
             //double hardness2 = blocksToBreak[1].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[1]);
             //Out.log("Can't walk through " + blocksToBreak[0] + " (hardness" + hardness1 + ") or " + blocksToBreak[1] + " (hardness " + hardness2 + ")");
-            return WC + getTotalHardnessOfBlocksToBreak(context.getToolSet());
+            return WC + getTotalHardnessOfBlocksToBreak(context);
         } else {//this is a bridge, so we need to place a block
             Block srcDown = BlockStateInterface.get(src.down()).getBlock();
             if (srcDown instanceof BlockLadder || srcDown instanceof BlockVine) {
@@ -108,14 +108,14 @@ public class MovementTraverse extends Movement {
                 double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
                 for (BlockPos against1 : against) {
                     if (BlockStateInterface.get(against1).isBlockNormalCube()) {
-                        return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
+                        return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
                     }
                 }
                 if (BlockStateInterface.get(src).getBlock().equals(Blocks.SOUL_SAND)) {
                     return COST_INF; // can't sneak and backplace against soul sand =/
                 }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
-                return WC + PLACE_ONE_BLOCK_COST + getTotalHardnessOfBlocksToBreak(context.getToolSet());
+                return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
             }
             return COST_INF;
             //Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());

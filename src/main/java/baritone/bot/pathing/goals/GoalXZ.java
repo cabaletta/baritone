@@ -64,24 +64,6 @@ public class GoalXZ implements Goal {
     }
 
     public static double calculate(double xDiff, double zDiff) {
-        return calculate(xDiff, zDiff, 0);
-    }
-
-    /*
-     public static double calculate(double xDiff, double zDiff) {
-     double pythaDist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
-     return calculate(xDiff, zDiff, pythaDist);
-     }
-     public static double calculateOld(double xDiff, double zDiff, double pythaDist) {
-     double heuristic = 0;
-     heuristic += Math.abs(xDiff) * Movement.WALK_ONE_BLOCK_COST * 1.1;//overestimate
-     heuristic += Math.abs(zDiff) * Movement.WALK_ONE_BLOCK_COST * 1.1;
-     heuristic += pythaDist / 10 * Movement.WALK_ONE_BLOCK_COST;
-     return heuristic;
-     }
-     */
-
-    public static double calculate(double xDiff, double zDiff, double pythaDist) {
         //This is a combination of pythagorean and manhattan distance
         //It takes into account the fact that pathing can either walk diagonally or forwards
 

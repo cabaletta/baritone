@@ -31,6 +31,11 @@ import java.util.*;
 public class Settings {
     public Setting<Boolean> allowBreak = new Setting<>(true);
     public Setting<Boolean> allowPlaceThrowaway = new Setting<>(true);
+    /**
+     * It doesn't actually take twenty ticks to place a block, this cost is so high
+     * because we want to generally conserve blocks which might be limited
+     */
+    public Setting<Double> blockPlacementPenalty = new Setting<>(20D);
     public Setting<Boolean> allowSprint = new Setting<>(true);
     public Setting<Double> costHeuristic = new <Double>Setting<Double>(4D);
     public Setting<Boolean> chuckCaching = new Setting<>(false);
@@ -44,7 +49,7 @@ public class Settings {
     public Setting<Boolean> slowPath = new Setting<>(false);
     public Setting<Number> slowPathTimeDelayMS = new Setting<>(100L);
     public Setting<Number> slowPathTimeoutMS = new Setting<>(40000L);
-    public Setting<List<Item>> acceptableThrowAwayItems = new Setting<>(Arrays.asList(
+    public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK)

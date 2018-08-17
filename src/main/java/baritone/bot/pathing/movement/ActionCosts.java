@@ -39,12 +39,6 @@ public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieI
     double CENTER_AFTER_FALL_COST = WALK_ONE_BLOCK_COST - WALK_OFF_BLOCK_COST;
 
     /**
-     * It doesn't actually take ten ticks to place a block, this cost is so high
-     * because we want to generally conserve blocks which might be limited
-     */
-    double PLACE_ONE_BLOCK_COST = 20;
-
-    /**
      * don't make this Double.MAX_VALUE because it's added to other things, maybe other COST_INFs,
      * and that would make it overflow to negative
      */

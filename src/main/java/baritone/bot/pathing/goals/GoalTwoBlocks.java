@@ -60,7 +60,7 @@ public class GoalTwoBlocks implements Goal {
     @Override
     public double heuristic(BlockPos pos) {
         double xDiff = pos.getX() - this.x;
-        double yDiff = pos.getY() - this.y;
+        int yDiff = pos.getY() - this.y;
         if (yDiff < 0) {
             yDiff++;
         }

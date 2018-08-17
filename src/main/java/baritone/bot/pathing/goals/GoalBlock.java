@@ -68,9 +68,9 @@ public class GoalBlock implements Goal {
 
     @Override
     public double heuristic(BlockPos pos) {
-        double xDiff = pos.getX() - this.x;
-        double yDiff = pos.getY() - this.y;
-        double zDiff = pos.getZ() - this.z;
+        int xDiff = pos.getX() - this.x;
+        int yDiff = pos.getY() - this.y;
+        int zDiff = pos.getZ() - this.z;
         return calculate(xDiff, yDiff, zDiff);
     }
 
@@ -86,25 +86,26 @@ public class GoalBlock implements Goal {
         return new BlockPos(x, y, z);
     }
 
-    public static double calculate(double xDiff, double yDiff, double zDiff) {
+    public static double calculate(double xDiff, int yDiff, double zDiff) {
         double pythaDist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
         double heuristic = 0;
-        double baseline = (PLACE_ONE_BLOCK_COST + FALL_N_BLOCKS_COST[1]) * 32;
         if (pythaDist < MAX) {//if we are more than MAX away, ignore the Y coordinate. It really doesn't matter how far away your Y coordinate is if you X coordinate is 1000 blocks away.
             //as we get closer, slowly reintroduce the Y coordinate as a heuristic cost
-            double multiplier = pythaDist < MIN ? 1 : 1 - (pythaDist - MIN) / (MAX - MIN);
-            if (yDiff < 0) {//pos.getY()-this.y<0 therefore pos.getY()<this.y, so target is above current
-                heuristic -= yDiff * (PLACE_ONE_BLOCK_COST * 0.7 + JUMP_ONE_BLOCK_COST);//target above current
+            double multiplier;
+            if (pythaDist < MIN) {
+                multiplier = 1;
             } else {
-                heuristic += yDiff * (10 + FALL_N_BLOCKS_COST[1]);//target below current
+                multiplier = 1 - (pythaDist - MIN) / (MAX - MIN);
             }
+
+            // if yDiff is 1 that means that pos.getY()-this.y==1 which means that we're 1 block below where we should be
+            // therefore going from 0,0,0 to a GoalYLevel of pos.getY()-this.y is accurate
+            heuristic += new GoalYLevel(yDiff).heuristic(new BlockPos(0, 0, 0));
+
             heuristic *= multiplier;
-            heuristic += (1 - multiplier) * baseline;
-        } else {
-            heuristic += baseline;
         }
         //use the pythagorean and manhattan mixture from GoalXZ
-        heuristic += GoalXZ.calculate(xDiff, zDiff, pythaDist);
+        heuristic += GoalXZ.calculate(xDiff, zDiff);
         return heuristic;
     }
 }

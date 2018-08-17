@@ -47,7 +47,7 @@ public class MovementDownward extends Movement {
         if (ladder) {
             return LADDER_DOWN_ONE_COST;
         } else {
-            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context.getToolSet(), dest, d);
+            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, dest, d);
         }
     }
 

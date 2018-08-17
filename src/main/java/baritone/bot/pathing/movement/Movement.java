@@ -178,7 +178,7 @@ public abstract class Movement implements Helper, MovementHelper {
     }
 
 
-    public double getTotalHardnessOfBlocksToBreak(ToolSet ts) {
+    public double getTotalHardnessOfBlocksToBreak(CalculationContext ctx) {
         /*
         double sum = 0;
         HashSet<BlockPos> toBreak = new HashSet();
@@ -209,7 +209,7 @@ public abstract class Movement implements Helper, MovementHelper {
         //^ the above implementation properly deals with falling blocks, TODO integrate
         double sum = 0;
         for (BlockPos pos : positionsToBreak) {
-            sum += MovementHelper.getMiningDurationTicks(ts, pos);
+            sum += MovementHelper.getMiningDurationTicks(ctx, pos);
             if (sum >= COST_INF) {
                 return COST_INF;
             }

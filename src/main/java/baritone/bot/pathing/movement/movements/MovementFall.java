@@ -18,7 +18,10 @@
 package baritone.bot.pathing.movement.movements;
 
 import baritone.bot.behavior.impl.LookBehaviorUtils;
-import baritone.bot.pathing.movement.*;
+import baritone.bot.pathing.movement.CalculationContext;
+import baritone.bot.pathing.movement.Movement;
+import baritone.bot.pathing.movement.MovementHelper;
+import baritone.bot.pathing.movement.MovementState;
 import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.pathing.movement.MovementState.MovementTarget;
 import baritone.bot.utils.BlockStateInterface;
@@ -52,9 +55,9 @@ public class MovementFall extends Movement {
             if (!context.hasWaterBucket()) {
                 return COST_INF;
             }
-            placeBucketCost = ActionCosts.PLACE_ONE_BLOCK_COST;
+            placeBucketCost = context.placeBlockCost();
         }
-        double frontTwo = MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[1]);
+        double frontTwo = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1]);
         if (frontTwo >= COST_INF) {
             return COST_INF;
         }
@@ -64,7 +67,7 @@ public class MovementFall extends Movement {
             // lilypads (i think?) are 0 ticks to mine, but they definitely cause fall damage
             // same thing for falling through water... we can't actually do that
             // and falling through signs is possible, but they do have a mining duration, right?
-            if (MovementHelper.getMiningDurationTicks(context.getToolSet(), positionsToBreak[i]) > 0) {
+            if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i]) > 0) {
                 //can't break while falling
                 return COST_INF;
             }

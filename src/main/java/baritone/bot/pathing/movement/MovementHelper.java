@@ -161,22 +161,22 @@ public interface MovementHelper extends ActionCosts, Helper {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
-    static double getMiningDurationTicks(ToolSet ts, BlockPos position) {
+    static double getMiningDurationTicks(CalculationContext context, BlockPos position) {
         IBlockState state = BlockStateInterface.get(position);
-        return getMiningDurationTicks(ts, position, state);
+        return getMiningDurationTicks(context, position, state);
     }
 
-    static double getMiningDurationTicks(ToolSet ts, BlockPos position, IBlockState state) {
+    static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state) {
         Block block = state.getBlock();
-        if (!block.equals(Blocks.AIR) && !canWalkThrough(position, state)) {
-            if (!Baritone.settings().allowBreak.get()) {
+        if (!block.equals(Blocks.AIR) && !canWalkThrough(position, state)) { // TODO is the air check really necessary? Isn't air canWalkThrough?
+            if (!context.allowBreak()) {
                 return COST_INF;
             }
             if (avoidBreaking(position, state)) {
                 return COST_INF;
             }
-            double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1;
-            return m / ts.getStrVsBlock(state, position);
+            double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
+            return m / context.getToolSet().getStrVsBlock(state, position);
         }
         return 0;
     }
@@ -230,7 +230,12 @@ public interface MovementHelper extends ActionCosts, Helper {
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);
-            if (Baritone.settings().acceptableThrowAwayItems.get().contains(item.getItem())) {
+            // this usage of settings() is okay because it's only called once during pathing
+            // (while creating the CalculationContext at the very beginning)
+            // and then it's called during execution
+            // since this function is never called during cost calculation, we don't need to migrate
+            // acceptableThrowawayItems to the CalculationContext
+            if (Baritone.settings().acceptableThrowawayItems.get().contains(item.getItem())) {
                 if (select) {
                     p.inventory.currentItem = i;
                 }
