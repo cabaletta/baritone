@@ -154,7 +154,7 @@ public class MovementTraverse extends Movement {
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionsToPlace[0]) || ladder;
         BlockPos whereAmI = playerFeet();
         if (whereAmI.getY() != dest.getY() && !ladder) {
-            System.out.println("Wrong Y coordinate");
+            displayChatMessageRaw("Wrong Y coordinate");
             if (whereAmI.getY() < dest.getY()) {
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
             }
@@ -167,6 +167,11 @@ public class MovementTraverse extends Movement {
             }
             if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
                 player().setSprinting(true);
+            }
+            Block destDown = BlockStateInterface.get(dest.down()).getBlock();
+            if (ladder && (destDown instanceof BlockVine || destDown instanceof BlockLadder)) {
+                new MovementPillar(dest.down(), dest).updateState(state); // i'm sorry
+                return state;
             }
             MovementHelper.moveTowards(state, positionsToBreak[0]);
             return state;
