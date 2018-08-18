@@ -119,6 +119,7 @@ public class MovementAscend extends Movement {
         // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
         switch (state.getStatus()) {
             case WAITING:
+                state.setStatus(MovementStatus.RUNNING);
             case RUNNING:
                 break;
             default:

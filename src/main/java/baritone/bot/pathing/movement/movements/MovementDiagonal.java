@@ -52,6 +52,7 @@ public class MovementDiagonal extends Movement {
         super.updateState(state);
         switch (state.getStatus()) {
             case WAITING:
+                state.setStatus(MovementState.MovementStatus.RUNNING);
             case RUNNING:
                 break;
             default:
