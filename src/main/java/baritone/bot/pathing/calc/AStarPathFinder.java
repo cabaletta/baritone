@@ -97,6 +97,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         boolean cache = Baritone.settings().chuckCaching.get();
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get();
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
+        boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime) {
             if (slowPath) {
                 try {
@@ -160,6 +161,14 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     if (tentativeCost < 0) {
                         throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " overflowed into negative " + actionCost + " " + neighbor.cost + " " + tentativeCost);
                     }
+                    double improvementBy = neighbor.cost - tentativeCost;
+                    // there are floating point errors caused by random combinations of traverse and diagonal over a flat area
+                    // that means that sometimes there's a cost improvement of like 10 ^ -16
+                    // it's not worth the time to update the costs, decrease-key the heap, potentially repropagate, etc
+                    if (improvementBy < 0.01 && minimumImprovementRepropagation) {
+                        // who cares about a hundredth of a tick? that's half a millisecond for crying out loud!
+                        continue;
+                    }
                     neighbor.previous = currentNode;
                     neighbor.previousMovement = movementToGetToNeighbor;
                     neighbor.cost = tentativeCost;
@@ -190,7 +199,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 bestDist = dist;
             }
             if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                displayChatMessageRaw("A* cost coefficient " + COEFFICIENTS[i]);
+                displayChatMessageRaw("Took " + (System.currentTimeMillis() - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i]);
                 if (COEFFICIENTS[i] >= 3) {
                     System.out.println("Warning: cost coefficient is greater than three! Probably means that");
                     System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");

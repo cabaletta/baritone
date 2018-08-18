@@ -265,7 +265,7 @@ public class PathingBehavior extends Behavior {
             PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED, Baritone.settings().fadePath.get(), 10, 20);
         }
         if (next != null && next.getPath() != null) {
-            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.GREEN, Baritone.settings().fadePath.get(), 10, 20);
+            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.MAGENTA, Baritone.settings().fadePath.get(), 10, 20);
         }
 
         long split = System.nanoTime();

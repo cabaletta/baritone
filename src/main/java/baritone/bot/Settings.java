@@ -36,30 +36,41 @@ public class Settings {
      * because we want to generally conserve blocks which might be limited
      */
     public Setting<Double> blockPlacementPenalty = new Setting<>(20D);
-    public Setting<Boolean> allowSprint = new Setting<>(true);
-    public Setting<Double> costHeuristic = new <Double>Setting<Double>(4D);
-    public Setting<Boolean> chuckCaching = new Setting<>(false);
     public Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
-    public Setting<Integer> planningTickLookAhead = new Setting<>(150);
-    public Setting<Boolean> chatDebug = new Setting<>(true);
-    public Setting<Boolean> chatControl = new Setting<>(true); // probably false in impact
-    public Setting<Boolean> renderPath = new Setting<>(true);
-    public Setting<Boolean> fadePath = new Setting<>(false); // give this a better name in the UI, like "better path fps" idk
-    public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
-    public Setting<Boolean> slowPath = new Setting<>(false);
-    public Setting<Number> slowPathTimeDelayMS = new Setting<>(100L);
-    public Setting<Number> slowPathTimeoutMS = new Setting<>(40000L);
+    public Setting<Boolean> allowSprint = new Setting<>(true);
     public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK)
     ));
-    public Setting<Boolean> renderGoal = new Setting<>(true);
+
+    public Setting<Double> costHeuristic = new <Double>Setting<Double>(4D);
+
+    // obscure internal A* settings that you probably don't want to change
     public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
-    public Setting<Boolean> backtrackCostFavor = new Setting<>(true);
+    public Setting<Boolean> backtrackCostFavor = new Setting<>(true);  // see issue #18
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);  // see issue #18
+    public Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
+
+    public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
+
+    public Setting<Boolean> slowPath = new Setting<>(false);
+    public Setting<Number> slowPathTimeDelayMS = new Setting<>(100L);
+    public Setting<Number> slowPathTimeoutMS = new Setting<>(40000L);
+
+    public Setting<Boolean> chuckCaching = new Setting<>(false);
+
+    public Setting<Integer> planningTickLookAhead = new Setting<>(150);
+
+    public Setting<Boolean> chatDebug = new Setting<>(true);
+    public Setting<Boolean> chatControl = new Setting<>(true); // probably false in impact
+
+    public Setting<Boolean> renderPath = new Setting<>(true);
+    public Setting<Boolean> renderGoal = new Setting<>(true);
     public Setting<Float> pathRenderLineWidth = new Setting<>(5F);
     public Setting<Float> goalRenderLineWidth = new Setting<>(3F);
+    public Setting<Boolean> fadePath = new Setting<>(false); // give this a better name in the UI, like "better path fps" idk
+
 
     public final Map<String, Setting<?>> byName;
     public final List<Setting<?>> allSettings;
