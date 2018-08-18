@@ -27,7 +27,9 @@ import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
+import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.PathRenderer;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 import java.awt.*;
@@ -92,7 +94,7 @@ public class PathingBehavior extends Behavior {
                         // if we aren't calculating right now
                         return;
                     }
-                    findPathInNewThread(playerFeet(), true, Optional.empty());
+                    findPathInNewThread(pathStart(), true, Optional.empty());
                 }
                 return;
             }
@@ -168,9 +170,17 @@ public class PathingBehavior extends Behavior {
                 if (isPathCalcInProgress) {
                     return;
                 }
-                findPathInNewThread(playerFeet(), true, Optional.empty());
+                findPathInNewThread(pathStart(), true, Optional.empty());
             }
         }
+    }
+
+    public BlockPos pathStart() {
+        BlockPos feet = playerFeet();
+        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR)) {
+            return feet.down();
+        }
+        return feet;
     }
 
     /**
