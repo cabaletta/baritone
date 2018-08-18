@@ -146,9 +146,11 @@ public class MovementTraverse extends Movement {
                 isDoorActuallyBlockingUs = true;
             }
             if (isDoorActuallyBlockingUs) {
-                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()))));
-                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                return state;
+                if (!(Blocks.IRON_DOOR.equals(srcBlock) || Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
+                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()))));
+                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                    return state;
+                }
             }
         }
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionsToPlace[0]) || ladder;

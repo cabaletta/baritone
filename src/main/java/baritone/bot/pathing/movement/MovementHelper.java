@@ -47,13 +47,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block b = state.getBlock();
         BlockPos below = new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ());
         return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
-                || b instanceof BlockSilverfish
+                || b instanceof BlockSilverfish // obvious reasons
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1))
                 || (!(b instanceof BlockLilyPad && BlockStateInterface.isWater(below)) && BlockStateInterface.isLiquid(below));//if it's a lilypad above water, it's ok to break, otherwise don't break if its liquid
+        // TODO revisit this. why is it not okay to break non-lilypads that are right above water?
     }
 
     /**
@@ -78,7 +79,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (BlockStateInterface.isFlowing(state) || BlockStateInterface.isLiquid(pos.up())) {
             return false; // Don't walk through flowing liquids
         }
-        if (block instanceof BlockDoor) {
+        if (block instanceof BlockDoor && !Blocks.IRON_DOOR.equals(block)) {
             return true; // we can just open the door
         }
         return block.isPassable(mc.world, pos);
