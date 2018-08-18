@@ -124,9 +124,6 @@ public abstract class Movement implements Helper, MovementHelper {
     }
 
     protected boolean prepared(MovementState state) {
-        if (state.getStatus() == MovementStatus.WAITING)
-            return true;
-
         boolean somethingInTheWay = false;
         for (BlockPos blockPos : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(blockPos)) {
