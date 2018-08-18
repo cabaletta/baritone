@@ -225,9 +225,9 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return
      */
     public MovementState updateState(MovementState state) {
-        if (!prepared(state))
+        if (!prepared(state)) {
             return state.setStatus(MovementStatus.PREPPING);
-        else if (state.getStatus() == MovementStatus.PREPPING) {
+        } else if (state.getStatus() == MovementStatus.PREPPING) {
             state.setStatus(MovementStatus.WAITING);
         }
         return state;
