@@ -87,13 +87,13 @@ public class MovementPillar extends Movement {
             return vine.north();
         }
         if (BlockStateInterface.get(vine.south()).isBlockNormalCube()) {
-            return vine.north();
+            return vine.south();
         }
         if (BlockStateInterface.get(vine.east()).isBlockNormalCube()) {
-            return vine.north();
+            return vine.east();
         }
         if (BlockStateInterface.get(vine.west()).isBlockNormalCube()) {
-            return vine.north();
+            return vine.west();
         }
         return null;
     }
