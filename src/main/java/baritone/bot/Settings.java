@@ -44,7 +44,7 @@ public class Settings {
             Item.getItemFromBlock(Blocks.NETHERRACK)
     ));
 
-    public Setting<Double> costHeuristic = new <Double>Setting<Double>(4D);
+    public Setting<Double> costHeuristic = new <Double>Setting<Double>(3.5D);
 
     // obscure internal A* settings that you probably don't want to change
     public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
@@ -60,7 +60,7 @@ public class Settings {
 
     public Setting<Boolean> chuckCaching = new Setting<>(false);
 
-    public Setting<Integer> planningTickLookAhead = new Setting<>(150);
+    public Setting<Integer> planningTickLookAhead = new Setting<>(150);/**/
 
     public Setting<Boolean> chatDebug = new Setting<>(true);
     public Setting<Boolean> chatControl = new Setting<>(true); // probably false in impact
