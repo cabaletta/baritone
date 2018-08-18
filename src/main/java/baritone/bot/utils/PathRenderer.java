@@ -170,13 +170,6 @@ public final class PathRenderer implements Helper {
     }
 
     public static void drawLitDankGoalBox(EntityPlayer player, Goal goal, float partialTicks, Color color) {
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
-        GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidth.get());
-        GlStateManager.disableTexture2D();
-        GlStateManager.depthMask(false);
-        float expand = 0.002F;
         double renderPosX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
@@ -216,6 +209,13 @@ public final class PathRenderer implements Helper {
             // TODO GoalComposite
             return;
         }
+
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
+        GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidth.get());
+        GlStateManager.disableTexture2D();
+        GlStateManager.depthMask(false);
 
         if (y1 != 0) {
             BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
