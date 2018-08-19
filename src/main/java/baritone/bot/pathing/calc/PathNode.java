@@ -95,7 +95,7 @@ public class PathNode {
      */
     @Override
     public int hashCode() {
-        throw new IllegalStateException();
+        return pos.hashCode() * 7 + 3;
     }
 
     @Override

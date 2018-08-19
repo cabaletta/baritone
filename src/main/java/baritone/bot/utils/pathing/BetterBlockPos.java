@@ -60,12 +60,12 @@ public class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return hashCode;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (o == null) {
             return false;
         }

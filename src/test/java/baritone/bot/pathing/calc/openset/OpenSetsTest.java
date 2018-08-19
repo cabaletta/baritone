@@ -18,8 +18,9 @@
 package baritone.bot.pathing.calc.openset;
 
 import baritone.bot.pathing.calc.PathNode;
-import baritone.bot.pathing.goals.GoalBlock;
+import baritone.bot.pathing.goals.Goal;
 import baritone.bot.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
 
 import java.util.*;
@@ -73,7 +74,20 @@ public class OpenSetsTest {
         // generate the pathnodes that we'll be testing the sets on
         PathNode[] toInsert = new PathNode[size];
         for (int i = 0; i < size; i++) {
-            PathNode pn = new PathNode(new BetterBlockPos(0, 0, 0), new GoalBlock(new BetterBlockPos(0, 0, 0)));
+            // can't use an existing goal
+            // because they use Baritone.settings()
+            // and we can't do that because Minecraft itself isn't initted
+            PathNode pn = new PathNode(new BetterBlockPos(0, 0, 0), new Goal() {
+                @Override
+                public boolean isInGoal(BlockPos pos) {
+                    return false;
+                }
+
+                @Override
+                public double heuristic(BlockPos pos) {
+                    return 0;
+                }
+            });
             pn.combinedCost = Math.random();
             toInsert[i] = pn;
         }

@@ -53,27 +53,41 @@ public class BinaryHeapOpenSet implements IOpenSet {
     }
 
     @Override
-    public void insert(PathNode value) {
+    public final void insert(PathNode value) {
         if (size >= array.length - 1) {
             array = Arrays.copyOf(array, array.length * 2);
         }
         size++;
         value.heapPosition = size;
         array[size] = value;
-        upHeap(size);
-    }
-
-    public void update(PathNode node) {
-        upHeap(node.heapPosition);
+        update(value);
     }
 
     @Override
-    public boolean isEmpty() {
+    public final void update(PathNode node) {
+        int index = node.heapPosition;
+        int parentInd = index >>> 1;
+        PathNode val = array[index];
+        double cost = val.combinedCost;
+        PathNode parentNode = array[parentInd];
+        while (index > 1 && parentNode.combinedCost > cost) {
+            array[index] = parentNode;
+            array[parentInd] = val;
+            val.heapPosition = parentInd;
+            parentNode.heapPosition = index;
+            index = parentInd;
+            parentInd = index >>> 1;
+            parentNode = array[parentInd];
+        }
+    }
+
+    @Override
+    public final boolean isEmpty() {
         return size == 0;
     }
 
     @Override
-    public PathNode removeLowest() {
+    public final PathNode removeLowest() {
         if (size == 0) {
             throw new IllegalStateException();
         }
@@ -114,21 +128,5 @@ public class BinaryHeapOpenSet implements IOpenSet {
             smallerChild = index << 1;
         } while (smallerChild <= size);
         return result;
-    }
-
-    private void upHeap(int index) {
-        int parentInd = index >>> 1;
-        PathNode val = array[index];
-        double cost = val.combinedCost;
-        PathNode parentNode = array[parentInd];
-        while (index > 1 && parentNode.combinedCost > cost) {
-            array[index] = parentNode;
-            array[parentInd] = val;
-            val.heapPosition = parentInd;
-            parentNode.heapPosition = index;
-            index = parentInd;
-            parentInd = index >>> 1;
-            parentNode = array[parentInd];
-        }
     }
 }
