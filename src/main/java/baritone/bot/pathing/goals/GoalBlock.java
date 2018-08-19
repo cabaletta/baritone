@@ -87,23 +87,12 @@ public class GoalBlock implements Goal {
     }
 
     public static double calculate(double xDiff, int yDiff, double zDiff) {
-        double pythaDist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
         double heuristic = 0;
-        if (pythaDist < MAX) {//if we are more than MAX away, ignore the Y coordinate. It really doesn't matter how far away your Y coordinate is if you X coordinate is 1000 blocks away.
-            //as we get closer, slowly reintroduce the Y coordinate as a heuristic cost
-            double multiplier;
-            if (pythaDist < MIN) {
-                multiplier = 1;
-            } else {
-                multiplier = 1 - (pythaDist - MIN) / (MAX - MIN);
-            }
 
-            // if yDiff is 1 that means that pos.getY()-this.y==1 which means that we're 1 block below where we should be
-            // therefore going from 0,0,0 to a GoalYLevel of pos.getY()-this.y is accurate
-            heuristic += new GoalYLevel(yDiff).heuristic(new BlockPos(0, 0, 0));
+        // if yDiff is 1 that means that pos.getY()-this.y==1 which means that we're 1 block below where we should be
+        // therefore going from 0,0,0 to a GoalYLevel of pos.getY()-this.y is accurate
+        heuristic += new GoalYLevel(yDiff).heuristic(new BlockPos(0, 0, 0));
 
-            heuristic *= multiplier;
-        }
         //use the pythagorean and manhattan mixture from GoalXZ
         heuristic += GoalXZ.calculate(xDiff, zDiff);
         return heuristic;
