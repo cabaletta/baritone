@@ -51,6 +51,7 @@ public class Settings {
     public Setting<Boolean> backtrackCostFavor = new Setting<>(true);  // see issue #18
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);  // see issue #18
     public Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
+    public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
 
     public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
 

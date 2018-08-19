@@ -201,13 +201,17 @@ public class PathingBehavior extends Behavior {
                 displayChatMessageRaw("Starting to search for path from " + start + " to " + goal);
             }
 
-            findPath(start, previous).map(IPath::cutoffAtLoadedChunks).map(PathExecutor::new).ifPresent(path -> {
+            Optional<IPath> path = findPath(start, previous);
+            if (Baritone.settings().cutoffAtLoadBoundary.get()) {
+                path = path.map(IPath::cutoffAtLoadedChunks);
+            }
+            path.map(PathExecutor::new).ifPresent(p -> {
                 synchronized (pathPlanLock) {
                     if (current == null) {
-                        current = path;
+                        current = p;
                     } else {
                         if (next == null) {
-                            next = path;
+                            next = p;
                         } else {
                             throw new IllegalStateException("I have no idea what to do with this path");
                         }
