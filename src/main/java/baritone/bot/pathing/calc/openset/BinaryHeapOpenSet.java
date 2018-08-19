@@ -64,10 +64,9 @@ public class BinaryHeapOpenSet implements IOpenSet {
     }
 
     @Override
-    public final void update(PathNode node) {
-        int index = node.heapPosition;
+    public final void update(PathNode val) {
+        int index = val.heapPosition;
         int parentInd = index >>> 1;
-        PathNode val = array[index];
         double cost = val.combinedCost;
         PathNode parentNode = array[parentInd];
         while (index > 1 && parentNode.combinedCost > cost) {
