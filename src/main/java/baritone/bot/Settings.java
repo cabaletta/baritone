@@ -30,14 +30,14 @@ import java.util.*;
  */
 public class Settings {
     public Setting<Boolean> allowBreak = new Setting<>(true);
-    public Setting<Boolean> allowPlaceThrowaway = new Setting<>(true);
+    public Setting<Boolean> allowSprint = new Setting<>(true);
+    public Setting<Boolean> allowPlace = new Setting<>(true);
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited
      */
     public Setting<Double> blockPlacementPenalty = new Setting<>(20D);
     public Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
-    public Setting<Boolean> allowSprint = new Setting<>(true);
     public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
@@ -48,10 +48,11 @@ public class Settings {
 
     // obscure internal A* settings that you probably don't want to change
     public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
-    public Setting<Boolean> backtrackCostFavor = new Setting<>(true);  // see issue #18
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);  // see issue #18
     public Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
     public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
+    public Setting<Double> pathCutoffFactor = new Setting<>(0.7);
+    public Setting<Integer> pathCutoffMinimumLength = new Setting<>(70);
 
     public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
 
@@ -61,7 +62,7 @@ public class Settings {
 
     public Setting<Boolean> chuckCaching = new Setting<>(false);
 
-    public Setting<Integer> planningTickLookAhead = new Setting<>(150);/**/
+    public Setting<Integer> planningTickLookAhead = new Setting<>(150);
 
     public Setting<Boolean> chatDebug = new Setting<>(true);
     public Setting<Boolean> chatControl = new Setting<>(true); // probably false in impact
@@ -73,7 +74,7 @@ public class Settings {
     public Setting<Boolean> fadePath = new Setting<>(false); // give this a better name in the UI, like "better path fps" idk
 
 
-    public final Map<String, Setting<?>> byName;
+    public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 
     public class Setting<T> {
@@ -118,6 +119,7 @@ public class Settings {
                     Setting<?> setting = (Setting<? extends Object>) field.get(this);
                     String name = field.getName();
                     setting.name = name;
+                    name = name.toLowerCase();
                     if (tmpByName.containsKey(name)) {
                         throw new IllegalStateException("Duplicate setting name");
                     }
@@ -128,7 +130,7 @@ public class Settings {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        byName = Collections.unmodifiableMap(tmpByName);
+        byLowerName = Collections.unmodifiableMap(tmpByName);
         allSettings = Collections.unmodifiableList(tmpAll);
     }
 

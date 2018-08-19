@@ -46,7 +46,7 @@ public class CalculationContext implements Helper {
     public CalculationContext(ToolSet toolSet) {
         player().setSprinting(true);
         this.toolSet = toolSet;
-        this.hasThrowaway = Baritone.settings().allowPlaceThrowaway.get() && MovementHelper.throwaway(false);
+        this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(false);
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
         this.canSprint = Baritone.settings().allowSprint.get() && player().getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();

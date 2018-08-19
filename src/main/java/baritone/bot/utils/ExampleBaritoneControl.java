@@ -55,6 +55,9 @@ public class ExampleBaritoneControl extends Behavior {
             return;
         }
         String msg = event.getMessage();
+        if (msg.startsWith("/")) {
+            msg = msg.substring(1);
+        }
         if (msg.toLowerCase().startsWith("goal")) {
             event.cancel();
             String[] params = msg.toLowerCase().substring(4).trim().split(" ");
@@ -144,6 +147,45 @@ public class ExampleBaritoneControl extends Behavior {
                 displayChatMessageRaw("Toggled " + setting.getName() + " to " + setting.value);
                 return;
             }
+        }
+        if (msg.toLowerCase().equals("baritone") || msg.toLowerCase().equals("settings")) {
+            for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
+                displayChatMessageRaw(setting.toString());
+            }
+            event.cancel();
+            return;
+        }
+        if (msg.contains(" ")) {
+            String[] data = msg.split(" ");
+            if (data.length == 2) {
+                Settings.Setting setting = Baritone.settings().byLowerName.get(data[0].toLowerCase());
+                if (setting != null) {
+                    try {
+                        if (setting.value.getClass() == Long.class) {
+                            setting.value = Long.parseLong(data[1]);
+                        }
+                        if (setting.value.getClass() == Integer.class) {
+                            setting.value = Integer.parseInt(data[1]);
+                        }
+                        if (setting.value.getClass() == Double.class) {
+                            setting.value = Double.parseDouble(data[1]);
+                        }
+                    } catch (NumberFormatException e) {
+                        displayChatMessageRaw("Unable to parse " + data[1]);
+                        event.cancel();
+                        return;
+                    }
+                    displayChatMessageRaw(setting.toString());
+                    event.cancel();
+                    return;
+                }
+            }
+        }
+        if (Baritone.settings().byLowerName.containsKey(msg.toLowerCase())) {
+            Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg.toLowerCase());
+            displayChatMessageRaw(setting.toString());
+            event.cancel();
+            return;
         }
     }
 }

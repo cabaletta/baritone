@@ -205,7 +205,7 @@ public class PathingBehavior extends Behavior {
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(IPath::cutoffAtLoadedChunks);
             }
-            path.map(PathExecutor::new).ifPresent(p -> {
+            path.map(p -> p.staticCutoff(goal)).map(PathExecutor::new).ifPresent(p -> {
                 synchronized (pathPlanLock) {
                     if (current == null) {
                         current = p;

@@ -17,6 +17,8 @@
 
 package baritone.bot.pathing.path;
 
+import baritone.bot.Baritone;
+import baritone.bot.pathing.goals.Goal;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.Utils;
@@ -135,4 +137,16 @@ public interface IPath extends Helper {
         return this;
     }
 
+    default IPath staticCutoff(Goal destination) {
+        if (length() < Baritone.settings().pathCutoffMinimumLength.get()) {
+            return this;
+        }
+        if (destination == null || destination.isInGoal(getDest())) {
+            return this;
+        }
+        double factor = Baritone.settings().pathCutoffFactor.get();
+        int newLength = (int) (length() * factor);
+        displayChatMessageRaw("Static cutoff " + length() + " to " + newLength);
+        return new CutoffPath(this, newLength);
+    }
 }

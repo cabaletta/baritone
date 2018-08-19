@@ -93,8 +93,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         long lastPrintout = 0;
         int numNodes = 0;
         int numEmptyChunk = 0;
-        boolean favoring = favoredPositions.isPresent() && Baritone.settings().backtrackCostFavor.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
-        boolean cache = Baritone.settings().chuckCaching.get();
+        boolean favoring = favoredPositions.isPresent();
+        boolean cache = Baritone.settings().chuckCaching.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get();
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
