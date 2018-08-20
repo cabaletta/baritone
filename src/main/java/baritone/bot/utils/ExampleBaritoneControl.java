@@ -129,16 +129,6 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("heuristic")) {
-            try {
-                double d = Double.parseDouble(msg.substring("heuristic".length()).trim());
-                Baritone.settings().costHeuristic.value = d;
-            } catch (NumberFormatException e) {
-                displayChatMessageRaw("Couldn't parse value");
-            }
-            event.cancel();
-            return;
-        }
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getByValueType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
