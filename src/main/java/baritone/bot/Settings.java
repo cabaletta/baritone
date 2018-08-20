@@ -130,6 +130,11 @@ public class Settings {
     public Setting<Integer> maxFallHeight = new Setting<>(3);
 
     /**
+     * If a movement takes this many ticks more than its initial cost estimate, cancel it
+     */
+    public Setting<Integer> movementTimeoutTicks = new Setting<>(100);
+
+    /**
      * Pathing can never take longer than this
      */
     public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
