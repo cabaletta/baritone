@@ -123,6 +123,13 @@ public class Settings {
     public Setting<Integer> planningTickLookAhead = new Setting<>(100);
 
     /**
+     * How far are you allowed to fall onto solid ground (without a water bucket)?
+     * 3 won't deal any damage. But if you just want to get down the mountain quickly and you have
+     * Feather Falling IV, you might set it a bit higher, like 4 or 5.
+     */
+    public Setting<Integer> maxFallHeight = new Setting<>(3);
+
+    /**
      * Pathing can never take longer than this
      */
     public Setting<Number> pathTimeoutMS = new Setting<>(4000L);

@@ -284,6 +284,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         for (int fallHeight = 3; true; fallHeight++) {
             BlockPos onto = dest.down(fallHeight);
             if (onto.getY() < 0) {
+                // when pathing in the end, where you could plausibly fall into the void
+                // this check prevents it from getting the block at y=-1 and crashing
                 break;
             }
             IBlockState ontoBlock = BlockStateInterface.get(onto);
