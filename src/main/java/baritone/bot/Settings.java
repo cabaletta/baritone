@@ -51,8 +51,8 @@ public class Settings {
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);  // see issue #18
     public Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
     public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
-    public Setting<Double> pathCutoffFactor = new Setting<>(0.7);
-    public Setting<Integer> pathCutoffMinimumLength = new Setting<>(70);
+    public Setting<Double> pathCutoffFactor = new Setting<>(0.9);
+    public Setting<Integer> pathCutoffMinimumLength = new Setting<>(30);
 
     public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
 
@@ -62,7 +62,7 @@ public class Settings {
 
     public Setting<Boolean> chuckCaching = new Setting<>(false);
 
-    public Setting<Integer> planningTickLookAhead = new Setting<>(150);
+    public Setting<Integer> planningTickLookAhead = new Setting<>(100);
 
     public Setting<Boolean> chatDebug = new Setting<>(true);
     public Setting<Boolean> chatControl = new Setting<>(true); // probably false in impact
