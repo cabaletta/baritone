@@ -57,7 +57,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidth.get());
+        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         List<BetterBlockPos> positions = path.positions();
@@ -120,7 +120,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidth.get());
+        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         float expand = 0.002F;
@@ -213,7 +213,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
-        GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidth.get());
+        GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
 

@@ -29,50 +29,160 @@ import java.util.*;
  * @author leijurv
  */
 public class Settings {
+    /**
+     * Allow Baritone to break blocks
+     */
     public Setting<Boolean> allowBreak = new Setting<>(true);
+
+    /**
+     * Allow Baritone to sprint
+     */
     public Setting<Boolean> allowSprint = new Setting<>(true);
+
+    /**
+     * Allow Baritone to place blocks
+     */
     public Setting<Boolean> allowPlace = new Setting<>(true);
+
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited
      */
     public Setting<Double> blockPlacementPenalty = new Setting<>(20D);
+
+    /**
+     * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
+     * Reliability: questionable.
+     */
     public Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
+
+    /**
+     * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
+     */
     public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK)
     ));
 
-    public Setting<Double> costHeuristic = new <Double>Setting<Double>(3.5D);
+    /**
+     * This is the big A* setting.
+     * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
+     * 3.5 is always an underestimate, even if you are sprinting.
+     * If you're walking only (with allowSprint off) 4.6 is safe.
+     * Any value below 3.5 is never worth it. It's just more computation to find the same path, guaranteed.
+     * (specifically, it needs to be strictly slightly less than ActionCosts.WALK_ONE_BLOCK_COST, which is about 3.56)
+     * <p>
+     * Setting it at 3.57 or above with sprinting, or to 4.64 or above without sprinting, will result in
+     * faster computation, at the cost of a suboptimal path. Any value above the walk / sprint cost will result
+     * in it going straight at its goal, and not investigating alternatives, because the combined cost / heuristic
+     * metric gets better and better with each block, instead of slightly worse.
+     * <p>
+     * Finding the optimal path is worth it, so it's the default.
+     */
+    public Setting<Double> costHeuristic = this.new <Double>Setting<Double>(3.5D);
 
-    // obscure internal A* settings that you probably don't want to change
+    // a bunch of obscure internal A* settings that you probably don't want to change
+    /**
+     * The maximum number of times it will fetch outside loaded or cached chunks before assuming that
+     * pathing has reached the end of the known area, and should therefore stop.
+     */
     public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
-    public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);  // see issue #18
+
+    /**
+     * See issue #18
+     * Set to 1.0 to effectively disable this feature
+     */
+    public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);
+
+    /**
+     * Don't repropagate cost improvements below 0.01 ticks. They're all just floating point inaccuracies,
+     * and there's no point.
+     */
     public Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
+
+    /**
+     * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
+     * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
+     */
     public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
+
+    /**
+     * Static cutoff factor. 0.9 means cut off the last 10% of all paths, regardless of chunk load state
+     */
     public Setting<Double> pathCutoffFactor = new Setting<>(0.9);
+
+    /**
+     * Only apply static cutoff for paths of at least this length (in terms of number of movements)
+     */
     public Setting<Integer> pathCutoffMinimumLength = new Setting<>(30);
 
-    public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
-
-    public Setting<Boolean> slowPath = new Setting<>(false);
-    public Setting<Number> slowPathTimeDelayMS = new Setting<>(100L);
-    public Setting<Number> slowPathTimeoutMS = new Setting<>(40000L);
-
-    public Setting<Boolean> chuckCaching = new Setting<>(false);
-
+    /**
+     * Start planning the next path once the remaining movements tick estimates sum up to less than this value
+     */
     public Setting<Integer> planningTickLookAhead = new Setting<>(100);
 
+    /**
+     * Pathing can never take longer than this
+     */
+    public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
+
+    /**
+     * For debugging, consider nodes much much slower
+     */
+    public Setting<Boolean> slowPath = new Setting<>(false);
+
+    /**
+     * Milliseconds between each node
+     */
+    public Setting<Number> slowPathTimeDelayMS = new Setting<>(100L);
+
+    /**
+     * The alternative timeout number when slowPath is on
+     */
+    public Setting<Number> slowPathTimeoutMS = new Setting<>(40000L);
+
+    /**
+     * The big one. Download all chunks in simplified 2-bit format and save them for better very-long-distance pathing.
+     */
+    public Setting<Boolean> chuckCaching = new Setting<>(false);
+
+    /**
+     * Print all the debug messages to chat
+     */
     public Setting<Boolean> chatDebug = new Setting<>(true);
-    public Setting<Boolean> chatControl = new Setting<>(true); // probably false in impact
 
+    /**
+     * Allow chat based control of Baritone. Most likely should be disabled when Baritone is imported for use in
+     * something else
+     */
+    public Setting<Boolean> chatControl = new Setting<>(true);
+
+    /**
+     * Render the path
+     */
     public Setting<Boolean> renderPath = new Setting<>(true);
-    public Setting<Boolean> renderGoal = new Setting<>(true);
-    public Setting<Float> pathRenderLineWidth = new Setting<>(5F);
-    public Setting<Float> goalRenderLineWidth = new Setting<>(3F);
-    public Setting<Boolean> fadePath = new Setting<>(false); // give this a better name in the UI, like "better path fps" idk
 
+    /**
+     * Render the goal
+     */
+    public Setting<Boolean> renderGoal = new Setting<>(true);
+
+    /**
+     * Line width of the path when rendered, in pixels
+     */
+    public Setting<Float> pathRenderLineWidthPixels = new Setting<>(5F);
+
+    /**
+     * Line width of the goal when rendered, in pixels
+     */
+    public Setting<Float> goalRenderLineWidthPixels = new Setting<>(3F);
+
+    /**
+     * Start fading out the path at 20 movements ahead, and stop rendering it entirely 30 movements ahead.
+     * Improves FPS.
+     */
+    public Setting<Boolean> fadePath = new Setting<>(false);
 
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
