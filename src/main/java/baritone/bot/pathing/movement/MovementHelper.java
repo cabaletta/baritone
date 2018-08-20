@@ -69,14 +69,14 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkThrough(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
-        if (block instanceof BlockLilyPad
-                || block instanceof BlockFire
+        if (block instanceof BlockFire
                 || block instanceof BlockTripWire
                 || block instanceof BlockWeb
                 || block instanceof BlockEndPortal) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
-        if (BlockStateInterface.isFlowing(state) || BlockStateInterface.isLiquid(pos.up())) {
+        IBlockState up = BlockStateInterface.get(pos.up());
+        if (BlockStateInterface.isFlowing(state) || up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
             return false; // Don't walk through flowing liquids
         }
         if (block instanceof BlockDoor && !Blocks.IRON_DOOR.equals(block)) {
@@ -153,7 +153,8 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         if (BlockStateInterface.isWater(block)) {
-            return BlockStateInterface.isWater(pos.up()); // You can only walk on water if there is water above it
+            Block up = BlockStateInterface.get(pos.up()).getBlock();
+            return BlockStateInterface.isWater(up) || up instanceof BlockLilyPad; // You can only walk on water if there is water above it
         }
         if (Blocks.MAGMA.equals(block)) {
             return false;
