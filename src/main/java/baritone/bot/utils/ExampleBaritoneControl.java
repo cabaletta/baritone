@@ -23,10 +23,7 @@ import baritone.bot.behavior.Behavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.events.ChatEvent;
 import baritone.bot.pathing.calc.AStarPathFinder;
-import baritone.bot.pathing.goals.Goal;
-import baritone.bot.pathing.goals.GoalBlock;
-import baritone.bot.pathing.goals.GoalXZ;
-import baritone.bot.pathing.goals.GoalYLevel;
+import baritone.bot.pathing.goals.*;
 import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
@@ -108,6 +105,15 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().startsWith("thisway")) {
             Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
+            PathingBehavior.INSTANCE.setGoal(goal);
+            displayChatMessageRaw("Goal: " + goal);
+            event.cancel();
+            return;
+        }
+        if (msg.toLowerCase().equals("spawn")) {
+            BlockPos spawnPoint = player().getBedLocation();
+            // for some reason the default spawnpoint is underground sometimes
+            Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getY());
             PathingBehavior.INSTANCE.setGoal(goal);
             displayChatMessageRaw("Goal: " + goal);
             event.cancel();
