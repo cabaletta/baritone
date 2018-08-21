@@ -23,7 +23,12 @@ import baritone.bot.behavior.impl.MemoryBehavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.GameEventHandler;
 import baritone.bot.utils.InputOverrideHandler;
+import net.minecraft.client.Minecraft;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +52,7 @@ public enum Baritone {
     private InputOverrideHandler inputOverrideHandler;
     private Settings settings;
     private List<Behavior> behaviors;
+    private File dir;
 
     /**
      * Whether or not Baritone is active
@@ -64,6 +70,13 @@ public enum Baritone {
         behaviors.add(PathingBehavior.INSTANCE);
         behaviors.add(LookBehavior.INSTANCE);
         behaviors.add(MemoryBehavior.INSTANCE);
+
+        this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
+        if (!Files.exists(dir.toPath())) {
+            try {
+                Files.createDirectories(dir.toPath());
+            } catch (IOException ignored) {}
+        }
 
         this.active = true;
         this.initialized = true;
@@ -100,4 +113,6 @@ public enum Baritone {
     public static Settings settings() {
         return Baritone.INSTANCE.settings; // yolo
     }
+
+    public final File getDir() { return this.dir; }
 }
