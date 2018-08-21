@@ -173,6 +173,7 @@ public final class CachedRegion implements ICachedChunkAccess {
                                 in.readFully(bytes);
                                 BitSet bits = BitSet.valueOf(bytes);
                                 updateCachedChunk(x, z, bits);
+                                break;
                             case CHUNK_NOT_PRESENT:
                                 this.chunks[x][z] = null;
                                 break;
