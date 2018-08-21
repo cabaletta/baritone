@@ -37,7 +37,7 @@ public final class ChunkPacker implements Helper {
 
     private ChunkPacker() {}
 
-    public static synchronized BitSet createPackedChunk(Chunk chunk) {
+    public static BitSet createPackedChunk(Chunk chunk) {
         long start = System.currentTimeMillis();
         BitSet bitSet = new BitSet(CachedChunk.SIZE);
         try {
