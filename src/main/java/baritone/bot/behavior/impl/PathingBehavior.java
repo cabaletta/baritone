@@ -26,12 +26,15 @@ import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.calc.AbstractNodeCostSearch;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
+import baritone.bot.pathing.goals.GoalBlock;
+import baritone.bot.pathing.goals.GoalXZ;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.PathRenderer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.awt.*;
 import java.util.Collections;
@@ -258,9 +261,17 @@ public class PathingBehavior extends Behavior {
      * @return
      */
     private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous) {
+        Goal goal = this.goal;
         if (goal == null) {
             displayChatMessageRaw("no goal");
             return Optional.empty();
+        }
+        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof GoalBlock) {
+            BlockPos pos = ((GoalBlock) goal).getGoalPos();
+            if (world().getChunk(pos) instanceof EmptyChunk) {
+                displayChatMessageRaw("Simplifying GoalBlock to GoalXZ due to distance");
+                goal = new GoalXZ(pos.getX(), pos.getZ());
+            }
         }
         try {
             IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));

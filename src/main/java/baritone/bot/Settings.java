@@ -136,6 +136,15 @@ public class Settings {
     public Setting<Integer> maxFallHeight = new Setting<>(3);
 
     /**
+     * If your goal is a GoalBlock in an unloaded chunk, assume it's far enough away that the Y coord
+     * doesn't matter yet, and replace it with a GoalXZ to the same place before calculating a path.
+     * Once a segment ends within chunk load range of the GoalBlock, it will go back to normal behavior
+     * of considering the Y coord. The reasoning is that if your X and Z are 10,000 blocks away,
+     * your Y coordinate's accuracy doesn't matter at all until you get much much closer.
+     */
+    public Setting<Boolean> simplifyUnloadedYCoord = new Setting<>(true);
+
+    /**
      * If a movement takes this many ticks more than its initial cost estimate, cancel it
      */
     public Setting<Integer> movementTimeoutTicks = new Setting<>(100);
