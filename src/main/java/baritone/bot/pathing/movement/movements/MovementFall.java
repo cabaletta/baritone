@@ -101,9 +101,9 @@ public class MovementFall extends Movement {
         }
         if (targetRotation.isPresent()) {
             state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
-                    .setTarget(new MovementTarget(targetRotation.get()));
+                    .setTarget(new MovementTarget(targetRotation.get(), true));
         } else {
-            state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest))));
+            state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), true));
         }
         if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 // lilypads
                 || BlockStateInterface.isWater(dest))) {

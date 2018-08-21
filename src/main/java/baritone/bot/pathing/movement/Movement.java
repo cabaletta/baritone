@@ -131,7 +131,7 @@ public abstract class Movement implements Helper, MovementHelper {
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
                     player().inventory.currentItem = new ToolSet().getBestSlot(BlockStateInterface.get(blockPos));
-                    state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
+                    state.setTarget(new MovementState.MovementTarget(reachable.get(), true)).setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
                 //get rekt minecraft
@@ -139,7 +139,7 @@ public abstract class Movement implements Helper, MovementHelper {
                 //i dont care if theres snow in the way!!!!!!!
                 //you dont own me!!!!
                 state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                        Utils.getBlockPosCenter(blockPos)))
+                        Utils.getBlockPosCenter(blockPos)), true)
                 ).setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 return false;
             }

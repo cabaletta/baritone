@@ -93,21 +93,29 @@ public class MovementState {
          */
         public Rotation rotation;
 
+        /**
+         * Whether or not this target must force rotations.
+         * <p>
+         * {@code true} if we're trying to place or break blocks, {@code false} if we're trying to look at the movement location
+         */
+        private boolean forceRotations;
+
         public MovementTarget() {
-            this(null, null);
+            this(null, null, false);
         }
 
         public MovementTarget(Vec3d position) {
-            this(position, null);
+            this(position, null, false);
         }
 
-        public MovementTarget(Rotation rotation) {
-            this(null, rotation);
+        public MovementTarget(Rotation rotation, boolean forceRotations) {
+            this(null, rotation, forceRotations);
         }
 
-        public MovementTarget(Vec3d position, Rotation rotation) {
+        public MovementTarget(Vec3d position, Rotation rotation, boolean forceRotations) {
             this.position = position;
             this.rotation = rotation;
+            this.forceRotations = forceRotations;
         }
 
         public final Optional<Vec3d> getPosition() {
@@ -116,6 +124,10 @@ public class MovementState {
 
         public final Optional<Rotation> getRotation() {
             return Optional.ofNullable(this.rotation);
+        }
+
+        public boolean hasToForceRotations() {
+            return this.forceRotations;
         }
     }
 }
