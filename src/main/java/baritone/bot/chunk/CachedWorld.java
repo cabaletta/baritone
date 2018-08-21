@@ -53,7 +53,7 @@ public final class CachedWorld implements ICachedChunkAccess {
 
     @Override
     public final PathingBlockType getBlockType(int x, int y, int z) {
-        CachedRegion region = getRegion(x >> 9, z >> 9);
+        CachedRegion region = getOrCreateRegion(x >> 9, z >> 9);
         if (region != null) {
             return region.getBlockType(x & 511, y, z & 511);
         }
