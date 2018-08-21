@@ -63,7 +63,7 @@ public interface IGameEventListener {
      * Run once per game tick from before the player rotation is sent to the server.
      * @see EntityPlayerSP#onUpdate()
      */
-    void onPlayerUpdate();
+    void onPlayerUpdate(PlayerUpdateEvent event);
 
     /**
      * Run once per game tick from before keybinds are processed.

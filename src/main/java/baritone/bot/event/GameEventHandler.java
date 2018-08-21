@@ -69,8 +69,8 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     }
 
     @Override
-    public final void onPlayerUpdate() {
-        dispatch(IGameEventListener::onPlayerUpdate);
+    public final void onPlayerUpdate(PlayerUpdateEvent event) {
+        dispatch(listener -> listener.onPlayerUpdate(event));
     }
 
     @Override

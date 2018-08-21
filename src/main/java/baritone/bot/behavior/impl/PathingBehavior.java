@@ -19,6 +19,7 @@ package baritone.bot.behavior.impl;
 
 import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
+import baritone.bot.event.events.PlayerUpdateEvent;
 import baritone.bot.event.events.RenderEvent;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.calc.AStarPathFinder;
@@ -52,6 +53,8 @@ public class PathingBehavior extends Behavior {
     private final Object pathCalcLock = new Object();
 
     private final Object pathPlanLock = new Object();
+
+    private boolean lastAutoJump;
 
     @Override
     public void onTick(TickEvent event) {
@@ -128,6 +131,21 @@ public class PathingBehavior extends Behavior {
                     displayChatMessageRaw("Path almost over. Planning ahead...");
                     findPathInNewThread(current.getPath().getDest(), false, Optional.of(current.getPath()));
                 }
+            }
+        }
+    }
+
+    @Override
+    public void onPlayerUpdate(PlayerUpdateEvent event) {
+        if (current != null) {
+            switch (event.getState()) {
+                case PRE:
+                    lastAutoJump = mc.gameSettings.autoJump;
+                    mc.gameSettings.autoJump = false;
+                    break;
+                case POST:
+                    mc.gameSettings.autoJump = lastAutoJump;
+                    break;
             }
         }
     }
