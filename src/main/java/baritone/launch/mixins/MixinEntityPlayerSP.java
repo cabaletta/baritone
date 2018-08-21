@@ -19,6 +19,8 @@ package baritone.launch.mixins;
 
 import baritone.bot.Baritone;
 import baritone.bot.event.events.ChatEvent;
+import baritone.bot.event.events.PlayerUpdateEvent;
+import baritone.bot.event.events.type.EventState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -53,7 +55,20 @@ public class MixinEntityPlayerSP {
                     by = -3
             )
     )
-    private void onUpdate(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate();
+    private void onPreUpdate(CallbackInfo ci) {
+        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
+    }
+
+    @Inject(
+            method = "onUpdate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/entity/EntityPlayerSP.onUpdateWalkingPlayer()V",
+                    shift = At.Shift.BY,
+                    by = 2
+            )
+    )
+    private void onPostUpdate(CallbackInfo ci) {
+        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
     }
 }

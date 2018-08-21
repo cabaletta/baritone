@@ -217,7 +217,7 @@ public class PathExecutor implements Helper {
             return true;
         }
         if (movementStatus == SUCCESS) {
-            System.out.println("Movement done, next path");
+            //System.out.println("Movement done, next path");
             pathPosition++;
             ticksOnCurrent = 0;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();

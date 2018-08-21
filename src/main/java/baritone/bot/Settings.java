@@ -66,6 +66,12 @@ public class Settings {
     ));
 
     /**
+     * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
+     * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
+     */
+    public Setting<Boolean> allowVines = new Setting<>(false);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.

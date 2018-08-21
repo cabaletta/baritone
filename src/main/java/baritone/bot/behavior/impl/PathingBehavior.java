@@ -19,6 +19,7 @@ package baritone.bot.behavior.impl;
 
 import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
+import baritone.bot.event.events.PlayerUpdateEvent;
 import baritone.bot.event.events.RenderEvent;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.calc.AStarPathFinder;
@@ -53,11 +54,12 @@ public class PathingBehavior extends Behavior {
 
     private final Object pathPlanLock = new Object();
 
+    private boolean lastAutoJump;
+
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
-            current = null;
-            next = null;
+            this.cancel();
             return;
         }
         if (current == null) {
@@ -133,6 +135,21 @@ public class PathingBehavior extends Behavior {
         }
     }
 
+    @Override
+    public void onPlayerUpdate(PlayerUpdateEvent event) {
+        if (current != null) {
+            switch (event.getState()) {
+                case PRE:
+                    lastAutoJump = mc.gameSettings.autoJump;
+                    mc.gameSettings.autoJump = false;
+                    break;
+                case POST:
+                    mc.gameSettings.autoJump = lastAutoJump;
+                    break;
+            }
+        }
+    }
+
     public Optional<Double> ticksRemainingInSegment() {
         if (current == null) {
             return Optional.empty();
@@ -148,7 +165,9 @@ public class PathingBehavior extends Behavior {
         return current;
     }
 
-    public PathExecutor getNext() {return next;}
+    public PathExecutor getNext() {
+        return next;
+    }
 
     public Optional<IPath> getPath() {
         return Optional.ofNullable(current).map(PathExecutor::getPath);

@@ -2,6 +2,8 @@ package baritone.bot.behavior.impl;
 
 import baritone.bot.behavior.Behavior;
 import baritone.bot.event.events.PacketEvent;
+import baritone.bot.event.events.PlayerUpdateEvent;
+import baritone.bot.event.events.type.EventState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;
@@ -35,8 +37,9 @@ public class MemoryBehavior extends Behavior {
     private final Map<BlockPos, RememberedInventory> rememberedInventories = new HashMap<>();
 
     @Override
-    public void onPlayerUpdate() {
-        updateInventory();
+    public void onPlayerUpdate(PlayerUpdateEvent event) {
+        if (event.getState() == EventState.PRE)
+            updateInventory();
     }
 
     @Override

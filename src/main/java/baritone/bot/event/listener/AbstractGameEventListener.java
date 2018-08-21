@@ -52,7 +52,7 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onTick(TickEvent event) {}
 
     @Override
-    default void onPlayerUpdate() {}
+    default void onPlayerUpdate(PlayerUpdateEvent event) {}
 
     @Override
     default void onProcessKeyBinds() {}
@@ -74,4 +74,7 @@ public interface AbstractGameEventListener extends IGameEventListener {
 
     @Override
     default void onReceivePacket(PacketEvent event) {}
+
+    @Override
+    default void onQueryItemSlotForBlocks(ItemSlotEvent event) {}
 }

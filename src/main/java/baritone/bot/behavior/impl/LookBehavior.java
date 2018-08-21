@@ -18,6 +18,8 @@
 package baritone.bot.behavior.impl;
 
 import baritone.bot.behavior.Behavior;
+import baritone.bot.event.events.PlayerUpdateEvent;
+import baritone.bot.event.events.type.EventState;
 import baritone.bot.utils.Rotation;
 
 public class LookBehavior extends Behavior {
@@ -39,8 +41,8 @@ public class LookBehavior extends Behavior {
     }
 
     @Override
-    public void onPlayerUpdate() {
-        if (target != null) {
+    public void onPlayerUpdate(PlayerUpdateEvent event) {
+        if (event.getState() == EventState.PRE && target != null) {
             player().rotationYaw = target.getFirst();
             float oldPitch = player().rotationPitch;
             float desiredPitch = target.getSecond();

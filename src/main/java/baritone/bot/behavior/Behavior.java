@@ -19,6 +19,7 @@ package baritone.bot.behavior;
 
 import baritone.bot.event.listener.AbstractGameEventListener;
 import baritone.bot.utils.Helper;
+import baritone.bot.utils.interfaces.Toggleable;
 
 /**
  * A generic bot behavior.
@@ -26,7 +27,7 @@ import baritone.bot.utils.Helper;
  * @author Brady
  * @since 8/1/2018 6:29 PM
  */
-public class Behavior implements AbstractGameEventListener, Helper {
+public class Behavior implements AbstractGameEventListener, Toggleable, Helper {
 
     /**
      * Whether or not this behavior is enabled
@@ -38,6 +39,7 @@ public class Behavior implements AbstractGameEventListener, Helper {
      *
      * @return The new state.
      */
+    @Override
     public final boolean toggle() {
         return this.setEnabled(!this.enabled);
     }
@@ -47,6 +49,7 @@ public class Behavior implements AbstractGameEventListener, Helper {
      *
      * @return The new state.
      */
+    @Override
     public final boolean setEnabled(boolean enabled) {
         boolean newState = getNewState(this.enabled, enabled);
         if (newState == this.enabled)
@@ -79,6 +82,7 @@ public class Behavior implements AbstractGameEventListener, Helper {
     /**
      * @return Whether or not this {@link Behavior} is active.
      */
+    @Override
     public final boolean isEnabled() {
         return this.enabled;
     }

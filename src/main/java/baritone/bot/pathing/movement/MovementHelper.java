@@ -140,7 +140,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
-        if (block instanceof BlockLadder || block instanceof BlockVine) { // TODO reconsider this
+        if (block instanceof BlockLadder || (Baritone.settings().allowVines.get() && block instanceof BlockVine)) { // TODO reconsider this
             return true;
         }
         if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
