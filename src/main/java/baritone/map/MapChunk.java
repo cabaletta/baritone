@@ -10,6 +10,7 @@ import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -68,14 +69,16 @@ public class MapChunk {
         int chunkX = chunk.getPos().getXStart() + x;
         int chunkZ = chunk.getPos().getZStart() + z;
         BetterBlockPos blockPos = new BetterBlockPos(chunkX, chunk.getHeight(new BetterBlockPos(chunkX, 0, chunkZ)), chunkZ);
-        MapColor color = BlockStateInterface.get(blockPos).getMapColor(chunk.getWorld(), blockPos);
+        MapColor mapColor = BlockStateInterface.get(blockPos).getMapColor(chunk.getWorld(), blockPos);
 
         // The chunk heightMap returns the first non-full block above the surface, including bushes.
         // We have to check this and shift our block down by one if the color is "air" (as in, there's no real block there)
-        int colorValue = color != MapColor.AIR ? color.colorValue : BlockStateInterface.get(blockPos.down()).getMapColor(chunk.getWorld(), blockPos).colorValue;
-        int red = (colorValue >> 16) & 0xFF;
-        int green = (colorValue >> 8) & 0xFF;
-        int blue = colorValue & 0xFF;
+        Color color = new Color(mapColor != MapColor.AIR ?
+                mapColor.colorValue :
+                BlockStateInterface.get(blockPos.down()).getMapColor(chunk.getWorld(), blockPos).colorValue);
+        int red = color.getRed();
+        int green = color.getGreen();
+        int blue = color.getBlue();
 
         // Now we get the proper block for the position one to the north.
         BlockPos offset = blockPos.offset(EnumFacing.NORTH);
@@ -86,10 +89,11 @@ public class MapChunk {
 
         // We start the heightCoef at 0.8 to darken the colors similar to vanilla Minecraft's. 
         float heightCoef = 0.8f + (Math.signum(blockPos.getY() - offset.getY()) * 0.2f);
-        int newColor = Math.min(255, (int) (red * heightCoef));
-        newColor = (newColor << 8) + Math.min(255, (int) (green * heightCoef));
-        newColor = (newColor << 8) + Math.min(255, (int) (blue * heightCoef));
-        return newColor;
+        red = Math.min(255, (int) (red * heightCoef));
+        green = Math.min(255, (int) (green * heightCoef));
+        blue = Math.min(255, (int) (blue * heightCoef));
+
+        return new Color(red, green, blue).getRGB();
     }
 
 }
