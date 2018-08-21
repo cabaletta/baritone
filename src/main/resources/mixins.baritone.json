@@ -10,6 +10,7 @@
     "MixinGameSettings",
     "MixinGuiContainer",
     "MixinGuiScreen",
+    "MixinInventoryPlayer",
     "MixinKeyBinding",
     "MixinMain",
     "MixinMinecraft",
