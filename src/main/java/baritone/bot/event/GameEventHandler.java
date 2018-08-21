@@ -108,7 +108,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 && type == ChunkEvent.Type.UNLOAD
                 && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
-        if (Baritone.settings().chuckCaching.get()) {
+        if (Baritone.settings().chunkCaching.get()) {
             if (isPostPopulate || isPreUnload) {
                 CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
                         world.updateCachedChunk(event.getX(), event.getZ(),
@@ -132,7 +132,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        if (Baritone.settings().chuckCaching.get()) {
+        if (Baritone.settings().chunkCaching.get()) {
             CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
 
             switch (event.getState()) {
