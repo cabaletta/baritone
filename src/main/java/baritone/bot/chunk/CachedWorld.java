@@ -54,31 +54,19 @@ public final class CachedWorld implements ICachedChunkAccess {
     @Override
     public final PathingBlockType getBlockType(int x, int y, int z) {
         CachedRegion region = getOrCreateRegion(x >> 9, z >> 9);
-        if (region != null) {
-            return region.getBlockType(x & 511, y, z & 511);
-        }
-        return null;
+        return region.getBlockType(x & 511, y, z & 511);
     }
 
     @Override
     public final void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
         CachedRegion region = getOrCreateRegion(chunkX >> 5, chunkZ >> 5);
-        if (region != null) {
-            region.updateCachedChunk(chunkX & 31, chunkZ & 31, data);
-        }
+        region.updateCachedChunk(chunkX & 31, chunkZ & 31, data);
     }
 
     public final void save() {
         this.cachedRegions.values().forEach(region -> {
             if (region != null)
                 region.save(this.directory);
-        });
-    }
-
-    public final void load() {
-        this.cachedRegions.values().forEach(region -> {
-            if (region != null)
-                region.load(this.directory);
         });
     }
 

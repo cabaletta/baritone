@@ -17,8 +17,8 @@
 
 package baritone.bot.chunk;
 
-import baritone.bot.utils.pathing.PathingBlockType;
 import baritone.bot.utils.GZIPUtils;
+import baritone.bot.utils.pathing.PathingBlockType;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -52,9 +52,15 @@ public final class CachedRegion implements ICachedChunkAccess {
      */
     private final int z;
 
+    /**
+     * Has this region been modified since its most recent load or save
+     */
+    private boolean hasUnsavedChanges;
+
     CachedRegion(int x, int z) {
         this.x = x;
         this.z = z;
+        this.hasUnsavedChanges = false;
     }
 
     @Override
@@ -74,6 +80,7 @@ public final class CachedRegion implements ICachedChunkAccess {
         } else {
             chunk.updateContents(data);
         }
+        hasUnsavedChanges = true;
     }
 
     private CachedChunk getChunk(int chunkX, int chunkZ) {
@@ -92,6 +99,9 @@ public final class CachedRegion implements ICachedChunkAccess {
     }
 
     public final void save(String directory) {
+        if (!hasUnsavedChanges) {
+            return;
+        }
         try {
             Path path = Paths.get(directory);
             if (!Files.exists(path))
@@ -115,6 +125,7 @@ public final class CachedRegion implements ICachedChunkAccess {
                     }
                 }
             }
+            hasUnsavedChanges = false;
         } catch (IOException ignored) {}
     }
 
@@ -148,6 +159,7 @@ public final class CachedRegion implements ICachedChunkAccess {
                     }
                 }
             }
+            hasUnsavedChanges = false;
         } catch (IOException ignored) {}
     }
 
