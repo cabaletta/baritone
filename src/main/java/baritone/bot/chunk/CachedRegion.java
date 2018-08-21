@@ -135,6 +135,7 @@ public final class CachedRegion implements ICachedChunkAccess {
                         }
                     }
                 }
+                out.writeInt(~CACHED_REGION_MAGIC);
             }
             hasUnsavedChanges = false;
         } catch (IOException ignored) {}
@@ -181,6 +182,10 @@ public final class CachedRegion implements ICachedChunkAccess {
                                 throw new IOException("Malformed stream");
                         }
                     }
+                }
+                int fileEndMagic = in.readInt();
+                if (fileEndMagic != ~magic) {
+                    throw new IOException("Bad end of file magic");
                 }
             }
             hasUnsavedChanges = false;
