@@ -23,14 +23,14 @@ import baritone.bot.event.events.type.EventState;
  * @author Brady
  * @since 8/21/2018
  */
-public final class PlayerUpdateEvent {
+public final class RelativeMoveEvent {
 
     /**
      * The state of the event
      */
     private final EventState state;
 
-    public PlayerUpdateEvent(EventState state) {
+    public RelativeMoveEvent(EventState state) {
         this.state = state;
     }
 

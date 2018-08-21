@@ -42,6 +42,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
@@ -60,7 +61,8 @@ public interface IGameEventListener {
     void onTick(TickEvent event);
 
     /**
-     * Run once per game tick from before the player rotation is sent to the server.
+     * Run once per game tick from before and after the player rotation is sent to the server.
+     *
      * @see EntityPlayerSP#onUpdate()
      */
     void onPlayerUpdate(PlayerUpdateEvent event);
@@ -123,4 +125,11 @@ public interface IGameEventListener {
      * @see InventoryPlayer#canHarvestBlock(IBlockState)
      */
     void onQueryItemSlotForBlocks(ItemSlotEvent event);
+
+    /**
+     * Run once per game tick from before and after the player's moveRelative method is called
+     *
+     * @see Entity#moveRelative(float, float, float, float)
+     */
+    void onPlayerRelativeMove(RelativeMoveEvent event);
 }

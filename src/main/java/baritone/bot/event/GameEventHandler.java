@@ -156,17 +156,22 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onSendPacket(PacketEvent event) {
-        dispatch(behavior -> behavior.onSendPacket(event));
+        dispatch(listener -> listener.onSendPacket(event));
     }
 
     @Override
     public final void onReceivePacket(PacketEvent event) {
-        dispatch(behavior -> behavior.onReceivePacket(event));
+        dispatch(listener -> listener.onReceivePacket(event));
     }
 
     @Override
     public final void onQueryItemSlotForBlocks(ItemSlotEvent event) {
-        dispatch(behavior -> behavior.onQueryItemSlotForBlocks(event));
+        dispatch(listener -> listener.onQueryItemSlotForBlocks(event));
+    }
+
+    @Override
+    public void onPlayerRelativeMove(RelativeMoveEvent event) {
+        dispatch(listener -> listener.onPlayerRelativeMove(event));
     }
 
     public final void registerEventListener(IGameEventListener listener) {

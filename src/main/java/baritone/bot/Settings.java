@@ -202,6 +202,11 @@ public class Settings {
      */
     public Setting<Boolean> fadePath = new Setting<>(false);
 
+    /**
+     * Move without having to force the client-sided rotations
+     */
+    public Setting<Boolean> freeLook = new Setting<>(true);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 
@@ -210,6 +215,7 @@ public class Settings {
         private String name;
         private final Class<T> klass;
 
+        @SuppressWarnings("unchecked")
         private Setting(T value) {
             if (value == null) {
                 throw new IllegalArgumentException("Cannot determine value type class from null");
@@ -218,6 +224,7 @@ public class Settings {
             this.klass = (Class<T>) value.getClass();
         }
 
+        @SuppressWarnings("unchecked")
         public final <K extends T> K get() {
             return (K) value;
         }
@@ -244,7 +251,7 @@ public class Settings {
         try {
             for (Field field : temp) {
                 if (field.getType().equals(Setting.class)) {
-                    Setting<?> setting = (Setting<? extends Object>) field.get(this);
+                    Setting<?> setting = (Setting<?>) field.get(this);
                     String name = field.getName();
                     setting.name = name;
                     name = name.toLowerCase();
@@ -262,6 +269,7 @@ public class Settings {
         allSettings = Collections.unmodifiableList(tmpAll);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> List<Setting<T>> getByValueType(Class<T> klass) {
         ArrayList<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
