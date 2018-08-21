@@ -56,8 +56,7 @@ public class PathingBehavior extends Behavior {
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
-            current = null;
-            next = null;
+            this.cancel();
             return;
         }
         if (current == null) {
@@ -148,7 +147,9 @@ public class PathingBehavior extends Behavior {
         return current;
     }
 
-    public PathExecutor getNext() {return next;}
+    public PathExecutor getNext() {
+        return next;
+    }
 
     public Optional<IPath> getPath() {
         return Optional.ofNullable(current).map(PathExecutor::getPath);
