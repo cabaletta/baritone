@@ -66,6 +66,12 @@ public class Settings {
     ));
 
     /**
+     * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
+     * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
+     */
+    public Setting<Boolean> allowVines = new Setting<>(false);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.
@@ -121,6 +127,18 @@ public class Settings {
      * Start planning the next path once the remaining movements tick estimates sum up to less than this value
      */
     public Setting<Integer> planningTickLookAhead = new Setting<>(100);
+
+    /**
+     * How far are you allowed to fall onto solid ground (without a water bucket)?
+     * 3 won't deal any damage. But if you just want to get down the mountain quickly and you have
+     * Feather Falling IV, you might set it a bit higher, like 4 or 5.
+     */
+    public Setting<Integer> maxFallHeight = new Setting<>(3);
+
+    /**
+     * If a movement takes this many ticks more than its initial cost estimate, cancel it
+     */
+    public Setting<Integer> movementTimeoutTicks = new Setting<>(100);
 
     /**
      * Pathing can never take longer than this

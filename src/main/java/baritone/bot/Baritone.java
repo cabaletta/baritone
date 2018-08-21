@@ -67,9 +67,11 @@ public enum Baritone {
         this.inputOverrideHandler = new InputOverrideHandler();
         this.settings = new Settings();
         this.behaviors = new ArrayList<>();
-        behaviors.add(PathingBehavior.INSTANCE);
-        behaviors.add(LookBehavior.INSTANCE);
-        behaviors.add(MemoryBehavior.INSTANCE);
+        {
+            registerBehavior(PathingBehavior.INSTANCE);
+            registerBehavior(LookBehavior.INSTANCE);
+            registerBehavior(MemoryBehavior.INSTANCE);
+        }
 
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {
@@ -100,6 +102,7 @@ public enum Baritone {
 
     public void registerBehavior(Behavior behavior) {
         this.behaviors.add(behavior);
+        this.gameEventHandler.registerEventListener(behavior);
     }
 
     public final boolean isActive() {

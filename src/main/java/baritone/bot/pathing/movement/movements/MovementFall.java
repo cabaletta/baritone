@@ -17,6 +17,7 @@
 
 package baritone.bot.pathing.movement.movements;
 
+import baritone.bot.Baritone;
 import baritone.bot.behavior.impl.LookBehaviorUtils;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
@@ -51,7 +52,7 @@ public class MovementFall extends Movement {
             return COST_INF;
         }
         double placeBucketCost = 0.0;
-        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3) {
+        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > context.maxFallHeight()) {
             if (!context.hasWaterBucket()) {
                 return COST_INF;
             }
@@ -88,7 +89,7 @@ public class MovementFall extends Movement {
         }
         BlockPos playerFeet = playerFeet();
         Optional<Rotation> targetRotation = Optional.empty();
-        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > 3 && !playerFeet.equals(dest)) {
+        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeight.get() && !playerFeet.equals(dest)) {
             if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) { // TODO check if water bucket is on hotbar or main inventory
                 state.setStatus(MovementStatus.UNREACHABLE);
                 return state;
@@ -104,7 +105,7 @@ public class MovementFall extends Movement {
         } else {
             state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest))));
         }
-        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.01
+        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 // lilypads
                 || BlockStateInterface.isWater(dest))) {
             if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_EMPTY)) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);

@@ -115,10 +115,20 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     @Override
     public Optional<IPath> bestPathSoFar() {
-        if (startNode == null || bestSoFar[0] == null)
+        if (startNode == null || bestSoFar[0] == null) {
             return Optional.empty();
-
-        return Optional.of(new Path(startNode, bestSoFar[0], 0));
+        }
+        for (int i = 0; i < bestSoFar.length; i++) {
+            if (bestSoFar[i] == null) {
+                continue;
+            }
+            if (getDistFromStartSq(bestSoFar[i]) > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
+                return Optional.of(new Path(startNode, bestSoFar[i], 0));
+            }
+        }
+        // instead of returning bestSoFar[0], be less misleading
+        // if it actually won't find any path, don't make them think it will by rendering a dark blue that will never actually happen
+        return Optional.empty();
     }
 
     @Override

@@ -85,7 +85,7 @@ public class PathExecutor implements Helper {
             return true;
         }
         if (!whereShouldIBe.equals(whereAmI)) {
-            System.out.println("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
+            //System.out.println("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
             if (!Blocks.AIR.equals(BlockStateInterface.getBlock(whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 2 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.positions().get(i))) {
@@ -100,6 +100,7 @@ public class PathExecutor implements Helper {
                         if (i - pathPosition > 2) {
                             displayChatMessageRaw("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                         }
+                        System.out.println("Double skip sundae");
                         pathPosition = i - 1;
                         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                         return false;
@@ -216,7 +217,7 @@ public class PathExecutor implements Helper {
             return true;
         }
         if (movementStatus == SUCCESS) {
-            System.out.println("Movement done, next path");
+            //System.out.println("Movement done, next path");
             pathPosition++;
             ticksOnCurrent = 0;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
@@ -224,12 +225,12 @@ public class PathExecutor implements Helper {
             return true;
         } else {
             ticksOnCurrent++;
-            if (ticksOnCurrent > currentMovementInitialCostEstimate + 100) {
+            if (ticksOnCurrent > currentMovementInitialCostEstimate + Baritone.settings().movementTimeoutTicks.get()) {
                 // only fail if the total time has exceeded the initial estimate
                 // as you break the blocks required, the remaining cost goes down, to the point where
-                // ticksOnCurrent is greater than recalculateCost + 1000
+                // ticksOnCurrent is greater than recalculateCost + 100
                 // this is why we cache cost at the beginning, and don't recalculate for this comparison every tick
-                displayChatMessageRaw("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + movement.getCost(null) + "). Cancelling.");
+                displayChatMessageRaw("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + currentMovementInitialCostEstimate + "). Cancelling.");
                 movement.cancel();
                 Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                 pathPosition = path.length() + 3;

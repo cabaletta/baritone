@@ -36,11 +36,13 @@ package baritone.bot.event.listener;
 
 import baritone.bot.event.events.*;
 import io.netty.util.concurrent.GenericFutureListener;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 
@@ -114,5 +116,11 @@ public interface IGameEventListener {
      */
     void onReceivePacket(PacketEvent event);
 
-
+    /**
+     * Run when a query is made for a player's inventory current slot in the context of blocks
+     *
+     * @see InventoryPlayer#getDestroySpeed(IBlockState)
+     * @see InventoryPlayer#canHarvestBlock(IBlockState)
+     */
+    void onQueryItemSlotForBlocks(ItemSlotEvent event);
 }
