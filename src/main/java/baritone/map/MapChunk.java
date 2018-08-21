@@ -4,15 +4,12 @@ import baritone.bot.Baritone;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.pathing.BetterBlockPos;
 import net.minecraft.block.material.MapColor;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.chunk.Chunk;
-import org.lwjgl.util.Color;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -67,10 +64,10 @@ public class MapChunk {
      * @param z relative z coord.
      * @return Integer RGB value with contextual shading
      */
-    public int getColor(int x, int z) {
+    private int getColor(int x, int z) {
         int chunkX = chunk.getPos().getXStart() + x;
         int chunkZ = chunk.getPos().getZStart() + z;
-        MutableBlockPos blockPos = new MutableBlockPos(chunkX, chunk.getHeight(new BetterBlockPos(chunkX, 0, chunkZ)), chunkZ);
+        BetterBlockPos blockPos = new BetterBlockPos(chunkX, chunk.getHeight(new BetterBlockPos(chunkX, 0, chunkZ)), chunkZ);
         MapColor color = BlockStateInterface.get(blockPos).getMapColor(chunk.getWorld(), blockPos);
 
         // The chunk heightMap returns the first non-full block above the surface, including bushes.
