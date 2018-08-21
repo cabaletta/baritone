@@ -69,7 +69,17 @@ public enum CachedWorldProvider implements Helper {
     }
 
     public final void closeWorld() {
+        CachedWorld world = this.currentWorld;
         this.currentWorld = null;
+        if (world == null) {
+            return;
+        }
+        new Thread() {
+            public void run() {
+                System.out.println("Started saving the world in a new thread");
+                world.save();
+            }
+        }.start();
     }
 
     public final void ifWorldLoaded(Consumer<CachedWorld> currentWorldConsumer) {

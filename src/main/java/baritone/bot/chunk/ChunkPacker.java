@@ -18,9 +18,9 @@
 package baritone.bot.chunk;
 
 import baritone.bot.pathing.movement.MovementHelper;
-import baritone.bot.utils.pathing.PathingBlockType;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
+import baritone.bot.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
@@ -28,8 +28,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.BitSet;
-
-import static net.minecraft.block.Block.NULL_AABB;
 
 /**
  * @author Brady
@@ -39,7 +37,8 @@ public final class ChunkPacker implements Helper {
 
     private ChunkPacker() {}
 
-    public static BitSet createPackedChunk(Chunk chunk) {
+    public static synchronized BitSet createPackedChunk(Chunk chunk) {
+        long start = System.currentTimeMillis();
         BitSet bitSet = new BitSet(CachedChunk.SIZE);
         try {
             for (int y = 0; y < 256; y++) {
@@ -55,6 +54,8 @@ public final class ChunkPacker implements Helper {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        long end = System.currentTimeMillis();
+        //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         return bitSet;
     }
 
@@ -69,7 +70,7 @@ public final class ChunkPacker implements Helper {
             return PathingBlockType.AVOID;
         }
 
-        if (block instanceof BlockAir || state.getCollisionBoundingBox(mc.world, pos) == NULL_AABB) {
+        if (block instanceof BlockAir) {
             return PathingBlockType.AIR;
         }
 

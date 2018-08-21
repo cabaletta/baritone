@@ -17,6 +17,7 @@
 
 package baritone.bot.chunk;
 
+import baritone.bot.utils.pathing.IBlockTypeAccess;
 import baritone.bot.utils.pathing.PathingBlockType;
 
 import java.io.*;
@@ -32,7 +33,7 @@ import java.util.zip.GZIPOutputStream;
  * @author Brady
  * @since 8/3/2018 9:35 PM
  */
-public final class CachedRegion implements ICachedChunkAccess {
+public final class CachedRegion implements IBlockTypeAccess {
     private static final byte CHUNK_NOT_PRESENT = 0;
     private static final byte CHUNK_PRESENT = 1;
 
@@ -76,8 +77,7 @@ public final class CachedRegion implements ICachedChunkAccess {
         return null;
     }
 
-    @Override
-    public final void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
+    final void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
         CachedChunk chunk = this.getChunk(chunkX, chunkZ);
         if (chunk == null) {
             this.chunks[chunkX][chunkZ] = new CachedChunk(chunkX, chunkZ, data);
@@ -111,7 +111,7 @@ public final class CachedRegion implements ICachedChunkAccess {
             if (!Files.exists(path))
                 Files.createDirectories(path);
 
-            System.out.println("Saving region " + x + "," + z + " to disk");
+            System.out.println("Saving region " + x + "," + z + " to disk " + path);
             Path regionFile = getRegionFile(path, this.x, this.z);
             if (!Files.exists(regionFile))
                 Files.createFile(regionFile);
@@ -138,7 +138,10 @@ public final class CachedRegion implements ICachedChunkAccess {
                 out.writeInt(~CACHED_REGION_MAGIC);
             }
             hasUnsavedChanges = false;
-        } catch (IOException ignored) {}
+            System.out.println("Saved region successfully");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void load(String directory) {
@@ -151,7 +154,7 @@ public final class CachedRegion implements ICachedChunkAccess {
             if (!Files.exists(regionFile))
                 return;
 
-            System.out.println("Loading region " + x + "," + z + " from disk");
+            System.out.println("Loading region " + x + "," + z + " from disk " + path);
 
             try (
                     FileInputStream fileIn = new FileInputStream(regionFile.toFile());
@@ -189,7 +192,10 @@ public final class CachedRegion implements ICachedChunkAccess {
                 }
             }
             hasUnsavedChanges = false;
-        } catch (IOException ignored) {}
+            System.out.println("Loaded region successfully");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static boolean isAllZeros(final byte[] array) {

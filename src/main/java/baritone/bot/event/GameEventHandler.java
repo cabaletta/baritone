@@ -36,9 +36,7 @@ package baritone.bot.event;
 
 import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
-import baritone.bot.chunk.CachedWorld;
 import baritone.bot.chunk.CachedWorldProvider;
-import baritone.bot.chunk.ChunkPacker;
 import baritone.bot.event.events.*;
 import baritone.bot.event.events.type.EventState;
 import baritone.bot.event.listener.IGameEventListener;
@@ -49,6 +47,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.input.Keyboard;
 
 import java.util.function.Consumer;
@@ -110,9 +109,10 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
         if (Baritone.settings().chunkCaching.get()) {
             if (isPostPopulate || isPreUnload) {
-                CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
-                        world.updateCachedChunk(event.getX(), event.getZ(),
-                                ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ()))));
+                CachedWorldProvider.INSTANCE.ifWorldLoaded(world -> {
+                    Chunk chunk = mc.world.getChunk(event.getX(), event.getZ());
+                    world.queueForPacking(chunk);
+                });
             }
         }
 
@@ -137,7 +137,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
             switch (event.getState()) {
                 case PRE:
-                    cache.ifWorldLoaded(CachedWorld::save);
+                    cache.closeWorld();
                     break;
                 case POST:
                     cache.closeWorld();
