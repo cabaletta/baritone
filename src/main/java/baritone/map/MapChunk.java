@@ -90,7 +90,12 @@ public class MapChunk {
 
         // Now we get the proper block for the position one to the north.
         BlockPos offset = blockPos.offset(EnumFacing.NORTH);
-        offset = new BlockPos(offset.getX(), chunk.getHeight(offset), offset.getZ());
+        // If we are at the north border of the chunk, we need to get the next chunk
+        // to the north to ensure that we shade properly.
+        offset = chunk.getWorld().getChunk(offset).isLoaded() ? offset : offset.south();
+        // We adjust the height of the offset to the proper height value if the shading chunk is
+        // loaded, or the same as our target block if the shading chunk is not.
+        offset = new BlockPos(offset.getX(), chunk.getWorld().getChunk(offset).getHeight(offset), offset.getZ());
         // And once again, check to make sure we have an actual colored block an not "air"
         if(BlockStateInterface.get(offset).getMapColor(chunk.getWorld(), offset) == MapColor.AIR)
             offset = offset.down();

@@ -27,19 +27,16 @@ public class Map extends Behavior {
             return;
 
         MapChunk map = new MapChunk(world().getChunk(event.getX(), event.getZ()));
-        ChunkPos pos = map.getChunk().getPos();
-        int startX;
-        int startZ;
-        if(pos.x == 0 && pos.z == 0) {
-            startX = (fullImage.getWidth() / 2) - 9;
-            startZ = (fullImage.getHeight() / 2) - 9;
-        } else {
-            int widthOffset = (((fullImage.getWidth() / 2) - 1) + (int) Math.signum(pos.x) * -8);
-            int heightOffset = (((fullImage.getHeight() / 2) - 1) + (int) Math.signum(pos.z) * -8);
-            startX = widthOffset + (16 * (pos.x + (pos.x > 0 ? -1 : 0)));
-            startZ = heightOffset + (16 * (pos.z + (pos.z > 0 ? -1 : 0)));
+        stitchMapChunk(map);
+        if(world().getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ() - 1)) {
+            stitchMapChunk(new MapChunk(world().getChunk(event.getX(), event.getZ() - 1)));
         }
+    }
 
+    private void stitchMapChunk(MapChunk map) {
+        ChunkPos pos = map.getChunk().getPos();
+        int startX = pos.x * 16 + (fullImage.getWidth() / 2) - 8;
+        int startZ = pos.z * 16 + (fullImage.getHeight() / 2) - 8;
         Graphics graphics = fullImage.getGraphics();
         graphics.drawImage(map.generateOverview(), startX, startZ, null);
     }
