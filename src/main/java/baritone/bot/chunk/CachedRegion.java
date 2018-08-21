@@ -107,6 +107,7 @@ public final class CachedRegion implements ICachedChunkAccess {
             if (!Files.exists(path))
                 Files.createDirectories(path);
 
+            System.out.println("Saving region " + x + "," + z + " to disk");
             Path regionFile = getRegionFile(path, this.x, this.z);
             if (!Files.exists(regionFile))
                 Files.createFile(regionFile);
@@ -138,6 +139,8 @@ public final class CachedRegion implements ICachedChunkAccess {
             Path regionFile = getRegionFile(path, this.x, this.z);
             if (!Files.exists(regionFile))
                 return;
+
+            System.out.println("Loading region " + x + "," + z + " from disk");
 
             byte[] decompressed;
             try (FileInputStream in = new FileInputStream(regionFile.toFile())) {
