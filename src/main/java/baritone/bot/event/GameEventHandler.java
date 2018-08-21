@@ -35,7 +35,6 @@
 package baritone.bot.event;
 
 import baritone.bot.Baritone;
-import baritone.bot.behavior.Behavior;
 import baritone.bot.chunk.CachedWorld;
 import baritone.bot.chunk.CachedWorldProvider;
 import baritone.bot.chunk.ChunkPacker;
@@ -44,6 +43,7 @@ import baritone.bot.event.events.type.EventState;
 import baritone.bot.event.listener.IGameEventListener;
 import baritone.bot.utils.Helper;
 import baritone.bot.utils.InputOverrideHandler;
+import baritone.bot.utils.interfaces.Toggleable;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -51,6 +51,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -59,18 +61,20 @@ import java.util.function.Consumer;
  */
 public final class GameEventHandler implements IGameEventListener, Helper {
 
+    private final List<IGameEventListener> listeners = new ArrayList<>();
+
     @Override
     public final void onTick(TickEvent event) {
-        dispatch(behavior -> behavior.onTick(event));
+        dispatch(listener -> listener.onTick(event));
     }
 
     @Override
-    public void onPlayerUpdate() {
-        dispatch(Behavior::onPlayerUpdate);
+    public final void onPlayerUpdate() {
+        dispatch(IGameEventListener::onPlayerUpdate);
     }
 
     @Override
-    public void onProcessKeyBinds() {
+    public final void onProcessKeyBinds() {
         InputOverrideHandler inputHandler = Baritone.INSTANCE.getInputOverrideHandler();
 
         // Simulate the key being held down this tick
@@ -85,16 +89,16 @@ public final class GameEventHandler implements IGameEventListener, Helper {
             }
         }
 
-        dispatch(Behavior::onProcessKeyBinds);
+        dispatch(IGameEventListener::onProcessKeyBinds);
     }
 
     @Override
-    public void onSendChatMessage(ChatEvent event) {
-        dispatch(behavior -> behavior.onSendChatMessage(event));
+    public final void onSendChatMessage(ChatEvent event) {
+        dispatch(listener -> listener.onSendChatMessage(event));
     }
 
     @Override
-    public void onChunkEvent(ChunkEvent event) {
+    public final void onChunkEvent(ChunkEvent event) {
         EventState state = event.getState();
         ChunkEvent.Type type = event.getType();
 
@@ -116,22 +120,22 @@ public final class GameEventHandler implements IGameEventListener, Helper {
             }
         }
 
-        dispatch(behavior -> behavior.onChunkEvent(event));
+        dispatch(listener -> listener.onChunkEvent(event));
     }
 
     @Override
-    public void onRenderPass(RenderEvent event) {
+    public final void onRenderPass(RenderEvent event) {
         /*
         CachedWorldProvider.INSTANCE.ifWorldLoaded(world -> world.forEachRegion(region -> region.forEachChunk(chunk -> {
             drawChunkLine(region.getX() * 512 + chunk.getX() * 16, region.getZ() * 512 + chunk.getZ() * 16, event.getPartialTicks());
         })));
         */
 
-        dispatch(behavior -> behavior.onRenderPass(event));
+        dispatch(listener -> listener.onRenderPass(event));
     }
 
     @Override
-    public void onWorldEvent(WorldEvent event) {
+    public final void onWorldEvent(WorldEvent event) {
         if (Baritone.settings().chuckCaching.get()) {
             CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
 
@@ -147,21 +151,34 @@ public final class GameEventHandler implements IGameEventListener, Helper {
             }
         }
 
-        dispatch(behavior -> behavior.onWorldEvent(event));
+        dispatch(listener -> listener.onWorldEvent(event));
     }
 
     @Override
-    public void onSendPacket(PacketEvent event) {
+    public final void onSendPacket(PacketEvent event) {
         dispatch(behavior -> behavior.onSendPacket(event));
     }
 
     @Override
-    public void onReceivePacket(PacketEvent event) {
+    public final void onReceivePacket(PacketEvent event) {
         dispatch(behavior -> behavior.onReceivePacket(event));
     }
 
-    private void dispatch(Consumer<Behavior> dispatchFunction) {
-        Baritone.INSTANCE.getBehaviors().stream().filter(Behavior::isEnabled).forEach(dispatchFunction);
+    @Override
+    public final void onQueryItemSlotForBlocks(ItemSlotEvent event) {
+        dispatch(behavior -> behavior.onQueryItemSlotForBlocks(event));
+    }
+
+    public final void registerEventListener(IGameEventListener listener) {
+        this.listeners.add(listener);
+    }
+
+    private void dispatch(Consumer<IGameEventListener> dispatchFunction) {
+        this.listeners.stream().filter(this::canDispatch).forEach(dispatchFunction);
+    }
+
+    private boolean canDispatch(IGameEventListener listener) {
+        return !(listener instanceof Toggleable) || ((Toggleable) listener).isEnabled();
     }
 
     private void drawChunkLine(int posX, int posZ, float partialTicks) {

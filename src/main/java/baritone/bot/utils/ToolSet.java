@@ -17,6 +17,9 @@
 
 package baritone.bot.utils;
 
+import baritone.bot.Baritone;
+import baritone.bot.event.events.ItemSlotEvent;
+import baritone.bot.event.listener.AbstractGameEventListener;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -36,9 +39,18 @@ import java.util.Map;
 /**
  * A cached list of the best tools on the hotbar for any block
  *
- * @author avecowa
+ * @author avecowa, Brady
  */
 public class ToolSet implements Helper {
+
+    /**
+     * Instance of the internal event listener used to hook into Baritone's event bus
+     */
+    private static final InternalEventListener INTERNAL_EVENT_LISTENER = new InternalEventListener();
+
+    static {
+        Baritone.INSTANCE.getGameEventHandler().registerEventListener(INTERNAL_EVENT_LISTENER);
+    }
 
     /**
      * A list of tools on the hotbar that should be considered.
@@ -131,18 +143,29 @@ public class ToolSet implements Helper {
         // Calculate the slot with the best item
         byte slot = this.getBestSlot(state);
 
-        // Save the old current slot
-        int oldSlot = player().inventory.currentItem;
-
-        // Set the best slot
-        player().inventory.currentItem = slot;
+        INTERNAL_EVENT_LISTENER.setOverrideSlot(slot);
 
         // Calculate the relative hardness of the block to the player
         float hardness = state.getPlayerRelativeBlockHardness(player(), world(), pos);
 
         // Restore the old slot
-        player().inventory.currentItem = oldSlot;
+        INTERNAL_EVENT_LISTENER.setOverrideSlot(-1);
 
         return hardness;
+    }
+
+    private static final class InternalEventListener implements AbstractGameEventListener {
+
+        private int overrideSlot;
+
+        @Override
+        public void onQueryItemSlotForBlocks(ItemSlotEvent event) {
+            if (this.overrideSlot >= 0)
+                event.setSlot(this.overrideSlot);
+        }
+
+        public final void setOverrideSlot(int overrideSlot) {
+            this.overrideSlot = overrideSlot;
+        }
     }
 }
