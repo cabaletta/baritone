@@ -6,7 +6,6 @@ import baritone.bot.utils.pathing.BetterBlockPos;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import javax.imageio.ImageIO;
@@ -25,6 +24,16 @@ public class MapChunk {
         this.chunk = chunk;
     }
 
+    public BufferedImage generateOverview() {
+        BufferedImage bufferedImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
+        for(int x = 0; x < 16; x++) {
+            for(int z = 0; z < 16; z++) {
+                bufferedImage.setRGB(x, z, getColor(x, z));
+            }
+        }
+        return bufferedImage;
+    }
+
     public void writeImage() {
         Path image = getImagePath();
         if(!Files.exists(image.getParent())) {
@@ -34,12 +43,7 @@ public class MapChunk {
                 e.printStackTrace();
             }
         }
-        BufferedImage bufferedImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
-        for(int x = 0; x < 16; x++) {
-            for(int z = 0; z < 16; z++) {
-                bufferedImage.setRGB(x, z, getColor(x, z));
-            }
-        }
+        BufferedImage bufferedImage = generateOverview();
         try {
             ImageIO.write(bufferedImage, "PNG", image.toFile());
         } catch (IOException e) {
@@ -50,6 +54,10 @@ public class MapChunk {
 
     public Path getImagePath() {
         return new File(new File(Baritone.INSTANCE.getDir(), "map"), "chunk" + chunk.x + "-" + chunk.z + ".png").toPath();
+    }
+
+    public Chunk getChunk() {
+        return chunk;
     }
 
     /**

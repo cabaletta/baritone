@@ -23,6 +23,7 @@ import baritone.bot.behavior.impl.MemoryBehavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.GameEventHandler;
 import baritone.bot.utils.InputOverrideHandler;
+import baritone.map.Map;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -71,6 +72,7 @@ public enum Baritone {
             registerBehavior(PathingBehavior.INSTANCE);
             registerBehavior(LookBehavior.INSTANCE);
             registerBehavior(MemoryBehavior.INSTANCE);
+            registerBehavior(Map.INSTANCE);
         }
 
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");

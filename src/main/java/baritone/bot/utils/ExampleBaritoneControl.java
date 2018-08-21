@@ -28,6 +28,7 @@ import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.utils.pathing.BetterBlockPos;
+import baritone.map.Map;
 import baritone.map.MapChunk;
 import net.minecraft.util.math.BlockPos;
 
@@ -179,8 +180,7 @@ public class ExampleBaritoneControl extends Behavior {
             }
         }
         if(msg.toLowerCase().equals("map")) {
-            MapChunk chunk = new MapChunk(world().getChunk(player().getPosition()));
-            chunk.writeImage();
+            Map.INSTANCE.writeImage();
         }
         if (Baritone.settings().byLowerName.containsKey(msg.toLowerCase())) {
             Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg.toLowerCase());
