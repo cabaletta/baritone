@@ -24,10 +24,7 @@ import baritone.bot.pathing.movement.MovementState.MovementStatus;
 import baritone.bot.pathing.movement.movements.MovementDownward;
 import baritone.bot.pathing.movement.movements.MovementPillar;
 import baritone.bot.pathing.movement.movements.MovementTraverse;
-import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.Helper;
-import baritone.bot.utils.Rotation;
-import baritone.bot.utils.ToolSet;
+import baritone.bot.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
@@ -137,6 +134,14 @@ public abstract class Movement implements Helper, MovementHelper {
                     state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
+                //get rekt minecraft
+                //i'm doing it anyway
+                //i dont care if theres snow in the way!!!!!!!
+                //you dont own me!!!!
+                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+                        Utils.getBlockPosCenter(blockPos)))
+                ).setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
+                return false;
             }
         }
         if (somethingInTheWay) {
@@ -168,7 +173,6 @@ public abstract class Movement implements Helper, MovementHelper {
     public void onFinish(MovementState state) {
         state.getInputStates().replaceAll((input, forced) -> false);
         state.getInputStates().forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
-        state.setStatus(MovementStatus.SUCCESS);
     }
 
     public void cancel() {
