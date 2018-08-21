@@ -163,7 +163,7 @@ public class Settings {
     /**
      * The big one. Download all chunks in simplified 2-bit format and save them for better very-long-distance pathing.
      */
-    public Setting<Boolean> chuckCaching = new Setting<>(false);
+    public Setting<Boolean> chunkCaching = new Setting<>(true);
 
     /**
      * Print all the debug messages to chat

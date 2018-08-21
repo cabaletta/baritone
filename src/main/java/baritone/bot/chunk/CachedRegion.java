@@ -17,25 +17,30 @@
 
 package baritone.bot.chunk;
 
+import baritone.bot.utils.pathing.IBlockTypeAccess;
 import baritone.bot.utils.pathing.PathingBlockType;
-import baritone.bot.utils.GZIPUtils;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.function.Consumer;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
  * @author Brady
  * @since 8/3/2018 9:35 PM
  */
-public final class CachedRegion implements ICachedChunkAccess {
+public final class CachedRegion implements IBlockTypeAccess {
+    private static final byte CHUNK_NOT_PRESENT = 0;
+    private static final byte CHUNK_PRESENT = 1;
+
+    /**
+     * Magic value to detect invalid cache files, or incompatible cache files saved in an old version of Baritone
+     */
+    private static final int CACHED_REGION_MAGIC = 456022910;
 
     /**
      * All of the chunks in this region: A 32x32 array of them.
@@ -52,9 +57,15 @@ public final class CachedRegion implements ICachedChunkAccess {
      */
     private final int z;
 
+    /**
+     * Has this region been modified since its most recent load or save
+     */
+    private boolean hasUnsavedChanges;
+
     CachedRegion(int x, int z) {
         this.x = x;
         this.z = z;
+        this.hasUnsavedChanges = false;
     }
 
     @Override
@@ -66,14 +77,14 @@ public final class CachedRegion implements ICachedChunkAccess {
         return null;
     }
 
-    @Override
-    public final void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
+    final void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
         CachedChunk chunk = this.getChunk(chunkX, chunkZ);
         if (chunk == null) {
             this.chunks[chunkX][chunkZ] = new CachedChunk(chunkX, chunkZ, data);
         } else {
             chunk.updateContents(data);
         }
+        hasUnsavedChanges = true;
     }
 
     private CachedChunk getChunk(int chunkX, int chunkZ) {
@@ -92,21 +103,31 @@ public final class CachedRegion implements ICachedChunkAccess {
     }
 
     public final void save(String directory) {
+        if (!hasUnsavedChanges) {
+            return;
+        }
         try {
             Path path = Paths.get(directory);
             if (!Files.exists(path))
                 Files.createDirectories(path);
 
+            System.out.println("Saving region " + x + "," + z + " to disk " + path);
             Path regionFile = getRegionFile(path, this.x, this.z);
             if (!Files.exists(regionFile))
                 Files.createFile(regionFile);
-            try (FileOutputStream fileOut = new FileOutputStream(regionFile.toFile()); GZIPOutputStream out = new GZIPOutputStream(fileOut)) {
+            try (
+                    FileOutputStream fileOut = new FileOutputStream(regionFile.toFile());
+                    GZIPOutputStream gzipOut = new GZIPOutputStream(fileOut);
+                    DataOutputStream out = new DataOutputStream(gzipOut);
+            ) {
+                out.writeInt(CACHED_REGION_MAGIC);
                 for (int z = 0; z < 32; z++) {
                     for (int x = 0; x < 32; x++) {
                         CachedChunk chunk = this.chunks[x][z];
                         if (chunk == null) {
-                            out.write(CachedChunk.EMPTY_CHUNK);
+                            out.write(CHUNK_NOT_PRESENT);
                         } else {
+                            out.write(CHUNK_PRESENT);
                             byte[] chunkBytes = chunk.toByteArray();
                             out.write(chunkBytes);
                             // Messy, but fills the empty 0s that should be trailing to fill up the space.
@@ -114,8 +135,13 @@ public final class CachedRegion implements ICachedChunkAccess {
                         }
                     }
                 }
+                out.writeInt(~CACHED_REGION_MAGIC);
             }
-        } catch (IOException ignored) {}
+            hasUnsavedChanges = false;
+            System.out.println("Saved region successfully");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void load(String directory) {
@@ -128,27 +154,48 @@ public final class CachedRegion implements ICachedChunkAccess {
             if (!Files.exists(regionFile))
                 return;
 
-            byte[] decompressed;
-            try (FileInputStream in = new FileInputStream(regionFile.toFile())) {
-                decompressed = GZIPUtils.decompress(in);
-            }
+            System.out.println("Loading region " + x + "," + z + " from disk " + path);
 
-            if (decompressed == null)
-                return;
-
-            for (int z = 0; z < 32; z++) {
-                for (int x = 0; x < 32; x++) {
-                    int index = (x + (z << 5)) * CachedChunk.SIZE_IN_BYTES;
-                    byte[] bytes = Arrays.copyOfRange(decompressed, index, index + CachedChunk.SIZE_IN_BYTES);
-                    if (isAllZeros(bytes)) {
-                        this.chunks[x][z] = null;
-                    } else {
-                        BitSet bits = BitSet.valueOf(bytes);
-                        updateCachedChunk(x, z, bits);
+            try (
+                    FileInputStream fileIn = new FileInputStream(regionFile.toFile());
+                    GZIPInputStream gzipIn = new GZIPInputStream(fileIn);
+                    DataInputStream in = new DataInputStream(gzipIn);
+            ) {
+                int magic = in.readInt();
+                if (magic != CACHED_REGION_MAGIC) {
+                    // in the future, if we change the format on disk
+                    // we can keep converters for the old format
+                    // by switching on the magic value, and either loading it normally, or loading through a converter.
+                    throw new IOException("Bad magic value " + magic);
+                }
+                for (int z = 0; z < 32; z++) {
+                    for (int x = 0; x < 32; x++) {
+                        int isChunkPresent = in.read();
+                        switch (isChunkPresent) {
+                            case CHUNK_PRESENT:
+                                byte[] bytes = new byte[CachedChunk.SIZE_IN_BYTES];
+                                in.readFully(bytes);
+                                BitSet bits = BitSet.valueOf(bytes);
+                                updateCachedChunk(x, z, bits);
+                                break;
+                            case CHUNK_NOT_PRESENT:
+                                this.chunks[x][z] = null;
+                                break;
+                            default:
+                                throw new IOException("Malformed stream");
+                        }
                     }
                 }
+                int fileEndMagic = in.readInt();
+                if (fileEndMagic != ~magic) {
+                    throw new IOException("Bad end of file magic");
+                }
             }
-        } catch (IOException ignored) {}
+            hasUnsavedChanges = false;
+            System.out.println("Loaded region successfully");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static boolean isAllZeros(final byte[] array) {
