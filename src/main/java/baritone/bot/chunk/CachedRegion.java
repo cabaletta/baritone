@@ -159,6 +159,9 @@ public final class CachedRegion implements ICachedChunkAccess {
             ) {
                 int magic = in.readInt();
                 if (magic != CACHED_REGION_MAGIC) {
+                    // in the future, if we change the format on disk
+                    // we can keep converters for the old format
+                    // by switching on the magic value, and either loading it normally, or loading through a converter.
                     throw new IOException("Bad magic value " + magic);
                 }
                 for (int z = 0; z < 32; z++) {
