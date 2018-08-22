@@ -22,6 +22,7 @@ import baritone.Settings;
 import baritone.behavior.Behavior;
 import baritone.behavior.impl.PathingBehavior;
 import baritone.event.events.ChatEvent;
+import baritone.map.Map;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalBlock;
@@ -31,7 +32,6 @@ import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.utils.pathing.BetterBlockPos;
-import baritone.map.Map;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -181,7 +181,7 @@ public class ExampleBaritoneControl extends Behavior {
                 }
             }
         }
-        if(msg.toLowerCase().equals("map")) {
+        if (msg.toLowerCase().equals("map")) {
             Map.INSTANCE.writeImage();
         }
         if (Baritone.settings().byLowerName.containsKey(msg.toLowerCase())) {

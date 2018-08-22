@@ -36,7 +36,7 @@ public final class CachedWorld implements IBlockTypeAccess {
     /**
      * The maximum number of regions in any direction from (0,0)
      */
-    private static final int REGION_MAX = 117188;
+    private static final int REGION_MAX = 58594;
 
     /**
      * A map of all of the cached regions.
