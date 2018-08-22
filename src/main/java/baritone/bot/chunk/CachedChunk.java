@@ -41,11 +41,6 @@ public final class CachedChunk implements IBlockTypeAccess {
     public static final int SIZE_IN_BYTES = SIZE / 8;
 
     /**
-     * An array of just 0s with the length of {@link CachedChunk#SIZE_IN_BYTES}
-     */
-    public static final byte[] EMPTY_CHUNK = new byte[SIZE_IN_BYTES];
-
-    /**
      * The chunk x coordinate
      */
     private final int x;

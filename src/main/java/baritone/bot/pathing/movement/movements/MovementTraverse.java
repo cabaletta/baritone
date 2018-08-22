@@ -111,7 +111,7 @@ public class MovementTraverse extends Movement {
                         return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
                     }
                 }
-                if (BlockStateInterface.get(src).getBlock().equals(Blocks.SOUL_SAND)) {
+                if (Blocks.SOUL_SAND.equals(srcDown)) {
                     return COST_INF; // can't sneak and backplace against soul sand =/
                 }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
@@ -148,7 +148,7 @@ public class MovementTraverse extends Movement {
             }
             if (isDoorActuallyBlockingUs) {
                 if (!(Blocks.IRON_DOOR.equals(srcBlock) || Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
-                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world()))));
+                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world())), true));
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                     return state;
                 }
@@ -190,7 +190,7 @@ public class MovementTraverse extends Movement {
                     double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + against1.getY()) * 0.5D;
                     double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
+                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
 
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                     if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && Minecraft.getMinecraft().player.isSneaking()) {
@@ -217,7 +217,7 @@ public class MovementTraverse extends Movement {
                 double faceZ = (dest.getZ() + src.getZ() + 1.0D) * 0.5D;
                 // faceX, faceY, faceZ is the middle of the face between from and to
                 BlockPos goalLook = src.down(); // this is the block we were just standing on, and the one we want to place against
-                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
+                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
 
                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);

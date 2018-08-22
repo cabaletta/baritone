@@ -38,7 +38,8 @@ public class CalculationContext implements Helper {
     private final boolean canSprint;
     private final double placeBlockCost;
     private final boolean allowBreak;
-    private final int maxFallHeight;
+    private final int maxFallHeightNoWater;
+    private final int maxFallHeightBucket;
 
     public CalculationContext() {
         this(new ToolSet());
@@ -52,7 +53,8 @@ public class CalculationContext implements Helper {
         this.canSprint = Baritone.settings().allowSprint.get() && player().getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
         this.allowBreak = Baritone.settings().allowBreak.get();
-        this.maxFallHeight = Baritone.settings().maxFallHeight.get();
+        this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
+        this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
@@ -82,7 +84,12 @@ public class CalculationContext implements Helper {
         return allowBreak;
     }
 
-    public int maxFallHeight(){
-        return maxFallHeight;
+    public int maxFallHeightNoWater() {
+        return maxFallHeightNoWater;
     }
+
+    public int maxFallHeightBucket() {
+        return maxFallHeightBucket;
+    }
+
 }

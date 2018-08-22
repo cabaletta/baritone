@@ -255,10 +255,12 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static void moveTowards(MovementState state, BlockPos pos) {
-        state.setTarget(new MovementTarget(new Rotation(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                Utils.getBlockPosCenter(pos),
-                new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getFirst(), mc.player.rotationPitch))
-        ).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+        state.setTarget(new MovementTarget(
+                new Rotation(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+                        Utils.getBlockPosCenter(pos),
+                        new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getFirst(), mc.player.rotationPitch),
+                false
+        )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }
 
     static Movement generateMovementFallOrDescend(BlockPos pos, BlockPos dest, CalculationContext calcContext) {
@@ -297,7 +299,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 continue;
             }
             if (canWalkOn(onto, ontoBlock)) {
-                if (calcContext.hasWaterBucket() || fallHeight <= 4) {
+                if ((calcContext.hasWaterBucket() && fallHeight <= calcContext.maxFallHeightBucket() + 1) || fallHeight <= calcContext.maxFallHeightNoWater() + 1) {
                     // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
                     return new MovementFall(pos, onto.up());
                 } else {

@@ -139,7 +139,7 @@ public class MovementAscend extends Movement {
                     double faceX = (dest.getX() + anAgainst.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + anAgainst.getY()) * 0.5D;
                     double faceZ = (dest.getZ() + anAgainst.getZ() + 1.0D) * 0.5D;
-                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations())));
+                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                     if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), anAgainst) && LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
                         ticksWithoutPlacement++;

@@ -15,17 +15,29 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.chunk;
+package baritone.bot.event.events;
 
-import baritone.bot.utils.pathing.IBlockTypeAccess;
-
-import java.util.BitSet;
+import baritone.bot.event.events.type.EventState;
 
 /**
  * @author Brady
- * @since 8/4/2018 1:10 AM
+ * @since 8/21/2018
  */
-public interface ICachedChunkAccess extends IBlockTypeAccess {
+public final class PlayerUpdateEvent {
 
-    void updateCachedChunk(int chunkX, int chunkZ, BitSet data);
+    /**
+     * The state of the event
+     */
+    private final EventState state;
+
+    public PlayerUpdateEvent(EventState state) {
+        this.state = state;
+    }
+
+    /**
+     * @return The state of the event
+     */
+    public final EventState getState() {
+        return this.state;
+    }
 }

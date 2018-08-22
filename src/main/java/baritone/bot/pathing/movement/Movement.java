@@ -105,7 +105,13 @@ public abstract class Movement implements Helper, MovementHelper {
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
         }
-        latestState.getTarget().getRotation().ifPresent(LookBehavior.INSTANCE::updateTarget);
+
+        // If the movement target has to force the new rotations, or we aren't using silent move, then force the rotations
+        latestState.getTarget().getRotation().ifPresent(rotation ->
+                LookBehavior.INSTANCE.updateTarget(
+                        rotation,
+                        latestState.getTarget().hasToForceRotations()));
+
         // TODO: calculate movement inputs from latestState.getGoal().position
         // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
         latestState.getInputStates().forEach((input, forced) -> {
@@ -131,7 +137,7 @@ public abstract class Movement implements Helper, MovementHelper {
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
                     player().inventory.currentItem = new ToolSet().getBestSlot(BlockStateInterface.get(blockPos));
-                    state.setTarget(new MovementState.MovementTarget(reachable.get())).setInput(Input.CLICK_LEFT, true);
+                    state.setTarget(new MovementState.MovementTarget(reachable.get(), true)).setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
                 //get rekt minecraft
@@ -139,7 +145,7 @@ public abstract class Movement implements Helper, MovementHelper {
                 //i dont care if theres snow in the way!!!!!!!
                 //you dont own me!!!!
                 state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                        Utils.getBlockPosCenter(blockPos)))
+                        Utils.getBlockPosCenter(blockPos)), true)
                 ).setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 return false;
             }

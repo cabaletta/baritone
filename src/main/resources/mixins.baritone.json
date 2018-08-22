@@ -4,7 +4,11 @@
   "refmap": "mixins.client.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "verbose": false,
+  "injectors": {
+    "maxShiftBy": 2
+  },
   "client": [
+    "MixinEntity",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
     "MixinGameSettings",

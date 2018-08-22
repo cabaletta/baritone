@@ -133,7 +133,22 @@ public class Settings {
      * 3 won't deal any damage. But if you just want to get down the mountain quickly and you have
      * Feather Falling IV, you might set it a bit higher, like 4 or 5.
      */
-    public Setting<Integer> maxFallHeight = new Setting<>(3);
+    public Setting<Integer> maxFallHeightNoWater = new Setting<>(3);
+
+    /**
+     * How far are you allowed to fall onto solid ground (with a water bucket)?
+     * It's not that reliable, so I've set it below what would kill an unarmored player (23)
+     */
+    public Setting<Integer> maxFallHeightBucket = new Setting<>(20);
+
+    /**
+     * If your goal is a GoalBlock in an unloaded chunk, assume it's far enough away that the Y coord
+     * doesn't matter yet, and replace it with a GoalXZ to the same place before calculating a path.
+     * Once a segment ends within chunk load range of the GoalBlock, it will go back to normal behavior
+     * of considering the Y coord. The reasoning is that if your X and Z are 10,000 blocks away,
+     * your Y coordinate's accuracy doesn't matter at all until you get much much closer.
+     */
+    public Setting<Boolean> simplifyUnloadedYCoord = new Setting<>(true);
 
     /**
      * If a movement takes this many ticks more than its initial cost estimate, cancel it
@@ -163,7 +178,7 @@ public class Settings {
     /**
      * The big one. Download all chunks in simplified 2-bit format and save them for better very-long-distance pathing.
      */
-    public Setting<Boolean> chuckCaching = new Setting<>(false);
+    public Setting<Boolean> chunkCaching = new Setting<>(true);
 
     /**
      * Print all the debug messages to chat
@@ -202,6 +217,11 @@ public class Settings {
      */
     public Setting<Boolean> fadePath = new Setting<>(false);
 
+    /**
+     * Move without having to force the client-sided rotations
+     */
+    public Setting<Boolean> freeLook = new Setting<>(true);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 
@@ -210,6 +230,7 @@ public class Settings {
         private String name;
         private final Class<T> klass;
 
+        @SuppressWarnings("unchecked")
         private Setting(T value) {
             if (value == null) {
                 throw new IllegalArgumentException("Cannot determine value type class from null");
@@ -218,6 +239,7 @@ public class Settings {
             this.klass = (Class<T>) value.getClass();
         }
 
+        @SuppressWarnings("unchecked")
         public final <K extends T> K get() {
             return (K) value;
         }
@@ -244,7 +266,7 @@ public class Settings {
         try {
             for (Field field : temp) {
                 if (field.getType().equals(Setting.class)) {
-                    Setting<?> setting = (Setting<? extends Object>) field.get(this);
+                    Setting<?> setting = (Setting<?>) field.get(this);
                     String name = field.getName();
                     setting.name = name;
                     name = name.toLowerCase();
@@ -262,6 +284,7 @@ public class Settings {
         allSettings = Collections.unmodifiableList(tmpAll);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> List<Setting<T>> getByValueType(Class<T> klass) {
         ArrayList<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {

@@ -35,9 +35,7 @@
 package baritone.bot.event;
 
 import baritone.bot.Baritone;
-import baritone.bot.chunk.CachedWorld;
 import baritone.bot.chunk.CachedWorldProvider;
-import baritone.bot.chunk.ChunkPacker;
 import baritone.bot.event.events.*;
 import baritone.bot.event.events.type.EventState;
 import baritone.bot.event.listener.IGameEventListener;
@@ -49,6 +47,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.input.Keyboard;
 
 import java.util.ArrayList;
@@ -69,8 +68,8 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     }
 
     @Override
-    public final void onPlayerUpdate() {
-        dispatch(IGameEventListener::onPlayerUpdate);
+    public final void onPlayerUpdate(PlayerUpdateEvent event) {
+        dispatch(listener -> listener.onPlayerUpdate(event));
     }
 
     @Override
@@ -112,11 +111,12 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 && type == ChunkEvent.Type.UNLOAD
                 && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
-        if (Baritone.settings().chuckCaching.get()) {
+        if (Baritone.settings().chunkCaching.get()) {
             if (isPostPopulate || isPreUnload) {
-                CachedWorldProvider.INSTANCE.ifWorldLoaded(world ->
-                        world.updateCachedChunk(event.getX(), event.getZ(),
-                                ChunkPacker.createPackedChunk(mc.world.getChunk(event.getX(), event.getZ()))));
+                CachedWorldProvider.INSTANCE.ifWorldLoaded(world -> {
+                    Chunk chunk = mc.world.getChunk(event.getX(), event.getZ());
+                    world.queueForPacking(chunk);
+                });
             }
         }
 
@@ -136,12 +136,12 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onWorldEvent(WorldEvent event) {
-        if (Baritone.settings().chuckCaching.get()) {
+        if (Baritone.settings().chunkCaching.get()) {
             CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
 
             switch (event.getState()) {
                 case PRE:
-                    cache.ifWorldLoaded(CachedWorld::save);
+                    cache.closeWorld();
                     break;
                 case POST:
                     cache.closeWorld();
@@ -156,17 +156,22 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onSendPacket(PacketEvent event) {
-        dispatch(behavior -> behavior.onSendPacket(event));
+        dispatch(listener -> listener.onSendPacket(event));
     }
 
     @Override
     public final void onReceivePacket(PacketEvent event) {
-        dispatch(behavior -> behavior.onReceivePacket(event));
+        dispatch(listener -> listener.onReceivePacket(event));
     }
 
     @Override
     public final void onQueryItemSlotForBlocks(ItemSlotEvent event) {
-        dispatch(behavior -> behavior.onQueryItemSlotForBlocks(event));
+        dispatch(listener -> listener.onQueryItemSlotForBlocks(event));
+    }
+
+    @Override
+    public void onPlayerRelativeMove(RelativeMoveEvent event) {
+        dispatch(listener -> listener.onPlayerRelativeMove(event));
     }
 
     public final void registerEventListener(IGameEventListener listener) {

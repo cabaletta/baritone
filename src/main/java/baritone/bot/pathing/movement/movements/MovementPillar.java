@@ -115,7 +115,7 @@ public class MovementPillar extends Movement {
         if (!ladder) {
             state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                     Utils.getBlockPosCenter(positionsToPlace[0]),
-                    new Rotation(mc.player.rotationYaw, mc.player.rotationPitch))));
+                    new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)), true));
         }
         EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
         boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;

@@ -164,7 +164,7 @@ public class ToolSet implements Helper {
                 event.setSlot(this.overrideSlot);
         }
 
-        public final void setOverrideSlot(int overrideSlot) {
+        final void setOverrideSlot(int overrideSlot) {
             this.overrideSlot = overrideSlot;
         }
     }

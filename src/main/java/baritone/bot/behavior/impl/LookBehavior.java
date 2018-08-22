@@ -17,7 +17,12 @@
 
 package baritone.bot.behavior.impl;
 
+import baritone.bot.Baritone;
+import baritone.bot.Settings;
 import baritone.bot.behavior.Behavior;
+import baritone.bot.event.events.PlayerUpdateEvent;
+import baritone.bot.event.events.RelativeMoveEvent;
+import baritone.bot.event.events.type.EventState;
 import baritone.bot.utils.Rotation;
 
 public class LookBehavior extends Behavior {
@@ -34,21 +39,50 @@ public class LookBehavior extends Behavior {
      */
     private Rotation target;
 
-    public void updateTarget(Rotation target) {
+    /**
+     * Whether or not rotations are currently being forced
+     */
+    private boolean force;
+
+    /**
+     * The last player yaw angle. Used when free looking
+     *
+     * @see Settings#freeLook
+     */
+    private float lastYaw;
+
+    public void updateTarget(Rotation target, boolean force) {
         this.target = target;
+        this.force = force || !Baritone.settings().freeLook.get();
     }
 
     @Override
-    public void onPlayerUpdate() {
-        if (target != null) {
-            player().rotationYaw = target.getFirst();
+    public void onPlayerUpdate(PlayerUpdateEvent event) {
+        if (event.getState() == EventState.PRE && this.target != null && this.force) {
+            player().rotationYaw = this.target.getFirst();
             float oldPitch = player().rotationPitch;
-            float desiredPitch = target.getSecond();
+            float desiredPitch = this.target.getSecond();
             player().rotationPitch = desiredPitch;
             if (desiredPitch == oldPitch) {
                 nudgeToLevel();
             }
-            target = null;
+            this.target = null;
+        }
+    }
+
+    @Override
+    public void onPlayerRelativeMove(RelativeMoveEvent event) {
+        if (this.target != null && !force) {
+            switch (event.getState()) {
+                case PRE:
+                    this.lastYaw = player().rotationYaw;
+                    player().rotationYaw = this.target.getFirst();
+                    break;
+                case POST:
+                    player().rotationYaw = this.lastYaw;
+                    this.target = null;
+                    break;
+            }
         }
     }
 

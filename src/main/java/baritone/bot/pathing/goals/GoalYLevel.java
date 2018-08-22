@@ -44,11 +44,11 @@ public class GoalYLevel implements Goal {
     public double heuristic(BlockPos pos) {
         if (pos.getY() > level) {
             // need to descend
-            return FALL_N_BLOCKS_COST[1] * (pos.getY() - level);
+            return FALL_N_BLOCKS_COST[2] / 2 * (pos.getY() - level);
         }
         if (pos.getY() < level) {
             // need to ascend
-            return (level - pos.getY()) * JUMP_ONE_BLOCK_COST;
+            return (level - pos.getY()) * JUMP_ONE_BLOCK_COST * 0.9;
         }
         return 0;
     }

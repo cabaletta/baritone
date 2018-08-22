@@ -19,18 +19,22 @@ package baritone.bot.behavior.impl;
 
 import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;
+import baritone.bot.event.events.PlayerUpdateEvent;
 import baritone.bot.event.events.RenderEvent;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.pathing.calc.AStarPathFinder;
 import baritone.bot.pathing.calc.AbstractNodeCostSearch;
 import baritone.bot.pathing.calc.IPathFinder;
 import baritone.bot.pathing.goals.Goal;
+import baritone.bot.pathing.goals.GoalBlock;
+import baritone.bot.pathing.goals.GoalXZ;
 import baritone.bot.pathing.path.IPath;
 import baritone.bot.pathing.path.PathExecutor;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.PathRenderer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.awt.*;
 import java.util.Collections;
@@ -53,11 +57,12 @@ public class PathingBehavior extends Behavior {
 
     private final Object pathPlanLock = new Object();
 
+    private boolean lastAutoJump;
+
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
-            current = null;
-            next = null;
+            this.cancel();
             return;
         }
         if (current == null) {
@@ -133,6 +138,21 @@ public class PathingBehavior extends Behavior {
         }
     }
 
+    @Override
+    public void onPlayerUpdate(PlayerUpdateEvent event) {
+        if (current != null) {
+            switch (event.getState()) {
+                case PRE:
+                    lastAutoJump = mc.gameSettings.autoJump;
+                    mc.gameSettings.autoJump = false;
+                    break;
+                case POST:
+                    mc.gameSettings.autoJump = lastAutoJump;
+                    break;
+            }
+        }
+    }
+
     public Optional<Double> ticksRemainingInSegment() {
         if (current == null) {
             return Optional.empty();
@@ -148,7 +168,9 @@ public class PathingBehavior extends Behavior {
         return current;
     }
 
-    public PathExecutor getNext() {return next;}
+    public PathExecutor getNext() {
+        return next;
+    }
 
     public Optional<IPath> getPath() {
         return Optional.ofNullable(current).map(PathExecutor::getPath);
@@ -239,9 +261,17 @@ public class PathingBehavior extends Behavior {
      * @return
      */
     private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous) {
+        Goal goal = this.goal;
         if (goal == null) {
             displayChatMessageRaw("no goal");
             return Optional.empty();
+        }
+        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof GoalBlock) {
+            BlockPos pos = ((GoalBlock) goal).getGoalPos();
+            if (world().getChunk(pos) instanceof EmptyChunk) {
+                displayChatMessageRaw("Simplifying GoalBlock to GoalXZ due to distance");
+                goal = new GoalXZ(pos.getX(), pos.getZ());
+            }
         }
         try {
             IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
