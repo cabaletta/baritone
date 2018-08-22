@@ -19,7 +19,7 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.chunk.CachedWorld;
-import baritone.chunk.CachedWorldProvider;
+import baritone.chunk.WorldProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
@@ -43,7 +43,7 @@ public class BlockStateInterface implements Helper {
             }
         }
         if (Baritone.settings().chunkCaching.get()) {
-            CachedWorld world = CachedWorldProvider.INSTANCE.getCurrentWorld();
+            CachedWorld world = WorldProvider.INSTANCE.getCurrentWorld().cache;
             if (world != null) {
                 IBlockState type = world.getBlock(pos);
                 if (type != null) {

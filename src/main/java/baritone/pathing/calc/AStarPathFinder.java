@@ -18,7 +18,7 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
-import baritone.chunk.CachedWorldProvider;
+import baritone.chunk.WorldProvider;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.calc.openset.IOpenSet;
 import baritone.pathing.goals.Goal;
@@ -113,8 +113,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
                 boolean isPositionCached = false;
                 if (cache) {
-                    if (CachedWorldProvider.INSTANCE.getCurrentWorld() != null) {
-                        if (CachedWorldProvider.INSTANCE.getCurrentWorld().getBlock(dest) != null) {
+                    if (WorldProvider.INSTANCE.getCurrentWorld() != null) {
+                        if (WorldProvider.INSTANCE.getCurrentWorld().cache.getBlock(dest) != null) {
                             isPositionCached = true;
                         }
                     }

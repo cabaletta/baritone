@@ -35,7 +35,7 @@
 package baritone.event;
 
 import baritone.Baritone;
-import baritone.chunk.CachedWorldProvider;
+import baritone.chunk.WorldProvider;
 import baritone.event.events.*;
 import baritone.event.events.type.EventState;
 import baritone.event.listener.IGameEventListener;
@@ -113,9 +113,9 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
         if (Baritone.settings().chunkCaching.get()) {
             if (isPostPopulate || isPreUnload) {
-                CachedWorldProvider.INSTANCE.ifWorldLoaded(world -> {
+                WorldProvider.INSTANCE.ifWorldLoaded(world -> {
                     Chunk chunk = mc.world.getChunk(event.getX(), event.getZ());
-                    world.queueForPacking(chunk);
+                    world.cache.queueForPacking(chunk);
                 });
             }
         }
@@ -126,7 +126,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     @Override
     public final void onRenderPass(RenderEvent event) {
         /*
-        CachedWorldProvider.INSTANCE.ifWorldLoaded(world -> world.forEachRegion(region -> region.forEachChunk(chunk -> {
+        WorldProvider.INSTANCE.ifWorldLoaded(world -> world.forEachRegion(region -> region.forEachChunk(chunk -> {
             drawChunkLine(region.getX() * 512 + chunk.getX() * 16, region.getZ() * 512 + chunk.getZ() * 16, event.getPartialTicks());
         })));
         */
@@ -137,7 +137,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     @Override
     public final void onWorldEvent(WorldEvent event) {
         if (Baritone.settings().chunkCaching.get()) {
-            CachedWorldProvider cache = CachedWorldProvider.INSTANCE;
+            WorldProvider cache = WorldProvider.INSTANCE;
 
             switch (event.getState()) {
                 case PRE:
