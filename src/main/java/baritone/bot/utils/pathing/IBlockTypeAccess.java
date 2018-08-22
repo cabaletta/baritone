@@ -18,6 +18,7 @@
 package baritone.bot.utils.pathing;
 
 import baritone.bot.utils.Helper;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -26,9 +27,9 @@ import net.minecraft.util.math.BlockPos;
  */
 public interface IBlockTypeAccess extends Helper {
 
-    PathingBlockType getBlockType(int x, int y, int z);
+    IBlockState getBlock(int x, int y, int z);
 
-    default PathingBlockType getBlockType(BlockPos pos) {
-        return getBlockType(pos.getX(), pos.getY(), pos.getZ());
+    default IBlockState getBlock(BlockPos pos) {
+        return getBlock(pos.getX(), pos.getY(), pos.getZ());
     }
 }

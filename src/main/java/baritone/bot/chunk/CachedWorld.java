@@ -18,9 +18,9 @@
 package baritone.bot.chunk;
 
 import baritone.bot.utils.pathing.IBlockTypeAccess;
-import baritone.bot.utils.pathing.PathingBlockType;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.BitSet;
@@ -66,13 +66,13 @@ public final class CachedWorld implements IBlockTypeAccess {
     }
 
     @Override
-    public final PathingBlockType getBlockType(int x, int y, int z) {
+    public final IBlockState getBlock(int x, int y, int z) {
         // no point in doing getOrCreate region, if we don't have it we don't have it
         CachedRegion region = getRegion(x >> 9, z >> 9);
         if (region == null) {
             return null;
         }
-        return region.getBlockType(x & 511, y, z & 511);
+        return region.getBlock(x & 511, y, z & 511);
     }
 
     private void updateCachedChunk(CachedChunk chunk) {
