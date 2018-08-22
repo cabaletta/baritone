@@ -73,13 +73,7 @@ public enum Baritone {
             registerBehavior(MemoryBehavior.INSTANCE);
             registerBehavior(Map.INSTANCE);
         }
-
-        this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
-        if (!Files.exists(dir.toPath())) {
-            try {
-                Files.createDirectories(dir.toPath());
-            } catch (IOException ignored) {}
-        }
+        
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {
             try {
