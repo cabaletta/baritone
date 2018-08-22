@@ -67,13 +67,17 @@ public final class CachedWorld implements IBlockTypeAccess {
 
     @Override
     public final PathingBlockType getBlockType(int x, int y, int z) {
-        CachedRegion region = getOrCreateRegion(x >> 9, z >> 9);
+        // no point in doing getOrCreate region, if we don't have it we don't have it
+        CachedRegion region = getRegion(x >> 9, z >> 9);
+        if (region == null) {
+            return null;
+        }
         return region.getBlockType(x & 511, y, z & 511);
     }
 
-    private void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
-        CachedRegion region = getOrCreateRegion(chunkX >> 5, chunkZ >> 5);
-        region.updateCachedChunk(chunkX & 31, chunkZ & 31, data, );
+    private void updateCachedChunk(CachedChunk chunk) {
+        CachedRegion region = getOrCreateRegion(chunk.x >> 5, chunk.z >> 5);
+        region.updateCachedChunk(chunk.x & 31, chunk.z & 31, chunk);
     }
 
     public final void save() {
@@ -105,7 +109,7 @@ public final class CachedWorld implements IBlockTypeAccess {
      * @param regionZ The region Z coordinate
      * @return The region located at the specified coordinates
      */
-    CachedRegion getOrCreateRegion(int regionX, int regionZ) {
+    private CachedRegion getOrCreateRegion(int regionX, int regionZ) {
         return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
             CachedRegion newRegion = new CachedRegion(regionX, regionZ);
             newRegion.load(this.directory);
@@ -157,7 +161,8 @@ public final class CachedWorld implements IBlockTypeAccess {
                     Chunk chunk = queue.take();
                     BitSet packedChunk = ChunkPacker.createPackedChunk(chunk);
                     String[] packedOverview = ChunkPacker.createPackedOverview(chunk);
-                    CachedWorld.this.updateCachedChunk(chunk.x, chunk.z, packedChunk);
+                    CachedChunk cached = new CachedChunk(chunk.x, chunk.z, packedChunk, packedOverview);
+                    CachedWorld.this.updateCachedChunk(cached);
                     //System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);
                 } catch (InterruptedException e) {
                     e.printStackTrace();

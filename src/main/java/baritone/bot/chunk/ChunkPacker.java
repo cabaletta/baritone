@@ -20,14 +20,13 @@ package baritone.bot.chunk;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
-import baritone.bot.utils.pathing.BetterBlockPos;
 import baritone.bot.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
+import net.minecraft.block.BlockDoublePlant;
+import net.minecraft.block.BlockTallGrass;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.BitSet;
@@ -48,7 +47,7 @@ public final class ChunkPacker implements Helper {
                 for (int z = 0; z < 16; z++) {
                     for (int x = 0; x < 16; x++) {
                         int index = CachedChunk.getPositionIndex(x, y, z);
-                        boolean[] bits = getPathingBlockType(new BlockPos(x, y, z), chunk.getBlockState(x, y, z)).getBits();
+                        boolean[] bits = getPathingBlockType(chunk.getBlockState(x, y, z).getBlock()).getBits();
                         bitSet.set(index, bits[0]);
                         bitSet.set(index + 1, bits[1]);
                     }
@@ -65,26 +64,30 @@ public final class ChunkPacker implements Helper {
     public static String[] createPackedOverview(Chunk chunk) {
         long start = System.currentTimeMillis();
         String[] blockNames = new String[256];
-        for(int z = 0; z < 16; z++) {
-            for(int x = 0; x < 16; x++) {
+        for (int z = 0; z < 16; z++) {
+            for (int x = 0; x < 16; x++) {
                 int height = chunk.getHeightValue(x, z);
                 IBlockState blockState = chunk.getBlockState(x, height, z);
-                for(int y = height; y > 0; y--) {
+                for (int y = height; y > 0; y--) {
                     blockState = chunk.getBlockState(x, y, z);
-                    if(blockState.getBlock() != Blocks.AIR) {
+                    if (getPathingBlockType(blockState.getBlock()) != PathingBlockType.AIR) {
                         break;
                     }
                 }
-                blockNames[z << 4 | x] = blockState.getBlock().getLocalizedName();
+                ResourceLocation loc = Block.REGISTRY.getNameForObject(blockState.getBlock());
+                String name = loc.getPath(); // normally, only write the part after the minecraft:
+                if (!loc.getNamespace().equals("minecraft")) {
+                    // Baritone is running on top of forge with mods installed, perhaps?
+                    name = loc.toString(); // include the namespace with the colon
+                }
+                blockNames[z << 4 | x] = name;
             }
         }
         long end = System.currentTimeMillis();
         return blockNames;
     }
 
-    private static PathingBlockType getPathingBlockType(BlockPos pos, IBlockState state) {
-        Block block = state.getBlock();
-
+    private static PathingBlockType getPathingBlockType(Block block) {
         if (BlockStateInterface.isWater(block)) {
             return PathingBlockType.WATER;
         }
@@ -93,7 +96,11 @@ public final class ChunkPacker implements Helper {
             return PathingBlockType.AVOID;
         }
 
-        if (block instanceof BlockAir) {
+        // We used to do an AABB check here
+        // however, this failed in the nether when you were near a nether fortress
+        // because fences check their adjacent blocks in the world for their fence connection status to determine AABB shape
+        // this caused a nullpointerexception when we saved chunks on unload, because they were unable to check their neighbors
+        if (block instanceof BlockAir || block instanceof BlockTallGrass || block instanceof BlockDoublePlant) {
             return PathingBlockType.AIR;
         }
 

@@ -43,12 +43,12 @@ public final class CachedChunk implements IBlockTypeAccess {
     /**
      * The chunk x coordinate
      */
-    private final int x;
+    public final int x;
 
     /**
      * The chunk z coordinate
      */
-    private final int z;
+    public final int z;
 
     /**
      * The actual raw data of this packed chunk.
@@ -62,6 +62,8 @@ public final class CachedChunk implements IBlockTypeAccess {
      */
     private final String[] overview;
 
+    private final int[] heightMap;
+
     CachedChunk(int x, int z, BitSet data, String[] overview) {
         validateSize(data);
 
@@ -69,6 +71,8 @@ public final class CachedChunk implements IBlockTypeAccess {
         this.z = z;
         this.data = data;
         this.overview = overview;
+        this.heightMap = new int[256];
+        calculateHeightMap();
     }
 
     @Override
@@ -77,25 +81,22 @@ public final class CachedChunk implements IBlockTypeAccess {
         return PathingBlockType.fromBits(data.get(index), data.get(index + 1));
     }
 
-    void updateContents(BitSet data) {
-        validateSize(data);
-
-        for (int i = 0; i < data.length(); i++)
-            this.data.set(i, data.get(i));
+    private void calculateHeightMap() {
+        for (int z = 0; z < 16; z++) {
+            for (int x = 0; x < 16; x++) {
+                int index = z << 4 | x;
+                heightMap[index] = 0;
+                for (int y = 256; y >= 0; y--) {
+                    if (getBlockType(x, y, z) != PathingBlockType.AIR) {
+                        heightMap[index] = y;
+                    }
+                }
+            }
+        }
     }
 
-    /**
-     * @return Thee chunk x coordinat
-     */
-    public final int getX() {
-        return this.x;
-    }
-
-    /**
-     * @return The chunk z coordinate
-     */
-    public final int getZ() {
-        return this.z;
+    public final String[] getOverview() {
+        return overview;
     }
 
     /**

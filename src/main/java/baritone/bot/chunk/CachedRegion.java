@@ -24,6 +24,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
@@ -77,13 +78,8 @@ public final class CachedRegion implements IBlockTypeAccess {
         return null;
     }
 
-    final void updateCachedChunk(int chunkX, int chunkZ, BitSet chunkData, String[] chunkOverview) {
-        CachedChunk chunk = this.getChunk(chunkX, chunkZ);
-        if (chunk == null) {
-            this.chunks[chunkX][chunkZ] = new CachedChunk(chunkX, chunkZ, chunkData, chunkOverview);
-        } else {
-            chunk.updateContents(chunkData);
-        }
+    final void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
+        this.chunks[chunkX][chunkZ] = chunk;
         hasUnsavedChanges = true;
     }
 
@@ -135,6 +131,15 @@ public final class CachedRegion implements IBlockTypeAccess {
                         }
                     }
                 }
+                for (int z = 0; z < 32; z++) {
+                    for (int x = 0; x < 32; x++) {
+                        if (chunks[x][z] != null) {
+                            for (int i = 0; i < 256; i++) {
+                                out.writeUTF(chunks[x][z].getOverview()[i]);
+                            }
+                        }
+                    }
+                }
                 out.writeInt(~CACHED_REGION_MAGIC);
             }
             hasUnsavedChanges = false;
@@ -155,6 +160,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                 return;
 
             System.out.println("Loading region " + x + "," + z + " from disk " + path);
+            long start = System.currentTimeMillis();
 
             try (
                     FileInputStream fileIn = new FileInputStream(regionFile.toFile());
@@ -175,12 +181,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                             case CHUNK_PRESENT:
                                 byte[] bytes = new byte[CachedChunk.SIZE_IN_BYTES];
                                 in.readFully(bytes);
-                                BitSet bits = BitSet.valueOf(bytes);
-                                String[] overview = new String[256];
-                                for(int i = 0; i < 256; i++) {
-                                    overview[i] = in.readUTF();
-                                }
-                                updateCachedChunk(x, z, bits, overview);
+                                this.chunks[x][z] = new CachedChunk(x, z, BitSet.valueOf(bytes), new String[256]);
                                 break;
                             case CHUNK_NOT_PRESENT:
                                 this.chunks[x][z] = null;
@@ -190,13 +191,24 @@ public final class CachedRegion implements IBlockTypeAccess {
                         }
                     }
                 }
+                for (int z = 0; z < 32; z++) {
+                    for (int x = 0; x < 32; x++) {
+                        if (chunks[x][z] != null) {
+                            for (int i = 0; i < 256; i++) {
+                                chunks[x][z].getOverview()[i] = in.readUTF();
+                            }
+                            System.out.println(Arrays.asList(chunks[x][z].getOverview()));
+                        }
+                    }
+                }
                 int fileEndMagic = in.readInt();
                 if (fileEndMagic != ~magic) {
                     throw new IOException("Bad end of file magic");
                 }
             }
             hasUnsavedChanges = false;
-            System.out.println("Loaded region successfully");
+            long end = System.currentTimeMillis();
+            System.out.println("Loaded region successfully in " + (end - start) + "ms");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
