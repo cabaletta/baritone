@@ -17,9 +17,9 @@
 
 package baritone.launch.mixins;
 
-import baritone.bot.Baritone;
-import baritone.bot.event.events.PacketEvent;
-import baritone.bot.event.events.type.EventState;
+import baritone.Baritone;
+import baritone.event.events.PacketEvent;
+import baritone.event.events.type.EventState;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;
