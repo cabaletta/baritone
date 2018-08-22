@@ -20,7 +20,7 @@ package baritone.launch.mixins;
 import baritone.bot.Baritone;
 import baritone.bot.event.events.RelativeMoveEvent;
 import baritone.bot.event.events.type.EventState;
-import baritone.bot.utils.Helper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -40,7 +40,7 @@ public class MixinEntity {
     )
     private void preMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
         Entity _this = (Entity) (Object) this;
-        if (_this == Helper.mc.player)
+        if (_this == Minecraft.getMinecraft().player)
             Baritone.INSTANCE.getGameEventHandler().onPlayerRelativeMove(new RelativeMoveEvent(EventState.PRE));
     }
 
@@ -50,7 +50,7 @@ public class MixinEntity {
     )
     private void postMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
         Entity _this = (Entity) (Object) this;
-        if (_this == Helper.mc.player)
+        if (_this == Minecraft.getMinecraft().player)
             Baritone.INSTANCE.getGameEventHandler().onPlayerRelativeMove(new RelativeMoveEvent(EventState.POST));
     }
 }
