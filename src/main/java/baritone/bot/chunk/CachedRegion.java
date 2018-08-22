@@ -18,13 +18,12 @@
 package baritone.bot.chunk;
 
 import baritone.bot.utils.pathing.IBlockTypeAccess;
-import baritone.bot.utils.pathing.PathingBlockType;
+import net.minecraft.block.state.IBlockState;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
@@ -70,10 +69,10 @@ public final class CachedRegion implements IBlockTypeAccess {
     }
 
     @Override
-    public final PathingBlockType getBlockType(int x, int y, int z) {
+    public final IBlockState getBlock(int x, int y, int z) {
         CachedChunk chunk = this.getChunk(x >> 4, z >> 4);
         if (chunk != null) {
-            return chunk.getBlockType(x & 15, y, z & 15);
+            return chunk.getBlock(x & 15, y, z & 15);
         }
         return null;
     }
@@ -174,6 +173,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                     // by switching on the magic value, and either loading it normally, or loading through a converter.
                     throw new IOException("Bad magic value " + magic);
                 }
+                CachedChunk[][] tmpCached = new CachedChunk[32][32];
                 for (int z = 0; z < 32; z++) {
                     for (int x = 0; x < 32; x++) {
                         int isChunkPresent = in.read();
@@ -181,10 +181,10 @@ public final class CachedRegion implements IBlockTypeAccess {
                             case CHUNK_PRESENT:
                                 byte[] bytes = new byte[CachedChunk.SIZE_IN_BYTES];
                                 in.readFully(bytes);
-                                this.chunks[x][z] = new CachedChunk(x, z, BitSet.valueOf(bytes), new String[256]);
+                                tmpCached[x][z] = new CachedChunk(x, z, BitSet.valueOf(bytes), new String[256]);
                                 break;
                             case CHUNK_NOT_PRESENT:
-                                this.chunks[x][z] = null;
+                                tmpCached[x][z] = null;
                                 break;
                             default:
                                 throw new IOException("Malformed stream");
@@ -193,17 +193,22 @@ public final class CachedRegion implements IBlockTypeAccess {
                 }
                 for (int z = 0; z < 32; z++) {
                     for (int x = 0; x < 32; x++) {
-                        if (chunks[x][z] != null) {
+                        if (tmpCached[x][z] != null) {
                             for (int i = 0; i < 256; i++) {
-                                chunks[x][z].getOverview()[i] = in.readUTF();
+                                tmpCached[x][z].getOverview()[i] = in.readUTF();
                             }
-                            System.out.println(Arrays.asList(chunks[x][z].getOverview()));
                         }
                     }
                 }
                 int fileEndMagic = in.readInt();
                 if (fileEndMagic != ~magic) {
                     throw new IOException("Bad end of file magic");
+                }
+                // only if the entire file was uncorrupted do we actually set the chunks
+                for (int x = 0; x < 32; x++) {
+                    for (int z = 0; z < 32; z++) {
+                        this.chunks[x][z] = tmpCached[x][z];
+                    }
                 }
             }
             hasUnsavedChanges = false;

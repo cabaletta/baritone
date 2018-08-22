@@ -131,7 +131,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 boolean isPositionCached = false;
                 if (cache) {
                     if (CachedWorldProvider.INSTANCE.getCurrentWorld() != null) {
-                        if (CachedWorldProvider.INSTANCE.getCurrentWorld().getBlockType(dest) != null) {
+                        if (CachedWorldProvider.INSTANCE.getCurrentWorld().getBlock(dest) != null) {
                             isPositionCached = true;
                         }
                     }

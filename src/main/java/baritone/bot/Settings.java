@@ -222,6 +222,11 @@ public class Settings {
      */
     public Setting<Boolean> freeLook = new Setting<>(true);
 
+    /**
+     * Exclusively use cached chunks for pathing
+     */
+    public Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 

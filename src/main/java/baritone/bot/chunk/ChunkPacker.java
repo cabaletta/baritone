@@ -26,6 +26,7 @@ import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.block.BlockTallGrass;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.chunk.Chunk;
 
@@ -105,5 +106,21 @@ public final class ChunkPacker implements Helper {
         }
 
         return PathingBlockType.SOLID;
+    }
+
+    static IBlockState pathingTypeToBlock(PathingBlockType type) {
+        if (type != null) {
+            switch (type) {
+                case AIR:
+                    return Blocks.AIR.getDefaultState();
+                case WATER:
+                    return Blocks.WATER.getDefaultState();
+                case AVOID:
+                    return Blocks.LAVA.getDefaultState();
+                case SOLID:
+                    return Blocks.OBSIDIAN.getDefaultState();
+            }
+        }
+        return null;
     }
 }

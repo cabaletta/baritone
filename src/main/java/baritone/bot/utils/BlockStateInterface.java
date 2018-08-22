@@ -20,7 +20,6 @@ package baritone.bot.utils;
 import baritone.bot.Baritone;
 import baritone.bot.chunk.CachedWorld;
 import baritone.bot.chunk.CachedWorldProvider;
-import baritone.bot.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
@@ -31,31 +30,24 @@ import net.minecraft.world.chunk.Chunk;
 
 public class BlockStateInterface implements Helper {
 
-    public static IBlockState get(BlockPos pos) { // wrappers for future chunk caching capability
+    public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
 
         // Invalid vertical position
         if (pos.getY() < 0 || pos.getY() >= 256)
             return Blocks.AIR.getDefaultState();
 
-        Chunk chunk = mc.world.getChunk(pos);
-        if (chunk.isLoaded()) {
-            return chunk.getBlockState(pos);
+        if (!Baritone.settings().pathThroughCachedOnly.get()) {
+            Chunk chunk = mc.world.getChunk(pos);
+            if (chunk.isLoaded()) {
+                return chunk.getBlockState(pos);
+            }
         }
         if (Baritone.settings().chunkCaching.get()) {
             CachedWorld world = CachedWorldProvider.INSTANCE.getCurrentWorld();
             if (world != null) {
-                PathingBlockType type = world.getBlockType(pos);
+                IBlockState type = world.getBlock(pos);
                 if (type != null) {
-                    switch (type) {
-                        case AIR:
-                            return Blocks.AIR.getDefaultState();
-                        case WATER:
-                            return Blocks.WATER.getDefaultState();
-                        case AVOID:
-                            return Blocks.LAVA.getDefaultState();
-                        case SOLID:
-                            return Blocks.OBSIDIAN.getDefaultState();
-                    }
+                    return type;
                 }
             }
         }

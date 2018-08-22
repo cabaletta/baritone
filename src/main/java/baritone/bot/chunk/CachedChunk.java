@@ -19,6 +19,8 @@ package baritone.bot.chunk;
 
 import baritone.bot.utils.pathing.IBlockTypeAccess;
 import baritone.bot.utils.pathing.PathingBlockType;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 
 import java.util.BitSet;
 
@@ -76,7 +78,23 @@ public final class CachedChunk implements IBlockTypeAccess {
     }
 
     @Override
-    public final PathingBlockType getBlockType(int x, int y, int z) {
+    public final IBlockState getBlock(int x, int y, int z) {
+        int internalPos = z << 4 | x;
+        if (heightMap[internalPos] == y) {
+            // we have this exact block, it's a surface block
+            String name = overview[internalPos];
+            if (!name.contains(":")) {
+                name = "minecraft:" + name;
+            }
+            IBlockState state = Block.getBlockFromName(name).getDefaultState();
+            System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
+            return state;
+        }
+        PathingBlockType type = getType(x, y, z);
+        return ChunkPacker.pathingTypeToBlock(type);
+    }
+
+    private PathingBlockType getType(int x, int y, int z) {
         int index = getPositionIndex(x, y, z);
         return PathingBlockType.fromBits(data.get(index), data.get(index + 1));
     }
@@ -87,8 +105,9 @@ public final class CachedChunk implements IBlockTypeAccess {
                 int index = z << 4 | x;
                 heightMap[index] = 0;
                 for (int y = 256; y >= 0; y--) {
-                    if (getBlockType(x, y, z) != PathingBlockType.AIR) {
+                    if (getType(x, y, z) != PathingBlockType.AIR) {
                         heightMap[index] = y;
+                        break;
                     }
                 }
             }
