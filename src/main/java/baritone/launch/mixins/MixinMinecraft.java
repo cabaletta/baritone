@@ -17,12 +17,12 @@
 
 package baritone.launch.mixins;
 
-import baritone.bot.Baritone;
-import baritone.bot.behavior.impl.PathingBehavior;
-import baritone.bot.event.events.TickEvent;
-import baritone.bot.event.events.WorldEvent;
-import baritone.bot.event.events.type.EventState;
-import baritone.bot.utils.ExampleBaritoneControl;
+import baritone.Baritone;
+import baritone.behavior.impl.PathingBehavior;
+import baritone.event.events.TickEvent;
+import baritone.event.events.WorldEvent;
+import baritone.event.events.type.EventState;
+import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -33,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * @author Brady

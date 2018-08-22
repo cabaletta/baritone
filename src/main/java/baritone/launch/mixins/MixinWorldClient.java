@@ -17,9 +17,9 @@
 
 package baritone.launch.mixins;
 
-import baritone.bot.Baritone;
-import baritone.bot.event.events.ChunkEvent;
-import baritone.bot.event.events.type.EventState;
+import baritone.Baritone;
+import baritone.event.events.ChunkEvent;
+import baritone.event.events.type.EventState;
 import net.minecraft.client.multiplayer.WorldClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

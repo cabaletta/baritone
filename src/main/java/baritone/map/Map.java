@@ -1,8 +1,8 @@
 package baritone.map;
 
-import baritone.bot.Baritone;
-import baritone.bot.behavior.Behavior;
-import baritone.bot.event.events.ChunkEvent;
+import baritone.Baritone;
+import baritone.behavior.Behavior;
+import baritone.event.events.ChunkEvent;
 import net.minecraft.util.math.ChunkPos;
 
 import javax.imageio.ImageIO;

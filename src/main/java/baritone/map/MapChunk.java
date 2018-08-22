@@ -1,8 +1,8 @@
 package baritone.map;
 
-import baritone.bot.Baritone;
-import baritone.bot.utils.BlockStateInterface;
-import baritone.bot.utils.pathing.BetterBlockPos;
+import baritone.Baritone;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;

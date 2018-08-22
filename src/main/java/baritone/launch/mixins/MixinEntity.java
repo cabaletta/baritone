@@ -17,10 +17,10 @@
 
 package baritone.launch.mixins;
 
-import baritone.bot.Baritone;
-import baritone.bot.event.events.RelativeMoveEvent;
-import baritone.bot.event.events.type.EventState;
-import baritone.bot.utils.Helper;
+import baritone.Baritone;
+import baritone.event.events.RelativeMoveEvent;
+import baritone.event.events.type.EventState;
+import baritone.utils.Helper;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
