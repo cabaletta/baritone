@@ -80,6 +80,12 @@ public enum Baritone {
                 Files.createDirectories(dir.toPath());
             } catch (IOException ignored) {}
         }
+        this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
+        if (!Files.exists(dir.toPath())) {
+            try {
+                Files.createDirectories(dir.toPath());
+            } catch (IOException ignored) {}
+        }
 
         this.active = true;
         this.initialized = true;
@@ -118,5 +124,7 @@ public enum Baritone {
         return Baritone.INSTANCE.settings; // yolo
     }
 
-    public final File getDir() { return this.dir; }
+    public final File getDir() {
+        return this.dir;
+    }
 }
