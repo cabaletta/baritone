@@ -87,7 +87,7 @@ public final class CachedChunk implements IBlockTypeAccess {
                 name = "minecraft:" + name;
             }
             IBlockState state = Block.getBlockFromName(name).getDefaultState();
-            System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
+            //System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
             return state;
         }
         PathingBlockType type = getType(x, y, z);
