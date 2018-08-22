@@ -20,11 +20,14 @@ package baritone.bot.chunk;
 import baritone.bot.pathing.movement.MovementHelper;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.Helper;
+import baritone.bot.utils.pathing.BetterBlockPos;
 import baritone.bot.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.BitSet;
@@ -57,6 +60,26 @@ public final class ChunkPacker implements Helper {
         long end = System.currentTimeMillis();
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         return bitSet;
+    }
+
+    public static String[] createPackedOverview(Chunk chunk) {
+        long start = System.currentTimeMillis();
+        String[] blockNames = new String[256];
+        for(int z = 0; z < 16; z++) {
+            for(int x = 0; x < 16; x++) {
+                int height = chunk.getHeightValue(x, z);
+                IBlockState blockState = chunk.getBlockState(x, height, z);
+                for(int y = height; y > 0; y--) {
+                    blockState = chunk.getBlockState(x, y, z);
+                    if(blockState.getBlock() != Blocks.AIR) {
+                        break;
+                    }
+                }
+                blockNames[z << 4 | x] = blockState.getBlock().getLocalizedName();
+            }
+        }
+        long end = System.currentTimeMillis();
+        return blockNames;
     }
 
     private static PathingBlockType getPathingBlockType(BlockPos pos, IBlockState state) {

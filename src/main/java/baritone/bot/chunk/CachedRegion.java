@@ -77,12 +77,12 @@ public final class CachedRegion implements IBlockTypeAccess {
         return null;
     }
 
-    final void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
+    final void updateCachedChunk(int chunkX, int chunkZ, BitSet chunkData, String[] chunkOverview) {
         CachedChunk chunk = this.getChunk(chunkX, chunkZ);
         if (chunk == null) {
-            this.chunks[chunkX][chunkZ] = new CachedChunk(chunkX, chunkZ, data);
+            this.chunks[chunkX][chunkZ] = new CachedChunk(chunkX, chunkZ, chunkData, chunkOverview);
         } else {
-            chunk.updateContents(data);
+            chunk.updateContents(chunkData);
         }
         hasUnsavedChanges = true;
     }
@@ -176,7 +176,11 @@ public final class CachedRegion implements IBlockTypeAccess {
                                 byte[] bytes = new byte[CachedChunk.SIZE_IN_BYTES];
                                 in.readFully(bytes);
                                 BitSet bits = BitSet.valueOf(bytes);
-                                updateCachedChunk(x, z, bits);
+                                String[] overview = new String[256];
+                                for(int i = 0; i < 256; i++) {
+                                    overview[i] = in.readUTF();
+                                }
+                                updateCachedChunk(x, z, bits, overview);
                                 break;
                             case CHUNK_NOT_PRESENT:
                                 this.chunks[x][z] = null;
