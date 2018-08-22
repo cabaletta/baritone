@@ -73,7 +73,7 @@ public final class CachedWorld implements IBlockTypeAccess {
 
     private void updateCachedChunk(int chunkX, int chunkZ, BitSet data) {
         CachedRegion region = getOrCreateRegion(chunkX >> 5, chunkZ >> 5);
-        region.updateCachedChunk(chunkX & 31, chunkZ & 31, data);
+        region.updateCachedChunk(chunkX & 31, chunkZ & 31, data, );
     }
 
     public final void save() {
@@ -155,8 +155,9 @@ public final class CachedWorld implements IBlockTypeAccess {
                 }
                 try {
                     Chunk chunk = queue.take();
-                    BitSet packed = ChunkPacker.createPackedChunk(chunk);
-                    CachedWorld.this.updateCachedChunk(chunk.x, chunk.z, packed);
+                    BitSet packedChunk = ChunkPacker.createPackedChunk(chunk);
+                    String[] packedOverview = ChunkPacker.createPackedOverview(chunk);
+                    CachedWorld.this.updateCachedChunk(chunk.x, chunk.z, packedChunk);
                     //System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);
                 } catch (InterruptedException e) {
                     e.printStackTrace();

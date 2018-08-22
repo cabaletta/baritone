@@ -57,12 +57,18 @@ public final class CachedChunk implements IBlockTypeAccess {
      */
     private final BitSet data;
 
-    CachedChunk(int x, int z, BitSet data) {
+    /**
+     * The block names of each surface level block for generating an overview
+     */
+    private final String[] overview;
+
+    CachedChunk(int x, int z, BitSet data, String[] overview) {
         validateSize(data);
 
         this.x = x;
         this.z = z;
         this.data = data;
+        this.overview = overview;
     }
 
     @Override
