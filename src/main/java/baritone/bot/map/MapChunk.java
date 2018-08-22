@@ -1,14 +1,10 @@
-package baritone.map;
+package baritone.bot.map;
 
 import baritone.bot.Baritone;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.pathing.BetterBlockPos;
-import net.minecraft.block.BlockDynamicLiquid;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.BlockStaticLiquid;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;

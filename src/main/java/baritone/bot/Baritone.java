@@ -23,13 +23,12 @@ import baritone.bot.behavior.impl.MemoryBehavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.GameEventHandler;
 import baritone.bot.utils.InputOverrideHandler;
-import baritone.map.Map;
+import baritone.bot.map.Map;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 

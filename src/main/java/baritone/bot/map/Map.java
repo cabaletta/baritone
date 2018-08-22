@@ -1,4 +1,4 @@
-package baritone.map;
+package baritone.bot.map;
 
 import baritone.bot.Baritone;
 import baritone.bot.behavior.Behavior;

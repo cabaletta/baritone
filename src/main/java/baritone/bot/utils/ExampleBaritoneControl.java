@@ -31,8 +31,7 @@ import baritone.bot.pathing.movement.ActionCosts;
 import baritone.bot.pathing.movement.CalculationContext;
 import baritone.bot.pathing.movement.Movement;
 import baritone.bot.utils.pathing.BetterBlockPos;
-import baritone.map.Map;
-import baritone.map.MapChunk;
+import baritone.bot.map.Map;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
