@@ -18,11 +18,13 @@
 package baritone.launch.mixins;
 
 import baritone.bot.Baritone;
+import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.events.TickEvent;
 import baritone.bot.event.events.WorldEvent;
 import baritone.bot.event.events.type.EventState;
 import baritone.bot.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,6 +33,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * @author Brady
@@ -140,5 +143,17 @@ public class MixinMinecraft {
                         EventState.POST
                 )
         );
+    }
+
+    @Redirect(
+            method = "runTick",
+            at = @At(
+                    value = "FIELD",
+                    opcode = Opcodes.GETFIELD,
+                    target = "net/minecraft/client/gui/GuiScreen.allowUserInput:Z"
+            )
+    )
+    private boolean isAllowUserInput(GuiScreen screen) {
+        return PathingBehavior.INSTANCE.getCurrent() != null || screen.allowUserInput;
     }
 }
