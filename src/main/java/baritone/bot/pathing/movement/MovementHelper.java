@@ -299,7 +299,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 continue;
             }
             if (canWalkOn(onto, ontoBlock)) {
-                if (calcContext.hasWaterBucket() || fallHeight <= 4) {
+                if ((calcContext.hasWaterBucket() && fallHeight <= calcContext.maxFallHeightBucket() + 1) || fallHeight <= calcContext.maxFallHeightNoWater() + 1) {
                     // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
                     return new MovementFall(pos, onto.up());
                 } else {

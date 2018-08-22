@@ -52,8 +52,11 @@ public class MovementFall extends Movement {
             return COST_INF;
         }
         double placeBucketCost = 0.0;
-        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > context.maxFallHeight()) {
+        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > context.maxFallHeightNoWater()) {
             if (!context.hasWaterBucket()) {
+                return COST_INF;
+            }
+            if (src.getY() - dest.getY() > context.maxFallHeightBucket()) {
                 return COST_INF;
             }
             placeBucketCost = context.placeBlockCost();
@@ -89,7 +92,7 @@ public class MovementFall extends Movement {
         }
         BlockPos playerFeet = playerFeet();
         Optional<Rotation> targetRotation = Optional.empty();
-        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeight.get() && !playerFeet.equals(dest)) {
+        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
             if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) { // TODO check if water bucket is on hotbar or main inventory
                 state.setStatus(MovementStatus.UNREACHABLE);
                 return state;
