@@ -17,9 +17,9 @@
 
 package baritone.launch.mixins;
 
-import baritone.bot.Baritone;
-import baritone.bot.event.events.RelativeMoveEvent;
-import baritone.bot.event.events.type.EventState;
+import baritone.Baritone;
+import baritone.event.events.RelativeMoveEvent;
+import baritone.event.events.type.EventState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
