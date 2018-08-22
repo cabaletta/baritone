@@ -1,4 +1,4 @@
-package baritone.bot.map;
+package baritone.map;
 
 import baritone.bot.Baritone;
 import baritone.bot.utils.BlockStateInterface;

@@ -23,7 +23,7 @@ import baritone.bot.behavior.impl.MemoryBehavior;
 import baritone.bot.behavior.impl.PathingBehavior;
 import baritone.bot.event.GameEventHandler;
 import baritone.bot.utils.InputOverrideHandler;
-import baritone.bot.map.Map;
+import baritone.map.Map;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
