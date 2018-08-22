@@ -23,6 +23,9 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.chunk.Chunk;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.BitSet;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
@@ -50,8 +53,14 @@ public final class CachedWorld implements IBlockTypeAccess {
 
     private final LinkedBlockingQueue<Chunk> toPack = new LinkedBlockingQueue<>();
 
-    public CachedWorld(String directory) {
-        this.directory = directory;
+    CachedWorld(Path directory) {
+        if (!Files.exists(directory)) {
+            try {
+                Files.createDirectories(directory);
+            } catch (IOException ignored) {}
+        }
+        this.directory = directory.toString();
+        System.out.println("Cached world directory: " + directory);
         // Insert an invalid region element
         cachedRegions.put(0, null);
         new PackerThread().start();

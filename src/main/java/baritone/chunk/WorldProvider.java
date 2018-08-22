@@ -17,9 +17,10 @@
 
 package baritone.chunk;
 
-import baritone.utils.Helper;
+import baritone.Baritone;
 import baritone.launch.mixins.accessor.IAnvilChunkLoader;
 import baritone.launch.mixins.accessor.IChunkProviderServer;
+import baritone.utils.Helper;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.WorldServer;
@@ -36,53 +37,60 @@ import java.util.function.Consumer;
  * @author Brady
  * @since 8/4/2018 11:06 AM
  */
-public enum CachedWorldProvider implements Helper {
+public enum WorldProvider implements Helper {
 
     INSTANCE;
 
-    private final Map<String, CachedWorld> singlePlayerWorldCache = new HashMap<>();
+    private final Map<Path, WorldData> worldCache = new HashMap<>();
 
-    private CachedWorld currentWorld;
+    private WorldData currentWorld;
 
-    public final CachedWorld getCurrentWorld() {
+    public final WorldData getCurrentWorld() {
         return this.currentWorld;
     }
 
     public final void initWorld(WorldClient world) {
-        IntegratedServer integratedServer;
-        if ((integratedServer = mc.getIntegratedServer()) != null) {
-
-            WorldServer localServerWorld = integratedServer.getWorld(world.provider.getDimensionType().getId());
+        int dimensionID = world.provider.getDimensionType().getId();
+        File directory;
+        IntegratedServer integratedServer = mc.getIntegratedServer();
+        if (integratedServer != null) {
+            WorldServer localServerWorld = integratedServer.getWorld(dimensionID);
             IChunkProviderServer provider = (IChunkProviderServer) localServerWorld.getChunkProvider();
             IAnvilChunkLoader loader = (IAnvilChunkLoader) provider.getChunkLoader();
+            directory = loader.getChunkSaveLocation();
 
-            Path dir = new File(new File(loader.getChunkSaveLocation(), "region"), "cache").toPath();
-            if (!Files.exists(dir)) {
-                try {
-                    Files.createDirectories(dir);
-                } catch (IOException ignored) {}
+            if (!directory.getParentFile().getName().equals("saves")) {
+                // subdirectory of the main save directory for this world
+                directory = directory.getParentFile();
             }
 
-            this.currentWorld = this.singlePlayerWorldCache.computeIfAbsent(dir.toString(), CachedWorld::new);
+            directory = new File(directory, "baritone");
+
+        } else {
+            //remote
+            directory = new File(Baritone.INSTANCE.getDir(), mc.getCurrentServerData().serverIP);
         }
-        // TODO: Store server worlds
+        directory = new File(directory, "DIM" + dimensionID);
+        Path dir = directory.toPath();
+        if (!Files.exists(dir)) {
+            try {
+                Files.createDirectories(dir);
+            } catch (IOException ignored) {}
+        }
+        System.out.println("Baritone world data dir: " + dir);
+        this.currentWorld = this.worldCache.computeIfAbsent(dir, WorldData::new);
     }
 
     public final void closeWorld() {
-        CachedWorld world = this.currentWorld;
+        WorldData world = this.currentWorld;
         this.currentWorld = null;
         if (world == null) {
             return;
         }
-        new Thread() {
-            public void run() {
-                System.out.println("Started saving the world in a new thread");
-                world.save();
-            }
-        }.start();
+        world.onClose();
     }
 
-    public final void ifWorldLoaded(Consumer<CachedWorld> currentWorldConsumer) {
+    public final void ifWorldLoaded(Consumer<WorldData> currentWorldConsumer) {
         if (this.currentWorld != null)
             currentWorldConsumer.accept(this.currentWorld);
     }
