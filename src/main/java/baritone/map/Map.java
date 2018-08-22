@@ -17,9 +17,13 @@ public class Map extends Behavior {
 
     public static final Map INSTANCE = new Map();
 
-    private Map() {}
-
     private BufferedImage fullImage = new BufferedImage(4080, 4080, BufferedImage.TYPE_INT_RGB);
+
+    private Map() {
+        try {
+            fullImage = ImageIO.read(getImagePath().toFile());
+        } catch(IOException ignored) { }
+    }
 
     @Override
     public void onChunkEvent(ChunkEvent event) {

@@ -3,7 +3,12 @@ package baritone.map;
 import baritone.bot.Baritone;
 import baritone.bot.utils.BlockStateInterface;
 import baritone.bot.utils.pathing.BetterBlockPos;
+import net.minecraft.block.BlockDynamicLiquid;
+import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockStaticLiquid;
 import net.minecraft.block.material.MapColor;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
@@ -76,14 +81,19 @@ public class MapChunk {
     private int getColor(int x, int z) {
         int chunkX = chunk.getPos().getXStart() + x;
         int chunkZ = chunk.getPos().getZStart() + z;
-        BetterBlockPos blockPos = new BetterBlockPos(chunkX, chunk.getHeight(new BetterBlockPos(chunkX, 0, chunkZ)), chunkZ);
-        MapColor mapColor = BlockStateInterface.get(blockPos).getMapColor(chunk.getWorld(), blockPos);
+        BlockPos blockPos = new BetterBlockPos(chunkX, chunk.getHeight(new BetterBlockPos(chunkX, 0, chunkZ)), chunkZ);
+        IBlockState blockState = BlockStateInterface.get(blockPos);
+        MapColor mapColor = blockState.getMapColor(chunk.getWorld(), blockPos);
 
         // The chunk heightMap returns the first non-full block above the surface, including bushes.
         // We have to check this and shift our block down by one if the color is "air" (as in, there's no real block there)
-        Color color = new Color(mapColor != MapColor.AIR ?
-                mapColor.colorValue :
-                BlockStateInterface.get(blockPos.down()).getMapColor(chunk.getWorld(), blockPos).colorValue);
+        if(mapColor == MapColor.AIR) {
+            blockPos = blockPos.down();
+            blockState = BlockStateInterface.get(blockPos);
+            mapColor = blockState.getMapColor(chunk.getWorld(), blockPos);
+        }
+
+        Color color = new Color(mapColor.colorValue);
         int red = color.getRed();
         int green = color.getGreen();
         int blue = color.getBlue();
@@ -100,8 +110,26 @@ public class MapChunk {
         if(BlockStateInterface.get(offset).getMapColor(chunk.getWorld(), offset) == MapColor.AIR)
             offset = offset.down();
 
-        // We start the heightCoef at 0.8 to darken the colors similar to vanilla Minecraft's. 
-        float heightCoef = 0.8f + (Math.signum(blockPos.getY() - offset.getY()) * 0.2f);
+        float heightCoef;
+        // Check if we need to handle water depth shading
+        if(blockState.getMaterial().isLiquid()) {
+            heightCoef = 1.0f;
+            int i = 1;
+            // Iterate over the 4 layers of water shading and color proportional to the depth
+            for(; i < 5; i++) {
+                if(BlockStateInterface.get(blockPos.down(i * 2)).getMaterial().isLiquid()) {
+                    heightCoef -= 0.075f;
+                } else {
+                    break;
+                }
+            }
+            // Add checkerboard shading to the odd layers to give texture
+            if(i % 2 == 0)
+                heightCoef += 0.075f * (((x + z) % 2 == 0) ? -1 : 1);
+        } else {
+            // We start the heightCoef at 0.8 to darken the colors similar to vanilla Minecraft's.
+            heightCoef = 0.8f + (Math.signum(blockPos.getY() - offset.getY()) * 0.2f);
+        }
         red = Math.min(255, (int) (red * heightCoef));
         green = Math.min(255, (int) (green * heightCoef));
         blue = Math.min(255, (int) (blue * heightCoef));
