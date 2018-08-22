@@ -31,6 +31,10 @@ public class WorldData {
         this.waypoints = new Waypoints(directory.resolve("waypoints"));
     }
 
+    public Path getMapDirectory() {
+        return directory.resolve("map");
+    }
+
     void onClose() {
         new Thread() {
             public void run() {

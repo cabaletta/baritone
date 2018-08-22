@@ -1,6 +1,6 @@
 package baritone.map;
 
-import baritone.Baritone;
+import baritone.chunk.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.material.MapColor;
@@ -12,7 +12,6 @@ import net.minecraft.world.chunk.Chunk;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,8 +26,8 @@ public class MapChunk {
 
     public BufferedImage generateOverview() {
         BufferedImage bufferedImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
-        for(int x = 0; x < 16; x++) {
-            for(int z = 0; z < 16; z++) {
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
                 bufferedImage.setRGB(x, z, getColor(x, z));
             }
         }
@@ -37,7 +36,7 @@ public class MapChunk {
 
     public void writeImage() {
         Path image = getImagePath();
-        if(!Files.exists(image.getParent())) {
+        if (!Files.exists(image.getParent())) {
             try {
                 Files.createDirectory(image.getParent());
             } catch (IOException e) {
@@ -54,7 +53,7 @@ public class MapChunk {
     }
 
     public Path getImagePath() {
-        return new File(new File(Baritone.INSTANCE.getDir(), "map"), "chunk" + chunk.x + "-" + chunk.z + ".png").toPath();
+        return WorldProvider.INSTANCE.getCurrentWorld().getMapDirectory().resolve("chunk" + chunk.x + "-" + chunk.z + ".png");
     }
 
     public Chunk getChunk() {
@@ -65,7 +64,7 @@ public class MapChunk {
      * getColor is a re-implementation of the Minecraft ItemMap's
      * surface mapping system. This is significantly less convoluted
      * than the poorly de-obfuscated code.
-     *
+     * <p>
      * We perform shading of the given coordinate relative to the
      * position one to the north of the coordinate, as can be seen
      * in Minecraft's maps.
@@ -83,7 +82,7 @@ public class MapChunk {
 
         // The chunk heightMap returns the first non-full block above the surface, including bushes.
         // We have to check this and shift our block down by one if the color is "air" (as in, there's no real block there)
-        if(mapColor == MapColor.AIR) {
+        if (mapColor == MapColor.AIR) {
             blockPos = blockPos.down();
             blockState = BlockStateInterface.get(blockPos);
             mapColor = blockState.getMapColor(chunk.getWorld(), blockPos);
@@ -103,24 +102,24 @@ public class MapChunk {
         // loaded, or the same as our target block if the shading chunk is not.
         offset = new BlockPos(offset.getX(), chunk.getWorld().getChunk(offset).getHeight(offset), offset.getZ());
         // And once again, check to make sure we have an actual colored block an not "air"
-        if(BlockStateInterface.get(offset).getMapColor(chunk.getWorld(), offset) == MapColor.AIR)
+        if (BlockStateInterface.get(offset).getMapColor(chunk.getWorld(), offset) == MapColor.AIR)
             offset = offset.down();
 
         float heightCoef;
         // Check if we need to handle water depth shading
-        if(blockState.getMaterial().isLiquid()) {
+        if (blockState.getMaterial().isLiquid()) {
             heightCoef = 1.0f;
             int i = 1;
             // Iterate over the 4 layers of water shading and color proportional to the depth
-            for(; i < 5; i++) {
-                if(BlockStateInterface.get(blockPos.down(i * 2)).getMaterial().isLiquid()) {
+            for (; i < 5; i++) {
+                if (BlockStateInterface.get(blockPos.down(i * 2)).getMaterial().isLiquid()) {
                     heightCoef -= 0.075f;
                 } else {
                     break;
                 }
             }
             // Add checkerboard shading to the odd layers to give texture
-            if(i % 2 == 0)
+            if (i % 2 == 0)
                 heightCoef += 0.075f * (((x + z) % 2 == 0) ? -1 : 1);
         } else {
             // We start the heightCoef at 0.8 to darken the colors similar to vanilla Minecraft's.

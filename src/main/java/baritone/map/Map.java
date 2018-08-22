@@ -1,14 +1,13 @@
 package baritone.map;
 
-import baritone.Baritone;
 import baritone.behavior.Behavior;
+import baritone.chunk.WorldProvider;
 import baritone.event.events.ChunkEvent;
 import net.minecraft.util.math.ChunkPos;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,17 +21,17 @@ public class Map extends Behavior {
     private Map() {
         try {
             fullImage = ImageIO.read(getImagePath().toFile());
-        } catch(IOException ignored) { }
+        } catch (IOException ignored) { }
     }
 
     @Override
     public void onChunkEvent(ChunkEvent event) {
-        if(event.getType() != ChunkEvent.Type.POPULATE)
+        if (event.getType() != ChunkEvent.Type.POPULATE)
             return;
 
         MapChunk map = new MapChunk(world().getChunk(event.getX(), event.getZ()));
         stitchMapChunk(map);
-        if(world().getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ() - 1)) {
+        if (world().getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ() - 1)) {
             stitchMapChunk(new MapChunk(world().getChunk(event.getX(), event.getZ() - 1)));
         }
     }
@@ -47,7 +46,7 @@ public class Map extends Behavior {
 
     public void writeImage() {
         Path image = getImagePath();
-        if(!Files.exists(image.getParent())) {
+        if (!Files.exists(image.getParent())) {
             try {
                 Files.createDirectory(image.getParent());
             } catch (IOException e) {
@@ -63,7 +62,7 @@ public class Map extends Behavior {
     }
 
     public Path getImagePath() {
-        return new File(new File(Baritone.INSTANCE.getDir(), "map"), "full-map.png").toPath();
+        return WorldProvider.INSTANCE.getCurrentWorld().getMapDirectory().resolve("full-map.png");
     }
 
 }
