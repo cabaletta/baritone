@@ -62,7 +62,7 @@ public class Waypoint {
     }
 
     public enum Tag {
-        HOME, DEATH, USER;
+        HOME, DEATH, BED, USER;
 
         {
             map.put(name().toLowerCase(), this);

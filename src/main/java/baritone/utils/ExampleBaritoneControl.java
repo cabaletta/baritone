@@ -115,12 +115,19 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("spawn")) {
-            BlockPos spawnPoint = player().getBedLocation();
-            // for some reason the default spawnpoint is underground sometimes
-            Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getY());
-            PathingBehavior.INSTANCE.setGoal(goal);
-            displayChatMessageRaw("Goal: " + goal);
+        if (msg.toLowerCase().equals("spawn") || msg.toLowerCase().equals("bed")) {
+            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.BED);
+            if (waypoint == null) {
+                BlockPos spawnPoint = player().getBedLocation();
+                // for some reason the default spawnpoint is underground sometimes
+                Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getZ());
+                displayChatMessageRaw("spawn not saved, defaulting to world spawn. set goal to " + goal);
+                PathingBehavior.INSTANCE.setGoal(goal);
+            } else {
+                Goal goal = new GoalBlock(waypoint.location);
+                PathingBehavior.INSTANCE.setGoal(goal);
+                displayChatMessageRaw("Set goal to most recent bed " + goal);
+            }
             event.cancel();
             return;
         }
@@ -137,7 +144,7 @@ public class ExampleBaritoneControl extends Behavior {
             } else {
                 Goal goal = new GoalBlock(waypoint.location);
                 PathingBehavior.INSTANCE.setGoal(goal);
-                displayChatMessageRaw("Set goal to " + goal);
+                displayChatMessageRaw("Set goal to saved home " + goal);
             }
             event.cancel();
             return;
