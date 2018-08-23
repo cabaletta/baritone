@@ -42,10 +42,6 @@ import baritone.event.listener.IGameEventListener;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.interfaces.Toggleable;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.input.Keyboard;
@@ -181,6 +177,11 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         dispatch(IGameEventListener::onPlayerDeath);
     }
 
+    @Override
+    public void onPathEvent(PathEvent event) {
+        dispatch(listener -> listener.onPathEvent(event));
+    }
+
     public final void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
     }
@@ -191,28 +192,5 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     private boolean canDispatch(IGameEventListener listener) {
         return !(listener instanceof Toggleable) || ((Toggleable) listener).isEnabled();
-    }
-
-    private void drawChunkLine(int posX, int posZ, float partialTicks) {
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color(1.0F, 1.0F, 0.0F, 0.4F);
-        GlStateManager.glLineWidth(2.0F);
-        GlStateManager.disableTexture2D();
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
-        double d0 = mc.getRenderManager().viewerPosX;
-        double d1 = mc.getRenderManager().viewerPosY;
-        double d2 = mc.getRenderManager().viewerPosZ;
-        buffer.begin(3, DefaultVertexFormats.POSITION);
-        buffer.pos(posX - d0, 0 - d1, posZ - d2).endVertex();
-        buffer.pos(posX - d0, 256 - d1, posZ - d2).endVertex();
-        tessellator.draw();
-
-        GlStateManager.enableDepth();
-        GlStateManager.depthMask(true);
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
     }
 }

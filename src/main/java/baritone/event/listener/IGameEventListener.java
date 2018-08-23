@@ -149,4 +149,11 @@ public interface IGameEventListener {
      * @see GuiGameOver(ITextComponent)
      */
     void onPlayerDeath();
+
+    /**
+     * When the pathfinder's state changes
+     *
+     * @param event
+     */
+    void onPathEvent(PathEvent event);
 }
