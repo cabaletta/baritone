@@ -19,6 +19,8 @@ package baritone.chunk;
 
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,14 +63,28 @@ public class Waypoint {
         return name.hashCode() + tag.hashCode() + (int) creationTimestamp + location.hashCode(); //lol
     }
 
+    public long creationTimestamp() {
+        return creationTimestamp;
+    }
+
+    public String toString() {
+        return name + " " + location.toString() + " " + new Date(creationTimestamp).toString();
+    }
+
     public enum Tag {
         HOME, DEATH, BED, USER;
 
-        {
-            map.put(name().toLowerCase(), this);
-        }
-
     }
 
-    private static final Map<String, Tag> map = new HashMap<>();
+    public static final Map<String, Tag> TAG_MAP;
+
+    static {
+        HashMap<String, Tag> map = new HashMap<>();
+        map.put("home", Tag.HOME);
+        map.put("base", Tag.HOME);
+        map.put("bed", Tag.BED);
+        map.put("spawn", Tag.BED);
+        map.put("death", Tag.DEATH);
+        TAG_MAP = Collections.unmodifiableMap(map);
+    }
 }

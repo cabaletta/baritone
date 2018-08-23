@@ -35,10 +35,7 @@ import baritone.pathing.movement.Movement;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class ExampleBaritoneControl extends Behavior {
     public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
@@ -112,6 +109,53 @@ public class ExampleBaritoneControl extends Behavior {
             Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
             PathingBehavior.INSTANCE.setGoal(goal);
             displayChatMessageRaw("Goal: " + goal);
+            event.cancel();
+            return;
+        }
+        if (msg.toLowerCase().startsWith("list") || msg.toLowerCase().startsWith("get ") || msg.toLowerCase().startsWith("show")) {
+            String waypointType = msg.toLowerCase().substring(4).trim();
+            if (waypointType.endsWith("s")) {
+                // for example, "show deaths"
+                waypointType = waypointType.substring(0, waypointType.length() - 1);
+            }
+            Waypoint.Tag tag = Waypoint.TAG_MAP.get(waypointType);
+            if (tag == null) {
+                displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
+                event.cancel();
+                return;
+            }
+            Set<Waypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getByTag(tag);
+            // might as well show them from oldest to newest
+            List<Waypoint> sorted = new ArrayList<>(waypoints);
+            sorted.sort(Comparator.comparingLong(Waypoint::creationTimestamp).reversed());
+            displayChatMessageRaw("Waypoints under tag " + tag + ":");
+            for (Waypoint waypoint : sorted) {
+                displayChatMessageRaw(waypoint.toString());
+            }
+            event.cancel();
+            return;
+        }
+        if (msg.toLowerCase().startsWith("goto")) {
+            String waypointType = msg.toLowerCase().substring(4).trim();
+            if (waypointType.endsWith("s")) {
+                // for example, "show deaths"
+                waypointType = waypointType.substring(0, waypointType.length() - 1);
+            }
+            Waypoint.Tag tag = Waypoint.TAG_MAP.get(waypointType);
+            if (tag == null) {
+                displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
+                event.cancel();
+                return;
+            }
+            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(tag);
+            if (waypoint == null) {
+                displayChatMessageRaw("None saved for tag " + tag);
+                event.cancel();
+                return;
+            }
+            Goal goal = new GoalBlock(waypoint.location);
+            PathingBehavior.INSTANCE.setGoal(goal);
+            PathingBehavior.INSTANCE.path();
             event.cancel();
             return;
         }
