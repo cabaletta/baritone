@@ -21,6 +21,8 @@ import baritone.Baritone;
 import baritone.Settings;
 import baritone.behavior.Behavior;
 import baritone.behavior.impl.PathingBehavior;
+import baritone.chunk.Waypoint;
+import baritone.chunk.WorldProvider;
 import baritone.event.events.ChatEvent;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.goals.Goal;
@@ -119,6 +121,24 @@ public class ExampleBaritoneControl extends Behavior {
             Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getY());
             PathingBehavior.INSTANCE.setGoal(goal);
             displayChatMessageRaw("Goal: " + goal);
+            event.cancel();
+            return;
+        }
+        if (msg.toLowerCase().equals("sethome")) {
+            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
+            displayChatMessageRaw("Saved. Say home to set goal.");
+            event.cancel();
+            return;
+        }
+        if (msg.toLowerCase().equals("home")) {
+            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.HOME);
+            if (waypoint == null) {
+                displayChatMessageRaw("home not saved");
+            } else {
+                Goal goal = new GoalBlock(waypoint.location);
+                PathingBehavior.INSTANCE.setGoal(goal);
+                displayChatMessageRaw("Set goal to " + goal);
+            }
             event.cancel();
             return;
         }
