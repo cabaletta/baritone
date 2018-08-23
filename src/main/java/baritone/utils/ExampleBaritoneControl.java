@@ -127,7 +127,7 @@ public class ExampleBaritoneControl extends Behavior {
             Set<Waypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getByTag(tag);
             // might as well show them from oldest to newest
             List<Waypoint> sorted = new ArrayList<>(waypoints);
-            sorted.sort(Comparator.comparingLong(Waypoint::creationTimestamp).reversed());
+            sorted.sort(Comparator.comparingLong(Waypoint::creationTimestamp));
             displayChatMessageRaw("Waypoints under tag " + tag + ":");
             for (Waypoint waypoint : sorted) {
                 displayChatMessageRaw(waypoint.toString());
