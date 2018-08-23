@@ -25,6 +25,7 @@ import baritone.event.events.WorldEvent;
 import baritone.event.events.type.EventState;
 import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.item.ItemStack;
@@ -48,6 +49,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class MixinMinecraft {
 
     @Shadow private int leftClickCounter;
+    @Shadow public EntityPlayerSP player;
     @Shadow public WorldClient world;
 
     @Inject(
@@ -160,7 +162,7 @@ public class MixinMinecraft {
             )
     )
     private boolean isAllowUserInput(GuiScreen screen) {
-        return PathingBehavior.INSTANCE.getCurrent() != null || screen.allowUserInput;
+        return (PathingBehavior.INSTANCE.getCurrent() != null && player != null) || screen.allowUserInput;
     }
 
     @Inject(
