@@ -19,9 +19,11 @@ package baritone.launch.mixins;
 
 import baritone.Baritone;
 import net.minecraft.client.gui.GuiGameOver;
+import net.minecraft.util.text.ITextComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * @author Brady
@@ -31,7 +33,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 public class MixinGuiGameOver {
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit() {
+    private void onInit(ITextComponent causeOfDeathIn, CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onPlayerDeath();
     }
 }
