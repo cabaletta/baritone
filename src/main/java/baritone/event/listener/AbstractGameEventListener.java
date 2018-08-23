@@ -80,4 +80,7 @@ public interface AbstractGameEventListener extends IGameEventListener {
 
     @Override
     default void onPlayerRelativeMove(RelativeMoveEvent event) {}
+
+    @Override
+    default void onBlockInteract(BlockInteractEvent event) {}
 }

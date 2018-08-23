@@ -132,4 +132,12 @@ public interface IGameEventListener {
      * @see Entity#moveRelative(float, float, float, float)
      */
     void onPlayerRelativeMove(RelativeMoveEvent event);
+
+    /**
+     * Called when the local player interacts with a block, whether it is breaking or opening/placing.
+     *
+     * @see Minecraft#clickMouse()
+     * @see Minecraft#rightClickMouse()
+     */
+    void onBlockInteract(BlockInteractEvent event);
 }

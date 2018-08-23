@@ -174,6 +174,11 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         dispatch(listener -> listener.onPlayerRelativeMove(event));
     }
 
+    @Override
+    public void onBlockInteract(BlockInteractEvent event) {
+        dispatch(listener -> listener.onBlockInteract(event));
+    }
+
     public final void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
     }

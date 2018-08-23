@@ -61,7 +61,7 @@ public class Waypoints {
         try (
                 FileInputStream fileIn = new FileInputStream(fileName.toFile());
                 BufferedInputStream bufIn = new BufferedInputStream(fileIn);
-                DataInputStream in = new DataInputStream(bufIn);
+                DataInputStream in = new DataInputStream(bufIn)
         ) {
             while (true) {
                 String name = in.readUTF();
@@ -71,7 +71,7 @@ public class Waypoints {
                 int z = in.readInt();
                 waypoints.get(tag).add(new Waypoint(name, tag, new BlockPos(x, y, z), creationTimestamp));
             }
-        } catch (IOException ex) { }
+        } catch (IOException ignored) {}
     }
 
     private synchronized void save(Waypoint.Tag tag) {

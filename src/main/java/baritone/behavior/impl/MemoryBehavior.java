@@ -1,9 +1,14 @@
 package baritone.behavior.impl;
 
 import baritone.behavior.Behavior;
+import baritone.chunk.Waypoint;
+import baritone.chunk.WorldProvider;
+import baritone.event.events.BlockInteractEvent;
 import baritone.event.events.PacketEvent;
 import baritone.event.events.PlayerUpdateEvent;
 import baritone.event.events.type.EventState;
+import baritone.utils.BlockStateInterface;
+import net.minecraft.block.BlockBed;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;
@@ -101,6 +106,13 @@ public class MemoryBehavior extends Behavior {
                 }
                 break;
             }
+        }
+    }
+
+    @Override
+    public void onBlockInteract(BlockInteractEvent event) {
+        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.get(event.getPos()) instanceof BlockBed) {
+            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, playerFeet()));
         }
     }
 
