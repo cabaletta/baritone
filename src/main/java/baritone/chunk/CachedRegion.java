@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -71,7 +70,7 @@ public final class CachedRegion implements IBlockTypeAccess {
 
     @Override
     public final IBlockState getBlock(int x, int y, int z) {
-        CachedChunk chunk = this.getChunk(x >> 4, z >> 4);
+        CachedChunk chunk = chunks[x >> 4][z >> 4];
         if (chunk != null) {
             return chunk.getBlock(x & 15, y, z & 15);
         }
@@ -97,27 +96,13 @@ public final class CachedRegion implements IBlockTypeAccess {
         return res;
     }
 
-    final void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
+    final synchronized void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
         this.chunks[chunkX][chunkZ] = chunk;
         hasUnsavedChanges = true;
     }
 
-    private CachedChunk getChunk(int chunkX, int chunkZ) {
-        return this.chunks[chunkX][chunkZ];
-    }
 
-    public void forEachChunk(Consumer<CachedChunk> consumer) {
-        for (int x = 0; x < 32; x++) {
-            for (int z = 0; z < 32; z++) {
-                CachedChunk chunk = getChunk(x, z);
-                if (chunk != null) {
-                    consumer.accept(chunk);
-                }
-            }
-        }
-    }
-
-    public final void save(String directory) {
+    public synchronized final void save(String directory) {
         if (!hasUnsavedChanges) {
             return;
         }
@@ -184,7 +169,7 @@ public final class CachedRegion implements IBlockTypeAccess {
         }
     }
 
-    public void load(String directory) {
+    public synchronized void load(String directory) {
         try {
             Path path = Paths.get(directory);
             if (!Files.exists(path))
@@ -283,15 +268,6 @@ public final class CachedRegion implements IBlockTypeAccess {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-    }
-
-    private static boolean isAllZeros(final byte[] array) {
-        for (byte b : array) {
-            if (b != 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
