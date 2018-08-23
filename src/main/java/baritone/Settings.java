@@ -108,6 +108,11 @@ public class Settings {
     public Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
 
     /**
+     * Use a pythagorean metric (as opposed to the more accurate hybrid diagonal / traverse).
+     */
+    public Setting<Boolean> pythagoreanMetric = new Setting<>(false);
+
+    /**
      * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
      * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
      */

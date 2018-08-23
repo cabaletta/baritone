@@ -64,6 +64,9 @@ public class GoalXZ implements Goal {
     }
 
     public static double calculate(double xDiff, double zDiff) {
+        if (Baritone.settings().pythagoreanMetric.get()) {
+            return Math.sqrt(xDiff * xDiff + zDiff * zDiff) * Baritone.settings().costHeuristic.get();
+        }
         //This is a combination of pythagorean and manhattan distance
         //It takes into account the fact that pathing can either walk diagonally or forwards
 
