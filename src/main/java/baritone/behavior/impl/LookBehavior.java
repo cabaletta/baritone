@@ -58,21 +58,42 @@ public class LookBehavior extends Behavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-        if (event.getState() == EventState.PRE && this.target != null && this.force) {
-            player().rotationYaw = this.target.getFirst();
-            float oldPitch = player().rotationPitch;
-            float desiredPitch = this.target.getSecond();
-            player().rotationPitch = desiredPitch;
-            if (desiredPitch == oldPitch) {
-                nudgeToLevel();
+        if (this.target == null)
+            return;
+
+        // Whether or not we're going to silently set our angles
+        boolean silent = Baritone.settings().antiCheatCompatibility.get();
+
+        switch (event.getState()) {
+            case PRE: {
+                if (this.force) {
+                    player().rotationYaw = this.target.getFirst();
+                    float oldPitch = player().rotationPitch;
+                    float desiredPitch = this.target.getSecond();
+                    player().rotationPitch = desiredPitch;
+                    if (desiredPitch == oldPitch) {
+                        nudgeToLevel();
+                    }
+                    this.target = null;
+                } else if (silent) {
+                    this.lastYaw = player().rotationYaw;
+                    player().rotationYaw = this.target.getFirst();
+                }
+                break;
             }
-            this.target = null;
+            case POST: {
+                if (!this.force && silent) {
+                    player().rotationYaw = this.lastYaw;
+                    this.target = null;
+                }
+                break;
+            }
         }
     }
 
     @Override
     public void onPlayerRelativeMove(RelativeMoveEvent event) {
-        if (this.target != null && !force) {
+        if (this.target != null && !this.force) {
             switch (event.getState()) {
                 case PRE:
                     this.lastYaw = player().rotationYaw;
@@ -80,7 +101,10 @@ public class LookBehavior extends Behavior {
                     break;
                 case POST:
                     player().rotationYaw = this.lastYaw;
-                    this.target = null;
+
+                    // If we have antiCheatCompatibility on, we're going to use the target value later in onPlayerUpdate()
+                    if (!Baritone.settings().antiCheatCompatibility.get())
+                        this.target = null;
                     break;
             }
         }

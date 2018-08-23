@@ -223,6 +223,14 @@ public class Settings {
     public Setting<Boolean> freeLook = new Setting<>(true);
 
     /**
+     * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
+     * <p>
+     * At the moment this will silently set the player's rotations when using freeLook so you're not sprinting in
+     * directions other than forward, which is picken up by more "advanced" anticheats like AAC, but not NCP.
+     */
+    public Setting<Boolean> antiCheatCompatibility = new Setting<>(true);
+
+    /**
      * Exclusively use cached chunks for pathing
      */
     public Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
