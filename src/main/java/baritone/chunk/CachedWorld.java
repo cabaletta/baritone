@@ -66,6 +66,21 @@ public final class CachedWorld implements IBlockTypeAccess {
         // Insert an invalid region element
         cachedRegions.put(0, null);
         new PackerThread().start();
+        new Thread() {
+            public void run() {
+                try {
+                    while (true) {
+                        // since a region only saves if it's been modified since its last save
+                        // saving every 10 minutes means that once it's time to exit
+                        // we'll only have a couple regions to save
+                        save();
+                        Thread.sleep(600000);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     public final void queueForPacking(Chunk chunk) {
