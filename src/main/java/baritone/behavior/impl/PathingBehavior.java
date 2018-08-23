@@ -61,11 +61,11 @@ public class PathingBehavior extends Behavior {
     private boolean lastAutoJump;
 
     private void dispatchPathEvent(PathEvent event) {
-        new Thread() {
-            public void run() {
-                Baritone.INSTANCE.getGameEventHandler().onPathEvent(event);
-            }
-        }.start();
+        //new Thread() {
+        //   public void run() {
+        Baritone.INSTANCE.getGameEventHandler().onPathEvent(event);
+        //   }
+        //}.start();
     }
 
     @Override
