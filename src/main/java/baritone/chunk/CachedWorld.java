@@ -17,6 +17,7 @@
 
 package baritone.chunk;
 
+import baritone.Baritone;
 import baritone.utils.pathing.IBlockTypeAccess;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -120,6 +121,10 @@ public final class CachedWorld implements IBlockTypeAccess {
     }
 
     public final void save() {
+        if (!Baritone.settings().chunkCaching.get()) {
+            System.out.println("Not saving to disk; chunk caching is disabled.");
+            return;
+        }
         long start = System.currentTimeMillis();
         this.cachedRegions.values().forEach(region -> {
             if (region != null)

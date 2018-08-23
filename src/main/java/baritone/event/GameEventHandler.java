@@ -111,14 +111,13 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 && type == ChunkEvent.Type.UNLOAD
                 && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
-        if (Baritone.settings().chunkCaching.get()) {
-            if (isPostPopulate || isPreUnload) {
-                WorldProvider.INSTANCE.ifWorldLoaded(world -> {
-                    Chunk chunk = mc.world.getChunk(event.getX(), event.getZ());
-                    world.cache.queueForPacking(chunk);
-                });
-            }
+        if (isPostPopulate || isPreUnload) {
+            WorldProvider.INSTANCE.ifWorldLoaded(world -> {
+                Chunk chunk = mc.world.getChunk(event.getX(), event.getZ());
+                world.cache.queueForPacking(chunk);
+            });
         }
+
 
         dispatch(listener -> listener.onChunkEvent(event));
     }
@@ -136,19 +135,17 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onWorldEvent(WorldEvent event) {
-        if (Baritone.settings().chunkCaching.get()) {
-            WorldProvider cache = WorldProvider.INSTANCE;
+        WorldProvider cache = WorldProvider.INSTANCE;
 
-            switch (event.getState()) {
-                case PRE:
-                    cache.closeWorld();
-                    break;
-                case POST:
-                    cache.closeWorld();
-                    if (event.getWorld() != null)
-                        cache.initWorld(event.getWorld());
-                    break;
-            }
+        switch (event.getState()) {
+            case PRE:
+                cache.closeWorld();
+                break;
+            case POST:
+                cache.closeWorld();
+                if (event.getWorld() != null)
+                    cache.initWorld(event.getWorld());
+                break;
         }
 
         dispatch(listener -> listener.onWorldEvent(event));

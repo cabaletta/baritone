@@ -77,8 +77,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         int numNodes = 0;
         int numEmptyChunk = 0;
         boolean favoring = favoredPositions.isPresent();
-        boolean cache = Baritone.settings().chunkCaching.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
-        int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get();
+        int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime) {
@@ -112,11 +111,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 }
                 BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
                 boolean isPositionCached = false;
-                if (cache) {
-                    if (WorldProvider.INSTANCE.getCurrentWorld() != null) {
-                        if (WorldProvider.INSTANCE.getCurrentWorld().cache.getBlock(dest) != null) {
-                            isPositionCached = true;
-                        }
+                if (WorldProvider.INSTANCE.getCurrentWorld() != null) {
+                    if (WorldProvider.INSTANCE.getCurrentWorld().cache.getBlock(dest) != null) {
+                        isPositionCached = true;
                     }
                 }
                 if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk) {
