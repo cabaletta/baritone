@@ -84,7 +84,8 @@ public class MixinMinecraft {
             method = "runTickKeyboard",
             at = @At(
                     value = "INVOKE",
-                    target = "org/lwjgl/input/Keyboard.isKeyDown(I)Z"
+                    target = "org/lwjgl/input/Keyboard.isKeyDown(I)Z",
+                    remap = false
             )
     )
     private boolean Keyboard$isKeyDown(int keyCode) {
