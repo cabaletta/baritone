@@ -167,9 +167,10 @@ public class MixinMinecraft {
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/client/multiplayer/PlayerControllerMP.clickBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)Z"
-            )
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void clickMouse(CallbackInfo ci, BlockPos pos) {
+    private void onBlockBreak(CallbackInfo ci, BlockPos pos) {
         Baritone.INSTANCE.getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.BREAK));
     }
 
@@ -181,7 +182,7 @@ public class MixinMinecraft {
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void onBlockInteract(CallbackInfo ci, EnumHand var1[], int var2, int var3, EnumHand enumhand, ItemStack itemstack, BlockPos blockpos, int i, EnumActionResult enumactionresult) {
+    private void onBlockUse(CallbackInfo ci, EnumHand var1[], int var2, int var3, EnumHand enumhand, ItemStack itemstack, BlockPos blockpos, int i, EnumActionResult enumactionresult) {
         Baritone.INSTANCE.getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
     }
 }
