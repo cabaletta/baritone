@@ -32,7 +32,7 @@ import java.util.Map;
 public class Waypoint {
     public final String name;
     public final Tag tag;
-    public final long creationTimestamp;
+    private final long creationTimestamp;
     public final BlockPos location;
 
     public Waypoint(String name, Tag tag, BlockPos location) {

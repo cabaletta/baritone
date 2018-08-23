@@ -79,11 +79,11 @@ public class Waypoints {
         try (
                 FileOutputStream fileOut = new FileOutputStream(fileName.toFile());
                 BufferedOutputStream bufOut = new BufferedOutputStream(fileOut);
-                DataOutputStream out = new DataOutputStream(bufOut);
+                DataOutputStream out = new DataOutputStream(bufOut)
         ) {
             for (Waypoint waypoint : waypoints.get(tag)) {
                 out.writeUTF(waypoint.name);
-                out.writeLong(waypoint.creationTimestamp);
+                out.writeLong(waypoint.creationTimestamp());
                 out.writeInt(waypoint.location.getX());
                 out.writeInt(waypoint.location.getY());
                 out.writeInt(waypoint.location.getZ());
@@ -98,14 +98,8 @@ public class Waypoints {
     }
 
     public Waypoint getMostRecentByTag(Waypoint.Tag tag) {
-        Set<Waypoint> pts = waypoints.get(tag);
-        Waypoint best = null;
-        for (Waypoint waypoint : pts) {
-            if (best == null || waypoint.creationTimestamp > best.creationTimestamp) {
-                best = waypoint;
-            }
-        }
-        return best;
+        // Find a waypoint of the given tag which has the greatest timestamp value, indicating the most recent
+        return this.waypoints.get(tag).stream().min(Comparator.comparingLong(w -> -w.creationTimestamp())).orElse(null);
     }
 
     public void addWaypoint(Waypoint waypoint) {
