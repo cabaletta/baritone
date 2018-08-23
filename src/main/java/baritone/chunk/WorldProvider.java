@@ -53,6 +53,7 @@ public enum WorldProvider implements Helper {
     public final void initWorld(WorldClient world) {
         int dimensionID = world.provider.getDimensionType().getId();
         File directory;
+        File readme;
         IntegratedServer integratedServer = mc.getIntegratedServer();
         if (integratedServer != null) {
             WorldServer localServerWorld = integratedServer.getWorld(dimensionID);
@@ -66,16 +67,19 @@ public enum WorldProvider implements Helper {
             }
 
             directory = new File(directory, "baritone");
-
+            readme = directory;
+            
         } else {
             //remote
             directory = new File(Baritone.INSTANCE.getDir(), mc.getCurrentServerData().serverIP);
+            readme = Baritone.INSTANCE.getDir();
         }
-        // lol wtf is this baritone folder in my minecraft?
-        try (FileOutputStream out = new FileOutputStream(new File(directory, "readme.txt"))) {
+        // lol wtf is this baritone folder in my minecraft save?
+        try (FileOutputStream out = new FileOutputStream(new File(readme, "readme.txt"))) {
             // good thing we have a readme
             out.write("https://github.com/cabaletta/baritone\n".getBytes());
         } catch (IOException ex) {}
+
         directory = new File(directory, "DIM" + dimensionID);
         Path dir = directory.toPath();
         if (!Files.exists(dir)) {
