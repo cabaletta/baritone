@@ -39,6 +39,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.GameSettings;
@@ -46,6 +47,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
+import net.minecraft.util.text.ITextComponent;
 
 /**
  * @author Brady
@@ -140,4 +142,11 @@ public interface IGameEventListener {
      * @see Minecraft#rightClickMouse()
      */
     void onBlockInteract(BlockInteractEvent event);
+
+    /**
+     * Called when the local player dies, as indicated by the creation of the {@link GuiGameOver} screen.
+     *
+     * @see GuiGameOver(ITextComponent)
+     */
+    void onPlayerDeath();
 }

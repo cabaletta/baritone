@@ -179,6 +179,11 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         dispatch(listener -> listener.onBlockInteract(event));
     }
 
+    @Override
+    public void onPlayerDeath() {
+        dispatch(IGameEventListener::onPlayerDeath);
+    }
+
     public final void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
     }
