@@ -109,6 +109,7 @@ public class Settings {
 
     /**
      * Use a pythagorean metric (as opposed to the more accurate hybrid diagonal / traverse).
+     * You probably don't want this. It roughly triples nodes considered for no real advantage.
      */
     public Setting<Boolean> pythagoreanMetric = new Setting<>(false);
 
