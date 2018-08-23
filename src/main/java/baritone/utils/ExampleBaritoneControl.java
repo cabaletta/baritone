@@ -140,7 +140,7 @@ public class ExampleBaritoneControl extends Behavior {
                 return;
             }
             BlockPos playerFeet = playerFeet();
-            locs.sort(Comparator.comparingDouble(pos -> playerFeet.distanceSq(pos)));
+            locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
 
             // remove any that are within loaded chunks that aren't actually what we want
             locs.removeAll(locs.stream()
