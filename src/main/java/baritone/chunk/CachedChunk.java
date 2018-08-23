@@ -56,6 +56,13 @@ public final class CachedChunk implements IBlockTypeAccess {
         add(Blocks.BEACON);
         add(Blocks.BREWING_STAND);
         add(Blocks.SKULL);
+        add(Blocks.ENCHANTING_TABLE);
+        add(Blocks.ANVIL);
+        add(Blocks.LIT_FURNACE);
+        add(Blocks.BED);
+        add(Blocks.DRAGON_EGG);
+        add(Blocks.JUKEBOX);
+        add(Blocks.END_GATEWAY);
     }});
 
     /**
