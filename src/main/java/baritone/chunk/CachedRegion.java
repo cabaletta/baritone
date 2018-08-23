@@ -19,12 +19,13 @@ package baritone.chunk;
 
 import baritone.utils.pathing.IBlockTypeAccess;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.BitSet;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -75,6 +76,25 @@ public final class CachedRegion implements IBlockTypeAccess {
             return chunk.getBlock(x & 15, y, z & 15);
         }
         return null;
+    }
+
+    public final LinkedList<BlockPos> getLocationsOf(String block) {
+        LinkedList<BlockPos> res = new LinkedList<>();
+        for (int chunkX = 0; chunkX < 32; chunkX++) {
+            for (int chunkZ = 0; chunkZ < 32; chunkZ++) {
+                if (chunks[chunkX][chunkZ] == null) {
+                    continue;
+                }
+                List<BlockPos> locs = chunks[chunkX][chunkZ].getAbsoluteBlocks(block);
+                if (locs == null) {
+                    continue;
+                }
+                for (BlockPos pos : locs) {
+                    res.add(pos);
+                }
+            }
+        }
+        return res;
     }
 
     final void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
@@ -139,6 +159,22 @@ public final class CachedRegion implements IBlockTypeAccess {
                         }
                     }
                 }
+                for (int z = 0; z < 32; z++) {
+                    for (int x = 0; x < 32; x++) {
+                        if (chunks[x][z] != null) {
+                            Map<String, List<BlockPos>> locs = chunks[x][z].getRelativeBlocks();
+                            out.writeShort(locs.entrySet().size());
+                            for (Map.Entry<String, List<BlockPos>> entry : locs.entrySet()) {
+                                out.writeUTF(entry.getKey());
+                                out.writeShort(entry.getValue().size());
+                                for (BlockPos pos : entry.getValue()) {
+                                    out.writeByte((byte) (pos.getZ() << 4 | pos.getX()));
+                                    out.writeByte((byte) (pos.getY()));
+                                }
+                            }
+                        }
+                    }
+                }
                 out.writeInt(~CACHED_REGION_MAGIC);
             }
             hasUnsavedChanges = false;
@@ -174,6 +210,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                     throw new IOException("Bad magic value " + magic);
                 }
                 CachedChunk[][] tmpCached = new CachedChunk[32][32];
+                Map<String, List<BlockPos>>[][] location = new Map[32][32];
                 for (int z = 0; z < 32; z++) {
                     for (int x = 0; x < 32; x++) {
                         int isChunkPresent = in.read();
@@ -181,7 +218,12 @@ public final class CachedRegion implements IBlockTypeAccess {
                             case CHUNK_PRESENT:
                                 byte[] bytes = new byte[CachedChunk.SIZE_IN_BYTES];
                                 in.readFully(bytes);
-                                tmpCached[x][z] = new CachedChunk(x, z, BitSet.valueOf(bytes), new String[256]);
+                                location[x][z] = new HashMap<>();
+                                int regionX = this.x;
+                                int regionZ = this.z;
+                                int chunkX = x + 32 * regionX;
+                                int chunkZ = z + 32 * regionZ;
+                                tmpCached[x][z] = new CachedChunk(chunkX, chunkZ, BitSet.valueOf(bytes), new String[256], location[x][z]);
                                 break;
                             case CHUNK_NOT_PRESENT:
                                 tmpCached[x][z] = null;
@@ -196,6 +238,30 @@ public final class CachedRegion implements IBlockTypeAccess {
                         if (tmpCached[x][z] != null) {
                             for (int i = 0; i < 256; i++) {
                                 tmpCached[x][z].getOverview()[i] = in.readUTF();
+                            }
+                        }
+                    }
+                }
+                for (int z = 0; z < 32; z++) {
+                    for (int x = 0; x < 32; x++) {
+                        if (tmpCached[x][z] != null) {
+                            // 16 * 16 * 256 = 65536 so a short is enough
+                            short numSpecialBlockTypes = in.readShort();
+                            for (int i = 0; i < numSpecialBlockTypes; i++) {
+                                String blockName = in.readUTF();
+                                ArrayList<BlockPos> locs = new ArrayList<>();
+                                location[x][z].put(blockName, locs);
+                                short numLocations = in.readShort();
+                                for (int j = 0; j < numLocations; j++) {
+                                    byte xz = in.readByte();
+                                    int X = xz & 0x0f;
+                                    int Z = (xz >>> 4) & 0x0f;
+                                    int Y = (int) in.readByte();
+                                    if (Y < 0) {
+                                        Y += 256;
+                                    }
+                                    locs.add(new BlockPos(X, Y, Z));
+                                }
                             }
                         }
                     }

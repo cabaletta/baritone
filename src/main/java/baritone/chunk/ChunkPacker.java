@@ -28,9 +28,10 @@ import net.minecraft.block.BlockTallGrass;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
-import java.util.BitSet;
+import java.util.*;
 
 /**
  * @author Brady
@@ -40,30 +41,33 @@ public final class ChunkPacker implements Helper {
 
     private ChunkPacker() {}
 
-    public static BitSet createPackedChunk(Chunk chunk) {
+    public static CachedChunk pack(Chunk chunk) {
         long start = System.currentTimeMillis();
+
+        Map<String, List<BlockPos>> specialBlocks = new HashMap<>();
         BitSet bitSet = new BitSet(CachedChunk.SIZE);
         try {
             for (int y = 0; y < 256; y++) {
                 for (int z = 0; z < 16; z++) {
                     for (int x = 0; x < 16; x++) {
                         int index = CachedChunk.getPositionIndex(x, y, z);
-                        boolean[] bits = getPathingBlockType(chunk.getBlockState(x, y, z).getBlock()).getBits();
+                        Block block = chunk.getBlockState(x, y, z).getBlock();
+                        boolean[] bits = getPathingBlockType(block).getBits();
                         bitSet.set(index, bits[0]);
                         bitSet.set(index + 1, bits[1]);
+                        if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
+                            String name = blockToString(block);
+                            specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
+                        }
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        //System.out.println("Packed special blocks: " + specialBlocks);
         long end = System.currentTimeMillis();
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
-        return bitSet;
-    }
-
-    public static String[] createPackedOverview(Chunk chunk) {
-        long start = System.currentTimeMillis();
         String[] blockNames = new String[256];
         for (int z = 0; z < 16; z++) {
             for (int x = 0; x < 16; x++) {
@@ -75,17 +79,29 @@ public final class ChunkPacker implements Helper {
                         break;
                     }
                 }
-                ResourceLocation loc = Block.REGISTRY.getNameForObject(blockState.getBlock());
-                String name = loc.getPath(); // normally, only write the part after the minecraft:
-                if (!loc.getNamespace().equals("minecraft")) {
-                    // Baritone is running on top of forge with mods installed, perhaps?
-                    name = loc.toString(); // include the namespace with the colon
-                }
+                String name = blockToString(blockState.getBlock());
                 blockNames[z << 4 | x] = name;
             }
         }
-        long end = System.currentTimeMillis();
-        return blockNames;
+        CachedChunk cached = new CachedChunk(chunk.x, chunk.z, bitSet, blockNames, specialBlocks);
+        return cached;
+    }
+
+    public static String blockToString(Block block) {
+        ResourceLocation loc = Block.REGISTRY.getNameForObject(block);
+        String name = loc.getPath(); // normally, only write the part after the minecraft:
+        if (!loc.getNamespace().equals("minecraft")) {
+            // Baritone is running on top of forge with mods installed, perhaps?
+            name = loc.toString(); // include the namespace with the colon
+        }
+        return name;
+    }
+
+    public static Block stringToBlock(String name) {
+        if (!name.contains(":")) {
+            name = "minecraft:" + name;
+        }
+        return Block.getBlockFromName(name);
     }
 
     private static PathingBlockType getPathingBlockType(Block block) {

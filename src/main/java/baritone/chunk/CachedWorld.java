@@ -21,12 +21,13 @@ import baritone.utils.pathing.IBlockTypeAccess;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.BitSet;
+import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
@@ -84,6 +85,16 @@ public final class CachedWorld implements IBlockTypeAccess {
         return region.getBlock(x & 511, y, z & 511);
     }
 
+    public final LinkedList<BlockPos> getLocationsOf(String block) {
+        LinkedList<BlockPos> res = new LinkedList<>();
+        this.cachedRegions.values().forEach(region -> {
+            if (region != null)
+                for (BlockPos pos : region.getLocationsOf(block))
+                    res.add(pos);
+        });
+        return res;
+    }
+
     private void updateCachedChunk(CachedChunk chunk) {
         CachedRegion region = getOrCreateRegion(chunk.x >> 5, chunk.z >> 5);
         region.updateCachedChunk(chunk.x & 31, chunk.z & 31, chunk);
@@ -97,6 +108,16 @@ public final class CachedWorld implements IBlockTypeAccess {
         });
         long now = System.currentTimeMillis();
         System.out.println("World save took " + (now - start) + "ms");
+    }
+
+    public final void reloadAllFromDisk() {
+        long start = System.currentTimeMillis();
+        this.cachedRegions.values().forEach(region -> {
+            if (region != null)
+                region.load(this.directory);
+        });
+        long now = System.currentTimeMillis();
+        System.out.println("World load took " + (now - start) + "ms");
     }
 
     /**
@@ -168,9 +189,7 @@ public final class CachedWorld implements IBlockTypeAccess {
                 }
                 try {
                     Chunk chunk = queue.take();
-                    BitSet packedChunk = ChunkPacker.createPackedChunk(chunk);
-                    String[] packedOverview = ChunkPacker.createPackedOverview(chunk);
-                    CachedChunk cached = new CachedChunk(chunk.x, chunk.z, packedChunk, packedOverview);
+                    CachedChunk cached = ChunkPacker.pack(chunk);
                     CachedWorld.this.updateCachedChunk(cached);
                     //System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);
                 } catch (InterruptedException e) {

@@ -21,14 +21,42 @@ import baritone.utils.pathing.IBlockTypeAccess;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
 
-import java.util.BitSet;
+import java.util.*;
 
 /**
  * @author Brady
  * @since 8/3/2018 1:04 AM
  */
 public final class CachedChunk implements IBlockTypeAccess {
+
+    public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(new HashSet<Block>() {{
+        add(Blocks.DIAMOND_ORE);
+        add(Blocks.DIAMOND_BLOCK);
+        //add(Blocks.COAL_ORE);
+        add(Blocks.COAL_BLOCK);
+        //add(Blocks.IRON_ORE);
+        add(Blocks.IRON_BLOCK);
+        //add(Blocks.GOLD_ORE);
+        add(Blocks.GOLD_BLOCK);
+        add(Blocks.EMERALD_ORE);
+        add(Blocks.EMERALD_BLOCK);
+
+        add(Blocks.ENDER_CHEST);
+        add(Blocks.FURNACE);
+        add(Blocks.CHEST);
+        add(Blocks.END_PORTAL);
+        add(Blocks.END_PORTAL_FRAME);
+        add(Blocks.MOB_SPAWNER);
+        // TODO add all shulker colors
+        add(Blocks.PORTAL);
+        add(Blocks.HOPPER);
+        add(Blocks.BEACON);
+        add(Blocks.BREWING_STAND);
+        add(Blocks.SKULL);
+    }});
 
     /**
      * The size of the chunk data in bits. Equal to 16 KiB.
@@ -66,7 +94,9 @@ public final class CachedChunk implements IBlockTypeAccess {
 
     private final int[] heightMap;
 
-    CachedChunk(int x, int z, BitSet data, String[] overview) {
+    private final Map<String, List<BlockPos>> specialBlockLocations;
+
+    CachedChunk(int x, int z, BitSet data, String[] overview, Map<String, List<BlockPos>> specialBlockLocations) {
         validateSize(data);
 
         this.x = x;
@@ -74,6 +104,7 @@ public final class CachedChunk implements IBlockTypeAccess {
         this.data = data;
         this.overview = overview;
         this.heightMap = new int[256];
+        this.specialBlockLocations = specialBlockLocations;
         calculateHeightMap();
     }
 
@@ -82,11 +113,7 @@ public final class CachedChunk implements IBlockTypeAccess {
         int internalPos = z << 4 | x;
         if (heightMap[internalPos] == y) {
             // we have this exact block, it's a surface block
-            String name = overview[internalPos];
-            if (!name.contains(":")) {
-                name = "minecraft:" + name;
-            }
-            IBlockState state = Block.getBlockFromName(name).getDefaultState();
+            IBlockState state = ChunkPacker.stringToBlock(overview[internalPos]).getDefaultState();
             //System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
             return state;
         }
@@ -116,6 +143,21 @@ public final class CachedChunk implements IBlockTypeAccess {
 
     public final String[] getOverview() {
         return overview;
+    }
+
+    public final Map<String, List<BlockPos>> getRelativeBlocks() {
+        return specialBlockLocations;
+    }
+
+    public final LinkedList<BlockPos> getAbsoluteBlocks(String blockType) {
+        if (specialBlockLocations.get(blockType) == null) {
+            return null;
+        }
+        LinkedList<BlockPos> res = new LinkedList<>();
+        for (BlockPos pos : specialBlockLocations.get(blockType)) {
+            res.add(new BlockPos(pos.getX() + x * 16, pos.getY(), pos.getZ() + z * 16));
+        }
+        return res;
     }
 
     /**
