@@ -26,6 +26,7 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.WorldServer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,6 +71,11 @@ public enum WorldProvider implements Helper {
             //remote
             directory = new File(Baritone.INSTANCE.getDir(), mc.getCurrentServerData().serverIP);
         }
+        // lol wtf is this baritone folder in my minecraft?
+        try (FileOutputStream out = new FileOutputStream(new File(directory, "readme.txt"))) {
+            // good thing we have a readme
+            out.write("https://github.com/cabaletta/baritone\n".getBytes());
+        } catch (IOException ex) {}
         directory = new File(directory, "DIM" + dimensionID);
         Path dir = directory.toPath();
         if (!Files.exists(dir)) {
