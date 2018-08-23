@@ -85,13 +85,32 @@ public final class CachedWorld implements IBlockTypeAccess {
         return region.getBlock(x & 511, y, z & 511);
     }
 
-    public final LinkedList<BlockPos> getLocationsOf(String block) {
+    public final LinkedList<BlockPos> getLocationsOf(String block, int minimum, int maxRegionDistanceSq) {
         LinkedList<BlockPos> res = new LinkedList<>();
-        this.cachedRegions.values().forEach(region -> {
-            if (region != null)
-                for (BlockPos pos : region.getLocationsOf(block))
-                    res.add(pos);
-        });
+        int playerRegionX = playerFeet().getX() >> 9;
+        int playerRegionZ = playerFeet().getZ() >> 9;
+
+        int searchRadius = 0;
+        while (searchRadius <= maxRegionDistanceSq) {
+            for (int xoff = -searchRadius; xoff <= searchRadius; xoff++) {
+                for (int zoff = -searchRadius; zoff <= searchRadius; zoff++) {
+                    double distance = xoff * xoff + zoff * zoff;
+                    if (distance != searchRadius) {
+                        continue;
+                    }
+                    int regionX = xoff + playerRegionX;
+                    int regionZ = zoff + playerRegionZ;
+                    CachedRegion region = getOrCreateRegion(regionX, regionZ);
+                    if (region != null)
+                        for (BlockPos pos : region.getLocationsOf(block))
+                            res.add(pos);
+                }
+            }
+            if (res.size() >= minimum) {
+                return res;
+            }
+            searchRadius++;
+        }
         return res;
     }
 
@@ -139,7 +158,7 @@ public final class CachedWorld implements IBlockTypeAccess {
      * @param regionZ The region Z coordinate
      * @return The region located at the specified coordinates
      */
-    private CachedRegion getOrCreateRegion(int regionX, int regionZ) {
+    private synchronized CachedRegion getOrCreateRegion(int regionX, int regionZ) {
         return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
             CachedRegion newRegion = new CachedRegion(regionX, regionZ);
             newRegion.load(this.directory);

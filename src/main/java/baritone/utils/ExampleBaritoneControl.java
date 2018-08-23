@@ -120,7 +120,7 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().startsWith("find")) {
             String blockType = msg.toLowerCase().substring(4).trim();
-            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(blockType);
+            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(blockType, 1, 4);
             displayChatMessageRaw("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(pos).getBlock();
@@ -133,7 +133,7 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().startsWith("mine")) {
             String blockType = msg.toLowerCase().substring(4).trim();
-            List<BlockPos> locs = new ArrayList<>(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(blockType));
+            List<BlockPos> locs = new ArrayList<>(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(1, 1));
             if (locs.isEmpty()) {
                 displayChatMessageRaw("No locations known");
                 event.cancel();
@@ -148,9 +148,9 @@ public class ExampleBaritoneControl extends Behavior {
                     .filter(pos -> !ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).equalsIgnoreCase(blockType))
                     .collect(Collectors.toList()));
 
-            if (locs.size() > 10) {
-                displayChatMessageRaw("Pathing to any of closest 10");
-                locs = locs.subList(0, 10);
+            if (locs.size() > 30) {
+                displayChatMessageRaw("Pathing to any of closest 30");
+                locs = locs.subList(0, 30);
             }
             PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
             PathingBehavior.INSTANCE.path();
