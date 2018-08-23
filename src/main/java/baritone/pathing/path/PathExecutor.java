@@ -90,7 +90,11 @@ public class PathExecutor implements Helper {
                 for (int i = 0; i < pathPosition - 2 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.positions().get(i))) {
                         displayChatMessageRaw("Skipping back " + (pathPosition - i) + " steps, to " + i);
+                        int previousPos = pathPosition;
                         pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
+                        for (int j = pathPosition; j <= previousPos; j++) {
+                            path.movements().get(j).reset();
+                        }
                         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                         return false;
                     }

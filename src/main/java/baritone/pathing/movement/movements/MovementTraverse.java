@@ -67,6 +67,12 @@ public class MovementTraverse extends Movement {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        wasTheBridgeBlockAlwaysThere = true;
+    }
+
+    @Override
     protected double calculateCost(CalculationContext context) {
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);

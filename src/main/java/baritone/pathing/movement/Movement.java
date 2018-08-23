@@ -187,6 +187,9 @@ public abstract class Movement implements Helper, MovementHelper {
         currentState.setStatus(MovementStatus.CANCELED);
     }
 
+    public void reset() {
+        currentState = new MovementState().setStatus(MovementStatus.PREPPING);
+    }
 
     public double getTotalHardnessOfBlocksToBreak(CalculationContext ctx) {
         /*

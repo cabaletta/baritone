@@ -65,6 +65,12 @@ public class MovementAscend extends Movement {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        ticksWithoutPlacement = 0;
+    }
+
+    @Override
     protected double calculateCost(CalculationContext context) {
         IBlockState toPlace = BlockStateInterface.get(positionsToPlace[0]);
         if (!MovementHelper.canWalkOn(positionsToPlace[0], toPlace)) {

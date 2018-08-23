@@ -37,6 +37,12 @@ public class MovementDownward extends Movement {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        numTicks = 0;
+    }
+
+    @Override
     protected double calculateCost(CalculationContext context) {
         if (!MovementHelper.canWalkOn(dest.down())) {
             return COST_INF;

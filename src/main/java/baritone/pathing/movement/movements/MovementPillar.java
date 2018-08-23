@@ -39,6 +39,12 @@ public class MovementPillar extends Movement {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        numTicks = 0;
+    }
+
+    @Override
     protected double calculateCost(CalculationContext context) {
         Block fromDown = BlockStateInterface.get(src).getBlock();
         boolean ladder = fromDown instanceof BlockLadder || fromDown instanceof BlockVine;

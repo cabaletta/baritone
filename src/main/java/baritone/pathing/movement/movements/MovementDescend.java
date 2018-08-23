@@ -37,6 +37,12 @@ public class MovementDescend extends Movement {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        numTicks = 0;
+    }
+
+    @Override
     protected double calculateCost(CalculationContext context) {
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             return COST_INF;
