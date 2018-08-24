@@ -55,9 +55,10 @@ public class ExampleBaritoneControl extends Behavior {
             return;
         }
         String msg = event.getMessage();
-        if (msg.startsWith("/")) {
-            msg = msg.substring(1);
-        }
+        if (!msg.startsWith("#"))
+            return;
+
+        msg = msg.substring(1);
         if (msg.toLowerCase().startsWith("goal")) {
             event.cancel();
             String[] params = msg.toLowerCase().substring(4).trim().split(" ");
