@@ -13,7 +13,6 @@
     "MixinEntityRenderer",
     "MixinGameSettings",
     "MixinGuiContainer",
-    "MixinGuiGameOver",
     "MixinGuiScreen",
     "MixinInventoryPlayer",
     "MixinKeyBinding",
