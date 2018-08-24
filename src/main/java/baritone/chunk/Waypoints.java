@@ -30,6 +30,12 @@ import java.util.*;
  * @author leijurv
  */
 public class Waypoints {
+
+    /**
+     * Magic value to detect invalid waypoint files
+     */
+    private static final long WAYPOINT_MAGIC_VALUE = 121977993584L; // good value
+
     private final Path directory;
     private final Map<Waypoint.Tag, Set<Waypoint>> waypoints;
 
@@ -63,7 +69,13 @@ public class Waypoints {
                 BufferedInputStream bufIn = new BufferedInputStream(fileIn);
                 DataInputStream in = new DataInputStream(bufIn)
         ) {
-            while (true) {
+            long magic = in.readLong();
+            if (magic != WAYPOINT_MAGIC_VALUE) {
+                throw new IOException("Bad magic value " + magic);
+            }
+
+            long length = in.readLong(); // Yes I want 9,223,372,036,854,775,807 waypoints, do you not?
+            while (length-- > 0) {
                 String name = in.readUTF();
                 long creationTimestamp = in.readLong();
                 int x = in.readInt();
@@ -81,6 +93,8 @@ public class Waypoints {
                 BufferedOutputStream bufOut = new BufferedOutputStream(fileOut);
                 DataOutputStream out = new DataOutputStream(bufOut)
         ) {
+            out.writeLong(WAYPOINT_MAGIC_VALUE);
+            out.writeLong(waypoints.get(tag).size());
             for (Waypoint waypoint : waypoints.get(tag)) {
                 out.writeUTF(waypoint.name);
                 out.writeLong(waypoint.creationTimestamp());
