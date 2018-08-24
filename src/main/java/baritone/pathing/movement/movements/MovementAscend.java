@@ -175,7 +175,7 @@ public class MovementAscend extends Movement {
         double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - player().posX) + zAxis * Math.abs((dest.getZ() + 0.5D) - player().posZ);
 
         double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - player().posX) + xAxis * Math.abs((dest.getZ() + 0.5D) - player().posZ);
-        System.out.println(flatDistToNext + " " + sideDist);
+        //System.out.println(flatDistToNext + " " + sideDist);
         if (flatDistToNext > 1.2) {
             return state;
         }
