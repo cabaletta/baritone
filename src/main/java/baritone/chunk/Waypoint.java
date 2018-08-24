@@ -55,12 +55,12 @@ public class Waypoint {
             return false;
         }
         Waypoint w = (Waypoint) o;
-        return name.equals(w.name) && tag == w.tag && creationTimestamp == w.creationTimestamp && location.equals(w.location);
+        return name.equals(w.name) && tag == w.tag && location.equals(w.location);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode() + tag.hashCode() + (int) creationTimestamp + location.hashCode(); //lol
+        return name.hashCode() + tag.hashCode() + location.hashCode(); //lol
     }
 
     public long creationTimestamp() {
