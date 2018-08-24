@@ -164,17 +164,41 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
-        state.setInput(InputOverrideHandler.Input.JUMP, true);
 
-        // TODO check if the below actually helps or hurts, it's weird
-        //double flatDistToNext = Math.abs(to.getX() - from.getX()) * Math.abs((to.getX() + 0.5D) - thePlayer.posX) + Math.abs(to.getZ() - from.getZ()) * Math.abs((to.getZ() + 0.5D) - thePlayer.posZ);
-        //boolean pointingInCorrectDirection = MovementManager.moveTowardsBlock(to);
-        //MovementManager.jumping = flatDistToNext < 1.2 && pointingInCorrectDirection;
+        if (headBonkClear()) {
+            state.setInput(InputOverrideHandler.Input.JUMP, true);
+            return state;
+        }
+
+        int xAxis = Math.abs(src.getX() - dest.getX()); // either 0 or 1
+        int zAxis = Math.abs(src.getZ() - dest.getZ()); // either 0 or 1
+        double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - player().posX) + zAxis * Math.abs((dest.getZ() + 0.5D) - player().posZ);
+
+        double sideDist = zAxis * Math.abs((dest.getX()+0.5D) - player().posX) + xAxis * Math.abs((dest.getZ()+0.5D) - player().posZ);
+        System.out.println(flatDistToNext+" "+sideDist);
+        if (flatDistToNext > 1.2) {
+            return state;
+        }
+
+        if (sideDist > 0.2) {
+            return state;
+        }
         //once we are pointing the right way and moving, start jumping
         //this is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
         //also wait until we are close enough, because we might jump and hit our head on an adjacent block
-        //return Baritone.playerFeet.equals(to);
-
+        state.setInput(InputOverrideHandler.Input.JUMP, true);
         return state;
+    }
+
+    private boolean headBonkClear() {
+        BlockPos startUp = src.up(2);
+        for (int i = 0; i < 4; i++) {
+            BlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));
+            if (!MovementHelper.canWalkThrough(check)) {
+                // we might bonk our head
+                return false;
+            }
+        }
+        return true;
     }
 }
