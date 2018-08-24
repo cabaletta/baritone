@@ -61,7 +61,8 @@ public enum WorldProvider implements Helper {
             IAnvilChunkLoader loader = (IAnvilChunkLoader) provider.getChunkLoader();
             directory = loader.getChunkSaveLocation();
 
-            if (!directory.getParentFile().getName().equals("saves")) {
+            // In the case of any dimension that isn't the overworld, we'll see a number other than 2 (likely 3)
+            if (directory.toPath().relativize(mc.gameDir.toPath()).getNameCount() != 2) {
                 // subdirectory of the main save directory for this world
                 directory = directory.getParentFile();
             }
