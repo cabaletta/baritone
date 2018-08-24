@@ -110,7 +110,7 @@ public final class CachedWorld implements IBlockTypeAccess {
         while (searchRadius <= maxRegionDistanceSq) {
             for (int xoff = -searchRadius; xoff <= searchRadius; xoff++) {
                 for (int zoff = -searchRadius; zoff <= searchRadius; zoff++) {
-                    double distance = xoff * xoff + zoff * zoff;
+                    int distance = xoff * xoff + zoff * zoff;
                     if (distance != searchRadius) {
                         continue;
                     }
