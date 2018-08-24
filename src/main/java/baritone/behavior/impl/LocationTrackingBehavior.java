@@ -41,7 +41,7 @@ public final class LocationTrackingBehavior extends Behavior {
 
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
-        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.get(event.getPos()) instanceof BlockBed) {
+        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(event.getPos()) instanceof BlockBed) {
             createWaypointAtPlayer("bed", Waypoint.Tag.BED);
         }
     }
