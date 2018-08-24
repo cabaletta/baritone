@@ -77,6 +77,5 @@ public class MixinNetHandlerPlayClient {
     )
     private void onPlayerDeath(SPacketCombatEvent packetIn, CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onPlayerDeath();
-        System.out.println("DIED");
     }
 }
