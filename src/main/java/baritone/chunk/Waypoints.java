@@ -54,7 +54,7 @@ public class Waypoints {
     private synchronized void load(Waypoint.Tag tag) {
         waypoints.put(tag, new HashSet<>());
 
-        Path fileName = directory.resolve(tag.name().toLowerCase());
+        Path fileName = directory.resolve(tag.name().toLowerCase() + ".mp4");
         if (!Files.exists(fileName))
             return;
 
