@@ -55,7 +55,7 @@ public class ExampleBaritoneControl extends Behavior {
             return;
         }
         String msg = event.getMessage();
-        if (!msg.startsWith("#"))
+        if (Baritone.settings().prefix.get() && !msg.startsWith("#"))
             return;
 
         msg = msg.substring(1);

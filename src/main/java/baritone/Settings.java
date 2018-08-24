@@ -241,6 +241,11 @@ public class Settings {
      */
     public Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
+    /**
+     * Whether or not to use the "#" command prefix
+     */
+    public Setting<Boolean> prefix = new Setting<>(false);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 
