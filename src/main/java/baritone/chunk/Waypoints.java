@@ -75,7 +75,7 @@ public class Waypoints {
     }
 
     private synchronized void save(Waypoint.Tag tag) {
-        Path fileName = directory.resolve(tag.name().toLowerCase());
+        Path fileName = directory.resolve(tag.name().toLowerCase() + ".mp4");
         try (
                 FileOutputStream fileOut = new FileOutputStream(fileName.toFile());
                 BufferedOutputStream bufOut = new BufferedOutputStream(fileOut);
