@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.behavior.impl.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -174,7 +175,7 @@ public class MovementTraverse extends Movement {
                 state.setStatus(MovementState.MovementStatus.SUCCESS);
                 return state;
             }
-            if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
+            if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet()) && Baritone.settings().allowSprint.get()) {
                 player().setSprinting(true);
             }
             Block destDown = BlockStateInterface.get(dest.down()).getBlock();

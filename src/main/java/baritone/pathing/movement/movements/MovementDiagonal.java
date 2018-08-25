@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
@@ -62,7 +63,7 @@ public class MovementDiagonal extends Movement {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
             return state;
         }
-        if (!BlockStateInterface.isLiquid(playerFeet())) {
+        if (!BlockStateInterface.isLiquid(playerFeet()) && Baritone.settings().allowSprint.get()) {
             player().setSprinting(true);
         }
         MovementHelper.moveTowards(state, dest);
