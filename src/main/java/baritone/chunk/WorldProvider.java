@@ -61,7 +61,7 @@ public enum WorldProvider implements Helper {
             IAnvilChunkLoader loader = (IAnvilChunkLoader) provider.getChunkLoader();
             directory = loader.getChunkSaveLocation();
 
-            // In the case of any dimension that isn't the overworld, we'll see a number other than 2 (likely 3)
+            // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
             if (directory.toPath().relativize(mc.gameDir.toPath()).getNameCount() != 2) {
                 // subdirectory of the main save directory for this world
                 directory = directory.getParentFile();
@@ -79,7 +79,7 @@ public enum WorldProvider implements Helper {
         try (FileOutputStream out = new FileOutputStream(new File(readme, "readme.txt"))) {
             // good thing we have a readme
             out.write("https://github.com/cabaletta/baritone\n".getBytes());
-        } catch (IOException ex) {}
+        } catch (IOException ignored) {}
 
         directory = new File(directory, "DIM" + dimensionID);
         Path dir = directory.toPath();
