@@ -310,7 +310,7 @@ public class Settings {
 
     @SuppressWarnings("unchecked")
     public <T> List<Setting<T>> getByValueType(Class<T> klass) {
-        ArrayList<Setting<T>> result = new ArrayList<>();
+        List<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
             if (setting.klass.equals(klass)) {
                 result.add((Setting<T>) setting);

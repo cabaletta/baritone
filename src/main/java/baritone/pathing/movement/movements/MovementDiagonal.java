@@ -145,7 +145,7 @@ public class MovementDiagonal extends Movement {
         if (toBreakCached != null) {
             return toBreakCached;
         }
-        ArrayList<BlockPos> result = new ArrayList<>();
+        List<BlockPos> result = new ArrayList<>();
         for (int i = 4; i < 6; i++) {
             if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
                 result.add(positionsToBreak[i]);
