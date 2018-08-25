@@ -176,6 +176,10 @@ public class PathingBehavior extends Behavior {
         this.goal = goal;
     }
 
+    public Goal getGoal() {
+        return goal;
+    }
+
     public PathExecutor getCurrent() {
         return current;
     }

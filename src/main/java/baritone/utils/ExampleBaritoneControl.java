@@ -109,6 +109,28 @@ public class ExampleBaritoneControl extends Behavior {
             displayChatMessageRaw("ok canceled");
             return;
         }
+        if (msg.toLowerCase().equals("invert")) {
+            Goal goal = PathingBehavior.INSTANCE.getGoal();
+            BlockPos runAwayFrom;
+            if (goal instanceof GoalXZ) {
+                runAwayFrom = new BlockPos(((GoalXZ) goal).getX(), 0, ((GoalXZ) goal).getZ());
+            } else if (goal instanceof GoalBlock) {
+                runAwayFrom = ((GoalBlock) goal).getGoalPos();
+            } else {
+                displayChatMessageRaw("Goal must be GoalXZ or GoalBlock to invert");
+                displayChatMessageRaw("Inverting goal of player feet");
+                runAwayFrom = playerFeet();
+            }
+            PathingBehavior.INSTANCE.setGoal(new GoalRunAway(1, runAwayFrom) {
+                @Override
+                public boolean isInGoal(BlockPos pos) {
+                    return false;
+                }
+            });
+            PathingBehavior.INSTANCE.path();
+            event.cancel();
+            return;
+        }
         if (msg.toLowerCase().equals("reloadall")) {
             WorldProvider.INSTANCE.getCurrentWorld().cache.reloadAllFromDisk();
             displayChatMessageRaw("ok");
