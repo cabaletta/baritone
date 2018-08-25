@@ -30,6 +30,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -119,41 +120,26 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
-        IBlockState door = BlockStateInterface.get(doorPos);
-        if (!(door.getBlock() instanceof BlockDoor)) {
-            return true;
-        }
-        String facing = door.getValue(BlockDoor.FACING).getName();
-        boolean open = door.getValue(BlockDoor.OPEN).booleanValue();
-        /**
-         * yes this is dumb
-         * change it if you want
-         */
-        String playerFacing = "";
-        if (playerPos.equals(doorPos)) {
+        if (playerPos.equals(doorPos))
             return false;
-        }
+
+        IBlockState state = BlockStateInterface.get(doorPos);
+        if (!(state.getBlock() instanceof BlockDoor))
+            return true;
+
+        EnumFacing.Axis facing = state.getValue(BlockDoor.FACING).getAxis();
+        boolean open = state.getValue(BlockDoor.OPEN);
+
+        EnumFacing.Axis playerFacing;
         if (playerPos.north().equals(doorPos) || playerPos.south().equals(doorPos)) {
-            playerFacing = "northsouth";
+            playerFacing = EnumFacing.Axis.Z;
         } else if (playerPos.east().equals(doorPos) || playerPos.west().equals(doorPos)) {
-            playerFacing = "eastwest";
+            playerFacing = EnumFacing.Axis.X;
         } else {
             return true;
         }
 
-        if (facing == "north" || facing == "south") {
-            if (open) {
-                return playerFacing == "northsouth";
-            } else {
-                return playerFacing == "eastwest";
-            }
-        } else {
-            if (open) {
-                return playerFacing == "eastwest";
-            } else {
-                return playerFacing == "northsouth";
-            }
-        }
+        return (facing == playerFacing) == open;
     }
 
     static boolean avoidWalkingInto(Block block) {
