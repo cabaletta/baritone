@@ -29,6 +29,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -53,6 +54,8 @@ public abstract class Movement implements Helper, MovementHelper {
      * The positions where we need to place a block before this movement can ensue
      */
     protected final BlockPos[] positionsToPlace;
+
+    private boolean didBreakLastTick;
 
     private Double cost;
 
@@ -114,10 +117,29 @@ public abstract class Movement implements Helper, MovementHelper {
 
         // TODO: calculate movement inputs from latestState.getGoal().position
         // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
+
+        this.didBreakLastTick = false;
+
         latestState.getInputStates().forEach((input, forced) -> {
+            RayTraceResult trace = mc.objectMouseOver;
+            boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
+            boolean isLeftClick = forced && input == Input.CLICK_LEFT;
+
+            // If we're forcing left click, we're in a gui screen, and we're looking
+            // at a block, break the block without a direct game input manipulation.
+            if (mc.currentScreen != null && isLeftClick && isBlockTrace) {
+                BlockBreakHelper.tryBreakBlock(trace.getBlockPos(), trace.sideHit);
+                this.didBreakLastTick = true;
+                return;
+            }
+
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
         });
         latestState.getInputStates().replaceAll((input, forced) -> false);
+
+        if (!this.didBreakLastTick)
+            BlockBreakHelper.stopBreakingBlock();
+
         currentState = latestState;
 
         if (isFinished())

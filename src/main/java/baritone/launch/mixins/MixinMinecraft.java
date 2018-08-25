@@ -102,23 +102,6 @@ public class MixinMinecraft {
         Baritone.INSTANCE.getGameEventHandler().onProcessKeyBinds();
     }
 
-    @Redirect(
-            method = {
-                    "setIngameFocus",
-                    "runTick"
-            },
-            at = @At(
-                    value = "FIELD",
-                    opcode = Opcodes.PUTFIELD,
-                    target = "net/minecraft/client/Minecraft.leftClickCounter:I",
-                    ordinal = 0
-            )
-    )
-    private void setLeftClickCounter(Minecraft mc, int value) {
-        if (!Baritone.INSTANCE.isInitialized() || !Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown(mc.gameSettings.keyBindAttack))
-            this.leftClickCounter = value;
-    }
-
     @Inject(
             method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V",
             at = @At("HEAD")
