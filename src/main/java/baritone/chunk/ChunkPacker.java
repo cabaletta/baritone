@@ -133,7 +133,18 @@ public final class ChunkPacker implements Helper {
                 case AVOID:
                     return Blocks.LAVA.getDefaultState();
                 case SOLID:
-                    return Blocks.OBSIDIAN.getDefaultState();
+                    // Dimension solid types
+                    switch (mc.player.dimension) {
+                        case -1:
+                            return Blocks.NETHERRACK.getDefaultState();
+                        case 0:
+                            return Blocks.STONE.getDefaultState();
+                        case 1:
+                            return Blocks.END_STONE.getDefaultState();
+                    }
+
+                    // The fallback solid type
+                    return Blocks.STONE.getDefaultState();
             }
         }
         return null;
