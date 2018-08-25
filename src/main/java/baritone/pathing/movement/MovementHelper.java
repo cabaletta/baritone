@@ -33,6 +33,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.Optional;
 
@@ -75,14 +76,46 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockEndPortal) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
+        if (block instanceof BlockDoor) {
+            if (block == Blocks.IRON_DOOR) {
+                return false;
+            }
+            return true; // we can just open the door
+        }
+        if (block instanceof BlockSnow || block instanceof BlockFenceGate || block instanceof BlockTrapDoor) {
+            // we've already checked doors
+            // so the only remaining dynamic isPassables are snow, fence gate, and trapdoor
+            // if they're cached as a top block, we don't know their metadata
+            // default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
+            if (mc.world.getChunk(pos) instanceof EmptyChunk) {
+                return true;
+            }
+        }
         IBlockState up = BlockStateInterface.get(pos.up());
         if (BlockStateInterface.isFlowing(state) || up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
             return false; // Don't walk through flowing liquids
         }
-        if (block instanceof BlockDoor && !Blocks.IRON_DOOR.equals(block)) {
-            return true; // we can just open the door
-        }
         return block.isPassable(mc.world, pos);
+    }
+
+    static boolean isReplacable(BlockPos pos, IBlockState state) {
+        // for MovementTraverse and MovementAscend
+        // block double plant defaults to true when the block doesn't match, so don't need to check that case
+        // all other overrides just return true or false
+        // the only case to deal with is snow
+        /*
+         *  public boolean isReplaceable(IBlockAccess worldIn, BlockPos pos)
+         *     {
+         *         return ((Integer)worldIn.getBlockState(pos).getValue(LAYERS)).intValue() == 1;
+         *     }
+         */
+        if (state.getBlock() instanceof BlockSnow) {
+            // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
+            if (mc.world.getChunk(pos) instanceof EmptyChunk) {
+                return true;
+            }
+        }
+        return state.getBlock().isReplaceable(mc.world, pos);
     }
 
     static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {

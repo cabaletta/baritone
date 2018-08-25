@@ -74,11 +74,10 @@ public class MovementAscend extends Movement {
     protected double calculateCost(CalculationContext context) {
         IBlockState toPlace = BlockStateInterface.get(positionsToPlace[0]);
         if (!MovementHelper.canWalkOn(positionsToPlace[0], toPlace)) {
-            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock())) {
-                // TODO replace this check with isReplacable or similar
+            if (!context.hasThrowaway()) {
                 return COST_INF;
             }
-            if (!context.hasThrowaway()) {
+            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionsToPlace[0], toPlace)) {
                 return COST_INF;
             }
             for (BlockPos against1 : against) {

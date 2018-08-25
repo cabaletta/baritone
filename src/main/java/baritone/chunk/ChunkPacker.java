@@ -112,7 +112,6 @@ public final class ChunkPacker implements Helper {
         if (MovementHelper.avoidWalkingInto(block)) {
             return PathingBlockType.AVOID;
         }
-
         // We used to do an AABB check here
         // however, this failed in the nether when you were near a nether fortress
         // because fences check their adjacent blocks in the world for their fence connection status to determine AABB shape

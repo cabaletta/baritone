@@ -107,7 +107,7 @@ public class MovementTraverse extends Movement {
                 return COST_INF;
             }
             IBlockState pp0 = BlockStateInterface.get(positionsToPlace[0]);
-            if (pp0.getBlock().equals(Blocks.AIR) || (!BlockStateInterface.isWater(pp0.getBlock()) && pp0.getBlock().isReplaceable(Minecraft.getMinecraft().world, positionsToPlace[0]))) {
+            if (pp0.getBlock().equals(Blocks.AIR) || (!BlockStateInterface.isWater(pp0.getBlock()) && MovementHelper.isReplacable(positionsToPlace[0], pp0))) {
                 if (!context.hasThrowaway()) {
                     return COST_INF;
                 }
