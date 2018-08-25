@@ -67,10 +67,10 @@ public class MovementFall extends Movement {
         }
         for (int i = 2; i < positionsToBreak.length; i++) {
             // TODO is this the right check here?
-            // miningDurationTicks is all right, but shouldn't it be canWalkThrough instead?
-            // lilypads (i think?) are 0 ticks to mine, but they definitely cause fall damage
-            // same thing for falling through water... we can't actually do that
-            // and falling through signs is possible, but they do have a mining duration, right?
+            // MiningDurationTicks is all right, but shouldn't it be canWalkThrough instead?
+            // Lilypads (i think?) are 0 ticks to mine, but they definitely cause fall damage
+            // Same thing for falling through water... we can't actually do that
+            // And falling through signs is possible, but they do have a mining duration, right?
             if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i]) > 0) {
                 //can't break while falling
                 return COST_INF;
@@ -90,6 +90,7 @@ public class MovementFall extends Movement {
             default:
                 return state;
         }
+
         BlockPos playerFeet = playerFeet();
         Optional<Rotation> targetRotation = Optional.empty();
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {

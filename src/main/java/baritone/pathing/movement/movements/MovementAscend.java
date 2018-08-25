@@ -130,9 +130,9 @@ public class MovementAscend extends Movement {
             default:
                 return state;
         }
+
         if (playerFeet().equals(dest)) {
-            state.setStatus(MovementStatus.SUCCESS);
-            return state;
+            return state.setStatus(MovementStatus.SUCCESS);
         }
 
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
@@ -146,17 +146,21 @@ public class MovementAscend extends Movement {
                     double faceZ = (dest.getZ() + anAgainst.getZ() + 1.0D) * 0.5D;
                     state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), anAgainst) && LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
-                        ticksWithoutPlacement++;
-                        state.setInput(InputOverrideHandler.Input.SNEAK, true);
-                        if (player().isSneaking()) {
-                            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+
+                    LookBehaviorUtils.getSelectedBlock().ifPresent(selectedBlock -> {
+                        if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionsToPlace[0])) {
+                            ticksWithoutPlacement++;
+                            state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                            if (player().isSneaking()) {
+                                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                            }
+                            if (ticksWithoutPlacement > 20) {
+                                // After 20 ticks without placement, we might be standing in the way, move back
+                                state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                            }
                         }
-                        if (ticksWithoutPlacement > 20) {
-                            state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);//we might be standing in the way, move back
-                        }
-                    }
-                    System.out.println("Trying to look at " + anAgainst + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
+                        System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
+                    });
                     return state;
                 }
             }
@@ -165,28 +169,22 @@ public class MovementAscend extends Movement {
         MovementHelper.moveTowards(state, dest);
 
         if (headBonkClear()) {
-            state.setInput(InputOverrideHandler.Input.JUMP, true);
-            return state;
+            return state.setInput(InputOverrideHandler.Input.JUMP, true);
         }
 
         int xAxis = Math.abs(src.getX() - dest.getX()); // either 0 or 1
         int zAxis = Math.abs(src.getZ() - dest.getZ()); // either 0 or 1
         double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - player().posX) + zAxis * Math.abs((dest.getZ() + 0.5D) - player().posZ);
-
         double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - player().posX) + xAxis * Math.abs((dest.getZ() + 0.5D) - player().posZ);
-        //System.out.println(flatDistToNext + " " + sideDist);
-        if (flatDistToNext > 1.2) {
+        // System.out.println(flatDistToNext + " " + sideDist);
+        if (flatDistToNext > 1.2 || sideDist > 0.2) {
             return state;
         }
 
-        if (sideDist > 0.2) {
-            return state;
-        }
-        //once we are pointing the right way and moving, start jumping
-        //this is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
-        //also wait until we are close enough, because we might jump and hit our head on an adjacent block
-        state.setInput(InputOverrideHandler.Input.JUMP, true);
-        return state;
+        // Once we are pointing the right way and moving, start jumping
+        // This is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
+        // Also wait until we are close enough, because we might jump and hit our head on an adjacent block
+        return state.setInput(InputOverrideHandler.Input.JUMP, true);
     }
 
     private boolean headBonkClear() {
@@ -194,7 +192,7 @@ public class MovementAscend extends Movement {
         for (int i = 0; i < 4; i++) {
             BlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));
             if (!MovementHelper.canWalkThrough(check)) {
-                // we might bonk our head
+                // We might bonk our head
                 return false;
             }
         }

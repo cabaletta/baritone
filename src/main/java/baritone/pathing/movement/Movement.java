@@ -33,6 +33,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static baritone.utils.InputOverrideHandler.Input;
@@ -268,15 +269,15 @@ public abstract class Movement implements Helper, MovementHelper {
         return state;
     }
 
-    public ArrayList<BlockPos> toBreakCached = null;
-    public ArrayList<BlockPos> toPlaceCached = null;
-    public ArrayList<BlockPos> toWalkIntoCached = null;
+    public List<BlockPos> toBreakCached = null;
+    public List<BlockPos> toPlaceCached = null;
+    public List<BlockPos> toWalkIntoCached = null;
 
-    public ArrayList<BlockPos> toBreak() {
+    public List<BlockPos> toBreak() {
         if (toBreakCached != null) {
             return toBreakCached;
         }
-        ArrayList<BlockPos> result = new ArrayList<>();
+        List<BlockPos> result = new ArrayList<>();
         for (BlockPos positionToBreak : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(positionToBreak)) {
                 result.add(positionToBreak);
@@ -286,11 +287,11 @@ public abstract class Movement implements Helper, MovementHelper {
         return result;
     }
 
-    public ArrayList<BlockPos> toPlace() {
+    public List<BlockPos> toPlace() {
         if (toPlaceCached != null) {
             return toPlaceCached;
         }
-        ArrayList<BlockPos> result = new ArrayList<>();
+        List<BlockPos> result = new ArrayList<>();
         for (BlockPos positionToBreak : positionsToPlace) {
             if (!MovementHelper.canWalkOn(positionToBreak)) {
                 result.add(positionToBreak);
@@ -300,7 +301,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return result;
     }
 
-    public ArrayList<BlockPos> toWalkInto() { // overridden by movementdiagonal
+    public List<BlockPos> toWalkInto() { // overridden by movementdiagonal
         if (toWalkIntoCached == null) {
             toWalkIntoCached = new ArrayList<>();
         }
