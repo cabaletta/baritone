@@ -48,7 +48,7 @@ public class GoalYLevel implements Goal {
         }
         if (pos.getY() < level) {
             // need to ascend
-            return (level - pos.getY()) * JUMP_ONE_BLOCK_COST * 0.9;
+            return (level - pos.getY()) * JUMP_ONE_BLOCK_COST;
         }
         return 0;
     }
