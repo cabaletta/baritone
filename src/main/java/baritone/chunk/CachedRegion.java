@@ -239,6 +239,10 @@ public final class CachedRegion implements IBlockTypeAccess {
                                 List<BlockPos> locs = new ArrayList<>();
                                 location[x][z].put(blockName, locs);
                                 int numLocations = in.readShort() & 0xffff;
+                                if (numLocations == 0) {
+                                    // an entire chunk full of air can happen in the end
+                                    numLocations = 65536;
+                                }
                                 for (int j = 0; j < numLocations; j++) {
                                     byte xz = in.readByte();
                                     int X = xz & 0x0f;
