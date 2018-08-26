@@ -247,10 +247,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                                     byte xz = in.readByte();
                                     int X = xz & 0x0f;
                                     int Z = (xz >>> 4) & 0x0f;
-                                    int Y = (int) in.readByte();
-                                    if (Y < 0) {
-                                        Y += 256;
-                                    }
+                                    int Y = in.readByte() & 0xff;
                                     locs.add(new BlockPos(X, Y, Z));
                                 }
                             }
