@@ -18,25 +18,19 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
-import baritone.behavior.impl.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
-import baritone.utils.BlockStateInterface;
-import baritone.utils.InputOverrideHandler;
-import baritone.utils.Rotation;
-import baritone.utils.Utils;
-import net.minecraft.block.Block;
+import baritone.utils.*;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-
-import java.util.Optional;
 
 public class MovementFall extends Movement {
 
@@ -96,20 +90,26 @@ public class MovementFall extends Movement {
         }
 
         BlockPos playerFeet = playerFeet();
-        Optional<Rotation> targetRotation = Optional.empty();
+        Rotation targetRotation = null;
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
             if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) { // TODO check if water bucket is on hotbar or main inventory
                 state.setStatus(MovementStatus.UNREACHABLE);
                 return state;
             }
+
             if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
-                targetRotation = LookBehaviorUtils.reachable((BlockStateInterface.get(dest).getCollisionBoundingBox(mc.world, dest) == Block.NULL_AABB) ? dest : dest.down());
+
+                targetRotation = new Rotation(player().rotationYaw, 90.0F);
+
+                RayTraceResult trace = RayTraceUtils.simulateRayTrace(player().rotationYaw, 90.0F);
+                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK) {
+                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                }
             }
         }
-        if (targetRotation.isPresent()) {
-            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true)
-                    .setTarget(new MovementTarget(targetRotation.get(), true));
+        if (targetRotation != null) {
+            state.setTarget(new MovementTarget(targetRotation, true));
         } else {
             state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), false));
         }
