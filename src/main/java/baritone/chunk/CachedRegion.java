@@ -231,7 +231,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                         if (tmpCached[x][z] != null) {
                             // 16 * 16 * 256 = 65536 so a short is enough
                             // ^ haha jokes on leijurv, java doesn't have unsigned types so that isn't correct
-                            //   also ur gay if u have more than 32767 special blocks in a chunk
+                            //   also why would you have more than 32767 special blocks in a chunk
                             short numSpecialBlockTypes = in.readShort();
                             for (int i = 0; i < numSpecialBlockTypes; i++) {
                                 String blockName = in.readUTF();
