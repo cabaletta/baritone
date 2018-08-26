@@ -30,6 +30,7 @@ import baritone.utils.InputOverrideHandler;
 import baritone.utils.Rotation;
 import baritone.utils.Utils;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFalling;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -63,6 +64,9 @@ public class MovementFall extends Movement {
         }
         double frontTwo = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1]);
         if (frontTwo >= COST_INF) {
+            return COST_INF;
+        }
+        if (BlockStateInterface.get(positionsToBreak[0].up()).getBlock() instanceof BlockFalling) {
             return COST_INF;
         }
         for (int i = 2; i < positionsToBreak.length; i++) {
