@@ -120,6 +120,13 @@ public class Settings {
     public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
 
     /**
+     * Stop 5 movements before anything that made the path COST_INF.
+     * For example, if lava has spread across the path, don't walk right up to it then recalculate, it might
+     * still be spreading lol
+     */
+    public Setting<Integer> costVerificationLookahead = new Setting<>(5);
+
+    /**
      * Static cutoff factor. 0.9 means cut off the last 10% of all paths, regardless of chunk load state
      */
     public Setting<Double> pathCutoffFactor = new Setting<>(0.9);
