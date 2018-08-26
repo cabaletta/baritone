@@ -24,6 +24,7 @@ import baritone.pathing.movement.movements.MovementDescend;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.*;
 import net.minecraft.block.*;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -77,13 +78,13 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockEndPortal) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
-        if (block instanceof BlockDoor) {
+        if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
             if (block == Blocks.IRON_DOOR) {
                 return false;
             }
             return true; // we can just open the door
         }
-        if (block instanceof BlockSnow || block instanceof BlockFenceGate || block instanceof BlockTrapDoor) {
+        if (block instanceof BlockSnow || block instanceof BlockTrapDoor) {
             // we've already checked doors
             // so the only remaining dynamic isPassables are snow, fence gate, and trapdoor
             // if they're cached as a top block, we don't know their metadata
@@ -127,13 +128,31 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (!(state.getBlock() instanceof BlockDoor))
             return true;
 
-        EnumFacing.Axis facing = state.getValue(BlockDoor.FACING).getAxis();
-        boolean open = state.getValue(BlockDoor.OPEN);
+        return isHorizontalBlockPassable(doorPos, state, playerPos, BlockDoor.OPEN);
+    }
+
+    static boolean isGatePassable(BlockPos gatePos, BlockPos playerPos) {
+        if (playerPos.equals(gatePos))
+            return false;
+
+        IBlockState state = BlockStateInterface.get(gatePos);
+        if (!(state.getBlock() instanceof BlockFenceGate))
+            return true;
+
+        return isHorizontalBlockPassable(gatePos, state, playerPos, BlockFenceGate.OPEN);
+    }
+
+    static boolean isHorizontalBlockPassable(BlockPos blockPos, IBlockState blockState, BlockPos playerPos, PropertyBool propertyOpen) {
+        if (playerPos.equals(blockPos))
+            return false;
+
+        EnumFacing.Axis facing = blockState.getValue(BlockHorizontal.FACING).getAxis();
+        boolean open = blockState.getValue(propertyOpen);
 
         EnumFacing.Axis playerFacing;
-        if (playerPos.north().equals(doorPos) || playerPos.south().equals(doorPos)) {
+        if (playerPos.north().equals(blockPos) || playerPos.south().equals(blockPos)) {
             playerFacing = EnumFacing.Axis.Z;
-        } else if (playerPos.east().equals(doorPos) || playerPos.west().equals(doorPos)) {
+        } else if (playerPos.east().equals(blockPos) || playerPos.west().equals(blockPos)) {
             playerFacing = EnumFacing.Axis.X;
         } else {
             return true;

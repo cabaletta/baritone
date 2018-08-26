@@ -26,10 +26,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDoor;
-import net.minecraft.block.BlockLadder;
-import net.minecraft.block.BlockVine;
+import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -145,21 +142,36 @@ public class MovementTraverse extends Movement {
         boolean ladder = fd instanceof BlockLadder || fd instanceof BlockVine;
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
-        boolean door = BlockStateInterface.get(src).getBlock() instanceof BlockDoor || pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor;
+
+        boolean door = pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor;
         if (door) {
             boolean isDoorActuallyBlockingUs = false;
-            Block srcBlock = BlockStateInterface.get(src).getBlock();
-            if (srcBlock instanceof BlockDoor && !MovementHelper.isDoorPassable(src, dest)) {
+            if (pb0.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(src, dest)) {
                 isDoorActuallyBlockingUs = true;
             } else if (pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(dest, src)) {
                 isDoorActuallyBlockingUs = true;
             }
             if (isDoorActuallyBlockingUs) {
-                if (!(Blocks.IRON_DOOR.equals(srcBlock) || Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
+                if (!(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
                     state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world())), true));
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                     return state;
                 }
+            }
+        }
+
+        if (pb0.getBlock() instanceof BlockFenceGate || pb1.getBlock() instanceof BlockFenceGate) {
+            BlockPos blocked = null;
+            if (!MovementHelper.isGatePassable(positionsToBreak[0], src.up())) {
+                blocked = positionsToBreak[0];
+            } else if (!MovementHelper.isGatePassable(positionsToBreak[1], src)) {
+                blocked = positionsToBreak[1];
+            }
+
+            if (blocked != null) {
+                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(blocked, world())), true));
+                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                return state;
             }
         }
 
