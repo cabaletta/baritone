@@ -266,6 +266,11 @@ public abstract class Movement implements Helper, MovementHelper {
         } else if (state.getStatus() == MovementStatus.PREPPING) {
             state.setStatus(MovementStatus.WAITING);
         }
+
+        if (state.getStatus() == MovementStatus.WAITING) {
+            state.setStatus(MovementStatus.RUNNING);
+        }
+
         return state;
     }
 

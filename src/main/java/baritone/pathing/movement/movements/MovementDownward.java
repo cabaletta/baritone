@@ -60,14 +60,8 @@ public class MovementDownward extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementState.MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
+        if (state.getStatus() != MovementState.MovementStatus.RUNNING)
+            return state;
 
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
