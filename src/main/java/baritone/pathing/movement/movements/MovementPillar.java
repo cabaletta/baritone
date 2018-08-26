@@ -115,6 +115,7 @@ public class MovementPillar extends Movement {
             default:
                 return state;
         }
+
         IBlockState fromDown = BlockStateInterface.get(src);
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
@@ -123,57 +124,68 @@ public class MovementPillar extends Movement {
                     Utils.getBlockPosCenter(positionsToPlace[0]),
                     new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)), true));
         }
-        EntityPlayerSP thePlayer = Minecraft.getMinecraft().player;
+
         boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;
         if (ladder) {
             BlockPos against = vine ? getAgainst(src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
                 displayChatMessageRaw("Unable to climb vines");
-                state.setStatus(MovementState.MovementStatus.UNREACHABLE);
-                return state;
+                return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
             }
-            if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
-                state.setStatus(MovementState.MovementStatus.SUCCESS);
-                return state;
+
+            if (playerFeet().equals(against.up()) || playerFeet().equals(dest))
+                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+
+            /*
+            if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
+                Baritone.moveTowardsBlock(from);
             }
-            /*if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
-             Baritone.moveTowardsBlock(from);
-             }*/
+             */
+
             MovementHelper.moveTowards(state, against);
             return state;
         } else {
-            if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
+            // Get ready to place a throwaway block
+            if (!MovementHelper.throwaway(true)) {
                 state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                 return state;
             }
+
             numTicks++;
-            state.setInput(InputOverrideHandler.Input.JUMP, thePlayer.posY < dest.getY()); //if our Y coordinate is above our goal, stop jumping
+            // If our Y coordinate is above our goal, stop jumping
+            state.setInput(InputOverrideHandler.Input.JUMP, player().posY < dest.getY());
             state.setInput(InputOverrideHandler.Input.SNEAK, true);
-            //otherwise jump
+
+            // Otherwise jump
             if (numTicks > 40) {
-                double diffX = thePlayer.posX - (dest.getX() + 0.5);
-                double diffZ = thePlayer.posZ - (dest.getZ() + 0.5);
+                double diffX = player().posX - (dest.getX() + 0.5);
+                double diffZ = player().posZ - (dest.getZ() + 0.5);
                 double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
                 if (dist > 0.17) {//why 0.17? because it seemed like a good number, that's why
                     //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
                     //and 0.17 is reasonably less than 0.2
-                    state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);//if it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
+
+                    // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
+                    state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
                 }
             }
+
             if (!blockIsThere) {
                 Block fr = BlockStateInterface.get(src).getBlock();
                 if (!(fr instanceof BlockAir || fr.isReplaceable(Minecraft.getMinecraft().world, src))) {
                     state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                     blockIsThere = false;
                 } else if (Minecraft.getMinecraft().player.isSneaking()) {
-                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);//constantly right click
+                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }
         }
-        if (playerFeet().equals(dest) && blockIsThere) {//if we are at our goal and the block below us is placed
-            state.setStatus(MovementState.MovementStatus.SUCCESS);
-            return state;//we are done
+
+        // If we are at our goal and the block below us is placed
+        if (playerFeet().equals(dest) && blockIsThere) {
+            return state.setStatus(MovementState.MovementStatus.SUCCESS);
         }
+
         return state;
     }
 }

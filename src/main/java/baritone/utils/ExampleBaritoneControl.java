@@ -272,7 +272,7 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().equals("costs")) {
             Movement[] movements = AStarPathFinder.getConnectedPositions(new BetterBlockPos(playerFeet()), new CalculationContext());
-            ArrayList<Movement> moves = new ArrayList<>(Arrays.asList(movements));
+            List<Movement> moves = new ArrayList<>(Arrays.asList(movements));
             moves.sort(Comparator.comparingDouble(movement -> movement.getCost(new CalculationContext())));
             for (Movement move : moves) {
                 String[] parts = move.getClass().toString().split("\\.");

@@ -68,6 +68,7 @@ public class MovementDownward extends Movement {
             default:
                 return state;
         }
+
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
             return state;

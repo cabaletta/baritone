@@ -92,15 +92,15 @@ public class MovementTraverse extends Movement {
             }
             if (MovementHelper.canWalkThrough(positionsToBreak[0], pb0) && MovementHelper.canWalkThrough(positionsToBreak[1], pb1)) {
                 if (WC == WALK_ONE_BLOCK_COST && context.canSprint()) {
-                    // if there's nothing in the way, and this isn't water or soul sand, and we aren't sneak placing
-                    // we can sprint =D
+                    // If there's nothing in the way, and this isn't water or soul sand, and we aren't sneak placing
+                    // We can sprint =D
                     WC = SPRINT_ONE_BLOCK_COST;
                 }
                 return WC;
             }
-            //double hardness1 = blocksToBreak[0].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[0]);
-            //double hardness2 = blocksToBreak[1].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[1]);
-            //Out.log("Can't walk through " + blocksToBreak[0] + " (hardness" + hardness1 + ") or " + blocksToBreak[1] + " (hardness " + hardness2 + ")");
+            // double hardness1 = blocksToBreak[0].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[0]);
+            // double hardness2 = blocksToBreak[1].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[1]);
+            // Out.log("Can't walk through " + blocksToBreak[0] + " (hardness" + hardness1 + ") or " + blocksToBreak[1] + " (hardness " + hardness2 + ")");
             return WC + getTotalHardnessOfBlocksToBreak(context);
         } else {//this is a bridge, so we need to place a block
             Block srcDown = BlockStateInterface.get(src.down()).getBlock();
@@ -125,7 +125,7 @@ public class MovementTraverse extends Movement {
                 return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
             }
             return COST_INF;
-            //Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());
+            // Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());
         }
     }
 
@@ -140,6 +140,7 @@ public class MovementTraverse extends Movement {
             default:
                 return state;
         }
+
         Block fd = BlockStateInterface.get(src.down()).getBlock();
         boolean ladder = fd instanceof BlockLadder || fd instanceof BlockVine;
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
@@ -161,6 +162,7 @@ public class MovementTraverse extends Movement {
                 }
             }
         }
+
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionsToPlace[0]) || ladder;
         BlockPos whereAmI = playerFeet();
         if (whereAmI.getY() != dest.getY() && !ladder) {
@@ -170,6 +172,7 @@ public class MovementTraverse extends Movement {
             }
             return state;
         }
+
         if (isTheBridgeBlockThere) {
             if (playerFeet().equals(dest)) {
                 state.setStatus(MovementState.MovementStatus.SUCCESS);
@@ -202,20 +205,18 @@ public class MovementTraverse extends Movement {
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                     if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && Minecraft.getMinecraft().player.isSneaking()) {
                         if (LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
-                            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                            return state;
+                            return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                         } else {
                             // Out.gui("Wrong. " + side + " " + LookBehaviorUtils.getSelectedBlock().get().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);
                         }
                     }
-                    state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                     System.out.println("Trying to look at " + against1 + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
-                    return state;
+                    return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 }
             }
             state.setInput(InputOverrideHandler.Input.SNEAK, true);
             if (whereAmI.equals(dest)) {
-                // if we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
+                // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
                 if (!MovementHelper.throwaway(true)) {// get ready to place a throwaway block
                     displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");

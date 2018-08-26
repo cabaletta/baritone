@@ -235,7 +235,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                             short numSpecialBlockTypes = in.readShort();
                             for (int i = 0; i < numSpecialBlockTypes; i++) {
                                 String blockName = in.readUTF();
-                                ArrayList<BlockPos> locs = new ArrayList<>();
+                                List<BlockPos> locs = new ArrayList<>();
                                 location[x][z].put(blockName, locs);
                                 short numLocations = in.readShort();
                                 for (int j = 0; j < numLocations; j++) {
