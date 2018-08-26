@@ -8,6 +8,7 @@
     "maxShiftBy": 2
   },
   "client": [
+    "MixinBlockPos",
     "MixinEntity",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
@@ -19,7 +20,6 @@
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
-    "MixinVec3i",
     "MixinWorldClient",
 
     "accessor.IAnvilChunkLoader",

@@ -21,29 +21,23 @@ import com.google.common.base.MoreObjects;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author Brady
  * @since 8/25/2018
  */
-@Mixin(Vec3i.class)
-public class MixinVec3i {
+@Mixin(BlockPos.class)
+public abstract class MixinBlockPos extends Vec3i {
 
-    @Redirect(
-            method = "toString",
-            at = @At(
-                    value = "INVOKE",
-                    target = "com/google/common/base/MoreObjects.toStringHelper(Ljava/lang/Object;)Lcom/google/common/base/MoreObjects$ToStringHelper;"
-            )
-    )
-    private MoreObjects.ToStringHelper toStringHelper(Object object) {
+    public MixinBlockPos(int xIn, int yIn, int zIn) {
+        super(xIn, yIn, zIn);
+    }
 
-        if (object.getClass().equals(BlockPos.class)) {
-            return MoreObjects.toStringHelper("BlockPos");
-        }
-
-        return MoreObjects.toStringHelper(object);
+    @Override
+    @Nonnull
+    public String toString() {
+        return MoreObjects.toStringHelper("BlockPos").add("x", this.getX()).add("y", this.getY()).add("z", this.getZ()).toString();
     }
 }
