@@ -233,18 +233,12 @@ public final class CachedRegion implements IBlockTypeAccess {
                             // ^ haha jokes on leijurv, java doesn't have unsigned types so that isn't correct
                             //   also why would you have more than 32767 special blocks in a chunk
                             // haha double jokes on you now it works for 65535 not just 32767
-                            int numSpecialBlockTypes = in.readShort();
-                            if (numSpecialBlockTypes < 0) {
-                                numSpecialBlockTypes += 65536;
-                            }
+                            int numSpecialBlockTypes = in.readShort() & 0xffff;
                             for (int i = 0; i < numSpecialBlockTypes; i++) {
                                 String blockName = in.readUTF();
                                 List<BlockPos> locs = new ArrayList<>();
                                 location[x][z].put(blockName, locs);
-                                int numLocations = in.readShort();
-                                if (numLocations < 0) {
-                                    numLocations += 65536;
-                                }
+                                int numLocations = in.readShort() & 0xffff;
                                 for (int j = 0; j < numLocations; j++) {
                                     byte xz = in.readByte();
                                     int X = xz & 0x0f;
