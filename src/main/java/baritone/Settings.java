@@ -148,6 +148,13 @@ public class Settings {
     public Setting<Integer> maxFallHeightBucket = new Setting<>(20);
 
     /**
+     * Is it okay to sprint through a descend followed by a diagonal?
+     * The player overshoots the landing, but not enough to fall off. And the diagonal ensures that there isn't
+     * lava or anything that's !canWalkInto in that space, so it's technically safe, just a little sketchy.
+     */
+    public Setting<Boolean> allowOvershootDiagonalDescend = new Setting<>(true);
+
+    /**
      * If your goal is a GoalBlock in an unloaded chunk, assume it's far enough away that the Y coord
      * doesn't matter yet, and replace it with a GoalXZ to the same place before calculating a path.
      * Once a segment ends within chunk load range of the GoalBlock, it will go back to normal behavior

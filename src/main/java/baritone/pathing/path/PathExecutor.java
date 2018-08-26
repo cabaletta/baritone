@@ -22,6 +22,9 @@ import baritone.event.events.TickEvent;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementState;
+import baritone.pathing.movement.movements.MovementDescend;
+import baritone.pathing.movement.movements.MovementDiagonal;
+import baritone.pathing.movement.movements.MovementTraverse;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -228,6 +231,7 @@ public class PathExecutor implements Helper {
             onTick(event);
             return true;
         } else {
+            sprintIfRequested();
             ticksOnCurrent++;
             if (ticksOnCurrent > currentMovementInitialCostEstimate + Baritone.settings().movementTimeoutTicks.get()) {
                 // only fail if the total time has exceeded the initial estimate
@@ -243,6 +247,59 @@ public class PathExecutor implements Helper {
             }
         }
         return false; // movement is in progress
+    }
+
+    private void sprintIfRequested() {
+        if (!Baritone.settings().allowSprint.get()) {
+            player().setSprinting(false);
+            return;
+        }
+        if (Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown(mc.gameSettings.keyBindSprint)) {
+            if (!player().isSprinting()) {
+                player().setSprinting(true);
+            }
+            return;
+        }
+        Movement movement = path.movements().get(pathPosition);
+        if (movement instanceof MovementDescend && pathPosition < path.length() - 2) {
+            Movement next = path.movements().get(pathPosition + 1);
+            if (next instanceof MovementDescend) {
+                if (next.getDirection().equals(movement.getDirection())) {
+                    if (playerFeet().equals(movement.getDest())) {
+                        pathPosition++;
+                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    }
+                    if (!player().isSprinting()) {
+                        player().setSprinting(true);
+                    }
+                    return;
+                }
+            }
+            if (next instanceof MovementTraverse) {
+                if (next.getDirection().down().equals(movement.getDirection())) {
+                    if (playerFeet().equals(movement.getDest())) {
+                        pathPosition++;
+                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    }
+                    if (!player().isSprinting()) {
+                        player().setSprinting(true);
+                    }
+                    return;
+                }
+            }
+            if (next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.get()) {
+                if (playerFeet().equals(movement.getDest())) {
+                    pathPosition++;
+                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                }
+                if (!player().isSprinting()) {
+                    player().setSprinting(true);
+                }
+                return;
+            }
+            displayChatMessageRaw("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
+        }
+        player().setSprinting(false);
     }
 
     public int getPosition() {

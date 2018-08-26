@@ -158,7 +158,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
 
-        return (facing == playerFacing) == open;
+        return facing == playerFacing == open;
     }
 
     static boolean avoidWalkingInto(Block block) {

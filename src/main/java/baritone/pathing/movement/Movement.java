@@ -104,7 +104,6 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return Status
      */
     public MovementStatus update() {
-        player().setSprinting(false);
         MovementState latestState = updateState(currentState);
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
@@ -267,6 +266,10 @@ public abstract class Movement implements Helper, MovementHelper {
             state.setStatus(MovementStatus.WAITING);
         }
         return state;
+    }
+
+    public BlockPos getDirection() {
+        return getDest().subtract(getSrc());
     }
 
     public List<BlockPos> toBreakCached = null;

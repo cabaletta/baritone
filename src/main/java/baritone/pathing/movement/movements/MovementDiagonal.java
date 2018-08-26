@@ -17,12 +17,12 @@
 
 package baritone.pathing.movement.movements;
 
-import baritone.Baritone;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.BlockMagma;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -65,8 +65,8 @@ public class MovementDiagonal extends Movement {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
             return state;
         }
-        if (!BlockStateInterface.isLiquid(playerFeet()) && Baritone.settings().allowSprint.get()) {
-            player().setSprinting(true);
+        if (!BlockStateInterface.isLiquid(playerFeet())) {
+            state.setInput(InputOverrideHandler.Input.SPRINT, true);
         }
         MovementHelper.moveTowards(state, dest);
         return state;
