@@ -306,7 +306,7 @@ public class PathExecutor implements Helper {
                 }
                 return;
             }
-            displayChatMessageRaw("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
+            //displayChatMessageRaw("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
         }
         player().setSprinting(false);
     }
