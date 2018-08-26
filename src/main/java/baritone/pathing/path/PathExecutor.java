@@ -211,18 +211,18 @@ public class PathExecutor implements Helper {
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             return true;
         }
-        for (int i = 1; i < Baritone.settings().costVerificationLookahead.get() && pathPosition + i < path.length() - 1; i++) {
-            if (path.movements().get(pathPosition + i).recalculateCost() >= ActionCosts.COST_INF) {
-                displayChatMessageRaw("Something has changed in the world and a future movement has become impossible. Cancelling.");
-                pathPosition = path.length() + 3;
-                failed = true;
-                Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-                return true;
-            }
-        }
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
             costEstimateIndex = pathPosition;
             currentMovementInitialCostEstimate = currentCost; // do this only once, when the movement starts
+            for (int i = 1; i < Baritone.settings().costVerificationLookahead.get() && pathPosition + i < path.length() - 1; i++) {
+                if (path.movements().get(pathPosition + i).recalculateCost() >= ActionCosts.COST_INF) {
+                    displayChatMessageRaw("Something has changed in the world and a future movement has become impossible. Cancelling.");
+                    pathPosition = path.length() + 3;
+                    failed = true;
+                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    return true;
+                }
+            }
         }
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
