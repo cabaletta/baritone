@@ -304,22 +304,22 @@ public interface MovementHelper extends ActionCosts, Helper {
     static Movement generateMovementFallOrDescend(BlockPos pos, BlockPos dest, CalculationContext calcContext) {
         // A
         //SA
-        // B
+        // A
         // B
         // C
         // D
-        //if S is where you start, both of B need to be air for a movementfall
+        //if S is where you start, B needs to be air for a movementfall
         //A is plausibly breakable by either descend or fall
         //C, D, etc determine the length of the fall
-        for (int i = 1; i < 3; i++) {
-            if (!canWalkThrough(dest.down(i))) {
-                //if any of these two (B in the diagram) aren't air
-                //have to do a descend, because fall is impossible
 
-                //this doesn't guarantee descend is possible, it just guarantees fall is impossible
-                return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
-            }
+        if (!canWalkThrough(dest.down(2))) {
+            //if B in the diagram aren't air
+            //have to do a descend, because fall is impossible
+
+            //this doesn't guarantee descend is possible, it just guarantees fall is impossible
+            return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
         }
+
         // we're clear for a fall 2
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {

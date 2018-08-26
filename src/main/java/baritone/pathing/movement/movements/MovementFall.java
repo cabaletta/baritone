@@ -56,14 +56,17 @@ public class MovementFall extends Movement {
             }
             placeBucketCost = context.placeBlockCost();
         }
-        double frontTwo = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1]);
-        if (frontTwo >= COST_INF) {
-            return COST_INF;
+        double frontThree = 0;
+        for (int i = 0; i < 3; i++) {
+            frontThree += MovementHelper.getMiningDurationTicks(context, positionsToBreak[i]);
+            if (frontThree >= COST_INF) {
+                return COST_INF;
+            }
         }
         if (BlockStateInterface.get(positionsToBreak[0].up()).getBlock() instanceof BlockFalling) {
             return COST_INF;
         }
-        for (int i = 2; i < positionsToBreak.length; i++) {
+        for (int i = 3; i < positionsToBreak.length; i++) {
             // TODO is this the right check here?
             // MiningDurationTicks is all right, but shouldn't it be canWalkThrough instead?
             // Lilypads (i think?) are 0 ticks to mine, but they definitely cause fall damage
@@ -74,7 +77,7 @@ public class MovementFall extends Movement {
                 return COST_INF;
             }
         }
-        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost + frontTwo;
+        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost + frontThree;
     }
 
     @Override
