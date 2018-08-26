@@ -75,3 +75,8 @@ dependencies {
     }
     testImplementation 'junit:junit:4.12'
 }
+
+mixin {
+    defaultObfuscationEnv notch
+    add sourceSets.main, 'mixins.baritone.refmap.json'
+}
