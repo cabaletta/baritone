@@ -58,7 +58,8 @@ public class MovementFall extends Movement {
         }
         double frontThree = 0;
         for (int i = 0; i < 3; i++) {
-            frontThree += MovementHelper.getMiningDurationTicks(context, positionsToBreak[i]);
+            frontThree += MovementHelper.getMiningDurationTicks(context, positionsToBreak[i], false);
+            // don't include falling because we will check falling right after this, and if it's there it's COST_INF
             if (frontThree >= COST_INF) {
                 return COST_INF;
             }
@@ -72,7 +73,7 @@ public class MovementFall extends Movement {
             // Lilypads (i think?) are 0 ticks to mine, but they definitely cause fall damage
             // Same thing for falling through water... we can't actually do that
             // And falling through signs is possible, but they do have a mining duration, right?
-            if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i]) > 0) {
+            if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i], false) > 0) {
                 //can't break while falling
                 return COST_INF;
             }

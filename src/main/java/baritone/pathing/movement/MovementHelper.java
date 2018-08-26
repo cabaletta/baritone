@@ -208,12 +208,12 @@ public interface MovementHelper extends ActionCosts, Helper {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BlockPos position) {
+    static double getMiningDurationTicks(CalculationContext context, BlockPos position, boolean includeFalling) {
         IBlockState state = BlockStateInterface.get(position);
-        return getMiningDurationTicks(context, position, state);
+        return getMiningDurationTicks(context, position, state, includeFalling);
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state) {
+    static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!block.equals(Blocks.AIR) && !canWalkThrough(position, state)) { // TODO is the air check really necessary? Isn't air canWalkThrough?
             if (!context.allowBreak()) {
@@ -223,9 +223,17 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return COST_INF;
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
-            return m / context.getToolSet().getStrVsBlock(state, position);
+            double result = m / context.getToolSet().getStrVsBlock(state, position);
+            if (includeFalling) {
+                BlockPos up = position.up();
+                IBlockState above = BlockStateInterface.get(up);
+                if (above.getBlock() instanceof BlockFalling) {
+                    result += getMiningDurationTicks(context, up, above, true);
+                }
+            }
+            return result;
         }
-        return 0;
+        return 0; // we won't actually mine it, so don't check fallings above
     }
 
     /**

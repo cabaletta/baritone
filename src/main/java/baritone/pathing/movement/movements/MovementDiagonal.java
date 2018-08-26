@@ -97,8 +97,8 @@ public class MovementDiagonal extends Movement {
         if (BlockStateInterface.get(positionsToBreak[4].down()).getBlock() instanceof BlockMagma) {
             return COST_INF;
         }
-        double optionA = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1]);
-        double optionB = MovementHelper.getMiningDurationTicks(context, positionsToBreak[2]) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[3]);
+        double optionA = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0], false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1], true);
+        double optionB = MovementHelper.getMiningDurationTicks(context, positionsToBreak[2], false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[3], true);
         if (optionA != 0 && optionB != 0) {
             return COST_INF;
         }
