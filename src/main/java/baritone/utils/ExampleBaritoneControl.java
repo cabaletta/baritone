@@ -25,6 +25,7 @@ import baritone.chunk.ChunkPacker;
 import baritone.chunk.Waypoint;
 import baritone.chunk.WorldProvider;
 import baritone.event.events.ChatEvent;
+import baritone.map.Map;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.goals.*;
 import baritone.pathing.movement.ActionCosts;
@@ -327,6 +328,9 @@ public class ExampleBaritoneControl extends Behavior {
                     return;
                 }
             }
+        }
+        if (msg.toLowerCase().equals("map")) {
+            Map.INSTANCE.writeImage();
         }
         if (Baritone.settings().byLowerName.containsKey(msg.toLowerCase())) {
             Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg.toLowerCase());
