@@ -286,7 +286,7 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getByValueType(Boolean.class);
+        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
                 setting.value ^= true;

@@ -5,9 +5,17 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
 # Setup
 - Open the project in IntelliJ as a Gradle project
 - Run the Gradle task `setupDecompWorkspace`
+- Refresh the Gradle project
 - Run the Gradle task `genIntellijRuns`
 - Restart IntelliJ and import Gradle changes
 - Select the "Minecraft Client" launch config and run
+
+## Command Line
+```
+$ gradlew setupDecompWorkspace
+$ gradlew --refresh-dependencies
+$ gradlew genIntellijRuns
+```
 
 # Chat control
 <a href="https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java">Defined here</a>

@@ -190,7 +190,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 return Optional.of(new Path(startNode, bestSoFar[i], numNodes));
             }
         }
-        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks =(");
+        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks");
         displayChatMessageRaw("No path found =(");
         currentlyRunning = null;
         return Optional.empty();
