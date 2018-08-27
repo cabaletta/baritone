@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.0'
+version '1.0.0'
 
 buildscript {
     repositories {
@@ -74,4 +74,9 @@ dependencies {
         exclude module: 'log4j-core'
     }
     testImplementation 'junit:junit:4.12'
+}
+
+mixin {
+    defaultObfuscationEnv notch
+    add sourceSets.main, 'mixins.baritone.refmap.json'
 }

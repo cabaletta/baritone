@@ -19,6 +19,11 @@ package baritone.chunk;
 
 import java.nio.file.Path;
 
+/**
+ * Data about a world, from baritone's point of view. Includes cached chunks, waypoints, and map data.
+ *
+ * @author leijurv
+ */
 public class WorldData {
     public final CachedWorld cache;
     public final Waypoints waypoints;

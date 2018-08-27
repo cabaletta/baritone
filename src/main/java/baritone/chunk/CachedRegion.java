@@ -19,13 +19,13 @@ package baritone.chunk;
 
 import baritone.utils.pathing.IBlockTypeAccess;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.BitSet;
-import java.util.function.Consumer;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -70,34 +70,39 @@ public final class CachedRegion implements IBlockTypeAccess {
 
     @Override
     public final IBlockState getBlock(int x, int y, int z) {
-        CachedChunk chunk = this.getChunk(x >> 4, z >> 4);
+        CachedChunk chunk = chunks[x >> 4][z >> 4];
         if (chunk != null) {
             return chunk.getBlock(x & 15, y, z & 15);
         }
         return null;
     }
 
-    final void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
+    public final LinkedList<BlockPos> getLocationsOf(String block) {
+        LinkedList<BlockPos> res = new LinkedList<>();
+        for (int chunkX = 0; chunkX < 32; chunkX++) {
+            for (int chunkZ = 0; chunkZ < 32; chunkZ++) {
+                if (chunks[chunkX][chunkZ] == null) {
+                    continue;
+                }
+                List<BlockPos> locs = chunks[chunkX][chunkZ].getAbsoluteBlocks(block);
+                if (locs == null) {
+                    continue;
+                }
+                for (BlockPos pos : locs) {
+                    res.add(pos);
+                }
+            }
+        }
+        return res;
+    }
+
+    final synchronized void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
         this.chunks[chunkX][chunkZ] = chunk;
         hasUnsavedChanges = true;
     }
 
-    private CachedChunk getChunk(int chunkX, int chunkZ) {
-        return this.chunks[chunkX][chunkZ];
-    }
 
-    public void forEachChunk(Consumer<CachedChunk> consumer) {
-        for (int x = 0; x < 32; x++) {
-            for (int z = 0; z < 32; z++) {
-                CachedChunk chunk = getChunk(x, z);
-                if (chunk != null) {
-                    consumer.accept(chunk);
-                }
-            }
-        }
-    }
-
-    public final void save(String directory) {
+    public synchronized final void save(String directory) {
         if (!hasUnsavedChanges) {
             return;
         }
@@ -139,7 +144,22 @@ public final class CachedRegion implements IBlockTypeAccess {
                         }
                     }
                 }
-                out.writeInt(~CACHED_REGION_MAGIC);
+                for (int z = 0; z < 32; z++) {
+                    for (int x = 0; x < 32; x++) {
+                        if (chunks[x][z] != null) {
+                            Map<String, List<BlockPos>> locs = chunks[x][z].getRelativeBlocks();
+                            out.writeShort(locs.entrySet().size());
+                            for (Map.Entry<String, List<BlockPos>> entry : locs.entrySet()) {
+                                out.writeUTF(entry.getKey());
+                                out.writeShort(entry.getValue().size());
+                                for (BlockPos pos : entry.getValue()) {
+                                    out.writeByte((byte) (pos.getZ() << 4 | pos.getX()));
+                                    out.writeByte((byte) (pos.getY()));
+                                }
+                            }
+                        }
+                    }
+                }
             }
             hasUnsavedChanges = false;
             System.out.println("Saved region successfully");
@@ -148,7 +168,7 @@ public final class CachedRegion implements IBlockTypeAccess {
         }
     }
 
-    public void load(String directory) {
+    public synchronized void load(String directory) {
         try {
             Path path = Paths.get(directory);
             if (!Files.exists(path))
@@ -174,6 +194,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                     throw new IOException("Bad magic value " + magic);
                 }
                 CachedChunk[][] tmpCached = new CachedChunk[32][32];
+                Map<String, List<BlockPos>>[][] location = new Map[32][32];
                 for (int z = 0; z < 32; z++) {
                     for (int x = 0; x < 32; x++) {
                         int isChunkPresent = in.read();
@@ -181,7 +202,12 @@ public final class CachedRegion implements IBlockTypeAccess {
                             case CHUNK_PRESENT:
                                 byte[] bytes = new byte[CachedChunk.SIZE_IN_BYTES];
                                 in.readFully(bytes);
-                                tmpCached[x][z] = new CachedChunk(x, z, BitSet.valueOf(bytes), new String[256]);
+                                location[x][z] = new HashMap<>();
+                                int regionX = this.x;
+                                int regionZ = this.z;
+                                int chunkX = x + 32 * regionX;
+                                int chunkZ = z + 32 * regionZ;
+                                tmpCached[x][z] = new CachedChunk(chunkX, chunkZ, BitSet.valueOf(bytes), new String[256], location[x][z]);
                                 break;
                             case CHUNK_NOT_PRESENT:
                                 tmpCached[x][z] = null;
@@ -200,9 +226,33 @@ public final class CachedRegion implements IBlockTypeAccess {
                         }
                     }
                 }
-                int fileEndMagic = in.readInt();
-                if (fileEndMagic != ~magic) {
-                    throw new IOException("Bad end of file magic");
+                for (int z = 0; z < 32; z++) {
+                    for (int x = 0; x < 32; x++) {
+                        if (tmpCached[x][z] != null) {
+                            // 16 * 16 * 256 = 65536 so a short is enough
+                            // ^ haha jokes on leijurv, java doesn't have unsigned types so that isn't correct
+                            //   also why would you have more than 32767 special blocks in a chunk
+                            // haha double jokes on you now it works for 65535 not just 32767
+                            int numSpecialBlockTypes = in.readShort() & 0xffff;
+                            for (int i = 0; i < numSpecialBlockTypes; i++) {
+                                String blockName = in.readUTF();
+                                List<BlockPos> locs = new ArrayList<>();
+                                location[x][z].put(blockName, locs);
+                                int numLocations = in.readShort() & 0xffff;
+                                if (numLocations == 0) {
+                                    // an entire chunk full of air can happen in the end
+                                    numLocations = 65536;
+                                }
+                                for (int j = 0; j < numLocations; j++) {
+                                    byte xz = in.readByte();
+                                    int X = xz & 0x0f;
+                                    int Z = (xz >>> 4) & 0x0f;
+                                    int Y = in.readByte() & 0xff;
+                                    locs.add(new BlockPos(X, Y, Z));
+                                }
+                            }
+                        }
+                    }
                 }
                 // only if the entire file was uncorrupted do we actually set the chunks
                 for (int x = 0; x < 32; x++) {
@@ -217,15 +267,6 @@ public final class CachedRegion implements IBlockTypeAccess {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-    }
-
-    private static boolean isAllZeros(final byte[] array) {
-        for (byte b : array) {
-            if (b != 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

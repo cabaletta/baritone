@@ -24,15 +24,18 @@ import baritone.pathing.movement.movements.MovementDescend;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.*;
 import net.minecraft.block.*;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.Optional;
 
@@ -75,52 +78,87 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockEndPortal) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
             return false;
         }
+        if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
+            if (block == Blocks.IRON_DOOR) {
+                return false;
+            }
+            return true; // we can just open the door
+        }
+        if (block instanceof BlockSnow || block instanceof BlockTrapDoor) {
+            // we've already checked doors
+            // so the only remaining dynamic isPassables are snow, fence gate, and trapdoor
+            // if they're cached as a top block, we don't know their metadata
+            // default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
+            if (mc.world.getChunk(pos) instanceof EmptyChunk) {
+                return true;
+            }
+        }
         IBlockState up = BlockStateInterface.get(pos.up());
         if (BlockStateInterface.isFlowing(state) || up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
             return false; // Don't walk through flowing liquids
         }
-        if (block instanceof BlockDoor && !Blocks.IRON_DOOR.equals(block)) {
-            return true; // we can just open the door
-        }
         return block.isPassable(mc.world, pos);
     }
 
-    static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
-        IBlockState door = BlockStateInterface.get(doorPos);
-        if (!(door.getBlock() instanceof BlockDoor)) {
-            return true;
-        }
-        String facing = door.getValue(BlockDoor.FACING).getName();
-        boolean open = door.getValue(BlockDoor.OPEN).booleanValue();
-        /**
-         * yes this is dumb
-         * change it if you want
+    static boolean isReplacable(BlockPos pos, IBlockState state) {
+        // for MovementTraverse and MovementAscend
+        // block double plant defaults to true when the block doesn't match, so don't need to check that case
+        // all other overrides just return true or false
+        // the only case to deal with is snow
+        /*
+         *  public boolean isReplaceable(IBlockAccess worldIn, BlockPos pos)
+         *     {
+         *         return ((Integer)worldIn.getBlockState(pos).getValue(LAYERS)).intValue() == 1;
+         *     }
          */
-        String playerFacing = "";
-        if (playerPos.equals(doorPos)) {
-            return false;
+        if (state.getBlock() instanceof BlockSnow) {
+            // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
+            if (mc.world.getChunk(pos) instanceof EmptyChunk) {
+                return true;
+            }
         }
-        if (playerPos.north().equals(doorPos) || playerPos.south().equals(doorPos)) {
-            playerFacing = "northsouth";
-        } else if (playerPos.east().equals(doorPos) || playerPos.west().equals(doorPos)) {
-            playerFacing = "eastwest";
+        return state.getBlock().isReplaceable(mc.world, pos);
+    }
+
+    static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
+        if (playerPos.equals(doorPos))
+            return false;
+
+        IBlockState state = BlockStateInterface.get(doorPos);
+        if (!(state.getBlock() instanceof BlockDoor))
+            return true;
+
+        return isHorizontalBlockPassable(doorPos, state, playerPos, BlockDoor.OPEN);
+    }
+
+    static boolean isGatePassable(BlockPos gatePos, BlockPos playerPos) {
+        if (playerPos.equals(gatePos))
+            return false;
+
+        IBlockState state = BlockStateInterface.get(gatePos);
+        if (!(state.getBlock() instanceof BlockFenceGate))
+            return true;
+
+        return isHorizontalBlockPassable(gatePos, state, playerPos, BlockFenceGate.OPEN);
+    }
+
+    static boolean isHorizontalBlockPassable(BlockPos blockPos, IBlockState blockState, BlockPos playerPos, PropertyBool propertyOpen) {
+        if (playerPos.equals(blockPos))
+            return false;
+
+        EnumFacing.Axis facing = blockState.getValue(BlockHorizontal.FACING).getAxis();
+        boolean open = blockState.getValue(propertyOpen);
+
+        EnumFacing.Axis playerFacing;
+        if (playerPos.north().equals(blockPos) || playerPos.south().equals(blockPos)) {
+            playerFacing = EnumFacing.Axis.Z;
+        } else if (playerPos.east().equals(blockPos) || playerPos.west().equals(blockPos)) {
+            playerFacing = EnumFacing.Axis.X;
         } else {
             return true;
         }
 
-        if (facing == "north" || facing == "south") {
-            if (open) {
-                return playerFacing == "northsouth";
-            } else {
-                return playerFacing == "eastwest";
-            }
-        } else {
-            if (open) {
-                return playerFacing == "eastwest";
-            } else {
-                return playerFacing == "northsouth";
-            }
-        }
+        return facing == playerFacing == open;
     }
 
     static boolean avoidWalkingInto(Block block) {
@@ -170,12 +208,12 @@ public interface MovementHelper extends ActionCosts, Helper {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BlockPos position) {
+    static double getMiningDurationTicks(CalculationContext context, BlockPos position, boolean includeFalling) {
         IBlockState state = BlockStateInterface.get(position);
-        return getMiningDurationTicks(context, position, state);
+        return getMiningDurationTicks(context, position, state, includeFalling);
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state) {
+    static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!block.equals(Blocks.AIR) && !canWalkThrough(position, state)) { // TODO is the air check really necessary? Isn't air canWalkThrough?
             if (!context.allowBreak()) {
@@ -185,9 +223,17 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return COST_INF;
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
-            return m / context.getToolSet().getStrVsBlock(state, position);
+            double result = m / context.getToolSet().getStrVsBlock(state, position);
+            if (includeFalling) {
+                BlockPos up = position.up();
+                IBlockState above = BlockStateInterface.get(up);
+                if (above.getBlock() instanceof BlockFalling) {
+                    result += getMiningDurationTicks(context, up, above, true);
+                }
+            }
+            return result;
         }
-        return 0;
+        return 0; // we won't actually mine it, so don't check fallings above
     }
 
     /**
@@ -266,22 +312,22 @@ public interface MovementHelper extends ActionCosts, Helper {
     static Movement generateMovementFallOrDescend(BlockPos pos, BlockPos dest, CalculationContext calcContext) {
         // A
         //SA
-        // B
+        // A
         // B
         // C
         // D
-        //if S is where you start, both of B need to be air for a movementfall
+        //if S is where you start, B needs to be air for a movementfall
         //A is plausibly breakable by either descend or fall
         //C, D, etc determine the length of the fall
-        for (int i = 1; i < 3; i++) {
-            if (!canWalkThrough(dest.down(i))) {
-                //if any of these two (B in the diagram) aren't air
-                //have to do a descend, because fall is impossible
 
-                //this doesn't guarantee descend is possible, it just guarantees fall is impossible
-                return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
-            }
+        if (!canWalkThrough(dest.down(2))) {
+            //if B in the diagram aren't air
+            //have to do a descend, because fall is impossible
+
+            //this doesn't guarantee descend is possible, it just guarantees fall is impossible
+            return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
         }
+
         // we're clear for a fall 2
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {

@@ -41,9 +41,8 @@ import baritone.event.events.*;
  * overridden with empty bodies, allowing inheritors of this class to choose
  * which events they would like to listen in on.
  *
- * @see IGameEventListener
- *
  * @author Brady
+ * @see IGameEventListener
  * @since 8/1/2018 6:29 PM
  */
 public interface AbstractGameEventListener extends IGameEventListener {
@@ -80,4 +79,13 @@ public interface AbstractGameEventListener extends IGameEventListener {
 
     @Override
     default void onPlayerRelativeMove(RelativeMoveEvent event) {}
+
+    @Override
+    default void onBlockInteract(BlockInteractEvent event) {}
+
+    @Override
+    default void onPlayerDeath() {}
+
+    @Override
+    default void onPathEvent(PathEvent event) {}
 }

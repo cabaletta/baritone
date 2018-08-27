@@ -22,6 +22,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.BlockMagma;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -29,6 +30,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MovementDiagonal extends Movement {
 
@@ -58,12 +60,13 @@ public class MovementDiagonal extends Movement {
             default:
                 return state;
         }
+
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementState.MovementStatus.SUCCESS);
             return state;
         }
         if (!BlockStateInterface.isLiquid(playerFeet())) {
-            player().setSprinting(true);
+            state.setInput(InputOverrideHandler.Input.SPRINT, true);
         }
         MovementHelper.moveTowards(state, dest);
         return state;
@@ -80,7 +83,7 @@ public class MovementDiagonal extends Movement {
         }
         double multiplier = WALK_ONE_BLOCK_COST;
 
-        // for either possible soul sand, that affects half of our walking
+        // For either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock().equals(Blocks.SOUL_SAND)) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
@@ -94,8 +97,8 @@ public class MovementDiagonal extends Movement {
         if (BlockStateInterface.get(positionsToBreak[4].down()).getBlock() instanceof BlockMagma) {
             return COST_INF;
         }
-        double optionA = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1]);
-        double optionB = MovementHelper.getMiningDurationTicks(context, positionsToBreak[2]) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[3]);
+        double optionA = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0], false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1], true);
+        double optionB = MovementHelper.getMiningDurationTicks(context, positionsToBreak[2], false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[3], true);
         if (optionA != 0 && optionB != 0) {
             return COST_INF;
         }
@@ -116,17 +119,17 @@ public class MovementDiagonal extends Movement {
             }
         }
         if (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest)) {
-            // ignore previous multiplier
-            // whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
-            // not even touching the blocks below
+            // Ignore previous multiplier
+            // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
+            // Not even touching the blocks below
             multiplier = WALK_ONE_IN_WATER_COST;
         }
         if (optionA != 0 || optionB != 0) {
             multiplier *= SQRT_2 - 0.001; // TODO tune
         }
         if (multiplier == WALK_ONE_BLOCK_COST && context.canSprint()) {
-            // if we aren't edging around anything, and we aren't in water or soul sand
-            // we can sprint =D
+            // If we aren't edging around anything, and we aren't in water or soul sand
+            // We can sprint =D
             multiplier = SPRINT_ONE_BLOCK_COST;
         }
         return multiplier * SQRT_2;
@@ -138,11 +141,11 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public ArrayList<BlockPos> toBreak() {
+    public List<BlockPos> toBreak() {
         if (toBreakCached != null) {
             return toBreakCached;
         }
-        ArrayList<BlockPos> result = new ArrayList<>();
+        List<BlockPos> result = new ArrayList<>();
         for (int i = 4; i < 6; i++) {
             if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
                 result.add(positionsToBreak[i]);
@@ -153,11 +156,11 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public ArrayList<BlockPos> toWalkInto() {
+    public List<BlockPos> toWalkInto() {
         if (toWalkIntoCached == null) {
             toWalkIntoCached = new ArrayList<>();
         }
-        ArrayList<BlockPos> result = new ArrayList<>();
+        List<BlockPos> result = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
                 result.add(positionsToBreak[i]);

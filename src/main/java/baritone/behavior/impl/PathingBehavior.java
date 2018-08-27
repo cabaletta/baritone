@@ -19,6 +19,7 @@ package baritone.behavior.impl;
 
 import baritone.Baritone;
 import baritone.behavior.Behavior;
+import baritone.event.events.PathEvent;
 import baritone.event.events.PlayerUpdateEvent;
 import baritone.event.events.RenderEvent;
 import baritone.event.events.TickEvent;
@@ -59,6 +60,10 @@ public class PathingBehavior extends Behavior {
 
     private boolean lastAutoJump;
 
+    private void dispatchPathEvent(PathEvent event) {
+        new Thread(() -> Baritone.INSTANCE.getGameEventHandler().onPathEvent(event)).start();
+    }
+
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
@@ -74,6 +79,7 @@ public class PathingBehavior extends Behavior {
                 current = null;
                 if (goal == null || goal.isInGoal(playerFeet())) {
                     displayChatMessageRaw("All done. At " + goal);
+                    dispatchPathEvent(PathEvent.AT_GOAL);
                     next = null;
                     return;
                 }
@@ -85,10 +91,12 @@ public class PathingBehavior extends Behavior {
                     // but if we fail in the middle of current
                     // we're nowhere close to our planned ahead path
                     // so need to discard it sadly.
+                    dispatchPathEvent(PathEvent.DISCARD_NEXT);
                     next = null;
                 }
                 if (next != null) {
                     displayChatMessageRaw("Continuing on to planned next path");
+                    dispatchPathEvent(PathEvent.CONTINUING_ONTO_PLANNED_NEXT);
                     current = next;
                     next = null;
                     return;
@@ -96,9 +104,11 @@ public class PathingBehavior extends Behavior {
                 // at this point, current just ended, but we aren't in the goal and have no plan for the future
                 synchronized (pathCalcLock) {
                     if (isPathCalcInProgress) {
+                        dispatchPathEvent(PathEvent.PATH_FINISHED_NEXT_STILL_CALCULATING);
                         // if we aren't calculating right now
                         return;
                     }
+                    dispatchPathEvent(PathEvent.CALC_STARTED);
                     findPathInNewThread(pathStart(), true, Optional.empty());
                 }
                 return;
@@ -110,6 +120,7 @@ public class PathingBehavior extends Behavior {
                     if (next.getPath().positions().contains(playerFeet())) {
                         // jump directly onto the next path
                         displayChatMessageRaw("Splicing into planned next path early...");
+                        dispatchPathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
                         current = next;
                         next = null;
                         return;
@@ -132,6 +143,7 @@ public class PathingBehavior extends Behavior {
                 if (ticksRemainingInSegment().get() < Baritone.settings().planningTickLookAhead.get()) {
                     // and this path has 5 seconds or less left
                     displayChatMessageRaw("Path almost over. Planning ahead...");
+                    dispatchPathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
                     findPathInNewThread(current.getPath().getDest(), false, Optional.of(current.getPath()));
                 }
             }
@@ -164,6 +176,10 @@ public class PathingBehavior extends Behavior {
         this.goal = goal;
     }
 
+    public Goal getGoal() {
+        return goal;
+    }
+
     public PathExecutor getCurrent() {
         return current;
     }
@@ -192,6 +208,7 @@ public class PathingBehavior extends Behavior {
                 if (isPathCalcInProgress) {
                     return;
                 }
+                dispatchPathEvent(PathEvent.CALC_STARTED);
                 findPathInNewThread(pathStart(), true, Optional.empty());
             }
         }
@@ -227,19 +244,29 @@ public class PathingBehavior extends Behavior {
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(IPath::cutoffAtLoadedChunks);
             }
-            path.map(p -> p.staticCutoff(goal)).map(PathExecutor::new).ifPresent(p -> {
-                synchronized (pathPlanLock) {
-                    if (current == null) {
-                        current = p;
+            Optional<PathExecutor> executor = path.map(p -> p.staticCutoff(goal)).map(PathExecutor::new);
+            synchronized (pathPlanLock) {
+                if (current == null) {
+                    if (executor.isPresent()) {
+                        dispatchPathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
+                        current = executor.get();
                     } else {
-                        if (next == null) {
-                            next = p;
+                        dispatchPathEvent(PathEvent.CALC_FAILED);
+                    }
+                } else {
+                    if (next == null) {
+                        if (executor.isPresent()) {
+                            dispatchPathEvent(PathEvent.NEXT_SEGMENT_CALC_FINISHED);
+                            next = executor.get();
                         } else {
-                            throw new IllegalStateException("I have no idea what to do with this path");
+                            dispatchPathEvent(PathEvent.NEXT_CALC_FAILED);
                         }
+                    } else {
+                        throw new IllegalStateException("I have no idea what to do with this path");
                     }
                 }
-            });
+            }
+
             if (talkAboutIt && current != null && current.getPath() != null) {
                 if (goal == null || goal.isInGoal(current.getPath().getDest())) {
                     displayChatMessageRaw("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");

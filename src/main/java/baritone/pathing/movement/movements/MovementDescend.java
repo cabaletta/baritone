@@ -37,6 +37,12 @@ public class MovementDescend extends Movement {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        numTicks = 0;
+    }
+
+    @Override
     protected double calculateCost(CalculationContext context) {
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
             return COST_INF;
@@ -67,6 +73,7 @@ public class MovementDescend extends Movement {
             default:
                 return state;
         }
+
         BlockPos playerFeet = playerFeet();
         if (playerFeet.equals(dest)) {
             if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094) { // lilypads
@@ -85,9 +92,6 @@ public class MovementDescend extends Movement {
         double fromStart = Math.sqrt(x * x + z * z);
         if (!playerFeet.equals(dest) || ab > 0.25) {
             BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
-            double diffX2 = player().posX - (fakeDest.getX() + 0.5);
-            double diffZ2 = player().posZ - (fakeDest.getZ() + 0.5);
-            double d = Math.sqrt(diffX2 * diffX2 + diffZ2 * diffZ2);
             if (numTicks++ < 20) {
                 MovementHelper.moveTowards(state, fakeDest);
                 if (fromStart > 1.25) {

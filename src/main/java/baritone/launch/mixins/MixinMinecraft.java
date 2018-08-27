@@ -19,13 +19,19 @@ package baritone.launch.mixins;
 
 import baritone.Baritone;
 import baritone.behavior.impl.PathingBehavior;
+import baritone.event.events.BlockInteractEvent;
 import baritone.event.events.TickEvent;
 import baritone.event.events.WorldEvent;
 import baritone.event.events.type.EventState;
 import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -33,6 +39,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
  * @author Brady
@@ -42,6 +49,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinMinecraft {
 
     @Shadow private int leftClickCounter;
+    @Shadow public EntityPlayerSP player;
     @Shadow public WorldClient world;
 
     @Inject(
@@ -78,7 +86,8 @@ public class MixinMinecraft {
             method = "runTickKeyboard",
             at = @At(
                     value = "INVOKE",
-                    target = "org/lwjgl/input/Keyboard.isKeyDown(I)Z"
+                    target = "org/lwjgl/input/Keyboard.isKeyDown(I)Z",
+                    remap = false
             )
     )
     private boolean Keyboard$isKeyDown(int keyCode) {
@@ -91,23 +100,6 @@ public class MixinMinecraft {
     )
     private void runTickKeyboard(CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onProcessKeyBinds();
-    }
-
-    @Redirect(
-            method = {
-                    "setIngameFocus",
-                    "runTick"
-            },
-            at = @At(
-                    value = "FIELD",
-                    opcode = Opcodes.PUTFIELD,
-                    target = "net/minecraft/client/Minecraft.leftClickCounter:I",
-                    ordinal = 0
-            )
-    )
-    private void setLeftClickCounter(Minecraft mc, int value) {
-        if (!Baritone.INSTANCE.isInitialized() || !Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown(mc.gameSettings.keyBindAttack))
-            this.leftClickCounter = value;
     }
 
     @Inject(
@@ -153,6 +145,30 @@ public class MixinMinecraft {
             )
     )
     private boolean isAllowUserInput(GuiScreen screen) {
-        return PathingBehavior.INSTANCE.getCurrent() != null || screen.allowUserInput;
+        return (PathingBehavior.INSTANCE.getCurrent() != null && player != null) || screen.allowUserInput;
+    }
+
+    @Inject(
+            method = "clickMouse",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/multiplayer/PlayerControllerMP.clickBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)Z"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
+    private void onBlockBreak(CallbackInfo ci, BlockPos pos) {
+        Baritone.INSTANCE.getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.BREAK));
+    }
+
+    @Inject(
+            method = "rightClickMouse",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/entity/EntityPlayerSP.swingArm(Lnet/minecraft/util/EnumHand;)V"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
+    private void onBlockUse(CallbackInfo ci, EnumHand var1[], int var2, int var3, EnumHand enumhand, ItemStack itemstack, BlockPos blockpos, int i, EnumActionResult enumactionresult) {
+        Baritone.INSTANCE.getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
     }
 }

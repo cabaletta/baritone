@@ -146,7 +146,7 @@ public interface IPath extends Helper {
         }
         double factor = Baritone.settings().pathCutoffFactor.get();
         int newLength = (int) (length() * factor);
-        displayChatMessageRaw("Static cutoff " + length() + " to " + newLength);
+        //displayChatMessageRaw("Static cutoff " + length() + " to " + newLength);
         return new CutoffPath(this, newLength);
     }
 }

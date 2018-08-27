@@ -22,6 +22,7 @@ import baritone.event.events.ChunkEvent;
 import baritone.event.events.type.EventState;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.play.server.SPacketChunkData;
+import net.minecraft.network.play.server.SPacketCombatEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -65,5 +66,16 @@ public class MixinNetHandlerPlayClient {
                         packetIn.getChunkZ()
                 )
         );
+    }
+
+    @Inject(
+            method = "handleCombatEvent",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/Minecraft.displayGuiScreen(Lnet/minecraft/client/gui/GuiScreen;)V"
+            )
+    )
+    private void onPlayerDeath(SPacketCombatEvent packetIn, CallbackInfo ci) {
+        Baritone.INSTANCE.getGameEventHandler().onPlayerDeath();
     }
 }

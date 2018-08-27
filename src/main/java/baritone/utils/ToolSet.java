@@ -69,7 +69,13 @@ public class ToolSet implements Helper {
      * The values in this map are *not* hotbar slots indexes, they need to be looked up in slots
      * in order to be converted into hotbar slots.
      */
-    private Map<Block, Byte> cache = new HashMap<>();
+    private Map<Block, Byte> slotCache = new HashMap<>();
+
+    /**
+     * A cache mapping a {@link IBlockState} to how long it will take to break
+     * with this toolset, given the optimum tool is used.
+     */
+    private Map<IBlockState, Double> breakStrengthCache = new HashMap<>();
 
     /**
      * Create a toolset from the current player's inventory (but don't calculate any hardness values just yet)
@@ -96,7 +102,7 @@ public class ToolSet implements Helper {
      * @return get which tool on the hotbar is best for mining it
      */
     public Item getBestTool(IBlockState state) {
-        return tools.get(cache.computeIfAbsent(state.getBlock(), block -> getBestToolIndex(state)));
+        return tools.get(slotCache.computeIfAbsent(state.getBlock(), block -> getBestToolIndex(state)));
     }
 
     /**
@@ -129,7 +135,7 @@ public class ToolSet implements Helper {
      * @return a byte indicating which hotbar slot worked best
      */
     public byte getBestSlot(IBlockState state) {
-        return slots.get(cache.computeIfAbsent(state.getBlock(), block -> getBestToolIndex(state)));
+        return slots.get(slotCache.computeIfAbsent(state.getBlock(), block -> getBestToolIndex(state)));
     }
 
     /**
@@ -140,6 +146,18 @@ public class ToolSet implements Helper {
      * @return how long it would take in ticks
      */
     public double getStrVsBlock(IBlockState state, BlockPos pos) {
+        return this.breakStrengthCache.computeIfAbsent(state, s -> calculateStrVsBlock(s, pos));
+    }
+
+    /**
+     * Calculates how long would it take to mine the specified block given the best tool
+     * in this toolset is used.
+     *
+     * @param state the blockstate to be mined
+     * @param pos   the blockpos to be mined
+     * @return how long it would take in ticks
+     */
+    private double calculateStrVsBlock(IBlockState state, BlockPos pos) {
         // Calculate the slot with the best item
         byte slot = this.getBestSlot(state);
 

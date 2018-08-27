@@ -17,16 +17,18 @@
 
 package baritone.chunk;
 
+import baritone.Baritone;
 import baritone.utils.pathing.IBlockTypeAccess;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.BitSet;
+import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
@@ -64,6 +66,21 @@ public final class CachedWorld implements IBlockTypeAccess {
         // Insert an invalid region element
         cachedRegions.put(0, null);
         new PackerThread().start();
+        new Thread() {
+            public void run() {
+                try {
+                    while (true) {
+                        // since a region only saves if it's been modified since its last save
+                        // saving every 10 minutes means that once it's time to exit
+                        // we'll only have a couple regions to save
+                        save();
+                        Thread.sleep(600000);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     public final void queueForPacking(Chunk chunk) {
@@ -84,12 +101,45 @@ public final class CachedWorld implements IBlockTypeAccess {
         return region.getBlock(x & 511, y, z & 511);
     }
 
+    public final LinkedList<BlockPos> getLocationsOf(String block, int minimum, int maxRegionDistanceSq) {
+        LinkedList<BlockPos> res = new LinkedList<>();
+        int playerRegionX = playerFeet().getX() >> 9;
+        int playerRegionZ = playerFeet().getZ() >> 9;
+
+        int searchRadius = 0;
+        while (searchRadius <= maxRegionDistanceSq) {
+            for (int xoff = -searchRadius; xoff <= searchRadius; xoff++) {
+                for (int zoff = -searchRadius; zoff <= searchRadius; zoff++) {
+                    int distance = xoff * xoff + zoff * zoff;
+                    if (distance != searchRadius) {
+                        continue;
+                    }
+                    int regionX = xoff + playerRegionX;
+                    int regionZ = zoff + playerRegionZ;
+                    CachedRegion region = getOrCreateRegion(regionX, regionZ);
+                    if (region != null)
+                        for (BlockPos pos : region.getLocationsOf(block))
+                            res.add(pos);
+                }
+            }
+            if (res.size() >= minimum) {
+                return res;
+            }
+            searchRadius++;
+        }
+        return res;
+    }
+
     private void updateCachedChunk(CachedChunk chunk) {
         CachedRegion region = getOrCreateRegion(chunk.x >> 5, chunk.z >> 5);
         region.updateCachedChunk(chunk.x & 31, chunk.z & 31, chunk);
     }
 
     public final void save() {
+        if (!Baritone.settings().chunkCaching.get()) {
+            System.out.println("Not saving to disk; chunk caching is disabled.");
+            return;
+        }
         long start = System.currentTimeMillis();
         this.cachedRegions.values().forEach(region -> {
             if (region != null)
@@ -97,6 +147,16 @@ public final class CachedWorld implements IBlockTypeAccess {
         });
         long now = System.currentTimeMillis();
         System.out.println("World save took " + (now - start) + "ms");
+    }
+
+    public final void reloadAllFromDisk() {
+        long start = System.currentTimeMillis();
+        this.cachedRegions.values().forEach(region -> {
+            if (region != null)
+                region.load(this.directory);
+        });
+        long now = System.currentTimeMillis();
+        System.out.println("World load took " + (now - start) + "ms");
     }
 
     /**
@@ -118,7 +178,7 @@ public final class CachedWorld implements IBlockTypeAccess {
      * @param regionZ The region Z coordinate
      * @return The region located at the specified coordinates
      */
-    private CachedRegion getOrCreateRegion(int regionX, int regionZ) {
+    private synchronized CachedRegion getOrCreateRegion(int regionX, int regionZ) {
         return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
             CachedRegion newRegion = new CachedRegion(regionX, regionZ);
             newRegion.load(this.directory);
@@ -168,9 +228,7 @@ public final class CachedWorld implements IBlockTypeAccess {
                 }
                 try {
                     Chunk chunk = queue.take();
-                    BitSet packedChunk = ChunkPacker.createPackedChunk(chunk);
-                    String[] packedOverview = ChunkPacker.createPackedOverview(chunk);
-                    CachedChunk cached = new CachedChunk(chunk.x, chunk.z, packedChunk, packedOverview);
+                    CachedChunk cached = ChunkPacker.pack(chunk);
                     CachedWorld.this.updateCachedChunk(cached);
                     //System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);
                 } catch (InterruptedException e) {

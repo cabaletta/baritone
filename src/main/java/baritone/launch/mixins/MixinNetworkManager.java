@@ -64,8 +64,7 @@ public abstract class MixinNetworkManager {
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/network/Packet.processPacket(Lnet/minecraft/network/INetHandler;)V"
-            ),
-            remap = false
+            )
     )
     private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.PRE, packet));
@@ -73,8 +72,7 @@ public abstract class MixinNetworkManager {
 
     @Inject(
             method = "channelRead0",
-            at = @At("RETURN"),
-            remap = false
+            at = @At("RETURN")
     )
     private void postProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if (this.channel.isOpen())

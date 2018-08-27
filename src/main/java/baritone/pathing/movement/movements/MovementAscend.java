@@ -65,14 +65,19 @@ public class MovementAscend extends Movement {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        ticksWithoutPlacement = 0;
+    }
+
+    @Override
     protected double calculateCost(CalculationContext context) {
         IBlockState toPlace = BlockStateInterface.get(positionsToPlace[0]);
         if (!MovementHelper.canWalkOn(positionsToPlace[0], toPlace)) {
-            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock())) {
-                // TODO replace this check with isReplacable or similar
+            if (!context.hasThrowaway()) {
                 return COST_INF;
             }
-            if (!context.hasThrowaway()) {
+            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionsToPlace[0], toPlace)) {
                 return COST_INF;
             }
             for (BlockPos against1 : against) {
@@ -125,9 +130,9 @@ public class MovementAscend extends Movement {
             default:
                 return state;
         }
+
         if (playerFeet().equals(dest)) {
-            state.setStatus(MovementStatus.SUCCESS);
-            return state;
+            return state.setStatus(MovementStatus.SUCCESS);
         }
 
         if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
@@ -141,34 +146,56 @@ public class MovementAscend extends Movement {
                     double faceZ = (dest.getZ() + anAgainst.getZ() + 1.0D) * 0.5D;
                     state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), anAgainst) && LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
-                        ticksWithoutPlacement++;
-                        state.setInput(InputOverrideHandler.Input.SNEAK, true);
-                        if (player().isSneaking()) {
-                            state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+
+                    LookBehaviorUtils.getSelectedBlock().ifPresent(selectedBlock -> {
+                        if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionsToPlace[0])) {
+                            ticksWithoutPlacement++;
+                            state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                            if (player().isSneaking()) {
+                                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                            }
+                            if (ticksWithoutPlacement > 20) {
+                                // After 20 ticks without placement, we might be standing in the way, move back
+                                state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                            }
                         }
-                        if (ticksWithoutPlacement > 20) {
-                            state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);//we might be standing in the way, move back
-                        }
-                    }
-                    System.out.println("Trying to look at " + anAgainst + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
+                        System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
+                    });
                     return state;
                 }
             }
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
-        state.setInput(InputOverrideHandler.Input.JUMP, true);
 
-        // TODO check if the below actually helps or hurts, it's weird
-        //double flatDistToNext = Math.abs(to.getX() - from.getX()) * Math.abs((to.getX() + 0.5D) - thePlayer.posX) + Math.abs(to.getZ() - from.getZ()) * Math.abs((to.getZ() + 0.5D) - thePlayer.posZ);
-        //boolean pointingInCorrectDirection = MovementManager.moveTowardsBlock(to);
-        //MovementManager.jumping = flatDistToNext < 1.2 && pointingInCorrectDirection;
-        //once we are pointing the right way and moving, start jumping
-        //this is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
-        //also wait until we are close enough, because we might jump and hit our head on an adjacent block
-        //return Baritone.playerFeet.equals(to);
+        if (headBonkClear()) {
+            return state.setInput(InputOverrideHandler.Input.JUMP, true);
+        }
 
-        return state;
+        int xAxis = Math.abs(src.getX() - dest.getX()); // either 0 or 1
+        int zAxis = Math.abs(src.getZ() - dest.getZ()); // either 0 or 1
+        double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - player().posX) + zAxis * Math.abs((dest.getZ() + 0.5D) - player().posZ);
+        double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - player().posX) + xAxis * Math.abs((dest.getZ() + 0.5D) - player().posZ);
+        // System.out.println(flatDistToNext + " " + sideDist);
+        if (flatDistToNext > 1.2 || sideDist > 0.2) {
+            return state;
+        }
+
+        // Once we are pointing the right way and moving, start jumping
+        // This is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
+        // Also wait until we are close enough, because we might jump and hit our head on an adjacent block
+        return state.setInput(InputOverrideHandler.Input.JUMP, true);
+    }
+
+    private boolean headBonkClear() {
+        BlockPos startUp = src.up(2);
+        for (int i = 0; i < 4; i++) {
+            BlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));
+            if (!MovementHelper.canWalkThrough(check)) {
+                // We might bonk our head
+                return false;
+            }
+        }
+        return true;
     }
 }

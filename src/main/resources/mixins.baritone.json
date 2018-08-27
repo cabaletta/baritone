@@ -1,13 +1,14 @@
 {
   "required": true,
   "package": "baritone.launch.mixins",
-  "refmap": "mixins.client.refmap.json",
+  "refmap": "mixins.baritone.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "verbose": false,
   "injectors": {
     "maxShiftBy": 2
   },
   "client": [
+    "MixinBlockPos",
     "MixinEntity",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
@@ -16,7 +17,6 @@
     "MixinGuiScreen",
     "MixinInventoryPlayer",
     "MixinKeyBinding",
-    "MixinMain",
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",

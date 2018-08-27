@@ -38,7 +38,8 @@ public class MixinGuiScreen {
             },
             at = @At(
                     value = "INVOKE",
-                    target = "org/lwjgl/input/Keyboard.isKeyDown(I)Z"
+                    target = "org/lwjgl/input/Keyboard.isKeyDown(I)Z",
+                    remap = false
             )
     )
     private static boolean isKeyDown(int keyCode) {

@@ -21,6 +21,7 @@ import baritone.behavior.Behavior;
 import baritone.behavior.impl.LookBehavior;
 import baritone.behavior.impl.MemoryBehavior;
 import baritone.behavior.impl.PathingBehavior;
+import baritone.behavior.impl.LocationTrackingBehavior;
 import baritone.event.GameEventHandler;
 import baritone.map.Map;
 import baritone.utils.InputOverrideHandler;
@@ -72,6 +73,7 @@ public enum Baritone {
             registerBehavior(LookBehavior.INSTANCE);
             registerBehavior(MemoryBehavior.INSTANCE);
             registerBehavior(Map.INSTANCE);
+            registerBehavior(LocationTrackingBehavior.INSTANCE);
         }
         
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");

@@ -108,10 +108,23 @@ public class Settings {
     public Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
 
     /**
+     * Use a pythagorean metric (as opposed to the more accurate hybrid diagonal / traverse).
+     * You probably don't want this. It roughly triples nodes considered for no real advantage.
+     */
+    public Setting<Boolean> pythagoreanMetric = new Setting<>(false);
+
+    /**
      * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
      * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
      */
     public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
+
+    /**
+     * Stop 5 movements before anything that made the path COST_INF.
+     * For example, if lava has spread across the path, don't walk right up to it then recalculate, it might
+     * still be spreading lol
+     */
+    public Setting<Integer> costVerificationLookahead = new Setting<>(5);
 
     /**
      * Static cutoff factor. 0.9 means cut off the last 10% of all paths, regardless of chunk load state
@@ -140,6 +153,13 @@ public class Settings {
      * It's not that reliable, so I've set it below what would kill an unarmored player (23)
      */
     public Setting<Integer> maxFallHeightBucket = new Setting<>(20);
+
+    /**
+     * Is it okay to sprint through a descend followed by a diagonal?
+     * The player overshoots the landing, but not enough to fall off. And the diagonal ensures that there isn't
+     * lava or anything that's !canWalkInto in that space, so it's technically safe, just a little sketchy.
+     */
+    public Setting<Boolean> allowOvershootDiagonalDescend = new Setting<>(true);
 
     /**
      * If your goal is a GoalBlock in an unloaded chunk, assume it's far enough away that the Y coord
@@ -223,9 +243,22 @@ public class Settings {
     public Setting<Boolean> freeLook = new Setting<>(true);
 
     /**
+     * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
+     * <p>
+     * At the moment this will silently set the player's rotations when using freeLook so you're not sprinting in
+     * directions other than forward, which is picken up by more "advanced" anticheats like AAC, but not NCP.
+     */
+    public Setting<Boolean> antiCheatCompatibility = new Setting<>(true);
+
+    /**
      * Exclusively use cached chunks for pathing
      */
     public Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
+
+    /**
+     * Whether or not to use the "#" command prefix
+     */
+    public Setting<Boolean> prefix = new Setting<>(false);
 
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
@@ -291,7 +324,7 @@ public class Settings {
 
     @SuppressWarnings("unchecked")
     public <T> List<Setting<T>> getByValueType(Class<T> klass) {
-        ArrayList<Setting<T>> result = new ArrayList<>();
+        List<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
             if (setting.klass.equals(klass)) {
                 result.add((Setting<T>) setting);

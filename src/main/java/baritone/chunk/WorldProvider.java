@@ -26,6 +26,7 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.WorldServer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,6 +53,7 @@ public enum WorldProvider implements Helper {
     public final void initWorld(WorldClient world) {
         int dimensionID = world.provider.getDimensionType().getId();
         File directory;
+        File readme;
         IntegratedServer integratedServer = mc.getIntegratedServer();
         if (integratedServer != null) {
             WorldServer localServerWorld = integratedServer.getWorld(dimensionID);
@@ -59,17 +61,26 @@ public enum WorldProvider implements Helper {
             IAnvilChunkLoader loader = (IAnvilChunkLoader) provider.getChunkLoader();
             directory = loader.getChunkSaveLocation();
 
-            if (!directory.getParentFile().getName().equals("saves")) {
+            // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
+            if (directory.toPath().relativize(mc.gameDir.toPath()).getNameCount() != 2) {
                 // subdirectory of the main save directory for this world
                 directory = directory.getParentFile();
             }
 
             directory = new File(directory, "baritone");
-
+            readme = directory;
+            
         } else {
             //remote
             directory = new File(Baritone.INSTANCE.getDir(), mc.getCurrentServerData().serverIP);
+            readme = Baritone.INSTANCE.getDir();
         }
+        // lol wtf is this baritone folder in my minecraft save?
+        try (FileOutputStream out = new FileOutputStream(new File(readme, "readme.txt"))) {
+            // good thing we have a readme
+            out.write("https://github.com/cabaletta/baritone\n".getBytes());
+        } catch (IOException ignored) {}
+
         directory = new File(directory, "DIM" + dimensionID);
         Path dir = directory.toPath();
         if (!Files.exists(dir)) {
