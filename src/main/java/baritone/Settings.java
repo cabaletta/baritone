@@ -323,7 +323,7 @@ public class Settings {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<Setting<T>> getByValueType(Class<T> klass) {
+    public <T> List<Setting<T>> getAllValuesByType(Class<T> klass) {
         List<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
             if (setting.klass.equals(klass)) {
