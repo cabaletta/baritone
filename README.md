@@ -5,9 +5,8 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
 # Setup
 - Open the project in IntelliJ as a Gradle project
 - Run the Gradle task `setupDecompWorkspace`
-- Refresh the Gradle project
 - Run the Gradle task `genIntellijRuns`
-- Restart IntelliJ and import Gradle changes
+- Refresh the Gradle project (or just restart IntelliJ)
 - Select the "Minecraft Client" launch config and run
 
 ## Command Line
