@@ -326,7 +326,7 @@ public class Settings {
     public <T> List<Setting<T>> getAllValuesByType(Class<T> klass) {
         List<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
-            if (setting.klass.equals(klass)) {
+            if (setting.getValueClass().equals(klass)) {
                 result.add((Setting<T>) setting);
             }
         }
