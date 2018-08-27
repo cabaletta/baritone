@@ -55,9 +55,18 @@ public enum Baritone {
     private File dir;
 
     /**
+     * List of runnables to be called after Baritone has initialized
+     */
+    private List<Runnable> onInitRunnables;
+
+    /**
      * Whether or not Baritone is active
      */
     private boolean active;
+
+    Baritone() {
+        this.onInitRunnables = new ArrayList<>();
+    }
 
     public synchronized void init() {
         if (initialized) {
@@ -82,6 +91,8 @@ public enum Baritone {
 
         this.active = true;
         this.initialized = true;
+
+        this.onInitRunnables.forEach(Runnable::run);
     }
 
     public final boolean isInitialized() {
@@ -119,5 +130,9 @@ public enum Baritone {
 
     public final File getDir() {
         return this.dir;
+    }
+
+    public final void registerInitListener(Runnable runnable) {
+        this.onInitRunnables.add(runnable);
     }
 }
