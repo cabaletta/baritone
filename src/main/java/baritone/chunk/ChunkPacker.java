@@ -18,7 +18,6 @@
 package baritone.chunk;
 
 import baritone.pathing.movement.MovementHelper;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
@@ -105,11 +104,12 @@ public final class ChunkPacker implements Helper {
     }
 
     private static PathingBlockType getPathingBlockType(Block block) {
-        if (BlockStateInterface.isWater(block)) {
+        if (block.equals(Blocks.WATER)) {
+            // only water source blocks are plausibly usable, flowing water should be avoid
             return PathingBlockType.WATER;
         }
 
-        if (MovementHelper.avoidWalkingInto(block)) {
+        if (MovementHelper.avoidWalkingInto(block) || block.equals(Blocks.FLOWING_WATER)) {
             return PathingBlockType.AVOID;
         }
         // We used to do an AABB check here
