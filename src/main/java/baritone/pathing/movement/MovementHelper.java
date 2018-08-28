@@ -93,9 +93,14 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return true;
             }
         }
-        IBlockState up = BlockStateInterface.get(pos.up());
-        if (BlockStateInterface.isFlowing(state) || up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
+        if (BlockStateInterface.isFlowing(state)) {
             return false; // Don't walk through flowing liquids
+        }
+        if (block instanceof BlockLiquid) {
+            IBlockState up = BlockStateInterface.get(pos.up());
+            if (up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
+                return false;
+            }
         }
         return block.isPassable(mc.world, pos);
     }
