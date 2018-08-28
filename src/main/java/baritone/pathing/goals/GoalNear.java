@@ -47,4 +47,8 @@ public class GoalNear implements Goal {
         int diffZ = z - pos.getZ();
         return GoalBlock.calculate(diffX, diffY, diffZ);
     }
+
+    public BlockPos getGoalPos() {
+        return new BlockPos(x, y, z);
+    }
 }

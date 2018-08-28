@@ -26,9 +26,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
-import baritone.pathing.goals.Goal;
-import baritone.pathing.goals.GoalBlock;
-import baritone.pathing.goals.GoalXZ;
+import baritone.pathing.goals.*;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockStateInterface;
@@ -293,10 +291,23 @@ public class PathingBehavior extends Behavior {
             displayChatMessageRaw("no goal");
             return Optional.empty();
         }
-        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof GoalBlock) {
-            BlockPos pos = ((GoalBlock) goal).getGoalPos();
-            if (world().getChunk(pos) instanceof EmptyChunk) {
-                displayChatMessageRaw("Simplifying GoalBlock to GoalXZ due to distance");
+        if (Baritone.settings().simplifyUnloadedYCoord.get()) {
+            BlockPos pos = null;
+            if (goal instanceof GoalBlock) {
+                pos = ((GoalBlock) goal).getGoalPos();
+            }
+            if (goal instanceof GoalTwoBlocks) {
+                pos = ((GoalTwoBlocks) goal).getGoalPos();
+            }
+            if (goal instanceof GoalNear) {
+                pos = ((GoalNear) goal).getGoalPos();
+            }
+            if (goal instanceof GoalGetToBlock) {
+                pos = ((GoalGetToBlock) goal).getGoalPos();
+            }
+            // TODO simplify each individual goal in a GoalComposite
+            if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
+                displayChatMessageRaw("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
@@ -304,7 +315,7 @@ public class PathingBehavior extends Behavior {
             IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
             return pf.calculate();
         } catch (Exception e) {
-            displayChatMessageRaw("Exception: " + e);
+            displayChatMessageRaw("Pathing exception: " + e);
             e.printStackTrace();
             return Optional.empty();
         }

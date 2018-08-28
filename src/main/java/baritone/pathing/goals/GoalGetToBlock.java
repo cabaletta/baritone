@@ -27,8 +27,11 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GoalGetToBlock extends GoalComposite {
 
+    private final BlockPos pos;
+
     public GoalGetToBlock(BlockPos pos) {
         super(adjacentBlocks(pos));
+        this.pos = pos;
     }
 
     private static BlockPos[] adjacentBlocks(BlockPos pos) {
@@ -37,5 +40,9 @@ public class GoalGetToBlock extends GoalComposite {
             sides[i] = pos.offset(EnumFacing.values()[i]);
         }
         return sides;
+    }
+
+    public BlockPos getGoalPos() {
+        return pos;
     }
 }
