@@ -30,7 +30,6 @@ import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,23 +52,23 @@ public abstract class Movement implements Helper, MovementHelper {
     protected final BlockPos[] positionsToBreak;
 
     /**
-     * The positions where we need to place a block before this movement can ensue
+     * The position where we need to place a block before this movement can ensue
      */
-    protected final BlockPos[] positionsToPlace;
+    protected final BlockPos positionToPlace;
 
     private boolean didBreakLastTick;
 
     private Double cost;
 
-    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos[] toPlace) {
+    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos toPlace) {
         this.src = src;
         this.dest = dest;
         this.positionsToBreak = toBreak;
-        this.positionsToPlace = toPlace;
+        this.positionToPlace = toPlace;
     }
 
-    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos[] toPlace, Vec3d rotationTarget) {
-        this(src, dest, toBreak, toPlace);
+    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak) {
+        this(src, dest, toBreak, null);
     }
 
     public double getCost(CalculationContext context) {
@@ -310,10 +309,8 @@ public abstract class Movement implements Helper, MovementHelper {
             return toPlaceCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        for (BlockPos positionToBreak : positionsToPlace) {
-            if (!MovementHelper.canWalkOn(positionToBreak)) {
-                result.add(positionToBreak);
-            }
+        if (positionToPlace != null && !MovementHelper.canWalkOn(positionToPlace)) {
+            result.add(positionToPlace);
         }
         toPlaceCached = result;
         return result;

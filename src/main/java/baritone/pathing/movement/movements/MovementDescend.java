@@ -33,7 +33,7 @@ import net.minecraft.util.math.BlockPos;
 public class MovementDescend extends Movement {
 
     public MovementDescend(BlockPos start, BlockPos end) {
-        super(start, end, new BlockPos[]{end.up(2), end.up(), end}, new BlockPos[]{end.down()});
+        super(start, end, new BlockPos[]{end.up(2), end.up(), end}, end.down());
     }
 
     @Override
@@ -44,7 +44,7 @@ public class MovementDescend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
+        if (!MovementHelper.canWalkOn(positionToPlace)) {
             return COST_INF;
         }
         Block tmp1 = BlockStateInterface.get(dest).getBlock();

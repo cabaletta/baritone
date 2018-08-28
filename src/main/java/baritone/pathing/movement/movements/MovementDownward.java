@@ -33,7 +33,7 @@ public class MovementDownward extends Movement {
     private int numTicks = 0;
 
     public MovementDownward(BlockPos start, BlockPos end) {
-        super(start, end, new BlockPos[]{end}, new BlockPos[0]);
+        super(start, end, new BlockPos[]{end});
     }
 
     @Override

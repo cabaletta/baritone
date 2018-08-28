@@ -34,7 +34,7 @@ public class MovementPillar extends Movement {
     private int numTicks = 0;
 
     public MovementPillar(BlockPos start, BlockPos end) {
-        super(start, end, new BlockPos[]{start.up(2)}, new BlockPos[]{start});
+        super(start, end, new BlockPos[]{start.up(2)}, start);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class MovementPillar extends Movement {
         boolean vine = fromDown.getBlock() instanceof BlockVine;
         if (!ladder) {
             state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                    Utils.getBlockPosCenter(positionsToPlace[0]),
+                    Utils.getBlockPosCenter(positionToPlace),
                     new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)), true));
         }
 

@@ -43,9 +43,9 @@ public class MovementAscend extends Movement {
     private int ticksWithoutPlacement = 0;
 
     public MovementAscend(BlockPos src, BlockPos dest) {
-        super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, new BlockPos[]{dest.down()});
+        super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, dest.down());
 
-        BlockPos placementLocation = positionsToPlace[0]; // dest.down()
+        BlockPos placementLocation = positionToPlace; // dest.down()
         int i = 0;
         if (!placementLocation.north().equals(src))
             against[i++] = placementLocation.north();
@@ -72,12 +72,12 @@ public class MovementAscend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        IBlockState toPlace = BlockStateInterface.get(positionsToPlace[0]);
-        if (!MovementHelper.canWalkOn(positionsToPlace[0], toPlace)) {
+        IBlockState toPlace = BlockStateInterface.get(positionToPlace);
+        if (!MovementHelper.canWalkOn(positionToPlace, toPlace)) {
             if (!context.hasThrowaway()) {
                 return COST_INF;
             }
-            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionsToPlace[0], toPlace)) {
+            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionToPlace, toPlace)) {
                 return COST_INF;
             }
             for (BlockPos against1 : against) {
@@ -135,7 +135,7 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
-        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
+        if (!MovementHelper.canWalkOn(positionToPlace)) {
             for (BlockPos anAgainst : against) {
                 if (BlockStateInterface.get(anAgainst).isBlockNormalCube()) {
                     if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
@@ -148,7 +148,7 @@ public class MovementAscend extends Movement {
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
 
                     LookBehaviorUtils.getSelectedBlock().ifPresent(selectedBlock -> {
-                        if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionsToPlace[0])) {
+                        if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionToPlace)) {
                             ticksWithoutPlacement++;
                             state.setInput(InputOverrideHandler.Input.SNEAK, true);
                             if (player().isSneaking()) {

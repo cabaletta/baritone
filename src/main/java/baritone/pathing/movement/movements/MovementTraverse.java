@@ -45,7 +45,7 @@ public class MovementTraverse extends Movement {
     private boolean wasTheBridgeBlockAlwaysThere = true;
 
     public MovementTraverse(BlockPos from, BlockPos to) {
-        super(from, to, new BlockPos[]{to.up(), to}, new BlockPos[]{to.down()});
+        super(from, to, new BlockPos[]{to.up(), to}, to.down());
         int i = 0;
 
         if (!to.north().equals(from))
@@ -73,8 +73,8 @@ public class MovementTraverse extends Movement {
     protected double calculateCost(CalculationContext context) {
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
-        IBlockState destOn = BlockStateInterface.get(positionsToPlace[0]);
-        if (MovementHelper.canWalkOn(positionsToPlace[0], destOn)) {//this is a walk, not a bridge
+        IBlockState destOn = BlockStateInterface.get(positionToPlace);
+        if (MovementHelper.canWalkOn(positionToPlace, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             if (BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock())) {
                 WC = WALK_ONE_IN_WATER_COST;
@@ -105,7 +105,7 @@ public class MovementTraverse extends Movement {
             if (srcDown instanceof BlockLadder || srcDown instanceof BlockVine) {
                 return COST_INF;
             }
-            if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(positionsToPlace[0], destOn)) {
+            if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(positionToPlace, destOn)) {
                 boolean throughWater = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock());
                 if (BlockStateInterface.isWater(destOn.getBlock()) && throughWater) {
                     return COST_INF;
@@ -179,7 +179,7 @@ public class MovementTraverse extends Movement {
             }
         }
 
-        boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionsToPlace[0]) || ladder;
+        boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionToPlace) || ladder;
         BlockPos whereAmI = playerFeet();
         if (whereAmI.getY() != dest.getY() && !ladder) {
             displayChatMessageRaw("Wrong Y coordinate");
@@ -220,7 +220,7 @@ public class MovementTraverse extends Movement {
 
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                     if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && Minecraft.getMinecraft().player.isSneaking()) {
-                        if (LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionsToPlace[0])) {
+                        if (LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                             return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                         } else {
                             // Out.gui("Wrong. " + side + " " + LookBehaviorUtils.getSelectedBlock().get().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);

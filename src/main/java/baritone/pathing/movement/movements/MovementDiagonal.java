@@ -46,7 +46,7 @@ public class MovementDiagonal extends Movement {
     }
 
     public MovementDiagonal(BlockPos start, BlockPos end, BlockPos dir1, BlockPos dir2) {
-        super(start, end, new BlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()}, new BlockPos[]{end.down()});
+        super(start, end, new BlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
     }
 
     @Override
@@ -77,8 +77,9 @@ public class MovementDiagonal extends Movement {
         if (!MovementHelper.canWalkThrough(positionsToBreak[4]) || !MovementHelper.canWalkThrough(positionsToBreak[5])) {
             return COST_INF;
         }
-        IBlockState destWalkOn = BlockStateInterface.get(positionsToPlace[0]);
-        if (!MovementHelper.canWalkOn(positionsToPlace[0], destWalkOn)) {
+        BlockPos destDown = dest.down();
+        IBlockState destWalkOn = BlockStateInterface.get(destDown);
+        if (!MovementHelper.canWalkOn(destDown, destWalkOn)) {
             return COST_INF;
         }
         double multiplier = WALK_ONE_BLOCK_COST;

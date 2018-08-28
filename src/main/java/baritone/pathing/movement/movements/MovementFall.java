@@ -38,12 +38,12 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
     public MovementFall(BlockPos src, BlockPos dest) {
-        super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[]{dest.down()});
+        super(src, dest, MovementFall.buildPositionsToBreak(src, dest));
     }
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
+        if (!MovementHelper.canWalkOn(dest.down())) {
             return COST_INF;
         }
         double placeBucketCost = 0.0;
