@@ -202,11 +202,13 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (BlockStateInterface.isFlowing(state)) {
                 return false;
             }
-            if (Baritone.settings().assumeWalkOnWater.get()) {
+            Block up = BlockStateInterface.get(pos.up()).getBlock();
+            if (up instanceof BlockLilyPad) {
                 return true;
             }
-            Block up = BlockStateInterface.get(pos.up()).getBlock();
-            return BlockStateInterface.isWater(up) || up instanceof BlockLilyPad; // You can only walk on water if there is water above it
+            // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
+            // if assumeWalkOnWater is off, we can only walk on water if there is water above it
+            return BlockStateInterface.isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
         }
         if (Blocks.MAGMA.equals(block)) {
             return false;

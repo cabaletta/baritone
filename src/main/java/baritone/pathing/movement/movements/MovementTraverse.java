@@ -105,12 +105,15 @@ public class MovementTraverse extends Movement {
             if (srcDown instanceof BlockLadder || srcDown instanceof BlockVine) {
                 return COST_INF;
             }
-            IBlockState pp0 = BlockStateInterface.get(positionsToPlace[0]);
-            if (pp0.getBlock().equals(Blocks.AIR) || (!BlockStateInterface.isWater(pp0.getBlock()) && MovementHelper.isReplacable(positionsToPlace[0], pp0))) {
+            if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(positionsToPlace[0], destOn)) {
+                boolean throughWater = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock());
+                if (BlockStateInterface.isWater(destOn.getBlock()) && throughWater) {
+                    return COST_INF;
+                }
                 if (!context.hasThrowaway()) {
                     return COST_INF;
                 }
-                double WC = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock()) ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
+                double WC = throughWater ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
                 for (BlockPos against1 : against) {
                     if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                         return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
