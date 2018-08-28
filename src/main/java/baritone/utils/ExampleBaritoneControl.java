@@ -22,6 +22,7 @@ import baritone.Settings;
 import baritone.api.event.events.ChatEvent;
 import baritone.behavior.Behavior;
 import baritone.behavior.impl.FollowBehavior;
+import baritone.behavior.impl.MineBehavior;
 import baritone.behavior.impl.PathingBehavior;
 import baritone.chunk.ChunkPacker;
 import baritone.chunk.Waypoint;
@@ -36,10 +37,8 @@ import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ExampleBaritoneControl extends Behavior {
     public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
@@ -102,13 +101,16 @@ public class ExampleBaritoneControl extends Behavior {
             return;
         }
         if (msg.equals("path")) {
-            PathingBehavior.INSTANCE.path();
+            if (!PathingBehavior.INSTANCE.path()) {
+                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+            }
             event.cancel();
             return;
         }
         if (msg.toLowerCase().equals("cancel")) {
             PathingBehavior.INSTANCE.cancel();
             FollowBehavior.INSTANCE.cancel();
+            MineBehavior.INSTANCE.cancel();
             event.cancel();
             displayChatMessageRaw("ok canceled");
             return;
@@ -131,7 +133,9 @@ public class ExampleBaritoneControl extends Behavior {
                     return false;
                 }
             });
-            PathingBehavior.INSTANCE.path();
+            if (!PathingBehavior.INSTANCE.path()) {
+                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+            }
             event.cancel();
             return;
         }
@@ -174,27 +178,8 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().startsWith("mine")) {
             String blockType = msg.toLowerCase().substring(4).trim();
-            List<BlockPos> locs = new ArrayList<>(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(blockType, 1, 1));
-            if (locs.isEmpty()) {
-                displayChatMessageRaw("No locations known");
-                event.cancel();
-                return;
-            }
-            BlockPos playerFeet = playerFeet();
-            locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
-
-            // remove any that are within loaded chunks that aren't actually what we want
-            locs.removeAll(locs.stream()
-                    .filter(pos -> !(world().getChunk(pos) instanceof EmptyChunk))
-                    .filter(pos -> !ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).equalsIgnoreCase(blockType))
-                    .collect(Collectors.toList()));
-
-            if (locs.size() > 30) {
-                displayChatMessageRaw("Pathing to any of closest 30");
-                locs = locs.subList(0, 30);
-            }
-            PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
-            PathingBehavior.INSTANCE.path();
+            MineBehavior.INSTANCE.mine(blockType);
+            displayChatMessageRaw("Started mining blocks of type" + blockType);
             event.cancel();
             return;
         }
@@ -248,7 +233,9 @@ public class ExampleBaritoneControl extends Behavior {
             }
             Goal goal = new GoalBlock(waypoint.location);
             PathingBehavior.INSTANCE.setGoal(goal);
-            PathingBehavior.INSTANCE.path();
+            if (!PathingBehavior.INSTANCE.path()) {
+                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+            }
             event.cancel();
             return;
         }

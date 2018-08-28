@@ -17,9 +17,9 @@
 
 package baritone;
 
+import baritone.api.event.GameEventHandler;
 import baritone.behavior.Behavior;
 import baritone.behavior.impl.*;
-import baritone.api.event.GameEventHandler;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 
@@ -79,6 +79,7 @@ public enum Baritone {
             registerBehavior(MemoryBehavior.INSTANCE);
             registerBehavior(LocationTrackingBehavior.INSTANCE);
             registerBehavior(FollowBehavior.INSTANCE);
+            registerBehavior(MineBehavior.INSTANCE);
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {

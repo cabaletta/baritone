@@ -23,6 +23,11 @@ import baritone.pathing.goals.GoalNear;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
+/**
+ * Follow an entity
+ *
+ * @author leijurv
+ */
 public class FollowBehavior extends Behavior {
     public static final FollowBehavior INSTANCE = new FollowBehavior();
 

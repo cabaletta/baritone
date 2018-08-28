@@ -197,18 +197,23 @@ public class PathingBehavior extends Behavior {
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
     }
 
-    public void path() {
+    /**
+     * Start calculating a path if we aren't already
+     *
+     * @return true if this call started path calculation, false if it was already calculating or executing a path
+     */
+    public boolean path() {
         synchronized (pathPlanLock) {
             if (current != null) {
-                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
-                return;
+                return false;
             }
             synchronized (pathCalcLock) {
                 if (isPathCalcInProgress) {
-                    return;
+                    return false;
                 }
                 dispatchPathEvent(PathEvent.CALC_STARTED);
                 findPathInNewThread(pathStart(), true, Optional.empty());
+                return true;
             }
         }
     }
