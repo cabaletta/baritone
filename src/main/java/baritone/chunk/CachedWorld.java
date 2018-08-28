@@ -69,6 +69,7 @@ public final class CachedWorld implements IBlockTypeAccess {
         new Thread() {
             public void run() {
                 try {
+                    Thread.sleep(30000);
                     while (true) {
                         // since a region only saves if it's been modified since its last save
                         // saving every 10 minutes means that once it's time to exit
@@ -141,7 +142,7 @@ public final class CachedWorld implements IBlockTypeAccess {
             return;
         }
         long start = System.currentTimeMillis();
-        this.cachedRegions.values().forEach(region -> {
+        this.cachedRegions.values().parallelStream().forEach(region -> {
             if (region != null)
                 region.save(this.directory);
         });

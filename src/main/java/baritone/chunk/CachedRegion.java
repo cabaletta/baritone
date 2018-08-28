@@ -117,8 +117,8 @@ public final class CachedRegion implements IBlockTypeAccess {
                 Files.createFile(regionFile);
             try (
                     FileOutputStream fileOut = new FileOutputStream(regionFile.toFile());
-                    GZIPOutputStream gzipOut = new GZIPOutputStream(fileOut);
-                    DataOutputStream out = new DataOutputStream(gzipOut);
+                    GZIPOutputStream gzipOut = new GZIPOutputStream(fileOut, 16384);
+                    DataOutputStream out = new DataOutputStream(gzipOut)
             ) {
                 out.writeInt(CACHED_REGION_MAGIC);
                 for (int z = 0; z < 32; z++) {
@@ -183,8 +183,8 @@ public final class CachedRegion implements IBlockTypeAccess {
 
             try (
                     FileInputStream fileIn = new FileInputStream(regionFile.toFile());
-                    GZIPInputStream gzipIn = new GZIPInputStream(fileIn);
-                    DataInputStream in = new DataInputStream(gzipIn);
+                    GZIPInputStream gzipIn = new GZIPInputStream(fileIn, 32768);
+                    DataInputStream in = new DataInputStream(gzipIn)
             ) {
                 int magic = in.readInt();
                 if (magic != CACHED_REGION_MAGIC) {
