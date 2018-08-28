@@ -69,7 +69,7 @@ public class MovementAscend extends Movement {
                 if (against1.equals(src)) {
                     continue;
                 }
-                if (BlockStateInterface.get(against1).isBlockNormalCube()) {
+                if (MovementHelper.canPlaceAgainst(against1)) {
                     return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
                 }
             }
@@ -129,7 +129,7 @@ public class MovementAscend extends Movement {
                 if (anAgainst.equals(src)) {
                     continue;
                 }
-                if (BlockStateInterface.get(anAgainst).isBlockNormalCube()) {
+                if (MovementHelper.canPlaceAgainst(anAgainst)) {
                     if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
                         return state.setStatus(MovementStatus.UNREACHABLE);
                     }

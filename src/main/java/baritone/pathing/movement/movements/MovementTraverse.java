@@ -103,8 +103,7 @@ public class MovementTraverse extends Movement {
                         continue;
                     }
                     against1 = against1.down();
-                    // TODO isBlockNormalCube isn't the best check for whether or not we can place a block against it. e.g. glass isn't normalCube but we can place against it
-                    if (BlockStateInterface.get(against1).isBlockNormalCube()) {
+                    if (MovementHelper.canPlaceAgainst(against1)) {
                         return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
                     }
                 }
@@ -201,7 +200,7 @@ public class MovementTraverse extends Movement {
                     continue;
                 }
                 against1 = against1.down();
-                if (BlockStateInterface.get(against1).isBlockNormalCube()) {
+                if (MovementHelper.canPlaceAgainst(against1)) {
                     if (!MovementHelper.throwaway(true)) { // get ready to place a throwaway block
                         displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
                         return state.setStatus(MovementState.MovementStatus.UNREACHABLE);

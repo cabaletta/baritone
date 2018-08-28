@@ -224,6 +224,12 @@ public interface MovementHelper extends ActionCosts, Helper {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
+    static boolean canPlaceAgainst(BlockPos pos) {
+        IBlockState state = BlockStateInterface.get(pos);
+        // TODO isBlockNormalCube isn't the best check for whether or not we can place a block against it. e.g. glass isn't normalCube but we can place against it
+        return state.isBlockNormalCube();
+    }
+
     static double getMiningDurationTicks(CalculationContext context, BlockPos position, boolean includeFalling) {
         IBlockState state = BlockStateInterface.get(position);
         return getMiningDurationTicks(context, position, state, includeFalling);
