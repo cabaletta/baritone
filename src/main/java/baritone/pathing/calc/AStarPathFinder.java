@@ -35,10 +35,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 /**
  * The actual A* pathfinding
@@ -80,6 +77,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
+        HashMap<Class<? extends Movement>, Long> timeConsumed = new HashMap<>();
+        HashMap<Class<? extends Movement>, Integer> count = new HashMap<>();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime && !cancelRequested) {
             if (slowPath) {
                 try {
@@ -120,10 +119,12 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     numEmptyChunk++;
                     continue;
                 }
-                //long costStart = System.nanoTime();
+                long costStart = System.nanoTime();
                 // TODO cache cost
                 double actionCost = movementToGetToNeighbor.getCost(calcContext);
-                //long costEnd = System.nanoTime();
+                long costEnd = System.nanoTime();
+                timeConsumed.put(movementToGetToNeighbor.getClass(), costEnd - costStart + timeConsumed.getOrDefault(movementToGetToNeighbor.getClass(), 0L));
+                count.put(movementToGetToNeighbor.getClass(), 1 + count.getOrDefault(movementToGetToNeighbor.getClass(), 0));
                 //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
@@ -168,6 +169,13 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     }
                 }
             }
+        }
+        ArrayList<Class<? extends Movement>> klasses = new ArrayList<>(count.keySet());
+        klasses.sort(Comparator.comparingLong(k -> timeConsumed.get(k) / count.get(k)));
+        for (Class<? extends Movement> klass : klasses) {
+            int num = count.get(klass);
+            long nanoTime = timeConsumed.get(klass);
+            System.out.println(nanoTime / num + " " + klass + " " + nanoTime + " " + num);
         }
         if (cancelRequested) {
             currentlyRunning = null;
