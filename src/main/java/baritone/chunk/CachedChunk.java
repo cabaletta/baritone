@@ -139,7 +139,8 @@ public final class CachedChunk implements IBlockTypeAccess {
                 int index = z << 4 | x;
                 heightMap[index] = 0;
                 for (int y = 256; y >= 0; y--) {
-                    if (getType(x, y, z) != PathingBlockType.AIR) {
+                    int i = getPositionIndex(x, y, z);
+                    if (data.get(i) || data.get(i + 1)) {
                         heightMap[index] = y;
                         break;
                     }
