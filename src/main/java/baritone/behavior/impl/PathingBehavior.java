@@ -18,11 +18,11 @@
 package baritone.behavior.impl;
 
 import baritone.Baritone;
-import baritone.behavior.Behavior;
 import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
+import baritone.behavior.Behavior;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
@@ -194,6 +194,7 @@ public class PathingBehavior extends Behavior {
         current = null;
         next = null;
         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
     }
 
     public void path() {

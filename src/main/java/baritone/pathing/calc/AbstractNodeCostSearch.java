@@ -52,6 +52,8 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     private volatile boolean isFinished;
 
+    protected boolean cancelRequested;
+
     /**
      * This is really complicated and hard to explain. I wrote a comment in the old version of MineBot but it was so
      * long it was easier as a Google Doc (because I could insert charts).
@@ -70,10 +72,15 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         this.map = new HashMap<>();
     }
 
+    public void cancel() {
+        cancelRequested = true;
+    }
+
     public synchronized Optional<IPath> calculate() {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
+        this.cancelRequested = false;
         Optional<IPath> path = calculate0();
         isFinished = true;
         return path;

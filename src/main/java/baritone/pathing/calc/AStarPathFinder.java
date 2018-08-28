@@ -80,7 +80,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
-        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime) {
+        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime && !cancelRequested) {
             if (slowPath) {
                 try {
                     Thread.sleep(Baritone.settings().slowPathTimeDelayMS.<Long>get());
@@ -168,6 +168,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     }
                 }
             }
+        }
+        if (cancelRequested) {
+            currentlyRunning = null;
+            return Optional.empty();
         }
         double bestDist = 0;
         for (int i = 0; i < bestSoFar.length; i++) {
