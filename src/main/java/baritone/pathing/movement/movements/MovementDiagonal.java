@@ -82,7 +82,6 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         double multiplier = WALK_ONE_BLOCK_COST;
-
         // For either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock().equals(Blocks.SOUL_SAND)) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
@@ -90,31 +89,34 @@ public class MovementDiagonal extends Movement {
         if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-
         if (BlockStateInterface.get(positionsToBreak[2].down()).getBlock() instanceof BlockMagma) {
             return COST_INF;
         }
         if (BlockStateInterface.get(positionsToBreak[4].down()).getBlock() instanceof BlockMagma) {
             return COST_INF;
         }
-        double optionA = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0], false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1], true);
-        double optionB = MovementHelper.getMiningDurationTicks(context, positionsToBreak[2], false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[3], true);
+        IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
+        IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
+        IBlockState pb2 = BlockStateInterface.get(positionsToBreak[2]);
+        IBlockState pb3 = BlockStateInterface.get(positionsToBreak[3]);
+        double optionA = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0], pb0, false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1], pb1, true);
+        double optionB = MovementHelper.getMiningDurationTicks(context, positionsToBreak[2], pb2, false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[3], pb3, true);
         if (optionA != 0 && optionB != 0) {
             return COST_INF;
         }
         if (optionA == 0) {
-            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(positionsToBreak[2]))) {
+            if (MovementHelper.avoidWalkingInto(pb2.getBlock())) {
                 return COST_INF;
             }
-            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(positionsToBreak[3]))) {
+            if (MovementHelper.avoidWalkingInto(pb3.getBlock())) {
                 return COST_INF;
             }
         }
         if (optionB == 0) {
-            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(positionsToBreak[0]))) {
+            if (MovementHelper.avoidWalkingInto(pb0.getBlock())) {
                 return COST_INF;
             }
-            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(positionsToBreak[1]))) {
+            if (MovementHelper.avoidWalkingInto(pb1.getBlock())) {
                 return COST_INF;
             }
         }
