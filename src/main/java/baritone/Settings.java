@@ -57,6 +57,12 @@ public class Settings {
     public Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
 
     /**
+     * Allow Baritone to assume it can walk on still water just like any other block.
+     * This functionality is assumed to be provided by a separate library that might have imported Baritone.
+     */
+    public Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
+
+    /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
     public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(Arrays.asList(

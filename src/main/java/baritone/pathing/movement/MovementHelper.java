@@ -48,7 +48,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockPos pos, IBlockState state) {
         Block b = state.getBlock();
-        BlockPos below = new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ());
+        Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
         return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
@@ -56,7 +56,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1))
-                || (!(b instanceof BlockLilyPad && BlockStateInterface.isWater(below)) && BlockStateInterface.isLiquid(below));//if it's a lilypad above water, it's ok to break, otherwise don't break if its liquid
+                || (!(b instanceof BlockLilyPad && BlockStateInterface.isWater(below)) && below instanceof BlockLiquid);//if it's a lilypad above water, it's ok to break, otherwise don't break if its liquid
         // TODO revisit this. why is it not okay to break non-lilypads that are right above water?
     }
 
@@ -97,6 +97,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false; // Don't walk through flowing liquids
         }
         if (block instanceof BlockLiquid) {
+            if (Baritone.settings().assumeWalkOnWater.get()) {
+                return false;
+            }
             IBlockState up = BlockStateInterface.get(pos.up());
             if (up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
                 return false;
@@ -196,6 +199,12 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         if (BlockStateInterface.isWater(block)) {
+            if (BlockStateInterface.isFlowing(state)) {
+                return false;
+            }
+            if (Baritone.settings().assumeWalkOnWater.get()) {
+                return true;
+            }
             Block up = BlockStateInterface.get(pos.up()).getBlock();
             return BlockStateInterface.isWater(up) || up instanceof BlockLilyPad; // You can only walk on water if there is water above it
         }
