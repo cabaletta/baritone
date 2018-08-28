@@ -39,29 +39,10 @@ import java.util.Objects;
 
 public class MovementAscend extends Movement {
 
-    private BlockPos[] against = new BlockPos[3];
     private int ticksWithoutPlacement = 0;
 
     public MovementAscend(BlockPos src, BlockPos dest) {
         super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, dest.down());
-
-        BlockPos placementLocation = positionToPlace; // dest.down()
-        int i = 0;
-        if (!placementLocation.north().equals(src))
-            against[i++] = placementLocation.north();
-
-        if (!placementLocation.south().equals(src))
-            against[i++] = placementLocation.south();
-
-        if (!placementLocation.east().equals(src))
-            against[i++] = placementLocation.east();
-
-        if (!placementLocation.west().equals(src))
-            against[i] = placementLocation.west();
-
-        // TODO: add ability to place against .down() as well as the cardinal directions
-        // useful for when you are starting a staircase without anything to place against
-        // Counterpoint to the above TODO ^ you should move then pillar instead of ascend
     }
 
     @Override
@@ -80,7 +61,14 @@ public class MovementAscend extends Movement {
             if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionToPlace, toPlace)) {
                 return COST_INF;
             }
-            for (BlockPos against1 : against) {
+            // TODO: add ability to place against .down() as well as the cardinal directions
+            // useful for when you are starting a staircase without anything to place against
+            // Counterpoint to the above TODO ^ you should move then pillar instead of ascend
+            for (int i = 0; i < 4; i++) {
+                BlockPos against1 = positionToPlace.offset(HORIZONTALS[i]);
+                if (against1.equals(src)) {
+                    continue;
+                }
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                     return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
                 }
@@ -136,7 +124,11 @@ public class MovementAscend extends Movement {
         }
 
         if (!MovementHelper.canWalkOn(positionToPlace)) {
-            for (BlockPos anAgainst : against) {
+            for (int i = 0; i < 4; i++) {
+                BlockPos anAgainst = positionToPlace.offset(HORIZONTALS[i]);
+                if (anAgainst.equals(src)) {
+                    continue;
+                }
                 if (BlockStateInterface.get(anAgainst).isBlockNormalCube()) {
                     if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
                         return state.setStatus(MovementStatus.UNREACHABLE);

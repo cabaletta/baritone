@@ -37,8 +37,6 @@ import java.util.Objects;
 
 public class MovementTraverse extends Movement {
 
-    private BlockPos[] against = new BlockPos[3];
-
     /**
      * Did we have to place a bridge block or was it always there
      */
@@ -46,21 +44,6 @@ public class MovementTraverse extends Movement {
 
     public MovementTraverse(BlockPos from, BlockPos to) {
         super(from, to, new BlockPos[]{to.up(), to}, to.down());
-        int i = 0;
-
-        if (!to.north().equals(from))
-            against[i++] = to.north().down();
-
-        if (!to.south().equals(from))
-            against[i++] = to.south().down();
-
-        if (!to.east().equals(from))
-            against[i++] = to.east().down();
-
-        if (!to.west().equals(from))
-            against[i] = to.west().down();
-
-        //note: do NOT add ability to place against .down().down()
     }
 
     @Override
@@ -114,7 +97,13 @@ public class MovementTraverse extends Movement {
                     return COST_INF;
                 }
                 double WC = throughWater ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
-                for (BlockPos against1 : against) {
+                for (int i = 0; i < 4; i++) {
+                    BlockPos against1 = dest.offset(HORIZONTALS[i]);
+                    if (against1.equals(src)) {
+                        continue;
+                    }
+                    against1 = against1.down();
+                    // TODO isBlockNormalCube isn't the best check for whether or not we can place a block against it. e.g. glass isn't normalCube but we can place against it
                     if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                         return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
                     }
@@ -206,7 +195,12 @@ public class MovementTraverse extends Movement {
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
-            for (BlockPos against1 : against) {
+            for (int i = 0; i < 4; i++) {
+                BlockPos against1 = dest.offset(HORIZONTALS[i]);
+                if (against1.equals(src)) {
+                    continue;
+                }
+                against1 = against1.down();
                 if (BlockStateInterface.get(against1).isBlockNormalCube()) {
                     if (!MovementHelper.throwaway(true)) { // get ready to place a throwaway block
                         displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");

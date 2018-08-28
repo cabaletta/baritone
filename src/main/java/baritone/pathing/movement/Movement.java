@@ -28,6 +28,7 @@ import baritone.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.BlockVine;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 
@@ -39,6 +40,8 @@ import java.util.Optional;
 import static baritone.utils.InputOverrideHandler.Input;
 
 public abstract class Movement implements Helper, MovementHelper {
+
+    protected static final EnumFacing[] HORIZONTALS = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST};
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
 
