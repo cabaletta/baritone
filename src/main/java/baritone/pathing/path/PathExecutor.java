@@ -18,7 +18,7 @@
 package baritone.pathing.path;
 
 import baritone.Baritone;
-import baritone.event.events.TickEvent;
+import baritone.api.event.events.TickEvent;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementState;

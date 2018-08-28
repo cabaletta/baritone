@@ -18,7 +18,7 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
-import baritone.event.events.RenderEvent;
+import baritone.api.event.events.RenderEvent;
 import net.minecraft.client.renderer.EntityRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

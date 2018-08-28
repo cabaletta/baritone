@@ -15,42 +15,23 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.event.events;
-
-import baritone.event.listener.IGameEventListener;
+package baritone.api.event.events.type;
 
 /**
- * Called in some cases where a player's inventory has it's current slot queried.
- * <p>
- * @see IGameEventListener#onQueryItemSlotForBlocks()
- *
  * @author Brady
- * @since 8/20/2018
+ * @since 8/2/2018 12:34 AM
  */
-public final class ItemSlotEvent {
+public enum EventState {
 
     /**
-     * The current slot index
+     * Indicates that whatever movement the event is being
+     * dispatched as a result of is about to occur.
      */
-    private int slot;
-
-    public ItemSlotEvent(int slot) {
-        this.slot = slot;
-    }
+    PRE,
 
     /**
-     * Sets the new slot index that will be used
-     *
-     * @param slot The slot index
+     * Indicates that whatever movement the event is being
+     * dispatched as a result of has already occured.
      */
-    public final void setSlot(int slot) {
-        this.slot = slot;
-    }
-
-    /**
-     * @return The current slot index
-     */
-    public final int getSlot() {
-        return this.slot;
-    }
+    POST
 }

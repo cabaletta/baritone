@@ -18,8 +18,8 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.event.events.ItemSlotEvent;
-import baritone.event.listener.AbstractGameEventListener;
+import baritone.api.event.events.ItemSlotEvent;
+import baritone.api.event.listener.AbstractGameEventListener;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;

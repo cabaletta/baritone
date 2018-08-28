@@ -24,7 +24,7 @@ import baritone.behavior.impl.PathingBehavior;
 import baritone.chunk.ChunkPacker;
 import baritone.chunk.Waypoint;
 import baritone.chunk.WorldProvider;
-import baritone.event.events.ChatEvent;
+import baritone.api.event.events.ChatEvent;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.goals.*;
 import baritone.pathing.movement.ActionCosts;

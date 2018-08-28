@@ -15,9 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.event.events;
+package baritone.api.event.events;
 
-import baritone.event.events.type.EventState;
+import baritone.api.event.events.type.EventState;
 
 /**
  * @author Brady

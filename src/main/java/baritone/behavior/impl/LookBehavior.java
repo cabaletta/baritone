@@ -20,9 +20,8 @@ package baritone.behavior.impl;
 import baritone.Baritone;
 import baritone.Settings;
 import baritone.behavior.Behavior;
-import baritone.event.events.PlayerUpdateEvent;
-import baritone.event.events.RelativeMoveEvent;
-import baritone.event.events.type.EventState;
+import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.RelativeMoveEvent;
 import baritone.utils.Rotation;
 
 public class LookBehavior extends Behavior {

@@ -18,8 +18,8 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
-import baritone.event.events.ChunkEvent;
-import baritone.event.events.type.EventState;
+import baritone.api.event.events.ChunkEvent;
+import baritone.api.event.events.type.EventState;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.play.server.SPacketChunkData;
 import net.minecraft.network.play.server.SPacketCombatEvent;

@@ -19,10 +19,10 @@ package baritone.behavior.impl;
 
 import baritone.Baritone;
 import baritone.behavior.Behavior;
-import baritone.event.events.PathEvent;
-import baritone.event.events.PlayerUpdateEvent;
-import baritone.event.events.RenderEvent;
-import baritone.event.events.TickEvent;
+import baritone.api.event.events.PathEvent;
+import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.RenderEvent;
+import baritone.api.event.events.TickEvent;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;

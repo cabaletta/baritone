@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.event.events;
+package baritone.api.event.events;
 
 import net.minecraft.util.math.BlockPos;
 

@@ -18,8 +18,8 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
-import baritone.event.events.PacketEvent;
-import baritone.event.events.type.EventState;
+import baritone.api.event.events.PacketEvent;
+import baritone.api.event.events.type.EventState;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;

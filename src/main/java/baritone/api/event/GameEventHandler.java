@@ -32,13 +32,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.event;
+package baritone.api.event;
 
 import baritone.Baritone;
 import baritone.chunk.WorldProvider;
-import baritone.event.events.*;
-import baritone.event.events.type.EventState;
-import baritone.event.listener.IGameEventListener;
+import baritone.api.event.events.*;
+import baritone.api.event.events.type.EventState;
+import baritone.api.event.listener.IGameEventListener;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.interfaces.Toggleable;

@@ -15,29 +15,42 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.event.events;
+package baritone.api.event.events;
 
-import baritone.event.events.type.Cancellable;
+import baritone.api.event.listener.IGameEventListener;
 
 /**
+ * Called in some cases where a player's inventory has it's current slot queried.
+ * <p>
+ * @see IGameEventListener#onQueryItemSlotForBlocks()
+ *
  * @author Brady
- * @since 8/1/2018 6:39 PM
+ * @since 8/20/2018
  */
-public final class ChatEvent extends Cancellable {
+public final class ItemSlotEvent {
 
     /**
-     * The message being sent
+     * The current slot index
      */
-    private final String message;
+    private int slot;
 
-    public ChatEvent(String message) {
-        this.message = message;
+    public ItemSlotEvent(int slot) {
+        this.slot = slot;
     }
 
     /**
-     * @return The message being sent
+     * Sets the new slot index that will be used
+     *
+     * @param slot The slot index
      */
-    public final String getMessage() {
-        return this.message;
+    public final void setSlot(int slot) {
+        this.slot = slot;
+    }
+
+    /**
+     * @return The current slot index
+     */
+    public final int getSlot() {
+        return this.slot;
     }
 }

@@ -22,7 +22,7 @@ import baritone.behavior.impl.LookBehavior;
 import baritone.behavior.impl.MemoryBehavior;
 import baritone.behavior.impl.PathingBehavior;
 import baritone.behavior.impl.LocationTrackingBehavior;
-import baritone.event.GameEventHandler;
+import baritone.api.event.GameEventHandler;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 

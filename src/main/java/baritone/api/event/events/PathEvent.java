@@ -15,23 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.event.events.type;
+package baritone.api.event.events;
 
-/**
- * @author Brady
- * @since 8/2/2018 12:34 AM
- */
-public enum EventState {
-
-    /**
-     * Indicates that whatever movement the event is being
-     * dispatched as a result of is about to occur.
-     */
-    PRE,
-
-    /**
-     * Indicates that whatever movement the event is being
-     * dispatched as a result of has already occured.
-     */
-    POST
+public enum PathEvent {
+    CALC_STARTED,
+    CALC_FINISHED_NOW_EXECUTING,
+    CALC_FAILED,
+    NEXT_SEGMENT_CALC_STARTED,
+    NEXT_SEGMENT_CALC_FINISHED,
+    CONTINUING_ONTO_PLANNED_NEXT,
+    SPLICING_ONTO_NEXT_EARLY,
+    AT_GOAL,
+    PATH_FINISHED_NEXT_STILL_CALCULATING,
+    NEXT_CALC_FAILED,
+    DISCARD_NEXT
 }

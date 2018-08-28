@@ -1,9 +1,9 @@
 package baritone.behavior.impl;
 
 import baritone.behavior.Behavior;
-import baritone.event.events.PacketEvent;
-import baritone.event.events.PlayerUpdateEvent;
-import baritone.event.events.type.EventState;
+import baritone.api.event.events.PacketEvent;
+import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.type.EventState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;

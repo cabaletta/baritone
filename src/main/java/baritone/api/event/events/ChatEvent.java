@@ -15,27 +15,29 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.event.events;
+package baritone.api.event.events;
+
+import baritone.api.event.events.type.Cancellable;
 
 /**
  * @author Brady
- * @since 8/5/2018 12:28 AM
+ * @since 8/1/2018 6:39 PM
  */
-public final class RenderEvent {
+public final class ChatEvent extends Cancellable {
 
     /**
-     * The current render partial ticks
+     * The message being sent
      */
-    private final float partialTicks;
+    private final String message;
 
-    public RenderEvent(float partialTicks) {
-        this.partialTicks = partialTicks;
+    public ChatEvent(String message) {
+        this.message = message;
     }
 
     /**
-     * @return The current render partial ticks
+     * @return The message being sent
      */
-    public final float getPartialTicks() {
-        return this.partialTicks;
+    public final String getMessage() {
+        return this.message;
     }
 }

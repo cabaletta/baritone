@@ -18,7 +18,7 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
-import baritone.event.events.ItemSlotEvent;
+import baritone.api.event.events.ItemSlotEvent;
 import net.minecraft.entity.player.InventoryPlayer;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;

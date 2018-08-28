@@ -19,10 +19,10 @@ package baritone.launch.mixins;
 
 import baritone.Baritone;
 import baritone.behavior.impl.PathingBehavior;
-import baritone.event.events.BlockInteractEvent;
-import baritone.event.events.TickEvent;
-import baritone.event.events.WorldEvent;
-import baritone.event.events.type.EventState;
+import baritone.api.event.events.BlockInteractEvent;
+import baritone.api.event.events.TickEvent;
+import baritone.api.event.events.WorldEvent;
+import baritone.api.event.events.type.EventState;
 import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
