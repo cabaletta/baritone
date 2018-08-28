@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.Settings;
 import baritone.behavior.Behavior;
+import baritone.behavior.impl.FollowBehavior;
 import baritone.behavior.impl.PathingBehavior;
 import baritone.chunk.ChunkPacker;
 import baritone.chunk.Waypoint;
@@ -30,8 +31,10 @@ import baritone.pathing.goals.*;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
+import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -128,6 +131,18 @@ public class ExampleBaritoneControl extends Behavior {
                 }
             });
             PathingBehavior.INSTANCE.path();
+            event.cancel();
+            return;
+        }
+        if (msg.toLowerCase().equals("follow")) {
+            Optional<Entity> entity = MovementHelper.whatEntityAmILookingAt();
+            if (!entity.isPresent()) {
+                displayChatMessageRaw("You aren't looking at an entity bruh");
+                event.cancel();
+                return;
+            }
+            FollowBehavior.INSTANCE.follow(entity.get());
+            displayChatMessageRaw("Following " + entity.get());
             event.cancel();
             return;
         }
