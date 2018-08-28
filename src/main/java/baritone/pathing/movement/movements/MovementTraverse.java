@@ -86,7 +86,12 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
-            if (MovementHelper.canWalkThrough(positionsToBreak[0], pb0) && MovementHelper.canWalkThrough(positionsToBreak[1], pb1)) {
+            double hardness1 = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0], pb0, true);
+            if (hardness1 >= COST_INF) {
+                return COST_INF;
+            }
+            double hardness2 = MovementHelper.getMiningDurationTicks(context, positionsToBreak[1], pb1, false);
+            if (hardness1 == 0 && hardness2 == 0) {
                 if (WC == WALK_ONE_BLOCK_COST && context.canSprint()) {
                     // If there's nothing in the way, and this isn't water or soul sand, and we aren't sneak placing
                     // We can sprint =D
@@ -94,10 +99,7 @@ public class MovementTraverse extends Movement {
                 }
                 return WC;
             }
-            // double hardness1 = blocksToBreak[0].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[0]);
-            // double hardness2 = blocksToBreak[1].getBlockHardness(Minecraft.getMinecraft().world, positionsToBreak[1]);
-            // Out.log("Can't walk through " + blocksToBreak[0] + " (hardness" + hardness1 + ") or " + blocksToBreak[1] + " (hardness " + hardness2 + ")");
-            return WC + getTotalHardnessOfBlocksToBreak(context);
+            return WC + hardness1 + hardness2;
         } else {//this is a bridge, so we need to place a block
             Block srcDown = BlockStateInterface.get(src.down()).getBlock();
             if (srcDown instanceof BlockLadder || srcDown instanceof BlockVine) {
