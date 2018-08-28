@@ -195,7 +195,7 @@ public class ExampleBaritoneControl extends Behavior {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
-            Waypoint.Tag tag = Waypoint.TAG_MAP.get(waypointType);
+            Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
             if (tag == null) {
                 displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
@@ -218,7 +218,7 @@ public class ExampleBaritoneControl extends Behavior {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
-            Waypoint.Tag tag = Waypoint.TAG_MAP.get(waypointType);
+            Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
             if (tag == null) {
                 displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
