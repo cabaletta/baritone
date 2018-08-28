@@ -75,6 +75,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
         long lastPrintout = 0;
         int numNodes = 0;
+        int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
         boolean favoring = favoredPositions.isPresent();
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
@@ -125,6 +126,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 double actionCost = movementToGetToNeighbor.getCost(calcContext);
                 //long costEnd = System.nanoTime();
                 //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
+                numMovementsConsidered++;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
@@ -173,6 +175,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             currentlyRunning = null;
             return Optional.empty();
         }
+        System.out.println(numMovementsConsidered + " movements considered");
+        System.out.println("Open set size: " + ((BinaryHeapOpenSet) openSet).size());
+        System.out.println((int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)) + " nodes per second");
         double bestDist = 0;
         for (int i = 0; i < bestSoFar.length; i++) {
             if (bestSoFar[i] == null) {
@@ -183,7 +188,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 bestDist = dist;
             }
             if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                System.out.println((int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)) + " nodes per second");
                 displayChatMessageRaw("Took " + (System.currentTimeMillis() - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i]);
                 if (COEFFICIENTS[i] >= 3) {
                     System.out.println("Warning: cost coefficient is greater than three! Probably means that");
