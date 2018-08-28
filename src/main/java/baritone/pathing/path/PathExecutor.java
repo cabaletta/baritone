@@ -46,7 +46,7 @@ import static baritone.pathing.movement.MovementState.MovementStatus.*;
  */
 public class PathExecutor implements Helper {
     private static final double MAX_DIST_FROM_PATH = 2;
-    private static final double MAX_TICKS_AWAY = 200; // ten seconds
+    private static final double MAX_TICKS_AWAY = 200; // ten seconds. ok to decrease this, but it must be at least 110, see issue #102
     private final IPath path;
     private int pathPosition;
     private int ticksAway;
