@@ -183,7 +183,7 @@ public final class CachedChunk implements IBlockTypeAccess {
      * @return The bit index
      */
     public static int getPositionIndex(int x, int y, int z) {
-        return (x + (z << 4) + (y << 8)) << 1;
+        return (x << 1) + (z << 5) + (y << 9);
     }
 
     /**
