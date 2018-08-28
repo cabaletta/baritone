@@ -35,10 +35,10 @@
 package baritone.api.event;
 
 import baritone.Baritone;
-import baritone.chunk.WorldProvider;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.chunk.WorldProvider;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.interfaces.Toggleable;
@@ -135,7 +135,6 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
         switch (event.getState()) {
             case PRE:
-                cache.closeWorld();
                 break;
             case POST:
                 cache.closeWorld();

@@ -18,11 +18,11 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
-import baritone.behavior.impl.PathingBehavior;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.behavior.impl.PathingBehavior;
 import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -48,9 +48,12 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 
-    @Shadow private int leftClickCounter;
-    @Shadow public EntityPlayerSP player;
-    @Shadow public WorldClient world;
+    @Shadow
+    private int leftClickCounter;
+    @Shadow
+    public EntityPlayerSP player;
+    @Shadow
+    public WorldClient world;
 
     @Inject(
             method = "init",
@@ -108,8 +111,9 @@ public class MixinMinecraft {
     )
     private void preLoadWorld(WorldClient world, String loadingMessage, CallbackInfo ci) {
         // If we're unloading the world but one doesn't exist, ignore it
-        if (this.world == null && world == null)
+        if (this.world == null && world == null) {
             return;
+        }
 
         Baritone.INSTANCE.getGameEventHandler().onWorldEvent(
                 new WorldEvent(
@@ -124,9 +128,7 @@ public class MixinMinecraft {
             at = @At("RETURN")
     )
     private void postLoadWorld(WorldClient world, String loadingMessage, CallbackInfo ci) {
-        // If we're unloading the world but one doesn't exist, ignore it
-        if (this.world == null && world == null)
-            return;
+        // still fire event for both null, as that means we've just finished exiting a world
 
         Baritone.INSTANCE.getGameEventHandler().onWorldEvent(
                 new WorldEvent(
