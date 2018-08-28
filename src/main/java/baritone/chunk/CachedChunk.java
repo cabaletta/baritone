@@ -121,7 +121,10 @@ public final class CachedChunk implements IBlockTypeAccess {
         if (heightMap[internalPos] == y) {
             // we have this exact block, it's a surface block
             IBlockState state = ChunkPacker.stringToBlock(overview[internalPos]).getDefaultState();
-            //System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
+            /*System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
+            if (!Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock().equals(state.getBlock())) {
+                throw new IllegalStateException("failed " + Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock() + " " + state.getBlock() + " " + (x + this.x * 16) + " " + y + " " + (z + this.z * 16));
+            }*/
             return state;
         }
         PathingBlockType type = getType(x, y, z);

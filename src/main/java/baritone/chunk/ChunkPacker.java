@@ -71,7 +71,7 @@ public final class ChunkPacker implements Helper {
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
-                    if (!bitSet.get(index) && !bitSet.get(index + 1)) {
+                    if (bitSet.get(index) || bitSet.get(index + 1)) {
                         String name = blockToString(chunk.getBlockState(x, y, z).getBlock());
                         blockNames[z << 4 | x] = name;
                         continue outerLoop;
