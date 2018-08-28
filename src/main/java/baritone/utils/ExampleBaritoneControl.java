@@ -19,13 +19,13 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.Settings;
+import baritone.api.event.events.ChatEvent;
 import baritone.behavior.Behavior;
 import baritone.behavior.impl.FollowBehavior;
 import baritone.behavior.impl.PathingBehavior;
 import baritone.chunk.ChunkPacker;
 import baritone.chunk.Waypoint;
 import baritone.chunk.WorldProvider;
-import baritone.api.event.events.ChatEvent;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.goals.*;
 import baritone.pathing.movement.ActionCosts;
@@ -108,6 +108,7 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().equals("cancel")) {
             PathingBehavior.INSTANCE.cancel();
+            FollowBehavior.INSTANCE.cancel();
             event.cancel();
             displayChatMessageRaw("ok canceled");
             return;
