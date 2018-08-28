@@ -28,7 +28,6 @@ import baritone.utils.Utils;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementPillar extends Movement {
@@ -63,6 +62,9 @@ public class MovementPillar extends Movement {
             }
         }
         double hardness = getTotalHardnessOfBlocksToBreak(context);
+        if (hardness >= COST_INF) {
+            return COST_INF;
+        }
         if (hardness != 0) {
             Block tmp = BlockStateInterface.get(src.up(2)).getBlock();
             if (tmp instanceof BlockLadder || tmp instanceof BlockVine) {
@@ -70,12 +72,19 @@ public class MovementPillar extends Movement {
             } else {
                 BlockPos chkPos = src.up(3);
                 IBlockState check = BlockStateInterface.get(chkPos);
-                if (!MovementHelper.canWalkOn(chkPos, check) || MovementHelper.canWalkThrough(chkPos, check) || check.getBlock() instanceof BlockFalling) {//if the block above where we want to break is not a full block, don't do it
-                    // TODO why does canWalkThrough mean this action is COST_INF?
-                    // BlockFalling makes sense, and !canWalkOn deals with weird cases like if it were lava
-                    // but I don't understand why canWalkThrough makes it impossible
-                    return COST_INF;
+                if (check.getBlock() instanceof BlockFalling) {
+                    // see MovementAscend's identical check for breaking a falling block above our head
+                    if (!(tmp instanceof BlockFalling) || !(BlockStateInterface.get(src.up(1)).getBlock() instanceof BlockFalling)) {
+                        return COST_INF;
+                    }
                 }
+                // this is commented because it may have had a purpose, but it's very unclear what it was. it's from the minebot era.
+                //if (!MovementHelper.canWalkOn(chkPos, check) || MovementHelper.canWalkThrough(chkPos, check)) {//if the block above where we want to break is not a full block, don't do it
+                // TODO why does canWalkThrough mean this action is COST_INF?
+                // BlockFalling makes sense, and !canWalkOn deals with weird cases like if it were lava
+                // but I don't understand why canWalkThrough makes it impossible
+                //    return COST_INF;
+                //}
             }
         }
         if (fromDown instanceof BlockLiquid || fromDownDown instanceof BlockLiquid) {//can't pillar on water or in water
