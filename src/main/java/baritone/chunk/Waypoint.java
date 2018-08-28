@@ -17,12 +17,11 @@
 
 package baritone.chunk;
 
+import com.google.common.collect.ImmutableList;
 import net.minecraft.util.math.BlockPos;
+import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A single waypoint
@@ -30,6 +29,7 @@ import java.util.Map;
  * @author leijurv
  */
 public class Waypoint {
+
     public final String name;
     public final Tag tag;
     private final long creationTimestamp;
@@ -72,19 +72,21 @@ public class Waypoint {
     }
 
     public enum Tag {
-        HOME, DEATH, BED, USER;
+        HOME("home", "base"),
+        DEATH("death"),
+        BED("bed", "spawn"),
+        USER();
 
-    }
+        private static final List<Tag> TAG_LIST = ImmutableList.<Tag>builder().add(Tag.values()).build();
 
-    public static final Map<String, Tag> TAG_MAP;
+        private final String[] names;
 
-    static {
-        HashMap<String, Tag> map = new HashMap<>();
-        map.put("home", Tag.HOME);
-        map.put("base", Tag.HOME);
-        map.put("bed", Tag.BED);
-        map.put("spawn", Tag.BED);
-        map.put("death", Tag.DEATH);
-        TAG_MAP = Collections.unmodifiableMap(map);
+        Tag(String... names) {
+            this.names = names;
+        }
+
+        public static Tag fromString(String name) {
+            return TAG_LIST.stream().filter(tag -> ArrayUtils.contains(tag.names, name.toLowerCase())).findFirst().orElse(null);
+        }
     }
 }
