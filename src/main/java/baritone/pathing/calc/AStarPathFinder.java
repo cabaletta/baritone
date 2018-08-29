@@ -82,24 +82,24 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
         HashMap<Class<? extends Movement>, Long> timeConsumed = new HashMap<>();
         HashMap<Class<? extends Movement>, Integer> count = new HashMap<>();
-        long heapRemove=0;
-        int heapRemoveCount=0;
-        long heapAdd=0;
-        int heapAddCount=0;
-        long heapUpdate=0;
-        int heapUpdateCount=0;
+        long heapRemove = 0;
+        int heapRemoveCount = 0;
+        long heapAdd = 0;
+        int heapAddCount = 0;
+        long heapUpdate = 0;
+        int heapUpdateCount = 0;
 
-        long construction=0;
-        int constructionCount=0;
+        long construction = 0;
+        int constructionCount = 0;
 
-        long chunk=0;
-        int chunkCount=0;
+        long chunk = 0;
+        int chunkCount = 0;
 
-        long chunk2=0;
-        int chunkCount2=0;
+        long chunk2 = 0;
+        int chunkCount2 = 0;
 
-        long getNode=0;
-        int getNodeCount=0;
+        long getNode = 0;
+        int getNodeCount = 0;
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime && !cancelRequested) {
             if (slowPath) {
                 try {
@@ -107,9 +107,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 } catch (InterruptedException ex) {
                 }
             }
-            long before=System.nanoTime();
+            long before = System.nanoTime();
             PathNode currentNode = openSet.removeLowest();
-            heapRemove+=System.nanoTime()-before;
+            heapRemove += System.nanoTime() - before;
             heapRemoveCount++;
             currentNode.isOpen = false;
             mostRecentConsidered = currentNode;
@@ -127,7 +127,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos, in random order
             shuffle(possibleMovements);
             long constructEnd = System.nanoTime();
-            construction+=constructEnd-constructStart;
+            construction += constructEnd - constructStart;
             constructionCount++;
             //System.out.println(constructEnd - constructStart);
             for (Movement movementToGetToNeighbor : possibleMovements) {
@@ -135,19 +135,19 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     continue;
                 }
                 BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
-                long s=System.nanoTime();
+                long s = System.nanoTime();
                 boolean isPositionCached = false;
                 if (world != null) {
                     if (world.isCached(dest)) {
                         isPositionCached = true;
                     }
                 }
-                long k=System.nanoTime();
-                chunk2+=k-s;
+                long k = System.nanoTime();
+                chunk2 += k - s;
                 chunkCount2++;
-                boolean currentlyLoaded=Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk;
+                boolean currentlyLoaded = Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk;
                 long costStart = System.nanoTime();
-                chunk+=costStart-k;
+                chunk += costStart - k;
                 chunkCount++;
                 if (!isPositionCached && currentlyLoaded) {
                     numEmptyChunk++;
@@ -171,9 +171,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     // see issue #18
                     actionCost *= favorCoeff;
                 }
-                long st=System.nanoTime();
+                long st = System.nanoTime();
                 PathNode neighbor = getNodeAtPosition(dest);
-                getNode+=System.nanoTime()-st;
+                getNode += System.nanoTime() - st;
                 getNodeCount++;
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
@@ -193,14 +193,14 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     neighbor.cost = tentativeCost;
                     neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
                     if (neighbor.isOpen) {
-                        long bef=System.nanoTime();
+                        long bef = System.nanoTime();
                         openSet.update(neighbor);
-                        heapUpdate+=System.nanoTime()-bef;
+                        heapUpdate += System.nanoTime() - bef;
                         heapUpdateCount++;
                     } else {
-                        long bef=System.nanoTime();
+                        long bef = System.nanoTime();
                         openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
-                        heapAdd+=System.nanoTime()-bef;
+                        heapAdd += System.nanoTime() - bef;
                         heapAddCount++;
                         neighbor.isOpen = true;
                     }
@@ -214,19 +214,19 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 }
             }
         }
-        System.out.println("Remove "+(heapRemove/heapRemoveCount)+" "+heapRemove/1000000+" "+heapRemoveCount);
-        System.out.println("Add "+(heapAdd/heapAddCount)+" "+heapAdd/1000000+" "+heapAddCount);
-        System.out.println("Update "+(heapUpdate/heapUpdateCount)+" "+heapUpdate/1000000+" "+heapUpdateCount);
-        System.out.println("Construction "+(construction/constructionCount)+" "+construction/1000000+" "+constructionCount);
-        System.out.println("EmptyChunk "+(chunk/chunkCount)+" "+chunk/1000000+" "+chunkCount);
-        System.out.println("CachedChunk "+(chunk2/chunkCount2)+" "+chunk2/1000000+" "+chunkCount2);
-        System.out.println("GetNode "+(getNode/getNodeCount)+" "+getNode/1000000+" "+getNodeCount);
+        System.out.println("Remove " + (heapRemove / heapRemoveCount) + " " + heapRemove / 1000000 + " " + heapRemoveCount);
+        System.out.println("Add " + (heapAdd / heapAddCount) + " " + heapAdd / 1000000 + " " + heapAddCount);
+        System.out.println("Update " + (heapUpdate / heapUpdateCount) + " " + heapUpdate / 1000000 + " " + heapUpdateCount);
+        System.out.println("Construction " + (construction / constructionCount) + " " + construction / 1000000 + " " + constructionCount);
+        System.out.println("EmptyChunk " + (chunk / chunkCount) + " " + chunk / 1000000 + " " + chunkCount);
+        System.out.println("CachedChunk " + (chunk2 / chunkCount2) + " " + chunk2 / 1000000 + " " + chunkCount2);
+        System.out.println("GetNode " + (getNode / getNodeCount) + " " + getNode / 1000000 + " " + getNodeCount);
         ArrayList<Class<? extends Movement>> klasses = new ArrayList<>(count.keySet());
         klasses.sort(Comparator.comparingLong(k -> timeConsumed.get(k) / count.get(k)));
         for (Class<? extends Movement> klass : klasses) {
             int num = count.get(klass);
             long nanoTime = timeConsumed.get(klass);
-            System.out.println(nanoTime / num + " " + klass + " " + nanoTime/1000000 + "ms " + num);
+            System.out.println(nanoTime / num + " " + klass + " " + nanoTime / 1000000 + "ms " + num);
         }
         if (cancelRequested) {
             currentlyRunning = null;
