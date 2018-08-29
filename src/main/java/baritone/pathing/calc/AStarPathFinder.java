@@ -113,15 +113,18 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     continue;
                 }
                 BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
-                boolean isPositionCached = false;
-                if (world != null) {
-                    if (world.isCached(dest)) {
-                        isPositionCached = true;
+                if (dest.x >> 4 != currentNodePos.x >> 4 || dest.z >> 4 != currentNodePos.z >> 4) {
+                    // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
+                    boolean isPositionCached = false;
+                    if (world != null) {
+                        if (world.isCached(dest)) {
+                            isPositionCached = true;
+                        }
                     }
-                }
-                if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk) {
-                    numEmptyChunk++;
-                    continue;
+                    if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk) {
+                        numEmptyChunk++;
+                        continue;
+                    }
                 }
                 //long costStart = System.nanoTime();
                 // TODO cache cost
