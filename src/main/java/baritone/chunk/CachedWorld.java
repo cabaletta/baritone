@@ -153,22 +153,22 @@ public final class CachedWorld implements IBlockTypeAccess {
             System.out.println("Not saving to disk; chunk caching is disabled.");
             return;
         }
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime() / 1000000L;
         this.cachedRegions.values().parallelStream().forEach(region -> {
             if (region != null)
                 region.save(this.directory);
         });
-        long now = System.currentTimeMillis();
+        long now = System.nanoTime() / 1000000L;
         System.out.println("World save took " + (now - start) + "ms");
     }
 
     public final void reloadAllFromDisk() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime() / 1000000L;
         this.cachedRegions.values().forEach(region -> {
             if (region != null)
                 region.load(this.directory);
         });
-        long now = System.currentTimeMillis();
+        long now = System.nanoTime() / 1000000L;
         System.out.println("World load took " + (now - start) + "ms");
     }
 

@@ -183,7 +183,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                 return;
 
             System.out.println("Loading region " + x + "," + z + " from disk " + path);
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime() / 1000000L;
 
             try (
                     FileInputStream fileIn = new FileInputStream(regionFile.toFile());
@@ -266,7 +266,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                 }
             }
             hasUnsavedChanges = false;
-            long end = System.currentTimeMillis();
+            long end = System.nanoTime() / 1000000L;
             System.out.println("Loaded region successfully in " + (end - start) + "ms");
         } catch (IOException ex) {
             ex.printStackTrace();

@@ -163,7 +163,7 @@ public class PathExecutor implements Helper {
                 }
             }
         }*/
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime() / 1000000L;
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i >= 0 && i < path.movements().size()) {
                 Movement m = path.movements().get(i);
@@ -198,7 +198,7 @@ public class PathExecutor implements Helper {
             toWalkInto = newWalkInto;
             recalcBP = false;
         }
-        long end = System.currentTimeMillis();
+        long end = System.nanoTime() / 1000000L;
         if (end - start > 0) {
             //displayChatMessageRaw("Recalculating break and place took " + (end - start) + "ms");
         }
