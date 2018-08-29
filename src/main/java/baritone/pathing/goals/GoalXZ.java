@@ -20,6 +20,7 @@ package baritone.pathing.goals;
 import baritone.Baritone;
 import baritone.utils.Utils;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 /**
@@ -88,9 +89,9 @@ public class GoalXZ implements Goal {
     }
 
     public static GoalXZ fromDirection(Vec3d origin, float yaw, double distance) {
-        double theta = Utils.degToRad(yaw);
-        double x = origin.x - Math.sin(theta) * distance;
-        double z = origin.z + Math.cos(theta) * distance;
+        float theta = (float) Utils.degToRad(yaw);
+        double x = origin.x - MathHelper.sin(theta) * distance;
+        double z = origin.z + MathHelper.cos(theta) * distance;
         return new GoalXZ((int) x, (int) z);
     }
 
