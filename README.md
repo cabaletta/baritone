@@ -30,3 +30,11 @@ Baritone.settings().pathTimeoutMS.value = 2000L;
 PathingBehavior.INSTANCE.setGoal(new GoalXZ(10000, 20000));
 PathingBehavior.INSTANCE.path();
 ```
+
+# Can I use Baritone as a library in my hacked client?
+
+Sure!
+
+# How is it so fast?
+
+Magic
