@@ -97,6 +97,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
         long chunk2=0;
         int chunkCount2=0;
+
+        long getNode=0;
+        int getNodeCount=0;
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime && !cancelRequested) {
             if (slowPath) {
                 try {
@@ -142,13 +145,15 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 long k=System.nanoTime();
                 chunk2+=k-s;
                 chunkCount2++;
-                if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk) {
-                    numEmptyChunk++;
-                    continue;
-                }
+                boolean currentlyLoaded=Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk;
                 long costStart = System.nanoTime();
                 chunk+=costStart-k;
                 chunkCount++;
+                if (!isPositionCached && currentlyLoaded) {
+                    numEmptyChunk++;
+                    continue;
+                }
+
                 // TODO cache cost
                 double actionCost = movementToGetToNeighbor.getCost(calcContext);
                 long costEnd = System.nanoTime();
@@ -166,7 +171,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     // see issue #18
                     actionCost *= favorCoeff;
                 }
+                long st=System.nanoTime();
                 PathNode neighbor = getNodeAtPosition(dest);
+                getNode+=System.nanoTime()-st;
+                getNodeCount++;
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
                     if (tentativeCost < 0) {
@@ -212,6 +220,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         System.out.println("Construction "+(construction/constructionCount)+" "+construction/1000000+" "+constructionCount);
         System.out.println("EmptyChunk "+(chunk/chunkCount)+" "+chunk/1000000+" "+chunkCount);
         System.out.println("CachedChunk "+(chunk2/chunkCount2)+" "+chunk2/1000000+" "+chunkCount2);
+        System.out.println("GetNode "+(getNode/getNodeCount)+" "+getNode/1000000+" "+getNodeCount);
         ArrayList<Class<? extends Movement>> klasses = new ArrayList<>(count.keySet());
         klasses.sort(Comparator.comparingLong(k -> timeConsumed.get(k) / count.get(k)));
         for (Class<? extends Movement> klass : klasses) {
