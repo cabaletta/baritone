@@ -30,7 +30,7 @@ public class BetterBlockPos extends BlockPos {
     public final int x;
     public final int y;
     public final int z;
-    private final int hashCode;
+    public final long hashCode;
 
     public BetterBlockPos(int x, int y, int z) {
         super(x, y, z);
@@ -48,10 +48,10 @@ public class BetterBlockPos extends BlockPos {
          *
          *   That's why we grab out the X, Y, Z and calculate our own hashcode
          */
-        int hash = 3241;
-        hash = 3457689 * hash + x;
-        hash = 8734625 * hash + y;
-        hash = 2873465 * hash + z;
+        long hash = 3241;
+        hash = 3457689L * hash + x;
+        hash = 8734625L * hash + y;
+        hash = 2873465L * hash + z;
         this.hashCode = hash;
     }
 
@@ -61,7 +61,7 @@ public class BetterBlockPos extends BlockPos {
 
     @Override
     public final int hashCode() {
-        return hashCode;
+        return (int) hashCode;
     }
 
     @Override
