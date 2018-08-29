@@ -108,14 +108,13 @@ public final class BinaryHeapOpenSet implements IOpenSet {
         int smallerChild = 2;
         double cost = val.combinedCost;
         do {
-            int right = smallerChild + 1;
             PathNode smallerChildNode = array[smallerChild];
             double smallerChildCost = smallerChildNode.combinedCost;
-            if (right <= size) {
-                PathNode rightChildNode = array[right];
+            if (smallerChild < size) {
+                PathNode rightChildNode = array[smallerChild + 1];
                 double rightChildCost = rightChildNode.combinedCost;
                 if (smallerChildCost > rightChildCost) {
-                    smallerChild = right;
+                    smallerChild++;
                     smallerChildCost = rightChildCost;
                     smallerChildNode = rightChildNode;
                 }
@@ -128,8 +127,7 @@ public final class BinaryHeapOpenSet implements IOpenSet {
             val.heapPosition = smallerChild;
             smallerChildNode.heapPosition = index;
             index = smallerChild;
-            smallerChild = index << 1;
-        } while (smallerChild <= size);
+        } while ((smallerChild <<= 1) <= size);
         return result;
     }
 }
