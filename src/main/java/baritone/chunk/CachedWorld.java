@@ -59,7 +59,8 @@ public final class CachedWorld implements IBlockTypeAccess {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
         this.directory = directory.toString();
         System.out.println("Cached world directory: " + directory);
@@ -101,6 +102,17 @@ public final class CachedWorld implements IBlockTypeAccess {
         }
         return region.getBlock(x & 511, y, z & 511);
     }
+
+    public final boolean isCached(BlockPos pos) {
+        int x = pos.getX();
+        int z = pos.getZ();
+        CachedRegion region = getRegion(x >> 9, z >> 9);
+        if (region == null) {
+            return false;
+        }
+        return region.isCached(x & 511, z & 511);
+    }
+
 
     public final LinkedList<BlockPos> getLocationsOf(String block, int minimum, int maxRegionDistanceSq) {
         LinkedList<BlockPos> res = new LinkedList<>();
