@@ -32,9 +32,9 @@ import baritone.pathing.path.IPath;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -71,11 +71,12 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         CalculationContext calcContext = new CalculationContext();
         HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
         currentlyRunning = this;
-        CachedWorld world = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
+        CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
+        ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
         long startTime = System.currentTimeMillis();
         boolean slowPath = Baritone.settings().slowPath.get();
         long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
-        long lastPrintout = 0;
+        //long lastPrintout = 0;
         int numNodes = 0;
         int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
@@ -95,10 +96,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             mostRecentConsidered = currentNode;
             BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
-            if (System.currentTimeMillis() > lastPrintout + 1000) {//print once a second
+            /*if (System.currentTimeMillis() > lastPrintout + 1000) {//print once a second
                 System.out.println("searching... at " + currentNodePos + ", considered " + numNodes + " nodes so far");
                 lastPrintout = System.currentTimeMillis();
-            }
+            }*/
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
                 displayChatMessageRaw("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");
@@ -114,17 +115,16 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     continue;
                 }
                 BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
-                if (dest.x >> 4 != currentNodePos.x >> 4 || dest.z >> 4 != currentNodePos.z >> 4) {
+                int chunkX = currentNodePos.x >> 4;
+                int chunkZ = currentNodePos.z >> 4;
+                if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
-                    boolean isPositionCached = false;
-                    if (world != null) {
-                        if (world.isCached(dest)) {
-                            isPositionCached = true;
+                    if (chunkProvider.getLoadedChunk(chunkX, chunkZ) == null) {
+                        // see issue #106
+                        if (cachedWorld == null || !cachedWorld.isCached(dest)) {
+                            numEmptyChunk++;
+                            continue;
                         }
-                    }
-                    if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk) {
-                        numEmptyChunk++;
-                        continue;
                     }
                 }
                 //long costStart = System.nanoTime();
