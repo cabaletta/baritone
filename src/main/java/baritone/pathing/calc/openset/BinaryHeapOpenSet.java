@@ -52,6 +52,10 @@ public class BinaryHeapOpenSet implements IOpenSet {
         this.array = new PathNode[size];
     }
 
+    public int size() {
+        return size;
+    }
+
     @Override
     public final void insert(PathNode value) {
         if (size >= array.length - 1) {

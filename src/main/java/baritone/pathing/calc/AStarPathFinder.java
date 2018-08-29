@@ -72,6 +72,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
         long lastPrintout = 0;
         int numNodes = 0;
+        int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
         boolean favoring = favoredPositions.isPresent();
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
@@ -126,6 +127,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 timeConsumed.put(movementToGetToNeighbor.getClass(), costEnd - costStart + timeConsumed.getOrDefault(movementToGetToNeighbor.getClass(), 0L));
                 count.put(movementToGetToNeighbor.getClass(), 1 + count.getOrDefault(movementToGetToNeighbor.getClass(), 0));
                 //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
+                numMovementsConsidered++;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
@@ -181,6 +183,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             currentlyRunning = null;
             return Optional.empty();
         }
+        System.out.println(numMovementsConsidered + " movements considered");
+        System.out.println("Open set size: " + ((BinaryHeapOpenSet) openSet).size());
+        System.out.println((int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)) + " nodes per second");
         double bestDist = 0;
         for (int i = 0; i < bestSoFar.length; i++) {
             if (bestSoFar[i] == null) {
@@ -197,7 +202,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");
                     System.out.println("But I'm going to do it anyway, because yolo");
                 }
-                System.out.println("Path goes for " + dist + " blocks");
+                System.out.println("Path goes for " + Math.sqrt(dist) + " blocks");
                 currentlyRunning = null;
                 return Optional.of(new Path(startNode, bestSoFar[i], numNodes));
             }
