@@ -106,18 +106,12 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         if (optionA == 0) {
-            if (MovementHelper.avoidWalkingInto(pb2.getBlock())) {
-                return COST_INF;
-            }
-            if (MovementHelper.avoidWalkingInto(pb3.getBlock())) {
+            if (MovementHelper.avoidWalkingInto(pb2.getBlock()) || MovementHelper.avoidWalkingInto(pb3.getBlock())) {
                 return COST_INF;
             }
         }
         if (optionB == 0) {
-            if (MovementHelper.avoidWalkingInto(pb0.getBlock())) {
-                return COST_INF;
-            }
-            if (MovementHelper.avoidWalkingInto(pb1.getBlock())) {
+            if (MovementHelper.avoidWalkingInto(pb0.getBlock()) || MovementHelper.avoidWalkingInto(pb1.getBlock())) {
                 return COST_INF;
             }
         }
