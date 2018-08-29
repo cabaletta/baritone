@@ -96,8 +96,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         long chunk = 0;
         int chunkCount = 0;
 
-        long chunk2 = 0;
-        int chunkCount2 = 0;
+        long goalCheck = 0;
+        int goalCheckCount = 0;
 
         long getNode = 0;
         int getNodeCount = 0;
@@ -110,7 +110,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             }
             long before = System.nanoTime();
             PathNode currentNode = openSet.removeLowest();
-            heapRemove += System.nanoTime() - before;
+            long t = System.nanoTime();
+            heapRemove += t - before;
             heapRemoveCount++;
             currentNode.isOpen = false;
             mostRecentConsidered = currentNode;
@@ -126,6 +127,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 return Optional.of(new Path(startNode, currentNode, numNodes));
             }
             long constructStart = System.nanoTime();
+            goalCheck += constructStart - t;
+            goalCheckCount++;
             Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos, in random order
             shuffle(possibleMovements);
             long constructEnd = System.nanoTime();
@@ -220,6 +223,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         System.out.println("Construction " + (construction / constructionCount) + " " + construction / 1000000 + " " + constructionCount);
         System.out.println("Chunk " + (chunk / chunkCount) + " " + chunk / 1000000 + " " + chunkCount);
         System.out.println("GetNode " + (getNode / getNodeCount) + " " + getNode / 1000000 + " " + getNodeCount);
+        System.out.println("GoalCheck " + (goalCheck / goalCheckCount) + " " + goalCheck / 1000000 + " " + goalCheckCount);
         ArrayList<Class<? extends Movement>> klasses = new ArrayList<>(count.keySet());
         klasses.sort(Comparator.comparingLong(k -> timeConsumed.get(k) / count.get(k)));
         for (Class<? extends Movement> klass : klasses) {
