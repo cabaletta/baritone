@@ -77,6 +77,10 @@ public final class CachedRegion implements IBlockTypeAccess {
         return null;
     }
 
+    public final boolean isCached(int x, int z) {
+        return chunks[x >> 4][z >> 4] != null;
+    }
+
     public final LinkedList<BlockPos> getLocationsOf(String block) {
         LinkedList<BlockPos> res = new LinkedList<>();
         for (int chunkX = 0; chunkX < 32; chunkX++) {
