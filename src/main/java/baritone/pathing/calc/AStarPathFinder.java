@@ -21,7 +21,6 @@ import baritone.Baritone;
 import baritone.chunk.CachedWorld;
 import baritone.chunk.WorldProvider;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
-import baritone.pathing.calc.openset.IOpenSet;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
@@ -60,7 +59,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         startNode = getNodeAtPosition(start);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
-        IOpenSet openSet = new BinaryHeapOpenSet();
+        BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
         openSet.insert(startNode);
         startNode.isOpen = true;
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
@@ -182,7 +181,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             return Optional.empty();
         }
         System.out.println(numMovementsConsidered + " movements considered");
-        System.out.println("Open set size: " + ((BinaryHeapOpenSet) openSet).size());
+        System.out.println("Open set size: " + openSet.size());
         System.out.println((int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)) + " nodes per second");
         double bestDist = 0;
         for (int i = 0; i < bestSoFar.length; i++) {

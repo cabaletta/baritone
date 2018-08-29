@@ -26,7 +26,7 @@ import java.util.Arrays;
  *
  * @author leijurv
  */
-public class BinaryHeapOpenSet implements IOpenSet {
+public final class BinaryHeapOpenSet implements IOpenSet {
 
     /**
      * The initial capacity of the heap (2^10)
