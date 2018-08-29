@@ -23,7 +23,7 @@ package baritone.utils.pathing;
  */
 public enum PathingBlockType {
 
-    AIR  (0b00),
+    AIR(0b00),
     WATER(0b01),
     AVOID(0b10),
     SOLID(0b11);
@@ -31,7 +31,7 @@ public enum PathingBlockType {
     private final boolean[] bits;
 
     PathingBlockType(int bits) {
-        this.bits = new boolean[] {
+        this.bits = new boolean[]{
                 (bits & 0b10) != 0,
                 (bits & 0b01) != 0
         };
@@ -42,11 +42,18 @@ public enum PathingBlockType {
     }
 
     public static PathingBlockType fromBits(boolean b1, boolean b2) {
-        for (PathingBlockType type : values())
-            if (type.bits[0] == b1 && type.bits[1] == b2)
-                return type;
-
-        // This will never happen, but if it does, assume it's just AIR
-        return PathingBlockType.AIR;
+        if (b1) {
+            if (b2) {
+                return PathingBlockType.SOLID;
+            } else {
+                return PathingBlockType.AVOID;
+            }
+        } else {
+            if (b2) {
+                return PathingBlockType.WATER;
+            } else {
+                return PathingBlockType.AIR;
+            }
+        }
     }
 }
