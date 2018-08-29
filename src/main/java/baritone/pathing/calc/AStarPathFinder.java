@@ -68,6 +68,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         CalculationContext calcContext = new CalculationContext();
         HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
         currentlyRunning = this;
+        CachedWorld world = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
         long startTime = System.currentTimeMillis();
         boolean slowPath = Baritone.settings().slowPath.get();
         long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
@@ -79,7 +80,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
-        CachedWorld world=Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w->w.cache).orElse(null);
         HashMap<Class<? extends Movement>, Long> timeConsumed = new HashMap<>();
         HashMap<Class<? extends Movement>, Integer> count = new HashMap<>();
         long heapRemove=0;
@@ -135,7 +135,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 long s=System.nanoTime();
                 boolean isPositionCached = false;
                 if (world != null) {
-                    if (world.isCached(dest)){
+                    if (world.isCached(dest)) {
                         isPositionCached = true;
                     }
                 }
