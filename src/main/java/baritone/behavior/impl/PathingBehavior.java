@@ -203,6 +203,12 @@ public class PathingBehavior extends Behavior {
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
     public boolean path() {
+        if (goal == null) {
+            return false;
+        }
+        if (goal.isInGoal(playerFeet())) {
+            return false;
+        }
         synchronized (pathPlanLock) {
             if (current != null) {
                 return false;
