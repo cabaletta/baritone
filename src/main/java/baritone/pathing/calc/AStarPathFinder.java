@@ -233,6 +233,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             int num = count.get(klass);
             long nanoTime = timeConsumed.get(klass);
             System.out.println(nanoTime / num + " " + klass + " " + nanoTime / 1000000 + "ms " + num);
+            System.out.println(stateLookup.get(klass) / num + " " + stateLookup.get(klass));
         }
         if (cancelRequested) {
             currentlyRunning = null;
