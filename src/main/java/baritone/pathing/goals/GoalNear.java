@@ -51,4 +51,14 @@ public class GoalNear implements Goal {
     public BlockPos getGoalPos() {
         return new BlockPos(x, y, z);
     }
+
+    @Override
+    public String toString() {
+        return "GoalNear{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                ", rangeSq=" + rangeSq +
+                '}';
+    }
 }
