@@ -25,6 +25,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.movements.MovementDescend;
 import baritone.pathing.movement.movements.MovementDiagonal;
+import baritone.pathing.movement.movements.MovementFall;
 import baritone.pathing.movement.movements.MovementTraverse;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
@@ -46,6 +47,7 @@ import static baritone.pathing.movement.MovementState.MovementStatus.*;
  * @author leijurv
  */
 public class PathExecutor implements Helper {
+    private static final double MAX_MAX_DIST_FROM_PATH = 3;
     private static final double MAX_DIST_FROM_PATH = 2;
     private static final double MAX_TICKS_AWAY = 200; // ten seconds. ok to decrease this, but it must be at least 110, see issue #102
     private final IPath path;
@@ -131,6 +133,17 @@ public class PathExecutor implements Helper {
             }
         } else {
             ticksAway = 0;
+        }
+        if (distanceFromPath > MAX_MAX_DIST_FROM_PATH) {
+            if (!(path.movements().get(pathPosition) instanceof MovementFall)) { // might be midair
+                if (pathPosition > 0 || !(path.movements().get(pathPosition - 1) instanceof MovementFall)) { // might have overshot the landing
+                    displayChatMessageRaw("too far from path");
+                    pathPosition = path.length() + 3;
+                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    failed = true;
+                    return false;
+                }
+            }
         }
         //this commented block is literally cursed.
         /*Out.log(actions.get(pathPosition));
