@@ -136,7 +136,7 @@ public class PathExecutor implements Helper {
         }
         if (distanceFromPath > MAX_MAX_DIST_FROM_PATH) {
             if (!(path.movements().get(pathPosition) instanceof MovementFall)) { // might be midair
-                if (pathPosition > 0 || !(path.movements().get(pathPosition - 1) instanceof MovementFall)) { // might have overshot the landing
+                if (pathPosition == 0 || !(path.movements().get(pathPosition - 1) instanceof MovementFall)) { // might have overshot the landing
                     displayChatMessageRaw("too far from path");
                     pathPosition = path.length() + 3;
                     Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
