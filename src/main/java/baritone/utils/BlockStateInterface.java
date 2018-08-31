@@ -30,8 +30,10 @@ import net.minecraft.world.chunk.Chunk;
 
 public class BlockStateInterface implements Helper {
 
-    public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
+    public static int numBlockStateLookups = 0;
 
+    public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
+        numBlockStateLookups++;
         // Invalid vertical position
         if (pos.getY() < 0 || pos.getY() >= 256)
             return Blocks.AIR.getDefaultState();

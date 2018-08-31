@@ -28,6 +28,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.pathing.path.IPath;
+import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
@@ -82,6 +83,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
         HashMap<Class<? extends Movement>, Long> timeConsumed = new HashMap<>();
         HashMap<Class<? extends Movement>, Integer> count = new HashMap<>();
+        HashMap<Class<? extends Movement>, Integer> stateLookup = new HashMap<>();
         long heapRemove = 0;
         int heapRemoveCount = 0;
         long heapAdd = 0;
@@ -157,8 +159,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 chunkCount++;
                 //long costStart = System.nanoTime();
                 // TODO cache cost
+                int numLookupsBefore = BlockStateInterface.numBlockStateLookups;
                 double actionCost = movementToGetToNeighbor.getCost(calcContext);
                 long costEnd = System.nanoTime();
+                stateLookup.put(movementToGetToNeighbor.getClass(), BlockStateInterface.numBlockStateLookups - numLookupsBefore + stateLookup.getOrDefault(movementToGetToNeighbor.getClass(), 0));
                 timeConsumed.put(movementToGetToNeighbor.getClass(), costEnd - costStart + timeConsumed.getOrDefault(movementToGetToNeighbor.getClass(), 0L));
                 count.put(movementToGetToNeighbor.getClass(), 1 + count.getOrDefault(movementToGetToNeighbor.getClass(), 0));
                 //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
