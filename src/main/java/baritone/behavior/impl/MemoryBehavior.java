@@ -59,7 +59,7 @@ public class MemoryBehavior extends Behavior {
                         TileEntityLockable lockable = (TileEntityLockable) tileEntity;
                         int size = lockable.getSizeInventory();
 
-                        this.futureInventories.add(new FutureInventory(System.currentTimeMillis(), size, lockable.getGuiID(), tileEntity.getPos()));
+                        this.futureInventories.add(new FutureInventory(System.nanoTime() / 1000000L, size, lockable.getGuiID(), tileEntity.getPos()));
                     }
                 }
 
@@ -81,7 +81,7 @@ public class MemoryBehavior extends Behavior {
                     SPacketOpenWindow packet = event.cast();
 
                     // Remove any entries that were created over a second ago, this should make up for INSANE latency
-                    this.futureInventories.removeIf(i -> System.currentTimeMillis() - i.time > 1000);
+                    this.futureInventories.removeIf(i -> System.nanoTime() / 1000000L - i.time > 1000);
 
                     this.futureInventories.stream()
                             .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())

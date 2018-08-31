@@ -65,11 +65,11 @@ public class Settings {
     /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
-    public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(Arrays.asList(
+    public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK)
-    ));
+    )));
 
     /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real

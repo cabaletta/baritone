@@ -44,21 +44,21 @@ public class BetterBlockPosTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        long before1 = System.currentTimeMillis();
+        long before1 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
             pos.up();
         }
-        long after1 = System.currentTimeMillis();
+        long after1 = System.nanoTime() / 1000000L;
         try {
             Thread.sleep(1000); // give GC some time
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        long before2 = System.currentTimeMillis();
+        long before2 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
             pos2.up();
         }
-        long after2 = System.currentTimeMillis();
+        long after2 = System.nanoTime() / 1000000L;
         System.out.println((after1 - before1) + " " + (after2 - before2));
     }
 
@@ -70,7 +70,7 @@ public class BetterBlockPosTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        long before1 = System.currentTimeMillis();
+        long before1 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
             pos.up(0);
             pos.up(1);
@@ -78,13 +78,13 @@ public class BetterBlockPosTest {
             pos.up(3);
             pos.up(4);
         }
-        long after1 = System.currentTimeMillis();
+        long after1 = System.nanoTime() / 1000000L;
         try {
             Thread.sleep(1000); // give GC some time
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        long before2 = System.currentTimeMillis();
+        long before2 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
             pos2.up(0);
             pos2.up(1);
@@ -92,7 +92,7 @@ public class BetterBlockPosTest {
             pos2.up(3);
             pos2.up(4);
         }
-        long after2 = System.currentTimeMillis();
+        long after2 = System.nanoTime() / 1000000L;
         System.out.println((after1 - before1) + " " + (after2 - before2));
     }
 }

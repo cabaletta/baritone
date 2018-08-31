@@ -21,7 +21,6 @@ import baritone.Baritone;
 import baritone.chunk.CachedWorld;
 import baritone.chunk.WorldProvider;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
-import baritone.pathing.calc.openset.IOpenSet;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
@@ -57,7 +56,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         startNode = getNodeAtPosition(start);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
-        IOpenSet openSet = new BinaryHeapOpenSet();
+        BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
         openSet.insert(startNode);
         startNode.isOpen = true;
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
@@ -70,7 +69,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         currentlyRunning = this;
         CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
         //long lastPrintout = 0;
@@ -101,7 +100,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
         long getNode = 0;
         int getNodeCount = 0;
-        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime && !cancelRequested) {
+        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.nanoTime() / 1000000L - timeoutTime < 0 && !cancelRequested) {
             if (slowPath) {
                 try {
                     Thread.sleep(Baritone.settings().slowPathTimeDelayMS.<Long>get());
@@ -117,13 +116,13 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             mostRecentConsidered = currentNode;
             BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
-            /*if (System.currentTimeMillis() > lastPrintout + 1000) {//print once a second
+            /*if ((lastPrintout + 1000) - System.nanoTime() / 1000000L < 0) {//print once a second
                 System.out.println("searching... at " + currentNodePos + ", considered " + numNodes + " nodes so far");
-                lastPrintout = System.currentTimeMillis();
+                lastPrintout = System.nanoTime() / 1000000L;
             }*/
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
-                displayChatMessageRaw("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");
+                displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes));
             }
             long constructStart = System.nanoTime();
@@ -236,8 +235,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             return Optional.empty();
         }
         System.out.println(numMovementsConsidered + " movements considered");
-        System.out.println("Open set size: " + ((BinaryHeapOpenSet) openSet).size());
-        System.out.println((int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)) + " nodes per second");
+        System.out.println("Open set size: " + openSet.size());
+        System.out.println((int) (numNodes * 1.0 / ((System.nanoTime() / 1000000L - startTime) / 1000F)) + " nodes per second");
         double bestDist = 0;
         for (int i = 0; i < bestSoFar.length; i++) {
             if (bestSoFar[i] == null) {
@@ -248,7 +247,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 bestDist = dist;
             }
             if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                displayChatMessageRaw("Took " + (System.currentTimeMillis() - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
+                displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
                 if (COEFFICIENTS[i] >= 3) {
                     System.out.println("Warning: cost coefficient is greater than three! Probably means that");
                     System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");

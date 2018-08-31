@@ -67,22 +67,20 @@ public final class CachedWorld implements IBlockTypeAccess {
         // Insert an invalid region element
         cachedRegions.put(0, null);
         new PackerThread().start();
-        new Thread() {
-            public void run() {
-                try {
-                    Thread.sleep(30000);
-                    while (true) {
-                        // since a region only saves if it's been modified since its last save
-                        // saving every 10 minutes means that once it's time to exit
-                        // we'll only have a couple regions to save
-                        save();
-                        Thread.sleep(600000);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        new Thread(() -> {
+            try {
+                Thread.sleep(30000);
+                while (true) {
+                    // since a region only saves if it's been modified since its last save
+                    // saving every 10 minutes means that once it's time to exit
+                    // we'll only have a couple regions to save
+                    save();
+                    Thread.sleep(600000);
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        }.start();
+        }).start();
     }
 
     public final void queueForPacking(Chunk chunk) {
@@ -153,22 +151,22 @@ public final class CachedWorld implements IBlockTypeAccess {
             System.out.println("Not saving to disk; chunk caching is disabled.");
             return;
         }
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime() / 1000000L;
         this.cachedRegions.values().parallelStream().forEach(region -> {
             if (region != null)
                 region.save(this.directory);
         });
-        long now = System.currentTimeMillis();
+        long now = System.nanoTime() / 1000000L;
         System.out.println("World save took " + (now - start) + "ms");
     }
 
     public final void reloadAllFromDisk() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime() / 1000000L;
         this.cachedRegions.values().forEach(region -> {
             if (region != null)
                 region.load(this.directory);
         });
-        long now = System.currentTimeMillis();
+        long now = System.nanoTime() / 1000000L;
         System.out.println("World load took " + (now - start) + "ms");
     }
 

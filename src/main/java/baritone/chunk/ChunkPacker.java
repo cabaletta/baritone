@@ -39,7 +39,7 @@ public final class ChunkPacker implements Helper {
     private ChunkPacker() {}
 
     public static CachedChunk pack(Chunk chunk) {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime() / 1000000L;
 
         Map<String, List<BlockPos>> specialBlocks = new HashMap<>();
         BitSet bitSet = new BitSet(CachedChunk.SIZE);
@@ -63,7 +63,7 @@ public final class ChunkPacker implements Helper {
             e.printStackTrace();
         }
         //System.out.println("Packed special blocks: " + specialBlocks);
-        long end = System.currentTimeMillis();
+        long end = System.nanoTime() / 1000000L;
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         String[] blockNames = new String[256];
         for (int z = 0; z < 16; z++) {
