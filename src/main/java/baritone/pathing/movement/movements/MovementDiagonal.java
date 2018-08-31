@@ -23,6 +23,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockMagma;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -90,10 +91,12 @@ public class MovementDiagonal extends Movement {
         if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        if (BlockStateInterface.get(positionsToBreak[2].down()).getBlock() instanceof BlockMagma) {
+        Block cuttingOver1 = BlockStateInterface.get(positionsToBreak[2].down()).getBlock();
+        if (cuttingOver1 instanceof BlockMagma || BlockStateInterface.isLava(cuttingOver1)) {
             return COST_INF;
         }
-        if (BlockStateInterface.get(positionsToBreak[4].down()).getBlock() instanceof BlockMagma) {
+        Block cuttingOver2 = BlockStateInterface.get(positionsToBreak[4].down()).getBlock();
+        if (cuttingOver2 instanceof BlockMagma || BlockStateInterface.isLava(cuttingOver2)) {
             return COST_INF;
         }
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
