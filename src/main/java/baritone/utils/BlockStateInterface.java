@@ -31,6 +31,7 @@ import net.minecraft.world.chunk.Chunk;
 public class BlockStateInterface implements Helper {
 
     public static int numBlockStateLookups = 0;
+    public static int numTimesChunkSucceeded = 0;
     private static Chunk prev = null;
 
     public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
@@ -47,6 +48,7 @@ public class BlockStateInterface implements Helper {
             // we can just skip the mc.world.getChunk lookup
             // which is a Long2ObjectOpenHashMap.get
             if (cached != null && cached.x == pos.getX() >> 4 && cached.z == pos.getZ() >> 4) {
+                numTimesChunkSucceeded++;
                 return cached.getBlockState(pos);
             }
             Chunk chunk = mc.world.getChunk(pos);

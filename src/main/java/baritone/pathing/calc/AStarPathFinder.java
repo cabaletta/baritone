@@ -102,6 +102,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
         long getNode = 0;
         int getNodeCount = 0;
+        int startVal = BlockStateInterface.numTimesChunkSucceeded;
+        int startVal2 = BlockStateInterface.numBlockStateLookups;
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.nanoTime() / 1000000L - timeoutTime < 0 && !cancelRequested) {
             if (slowPath) {
                 try {
@@ -220,6 +222,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 }
             }
         }
+        int numBlockState = BlockStateInterface.numBlockStateLookups - startVal2;
+        int numSucc = BlockStateInterface.numTimesChunkSucceeded - startVal;
+        System.out.println("Out of " + numBlockState + " block state lookups, " + numSucc + " were in the same chunk as the previous and could be cached");
         System.out.println("Remove " + (heapRemove / heapRemoveCount) + " " + heapRemove / 1000000 + " " + heapRemoveCount);
         System.out.println("Add " + (heapAdd / heapAddCount) + " " + heapAdd / 1000000 + " " + heapAddCount);
         System.out.println("Update " + (heapUpdate / heapUpdateCount) + " " + heapUpdate / 1000000 + " " + heapUpdateCount);
