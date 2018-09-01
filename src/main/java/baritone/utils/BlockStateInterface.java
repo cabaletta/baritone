@@ -31,7 +31,7 @@ import net.minecraft.world.chunk.Chunk;
 public class BlockStateInterface implements Helper {
 
     private static Chunk prev = null;
-    
+
     public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
 
         // Invalid vertical position
@@ -64,6 +64,10 @@ public class BlockStateInterface implements Helper {
 
 
         return Blocks.AIR.getDefaultState();
+    }
+
+    public static void clearCachedChunk() {
+        prev = null;
     }
 
     public static Block getBlock(BlockPos pos) {
