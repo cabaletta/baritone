@@ -195,6 +195,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (Blocks.FARMLAND.equals(block) || Blocks.GRASS_PATH.equals(block)) {
             return true;
         }
+        if (Blocks.ENDER_CHEST.equals(block) || Blocks.CHEST.equals(block)) {
+            return true;
+        }
         if (block instanceof BlockAir) {
             return false;
         }
