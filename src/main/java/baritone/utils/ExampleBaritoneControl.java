@@ -217,7 +217,7 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().startsWith("goto")) {
             String waypointType = msg.toLowerCase().substring(4).trim();
-            if (waypointType.endsWith("s")) {
+            if (waypointType.endsWith("s") && Waypoint.Tag.fromString(waypointType.substring(0, waypointType.length() - 1)) != null) {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
