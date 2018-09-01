@@ -206,6 +206,16 @@ public class MovementTraverse extends Movement {
                         return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                     }
                     state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                    if (BlockStateInterface.get(playerFeet().down()).getBlock().equals(Blocks.SOUL_SAND)) { // see issue #118
+                        double dist = Math.max(Math.abs(dest.getX() + 0.5 - player().posX), Math.abs(dest.getZ() + 0.5 - player().posZ));
+                        if (dist < 0.85) { // 0.5 + 0.3 + epsilon
+                            MovementHelper.moveTowards(state, dest);
+                            state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
+                            state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                            return state;
+                        }
+                    }
+                    state.setInput(InputOverrideHandler.Input.MOVE_BACK, false);
                     double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + against1.getY()) * 0.5D;
                     double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
