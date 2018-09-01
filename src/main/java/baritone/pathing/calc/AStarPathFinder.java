@@ -169,6 +169,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     for (int i = 0; i < bestSoFar.length; i++) {
                         double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
                         if (heuristic < bestHeuristicSoFar[i]) {
+                            if (bestHeuristicSoFar[i] - heuristic < 0.01 && minimumImprovementRepropagation) {
+                                continue;
+                            }
                             bestHeuristicSoFar[i] = heuristic;
                             bestSoFar[i] = neighbor;
                         }
