@@ -37,8 +37,10 @@ import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ExampleBaritoneControl extends Behavior {
     public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
@@ -221,8 +223,27 @@ public class ExampleBaritoneControl extends Behavior {
             }
             Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
             if (tag == null) {
-                displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
+                String mining = waypointType;
+                //displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
+                List<BlockPos> locs = new ArrayList<>(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(mining, 1, 1));
+                if (locs.isEmpty()) {
+                    displayChatMessageRaw("No locations for " + mining + " known, cancelling");
+                    return;
+                }
+                BlockPos playerFeet = playerFeet();
+                locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
+
+                // remove any that are within loaded chunks that aren't actually what we want
+                locs.removeAll(locs.stream()
+                        .filter(pos -> !(world().getChunk(pos) instanceof EmptyChunk))
+                        .filter(pos -> !ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).equalsIgnoreCase(mining))
+                        .collect(Collectors.toList()));
+                if (locs.size() > 30) {
+                    locs = locs.subList(0, 30);
+                }
+                PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
+                PathingBehavior.INSTANCE.path();
                 return;
             }
             Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(tag);
