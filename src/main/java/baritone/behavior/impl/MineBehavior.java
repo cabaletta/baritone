@@ -55,11 +55,6 @@ public class MineBehavior extends Behavior {
             return;
         }
         List<BlockPos> locs = new ArrayList<>(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(mining, 1, 1));
-        if (locs.isEmpty()) {
-            displayChatMessageRaw("No locations for " + mining + " known, cancelling");
-            cancel();
-            return;
-        }
         BlockPos playerFeet = playerFeet();
         locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
 
@@ -70,6 +65,11 @@ public class MineBehavior extends Behavior {
                 .collect(Collectors.toList()));
         if (locs.size() > 30) {
             locs = locs.subList(0, 30);
+        }
+        if (locs.isEmpty()) {
+            displayChatMessageRaw("No locations for " + mining + " known, cancelling");
+            cancel();
+            return;
         }
         PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
         PathingBehavior.INSTANCE.path();
