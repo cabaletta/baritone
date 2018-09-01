@@ -17,6 +17,7 @@
 
 package baritone.pathing.calc;
 
+import baritone.behavior.impl.PathingBehavior;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
@@ -119,6 +120,11 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             map.put(hashCode, node);
         }
         return node;
+    }
+
+    public static void forceCancel() {
+        PathingBehavior.INSTANCE.cancel();
+        currentlyRunning = null;
     }
 
     @Override

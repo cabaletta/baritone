@@ -28,6 +28,7 @@ import baritone.chunk.ChunkPacker;
 import baritone.chunk.Waypoint;
 import baritone.chunk.WorldProvider;
 import baritone.pathing.calc.AStarPathFinder;
+import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.goals.*;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
@@ -115,6 +116,12 @@ public class ExampleBaritoneControl extends Behavior {
             MineBehavior.INSTANCE.cancel();
             event.cancel();
             displayChatMessageRaw("ok canceled");
+            return;
+        }
+        if (msg.toLowerCase().equals("forcecancel")) {
+            AbstractNodeCostSearch.forceCancel();
+            event.cancel();
+            displayChatMessageRaw("ok force canceled");
             return;
         }
         if (msg.toLowerCase().equals("invert")) {
