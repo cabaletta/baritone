@@ -81,9 +81,19 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
         this.cancelRequested = false;
-        Optional<IPath> path = calculate0();
-        isFinished = true;
-        return path;
+        try {
+            Optional<IPath> path = calculate0();
+            isFinished = true;
+            return path;
+        } catch (Exception e) {
+            currentlyRunning = null;
+            isFinished = true;
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     protected abstract Optional<IPath> calculate0();
