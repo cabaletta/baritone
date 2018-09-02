@@ -150,6 +150,8 @@ public class MovementAscend extends Movement {
                                 // After 20 ticks without placement, we might be standing in the way, move back
                                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                             }
+                        } else {
+                            state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true); // break whatever replaceable block is in the way
                         }
                         System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
                     });
