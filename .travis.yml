@@ -5,4 +5,4 @@ install: true
 script:
 - ./gradlew check
 - sudo apt-get install -qq --force-yes mesa-utils libgl1-mesa-swx11 libgl1-mesa-swx11-dev xvfb
-- xvfb-run :99 -screen 0 1400x900x24 -ac +extension GLX +render ./gradlew run
+- /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/xvfb-run -- :99 -screen 0 1400x900x24 -ac +extension GLX +render ./gradlew run
