@@ -34,10 +34,12 @@ PathingBehavior.INSTANCE.setGoal(new GoalXZ(10000, 20000));
 PathingBehavior.INSTANCE.path();
 ```
 
-# Can I use Baritone as a library in my hacked client?
+# FAQ
+
+## Can I use Baritone as a library in my hacked client?
 
 Sure!
 
-# How is it so fast?
+## How is it so fast?
 
 Magic
