@@ -18,11 +18,10 @@
 package baritone.utils.pathing;
 
 import net.minecraft.util.math.BlockPos;
-import org.junit.Test;
 
 public class BetterBlockPosTest {
 
-    @Test
+    //@Test
     public void benchMulti() {
         System.out.println("Benching up()");
         for (int i = 0; i < 10; i++) {
