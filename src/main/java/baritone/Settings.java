@@ -122,8 +122,9 @@ public class Settings {
     /**
      * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
      * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
+     * See issue #114 for why this is disabled.
      */
-    public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
+    public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
 
     /**
      * Stop 5 movements before anything that made the path COST_INF.
