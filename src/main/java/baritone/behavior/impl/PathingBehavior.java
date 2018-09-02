@@ -27,6 +27,7 @@ import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
 import baritone.pathing.goals.*;
+import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockStateInterface;
@@ -226,7 +227,7 @@ public class PathingBehavior extends Behavior {
 
     public BlockPos pathStart() {
         BlockPos feet = playerFeet();
-        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR)) {
+        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR) && MovementHelper.canWalkOn(feet.down().down())) {
             return feet.down();
         }
         return feet;
