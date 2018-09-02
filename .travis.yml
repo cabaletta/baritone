@@ -4,4 +4,5 @@ install: true
 
 script:
 - ./gradlew check
-- xvfb-run ./gradlew run
+- sudo apt-get install -qq --force-yes mesa-utils libgl1-mesa-swx11 libgl1-mesa-swx11-dev xvfb
+- /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render ./gradlew run
