@@ -4,4 +4,4 @@ install: true
 
 script:
 - ./gradlew check
-- ./gradlew run
+- xvfb-run ./gradlew run
