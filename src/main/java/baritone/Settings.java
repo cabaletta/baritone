@@ -185,7 +185,12 @@ public class Settings {
     /**
      * Pathing can never take longer than this
      */
-    public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
+    public Setting<Number> pathTimeoutMS = new Setting<>(2000L);
+
+    /**
+     * Planning ahead while executing a segment can never take longer than this
+     */
+    public Setting<Number> planAheadTimeoutMS = new Setting<>(4000L);
 
     /**
      * For debugging, consider nodes much much slower

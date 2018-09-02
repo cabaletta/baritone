@@ -55,7 +55,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
     }
 
     @Override
-    protected Optional<IPath> calculate0() {
+    protected Optional<IPath> calculate0(long timeout) {
         startNode = getNodeAtPosition(start);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
@@ -74,7 +74,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
-        long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
+        if (slowPath) {
+            displayChatMessageRaw("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + timeout + "ms");
+        }
+        long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : timeout);
         //long lastPrintout = 0;
         int numNodes = 0;
         int numMovementsConsidered = 0;

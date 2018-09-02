@@ -76,13 +76,13 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         cancelRequested = true;
     }
 
-    public synchronized Optional<IPath> calculate() {
+    public synchronized Optional<IPath> calculate(long timeout) {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
         this.cancelRequested = false;
         try {
-            Optional<IPath> path = calculate0();
+            Optional<IPath> path = calculate0(timeout);
             isFinished = true;
             return path;
         } catch (Exception e) {
@@ -96,7 +96,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         }
     }
 
-    protected abstract Optional<IPath> calculate0();
+    protected abstract Optional<IPath> calculate0(long timeout);
 
     /**
      * Determines the distance squared from the specified node to the start

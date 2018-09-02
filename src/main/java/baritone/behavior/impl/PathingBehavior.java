@@ -324,9 +324,15 @@ public class PathingBehavior extends Behavior {
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
+        long timeout;
+        if (current == null) {
+            timeout = Baritone.settings().pathTimeoutMS.<Long>get();
+        } else {
+            timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
+        }
         try {
             IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
-            return pf.calculate();
+            return pf.calculate(timeout);
         } catch (Exception e) {
             displayChatMessageRaw("Pathing exception: " + e);
             e.printStackTrace();
