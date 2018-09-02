@@ -12,6 +12,7 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
 - Select the "Minecraft Client" launch config and run
 
 ## Command Line
+On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 ```
 $ gradlew setupDecompWorkspace
 $ gradlew --refresh-dependencies
