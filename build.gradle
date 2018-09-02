@@ -65,7 +65,7 @@ repositories {
 }
 
 dependencies {
-    implementation ('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+    runtime implementation('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
         // Mixin includes a lot of dependencies that are too up-to-date
         exclude module: 'launchwrapper'
         exclude module: 'guava'
