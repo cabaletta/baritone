@@ -219,6 +219,11 @@ public class Settings {
     public Setting<Boolean> chatControl = new Setting<>(true);
 
     /**
+     * A second override over chatControl to force it on
+     */
+    public Setting<Boolean> removePrefix = new Setting<>(false);
+
+    /**
      * Render the path
      */
     public Setting<Boolean> renderPath = new Setting<>(true);

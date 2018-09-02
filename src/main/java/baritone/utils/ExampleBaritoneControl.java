@@ -57,7 +57,9 @@ public class ExampleBaritoneControl extends Behavior {
     @Override
     public void onSendChatMessage(ChatEvent event) {
         if (!Baritone.settings().chatControl.get()) {
-            return;
+            if (!Baritone.settings().removePrefix.get()) {
+                return;
+            }
         }
         String msg = event.getMessage();
         if (Baritone.settings().prefix.get()) {
