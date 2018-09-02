@@ -255,7 +255,7 @@ public class MovementTraverse extends Movement {
                     return state;
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
-                return state;
+                return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
             } else {
                 MovementHelper.moveTowards(state, positionsToBreak[0]);
                 return state;
