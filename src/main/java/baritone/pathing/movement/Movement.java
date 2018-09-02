@@ -100,6 +100,10 @@ public abstract class Movement implements Helper, MovementHelper {
         return getCost(null);
     }
 
+    public double calculateCostWithoutCaching() {
+        return calculateCost0(new CalculationContext());
+    }
+
     /**
      * Handles the execution of the latest Movement
      * State, and offers a Status to the calling class.
