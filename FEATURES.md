@@ -33,13 +33,17 @@ And finally `GoalComposite`. `GoalComposite` is a list of other goals, any one o
 
 
 # Future features
-(things it doesn't have yet, and things it may not ever have)
+Things it doesn't have yet
 - Trapdoors
-- Boats
-- Horses / pigs
 - Slabs (double, top, and bottom)
 - Sprint jumping in a 1x2 corridor
 - Stairs
-- Parkour (jumping over gaps of any length)
 
 See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
+
+Things it may not ever have, from most likely to least likely =(
+- Parkour (jumping over gaps of any length)
+- Boats
+- Pigs
+- Horses (2x3 path instead of 1x2)
+- Elytra
