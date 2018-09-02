@@ -7,7 +7,14 @@
 - Vines and ladders. Baritone understands how to climb and descend vines and ladders.
 - Fence gates and doors.
 - Falling blocks. Baritone understands the costs of breaking blocks with falling blocks on top, and includes all of their break costs. Additionally, since it avoids breaking any blocks touching a liquid, it won't break the bottom of a gravel stack below a lava lake (anymore).
-- 
+
+# Pathing method
+Baritone uses a modified version of A*. 
+
+- Incremental cost backoff. Since most of the time Baritone only knows the terrain up to the render distance, it can't calculate a full path to the goal. Therefore it needs to select a segment to execute first (assuming it will calculate the next segment at the end of this one). It uses incremental cost backoff to select the best node by varying metrics, then paths to that node. This is unchanged from MineBot and I made a <a href="https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit">write-up</a> that still applies.
+- Minimum improvement repropagation. The pathfinder ignores alternate routes that provide minimal improvements (less than 0.01 ticks of improvement), because the calculation cost of repropagating this to all connected nodes is much higher than the half-millisecond path time improvement it would get.
+- Backtrack cost favoring. While calculating the next segment, Baritone favors backtracking its current segment slightly, as a tiebreaker. This allows it to splice and jump onto the next segment as early as possible, if the next segment begins with a backtrack of the current one.
+
 
 # Goals
 The pathing goal can be set to any of these options 
@@ -23,3 +30,8 @@ And finally GoalComposite. GoalComposite is a list of other goals, any one of wh
 
 # Future features
 (things it doesn't have yet)
+- Trapdoors
+- Boats
+- Horses / pigs
+- Sprint jumping in a 1x2 corridor
+- Parkour (jumping over gaps of any length)
