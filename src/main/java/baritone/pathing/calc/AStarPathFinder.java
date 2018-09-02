@@ -95,20 +95,13 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             mostRecentConsidered = currentNode;
             BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
-            /*if ((lastPrintout + 1000) - System.nanoTime() / 1000000L < 0) {//print once a second
-                System.out.println("searching... at " + currentNodePos + ", considered " + numNodes + " nodes so far");
-                lastPrintout = System.nanoTime() / 1000000L;
-            }*/
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
                 displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes));
             }
-            //long constructStart = System.nanoTime();
             Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos, in random order
             shuffle(possibleMovements);
-            //long constructEnd = System.nanoTime();
-            //System.out.println(constructEnd - constructStart);
             for (Movement movementToGetToNeighbor : possibleMovements) {
                 if (movementToGetToNeighbor == null) {
                     continue;
@@ -126,11 +119,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                         }
                     }
                 }
-                //long costStart = System.nanoTime();
                 // TODO cache cost
                 double actionCost = movementToGetToNeighbor.getCost(calcContext);
-                //long costEnd = System.nanoTime();
-                //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
                 numMovementsConsidered++;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
