@@ -37,5 +37,9 @@ And finally `GoalComposite`. `GoalComposite` is a list of other goals, any one o
 - Trapdoors
 - Boats
 - Horses / pigs
+- Slabs (double, top, and bottom)
 - Sprint jumping in a 1x2 corridor
+- Stairs
 - Parkour (jumping over gaps of any length)
+
+See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
