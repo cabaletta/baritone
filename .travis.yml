@@ -1,1 +1,7 @@
 language: java
+
+install: true
+
+script:
+- ./gradlew check
+- ./gradlew run
