@@ -101,7 +101,7 @@ public final class BinaryHeapOpenSet implements IOpenSet {
         array[size] = null;
         size--;
         result.heapPosition = -1;
-        if (size < 3) {
+        if (size < 2) {
             return result;
         }
         int index = 1;
