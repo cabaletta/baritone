@@ -210,6 +210,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return true;
         }
+        if (block instanceof BlockStairs) {
+            return true;
+        }
         if (BlockStateInterface.isWater(block)) {
             if (BlockStateInterface.isFlowing(state)) {
                 return false;
