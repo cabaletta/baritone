@@ -6,6 +6,8 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
 
 <a href="https://github.com/cabaletta/baritone/blob/master/FEATURES.md">Features</a>
 
+<a href="https://github.com/cabaletta/baritone/blob/master/IMPACT.md">Baritone + Impact</a>
+
 # Setup
 - Open the project in IntelliJ as a Gradle project
 - Run the Gradle task `setupDecompWorkspace`
