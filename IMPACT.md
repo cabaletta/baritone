@@ -6,7 +6,7 @@ You can either build Baritone yourself, or download the jar from Septmeber 3 fro
 
 To build it yourself, clone and setup Baritone (instructions in main README.md). Then, build the jar. From the command line, it's `./gradlew build` (or `gradlew build` on Windows). In IntelliJ, you can just start the `build` task in the Gradle menu.
 
-Copy the jar into place. It should be `build/libs/baritone-1.0.0.jar` in baritone. Copy it to your libraries in your Minecraft install. For example, on Mac I do `cp Documents/baritone/build/libs/baritone-1.0.0.jar Library/Application\ Support/minecraft/libraries/cabaletta/baritone/1.0/baritone-1.0.jar`. The first time you'll need to make the directory `cabaletta/baritone/1.0` in libraries first.
+Copy the jar into place. It should be `build/libs/baritone-1.0.0.jar` in baritone. Copy it to your libraries in your Minecraft install. Note the rename from `baritone-1.0.0.jar` to `baritone-1.0.jar`. For example, on Mac I do `cp Documents/baritone/build/libs/baritone-1.0.0.jar Library/Application\ Support/minecraft/libraries/cabaletta/baritone/1.0/baritone-1.0.jar`. The first time you'll need to make the directory `cabaletta/baritone/1.0` in libraries first.
 
 Then, we'll need to modify the Impact launch json. Open `minecraft/versions/1.12.2-Impact_4.3/1.12.2-Impact_4.3.json`.
 
