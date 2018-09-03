@@ -186,6 +186,9 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
+        if (block == Blocks.AIR) {
+            return false;
+        }
         if (block instanceof BlockLadder || (Baritone.settings().allowVines.get() && block instanceof BlockVine)) { // TODO reconsider this
             return true;
         }
@@ -198,8 +201,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (Blocks.ENDER_CHEST.equals(block) || Blocks.CHEST.equals(block)) {
             return true;
         }
-        if (block instanceof BlockAir) {
-            return false;
+        if (block instanceof BlockSlab) {
+            return true;
         }
         if (BlockStateInterface.isWater(block)) {
             if (BlockStateInterface.isFlowing(state)) {

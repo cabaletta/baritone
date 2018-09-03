@@ -25,7 +25,9 @@ import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.*;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -43,6 +45,10 @@ public class MovementFall extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
+        Block fromDown = BlockStateInterface.get(src.down()).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
+            return COST_INF;
+        }
         if (!MovementHelper.canWalkOn(dest.down())) {
             return COST_INF;
         }

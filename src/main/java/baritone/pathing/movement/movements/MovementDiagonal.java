@@ -75,6 +75,10 @@ public class MovementDiagonal extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
+        Block fromDown = BlockStateInterface.get(src.down()).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
+            return COST_INF;
+        }
         if (!MovementHelper.canWalkThrough(positionsToBreak[4]) || !MovementHelper.canWalkThrough(positionsToBreak[5])) {
             return COST_INF;
         }
@@ -88,7 +92,7 @@ public class MovementDiagonal extends Movement {
         if (destWalkOn.getBlock().equals(Blocks.SOUL_SAND)) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
+        if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
         Block cuttingOver1 = BlockStateInterface.get(positionsToBreak[2].down()).getBlock();

@@ -20,10 +20,7 @@ package baritone.chunk;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDoublePlant;
-import net.minecraft.block.BlockFlower;
-import net.minecraft.block.BlockTallGrass;
+import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
@@ -50,10 +47,11 @@ public final class ChunkPacker implements Helper {
                 for (int z = 0; z < 16; z++) {
                     for (int x = 0; x < 16; x++) {
                         int index = CachedChunk.getPositionIndex(x, y, z);
-                        Block block = chunk.getBlockState(x, y, z).getBlock();
-                        boolean[] bits = getPathingBlockType(block).getBits();
+                        IBlockState state = chunk.getBlockState(x, y, z);
+                        boolean[] bits = getPathingBlockType(state).getBits();
                         bitSet.set(index, bits[0]);
                         bitSet.set(index + 1, bits[1]);
+                        Block block = state.getBlock();
                         if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
                             String name = blockToString(block);
                             specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
@@ -103,13 +101,14 @@ public final class ChunkPacker implements Helper {
         return Block.getBlockFromName(name);
     }
 
-    private static PathingBlockType getPathingBlockType(Block block) {
+    private static PathingBlockType getPathingBlockType(IBlockState state) {
+        Block block = state.getBlock();
         if (block.equals(Blocks.WATER)) {
             // only water source blocks are plausibly usable, flowing water should be avoid
             return PathingBlockType.WATER;
         }
 
-        if (MovementHelper.avoidWalkingInto(block) || block.equals(Blocks.FLOWING_WATER)) {
+        if (MovementHelper.avoidWalkingInto(block) || block.equals(Blocks.FLOWING_WATER) || (block instanceof BlockSlab && state.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM)) {
             return PathingBlockType.AVOID;
         }
         // We used to do an AABB check here

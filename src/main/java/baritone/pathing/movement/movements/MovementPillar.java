@@ -47,10 +47,15 @@ public class MovementPillar extends Movement {
     protected double calculateCost(CalculationContext context) {
         Block fromDown = BlockStateInterface.get(src).getBlock();
         boolean ladder = fromDown instanceof BlockLadder || fromDown instanceof BlockVine;
-        Block fromDownDown = BlockStateInterface.get(src.down()).getBlock();
+        IBlockState fromDownDown = BlockStateInterface.get(src.down());
         if (!ladder) {
-            if (fromDownDown instanceof BlockLadder || fromDownDown instanceof BlockVine) {
+            if (fromDownDown.getBlock() instanceof BlockLadder || fromDownDown.getBlock() instanceof BlockVine) {
                 return COST_INF;
+            }
+            if (fromDownDown.getBlock() instanceof BlockSlab) {
+                if (!((BlockSlab) fromDownDown.getBlock()).isDouble() && fromDownDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+                    return COST_INF; // can't pillar up from a bottom slab onto a non ladder
+                }
             }
         }
         if (!context.hasThrowaway() && !ladder) {
@@ -87,7 +92,7 @@ public class MovementPillar extends Movement {
                 //}
             }
         }
-        if (fromDown instanceof BlockLiquid || fromDownDown instanceof BlockLiquid) {//can't pillar on water or in water
+        if (fromDown instanceof BlockLiquid || fromDownDown.getBlock() instanceof BlockLiquid) {//can't pillar on water or in water
             return COST_INF;
         }
         if (ladder) {
@@ -142,9 +147,12 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
             }
 
-            if (playerFeet().equals(against.up()) || playerFeet().equals(dest))
+            if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
                 return state.setStatus(MovementState.MovementStatus.SUCCESS);
-
+            }
+            if (fromDown.getBlock() instanceof BlockSlab && !((BlockSlab) fromDown.getBlock()).isDouble() && fromDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+                state.setInput(InputOverrideHandler.Input.JUMP, true);
+            }
             /*
             if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
                 Baritone.moveTowardsBlock(from);
