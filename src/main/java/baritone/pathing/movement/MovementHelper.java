@@ -202,6 +202,12 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
         if (block instanceof BlockSlab) {
+            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
+                if (((BlockSlab) block).isDouble()) {
+                    return true;
+                }
+                return state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM;
+            }
             return true;
         }
         if (BlockStateInterface.isWater(block)) {
