@@ -15,6 +15,8 @@ RUN apt install -qq --force-yes mesa-utils libgl1-mesa-glx libxcursor1 libxrandr
 
 ADD . /code
 
+RUN echo "\nrunClient {\nargs \"--width\",\"128\",\"--height\",\"128\"\n}" >> /code/build.gradle
+
 RUN dpkg -i /code/xvfb_1.16.4-1_amd64.deb
 
 WORKDIR /code
