@@ -189,8 +189,11 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
-        if (jumpingOnto.getBlock() instanceof BlockSlab && !((BlockSlab) jumpingOnto.getBlock()).isDouble() && jumpingOnto.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM && !(BlockStateInterface.get(src.down()).getBlock() instanceof BlockSlab)) {
-            return state; // don't jump while walking from a non slab into a bottom slab
+        if (jumpingOnto.getBlock() instanceof BlockSlab && !((BlockSlab) jumpingOnto.getBlock()).isDouble() && jumpingOnto.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+            IBlockState from = BlockStateInterface.get(src.down());
+            if (!(from.getBlock() instanceof BlockSlab) || ((BlockSlab) from.getBlock()).isDouble() || from.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.TOP) {
+                return state; // don't jump while walking from a non double slab into a bottom slab
+            }
         }
 
         if (headBonkClear()) {
