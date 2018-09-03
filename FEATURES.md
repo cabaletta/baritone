@@ -5,7 +5,8 @@
 - **Block placing** Baritone considers placing blocks as part of its path. This includes sneak-back-placing, pillaring, etc. It has a configurable penalty of placing a block (set to 1 second by default), to conserve its resources. The list of acceptable throwaway blocks is also configurable, and is cobble, dirt, or netherrack by default.
 - **Falling** Baritone will fall up to 3 blocks onto solid ground (configurable, if you have Feather Falling and/or don't mind taking a little damage). If you have a water bucket on your hotbar, it will fall up to 23 blocks and place the bucket beneath it. It will fall an unlimited distance into existing still water.
 - **Vines and ladders** Baritone understands how to climb and descend vines and ladders. There is experimental support for more advanced maneuvers, like strafing to a different ladder / vine column in midair (off by default, setting named `allowVines`).
-- **Fence gates and doors**
+- **Opening fence gates and doors**
+- **Slabs and stairs**
 - **Falling blocks** Baritone understands the costs of breaking blocks with falling blocks on top, and includes all of their break costs. Additionally, since it avoids breaking any blocks touching a liquid, it won't break the bottom of a gravel stack below a lava lake (anymore).
 - **Avoiding dangerous blocks** Obviously, it knows not to walk through fire or on magma, not to corner over lava (that deals some damage), not to break any blocks touching a liquid (it might drown), etc.
 
@@ -35,9 +36,7 @@ And finally `GoalComposite`. `GoalComposite` is a list of other goals, any one o
 # Future features
 Things it doesn't have yet
 - Trapdoors
-- Slabs (double, top, and bottom)
 - Sprint jumping in a 1x2 corridor
-- Stairs
 
 See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
 
