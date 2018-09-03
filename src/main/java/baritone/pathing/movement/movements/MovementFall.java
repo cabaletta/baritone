@@ -28,6 +28,7 @@ import baritone.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -107,7 +108,7 @@ public class MovementFall extends Movement {
         BlockPos playerFeet = playerFeet();
         Rotation targetRotation = null;
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
-            if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) {
+            if (!InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) || world().provider.isNether()) {
                 state.setStatus(MovementStatus.UNREACHABLE);
                 return state;
             }
@@ -130,7 +131,7 @@ public class MovementFall extends Movement {
         }
         if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 // lilypads
                 || BlockStateInterface.isWater(dest))) {
-            if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_EMPTY)) {
+            if (BlockStateInterface.isWater(dest) && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                 if (player().motionY >= 0) {
                     return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
