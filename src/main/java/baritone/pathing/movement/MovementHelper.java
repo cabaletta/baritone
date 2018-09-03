@@ -270,6 +270,16 @@ public interface MovementHelper extends ActionCosts, Helper {
         return 0; // we won't actually mine it, so don't check fallings above
     }
 
+    static boolean isBottomSlab(IBlockState state) {
+        return state.getBlock() instanceof BlockSlab
+                && !((BlockSlab) state.getBlock()).isDouble()
+                && state.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM;
+    }
+
+    static boolean isBottomSlab(BlockPos pos) {
+        return isBottomSlab(BlockStateInterface.get(pos));
+    }
+
     /**
      * The entity the player is currently looking at
      *

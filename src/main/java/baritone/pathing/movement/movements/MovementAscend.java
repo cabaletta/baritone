@@ -28,7 +28,6 @@ import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
-import net.minecraft.block.BlockSlab;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -59,25 +58,12 @@ public class MovementAscend extends Movement {
             return COST_INF;
         }
         // we can jump from soul sand, but not from a bottom slab
-        // the only thing we can ascend onto from a bottom slab is another bottom slab
-        boolean jumpingFromBottomSlab = false;
-        if (srcDown.getBlock() instanceof BlockSlab) {
-            BlockSlab jumpingFrom = (BlockSlab) srcDown.getBlock();
-            if (!jumpingFrom.isDouble()) {
-                jumpingFromBottomSlab = srcDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM;
-            }
-        }
+        boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
         IBlockState toPlace = BlockStateInterface.get(positionToPlace);
-        boolean jumpingToBottomSlab = false;
-        if (toPlace.getBlock() instanceof BlockSlab) {
-            BlockSlab jumpingTo = (BlockSlab) toPlace.getBlock();
-            if (!jumpingTo.isDouble() && toPlace.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
-                jumpingToBottomSlab = true;
-            } else if (jumpingFromBottomSlab) {
-                return COST_INF;
-            }
-        } else if (jumpingFromBottomSlab) {
-            return COST_INF;
+        boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
+
+        if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
+            return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
         }
         if (!MovementHelper.canWalkOn(positionToPlace, toPlace)) {
             if (!context.hasThrowaway()) {
@@ -189,9 +175,8 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
-        if (jumpingOnto.getBlock() instanceof BlockSlab && !((BlockSlab) jumpingOnto.getBlock()).isDouble() && jumpingOnto.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
-            IBlockState from = BlockStateInterface.get(src.down());
-            if (!(from.getBlock() instanceof BlockSlab) || ((BlockSlab) from.getBlock()).isDouble() || from.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.TOP) {
+        if (MovementHelper.isBottomSlab(jumpingOnto)) {
+            if (!MovementHelper.isBottomSlab(src.down())) {
                 return state; // don't jump while walking from a non double slab into a bottom slab
             }
         }

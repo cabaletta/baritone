@@ -150,7 +150,7 @@ public class MovementPillar extends Movement {
             if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
                 return state.setStatus(MovementState.MovementStatus.SUCCESS);
             }
-            if (fromDown.getBlock() instanceof BlockSlab && !((BlockSlab) fromDown.getBlock()).isDouble() && fromDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+            if (MovementHelper.isBottomSlab(src.down())) {
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
             }
             /*

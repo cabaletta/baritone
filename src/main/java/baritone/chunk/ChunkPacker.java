@@ -20,7 +20,10 @@ package baritone.chunk;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockDoublePlant;
+import net.minecraft.block.BlockFlower;
+import net.minecraft.block.BlockTallGrass;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
@@ -108,7 +111,7 @@ public final class ChunkPacker implements Helper {
             return PathingBlockType.WATER;
         }
 
-        if (MovementHelper.avoidWalkingInto(block) || block.equals(Blocks.FLOWING_WATER) || (block instanceof BlockSlab && state.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM)) {
+        if (MovementHelper.avoidWalkingInto(block) || block.equals(Blocks.FLOWING_WATER) || MovementHelper.isBottomSlab(state)) {
             return PathingBlockType.AVOID;
         }
         // We used to do an AABB check here
