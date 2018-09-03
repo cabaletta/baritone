@@ -34,7 +34,13 @@ import net.minecraft.util.text.TextFormatting;
  */
 public interface Helper {
 
-    ITextComponent MESSAGE_PREFIX = new TextComponentString("§5[§dBaritone§5]§7");
+    ITextComponent MESSAGE_PREFIX = new TextComponentString(String.format(
+            "%s[%sBaritone%s]%s",
+            TextFormatting.DARK_PURPLE,
+            TextFormatting.LIGHT_PURPLE,
+            TextFormatting.DARK_PURPLE,
+            TextFormatting.GRAY
+    ));
 
     Minecraft mc = Minecraft.getMinecraft();
 
