@@ -1,6 +1,36 @@
 -injars baritone-1.0.0.jar
 -outjars Obfuscated
 
+
+-keepattributes Signature
+-keepattributes *Annotation*
+
+-optimizationpasses 20
+-verbose
+
+-allowaccessmodification # anything not kept can be changed from public to private and inlined etc
+-mergeinterfacesaggressively
+-overloadaggressively
+-dontusemixedcaseclassnames
+
+# instead of obfing to a, b, c, obf to baritone.a, baritone.b, baritone.c so as to not conflict with mcp
+-flattenpackagehierarchy
+-repackageclasses 'baritone'
+
+#-keep class baritone.behavior.** { *; }
+#-keep class baritone.api.** { *; }
+#-keep class baritone.* { *; }
+#-keep class baritone.pathing.goals.** { *; }
+
+# setting names are reflected from field names, so keep field names
+-keepclassmembers class baritone.Settings {
+    public <fields>;    
+}
+
+# need to keep mixin names
+-keep class baritone.launch.** { *; }
+
+# copy all necessary libraries into tempLibraries to build
 -libraryjars '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/lib/rt.jar'
 
 -libraryjars 'tempLibraries/1.12.2.jar'
@@ -46,29 +76,8 @@
 -libraryjars 'tempLibraries/mixin-0.7.8-SNAPSHOT.jar'
 -libraryjars 'tempLibraries/launchwrapper-1.12.jar'
 
--keepattributes Signature
--keepattributes *Annotation*
 
--optimizationpasses 20
--verbose
 
--allowaccessmodification
--mergeinterfacesaggressively
--overloadaggressively
--flattenpackagehierarchy
--repackageclasses
--dontusemixedcaseclassnames
-
--overloadaggressively
-
--repackageclasses 'baritone'
-
--keep class baritone.behavior.** { *; }
--keep class baritone.api.** { *; }
--keep class baritone.* { *; }
--keep class baritone.pathing.goals.** { *; }
-
--keep class baritone.launch.** { *; }
 
 # Keep - Applications. Keep all application classes, along with their 'main'
 # methods.
