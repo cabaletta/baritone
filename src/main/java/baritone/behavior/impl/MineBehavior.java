@@ -80,11 +80,11 @@ public class MineBehavior extends Behavior {
     }
 
     public void mine(String... mining) {
-        this.mining = mining == null ? null : new ArrayList<>(Arrays.asList(mining));
+        this.mining = mining == null || mining.length == 0 ? null : new ArrayList<>(Arrays.asList(mining));
     }
 
     public void cancel() {
         PathingBehavior.INSTANCE.cancel();
-        mine(null);
+        mine();
     }
 }
