@@ -17,6 +17,7 @@
 
 package baritone.pathing.calc;
 
+import baritone.behavior.impl.PathingBehavior;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
@@ -75,17 +76,27 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         cancelRequested = true;
     }
 
-    public synchronized Optional<IPath> calculate() {
+    public synchronized Optional<IPath> calculate(long timeout) {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
         this.cancelRequested = false;
-        Optional<IPath> path = calculate0();
-        isFinished = true;
-        return path;
+        try {
+            Optional<IPath> path = calculate0(timeout);
+            isFinished = true;
+            return path;
+        } catch (Exception e) {
+            currentlyRunning = null;
+            isFinished = true;
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    protected abstract Optional<IPath> calculate0();
+    protected abstract Optional<IPath> calculate0(long timeout);
 
     /**
      * Determines the distance squared from the specified node to the start
@@ -119,6 +130,11 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             map.put(hashCode, node);
         }
         return node;
+    }
+
+    public static void forceCancel() {
+        PathingBehavior.INSTANCE.cancel();
+        currentlyRunning = null;
     }
 
     @Override

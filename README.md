@@ -1,6 +1,12 @@
 # Baritone
+[![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone)
+
 A Minecraft bot. This project is an updated version of [Minebot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
+
+<a href="https://github.com/cabaletta/baritone/blob/master/FEATURES.md">Features</a>
+
+<a href="https://github.com/cabaletta/baritone/blob/master/IMPACT.md">Baritone + Impact</a>
 
 # Setup
 - Open the project in IntelliJ as a Gradle project
@@ -10,6 +16,7 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
 - Select the "Minecraft Client" launch config and run
 
 ## Command Line
+On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 ```
 $ gradlew setupDecompWorkspace
 $ gradlew --refresh-dependencies
@@ -31,10 +38,12 @@ PathingBehavior.INSTANCE.setGoal(new GoalXZ(10000, 20000));
 PathingBehavior.INSTANCE.path();
 ```
 
-# Can I use Baritone as a library in my hacked client?
+# FAQ
+
+## Can I use Baritone as a library in my hacked client?
 
 Sure!
 
-# How is it so fast?
+## How is it so fast?
 
 Magic

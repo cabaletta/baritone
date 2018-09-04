@@ -17,7 +17,6 @@
 
 package baritone.utils;
 
-import baritone.Baritone;
 import baritone.api.event.events.ItemSlotEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import net.minecraft.block.Block;
@@ -46,11 +45,7 @@ public class ToolSet implements Helper {
     /**
      * Instance of the internal event listener used to hook into Baritone's event bus
      */
-    private static final InternalEventListener INTERNAL_EVENT_LISTENER = new InternalEventListener();
-
-    static {
-        Baritone.INSTANCE.getGameEventHandler().registerEventListener(INTERNAL_EVENT_LISTENER);
-    }
+    public static final InternalEventListener INTERNAL_EVENT_LISTENER = new InternalEventListener();
 
     /**
      * A list of tools on the hotbar that should be considered.
@@ -72,10 +67,10 @@ public class ToolSet implements Helper {
     private Map<Block, Byte> slotCache = new HashMap<>();
 
     /**
-     * A cache mapping a {@link IBlockState} to how long it will take to break
+     * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
      */
-    private Map<IBlockState, Double> breakStrengthCache = new HashMap<>();
+    private Map<Block, Double> breakStrengthCache = new HashMap<>();
 
     /**
      * Create a toolset from the current player's inventory (but don't calculate any hardness values just yet)
@@ -146,7 +141,7 @@ public class ToolSet implements Helper {
      * @return how long it would take in ticks
      */
     public double getStrVsBlock(IBlockState state, BlockPos pos) {
-        return this.breakStrengthCache.computeIfAbsent(state, s -> calculateStrVsBlock(s, pos));
+        return this.breakStrengthCache.computeIfAbsent(state.getBlock(), b -> calculateStrVsBlock(state, pos));
     }
 
     /**

@@ -186,6 +186,9 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
+        if (block == Blocks.AIR) {
+            return false;
+        }
         if (block instanceof BlockLadder || (Baritone.settings().allowVines.get() && block instanceof BlockVine)) { // TODO reconsider this
             return true;
         }
@@ -195,16 +198,29 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (Blocks.FARMLAND.equals(block) || Blocks.GRASS_PATH.equals(block)) {
             return true;
         }
-        if (block instanceof BlockAir) {
-            return false;
+        if (Blocks.ENDER_CHEST.equals(block) || Blocks.CHEST.equals(block)) {
+            return true;
+        }
+        if (block instanceof BlockSlab) {
+            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
+                if (((BlockSlab) block).isDouble()) {
+                    return true;
+                }
+                return state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM;
+            }
+            return true;
+        }
+        if (block instanceof BlockStairs) {
+            return true;
         }
         if (BlockStateInterface.isWater(block)) {
-            if (BlockStateInterface.isFlowing(state)) {
-                return false;
-            }
             Block up = BlockStateInterface.get(pos.up()).getBlock();
             if (up instanceof BlockLilyPad) {
                 return true;
+            }
+            if (BlockStateInterface.isFlowing(state)) {
+                // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
+                return BlockStateInterface.isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
             }
             // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
@@ -256,6 +272,16 @@ public interface MovementHelper extends ActionCosts, Helper {
             return result;
         }
         return 0; // we won't actually mine it, so don't check fallings above
+    }
+
+    static boolean isBottomSlab(IBlockState state) {
+        return state.getBlock() instanceof BlockSlab
+                && !((BlockSlab) state.getBlock()).isDouble()
+                && state.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM;
+    }
+
+    static boolean isBottomSlab(BlockPos pos) {
+        return isBottomSlab(BlockStateInterface.get(pos));
     }
 
     /**

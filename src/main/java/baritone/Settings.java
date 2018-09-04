@@ -78,6 +78,12 @@ public class Settings {
     public Setting<Boolean> allowVines = new Setting<>(false);
 
     /**
+     * Slab behavior is complicated, disable this for higher path reliability. Leave enabled if you have bottom slabs
+     * everywhere in your base.
+     */
+    public Setting<Boolean> allowWalkOnBottomSlab = new Setting<>(true);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.
@@ -122,8 +128,9 @@ public class Settings {
     /**
      * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
      * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
+     * See issue #114 for why this is disabled.
      */
-    public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
+    public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
 
     /**
      * Stop 5 movements before anything that made the path COST_INF.
@@ -184,7 +191,12 @@ public class Settings {
     /**
      * Pathing can never take longer than this
      */
-    public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
+    public Setting<Number> pathTimeoutMS = new Setting<>(2000L);
+
+    /**
+     * Planning ahead while executing a segment can never take longer than this
+     */
+    public Setting<Number> planAheadTimeoutMS = new Setting<>(4000L);
 
     /**
      * For debugging, consider nodes much much slower
@@ -216,6 +228,11 @@ public class Settings {
      * something else
      */
     public Setting<Boolean> chatControl = new Setting<>(true);
+
+    /**
+     * A second override over chatControl to force it on
+     */
+    public Setting<Boolean> removePrefix = new Setting<>(false);
 
     /**
      * Render the path

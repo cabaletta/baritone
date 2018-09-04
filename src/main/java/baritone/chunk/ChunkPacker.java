@@ -21,12 +21,16 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockAir;
+import net.minecraft.block.BlockDoublePlant;
+import net.minecraft.block.BlockFlower;
+import net.minecraft.block.BlockTallGrass;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.*;
 
@@ -38,27 +42,67 @@ public final class ChunkPacker implements Helper {
 
     private ChunkPacker() {}
 
+    private static BitSet originalPacker(Chunk chunk) {
+        BitSet bitSet = new BitSet(CachedChunk.SIZE);
+        for (int y = 0; y < 256; y++) {
+            for (int z = 0; z < 16; z++) {
+                for (int x = 0; x < 16; x++) {
+                    int index = CachedChunk.getPositionIndex(x, y, z);
+                    IBlockState state = chunk.getBlockState(x, y, z);
+                    boolean[] bits = getPathingBlockType(state).getBits();
+                    bitSet.set(index, bits[0]);
+                    bitSet.set(index + 1, bits[1]);
+                }
+            }
+        }
+        return bitSet;
+    }
+
     public static CachedChunk pack(Chunk chunk) {
         long start = System.nanoTime() / 1000000L;
 
         Map<String, List<BlockPos>> specialBlocks = new HashMap<>();
         BitSet bitSet = new BitSet(CachedChunk.SIZE);
         try {
-            for (int y = 0; y < 256; y++) {
-                for (int z = 0; z < 16; z++) {
-                    for (int x = 0; x < 16; x++) {
-                        int index = CachedChunk.getPositionIndex(x, y, z);
-                        Block block = chunk.getBlockState(x, y, z).getBlock();
-                        boolean[] bits = getPathingBlockType(block).getBits();
-                        bitSet.set(index, bits[0]);
-                        bitSet.set(index + 1, bits[1]);
-                        if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
-                            String name = blockToString(block);
-                            specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
+            ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+            for (int y0 = 0; y0 < 16; y0++) {
+                ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
+                if (extendedblockstorage == null) {
+                    // any 16x16x16 area that's all air will have null storage
+                    // for example, in an ocean biome, with air from y=64 to y=256
+                    // the first 4 extended blocks storages will be full
+                    // and the remaining 12 will be null
+
+                    // since the index into the bitset is calculated from the x y and z
+                    // and doesn't function as an append, we can entirely skip the scanning
+                    // since a bitset is initialized to all zero, and air is saved as zeros
+                    continue;
+                }
+                BlockStateContainer bsc = extendedblockstorage.getData();
+                int yReal = y0 << 4;
+                // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
+                // for better cache locality, iterate in that order
+                for (int y1 = 0; y1 < 16; y1++) {
+                    int y = y1 | yReal;
+                    for (int z = 0; z < 16; z++) {
+                        for (int x = 0; x < 16; x++) {
+                            int index = CachedChunk.getPositionIndex(x, y, z);
+                            IBlockState state = bsc.get(x, y1, z);
+                            boolean[] bits = getPathingBlockType(state).getBits();
+                            bitSet.set(index, bits[0]);
+                            bitSet.set(index + 1, bits[1]);
+                            Block block = state.getBlock();
+                            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
+                                String name = blockToString(block);
+                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
+                            }
                         }
                     }
                 }
             }
+            /*if (!bitSet.equals(originalPacker(chunk))) {
+                throw new IllegalStateException();
+            }*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -101,20 +145,21 @@ public final class ChunkPacker implements Helper {
         return Block.getBlockFromName(name);
     }
 
-    private static PathingBlockType getPathingBlockType(Block block) {
+    private static PathingBlockType getPathingBlockType(IBlockState state) {
+        Block block = state.getBlock();
         if (block.equals(Blocks.WATER)) {
             // only water source blocks are plausibly usable, flowing water should be avoid
             return PathingBlockType.WATER;
         }
 
-        if (MovementHelper.avoidWalkingInto(block) || block.equals(Blocks.FLOWING_WATER)) {
+        if (MovementHelper.avoidWalkingInto(block) || block.equals(Blocks.FLOWING_WATER) || MovementHelper.isBottomSlab(state)) {
             return PathingBlockType.AVOID;
         }
         // We used to do an AABB check here
         // however, this failed in the nether when you were near a nether fortress
         // because fences check their adjacent blocks in the world for their fence connection status to determine AABB shape
         // this caused a nullpointerexception when we saved chunks on unload, because they were unable to check their neighbors
-        if (block instanceof BlockAir) {
+        if (block == Blocks.AIR || block instanceof BlockTallGrass || block instanceof BlockDoublePlant || block instanceof BlockFlower) {
             return PathingBlockType.AIR;
         }
 

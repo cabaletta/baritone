@@ -28,6 +28,7 @@ import baritone.chunk.ChunkPacker;
 import baritone.chunk.Waypoint;
 import baritone.chunk.WorldProvider;
 import baritone.pathing.calc.AStarPathFinder;
+import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.goals.*;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
@@ -54,7 +55,9 @@ public class ExampleBaritoneControl extends Behavior {
     @Override
     public void onSendChatMessage(ChatEvent event) {
         if (!Baritone.settings().chatControl.get()) {
-            return;
+            if (!Baritone.settings().removePrefix.get()) {
+                return;
+            }
         }
         String msg = event.getMessage();
         if (Baritone.settings().prefix.get()) {
@@ -113,6 +116,12 @@ public class ExampleBaritoneControl extends Behavior {
             MineBehavior.INSTANCE.cancel();
             event.cancel();
             displayChatMessageRaw("ok canceled");
+            return;
+        }
+        if (msg.toLowerCase().equals("forcecancel")) {
+            AbstractNodeCostSearch.forceCancel();
+            event.cancel();
+            displayChatMessageRaw("ok force canceled");
             return;
         }
         if (msg.toLowerCase().equals("invert")) {
@@ -177,9 +186,16 @@ public class ExampleBaritoneControl extends Behavior {
             return;
         }
         if (msg.toLowerCase().startsWith("mine")) {
-            String blockType = msg.toLowerCase().substring(4).trim();
-            MineBehavior.INSTANCE.mine(blockType);
-            displayChatMessageRaw("Started mining blocks of type" + blockType);
+            String[] blockTypes = msg.toLowerCase().substring(4).trim().split(" ");
+            for (String s : blockTypes) {
+                if (ChunkPacker.stringToBlock(s) == null) {
+                    displayChatMessageRaw(s + " isn't a valid block name");
+                    event.cancel();
+                    return;
+                }
+            }
+            MineBehavior.INSTANCE.mine(blockTypes);
+            displayChatMessageRaw("Started mining blocks of type " + Arrays.toString(blockTypes));
             event.cancel();
             return;
         }
@@ -215,14 +231,26 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().startsWith("goto")) {
             String waypointType = msg.toLowerCase().substring(4).trim();
-            if (waypointType.endsWith("s")) {
+            if (waypointType.endsWith("s") && Waypoint.Tag.fromString(waypointType.substring(0, waypointType.length() - 1)) != null) {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
             Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
             if (tag == null) {
-                displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
+                String mining = waypointType;
+                //displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
+                if (ChunkPacker.stringToBlock(mining) == null) {
+                    displayChatMessageRaw("No locations for " + mining + " known, cancelling");
+                    return;
+                }
+                List<BlockPos> locs = MineBehavior.scanFor(Arrays.asList(mining), 64);
+                if (locs.isEmpty()) {
+                    displayChatMessageRaw("No locations for " + mining + " known, cancelling");
+                    return;
+                }
+                PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
+                PathingBehavior.INSTANCE.path();
                 return;
             }
             Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(tag);

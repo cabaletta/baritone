@@ -21,6 +21,7 @@ import baritone.api.event.GameEventHandler;
 import baritone.behavior.Behavior;
 import baritone.behavior.impl.*;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.ToolSet;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Brady
@@ -52,9 +54,9 @@ public enum Baritone {
     private File dir;
 
     /**
-     * List of runnables to be called after Baritone has initialized
+     * List of consumers to be called after Baritone has initialized
      */
-    private List<Runnable> onInitRunnables;
+    private List<Consumer<Baritone>> onInitConsumers;
 
     /**
      * Whether or not Baritone is active
@@ -62,7 +64,7 @@ public enum Baritone {
     private boolean active;
 
     Baritone() {
-        this.onInitRunnables = new ArrayList<>();
+        this.onInitConsumers = new ArrayList<>();
     }
 
     public synchronized void init() {
@@ -80,6 +82,7 @@ public enum Baritone {
             registerBehavior(LocationTrackingBehavior.INSTANCE);
             registerBehavior(FollowBehavior.INSTANCE);
             registerBehavior(MineBehavior.INSTANCE);
+            this.gameEventHandler.registerEventListener(ToolSet.INTERNAL_EVENT_LISTENER);
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {
@@ -91,7 +94,7 @@ public enum Baritone {
         this.active = true;
         this.initialized = true;
 
-        this.onInitRunnables.forEach(Runnable::run);
+        this.onInitConsumers.forEach(consumer -> consumer.accept(this));
     }
 
     public final boolean isInitialized() {
@@ -131,7 +134,7 @@ public enum Baritone {
         return this.dir;
     }
 
-    public final void registerInitListener(Runnable runnable) {
-        this.onInitRunnables.add(runnable);
+    public final void registerInitListener(Consumer<Baritone> runnable) {
+        this.onInitConsumers.add(runnable);
     }
 }

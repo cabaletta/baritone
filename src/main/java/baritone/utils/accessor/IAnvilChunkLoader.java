@@ -15,11 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch.mixins.accessor;
-
-import net.minecraft.world.chunk.storage.AnvilChunkLoader;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+package baritone.utils.accessor;
 
 import java.io.File;
 
@@ -27,8 +23,7 @@ import java.io.File;
  * @author Brady
  * @since 8/4/2018 11:36 AM
  */
-@Mixin(AnvilChunkLoader.class)
 public interface IAnvilChunkLoader {
 
-    @Accessor File getChunkSaveLocation();
+    File getChunkSaveLocation();
 }

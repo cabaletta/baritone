@@ -39,6 +39,7 @@ import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.chunk.WorldProvider;
+import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.interfaces.Toggleable;
@@ -132,6 +133,8 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     @Override
     public final void onWorldEvent(WorldEvent event) {
         WorldProvider cache = WorldProvider.INSTANCE;
+
+        BlockStateInterface.clearCachedChunk();
 
         switch (event.getState()) {
             case PRE:

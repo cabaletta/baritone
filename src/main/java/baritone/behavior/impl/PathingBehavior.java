@@ -27,6 +27,7 @@ import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
 import baritone.pathing.goals.*;
+import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockStateInterface;
@@ -203,6 +204,12 @@ public class PathingBehavior extends Behavior {
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
     public boolean path() {
+        if (goal == null) {
+            return false;
+        }
+        if (goal.isInGoal(playerFeet())) {
+            return false;
+        }
         synchronized (pathPlanLock) {
             if (current != null) {
                 return false;
@@ -220,7 +227,7 @@ public class PathingBehavior extends Behavior {
 
     public BlockPos pathStart() {
         BlockPos feet = playerFeet();
-        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR)) {
+        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR) && MovementHelper.canWalkOn(feet.down().down())) {
             return feet.down();
         }
         return feet;
@@ -317,9 +324,15 @@ public class PathingBehavior extends Behavior {
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
+        long timeout;
+        if (current == null) {
+            timeout = Baritone.settings().pathTimeoutMS.<Long>get();
+        } else {
+            timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
+        }
         try {
             IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
-            return pf.calculate();
+            return pf.calculate(timeout);
         } catch (Exception e) {
             displayChatMessageRaw("Pathing exception: " + e);
             e.printStackTrace();

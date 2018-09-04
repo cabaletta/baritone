@@ -69,6 +69,10 @@ public class BlockStateInterface implements Helper {
         return Blocks.AIR.getDefaultState();
     }
 
+    public static void clearCachedChunk() {
+        prev = null;
+    }
+
     public static Block getBlock(BlockPos pos) {
         return get(pos).getBlock();
     }

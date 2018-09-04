@@ -18,8 +18,8 @@
 package baritone.chunk;
 
 import baritone.Baritone;
-import baritone.launch.mixins.accessor.IAnvilChunkLoader;
-import baritone.launch.mixins.accessor.IChunkProviderServer;
+import baritone.utils.accessor.IAnvilChunkLoader;
+import baritone.utils.accessor.IChunkProviderServer;
 import baritone.utils.Helper;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.server.integrated.IntegratedServer;

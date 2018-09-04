@@ -25,8 +25,6 @@ import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLadder;
-import net.minecraft.block.BlockVine;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
@@ -44,18 +42,22 @@ public class MovementDescend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
+        Block fromDown = BlockStateInterface.get(src.down()).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
+            return COST_INF;
+        }
         if (!MovementHelper.canWalkOn(positionToPlace)) {
             return COST_INF;
         }
         Block tmp1 = BlockStateInterface.get(dest).getBlock();
-        if (tmp1 instanceof BlockLadder || tmp1 instanceof BlockVine) {
+        if (tmp1 == Blocks.LADDER || tmp1 == Blocks.VINE) {
             return COST_INF;
         }
         // we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
         double walk = WALK_OFF_BLOCK_COST;
-        if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
+        if (fromDown == Blocks.SOUL_SAND) {
             // use this ratio to apply the soul sand speed penalty to our 0.8 block distance
-            walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
+            walk = WALK_ONE_OVER_SOUL_SAND_COST;
         }
         return walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST) + getTotalHardnessOfBlocksToBreak(context);
     }

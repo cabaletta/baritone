@@ -17,10 +17,12 @@
 
 package baritone.behavior.impl;
 
-import baritone.api.event.events.TickEvent;
+import baritone.api.event.events.PathEvent;
 import baritone.behavior.Behavior;
+import baritone.chunk.CachedChunk;
 import baritone.chunk.ChunkPacker;
 import baritone.chunk.WorldProvider;
+import baritone.chunk.WorldScanner;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
@@ -29,6 +31,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,43 +47,65 @@ public class MineBehavior extends Behavior {
     private MineBehavior() {
     }
 
-    String mining;
+    List<String> mining;
 
     @Override
-    public void onTick(TickEvent event) {
-        if (event.getType() == TickEvent.Type.OUT) {
-            return;
-        }
+    public void onPathEvent(PathEvent event) {
+        updateGoal();
+    }
+
+    public void updateGoal() {
         if (mining == null) {
             return;
         }
-        List<BlockPos> locs = new ArrayList<>(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(mining, 1, 1));
+        List<BlockPos> locs = scanFor(mining, 64);
         if (locs.isEmpty()) {
             displayChatMessageRaw("No locations for " + mining + " known, cancelling");
             cancel();
             return;
         }
-        BlockPos playerFeet = playerFeet();
-        locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
-
-        // remove any that are within loaded chunks that aren't actually what we want
-        locs.removeAll(locs.stream()
-                .filter(pos -> !(world().getChunk(pos) instanceof EmptyChunk))
-                .filter(pos -> !ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).equalsIgnoreCase(mining))
-                .collect(Collectors.toList()));
-        if (locs.size() > 30) {
-            locs = locs.subList(0, 30);
-        }
         PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
         PathingBehavior.INSTANCE.path();
     }
 
-    public void mine(String mining) {
-        this.mining = mining;
+    public static List<BlockPos> scanFor(List<String> mining, int max) {
+        List<BlockPos> locs = new ArrayList<>();
+        List<String> uninteresting = new ArrayList<>();
+        //long b = System.currentTimeMillis();
+        for (String m : mining) {
+            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(ChunkPacker.stringToBlock(m))) {
+                locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(m, 1, 1));
+            } else {
+                uninteresting.add(m);
+            }
+        }
+        //System.out.println("Scan of cached chunks took " + (System.currentTimeMillis() - b) + "ms");
+        if (!uninteresting.isEmpty()) {
+            //long before = System.currentTimeMillis();
+            locs.addAll(WorldScanner.INSTANCE.scanLoadedChunks(uninteresting, max));
+            //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
+        }
+        BlockPos playerFeet = MineBehavior.INSTANCE.playerFeet();
+        locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
+
+        // remove any that are within loaded chunks that aren't actually what we want
+        locs.removeAll(locs.stream()
+                .filter(pos -> !(MineBehavior.INSTANCE.world().getChunk(pos) instanceof EmptyChunk))
+                .filter(pos -> !mining.contains(ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).toLowerCase()))
+                .collect(Collectors.toList()));
+        if (locs.size() > max) {
+            locs = locs.subList(0, max);
+        }
+        return locs;
+    }
+
+    public void mine(String... mining) {
+        this.mining = mining == null || mining.length == 0 ? null : new ArrayList<>(Arrays.asList(mining));
+        updateGoal();
     }
 
     public void cancel() {
         PathingBehavior.INSTANCE.cancel();
-        mine(null);
+        mine();
     }
 }

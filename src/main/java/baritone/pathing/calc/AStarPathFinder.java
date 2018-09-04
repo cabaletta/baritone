@@ -53,7 +53,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
     }
 
     @Override
-    protected Optional<IPath> calculate0() {
+    protected Optional<IPath> calculate0(long timeout) {
         startNode = getNodeAtPosition(start);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
@@ -72,7 +72,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
-        long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
+        if (slowPath) {
+            displayChatMessageRaw("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + timeout + "ms");
+        }
+        long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : timeout);
         //long lastPrintout = 0;
         int numNodes = 0;
         int numMovementsConsidered = 0;
@@ -120,10 +123,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             mostRecentConsidered = currentNode;
             BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
-            /*if ((lastPrintout + 1000) - System.nanoTime() / 1000000L < 0) {//print once a second
-                System.out.println("searching... at " + currentNodePos + ", considered " + numNodes + " nodes so far");
-                lastPrintout = System.nanoTime() / 1000000L;
-            }*/
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
                 displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
@@ -137,7 +136,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             long constructEnd = System.nanoTime();
             construction += constructEnd - constructStart;
             constructionCount++;
-            //System.out.println(constructEnd - constructStart);
             for (Movement movementToGetToNeighbor : possibleMovements) {
                 if (movementToGetToNeighbor == null) {
                     continue;
@@ -159,7 +157,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 long costStart = System.nanoTime();
                 chunk += costStart - s;
                 chunkCount++;
-                //long costStart = System.nanoTime();
                 // TODO cache cost
                 int numLookupsBefore = BlockStateInterface.numBlockStateLookups;
                 double actionCost = movementToGetToNeighbor.getCost(calcContext);
@@ -167,7 +164,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 stateLookup.put(movementToGetToNeighbor.getClass(), BlockStateInterface.numBlockStateLookups - numLookupsBefore + stateLookup.getOrDefault(movementToGetToNeighbor.getClass(), 0));
                 timeConsumed.put(movementToGetToNeighbor.getClass(), costEnd - costStart + timeConsumed.getOrDefault(movementToGetToNeighbor.getClass(), 0L));
                 count.put(movementToGetToNeighbor.getClass(), 1 + count.getOrDefault(movementToGetToNeighbor.getClass(), 0));
-                //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
                 numMovementsConsidered++;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
@@ -215,6 +211,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     for (int i = 0; i < bestSoFar.length; i++) {
                         double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
                         if (heuristic < bestHeuristicSoFar[i]) {
+                            if (bestHeuristicSoFar[i] - heuristic < 0.01 && minimumImprovementRepropagation) {
+                                continue;
+                            }
                             bestHeuristicSoFar[i] = heuristic;
                             bestSoFar[i] = neighbor;
                         }
@@ -268,7 +267,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 return Optional.of(new Path(startNode, bestSoFar[i], numNodes));
             }
         }
-        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks");
+        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
         displayChatMessageRaw("No path found =(");
         currentlyRunning = null;
         return Optional.empty();
