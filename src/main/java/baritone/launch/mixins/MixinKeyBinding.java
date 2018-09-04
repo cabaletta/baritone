@@ -29,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * @since 7/31/2018 11:44 PM
  */
 @Mixin(KeyBinding.class)
-public abstract class MixinKeyBinding {
+public class MixinKeyBinding {
 
     @Inject(
             method = "isKeyDown",

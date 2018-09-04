@@ -37,11 +37,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @since 8/6/2018 9:30 PM
  */
 @Mixin(NetworkManager.class)
-public abstract class MixinNetworkManager {
+public class MixinNetworkManager {
 
     @Shadow private Channel channel;
-
-    @Shadow protected abstract void channelRead0(ChannelHandlerContext p_channelRead0_1_, Packet<?> p_channelRead0_2_) throws Exception;
 
     @Inject(
             method = "dispatchPacket",

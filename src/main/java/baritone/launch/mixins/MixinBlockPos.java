@@ -29,7 +29,7 @@ import javax.annotation.Nonnull;
  * @since 8/25/2018
  */
 @Mixin(BlockPos.class)
-public abstract class MixinBlockPos extends Vec3i {
+public class MixinBlockPos extends Vec3i {
 
     public MixinBlockPos(int xIn, int yIn, int zIn) {
         super(xIn, yIn, zIn);
