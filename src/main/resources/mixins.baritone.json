@@ -8,7 +8,9 @@
     "maxShiftBy": 2
   },
   "client": [
+    "MixinAnvilChunkLoader",
     "MixinBlockPos",
+    "MixinChunkProviderServer",
     "MixinEntity",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
@@ -20,9 +22,6 @@
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
-    "MixinWorldClient",
-
-    "accessor.IAnvilChunkLoader",
-    "accessor.IChunkProviderServer"
+    "MixinWorldClient"
   ]
 }
