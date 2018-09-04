@@ -83,7 +83,7 @@ dependencies {
 
 mixin {
     defaultObfuscationEnv notch
-    add sourceSets.main, 'mixins.baritone.refmap.json'
+    add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
 
 jar {
