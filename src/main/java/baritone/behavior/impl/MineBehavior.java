@@ -19,8 +19,10 @@ package baritone.behavior.impl;
 
 import baritone.api.event.events.TickEvent;
 import baritone.behavior.Behavior;
+import baritone.chunk.CachedChunk;
 import baritone.chunk.ChunkPacker;
 import baritone.chunk.WorldProvider;
+import baritone.chunk.WorldScanner;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
@@ -55,21 +57,7 @@ public class MineBehavior extends Behavior {
         if (mining == null) {
             return;
         }
-        List<BlockPos> locs = new ArrayList<>();
-        for (String m : mining) {
-            locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(m, 1, 1));
-        }
-        BlockPos playerFeet = playerFeet();
-        locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
-
-        // remove any that are within loaded chunks that aren't actually what we want
-        locs.removeAll(locs.stream()
-                .filter(pos -> !(world().getChunk(pos) instanceof EmptyChunk))
-                .filter(pos -> !mining.contains(ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).toLowerCase()))
-                .collect(Collectors.toList()));
-        if (locs.size() > 30) {
-            locs = locs.subList(0, 30);
-        }
+        List<BlockPos> locs = scanFor(mining, 64);
         if (locs.isEmpty()) {
             displayChatMessageRaw("No locations for " + mining + " known, cancelling");
             cancel();
@@ -77,6 +65,31 @@ public class MineBehavior extends Behavior {
         }
         PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
         PathingBehavior.INSTANCE.path();
+    }
+
+    public static List<BlockPos> scanFor(List<String> mining, int max) {
+        List<BlockPos> locs = new ArrayList<>();
+        List<String> uninteresting = new ArrayList<>();
+        for (String m : mining) {
+            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(ChunkPacker.stringToBlock(m))) {
+                locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(m, 1, 1));
+            } else {
+                uninteresting.add(m);
+            }
+        }
+        locs.addAll(WorldScanner.INSTANCE.scanLoadedChunks(uninteresting, max));
+        BlockPos playerFeet = MineBehavior.INSTANCE.playerFeet();
+        locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
+
+        // remove any that are within loaded chunks that aren't actually what we want
+        locs.removeAll(locs.stream()
+                .filter(pos -> !(MineBehavior.INSTANCE.world().getChunk(pos) instanceof EmptyChunk))
+                .filter(pos -> !mining.contains(ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).toLowerCase()))
+                .collect(Collectors.toList()));
+        if (locs.size() > max) {
+            locs = locs.subList(0, max);
+        }
+        return locs;
     }
 
     public void mine(String... mining) {
