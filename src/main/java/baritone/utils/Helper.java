@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -53,10 +54,11 @@ public interface Helper {
 
     default BlockPos playerFeet() {
         // TODO find a better way to deal with soul sand!!!!!
-        return new BlockPos(player().posX, player().posY + 0.1251, player().posZ);
-        /*if (BlockStateInterface.get(feet).getBlock().equals(Blocks.SOUL_SAND) && player().posY > feet.getY() + 0.874999) {
+        BlockPos feet = new BlockPos(player().posX, player().posY + 0.1251, player().posZ);
+        if (BlockStateInterface.get(feet).getBlock() instanceof BlockSlab) {
             return feet.up();
-        }*/
+        }
+        return feet;
     }
 
     default Vec3d playerFeetAsVec() {

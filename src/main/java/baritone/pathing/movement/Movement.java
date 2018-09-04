@@ -21,13 +21,7 @@ import baritone.Baritone;
 import baritone.behavior.impl.LookBehavior;
 import baritone.behavior.impl.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementStatus;
-import baritone.pathing.movement.movements.MovementDownward;
-import baritone.pathing.movement.movements.MovementPillar;
-import baritone.pathing.movement.movements.MovementTraverse;
 import baritone.utils.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLadder;
-import net.minecraft.block.BlockVine;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -78,19 +72,9 @@ public abstract class Movement implements Helper, MovementHelper {
         if (cost == null) {
             if (context == null)
                 context = new CalculationContext();
-            cost = calculateCost0(context);
+            cost = calculateCost(context);
         }
         return cost;
-    }
-
-    private double calculateCost0(CalculationContext context) {
-        if (!(this instanceof MovementPillar) && !(this instanceof MovementTraverse) && !(this instanceof MovementDownward)) {
-            Block fromDown = BlockStateInterface.get(src.down()).getBlock();
-            if (fromDown instanceof BlockLadder || fromDown instanceof BlockVine) {
-                return COST_INF;
-            }
-        }
-        return calculateCost(context);
     }
 
     protected abstract double calculateCost(CalculationContext context);
@@ -101,7 +85,7 @@ public abstract class Movement implements Helper, MovementHelper {
     }
 
     public double calculateCostWithoutCaching() {
-        return calculateCost0(new CalculationContext());
+        return calculateCost(new CalculationContext());
     }
 
     /**

@@ -23,9 +23,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLadder;
-import net.minecraft.block.BlockVine;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDownward extends Movement {
@@ -49,7 +48,7 @@ public class MovementDownward extends Movement {
         }
         IBlockState d = BlockStateInterface.get(dest);
         Block td = d.getBlock();
-        boolean ladder = td instanceof BlockLadder || td instanceof BlockVine;
+        boolean ladder = td == Blocks.LADDER || td == Blocks.VINE;
         if (ladder) {
             return LADDER_DOWN_ONE_COST;
         } else {

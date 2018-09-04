@@ -85,7 +85,7 @@ public class MovementTraverse extends Movement {
             return WC + hardness1 + hardness2;
         } else {//this is a bridge, so we need to place a block
             Block srcDown = BlockStateInterface.get(src.down()).getBlock();
-            if (srcDown instanceof BlockLadder || srcDown instanceof BlockVine) {
+            if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
                 return COST_INF;
             }
             if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(positionToPlace, destOn)) {
@@ -107,8 +107,8 @@ public class MovementTraverse extends Movement {
                         return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
                     }
                 }
-                if (Blocks.SOUL_SAND.equals(srcDown)) {
-                    return COST_INF; // can't sneak and backplace against soul sand =/
+                if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && !((BlockSlab) srcDown).isDouble())) {
+                    return COST_INF; // can't sneak and backplace against soul sand or half slabs =/
                 }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
                 return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
@@ -206,7 +206,8 @@ public class MovementTraverse extends Movement {
                         return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                     }
                     state.setInput(InputOverrideHandler.Input.SNEAK, true);
-                    if (BlockStateInterface.get(playerFeet().down()).getBlock().equals(Blocks.SOUL_SAND)) { // see issue #118
+                    Block standingOn = BlockStateInterface.get(playerFeet().down()).getBlock();
+                    if (standingOn.equals(Blocks.SOUL_SAND) || standingOn instanceof BlockSlab) { // see issue #118
                         double dist = Math.max(Math.abs(dest.getX() + 0.5 - player().posX), Math.abs(dest.getZ() + 0.5 - player().posZ));
                         if (dist < 0.85) { // 0.5 + 0.3 + epsilon
                             MovementHelper.moveTowards(state, dest);

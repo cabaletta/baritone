@@ -26,7 +26,7 @@ import net.minecraft.util.math.Vec3i;
  *
  * @author leijurv
  */
-public class BetterBlockPos extends BlockPos {
+public final class BetterBlockPos extends BlockPos {
     public final int x;
     public final int y;
     public final int z;

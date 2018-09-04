@@ -25,8 +25,11 @@ import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.*;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -44,8 +47,16 @@ public class MovementFall extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (!MovementHelper.canWalkOn(dest.down())) {
+        Block fromDown = BlockStateInterface.get(src.down()).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return COST_INF;
+        }
+        IBlockState fallOnto = BlockStateInterface.get(dest.down());
+        if (!MovementHelper.canWalkOn(dest.down(), fallOnto)) {
+            return COST_INF;
+        }
+        if (MovementHelper.isBottomSlab(fallOnto)) {
+            return COST_INF; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
         }
         double placeBucketCost = 0.0;
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > context.maxFallHeightNoWater()) {

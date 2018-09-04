@@ -53,7 +53,18 @@ public class MovementAscend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
+        IBlockState srcDown = BlockStateInterface.get(src.down());
+        if (srcDown.getBlock() == Blocks.LADDER || srcDown.getBlock() == Blocks.VINE) {
+            return COST_INF;
+        }
+        // we can jump from soul sand, but not from a bottom slab
+        boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
         IBlockState toPlace = BlockStateInterface.get(positionToPlace);
+        boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
+
+        if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
+            return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
+        }
         if (!MovementHelper.canWalkOn(positionToPlace, toPlace)) {
             if (!context.hasThrowaway()) {
                 return COST_INF;
@@ -96,9 +107,11 @@ public class MovementAscend extends Movement {
             // it's possible srcUp is AIR from the start, and srcUp2 is falling
             // and in that scenario, when we arrive and break srcUp2, that lets srcUp3 fall on us and suffocate us
         }
-        // TODO maybe change behavior if src.down() is soul sand?
         double walk = WALK_ONE_BLOCK_COST;
-        if (toPlace.getBlock().equals(Blocks.SOUL_SAND)) {
+        if (jumpingToBottomSlab && !jumpingFromBottomSlab) {
+            return walk + getTotalHardnessOfBlocksToBreak(context); // we don't hit space we just walk into the slab
+        }
+        if (!jumpingToBottomSlab && toPlace.getBlock().equals(Blocks.SOUL_SAND)) {
             walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
         }
         // we hit space immediately on entering this action
@@ -123,7 +136,8 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
-        if (!MovementHelper.canWalkOn(positionToPlace)) {
+        IBlockState jumpingOnto = BlockStateInterface.get(positionToPlace);
+        if (!MovementHelper.canWalkOn(positionToPlace, jumpingOnto)) {
             for (int i = 0; i < 4; i++) {
                 BlockPos anAgainst = positionToPlace.offset(HORIZONTALS[i]);
                 if (anAgainst.equals(src)) {
@@ -161,6 +175,11 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
+        if (MovementHelper.isBottomSlab(jumpingOnto)) {
+            if (!MovementHelper.isBottomSlab(src.down())) {
+                return state; // don't jump while walking from a non double slab into a bottom slab
+            }
+        }
 
         if (headBonkClear()) {
             return state.setInput(InputOverrideHandler.Input.JUMP, true);
