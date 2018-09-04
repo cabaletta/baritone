@@ -80,10 +80,12 @@ public final class ChunkPacker implements Helper {
                 }
                 BlockStateContainer bsc = extendedblockstorage.getData();
                 int yReal = y0 << 4;
-                for (int x = 0; x < 16; x++) {
-                    for (int y1 = 0; y1 < 16; y1++) {
-                        for (int z = 0; z < 16; z++) {
-                            int y = y1 | yReal;
+                // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
+                // for better cache locality, iterate in that order
+                for (int y1 = 0; y1 < 16; y1++) {
+                    int y = y1 | yReal;
+                    for (int z = 0; z < 16; z++) {
+                        for (int x = 0; x < 16; x++) {
                             int index = CachedChunk.getPositionIndex(x, y, z);
                             IBlockState state = bsc.get(x, y1, z);
                             boolean[] bits = getPathingBlockType(state).getBits();

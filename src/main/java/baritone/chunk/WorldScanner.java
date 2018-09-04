@@ -73,9 +73,11 @@ public enum WorldScanner implements Helper {
                         }
                         int yReal = y0 << 4;
                         BlockStateContainer bsc = extendedblockstorage.getData();
-                        for (int x = 0; x < 16; x++) {
-                            for (int y = 0; y < 16; y++) {
-                                for (int z = 0; z < 16; z++) {
+                        // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
+                        // for better cache locality, iterate in that order
+                        for (int y = 0; y < 16; y++) {
+                            for (int z = 0; z < 16; z++) {
+                                for (int x = 0; x < 16; x++) {
                                     IBlockState state = bsc.get(x, y, z);
                                     if (asBlocks.contains(state.getBlock())) {
                                         res.add(new BlockPos(chunkX | x, yReal | y, chunkZ | z));
