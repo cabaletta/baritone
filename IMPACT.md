@@ -1,6 +1,6 @@
 # Integration between Baritone and Impact
 
-Baritone will be in Impact 4.4 with nice integrations with its hacks, but if you're impatient you can run Baritone on top of Impact 4.3 right now.
+Baritone will be in Impact 4.4 with nice integrations with its utility modules, but if you're impatient you can run Baritone on top of Impact 4.3 right now.
 
 You can either build Baritone yourself, or download the jar from September 3 from <a href="https://www.dropbox.com/s/vje9x3xd3eaplxu/baritone-1.0.jar?dl=0">here</a>
 
