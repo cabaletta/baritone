@@ -39,6 +39,9 @@ public enum WorldScanner implements Helper {
             throw new IllegalStateException("Invalid block name should have been caught earlier: " + blockTypes.toString());
         }
         LinkedList<BlockPos> res = new LinkedList<>();
+        if (asBlocks.isEmpty()) {
+            return res;
+        }
         ChunkProviderClient chunkProvider = world().getChunkProvider();
 
         int playerChunkX = playerFeet().getX() >> 4;

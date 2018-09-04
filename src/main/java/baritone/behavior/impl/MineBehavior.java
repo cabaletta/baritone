@@ -70,6 +70,7 @@ public class MineBehavior extends Behavior {
     public static List<BlockPos> scanFor(List<String> mining, int max) {
         List<BlockPos> locs = new ArrayList<>();
         List<String> uninteresting = new ArrayList<>();
+        //long b = System.currentTimeMillis();
         for (String m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(ChunkPacker.stringToBlock(m))) {
                 locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(m, 1, 1));
@@ -77,7 +78,12 @@ public class MineBehavior extends Behavior {
                 uninteresting.add(m);
             }
         }
-        locs.addAll(WorldScanner.INSTANCE.scanLoadedChunks(uninteresting, max));
+        //System.out.println("Scan of cached chunks took " + (System.currentTimeMillis() - b) + "ms");
+        if (!uninteresting.isEmpty()) {
+            //long before = System.currentTimeMillis();
+            locs.addAll(WorldScanner.INSTANCE.scanLoadedChunks(uninteresting, max));
+            //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
+        }
         BlockPos playerFeet = MineBehavior.INSTANCE.playerFeet();
         locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
 
