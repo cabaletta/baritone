@@ -38,14 +38,13 @@ buildscript {
 }
 
 apply plugin: 'java'
+apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+apply plugin: 'org.spongepowered.mixin'
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
 }
-
-apply plugin: 'net.minecraftforge.gradle.tweaker-client'
-apply plugin: 'org.spongepowered.mixin'
 
 minecraft {
     version = '1.12.2'
