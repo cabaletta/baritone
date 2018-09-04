@@ -17,7 +17,6 @@
 
 package baritone.utils;
 
-import baritone.Baritone;
 import baritone.api.event.events.ItemSlotEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import net.minecraft.block.Block;
@@ -46,11 +45,7 @@ public class ToolSet implements Helper {
     /**
      * Instance of the internal event listener used to hook into Baritone's event bus
      */
-    private static final InternalEventListener INTERNAL_EVENT_LISTENER = new InternalEventListener();
-
-    static {
-        Baritone.INSTANCE.getGameEventHandler().registerEventListener(INTERNAL_EVENT_LISTENER);
-    }
+    public static final InternalEventListener INTERNAL_EVENT_LISTENER = new InternalEventListener();
 
     /**
      * A list of tools on the hotbar that should be considered.
