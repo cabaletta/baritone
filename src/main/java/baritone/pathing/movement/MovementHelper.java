@@ -214,12 +214,13 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
         if (BlockStateInterface.isWater(block)) {
-            if (BlockStateInterface.isFlowing(state)) {
-                return false;
-            }
             Block up = BlockStateInterface.get(pos.up()).getBlock();
             if (up instanceof BlockLilyPad) {
                 return true;
+            }
+            if (BlockStateInterface.isFlowing(state)) {
+                // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
+                return BlockStateInterface.isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
             }
             // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
