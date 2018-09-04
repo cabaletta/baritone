@@ -47,7 +47,7 @@ public enum WorldScanner implements Helper {
         int playerChunkX = playerFeet().getX() >> 4;
         int playerChunkZ = playerFeet().getZ() >> 4;
 
-        int searchRadius = 0;
+        int searchRadius = 2;
         while (true) {
             boolean allUnloaded = true;
             for (int xoff = -searchRadius; xoff <= searchRadius; xoff++) {
