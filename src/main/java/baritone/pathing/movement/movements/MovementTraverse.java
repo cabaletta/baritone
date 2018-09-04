@@ -57,15 +57,16 @@ public class MovementTraverse extends Movement {
         IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
         IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
         IBlockState destOn = BlockStateInterface.get(positionToPlace);
+        Block srcDown = BlockStateInterface.getBlock(src.down());
         if (MovementHelper.canWalkOn(positionToPlace, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             if (BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock())) {
                 WC = WALK_ONE_IN_WATER_COST;
             } else {
-                if (Blocks.SOUL_SAND.equals(destOn.getBlock())) {
+                if (destOn.getBlock() == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
-                if (Blocks.SOUL_SAND.equals(BlockStateInterface.get(src.down()).getBlock())) {
+                if (srcDown == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
@@ -82,9 +83,12 @@ public class MovementTraverse extends Movement {
                 }
                 return WC;
             }
+            if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
+                hardness1 *= 5;
+                hardness2 *= 5;
+            }
             return WC + hardness1 + hardness2;
         } else {//this is a bridge, so we need to place a block
-            Block srcDown = BlockStateInterface.get(src.down()).getBlock();
             if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
                 return COST_INF;
             }
@@ -129,6 +133,8 @@ public class MovementTraverse extends Movement {
             default:
                 return state;
         }
+
+        state.setInput(InputOverrideHandler.Input.SNEAK, false);
 
         Block fd = BlockStateInterface.get(src.down()).getBlock();
         boolean ladder = fd instanceof BlockLadder || fd instanceof BlockVine;
@@ -186,7 +192,7 @@ public class MovementTraverse extends Movement {
                 state.setInput(InputOverrideHandler.Input.SPRINT, true);
             }
             Block destDown = BlockStateInterface.get(dest.down()).getBlock();
-            if (ladder && (destDown instanceof BlockVine || destDown instanceof BlockLadder)) {
+            if (whereAmI.getY() != dest.getY() && ladder && (destDown instanceof BlockVine || destDown instanceof BlockLadder)) {
                 new MovementPillar(dest.down(), dest).updateState(state); // i'm sorry
                 return state;
             }
@@ -263,5 +269,16 @@ public class MovementTraverse extends Movement {
                 // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
             }
         }
+    }
+
+    @Override
+    protected boolean prepared(MovementState state) {
+        if (playerFeet().equals(src) || playerFeet().equals(src.down())) {
+            Block block = BlockStateInterface.getBlock(src.down());
+            if (block == Blocks.LADDER || block == Blocks.VINE) {
+                state.setInput(InputOverrideHandler.Input.SNEAK, true);
+            }
+        }
+        return super.prepared(state);
     }
 }
