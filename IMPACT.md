@@ -2,7 +2,7 @@
 
 Baritone will be in Impact 4.4 with nice integrations with its utility modules, but if you're impatient you can run Baritone on top of Impact 4.3 right now.
 
-You can either build Baritone yourself, or download the jar from September 3 from <a href="https://www.dropbox.com/s/vje9x3xd3eaplxu/baritone-1.0.jar?dl=0">here</a>
+You can either build Baritone yourself, or download the jar from September 4 from <a href="https://www.dropbox.com/s/imc6xwwpwsh3i0y/baritone-1.0.0.jar?dl=0">here</a>
 
 To build it yourself, clone and setup Baritone (instructions in main README.md). Then, build the jar. From the command line, it's `./gradlew build` (or `gradlew build` on Windows). In IntelliJ, you can just start the `build` task in the Gradle menu.
 
