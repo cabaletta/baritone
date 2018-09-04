@@ -19,10 +19,7 @@ package baritone.pathing.path;
 
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
-import baritone.pathing.movement.ActionCosts;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.movement.MovementState;
+import baritone.pathing.movement.*;
 import baritone.pathing.movement.movements.MovementDescend;
 import baritone.pathing.movement.movements.MovementDiagonal;
 import baritone.pathing.movement.movements.MovementFall;
@@ -274,7 +271,7 @@ public class PathExecutor implements Helper {
     }
 
     private void sprintIfRequested() {
-        if (!Baritone.settings().allowSprint.get()) {
+        if (!new CalculationContext().canSprint()) {
             player().setSprinting(false);
             return;
         }
