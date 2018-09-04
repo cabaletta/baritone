@@ -28,7 +28,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.*;
 
@@ -40,28 +42,65 @@ public final class ChunkPacker implements Helper {
 
     private ChunkPacker() {}
 
+    private static BitSet originalPacker(Chunk chunk) {
+        BitSet bitSet = new BitSet(CachedChunk.SIZE);
+        for (int y = 0; y < 256; y++) {
+            for (int z = 0; z < 16; z++) {
+                for (int x = 0; x < 16; x++) {
+                    int index = CachedChunk.getPositionIndex(x, y, z);
+                    IBlockState state = chunk.getBlockState(x, y, z);
+                    boolean[] bits = getPathingBlockType(state).getBits();
+                    bitSet.set(index, bits[0]);
+                    bitSet.set(index + 1, bits[1]);
+                }
+            }
+        }
+        return bitSet;
+    }
+
     public static CachedChunk pack(Chunk chunk) {
         long start = System.nanoTime() / 1000000L;
 
         Map<String, List<BlockPos>> specialBlocks = new HashMap<>();
         BitSet bitSet = new BitSet(CachedChunk.SIZE);
         try {
-            for (int y = 0; y < 256; y++) {
-                for (int z = 0; z < 16; z++) {
-                    for (int x = 0; x < 16; x++) {
-                        int index = CachedChunk.getPositionIndex(x, y, z);
-                        IBlockState state = chunk.getBlockState(x, y, z);
-                        boolean[] bits = getPathingBlockType(state).getBits();
-                        bitSet.set(index, bits[0]);
-                        bitSet.set(index + 1, bits[1]);
-                        Block block = state.getBlock();
-                        if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
-                            String name = blockToString(block);
-                            specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
+            ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+            for (int y0 = 0; y0 < 16; y0++) {
+                ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
+                if (extendedblockstorage == null) {
+                    // any 16x16x16 area that's all air will have null storage
+                    // for example, in an ocean biome, with air from y=64 to y=256
+                    // the first 4 extended blocks storages will be full
+                    // and the remaining 12 will be null
+
+                    // since the index into the bitset is calculated from the x y and z
+                    // and doesn't function as an append, we can entirely skip the scanning
+                    // since a bitset is initialized to all zero, and air is saved as zeros
+                    continue;
+                }
+                BlockStateContainer bsc = extendedblockstorage.getData();
+                int yReal = y0 << 4;
+                for (int x = 0; x < 16; x++) {
+                    for (int y1 = 0; y1 < 16; y1++) {
+                        for (int z = 0; z < 16; z++) {
+                            int y = y1 | yReal;
+                            int index = CachedChunk.getPositionIndex(x, y, z);
+                            IBlockState state = bsc.get(x, y1, z);
+                            boolean[] bits = getPathingBlockType(state).getBits();
+                            bitSet.set(index, bits[0]);
+                            bitSet.set(index + 1, bits[1]);
+                            Block block = state.getBlock();
+                            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
+                                String name = blockToString(block);
+                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
+                            }
                         }
                     }
                 }
             }
+            /*if (!bitSet.equals(originalPacker(chunk))) {
+                throw new IllegalStateException();
+            }*/
         } catch (Exception e) {
             e.printStackTrace();
         }

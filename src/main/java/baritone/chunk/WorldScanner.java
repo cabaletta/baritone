@@ -64,18 +64,21 @@ public enum WorldScanner implements Helper {
                     }
                     allUnloaded = false;
                     ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+                    chunkX = chunkX << 4;
+                    chunkZ = chunkZ << 4;
                     for (int y0 = 0; y0 < 16; y0++) {
                         ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
                         if (extendedblockstorage == null) {
                             continue;
                         }
+                        int yReal = y0 << 4;
                         BlockStateContainer bsc = extendedblockstorage.getData();
                         for (int x = 0; x < 16; x++) {
                             for (int y = 0; y < 16; y++) {
                                 for (int z = 0; z < 16; z++) {
                                     IBlockState state = bsc.get(x, y, z);
                                     if (asBlocks.contains(state.getBlock())) {
-                                        res.add(new BlockPos(chunkX * 16 + x, y0 * 16 + y, chunkZ * 16 + z));
+                                        res.add(new BlockPos(chunkX | x, yReal | y, chunkZ | z));
                                     }
                                 }
                             }
