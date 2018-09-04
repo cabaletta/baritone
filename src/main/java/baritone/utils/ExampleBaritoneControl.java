@@ -189,8 +189,8 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.toLowerCase().startsWith("mine")) {
             String blockType = msg.toLowerCase().substring(4).trim();
-            MineBehavior.INSTANCE.mine(blockType);
-            displayChatMessageRaw("Started mining blocks of type " + blockType);
+            MineBehavior.INSTANCE.mine(blockType.split(" "));
+            displayChatMessageRaw("Started mining blocks of type " + Arrays.toString(blockType.split(" ")));
             event.cancel();
             return;
         }

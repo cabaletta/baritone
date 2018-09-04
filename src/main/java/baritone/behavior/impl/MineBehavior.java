@@ -29,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class MineBehavior extends Behavior {
     private MineBehavior() {
     }
 
-    String mining;
+    List<String> mining;
 
     @Override
     public void onTick(TickEvent event) {
@@ -54,14 +55,17 @@ public class MineBehavior extends Behavior {
         if (mining == null) {
             return;
         }
-        List<BlockPos> locs = new ArrayList<>(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(mining, 1, 1));
+        List<BlockPos> locs = new ArrayList<>();
+        for (String m : mining) {
+            locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(m, 1, 1));
+        }
         BlockPos playerFeet = playerFeet();
         locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
 
         // remove any that are within loaded chunks that aren't actually what we want
         locs.removeAll(locs.stream()
                 .filter(pos -> !(world().getChunk(pos) instanceof EmptyChunk))
-                .filter(pos -> !ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).equalsIgnoreCase(mining))
+                .filter(pos -> !mining.contains(ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).toLowerCase()))
                 .collect(Collectors.toList()));
         if (locs.size() > 30) {
             locs = locs.subList(0, 30);
@@ -75,8 +79,8 @@ public class MineBehavior extends Behavior {
         PathingBehavior.INSTANCE.path();
     }
 
-    public void mine(String mining) {
-        this.mining = mining;
+    public void mine(String... mining) {
+        this.mining = new ArrayList<>(Arrays.asList(mining));
     }
 
     public void cancel() {
