@@ -17,7 +17,7 @@
 
 package baritone.behavior.impl;
 
-import baritone.api.event.events.TickEvent;
+import baritone.api.event.events.PathEvent;
 import baritone.behavior.Behavior;
 import baritone.chunk.CachedChunk;
 import baritone.chunk.ChunkPacker;
@@ -50,10 +50,11 @@ public class MineBehavior extends Behavior {
     List<String> mining;
 
     @Override
-    public void onTick(TickEvent event) {
-        if (event.getType() == TickEvent.Type.OUT) {
-            return;
-        }
+    public void onPathEvent(PathEvent event) {
+        updateGoal();
+    }
+
+    public void updateGoal() {
         if (mining == null) {
             return;
         }
@@ -100,6 +101,7 @@ public class MineBehavior extends Behavior {
 
     public void mine(String... mining) {
         this.mining = mining == null || mining.length == 0 ? null : new ArrayList<>(Arrays.asList(mining));
+        updateGoal();
     }
 
     public void cancel() {
