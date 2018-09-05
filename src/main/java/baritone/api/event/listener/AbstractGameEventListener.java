@@ -75,9 +75,6 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onReceivePacket(PacketEvent event) {}
 
     @Override
-    default void onQueryItemSlotForBlocks(ItemSlotEvent event) {}
-
-    @Override
     default void onPlayerRelativeMove(RelativeMoveEvent event) {}
 
     @Override

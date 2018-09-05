@@ -17,7 +17,6 @@
     "MixinGameSettings",
     "MixinGuiContainer",
     "MixinGuiScreen",
-    "MixinInventoryPlayer",
     "MixinKeyBinding",
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",

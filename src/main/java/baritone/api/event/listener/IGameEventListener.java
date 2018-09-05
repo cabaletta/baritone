@@ -36,7 +36,6 @@ package baritone.api.event.listener;
 
 import baritone.api.event.events.*;
 import io.netty.util.concurrent.GenericFutureListener;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiGameOver;
@@ -44,7 +43,6 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.util.text.ITextComponent;
@@ -119,14 +117,6 @@ public interface IGameEventListener {
      * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
      */
     void onReceivePacket(PacketEvent event);
-
-    /**
-     * Run when a query is made for a player's inventory current slot in the context of blocks
-     *
-     * @see InventoryPlayer#getDestroySpeed(IBlockState)
-     * @see InventoryPlayer#canHarvestBlock(IBlockState)
-     */
-    void onQueryItemSlotForBlocks(ItemSlotEvent event);
 
     /**
      * Run once per game tick from before and after the player's moveRelative method is called

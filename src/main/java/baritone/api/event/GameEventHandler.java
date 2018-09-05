@@ -160,11 +160,6 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     }
 
     @Override
-    public final void onQueryItemSlotForBlocks(ItemSlotEvent event) {
-        dispatch(listener -> listener.onQueryItemSlotForBlocks(event));
-    }
-
-    @Override
     public void onPlayerRelativeMove(RelativeMoveEvent event) {
         dispatch(listener -> listener.onPlayerRelativeMove(event));
     }

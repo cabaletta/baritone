@@ -21,7 +21,6 @@ import baritone.api.event.GameEventHandler;
 import baritone.behavior.Behavior;
 import baritone.behavior.impl.*;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.ToolSet;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -82,7 +81,6 @@ public enum Baritone {
             registerBehavior(LocationTrackingBehavior.INSTANCE);
             registerBehavior(FollowBehavior.INSTANCE);
             registerBehavior(MineBehavior.INSTANCE);
-            this.gameEventHandler.registerEventListener(ToolSet.INTERNAL_EVENT_LISTENER);
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {
