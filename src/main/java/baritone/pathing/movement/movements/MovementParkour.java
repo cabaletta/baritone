@@ -66,11 +66,10 @@ public class MovementParkour extends Movement {
         }
         for (int i = 2; i <= 4; i++) {
             BlockPos dest = src.offset(dir, i);
-            if (!MovementHelper.fullyPassable(dest)) {
-                return null;
-            }
-            if (!MovementHelper.fullyPassable(dest.up())) {
-                return null;
+            for (int y = 0; y < 3; y++) {
+                if (!MovementHelper.fullyPassable(dest.up(y))) {
+                    return null;
+                }
             }
             if (MovementHelper.canWalkOn(dest.down())) {
                 return new MovementParkour(src, i, dir);
@@ -102,11 +101,10 @@ public class MovementParkour extends Movement {
         }
         for (int i = 1; i <= 4; i++) {
             BlockPos d = src.offset(direction, i);
-            if (!MovementHelper.fullyPassable(d)) {
-                return COST_INF;
-            }
-            if (!MovementHelper.fullyPassable(d.up())) {
-                return COST_INF;
+            for (int y = 0; y < 3; y++) {
+                if (!MovementHelper.fullyPassable(d.up(y))) {
+                    return COST_INF;
+                }
             }
             if (d.equals(dest)) {
                 return costFromJumpDistance(i);
