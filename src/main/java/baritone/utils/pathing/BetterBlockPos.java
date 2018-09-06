@@ -119,4 +119,10 @@ public final class BetterBlockPos extends BlockPos {
         Vec3i vec = dir.getDirectionVec();
         return new BetterBlockPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
     }
+
+    @Override
+    public BlockPos offset(EnumFacing dir, int dist) {
+        Vec3i vec = dir.getDirectionVec();
+        return new BetterBlockPos(x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
+    }
 }

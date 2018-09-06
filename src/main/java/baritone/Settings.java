@@ -84,6 +84,11 @@ public class Settings {
     public Setting<Boolean> allowWalkOnBottomSlab = new Setting<>(true);
 
     /**
+     * You know what it is
+     */
+    public Setting<Boolean> allowParkour = new Setting<>(true); // disable in release because its sketchy af lol
+
+    /**
      * For example, if you have Mining Fatigue or Haste, adjust the costs of breaking blocks accordingly.
      */
     public Setting<Boolean> considerPotionEffects = new Setting<>(true);
