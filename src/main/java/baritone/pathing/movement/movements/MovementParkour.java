@@ -66,7 +66,8 @@ public class MovementParkour extends Movement {
         }
         for (int i = 2; i <= 4; i++) {
             BlockPos dest = src.offset(dir, i);
-            for (int y = 0; y < 3; y++) {
+            // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
+            for (int y = 0; y < 4; y++) {
                 if (!MovementHelper.fullyPassable(dest.up(y))) {
                     return null;
                 }
@@ -101,7 +102,7 @@ public class MovementParkour extends Movement {
         }
         for (int i = 1; i <= 4; i++) {
             BlockPos d = src.offset(direction, i);
-            for (int y = 0; y < 3; y++) {
+            for (int y = 0; y < 4; y++) {
                 if (!MovementHelper.fullyPassable(d.up(y))) {
                     return COST_INF;
                 }
