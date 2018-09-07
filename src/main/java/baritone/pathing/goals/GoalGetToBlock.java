@@ -50,6 +50,9 @@ public class GoalGetToBlock implements Goal {
         if (yDiff == -2 && xDiff == 0 && zDiff == 0) {
             return true;
         }
+        if (yDiff == -1) {
+            yDiff = 0;
+        }
         return Math.abs(xDiff) + Math.abs(yDiff) + Math.abs(zDiff) <= 1;
     }
 

@@ -30,7 +30,7 @@ public class GoalGetToBlockTest {
 
     @Test
     public void isInGoal() {
-        List<String> acceptableOffsets = new ArrayList<>(Arrays.asList("0,0,0", "0,0,1", "0,0,-1", "1,0,0", "-1,0,0", "0,1,0", "0,-1,0", "0,-2,0"));
+        List<String> acceptableOffsets = new ArrayList<>(Arrays.asList("0,0,0", "0,0,1", "0,0,-1", "1,0,0", "-1,0,0", "0,-1,1", "0,-1,-1", "1,-1,0", "-1,-1,0", "0,1,0", "0,-1,0", "0,-2,0"));
         for (int x = -10; x <= 10; x++) {
             for (int y = -10; y <= 10; y++) {
                 for (int z = -10; z <= 10; z++) {
