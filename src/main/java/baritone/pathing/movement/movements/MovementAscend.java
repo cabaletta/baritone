@@ -33,6 +33,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
@@ -203,7 +204,10 @@ public class MovementAscend extends Movement {
     private boolean headBonkClear() {
         BlockPos startUp = src.up(2);
         for (int i = 0; i < 4; i++) {
-            BlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));
+            BlockPos check = startUp.offset(
+                    // byHorizontalIndex: I was too lazy to wrap this method
+                    HORIZONTALS[MathHelper.abs(i % HORIZONTALS.length)]
+            );
             if (!MovementHelper.canWalkThrough(check)) {
                 // We might bonk our head
                 return false;

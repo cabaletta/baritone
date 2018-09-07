@@ -50,6 +50,7 @@ public class BaritoneTweaker implements ITweaker {
         MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
         MixinEnvironment.getDefaultEnvironment().setObfuscationContext(ObfuscationServiceMCP.NOTCH);
         Mixins.addConfiguration("mixins.baritone.json");
+        Mixins.addConfiguration("mixins.baritone.wrapper.json");
     }
 
     @Override

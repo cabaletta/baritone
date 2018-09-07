@@ -19,6 +19,15 @@ group 'baritone'
 version '1.0.0'
 
 buildscript {
+    ext {
+        forgeGradleVersion = [
+                '1.12.2': '2.3-SNAPSHOT',
+                '1.11.2': '2.2-SNAPSHOT',
+                '1.10.2': '2.2-SNAPSHOT',
+                '1.9.4' : '2.2-SNAPSHOT'
+        ]
+    }
+
     repositories {
         maven {
             name = 'forge'
@@ -32,7 +41,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "net.minecraftforge.gradle:ForgeGradle:${forgeGradleVersion[project.mcversion]}"
         classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
     }
 }
@@ -40,6 +49,20 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle.tweaker-client'
 apply plugin: 'org.spongepowered.mixin'
+
+def getWrapperSourceSet() {
+    switch (project.mcversion) {
+        case '1.12.2':
+            return sourceSets.wrapper_1_12_2
+        case '1.11.2':
+            return sourceSets.wrapper_1_11_2
+        case '1.10.2':
+            return sourceSets.wrapper_1_10_2
+        case '1.9.4':
+            return sourceSets.wrapper_1_9_4
+    }
+    return null
+}
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
@@ -50,10 +73,44 @@ sourceSets {
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
+
+    wrapper {
+        compileClasspath += launch.compileClasspath
+    }
+
+    // There is likely a better way to do this, but too lazy to find out
+    switch (project.mcversion) {
+        case '1.12.2':
+            wrapper_1_12_2 {
+                compileClasspath += wrapper.compileClasspath + wrapper.output
+            }
+            break
+        case '1.11.2':
+            wrapper_1_11_2 {
+                compileClasspath += wrapper.compileClasspath + wrapper.output
+            }
+            break
+        case '1.10.2':
+            wrapper_1_10_2 {
+                compileClasspath += wrapper.compileClasspath + wrapper.output
+            }
+            break
+        case '1.9.4':
+            wrapper_1_9_4 {
+                compileClasspath += wrapper.compileClasspath + wrapper.output
+            }
+            break
+    }
+
+    launch.compileClasspath += project.getWrapperSourceSet().compileClasspath + project.getWrapperSourceSet().output
+
+    main {
+        compileClasspath += wrapper.output
+    }
 }
 
 minecraft {
-    version = '1.12.2'
+    version = project.mcversion
     mappings = 'snapshot_20180731'
     tweakClass = 'baritone.launch.BaritoneTweaker'
     runDir = 'run'
@@ -84,6 +141,7 @@ dependencies {
 mixin {
     defaultObfuscationEnv notch
     add sourceSets.launch, 'mixins.baritone.refmap.json'
+    add project.getWrapperSourceSet(), 'mixins.baritone.wrapper.refmap.json'
 }
 
 jar {

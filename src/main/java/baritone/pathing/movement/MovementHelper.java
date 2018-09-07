@@ -23,6 +23,7 @@ import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.pathing.movement.movements.MovementDescend;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.*;
+import baritone.wrapper.IInventoryPlayer;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
@@ -32,11 +33,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.chunk.EmptyChunk;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -224,7 +225,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
             return BlockStateInterface.isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
         }
-        if (Blocks.MAGMA.equals(block)) {
+        if (BlockStateInterface.isMagma(block)) {
             return false;
         }
         return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
@@ -328,9 +329,12 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean throwaway(boolean select) {
         EntityPlayerSP p = Minecraft.getMinecraft().player;
-        NonNullList<ItemStack> inv = p.inventory.mainInventory;
+        List<ItemStack> inv = ((IInventoryPlayer) p.inventory).getMainInventory();
         for (byte i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);
+            if (item == null)
+                continue;
+
             // this usage of settings() is okay because it's only called once during pathing
             // (while creating the CalculationContext at the very beginning)
             // and then it's called during execution

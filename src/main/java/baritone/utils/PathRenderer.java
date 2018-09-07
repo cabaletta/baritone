@@ -23,10 +23,10 @@ import baritone.pathing.goals.GoalBlock;
 import baritone.pathing.goals.GoalXZ;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
+import baritone.wrapper.IBufferBuilder;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -52,7 +52,7 @@ public final class PathRenderer implements Helper {
     }
 
     private static final Tessellator TESSELLATOR = Tessellator.getInstance();
-    private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
+    private static final IBufferBuilder BUFFER = (IBufferBuilder) TESSELLATOR.getBuffer();
 
     public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart, int fadeEnd) {
         GlStateManager.enableBlend();

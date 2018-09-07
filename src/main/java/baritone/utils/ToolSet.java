@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.wrapper.IItemStack;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -86,15 +87,22 @@ public class ToolSet implements Helper {
         // Calculate the slot with the best item
         ItemStack contents = player().inventory.getStackInSlot(slot);
 
+        // In 1.10 null item stacks were a thing, no such thing as empty ones.
+        if (contents == null)
+            return 0;
+
         float blockHard = state.getBlockHardness(null, null);
         if (blockHard < 0) {
             return 0;
         }
 
+        // noinspection ConstantConditions
+        IItemStack wrapped = (IItemStack) (Object) contents;
+
         float speed = contents.getDestroySpeed(state);
         if (speed > 1) {
             int effLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, contents);
-            if (effLevel > 0 && !contents.isEmpty()) {
+            if (effLevel > 0 && !wrapped.isEmpty()) {
                 speed += effLevel * effLevel + 1;
             }
         }
@@ -121,7 +129,7 @@ public class ToolSet implements Helper {
             }
         }
         speed /= blockHard;
-        if (state.getMaterial().isToolNotRequired() || (!contents.isEmpty() && contents.canHarvestBlock(state))) {
+        if (state.getMaterial().isToolNotRequired() || (!wrapped.isEmpty() && contents.canHarvestBlock(state))) {
             return speed / 30;
         } else {
             return speed / 100;

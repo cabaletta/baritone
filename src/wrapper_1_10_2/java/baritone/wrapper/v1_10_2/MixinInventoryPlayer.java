@@ -15,28 +15,28 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch.mixins;
+package baritone.wrapper.v1_10_2;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
-import org.spongepowered.asm.mixin.Mixin;
+import baritone.wrapper.IInventoryPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemStack;
+import org.spongepowered.asm.mixin.*;
 
-import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Brady
- * @since 8/25/2018
+ * @since 9/7/2018
  */
-@Mixin(BlockPos.class)
-public class MixinBlockPos extends Vec3i {
+@Implements(@Interface(iface = IInventoryPlayer.class, prefix = "wrapper$"))
+@Mixin(InventoryPlayer.class)
+public abstract class MixinInventoryPlayer implements IInventoryPlayer {
 
-    public MixinBlockPos(int xIn, int yIn, int zIn) {
-        super(xIn, yIn, zIn);
-    }
+    @Shadow @Final public ItemStack[] mainInventory;
 
-    @Override
-    @Nonnull
-    public String toString() {
-        return String.format("BlockPos{x=%d, y=%d, z=%d}", this.getX(), this.getY(), this.getZ());
+    @Intrinsic
+    public List<ItemStack> wrapper$getMainInventory() {
+        return Arrays.asList(this.mainInventory);
     }
 }

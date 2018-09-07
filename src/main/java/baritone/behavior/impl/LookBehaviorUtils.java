@@ -77,7 +77,7 @@ public final class LookBehaviorUtils implements Helper {
             double xDiff = aabb.minX * sideOffset.x + aabb.maxX * (1 - sideOffset.x);
             double yDiff = aabb.minY * sideOffset.y + aabb.maxY * (1 - sideOffset.y);
             double zDiff = aabb.minZ * sideOffset.z + aabb.maxZ * (1 - sideOffset.z);
-            possibleRotation = reachableOffset(pos, new Vec3d(pos).add(xDiff, yDiff, zDiff));
+            possibleRotation = reachableOffset(pos, new Vec3d(pos).add(new Vec3d(xDiff, yDiff, zDiff)));
             if (possibleRotation.isPresent())
                 return possibleRotation;
         }
