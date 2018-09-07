@@ -74,39 +74,31 @@ sourceSets {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
 
-    wrapper {
-        compileClasspath += launch.compileClasspath
-    }
-
     // There is likely a better way to do this, but too lazy to find out
     switch (project.mcversion) {
         case '1.12.2':
             wrapper_1_12_2 {
-                compileClasspath += wrapper.compileClasspath + wrapper.output
+                compileClasspath += launch.compileClasspath
             }
             break
         case '1.11.2':
             wrapper_1_11_2 {
-                compileClasspath += wrapper.compileClasspath + wrapper.output
+                compileClasspath += launch.compileClasspath
             }
             break
         case '1.10.2':
             wrapper_1_10_2 {
-                compileClasspath += wrapper.compileClasspath + wrapper.output
+                compileClasspath += launch.compileClasspath
             }
             break
         case '1.9.4':
             wrapper_1_9_4 {
-                compileClasspath += wrapper.compileClasspath + wrapper.output
+                compileClasspath += launch.compileClasspath
             }
             break
     }
 
     launch.compileClasspath += project.getWrapperSourceSet().compileClasspath + project.getWrapperSourceSet().output
-
-    main {
-        compileClasspath += wrapper.output
-    }
 }
 
 minecraft {
