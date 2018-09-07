@@ -204,10 +204,7 @@ public class MovementAscend extends Movement {
     private boolean headBonkClear() {
         BlockPos startUp = src.up(2);
         for (int i = 0; i < 4; i++) {
-            BlockPos check = startUp.offset(
-                    // byHorizontalIndex: I was too lazy to wrap this method
-                    HORIZONTALS[MathHelper.abs(i % HORIZONTALS.length)]
-            );
+            BlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));
             if (!MovementHelper.canWalkThrough(check)) {
                 // We might bonk our head
                 return false;
