@@ -31,6 +31,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.CompatibilityHelper;
 import baritone.utils.PathRenderer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -151,14 +152,14 @@ public class PathingBehavior extends Behavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-        if (current != null) {
+        if (current != null && CompatibilityHelper.isAutoJumpSupported()) {
             switch (event.getState()) {
                 case PRE:
-                    lastAutoJump = mc.gameSettings.autoJump;
-                    mc.gameSettings.autoJump = false;
+                    lastAutoJump = CompatibilityHelper.isAutoJump();
+                    CompatibilityHelper.setAutoJump(false);
                     break;
                 case POST:
-                    mc.gameSettings.autoJump = lastAutoJump;
+                    CompatibilityHelper.setAutoJump(lastAutoJump);
                     break;
             }
         }

@@ -15,28 +15,25 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch.mixins;
+package baritone.wrapper.v1_10_2;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import baritone.wrapper.IItemStack;
+import net.minecraft.item.ItemStack;
+import org.spongepowered.asm.mixin.Implements;
+import org.spongepowered.asm.mixin.Interface;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
-
-import javax.annotation.Nonnull;
 
 /**
  * @author Brady
- * @since 8/25/2018
+ * @since 9/7/2018
  */
-@Mixin(BlockPos.class)
-public class MixinBlockPos extends Vec3i {
+@Implements(@Interface(iface = IItemStack.class, prefix = "wrapper$"))
+@Mixin(ItemStack.class)
+public abstract class MixinItemStack implements IItemStack {
 
-    public MixinBlockPos(int xIn, int yIn, int zIn) {
-        super(xIn, yIn, zIn);
-    }
-
-    @Override
-    @Nonnull
-    public String toString() {
-        return String.format("BlockPos{x=%d, y=%d, z=%d}", this.getX(), this.getY(), this.getZ());
+    @Intrinsic
+    public boolean wrapper$isEmpty() {
+        return false;
     }
 }

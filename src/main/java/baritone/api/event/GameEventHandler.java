@@ -106,7 +106,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         // to make sure the chunk being unloaded is already loaded.
         boolean isPreUnload = state == EventState.PRE
                 && type == ChunkEvent.Type.UNLOAD
-                && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
+                && mc.world.getChunkProvider().getLoadedChunk(event.getX(), event.getZ()) != null; // Effectively isChunkGeneratedAt(int, int)
 
         if (isPostPopulate || isPreUnload) {
             WorldProvider.INSTANCE.ifWorldLoaded(world -> {

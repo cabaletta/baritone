@@ -52,11 +52,7 @@ public final class RayTraceUtils implements Helper {
         double blockReachDistance = mc.playerController.getBlockReachDistance();
         Vec3d start = mc.player.getPositionEyes(1.0F);
         Vec3d direction = calcVec3dFromRotation(rotation);
-        Vec3d end = start.add(
-                direction.x * blockReachDistance,
-                direction.y * blockReachDistance,
-                direction.z * blockReachDistance
-        );
+        Vec3d end = start.add(direction.scale(blockReachDistance));
         return mc.world.rayTraceBlocks(start, end, false, false, true);
     }
 }

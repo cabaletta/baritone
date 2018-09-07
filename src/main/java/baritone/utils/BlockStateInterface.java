@@ -105,6 +105,10 @@ public class BlockStateInterface implements Helper {
         return lavaFlowing.equals(b) || lavaStill.equals(b);
     }
 
+    public static boolean isMagma(Block b) {
+        return b.getTranslationKey().equals("tile.magma");
+    }
+
     /**
      * Returns whether or not the specified pos has a liquid
      *

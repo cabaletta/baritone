@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "baritone.wrapper.v1_11_2",
+  "refmap": "mixins.baritone.wrapper.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "verbose": false,
+  "client": [
+    "MixinEntity",
+    "MixinItemStack",
+    "MixinInventoryPlayer",
+    "MixinVertexBuffer"
+  ]
+}
