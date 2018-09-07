@@ -47,11 +47,8 @@ public class GoalGetToBlock implements Goal {
         int xDiff = pos.getX() - this.x;
         int yDiff = pos.getY() - this.y;
         int zDiff = pos.getZ() - this.z;
-        if (yDiff == -2 && xDiff == 0 && zDiff == 0) {
-            return true;
-        }
-        if (yDiff == -1) {
-            yDiff = 0;
+        if (yDiff < 0) {
+            yDiff++;
         }
         return Math.abs(xDiff) + Math.abs(yDiff) + Math.abs(zDiff) <= 1;
     }
