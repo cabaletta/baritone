@@ -87,8 +87,9 @@ public class ToolSet implements Helper {
         ItemStack contents = player().inventory.getStackInSlot(slot);
 
         float blockHard = state.getBlockHardness(null, null);
-        if (blockHard < 0)
+        if (blockHard < 0) {
             return -1;
+        }
 
         float speed = contents.getDestroySpeed(state);
         if (speed > 1) {

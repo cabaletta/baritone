@@ -112,13 +112,15 @@ public final class CachedRegion implements IBlockTypeAccess {
         }
         try {
             Path path = Paths.get(directory);
-            if (!Files.exists(path))
+            if (!Files.exists(path)) {
                 Files.createDirectories(path);
 
+            }
             System.out.println("Saving region " + x + "," + z + " to disk " + path);
             Path regionFile = getRegionFile(path, this.x, this.z);
-            if (!Files.exists(regionFile))
+            if (!Files.exists(regionFile)) {
                 Files.createFile(regionFile);
+            }
             try (
                     FileOutputStream fileOut = new FileOutputStream(regionFile.toFile());
                     GZIPOutputStream gzipOut = new GZIPOutputStream(fileOut, 16384);
@@ -175,12 +177,14 @@ public final class CachedRegion implements IBlockTypeAccess {
     public synchronized void load(String directory) {
         try {
             Path path = Paths.get(directory);
-            if (!Files.exists(path))
+            if (!Files.exists(path)) {
                 Files.createDirectories(path);
+            }
 
             Path regionFile = getRegionFile(path, this.x, this.z);
-            if (!Files.exists(regionFile))
+            if (!Files.exists(regionFile)) {
                 return;
+            }
 
             System.out.println("Loading region " + x + "," + z + " from disk " + path);
             long start = System.nanoTime() / 1000000L;

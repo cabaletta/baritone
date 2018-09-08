@@ -42,8 +42,9 @@ public class MixinEntityPlayerSP {
     private void sendChatMessage(String msg, CallbackInfo ci) {
         ChatEvent event = new ChatEvent(msg);
         Baritone.INSTANCE.getGameEventHandler().onSendChatMessage(event);
-        if (event.isCancelled())
+        if (event.isCancelled()) {
             ci.cancel();
+        }
     }
 
     @Inject(

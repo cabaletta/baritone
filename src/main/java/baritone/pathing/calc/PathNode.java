@@ -103,8 +103,9 @@ public class PathNode {
         // GOTTA GO FAST
         // ALL THESE CHECKS ARE FOR PEOPLE WHO WANT SLOW CODE
         // SKRT SKRT
-        //if (obj == null || !(obj instanceof PathNode))
+        //if (obj == null || !(obj instanceof PathNode)) {
         //    return false;
+        //}
 
         //final PathNode other = (PathNode) obj;
         //return Objects.equals(this.pos, other.pos) && Objects.equals(this.goal, other.goal);

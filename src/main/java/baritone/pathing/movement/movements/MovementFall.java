@@ -96,8 +96,9 @@ public class MovementFall extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementStatus.RUNNING)
+        if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
+        }
 
         BlockPos playerFeet = playerFeet();
         Rotation targetRotation = null;
@@ -123,8 +124,7 @@ public class MovementFall extends Movement {
         } else {
             state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), false));
         }
-        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 // lilypads
-                || BlockStateInterface.isWater(dest))) {
+        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 || BlockStateInterface.isWater(dest))) { // 0.094 because lilypads
             if (BlockStateInterface.isWater(dest) && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                 if (player().motionY >= 0) {

@@ -119,8 +119,9 @@ public class MovementDiagonal extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementState.MovementStatus.RUNNING)
+        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
             return state;
+        }
 
         if (playerFeet().equals(dest)) {
             state.setStatus(MovementState.MovementStatus.SUCCESS);

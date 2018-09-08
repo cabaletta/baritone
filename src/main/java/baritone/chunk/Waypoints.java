@@ -61,8 +61,9 @@ public class Waypoints {
         waypoints.put(tag, new HashSet<>());
 
         Path fileName = directory.resolve(tag.name().toLowerCase() + ".mp4");
-        if (!Files.exists(fileName))
+        if (!Files.exists(fileName)) {
             return;
+        }
 
         try (
                 FileInputStream fileIn = new FileInputStream(fileName.toFile());

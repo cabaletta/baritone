@@ -80,8 +80,9 @@ public final class GameEventHandler implements IGameEventListener, Helper {
             if (inputHandler.isInputForcedDown(keyBinding) && !keyBinding.isKeyDown()) {
                 int keyCode = keyBinding.getKeyCode();
 
-                if (keyCode < Keyboard.KEYBOARD_SIZE)
+                if (keyCode < Keyboard.KEYBOARD_SIZE) {
                     KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
+                }
             }
         }
 
@@ -141,8 +142,9 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 break;
             case POST:
                 cache.closeWorld();
-                if (event.getWorld() != null)
+                if (event.getWorld() != null) {
                     cache.initWorld(event.getWorld());
+                }
                 break;
         }
 

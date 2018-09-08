@@ -199,7 +199,8 @@ public final class CachedChunk implements IBlockTypeAccess {
      * @throws IllegalArgumentException if the bitset size exceeds the maximum size
      */
     private static void validateSize(BitSet data) {
-        if (data.size() > SIZE)
+        if (data.size() > SIZE) {
             throw new IllegalArgumentException("BitSet of invalid length provided");
+        }
     }
 }

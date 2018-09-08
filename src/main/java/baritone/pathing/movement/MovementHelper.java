@@ -70,10 +70,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkThrough(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
-        if (block instanceof BlockFire
-                || block instanceof BlockTripWire
-                || block instanceof BlockWeb
-                || block instanceof BlockEndPortal) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
+        if (block instanceof BlockFire || block instanceof BlockTripWire || block instanceof BlockWeb || block instanceof BlockEndPortal) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -127,30 +124,35 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
-        if (playerPos.equals(doorPos))
+        if (playerPos.equals(doorPos)) {
             return false;
+        }
 
         IBlockState state = BlockStateInterface.get(doorPos);
-        if (!(state.getBlock() instanceof BlockDoor))
+        if (!(state.getBlock() instanceof BlockDoor)) {
             return true;
+        }
 
         return isHorizontalBlockPassable(doorPos, state, playerPos, BlockDoor.OPEN);
     }
 
     static boolean isGatePassable(BlockPos gatePos, BlockPos playerPos) {
-        if (playerPos.equals(gatePos))
+        if (playerPos.equals(gatePos)) {
             return false;
+        }
 
         IBlockState state = BlockStateInterface.get(gatePos);
-        if (!(state.getBlock() instanceof BlockFenceGate))
+        if (!(state.getBlock() instanceof BlockFenceGate)) {
             return true;
+        }
 
         return isHorizontalBlockPassable(gatePos, state, playerPos, BlockFenceGate.OPEN);
     }
 
     static boolean isHorizontalBlockPassable(BlockPos blockPos, IBlockState blockState, BlockPos playerPos, PropertyBool propertyOpen) {
-        if (playerPos.equals(blockPos))
+        if (playerPos.equals(blockPos)) {
             return false;
+        }
 
         EnumFacing.Axis facing = blockState.getValue(BlockHorizontal.FACING).getAxis();
         boolean open = blockState.getValue(propertyOpen);
@@ -260,8 +262,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
             double strVsBlock = context.getToolSet().getStrVsBlock(state);
-            if (strVsBlock < 0)
+            if (strVsBlock < 0) {
                 return COST_INF;
+            }
 
             double result = m / strVsBlock;
             if (includeFalling) {

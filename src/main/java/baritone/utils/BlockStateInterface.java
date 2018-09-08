@@ -35,8 +35,9 @@ public class BlockStateInterface implements Helper {
     public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
 
         // Invalid vertical position
-        if (pos.getY() < 0 || pos.getY() >= 256)
+        if (pos.getY() < 0 || pos.getY() >= 256) {
             return Blocks.AIR.getDefaultState();
+        }
 
         if (!Baritone.settings().pathThroughCachedOnly.get()) {
             Chunk cached = prev;
