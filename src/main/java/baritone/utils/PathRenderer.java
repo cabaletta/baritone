@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalComposite;
+import baritone.pathing.goals.GoalTwoBlocks;
 import baritone.pathing.goals.GoalXZ;
 import baritone.pathing.path.IPath;
 import baritone.utils.interfaces.IGoalRenderPos;
@@ -191,10 +192,18 @@ public final class PathRenderer implements Helper {
             minZ = goalPos.getZ() + 0.002 - renderPosZ;
             maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
             double y = MathHelper.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
+            if (goal instanceof GoalTwoBlocks) {
+                y /= 2;
+            }
             y1 = 1 + y + goalPos.getY() - renderPosY;
             y2 = 1 - y + goalPos.getY() - renderPosY;
             minY = goalPos.getY() - renderPosY;
             maxY = minY + 2;
+            if (goal instanceof GoalTwoBlocks) {
+                y1 -= 0.5;
+                y2 -= 0.5;
+                maxY--;
+            }
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
 
