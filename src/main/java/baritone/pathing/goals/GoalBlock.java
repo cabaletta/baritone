@@ -17,6 +17,7 @@
 
 package baritone.pathing.goals;
 
+import baritone.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -24,7 +25,7 @@ import net.minecraft.util.math.BlockPos;
  *
  * @author leijurv
  */
-public class GoalBlock implements Goal {
+public class GoalBlock implements Goal, IGoalRenderPos {
 
     /**
      * The X block position of this goal

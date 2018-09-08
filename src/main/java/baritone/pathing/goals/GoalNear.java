@@ -17,9 +17,10 @@
 
 package baritone.pathing.goals;
 
+import baritone.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
-public class GoalNear implements Goal {
+public class GoalNear implements Goal, IGoalRenderPos {
     final int x;
     final int y;
     final int z;
