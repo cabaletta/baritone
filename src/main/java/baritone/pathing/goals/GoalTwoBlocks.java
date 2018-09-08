@@ -70,7 +70,7 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
     }
 
     public BlockPos getGoalPos() {
-        return new BlockPos(x, y - 1, z);
+        return new BlockPos(x, y, z);
     }
 
     @Override
