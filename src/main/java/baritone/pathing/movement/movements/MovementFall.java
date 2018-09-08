@@ -96,14 +96,8 @@ public class MovementFall extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
+        if (state.getStatus() != MovementStatus.RUNNING)
+            return state;
 
         BlockPos playerFeet = playerFeet();
         Rotation targetRotation = null;
