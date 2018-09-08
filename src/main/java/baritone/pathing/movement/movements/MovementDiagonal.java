@@ -51,29 +51,6 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public MovementState updateState(MovementState state) {
-        super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementState.MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
-
-        if (playerFeet().equals(dest)) {
-            state.setStatus(MovementState.MovementStatus.SUCCESS);
-            return state;
-        }
-        if (!BlockStateInterface.isLiquid(playerFeet())) {
-            state.setInput(InputOverrideHandler.Input.SPRINT, true);
-        }
-        MovementHelper.moveTowards(state, dest);
-        return state;
-    }
-
-    @Override
     protected double calculateCost(CalculationContext context) {
         Block fromDown = BlockStateInterface.get(src.down()).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
@@ -137,6 +114,29 @@ public class MovementDiagonal extends Movement {
             multiplier = SPRINT_ONE_BLOCK_COST;
         }
         return multiplier * SQRT_2;
+    }
+
+    @Override
+    public MovementState updateState(MovementState state) {
+        super.updateState(state);
+        switch (state.getStatus()) {
+            case WAITING:
+                state.setStatus(MovementState.MovementStatus.RUNNING);
+            case RUNNING:
+                break;
+            default:
+                return state;
+        }
+
+        if (playerFeet().equals(dest)) {
+            state.setStatus(MovementState.MovementStatus.SUCCESS);
+            return state;
+        }
+        if (!BlockStateInterface.isLiquid(playerFeet())) {
+            state.setInput(InputOverrideHandler.Input.SPRINT, true);
+        }
+        MovementHelper.moveTowards(state, dest);
+        return state;
     }
 
     @Override

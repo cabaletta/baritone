@@ -84,6 +84,11 @@ public class Settings {
     public Setting<Boolean> allowWalkOnBottomSlab = new Setting<>(true);
 
     /**
+     * For example, if you have Mining Fatigue or Haste, adjust the costs of breaking blocks accordingly.
+     */
+    public Setting<Boolean> considerPotionEffects = new Setting<>(true);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.

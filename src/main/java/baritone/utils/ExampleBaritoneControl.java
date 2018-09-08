@@ -105,7 +105,11 @@ public class ExampleBaritoneControl extends Behavior {
         }
         if (msg.equals("path")) {
             if (!PathingBehavior.INSTANCE.path()) {
-                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                if (PathingBehavior.INSTANCE.getGoal() == null) {
+                    displayChatMessageRaw("No goal.");
+                } else {
+                    displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                }
             }
             event.cancel();
             return;

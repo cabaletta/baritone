@@ -17,27 +17,32 @@
 
 package baritone.launch.mixins;
 
-import com.google.common.base.MoreObjects;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import baritone.Baritone;
+import net.minecraft.client.gui.GuiScreen;
 import org.spongepowered.asm.mixin.Mixin;
-
-import javax.annotation.Nonnull;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
  * @author Brady
- * @since 8/25/2018
+ * @since 7/31/2018 10:38 PM
  */
-@Mixin(BlockPos.class)
-public abstract class MixinBlockPos extends Vec3i {
+@Mixin(GuiScreen.class)
+public class MixinGuiScreen {
 
-    public MixinBlockPos(int xIn, int yIn, int zIn) {
-        super(xIn, yIn, zIn);
-    }
-
-    @Override
-    @Nonnull
-    public String toString() {
-        return MoreObjects.toStringHelper("BlockPos").add("x", this.getX()).add("y", this.getY()).add("z", this.getZ()).toString();
+    @Redirect(
+            method = {
+                    "isCtrlKeyDown",
+                    "isShiftKeyDown",
+                    "isAltKeyDown"
+            },
+            at = @At(
+                    value = "INVOKE",
+                    target = "org/lwjgl/input/Keyboard.isKeyDown(I)Z",
+                    remap = false
+            )
+    )
+    private static boolean isKeyDown(int keyCode) {
+        return Baritone.INSTANCE.getInputOverrideHandler().isKeyDown(keyCode);
     }
 }

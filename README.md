@@ -17,6 +17,14 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
 
 ## Command Line
 On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
+
+Running Baritone:
+
+```
+$ gradlew run
+```
+
+Setting up for IntelliJ:
 ```
 $ gradlew setupDecompWorkspace
 $ gradlew --refresh-dependencies

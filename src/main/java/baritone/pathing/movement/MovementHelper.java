@@ -55,9 +55,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1))
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1))
-                || (!(b instanceof BlockLilyPad && BlockStateInterface.isWater(below)) && below instanceof BlockLiquid);//if it's a lilypad above water, it's ok to break, otherwise don't break if its liquid
-        // TODO revisit this. why is it not okay to break non-lilypads that are right above water?
+                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1));
     }
 
     /**
@@ -261,7 +259,11 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return COST_INF;
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
-            double result = m / context.getToolSet().getStrVsBlock(state, position);
+            double strVsBlock = context.getToolSet().getStrVsBlock(state);
+            if (strVsBlock < 0)
+                return COST_INF;
+
+            double result = m / strVsBlock;
             if (includeFalling) {
                 BlockPos up = position.up();
                 IBlockState above = BlockStateInterface.get(up);

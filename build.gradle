@@ -38,14 +38,19 @@ buildscript {
 }
 
 apply plugin: 'java'
+apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+apply plugin: 'org.spongepowered.mixin'
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
 }
 
-apply plugin: 'net.minecraftforge.gradle.tweaker-client'
-apply plugin: 'org.spongepowered.mixin'
+sourceSets {
+    launch {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+    }
+}
 
 minecraft {
     version = '1.12.2'
@@ -65,7 +70,7 @@ repositories {
 }
 
 dependencies {
-    runtime implementation('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+    runtime launchCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
         // Mixin includes a lot of dependencies that are too up-to-date
         exclude module: 'launchwrapper'
         exclude module: 'guava'
@@ -78,5 +83,9 @@ dependencies {
 
 mixin {
     defaultObfuscationEnv notch
-    add sourceSets.main, 'mixins.baritone.refmap.json'
+    add sourceSets.launch, 'mixins.baritone.refmap.json'
+}
+
+jar {
+    from sourceSets.launch.output
 }
