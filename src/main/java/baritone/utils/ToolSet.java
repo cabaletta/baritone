@@ -78,7 +78,7 @@ public class ToolSet implements Helper {
 
     /**
      * Calculates how long would it take to mine the specified block given the best tool
-     * in this toolset is used.
+     * in this toolset is used. A negative value is returned if the specified block is unbreakable.
      *
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
@@ -92,9 +92,8 @@ public class ToolSet implements Helper {
             return 0;
 
         float blockHard = state.getBlockHardness(null, null);
-        if (blockHard < 0) {
-            return 0;
-        }
+        if (blockHard < 0)
+            return -1;
 
         // noinspection ConstantConditions
         IItemStack wrapped = (IItemStack) (Object) contents;
