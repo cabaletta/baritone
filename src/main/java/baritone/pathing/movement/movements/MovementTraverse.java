@@ -125,14 +125,8 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementState.MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
+        if (state.getStatus() != MovementState.MovementStatus.RUNNING)
+            return state;
 
         state.setInput(InputOverrideHandler.Input.SNEAK, false);
 
