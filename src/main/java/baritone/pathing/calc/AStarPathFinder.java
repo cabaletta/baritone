@@ -18,9 +18,9 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
+import baritone.chunk.CachedWorld;
 import baritone.chunk.WorldProvider;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
-import baritone.pathing.calc.openset.IOpenSet;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
@@ -31,9 +31,9 @@ import baritone.pathing.path.IPath;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -55,11 +55,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
     }
 
     @Override
-    protected Optional<IPath> calculate0() {
+    protected Optional<IPath> calculate0(long timeout) {
         startNode = getNodeAtPosition(start);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
-        IOpenSet openSet = new BinaryHeapOpenSet();
+        BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
         openSet.insert(startNode);
         startNode.isOpen = true;
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
@@ -70,17 +70,23 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         CalculationContext calcContext = new CalculationContext();
         HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
         currentlyRunning = this;
-        long startTime = System.currentTimeMillis();
+        CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
+        ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
+        long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
-        long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS : Baritone.settings().pathTimeoutMS).<Long>get();
-        long lastPrintout = 0;
+        if (slowPath) {
+            displayChatMessageRaw("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + timeout + "ms");
+        }
+        long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : timeout);
+        //long lastPrintout = 0;
         int numNodes = 0;
+        int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
         boolean favoring = favoredPositions.isPresent();
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
-        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.currentTimeMillis() < timeoutTime) {
+        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.nanoTime() / 1000000L - timeoutTime < 0 && !cancelRequested) {
             if (slowPath) {
                 try {
                     Thread.sleep(Baritone.settings().slowPathTimeDelayMS.<Long>get());
@@ -92,39 +98,33 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             mostRecentConsidered = currentNode;
             BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
-            if (System.currentTimeMillis() > lastPrintout + 1000) {//print once a second
-                System.out.println("searching... at " + currentNodePos + ", considered " + numNodes + " nodes so far");
-                lastPrintout = System.currentTimeMillis();
-            }
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
+                displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes));
             }
-            //long constructStart = System.nanoTime();
             Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos, in random order
             shuffle(possibleMovements);
-            //long constructEnd = System.nanoTime();
-            //System.out.println(constructEnd - constructStart);
             for (Movement movementToGetToNeighbor : possibleMovements) {
                 if (movementToGetToNeighbor == null) {
                     continue;
                 }
                 BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
-                boolean isPositionCached = false;
-                if (WorldProvider.INSTANCE.getCurrentWorld() != null) {
-                    if (WorldProvider.INSTANCE.getCurrentWorld().cache.getBlock(dest) != null) {
-                        isPositionCached = true;
+                int chunkX = currentNodePos.x >> 4;
+                int chunkZ = currentNodePos.z >> 4;
+                if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
+                    // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
+                    if (chunkProvider.getLoadedChunk(chunkX, chunkZ) == null) {
+                        // see issue #106
+                        if (cachedWorld == null || !cachedWorld.isCached(dest)) {
+                            numEmptyChunk++;
+                            continue;
+                        }
                     }
                 }
-                if (!isPositionCached && Minecraft.getMinecraft().world.getChunk(dest) instanceof EmptyChunk) {
-                    numEmptyChunk++;
-                    continue;
-                }
-                //long costStart = System.nanoTime();
                 // TODO cache cost
                 double actionCost = movementToGetToNeighbor.getCost(calcContext);
-                //long costEnd = System.nanoTime();
-                //System.out.println(movementToGetToNeighbor.getClass() + "" + (costEnd - costStart));
+                numMovementsConsidered++;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
@@ -162,6 +162,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     for (int i = 0; i < bestSoFar.length; i++) {
                         double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
                         if (heuristic < bestHeuristicSoFar[i]) {
+                            if (bestHeuristicSoFar[i] - heuristic < 0.01 && minimumImprovementRepropagation) {
+                                continue;
+                            }
                             bestHeuristicSoFar[i] = heuristic;
                             bestSoFar[i] = neighbor;
                         }
@@ -169,6 +172,13 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 }
             }
         }
+        if (cancelRequested) {
+            currentlyRunning = null;
+            return Optional.empty();
+        }
+        System.out.println(numMovementsConsidered + " movements considered");
+        System.out.println("Open set size: " + openSet.size());
+        System.out.println((int) (numNodes * 1.0 / ((System.nanoTime() / 1000000L - startTime) / 1000F)) + " nodes per second");
         double bestDist = 0;
         for (int i = 0; i < bestSoFar.length; i++) {
             if (bestSoFar[i] == null) {
@@ -179,18 +189,18 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 bestDist = dist;
             }
             if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                displayChatMessageRaw("Took " + (System.currentTimeMillis() - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i]);
+                displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
                 if (COEFFICIENTS[i] >= 3) {
                     System.out.println("Warning: cost coefficient is greater than three! Probably means that");
                     System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");
                     System.out.println("But I'm going to do it anyway, because yolo");
                 }
-                System.out.println("Path goes for " + dist + " blocks");
+                System.out.println("Path goes for " + Math.sqrt(dist) + " blocks");
                 currentlyRunning = null;
                 return Optional.of(new Path(startNode, bestSoFar[i], numNodes));
             }
         }
-        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + bestDist + " blocks =(");
+        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
         displayChatMessageRaw("No path found =(");
         currentlyRunning = null;
         return Optional.empty();

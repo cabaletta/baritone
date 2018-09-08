@@ -17,13 +17,13 @@
 
 package baritone.pathing.calc;
 
+import baritone.behavior.impl.PathingBehavior;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -42,7 +42,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     protected final Goal goal;
 
-    protected final Map<BetterBlockPos, PathNode> map;
+    private final Long2ObjectOpenHashMap<PathNode> map; // see issue #107
 
     protected PathNode startNode;
 
@@ -51,6 +51,8 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     protected PathNode[] bestSoFar;
 
     private volatile boolean isFinished;
+
+    protected boolean cancelRequested;
 
     /**
      * This is really complicated and hard to explain. I wrote a comment in the old version of MineBot but it was so
@@ -67,19 +69,34 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     AbstractNodeCostSearch(BlockPos start, Goal goal) {
         this.start = new BetterBlockPos(start.getX(), start.getY(), start.getZ());
         this.goal = goal;
-        this.map = new HashMap<>();
+        this.map = new Long2ObjectOpenHashMap<>();
     }
 
-    public synchronized Optional<IPath> calculate() {
+    public void cancel() {
+        cancelRequested = true;
+    }
+
+    public synchronized Optional<IPath> calculate(long timeout) {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
-        Optional<IPath> path = calculate0();
-        isFinished = true;
-        return path;
+        this.cancelRequested = false;
+        try {
+            Optional<IPath> path = calculate0(timeout);
+            isFinished = true;
+            return path;
+        } catch (Exception e) {
+            currentlyRunning = null;
+            isFinished = true;
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    protected abstract Optional<IPath> calculate0();
+    protected abstract Optional<IPath> calculate0(long timeout);
 
     /**
      * Determines the distance squared from the specified node to the start
@@ -105,7 +122,19 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @return The associated node
      */
     protected PathNode getNodeAtPosition(BetterBlockPos pos) {
-        return map.computeIfAbsent(pos, p -> new PathNode(p, goal));
+        // see issue #107
+        long hashCode = pos.hashCode;
+        PathNode node = map.get(hashCode);
+        if (node == null) {
+            node = new PathNode(pos, goal);
+            map.put(hashCode, node);
+        }
+        return node;
+    }
+
+    public static void forceCancel() {
+        PathingBehavior.INSTANCE.cancel();
+        currentlyRunning = null;
     }
 
     @Override

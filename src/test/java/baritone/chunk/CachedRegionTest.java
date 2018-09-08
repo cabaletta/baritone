@@ -33,10 +33,7 @@ public class CachedRegionTest {
                     byte xz = part1;
                     int X = xz & 0x0f;
                     int Z = (xz >>> 4) & 0x0f;
-                    int Y = (int) part2;
-                    if (Y < 0) {
-                        Y += 256;
-                    }
+                    int Y = part2 & 0xff;
                     if (x != X || y != Y || z != Z) {
                         System.out.println(x + " " + X + " " + y + " " + Y + " " + z + " " + Z);
                     }

@@ -77,6 +77,10 @@ public final class CachedRegion implements IBlockTypeAccess {
         return null;
     }
 
+    public final boolean isCached(int x, int z) {
+        return chunks[x >> 4][z >> 4] != null;
+    }
+
     public final LinkedList<BlockPos> getLocationsOf(String block) {
         LinkedList<BlockPos> res = new LinkedList<>();
         for (int chunkX = 0; chunkX < 32; chunkX++) {
@@ -117,8 +121,8 @@ public final class CachedRegion implements IBlockTypeAccess {
                 Files.createFile(regionFile);
             try (
                     FileOutputStream fileOut = new FileOutputStream(regionFile.toFile());
-                    GZIPOutputStream gzipOut = new GZIPOutputStream(fileOut);
-                    DataOutputStream out = new DataOutputStream(gzipOut);
+                    GZIPOutputStream gzipOut = new GZIPOutputStream(fileOut, 16384);
+                    DataOutputStream out = new DataOutputStream(gzipOut)
             ) {
                 out.writeInt(CACHED_REGION_MAGIC);
                 for (int z = 0; z < 32; z++) {
@@ -179,12 +183,12 @@ public final class CachedRegion implements IBlockTypeAccess {
                 return;
 
             System.out.println("Loading region " + x + "," + z + " from disk " + path);
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime() / 1000000L;
 
             try (
                     FileInputStream fileIn = new FileInputStream(regionFile.toFile());
-                    GZIPInputStream gzipIn = new GZIPInputStream(fileIn);
-                    DataInputStream in = new DataInputStream(gzipIn);
+                    GZIPInputStream gzipIn = new GZIPInputStream(fileIn, 32768);
+                    DataInputStream in = new DataInputStream(gzipIn)
             ) {
                 int magic = in.readInt();
                 if (magic != CACHED_REGION_MAGIC) {
@@ -231,21 +235,23 @@ public final class CachedRegion implements IBlockTypeAccess {
                         if (tmpCached[x][z] != null) {
                             // 16 * 16 * 256 = 65536 so a short is enough
                             // ^ haha jokes on leijurv, java doesn't have unsigned types so that isn't correct
-                            //   also ur gay if u have more than 32767 special blocks in a chunk
-                            short numSpecialBlockTypes = in.readShort();
+                            //   also why would you have more than 32767 special blocks in a chunk
+                            // haha double jokes on you now it works for 65535 not just 32767
+                            int numSpecialBlockTypes = in.readShort() & 0xffff;
                             for (int i = 0; i < numSpecialBlockTypes; i++) {
                                 String blockName = in.readUTF();
                                 List<BlockPos> locs = new ArrayList<>();
                                 location[x][z].put(blockName, locs);
-                                short numLocations = in.readShort();
+                                int numLocations = in.readShort() & 0xffff;
+                                if (numLocations == 0) {
+                                    // an entire chunk full of air can happen in the end
+                                    numLocations = 65536;
+                                }
                                 for (int j = 0; j < numLocations; j++) {
                                     byte xz = in.readByte();
                                     int X = xz & 0x0f;
                                     int Z = (xz >>> 4) & 0x0f;
-                                    int Y = (int) in.readByte();
-                                    if (Y < 0) {
-                                        Y += 256;
-                                    }
+                                    int Y = in.readByte() & 0xff;
                                     locs.add(new BlockPos(X, Y, Z));
                                 }
                             }
@@ -260,7 +266,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                 }
             }
             hasUnsavedChanges = false;
-            long end = System.currentTimeMillis();
+            long end = System.nanoTime() / 1000000L;
             System.out.println("Loaded region successfully in " + (end - start) + "ms");
         } catch (IOException ex) {
             ex.printStackTrace();

@@ -18,17 +18,16 @@
 package baritone.behavior.impl;
 
 import baritone.Baritone;
+import baritone.api.event.events.PathEvent;
+import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.RenderEvent;
+import baritone.api.event.events.TickEvent;
 import baritone.behavior.Behavior;
-import baritone.event.events.PathEvent;
-import baritone.event.events.PlayerUpdateEvent;
-import baritone.event.events.RenderEvent;
-import baritone.event.events.TickEvent;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
-import baritone.pathing.goals.Goal;
-import baritone.pathing.goals.GoalBlock;
-import baritone.pathing.goals.GoalXZ;
+import baritone.pathing.goals.*;
+import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockStateInterface;
@@ -196,27 +195,39 @@ public class PathingBehavior extends Behavior {
         current = null;
         next = null;
         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
     }
 
-    public void path() {
+    /**
+     * Start calculating a path if we aren't already
+     *
+     * @return true if this call started path calculation, false if it was already calculating or executing a path
+     */
+    public boolean path() {
+        if (goal == null) {
+            return false;
+        }
+        if (goal.isInGoal(playerFeet())) {
+            return false;
+        }
         synchronized (pathPlanLock) {
             if (current != null) {
-                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
-                return;
+                return false;
             }
             synchronized (pathCalcLock) {
                 if (isPathCalcInProgress) {
-                    return;
+                    return false;
                 }
                 dispatchPathEvent(PathEvent.CALC_STARTED);
                 findPathInNewThread(pathStart(), true, Optional.empty());
+                return true;
             }
         }
     }
 
     public BlockPos pathStart() {
         BlockPos feet = playerFeet();
-        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR)) {
+        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR) && MovementHelper.canWalkOn(feet.down().down())) {
             return feet.down();
         }
         return feet;
@@ -293,18 +304,37 @@ public class PathingBehavior extends Behavior {
             displayChatMessageRaw("no goal");
             return Optional.empty();
         }
-        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof GoalBlock) {
-            BlockPos pos = ((GoalBlock) goal).getGoalPos();
-            if (world().getChunk(pos) instanceof EmptyChunk) {
-                displayChatMessageRaw("Simplifying GoalBlock to GoalXZ due to distance");
+        if (Baritone.settings().simplifyUnloadedYCoord.get()) {
+            BlockPos pos = null;
+            if (goal instanceof GoalBlock) {
+                pos = ((GoalBlock) goal).getGoalPos();
+            }
+            if (goal instanceof GoalTwoBlocks) {
+                pos = ((GoalTwoBlocks) goal).getGoalPos();
+            }
+            if (goal instanceof GoalNear) {
+                pos = ((GoalNear) goal).getGoalPos();
+            }
+            if (goal instanceof GoalGetToBlock) {
+                pos = ((GoalGetToBlock) goal).getGoalPos();
+            }
+            // TODO simplify each individual goal in a GoalComposite
+            if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
+                displayChatMessageRaw("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
+        long timeout;
+        if (current == null) {
+            timeout = Baritone.settings().pathTimeoutMS.<Long>get();
+        } else {
+            timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
+        }
         try {
             IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
-            return pf.calculate();
+            return pf.calculate(timeout);
         } catch (Exception e) {
-            displayChatMessageRaw("Exception: " + e);
+            displayChatMessageRaw("Pathing exception: " + e);
             e.printStackTrace();
             return Optional.empty();
         }

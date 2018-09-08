@@ -21,24 +21,21 @@ import baritone.Baritone;
 import baritone.behavior.impl.LookBehavior;
 import baritone.behavior.impl.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementStatus;
-import baritone.pathing.movement.movements.MovementDownward;
-import baritone.pathing.movement.movements.MovementPillar;
-import baritone.pathing.movement.movements.MovementTraverse;
 import baritone.utils.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLadder;
-import net.minecraft.block.BlockVine;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static baritone.utils.InputOverrideHandler.Input;
 
 public abstract class Movement implements Helper, MovementHelper {
+
+    protected static final EnumFacing[] HORIZONTALS = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST};
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
 
@@ -52,42 +49,32 @@ public abstract class Movement implements Helper, MovementHelper {
     protected final BlockPos[] positionsToBreak;
 
     /**
-     * The positions where we need to place a block before this movement can ensue
+     * The position where we need to place a block before this movement can ensue
      */
-    protected final BlockPos[] positionsToPlace;
+    protected final BlockPos positionToPlace;
 
     private boolean didBreakLastTick;
 
     private Double cost;
 
-    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos[] toPlace) {
+    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos toPlace) {
         this.src = src;
         this.dest = dest;
         this.positionsToBreak = toBreak;
-        this.positionsToPlace = toPlace;
+        this.positionToPlace = toPlace;
     }
 
-    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos[] toPlace, Vec3d rotationTarget) {
-        this(src, dest, toBreak, toPlace);
+    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak) {
+        this(src, dest, toBreak, null);
     }
 
     public double getCost(CalculationContext context) {
         if (cost == null) {
             if (context == null)
                 context = new CalculationContext();
-            cost = calculateCost0(context);
+            cost = calculateCost(context);
         }
         return cost;
-    }
-
-    private double calculateCost0(CalculationContext context) {
-        if (!(this instanceof MovementPillar) && !(this instanceof MovementTraverse) && !(this instanceof MovementDownward)) {
-            Block fromDown = BlockStateInterface.get(src.down()).getBlock();
-            if (fromDown instanceof BlockLadder || fromDown instanceof BlockVine) {
-                return COST_INF;
-            }
-        }
-        return calculateCost(context);
     }
 
     protected abstract double calculateCost(CalculationContext context);
@@ -97,6 +84,10 @@ public abstract class Movement implements Helper, MovementHelper {
         return getCost(null);
     }
 
+    public double calculateCostWithoutCaching() {
+        return calculateCost(new CalculationContext());
+    }
+
     /**
      * Handles the execution of the latest Movement
      * State, and offers a Status to the calling class.
@@ -104,7 +95,6 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return Status
      */
     public MovementStatus update() {
-        player().setSprinting(false);
         MovementState latestState = updateState(currentState);
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
@@ -159,7 +149,7 @@ public abstract class Movement implements Helper, MovementHelper {
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
-                    player().inventory.currentItem = new ToolSet().getBestSlot(BlockStateInterface.get(blockPos));
+                    MovementHelper.switchToBestToolFor(BlockStateInterface.get(blockPos));
                     state.setTarget(new MovementState.MovementTarget(reachable.get(), true)).setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
@@ -215,39 +205,53 @@ public abstract class Movement implements Helper, MovementHelper {
     }
 
     public double getTotalHardnessOfBlocksToBreak(CalculationContext ctx) {
-        /*
-        double sum = 0;
-        HashSet<BlockPos> toBreak = new HashSet();
-        for (BlockPos positionsToBreak1 : positionsToBreak) {
-            toBreak.add(positionsToBreak1);
-            if (this instanceof ActionFall) {//if we are digging straight down, assume we have already broken the sand above us
-                continue;
-            }
-            BlockPos tmp = positionsToBreak1.up();
-            while (canFall(tmp)) {
-                toBreak.add(tmp);
-                tmp = tmp.up();
-            }
+        if (positionsToBreak.length == 0) {
+            return 0;
         }
-        for (BlockPos pos : toBreak) {
-            sum += getHardness(ts, Baritone.get(pos), pos);
-            if (sum >= COST_INF) {
-                return COST_INF;
-            }
+        if (positionsToBreak.length == 1) {
+            return MovementHelper.getMiningDurationTicks(ctx, positionsToBreak[0], true);
         }
-        if (!Baritone.allowBreakOrPlace || !Baritone.hasThrowaway) {
-            for (int i = 0; i < blocksToPlace.length; i++) {
-                if (!canWalkOn(positionsToPlace[i])) {
-                    return COST_INF;
+        int firstColumnX = positionsToBreak[0].getX();
+        int firstColumnZ = positionsToBreak[0].getZ();
+        int firstColumnMaxY = positionsToBreak[0].getY();
+        int firstColumnMaximalIndex = 0;
+        boolean hasSecondColumn = false;
+        int secondColumnX = -1;
+        int secondColumnZ = -1;
+        int secondColumnMaxY = -1;
+        int secondColumnMaximalIndex = -1;
+        for (int i = 0; i < positionsToBreak.length; i++) {
+            BlockPos pos = positionsToBreak[i];
+            if (pos.getX() == firstColumnX && pos.getZ() == firstColumnZ) {
+                if (pos.getY() > firstColumnMaxY) {
+                    firstColumnMaxY = pos.getY();
+                    firstColumnMaximalIndex = i;
+                }
+            } else {
+                if (!hasSecondColumn || (pos.getX() == secondColumnX && pos.getZ() == secondColumnZ)) {
+                    if (hasSecondColumn) {
+                        if (pos.getY() > secondColumnMaxY) {
+                            secondColumnMaxY = pos.getY();
+                            secondColumnMaximalIndex = i;
+                        }
+                    } else {
+                        hasSecondColumn = true;
+                        secondColumnX = pos.getX();
+                        secondColumnZ = pos.getZ();
+                        secondColumnMaxY = pos.getY();
+                        secondColumnMaximalIndex = i;
+                    }
+                } else {
+                    throw new IllegalStateException("I literally have no idea " + Arrays.asList(positionsToBreak));
                 }
             }
-        }*/
-        //^ the above implementation properly deals with falling blocks, TODO integrate
+        }
+
         double sum = 0;
-        for (BlockPos pos : positionsToBreak) {
-            sum += MovementHelper.getMiningDurationTicks(ctx, pos);
+        for (int i = 0; i < positionsToBreak.length; i++) {
+            sum += MovementHelper.getMiningDurationTicks(ctx, positionsToBreak[i], firstColumnMaximalIndex == i || secondColumnMaximalIndex == i);
             if (sum >= COST_INF) {
-                return COST_INF;
+                break;
             }
         }
         return sum;
@@ -274,6 +278,10 @@ public abstract class Movement implements Helper, MovementHelper {
         return state;
     }
 
+    public BlockPos getDirection() {
+        return getDest().subtract(getSrc());
+    }
+
     public List<BlockPos> toBreakCached = null;
     public List<BlockPos> toPlaceCached = null;
     public List<BlockPos> toWalkIntoCached = null;
@@ -297,10 +305,8 @@ public abstract class Movement implements Helper, MovementHelper {
             return toPlaceCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        for (BlockPos positionToBreak : positionsToPlace) {
-            if (!MovementHelper.canWalkOn(positionToBreak)) {
-                result.add(positionToBreak);
-            }
+        if (positionToPlace != null && !MovementHelper.canWalkOn(positionToPlace)) {
+            result.add(positionToPlace);
         }
         toPlaceCached = result;
         return result;

@@ -18,6 +18,9 @@
 package baritone.utils;
 
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
+
+import static baritone.behavior.impl.LookBehaviorUtils.calcVec3dFromRotation;
 
 /**
  * @author Brady
@@ -43,5 +46,17 @@ public final class RayTraceUtils implements Helper {
         mc.player.rotationPitch = oldPitch;
 
         return result;
+    }
+
+    public static RayTraceResult rayTraceTowards(Rotation rotation) {
+        double blockReachDistance = mc.playerController.getBlockReachDistance();
+        Vec3d start = mc.player.getPositionEyes(1.0F);
+        Vec3d direction = calcVec3dFromRotation(rotation);
+        Vec3d end = start.add(
+                direction.x * blockReachDistance,
+                direction.y * blockReachDistance,
+                direction.z * blockReachDistance
+        );
+        return mc.world.rayTraceBlocks(start, end, false, false, true);
     }
 }

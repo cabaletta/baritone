@@ -121,7 +121,10 @@ public final class CachedChunk implements IBlockTypeAccess {
         if (heightMap[internalPos] == y) {
             // we have this exact block, it's a surface block
             IBlockState state = ChunkPacker.stringToBlock(overview[internalPos]).getDefaultState();
-            //System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
+            /*System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
+            if (!Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock().equals(state.getBlock())) {
+                throw new IllegalStateException("failed " + Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock() + " " + state.getBlock() + " " + (x + this.x * 16) + " " + y + " " + (z + this.z * 16));
+            }*/
             return state;
         }
         PathingBlockType type = getType(x, y, z);
@@ -139,7 +142,8 @@ public final class CachedChunk implements IBlockTypeAccess {
                 int index = z << 4 | x;
                 heightMap[index] = 0;
                 for (int y = 256; y >= 0; y--) {
-                    if (getType(x, y, z) != PathingBlockType.AIR) {
+                    int i = getPositionIndex(x, y, z);
+                    if (data.get(i) || data.get(i + 1)) {
                         heightMap[index] = y;
                         break;
                     }
@@ -183,7 +187,7 @@ public final class CachedChunk implements IBlockTypeAccess {
      * @return The bit index
      */
     public static int getPositionIndex(int x, int y, int z) {
-        return (x + (z << 4) + (y << 8)) * 2;
+        return (x << 1) | (z << 5) | (y << 9);
     }
 
     /**

@@ -48,16 +48,14 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockPos pos, IBlockState state) {
         Block b = state.getBlock();
-        BlockPos below = new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ());
+        Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
         return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
                 || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1))
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1))
-                || (!(b instanceof BlockLilyPad && BlockStateInterface.isWater(below)) && BlockStateInterface.isLiquid(below));//if it's a lilypad above water, it's ok to break, otherwise don't break if its liquid
-        // TODO revisit this. why is it not okay to break non-lilypads that are right above water?
+                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1));
     }
 
     /**
@@ -93,9 +91,17 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return true;
             }
         }
-        IBlockState up = BlockStateInterface.get(pos.up());
-        if (BlockStateInterface.isFlowing(state) || up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
+        if (BlockStateInterface.isFlowing(state)) {
             return false; // Don't walk through flowing liquids
+        }
+        if (block instanceof BlockLiquid) {
+            if (Baritone.settings().assumeWalkOnWater.get()) {
+                return false;
+            }
+            IBlockState up = BlockStateInterface.get(pos.up());
+            if (up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
+                return false;
+            }
         }
         return block.isPassable(mc.world, pos);
     }
@@ -158,7 +164,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
 
-        return (facing == playerFacing) == open;
+        return facing == playerFacing == open;
     }
 
     static boolean avoidWalkingInto(Block block) {
@@ -178,6 +184,9 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
+        if (block == Blocks.AIR) {
+            return false;
+        }
         if (block instanceof BlockLadder || (Baritone.settings().allowVines.get() && block instanceof BlockVine)) { // TODO reconsider this
             return true;
         }
@@ -187,12 +196,33 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (Blocks.FARMLAND.equals(block) || Blocks.GRASS_PATH.equals(block)) {
             return true;
         }
-        if (block instanceof BlockAir) {
-            return false;
+        if (Blocks.ENDER_CHEST.equals(block) || Blocks.CHEST.equals(block)) {
+            return true;
+        }
+        if (block instanceof BlockSlab) {
+            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
+                if (((BlockSlab) block).isDouble()) {
+                    return true;
+                }
+                return state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM;
+            }
+            return true;
+        }
+        if (block instanceof BlockStairs) {
+            return true;
         }
         if (BlockStateInterface.isWater(block)) {
             Block up = BlockStateInterface.get(pos.up()).getBlock();
-            return BlockStateInterface.isWater(up) || up instanceof BlockLilyPad; // You can only walk on water if there is water above it
+            if (up instanceof BlockLilyPad) {
+                return true;
+            }
+            if (BlockStateInterface.isFlowing(state)) {
+                // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
+                return BlockStateInterface.isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
+            }
+            // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
+            // if assumeWalkOnWater is off, we can only walk on water if there is water above it
+            return BlockStateInterface.isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
         }
         if (Blocks.MAGMA.equals(block)) {
             return false;
@@ -208,12 +238,18 @@ public interface MovementHelper extends ActionCosts, Helper {
         return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BlockPos position) {
-        IBlockState state = BlockStateInterface.get(position);
-        return getMiningDurationTicks(context, position, state);
+    static boolean canPlaceAgainst(BlockPos pos) {
+        IBlockState state = BlockStateInterface.get(pos);
+        // TODO isBlockNormalCube isn't the best check for whether or not we can place a block against it. e.g. glass isn't normalCube but we can place against it
+        return state.isBlockNormalCube();
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state) {
+    static double getMiningDurationTicks(CalculationContext context, BlockPos position, boolean includeFalling) {
+        IBlockState state = BlockStateInterface.get(position);
+        return getMiningDurationTicks(context, position, state, includeFalling);
+    }
+
+    static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!block.equals(Blocks.AIR) && !canWalkThrough(position, state)) { // TODO is the air check really necessary? Isn't air canWalkThrough?
             if (!context.allowBreak()) {
@@ -223,9 +259,31 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return COST_INF;
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
-            return m / context.getToolSet().getStrVsBlock(state, position);
+            double strVsBlock = context.getToolSet().getStrVsBlock(state);
+            if (strVsBlock < 0)
+                return COST_INF;
+
+            double result = m / strVsBlock;
+            if (includeFalling) {
+                BlockPos up = position.up();
+                IBlockState above = BlockStateInterface.get(up);
+                if (above.getBlock() instanceof BlockFalling) {
+                    result += getMiningDurationTicks(context, up, above, true);
+                }
+            }
+            return result;
         }
-        return 0;
+        return 0; // we won't actually mine it, so don't check fallings above
+    }
+
+    static boolean isBottomSlab(IBlockState state) {
+        return state.getBlock() instanceof BlockSlab
+                && !((BlockSlab) state.getBlock()).isDouble()
+                && state.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM;
+    }
+
+    static boolean isBottomSlab(BlockPos pos) {
+        return isBottomSlab(BlockStateInterface.get(pos));
     }
 
     /**
@@ -304,22 +362,22 @@ public interface MovementHelper extends ActionCosts, Helper {
     static Movement generateMovementFallOrDescend(BlockPos pos, BlockPos dest, CalculationContext calcContext) {
         // A
         //SA
-        // B
+        // A
         // B
         // C
         // D
-        //if S is where you start, both of B need to be air for a movementfall
+        //if S is where you start, B needs to be air for a movementfall
         //A is plausibly breakable by either descend or fall
         //C, D, etc determine the length of the fall
-        for (int i = 1; i < 3; i++) {
-            if (!canWalkThrough(dest.down(i))) {
-                //if any of these two (B in the diagram) aren't air
-                //have to do a descend, because fall is impossible
 
-                //this doesn't guarantee descend is possible, it just guarantees fall is impossible
-                return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
-            }
+        if (!canWalkThrough(dest.down(2))) {
+            //if B in the diagram aren't air
+            //have to do a descend, because fall is impossible
+
+            //this doesn't guarantee descend is possible, it just guarantees fall is impossible
+            return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
         }
+
         // we're clear for a fall 2
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {

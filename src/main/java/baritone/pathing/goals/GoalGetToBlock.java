@@ -17,25 +17,47 @@
 
 package baritone.pathing.goals;
 
-import net.minecraft.util.EnumFacing;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
+
 
 /**
  * Don't get into the block, but get directly adjacent to it. Useful for chests.
  *
  * @author avecowa
  */
-public class GoalGetToBlock extends GoalComposite {
+public class GoalGetToBlock implements Goal {
+
+    private final int x;
+    private final int y;
+    private final int z;
 
     public GoalGetToBlock(BlockPos pos) {
-        super(adjacentBlocks(pos));
+        this.x = pos.getX();
+        this.y = pos.getY();
+        this.z = pos.getZ();
     }
 
-    private static BlockPos[] adjacentBlocks(BlockPos pos) {
-        BlockPos[] sides = new BlockPos[6];
-        for (int i = 0; i < 6; i++) {
-            sides[i] = pos.offset(EnumFacing.values()[i]);
+    public BlockPos getGoalPos() {
+        return new BetterBlockPos(x, y, z);
+    }
+
+    @Override
+    public boolean isInGoal(BlockPos pos) {
+        int xDiff = pos.getX() - this.x;
+        int yDiff = pos.getY() - this.y;
+        int zDiff = pos.getZ() - this.z;
+        if (yDiff < 0) {
+            yDiff++;
         }
-        return sides;
+        return Math.abs(xDiff) + Math.abs(yDiff) + Math.abs(zDiff) <= 1;
+    }
+
+    @Override
+    public double heuristic(BlockPos pos) {
+        int xDiff = pos.getX() - this.x;
+        int yDiff = pos.getY() - this.y;
+        int zDiff = pos.getZ() - this.z;
+        return GoalBlock.calculate(xDiff, yDiff, zDiff);
     }
 }

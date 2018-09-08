@@ -68,6 +68,10 @@ public class GoalTwoBlocks implements Goal {
         return GoalBlock.calculate(xDiff, yDiff, zDiff);
     }
 
+    public BlockPos getGoalPos() {
+        return new BlockPos(x, y, z);
+    }
+
     @Override
     public String toString() {
         return "GoalTwoBlocks{x=" + x + ",y=" + y + ",z=" + z + "}";

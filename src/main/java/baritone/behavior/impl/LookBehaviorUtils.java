@@ -17,10 +17,7 @@
 
 package baritone.behavior.impl;
 
-import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
-import baritone.utils.Rotation;
-import baritone.utils.Utils;
+import baritone.utils.*;
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.*;
@@ -87,18 +84,6 @@ public final class LookBehaviorUtils implements Helper {
         return Optional.empty();
     }
 
-    private static RayTraceResult rayTraceTowards(Rotation rotation) {
-        double blockReachDistance = mc.playerController.getBlockReachDistance();
-        Vec3d start = mc.player.getPositionEyes(1.0F);
-        Vec3d direction = calcVec3dFromRotation(rotation);
-        Vec3d end = start.add(
-                direction.x * blockReachDistance,
-                direction.y * blockReachDistance,
-                direction.z * blockReachDistance
-        );
-        return mc.world.rayTraceBlocks(start, end, false, false, true);
-    }
-
     /**
      * Checks if coordinate is reachable with the given block-face rotation offset
      *
@@ -108,7 +93,7 @@ public final class LookBehaviorUtils implements Helper {
      */
     protected static Optional<Rotation> reachableOffset(BlockPos pos, Vec3d offsetPos) {
         Rotation rotation = Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F), offsetPos);
-        RayTraceResult result = rayTraceTowards(rotation);
+        RayTraceResult result = RayTraceUtils.rayTraceTowards(rotation);
         System.out.println(result);
         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
             if (result.getBlockPos().equals(pos)) {

@@ -34,6 +34,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 
 import java.awt.*;
 import java.util.Collection;
@@ -188,7 +189,7 @@ public final class PathRenderer implements Helper {
             maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
             minZ = goalPos.getZ() + 0.002 - renderPosZ;
             maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
-            double y = Math.sin((System.currentTimeMillis() % 2000L) / 2000F * Math.PI * 2);
+            double y = MathHelper.sin((float) (((float) (System.nanoTime() / 1000000L) % 2000L) / 2000F * Math.PI * 2));
             y1 = 1 + y + goalPos.getY() - renderPosY;
             y2 = 1 - y + goalPos.getY() - renderPosY;
             minY = goalPos.getY() - renderPosY;

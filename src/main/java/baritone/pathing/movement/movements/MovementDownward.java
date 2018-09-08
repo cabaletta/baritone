@@ -23,9 +23,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLadder;
-import net.minecraft.block.BlockVine;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDownward extends Movement {
@@ -33,7 +32,7 @@ public class MovementDownward extends Movement {
     private int numTicks = 0;
 
     public MovementDownward(BlockPos start, BlockPos end) {
-        super(start, end, new BlockPos[]{end}, new BlockPos[0]);
+        super(start, end, new BlockPos[]{end});
     }
 
     @Override
@@ -49,11 +48,12 @@ public class MovementDownward extends Movement {
         }
         IBlockState d = BlockStateInterface.get(dest);
         Block td = d.getBlock();
-        boolean ladder = td instanceof BlockLadder || td instanceof BlockVine;
+        boolean ladder = td == Blocks.LADDER || td == Blocks.VINE;
         if (ladder) {
             return LADDER_DOWN_ONE_COST;
         } else {
-            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, dest, d);
+            // we're standing on it, while it might be block falling, it'll be air by the time we get here in the movement
+            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, dest, d, false);
         }
     }
 

@@ -25,7 +25,11 @@ import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.*;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -38,13 +42,21 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
     public MovementFall(BlockPos src, BlockPos dest) {
-        super(src, dest, MovementFall.buildPositionsToBreak(src, dest), new BlockPos[]{dest.down()});
+        super(src, dest, MovementFall.buildPositionsToBreak(src, dest));
     }
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
+        Block fromDown = BlockStateInterface.get(src.down()).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return COST_INF;
+        }
+        IBlockState fallOnto = BlockStateInterface.get(dest.down());
+        if (!MovementHelper.canWalkOn(dest.down(), fallOnto)) {
+            return COST_INF;
+        }
+        if (MovementHelper.isBottomSlab(fallOnto)) {
+            return COST_INF; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
         }
         double placeBucketCost = 0.0;
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > context.maxFallHeightNoWater()) {
@@ -56,25 +68,29 @@ public class MovementFall extends Movement {
             }
             placeBucketCost = context.placeBlockCost();
         }
-        double frontTwo = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0]) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1]);
-        if (frontTwo >= COST_INF) {
-            return COST_INF;
+        double frontThree = 0;
+        for (int i = 0; i < 3; i++) {
+            frontThree += MovementHelper.getMiningDurationTicks(context, positionsToBreak[i], false);
+            // don't include falling because we will check falling right after this, and if it's there it's COST_INF
+            if (frontThree >= COST_INF) {
+                return COST_INF;
+            }
         }
         if (BlockStateInterface.get(positionsToBreak[0].up()).getBlock() instanceof BlockFalling) {
             return COST_INF;
         }
-        for (int i = 2; i < positionsToBreak.length; i++) {
+        for (int i = 3; i < positionsToBreak.length; i++) {
             // TODO is this the right check here?
             // MiningDurationTicks is all right, but shouldn't it be canWalkThrough instead?
             // Lilypads (i think?) are 0 ticks to mine, but they definitely cause fall damage
             // Same thing for falling through water... we can't actually do that
             // And falling through signs is possible, but they do have a mining duration, right?
-            if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i]) > 0) {
+            if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i], false) > 0) {
                 //can't break while falling
                 return COST_INF;
             }
         }
-        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost + frontTwo;
+        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost + frontThree;
     }
 
     @Override
@@ -86,7 +102,7 @@ public class MovementFall extends Movement {
         BlockPos playerFeet = playerFeet();
         Rotation targetRotation = null;
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
-            if (!player().inventory.hasItemStack(STACK_BUCKET_WATER) || world().provider.isNether()) {
+            if (!InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) || world().provider.isNether()) {
                 state.setStatus(MovementStatus.UNREACHABLE);
                 return state;
             }
@@ -109,7 +125,7 @@ public class MovementFall extends Movement {
         }
         if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 // lilypads
                 || BlockStateInterface.isWater(dest))) {
-            if (BlockStateInterface.isWater(dest) && player().inventory.hasItemStack(STACK_BUCKET_EMPTY)) {
+            if (BlockStateInterface.isWater(dest) && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                 if (player().motionY >= 0) {
                     return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);

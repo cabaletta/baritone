@@ -57,19 +57,36 @@ public class Settings {
     public Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
 
     /**
+     * Allow Baritone to assume it can walk on still water just like any other block.
+     * This functionality is assumed to be provided by a separate library that might have imported Baritone.
+     */
+    public Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
+
+    /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
-    public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(Arrays.asList(
+    public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK)
-    ));
+    )));
 
     /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
      * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
      */
     public Setting<Boolean> allowVines = new Setting<>(false);
+
+    /**
+     * Slab behavior is complicated, disable this for higher path reliability. Leave enabled if you have bottom slabs
+     * everywhere in your base.
+     */
+    public Setting<Boolean> allowWalkOnBottomSlab = new Setting<>(true);
+
+    /**
+     * For example, if you have Mining Fatigue or Haste, adjust the costs of breaking blocks accordingly.
+     */
+    public Setting<Boolean> considerPotionEffects = new Setting<>(true);
 
     /**
      * This is the big A* setting.
@@ -116,8 +133,16 @@ public class Settings {
     /**
      * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
      * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
+     * See issue #114 for why this is disabled.
      */
-    public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(true);
+    public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
+
+    /**
+     * Stop 5 movements before anything that made the path COST_INF.
+     * For example, if lava has spread across the path, don't walk right up to it then recalculate, it might
+     * still be spreading lol
+     */
+    public Setting<Integer> costVerificationLookahead = new Setting<>(5);
 
     /**
      * Static cutoff factor. 0.9 means cut off the last 10% of all paths, regardless of chunk load state
@@ -148,6 +173,13 @@ public class Settings {
     public Setting<Integer> maxFallHeightBucket = new Setting<>(20);
 
     /**
+     * Is it okay to sprint through a descend followed by a diagonal?
+     * The player overshoots the landing, but not enough to fall off. And the diagonal ensures that there isn't
+     * lava or anything that's !canWalkInto in that space, so it's technically safe, just a little sketchy.
+     */
+    public Setting<Boolean> allowOvershootDiagonalDescend = new Setting<>(true);
+
+    /**
      * If your goal is a GoalBlock in an unloaded chunk, assume it's far enough away that the Y coord
      * doesn't matter yet, and replace it with a GoalXZ to the same place before calculating a path.
      * Once a segment ends within chunk load range of the GoalBlock, it will go back to normal behavior
@@ -164,7 +196,12 @@ public class Settings {
     /**
      * Pathing can never take longer than this
      */
-    public Setting<Number> pathTimeoutMS = new Setting<>(4000L);
+    public Setting<Number> pathTimeoutMS = new Setting<>(2000L);
+
+    /**
+     * Planning ahead while executing a segment can never take longer than this
+     */
+    public Setting<Number> planAheadTimeoutMS = new Setting<>(4000L);
 
     /**
      * For debugging, consider nodes much much slower
@@ -196,6 +233,11 @@ public class Settings {
      * something else
      */
     public Setting<Boolean> chatControl = new Setting<>(true);
+
+    /**
+     * A second override over chatControl to force it on
+     */
+    public Setting<Boolean> removePrefix = new Setting<>(false);
 
     /**
      * Render the path
@@ -309,10 +351,10 @@ public class Settings {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<Setting<T>> getByValueType(Class<T> klass) {
+    public <T> List<Setting<T>> getAllValuesByType(Class<T> klass) {
         List<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
-            if (setting.klass.equals(klass)) {
+            if (setting.getValueClass().equals(klass)) {
                 result.add((Setting<T>) setting);
             }
         }

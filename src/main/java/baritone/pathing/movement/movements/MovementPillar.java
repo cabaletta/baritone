@@ -28,14 +28,13 @@ import baritone.utils.Utils;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementPillar extends Movement {
     private int numTicks = 0;
 
     public MovementPillar(BlockPos start, BlockPos end) {
-        super(start, end, new BlockPos[]{start.up(2)}, new BlockPos[]{start});
+        super(start, end, new BlockPos[]{start.up(2)}, start);
     }
 
     @Override
@@ -48,10 +47,15 @@ public class MovementPillar extends Movement {
     protected double calculateCost(CalculationContext context) {
         Block fromDown = BlockStateInterface.get(src).getBlock();
         boolean ladder = fromDown instanceof BlockLadder || fromDown instanceof BlockVine;
-        Block fromDownDown = BlockStateInterface.get(src.down()).getBlock();
+        IBlockState fromDownDown = BlockStateInterface.get(src.down());
         if (!ladder) {
-            if (fromDownDown instanceof BlockLadder || fromDownDown instanceof BlockVine) {
+            if (fromDownDown.getBlock() instanceof BlockLadder || fromDownDown.getBlock() instanceof BlockVine) {
                 return COST_INF;
+            }
+            if (fromDownDown.getBlock() instanceof BlockSlab) {
+                if (!((BlockSlab) fromDownDown.getBlock()).isDouble() && fromDownDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+                    return COST_INF; // can't pillar up from a bottom slab onto a non ladder
+                }
             }
         }
         if (!context.hasThrowaway() && !ladder) {
@@ -63,6 +67,9 @@ public class MovementPillar extends Movement {
             }
         }
         double hardness = getTotalHardnessOfBlocksToBreak(context);
+        if (hardness >= COST_INF) {
+            return COST_INF;
+        }
         if (hardness != 0) {
             Block tmp = BlockStateInterface.get(src.up(2)).getBlock();
             if (tmp instanceof BlockLadder || tmp instanceof BlockVine) {
@@ -70,15 +77,22 @@ public class MovementPillar extends Movement {
             } else {
                 BlockPos chkPos = src.up(3);
                 IBlockState check = BlockStateInterface.get(chkPos);
-                if (!MovementHelper.canWalkOn(chkPos, check) || MovementHelper.canWalkThrough(chkPos, check) || check.getBlock() instanceof BlockFalling) {//if the block above where we want to break is not a full block, don't do it
-                    // TODO why does canWalkThrough mean this action is COST_INF?
-                    // BlockFalling makes sense, and !canWalkOn deals with weird cases like if it were lava
-                    // but I don't understand why canWalkThrough makes it impossible
-                    return COST_INF;
+                if (check.getBlock() instanceof BlockFalling) {
+                    // see MovementAscend's identical check for breaking a falling block above our head
+                    if (!(tmp instanceof BlockFalling) || !(BlockStateInterface.get(src.up(1)).getBlock() instanceof BlockFalling)) {
+                        return COST_INF;
+                    }
                 }
+                // this is commented because it may have had a purpose, but it's very unclear what it was. it's from the minebot era.
+                //if (!MovementHelper.canWalkOn(chkPos, check) || MovementHelper.canWalkThrough(chkPos, check)) {//if the block above where we want to break is not a full block, don't do it
+                // TODO why does canWalkThrough mean this action is COST_INF?
+                // BlockFalling makes sense, and !canWalkOn deals with weird cases like if it were lava
+                // but I don't understand why canWalkThrough makes it impossible
+                //    return COST_INF;
+                //}
             }
         }
-        if (fromDown instanceof BlockLiquid || fromDownDown instanceof BlockLiquid) {//can't pillar on water or in water
+        if (fromDown instanceof BlockLiquid || fromDownDown.getBlock() instanceof BlockLiquid) {//can't pillar on water or in water
             return COST_INF;
         }
         if (ladder) {
@@ -115,7 +129,7 @@ public class MovementPillar extends Movement {
         boolean vine = fromDown.getBlock() instanceof BlockVine;
         if (!ladder) {
             state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                    Utils.getBlockPosCenter(positionsToPlace[0]),
+                    Utils.getBlockPosCenter(positionToPlace),
                     new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)), true));
         }
 
@@ -127,9 +141,12 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
             }
 
-            if (playerFeet().equals(against.up()) || playerFeet().equals(dest))
+            if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
                 return state.setStatus(MovementState.MovementStatus.SUCCESS);
-
+            }
+            if (MovementHelper.isBottomSlab(src.down())) {
+                state.setInput(InputOverrideHandler.Input.JUMP, true);
+            }
             /*
             if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
                 Baritone.moveTowardsBlock(from);

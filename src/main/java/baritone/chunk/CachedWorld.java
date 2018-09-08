@@ -59,28 +59,28 @@ public final class CachedWorld implements IBlockTypeAccess {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
         this.directory = directory.toString();
         System.out.println("Cached world directory: " + directory);
         // Insert an invalid region element
         cachedRegions.put(0, null);
         new PackerThread().start();
-        new Thread() {
-            public void run() {
-                try {
-                    while (true) {
-                        // since a region only saves if it's been modified since its last save
-                        // saving every 10 minutes means that once it's time to exit
-                        // we'll only have a couple regions to save
-                        save();
-                        Thread.sleep(600000);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        new Thread(() -> {
+            try {
+                Thread.sleep(30000);
+                while (true) {
+                    // since a region only saves if it's been modified since its last save
+                    // saving every 10 minutes means that once it's time to exit
+                    // we'll only have a couple regions to save
+                    save();
+                    Thread.sleep(600000);
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        }.start();
+        }).start();
     }
 
     public final void queueForPacking(Chunk chunk) {
@@ -100,6 +100,17 @@ public final class CachedWorld implements IBlockTypeAccess {
         }
         return region.getBlock(x & 511, y, z & 511);
     }
+
+    public final boolean isCached(BlockPos pos) {
+        int x = pos.getX();
+        int z = pos.getZ();
+        CachedRegion region = getRegion(x >> 9, z >> 9);
+        if (region == null) {
+            return false;
+        }
+        return region.isCached(x & 511, z & 511);
+    }
+
 
     public final LinkedList<BlockPos> getLocationsOf(String block, int minimum, int maxRegionDistanceSq) {
         LinkedList<BlockPos> res = new LinkedList<>();
@@ -140,22 +151,22 @@ public final class CachedWorld implements IBlockTypeAccess {
             System.out.println("Not saving to disk; chunk caching is disabled.");
             return;
         }
-        long start = System.currentTimeMillis();
-        this.cachedRegions.values().forEach(region -> {
+        long start = System.nanoTime() / 1000000L;
+        this.cachedRegions.values().parallelStream().forEach(region -> {
             if (region != null)
                 region.save(this.directory);
         });
-        long now = System.currentTimeMillis();
+        long now = System.nanoTime() / 1000000L;
         System.out.println("World save took " + (now - start) + "ms");
     }
 
     public final void reloadAllFromDisk() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime() / 1000000L;
         this.cachedRegions.values().forEach(region -> {
             if (region != null)
                 region.load(this.directory);
         });
-        long now = System.currentTimeMillis();
+        long now = System.nanoTime() / 1000000L;
         System.out.println("World load took " + (now - start) + "ms");
     }
 

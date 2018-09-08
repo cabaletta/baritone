@@ -17,12 +17,9 @@
 
 package baritone;
 
+import baritone.api.event.GameEventHandler;
 import baritone.behavior.Behavior;
-import baritone.behavior.impl.LookBehavior;
-import baritone.behavior.impl.MemoryBehavior;
-import baritone.behavior.impl.PathingBehavior;
-import baritone.behavior.impl.LocationTrackingBehavior;
-import baritone.event.GameEventHandler;
+import baritone.behavior.impl.*;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 
@@ -31,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Brady
@@ -55,9 +53,18 @@ public enum Baritone {
     private File dir;
 
     /**
+     * List of consumers to be called after Baritone has initialized
+     */
+    private List<Consumer<Baritone>> onInitConsumers;
+
+    /**
      * Whether or not Baritone is active
      */
     private boolean active;
+
+    Baritone() {
+        this.onInitConsumers = new ArrayList<>();
+    }
 
     public synchronized void init() {
         if (initialized) {
@@ -72,6 +79,8 @@ public enum Baritone {
             registerBehavior(LookBehavior.INSTANCE);
             registerBehavior(MemoryBehavior.INSTANCE);
             registerBehavior(LocationTrackingBehavior.INSTANCE);
+            registerBehavior(FollowBehavior.INSTANCE);
+            registerBehavior(MineBehavior.INSTANCE);
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {
@@ -82,6 +91,8 @@ public enum Baritone {
 
         this.active = true;
         this.initialized = true;
+
+        this.onInitConsumers.forEach(consumer -> consumer.accept(this));
     }
 
     public final boolean isInitialized() {
@@ -119,5 +130,9 @@ public enum Baritone {
 
     public final File getDir() {
         return this.dir;
+    }
+
+    public final void registerInitListener(Consumer<Baritone> runnable) {
+        this.onInitConsumers.add(runnable);
     }
 }

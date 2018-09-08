@@ -39,29 +39,10 @@ import java.util.Objects;
 
 public class MovementAscend extends Movement {
 
-    private BlockPos[] against = new BlockPos[3];
     private int ticksWithoutPlacement = 0;
 
     public MovementAscend(BlockPos src, BlockPos dest) {
-        super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, new BlockPos[]{dest.down()});
-
-        BlockPos placementLocation = positionsToPlace[0]; // dest.down()
-        int i = 0;
-        if (!placementLocation.north().equals(src))
-            against[i++] = placementLocation.north();
-
-        if (!placementLocation.south().equals(src))
-            against[i++] = placementLocation.south();
-
-        if (!placementLocation.east().equals(src))
-            against[i++] = placementLocation.east();
-
-        if (!placementLocation.west().equals(src))
-            against[i] = placementLocation.west();
-
-        // TODO: add ability to place against .down() as well as the cardinal directions
-        // useful for when you are starting a staircase without anything to place against
-        // Counterpoint to the above TODO ^ you should move then pillar instead of ascend
+        super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, dest.down());
     }
 
     @Override
@@ -72,16 +53,34 @@ public class MovementAscend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        IBlockState toPlace = BlockStateInterface.get(positionsToPlace[0]);
-        if (!MovementHelper.canWalkOn(positionsToPlace[0], toPlace)) {
+        IBlockState srcDown = BlockStateInterface.get(src.down());
+        if (srcDown.getBlock() == Blocks.LADDER || srcDown.getBlock() == Blocks.VINE) {
+            return COST_INF;
+        }
+        // we can jump from soul sand, but not from a bottom slab
+        boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
+        IBlockState toPlace = BlockStateInterface.get(positionToPlace);
+        boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
+
+        if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
+            return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
+        }
+        if (!MovementHelper.canWalkOn(positionToPlace, toPlace)) {
             if (!context.hasThrowaway()) {
                 return COST_INF;
             }
-            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionsToPlace[0], toPlace)) {
+            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionToPlace, toPlace)) {
                 return COST_INF;
             }
-            for (BlockPos against1 : against) {
-                if (BlockStateInterface.get(against1).isBlockNormalCube()) {
+            // TODO: add ability to place against .down() as well as the cardinal directions
+            // useful for when you are starting a staircase without anything to place against
+            // Counterpoint to the above TODO ^ you should move then pillar instead of ascend
+            for (int i = 0; i < 4; i++) {
+                BlockPos against1 = positionToPlace.offset(HORIZONTALS[i]);
+                if (against1.equals(src)) {
+                    continue;
+                }
+                if (MovementHelper.canPlaceAgainst(against1)) {
                     return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
                 }
             }
@@ -108,9 +107,11 @@ public class MovementAscend extends Movement {
             // it's possible srcUp is AIR from the start, and srcUp2 is falling
             // and in that scenario, when we arrive and break srcUp2, that lets srcUp3 fall on us and suffocate us
         }
-        // TODO maybe change behavior if src.down() is soul sand?
         double walk = WALK_ONE_BLOCK_COST;
-        if (toPlace.getBlock().equals(Blocks.SOUL_SAND)) {
+        if (jumpingToBottomSlab && !jumpingFromBottomSlab) {
+            return walk + getTotalHardnessOfBlocksToBreak(context); // we don't hit space we just walk into the slab
+        }
+        if (!jumpingToBottomSlab && toPlace.getBlock().equals(Blocks.SOUL_SAND)) {
             walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
         }
         // we hit space immediately on entering this action
@@ -129,9 +130,14 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
-        if (!MovementHelper.canWalkOn(positionsToPlace[0])) {
-            for (BlockPos anAgainst : against) {
-                if (BlockStateInterface.get(anAgainst).isBlockNormalCube()) {
+        IBlockState jumpingOnto = BlockStateInterface.get(positionToPlace);
+        if (!MovementHelper.canWalkOn(positionToPlace, jumpingOnto)) {
+            for (int i = 0; i < 4; i++) {
+                BlockPos anAgainst = positionToPlace.offset(HORIZONTALS[i]);
+                if (anAgainst.equals(src)) {
+                    continue;
+                }
+                if (MovementHelper.canPlaceAgainst(anAgainst)) {
                     if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
                         return state.setStatus(MovementStatus.UNREACHABLE);
                     }
@@ -142,7 +148,7 @@ public class MovementAscend extends Movement {
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
 
                     LookBehaviorUtils.getSelectedBlock().ifPresent(selectedBlock -> {
-                        if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionsToPlace[0])) {
+                        if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionToPlace)) {
                             ticksWithoutPlacement++;
                             state.setInput(InputOverrideHandler.Input.SNEAK, true);
                             if (player().isSneaking()) {
@@ -152,6 +158,8 @@ public class MovementAscend extends Movement {
                                 // After 20 ticks without placement, we might be standing in the way, move back
                                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                             }
+                        } else {
+                            state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true); // break whatever replaceable block is in the way
                         }
                         System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
                     });
@@ -161,6 +169,11 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
+        if (MovementHelper.isBottomSlab(jumpingOnto)) {
+            if (!MovementHelper.isBottomSlab(src.down())) {
+                return state; // don't jump while walking from a non double slab into a bottom slab
+            }
+        }
 
         if (headBonkClear()) {
             return state.setInput(InputOverrideHandler.Input.JUMP, true);

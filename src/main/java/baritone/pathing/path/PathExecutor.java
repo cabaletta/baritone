@@ -18,10 +18,12 @@
 package baritone.pathing.path;
 
 import baritone.Baritone;
-import baritone.event.events.TickEvent;
-import baritone.pathing.movement.ActionCosts;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementState;
+import baritone.api.event.events.TickEvent;
+import baritone.pathing.movement.*;
+import baritone.pathing.movement.movements.MovementDescend;
+import baritone.pathing.movement.movements.MovementDiagonal;
+import baritone.pathing.movement.movements.MovementFall;
+import baritone.pathing.movement.movements.MovementTraverse;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -42,8 +44,9 @@ import static baritone.pathing.movement.MovementState.MovementStatus.*;
  * @author leijurv
  */
 public class PathExecutor implements Helper {
+    private static final double MAX_MAX_DIST_FROM_PATH = 3;
     private static final double MAX_DIST_FROM_PATH = 2;
-    private static final double MAX_TICKS_AWAY = 200; // ten seconds
+    private static final double MAX_TICKS_AWAY = 200; // ten seconds. ok to decrease this, but it must be at least 110, see issue #102
     private final IPath path;
     private int pathPosition;
     private int ticksAway;
@@ -128,6 +131,17 @@ public class PathExecutor implements Helper {
         } else {
             ticksAway = 0;
         }
+        if (distanceFromPath > MAX_MAX_DIST_FROM_PATH) {
+            if (!(path.movements().get(pathPosition) instanceof MovementFall)) { // might be midair
+                if (pathPosition == 0 || !(path.movements().get(pathPosition - 1) instanceof MovementFall)) { // might have overshot the landing
+                    displayChatMessageRaw("too far from path");
+                    pathPosition = path.length() + 3;
+                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    failed = true;
+                    return false;
+                }
+            }
+        }
         //this commented block is literally cursed.
         /*Out.log(actions.get(pathPosition));
         if (pathPosition < actions.size() - 1) {//if there are two ActionBridges in a row and they are at right angles, walk diagonally. This makes it so you walk at 45 degrees along a zigzag path instead of doing inefficient zigging and zagging
@@ -160,7 +174,7 @@ public class PathExecutor implements Helper {
                 }
             }
         }*/
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime() / 1000000L;
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i >= 0 && i < path.movements().size()) {
                 Movement m = path.movements().get(i);
@@ -195,11 +209,25 @@ public class PathExecutor implements Helper {
             toWalkInto = newWalkInto;
             recalcBP = false;
         }
-        long end = System.currentTimeMillis();
+        long end = System.nanoTime() / 1000000L;
         if (end - start > 0) {
             //displayChatMessageRaw("Recalculating break and place took " + (end - start) + "ms");
         }
         Movement movement = path.movements().get(pathPosition);
+        if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
+            costEstimateIndex = pathPosition;
+            // do this only once, when the movement starts, and deliberately get the cost as cached when this path was calculated, not the cost as it is right now
+            currentMovementInitialCostEstimate = movement.getCost(null);
+            for (int i = 1; i < Baritone.settings().costVerificationLookahead.get() && pathPosition + i < path.length() - 1; i++) {
+                if (path.movements().get(pathPosition + i).calculateCostWithoutCaching() >= ActionCosts.COST_INF) {
+                    displayChatMessageRaw("Something has changed in the world and a future movement has become impossible. Cancelling.");
+                    pathPosition = path.length() + 3;
+                    failed = true;
+                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    return true;
+                }
+            }
+        }
         double currentCost = movement.recalculateCost();
         if (currentCost >= ActionCosts.COST_INF) {
             displayChatMessageRaw("Something has changed in the world and this movement has become impossible. Cancelling.");
@@ -207,10 +235,6 @@ public class PathExecutor implements Helper {
             failed = true;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             return true;
-        }
-        if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
-            costEstimateIndex = pathPosition;
-            currentMovementInitialCostEstimate = currentCost; // do this only once, when the movement starts
         }
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
@@ -228,6 +252,7 @@ public class PathExecutor implements Helper {
             onTick(event);
             return true;
         } else {
+            sprintIfRequested();
             ticksOnCurrent++;
             if (ticksOnCurrent > currentMovementInitialCostEstimate + Baritone.settings().movementTimeoutTicks.get()) {
                 // only fail if the total time has exceeded the initial estimate
@@ -243,6 +268,59 @@ public class PathExecutor implements Helper {
             }
         }
         return false; // movement is in progress
+    }
+
+    private void sprintIfRequested() {
+        if (!new CalculationContext().canSprint()) {
+            player().setSprinting(false);
+            return;
+        }
+        if (Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown(mc.gameSettings.keyBindSprint)) {
+            if (!player().isSprinting()) {
+                player().setSprinting(true);
+            }
+            return;
+        }
+        Movement movement = path.movements().get(pathPosition);
+        if (movement instanceof MovementDescend && pathPosition < path.length() - 2) {
+            Movement next = path.movements().get(pathPosition + 1);
+            if (next instanceof MovementDescend) {
+                if (next.getDirection().equals(movement.getDirection())) {
+                    if (playerFeet().equals(movement.getDest())) {
+                        pathPosition++;
+                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    }
+                    if (!player().isSprinting()) {
+                        player().setSprinting(true);
+                    }
+                    return;
+                }
+            }
+            if (next instanceof MovementTraverse) {
+                if (next.getDirection().down().equals(movement.getDirection()) && MovementHelper.canWalkOn(next.getDest().down())) {
+                    if (playerFeet().equals(movement.getDest())) {
+                        pathPosition++;
+                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    }
+                    if (!player().isSprinting()) {
+                        player().setSprinting(true);
+                    }
+                    return;
+                }
+            }
+            if (next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.get()) {
+                if (playerFeet().equals(movement.getDest())) {
+                    pathPosition++;
+                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                }
+                if (!player().isSprinting()) {
+                    player().setSprinting(true);
+                }
+                return;
+            }
+            //displayChatMessageRaw("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
+        }
+        player().setSprinting(false);
     }
 
     public int getPosition() {

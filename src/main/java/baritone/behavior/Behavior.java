@@ -17,7 +17,7 @@
 
 package baritone.behavior;
 
-import baritone.event.listener.AbstractGameEventListener;
+import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.utils.Helper;
 import baritone.utils.interfaces.Toggleable;
 

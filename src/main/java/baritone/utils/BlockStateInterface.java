@@ -30,6 +30,8 @@ import net.minecraft.world.chunk.Chunk;
 
 public class BlockStateInterface implements Helper {
 
+    private static Chunk prev = null;
+
     public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
 
         // Invalid vertical position
@@ -37,8 +39,18 @@ public class BlockStateInterface implements Helper {
             return Blocks.AIR.getDefaultState();
 
         if (!Baritone.settings().pathThroughCachedOnly.get()) {
+            Chunk cached = prev;
+            // there's great cache locality in block state lookups
+            // generally it's within each movement
+            // if it's the same chunk as last time
+            // we can just skip the mc.world.getChunk lookup
+            // which is a Long2ObjectOpenHashMap.get
+            if (cached != null && cached.x == pos.getX() >> 4 && cached.z == pos.getZ() >> 4) {
+                return cached.getBlockState(pos);
+            }
             Chunk chunk = mc.world.getChunk(pos);
             if (chunk.isLoaded()) {
+                prev = chunk;
                 return chunk.getBlockState(pos);
             }
         }
@@ -52,6 +64,10 @@ public class BlockStateInterface implements Helper {
 
 
         return Blocks.AIR.getDefaultState();
+    }
+
+    public static void clearCachedChunk() {
+        prev = null;
     }
 
     public static Block getBlock(BlockPos pos) {

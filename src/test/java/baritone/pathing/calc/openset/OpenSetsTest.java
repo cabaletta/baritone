@@ -42,7 +42,7 @@ public class OpenSetsTest {
     public void removeAndTest(int amount, IOpenSet[] test, Optional<Collection<PathNode>> mustContain) {
         double[][] results = new double[test.length][amount];
         for (int i = 0; i < test.length; i++) {
-            long before = System.currentTimeMillis();
+            long before = System.nanoTime() / 1000000L;
             for (int j = 0; j < amount; j++) {
                 PathNode pn = test[i].removeLowest();
                 if (mustContain.isPresent() && !mustContain.get().contains(pn)) {
@@ -50,7 +50,7 @@ public class OpenSetsTest {
                 }
                 results[i][j] = pn.combinedCost;
             }
-            System.out.println(test[i].getClass() + " " + (System.currentTimeMillis() - before));
+            System.out.println(test[i].getClass() + " " + (System.nanoTime() / 1000000L - before));
         }
         for (int j = 0; j < amount; j++) {
             for (int i = 1; i < test.length; i++) {
@@ -104,10 +104,10 @@ public class OpenSetsTest {
 
         System.out.println("Insertion");
         for (IOpenSet set : test) {
-            long before = System.currentTimeMillis();
+            long before = System.nanoTime() / 1000000L;
             for (int i = 0; i < size; i++)
                 set.insert(toInsert[i]);
-            System.out.println(set.getClass() + " " + (System.currentTimeMillis() - before));
+            System.out.println(set.getClass() + " " + (System.nanoTime() / 1000000L - before));
             //all three take either 0 or 1ms to insert up to 10,000 nodes
             //linkedlist takes 0ms most often (because there's no array resizing or allocation there, just pointer shuffling)
         }
