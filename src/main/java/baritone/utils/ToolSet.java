@@ -87,10 +87,6 @@ public class ToolSet implements Helper {
         // Calculate the slot with the best item
         ItemStack contents = player().inventory.getStackInSlot(slot);
 
-        // In 1.10 null item stacks were a thing, no such thing as empty ones.
-        if (contents == null)
-            return 0;
-
         float blockHard = state.getBlockHardness(null, null);
         if (blockHard < 0)
             return -1;
@@ -98,7 +94,8 @@ public class ToolSet implements Helper {
         // noinspection ConstantConditions
         IItemStack wrapped = (IItemStack) (Object) contents;
 
-        float speed = contents.getDestroySpeed(state);
+        // In 1.10 null item stacks were a thing, no such thing as empty ones.
+        float speed = contents == null ? 1.0F : contents.getDestroySpeed(state);
         if (speed > 1) {
             int effLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, contents);
             if (effLevel > 0 && !wrapped.isEmpty()) {
@@ -128,7 +125,7 @@ public class ToolSet implements Helper {
             }
         }
         speed /= blockHard;
-        if (state.getMaterial().isToolNotRequired() || (!wrapped.isEmpty() && contents.canHarvestBlock(state))) {
+        if (state.getMaterial().isToolNotRequired() || (contents != null && !wrapped.isEmpty() && contents.canHarvestBlock(state))) {
             return speed / 30;
         } else {
             return speed / 100;
