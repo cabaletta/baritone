@@ -26,7 +26,7 @@ import baritone.utils.pathing.BetterBlockPos;
  *
  * @author leijurv
  */
-public class PathNode {
+public final class PathNode {
 
     /**
      * The position of this node
