@@ -47,7 +47,7 @@ public class MovementDiagonal extends Movement {
     }
 
     public MovementDiagonal(BlockPos start, BlockPos end, BlockPos dir1, BlockPos dir2) {
-        super(start, end, new BlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()}, new BlockPos[]{end.down()});
+        super(start, end, new BlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
     }
 
     @Override
