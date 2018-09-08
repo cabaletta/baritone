@@ -216,10 +216,12 @@ public final class PathRenderer implements Helper {
             y2 = 0;
             minY = 0 - renderPosY;
             maxY = 256 - renderPosY;
-        } else {
+        } else if (goal instanceof GoalComposite) {
             for (Goal g : ((GoalComposite) goal).goals()) {
                 drawLitDankGoalBox(player, g, partialTicks, color);
             }
+            return;
+        } else {
             return;
         }
 
