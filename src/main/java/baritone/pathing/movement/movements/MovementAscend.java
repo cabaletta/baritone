@@ -69,7 +69,7 @@ public class MovementAscend extends Movement {
             if (!context.hasThrowaway()) {
                 return COST_INF;
             }
-            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionToPlace, toPlace)) {
+            if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionToPlace, toPlace)) {
                 return COST_INF;
             }
             // TODO: add ability to place against .down() as well as the cardinal directions

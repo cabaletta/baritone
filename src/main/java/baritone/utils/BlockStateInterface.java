@@ -21,21 +21,29 @@ import baritone.Baritone;
 import baritone.chunk.WorldData;
 import baritone.chunk.WorldProvider;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
+/**
+ * Wraps get for chuck caching capability
+ *
+ * @author leijurv
+ */
 public class BlockStateInterface implements Helper {
 
     private static Chunk prev = null;
 
-    public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
+    public static IBlockState get(BlockPos pos) {
+        return get(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public static IBlockState get(int x, int y, int z) {
 
         // Invalid vertical position
-        if (pos.getY() < 0 || pos.getY() >= 256) {
+        if (y < 0 || y >= 256) {
             return Blocks.AIR.getDefaultState();
         }
 
@@ -46,18 +54,18 @@ public class BlockStateInterface implements Helper {
             // if it's the same chunk as last time
             // we can just skip the mc.world.getChunk lookup
             // which is a Long2ObjectOpenHashMap.get
-            if (cached != null && cached.x == pos.getX() >> 4 && cached.z == pos.getZ() >> 4) {
-                return cached.getBlockState(pos);
+            if (cached != null && cached.x == x >> 4 && cached.z == z >> 4) {
+                return cached.getBlockState(x, y, z);
             }
-            Chunk chunk = mc.world.getChunk(pos);
+            Chunk chunk = mc.world.getChunk(x >> 4, z >> 4);
             if (chunk.isLoaded()) {
                 prev = chunk;
-                return chunk.getBlockState(pos);
+                return chunk.getBlockState(x, y, z);
             }
         }
         WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
         if (world != null) {
-            IBlockState type = world.cache.getBlock(pos);
+            IBlockState type = world.cache.getBlock(x, y, z);
             if (type != null) {
                 return type;
             }
@@ -88,7 +96,7 @@ public class BlockStateInterface implements Helper {
      * @return Whether or not the block is water
      */
     public static boolean isWater(Block b) {
-        return waterFlowing.equals(b) || waterStill.equals(b);
+        return b == waterFlowing || b == waterStill;
     }
 
     /**
@@ -103,7 +111,7 @@ public class BlockStateInterface implements Helper {
     }
 
     public static boolean isLava(Block b) {
-        return lavaFlowing.equals(b) || lavaStill.equals(b);
+        return b == lavaFlowing || b == lavaStill;
     }
 
     /**
@@ -122,18 +130,4 @@ public class BlockStateInterface implements Helper {
                 && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
                 && state.getValue(BlockLiquid.LEVEL) != 0;
     }
-
-    public static boolean isAir(BlockPos pos) {
-        return BlockStateInterface.getBlock(pos).equals(Blocks.AIR);
-    }
-
-    public static boolean isAir(IBlockState state) {
-        return state.getBlock().equals(Blocks.AIR);
-    }
-
-    static boolean canFall(BlockPos pos) {
-        return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
-    }
-
-
 }
