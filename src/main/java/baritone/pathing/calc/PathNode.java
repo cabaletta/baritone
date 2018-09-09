@@ -19,7 +19,7 @@ package baritone.pathing.calc;
 
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * A node in the path, containing the cost and steps to get to it.
@@ -31,7 +31,7 @@ public final class PathNode {
     /**
      * The position of this node
      */
-    final BetterBlockPos pos;
+    final BlockPos pos;
 
     /**
      * The goal it's going towards
@@ -78,7 +78,7 @@ public final class PathNode {
      */
     public int heapPosition;
 
-    public PathNode(BetterBlockPos pos, Goal goal) {
+    public PathNode(BlockPos pos, Goal goal) {
         this.pos = pos;
         this.previous = null;
         this.cost = Short.MAX_VALUE;

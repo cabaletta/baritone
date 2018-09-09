@@ -26,7 +26,7 @@ import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -42,7 +42,7 @@ public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
 
-    public MovementAscend(BetterBlockPos src, BetterBlockPos dest) {
+    public MovementAscend(BlockPos src, BlockPos dest) {
         super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, dest.down());
     }
 

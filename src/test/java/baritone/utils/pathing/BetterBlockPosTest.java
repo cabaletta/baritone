@@ -20,7 +20,7 @@ package baritone.utils.pathing;
 import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
 
-public class BetterBlockPosTest {
+public class BlockPosTest {
 
     @Test
     public void benchMulti() {
@@ -38,7 +38,7 @@ public class BetterBlockPosTest {
 
     public void benchOne() {
         BlockPos pos = new BlockPos(1, 2, 3);
-        BetterBlockPos pos2 = new BetterBlockPos(1, 2, 3);
+        BlockPos pos2 = new BlockPos(1, 2, 3);
         try {
             Thread.sleep(1000); // give GC some time
         } catch (InterruptedException e) {
@@ -64,7 +64,7 @@ public class BetterBlockPosTest {
 
     public void benchN() {
         BlockPos pos = new BlockPos(1, 2, 3);
-        BetterBlockPos pos2 = new BetterBlockPos(1, 2, 3);
+        BlockPos pos2 = new BlockPos(1, 2, 3);
         try {
             Thread.sleep(1000); // give GC some time
         } catch (InterruptedException e) {

@@ -23,7 +23,7 @@ import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.pathing.movement.movements.MovementDescend;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.*;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
@@ -401,7 +401,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }
 
-    static Movement generateMovementFallOrDescend(BetterBlockPos pos, BetterBlockPos dest, CalculationContext calcContext) {
+    static Movement generateMovementFallOrDescend(BlockPos pos, BlockPos dest, CalculationContext calcContext) {
         // A
         //SA
         // A
@@ -424,7 +424,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // we're clear for a fall 2
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {
-            BetterBlockPos onto = dest.down(fallHeight);
+            BlockPos onto = dest.down(fallHeight);
             if (onto.getY() < 0) {
                 // when pathing in the end, where you could plausibly fall into the void
                 // this check prevents it from getting the block at y=-1 and crashing

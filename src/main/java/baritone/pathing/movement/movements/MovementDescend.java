@@ -24,14 +24,14 @@ import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDescend extends Movement {
 
-    public MovementDescend(BetterBlockPos start, BetterBlockPos end) {
+    public MovementDescend(BlockPos start, BlockPos end) {
         super(start, end, new BlockPos[]{end.up(2), end.up(), end}, end.down());
     }
 

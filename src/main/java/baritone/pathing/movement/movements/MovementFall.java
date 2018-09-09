@@ -25,7 +25,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.*;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -42,7 +42,7 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
     private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
-    public MovementFall(BetterBlockPos src, BetterBlockPos dest) {
+    public MovementFall(BlockPos src, BlockPos dest) {
         super(src, dest, MovementFall.buildPositionsToBreak(src, dest));
     }
 

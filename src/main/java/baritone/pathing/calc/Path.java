@@ -19,7 +19,7 @@ package baritone.pathing.calc;
 
 import baritone.pathing.movement.Movement;
 import baritone.pathing.path.IPath;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -37,18 +37,18 @@ class Path implements IPath {
     /**
      * The start position of this path
      */
-    final BetterBlockPos start;
+    final BlockPos start;
 
     /**
      * The end position of this path
      */
-    final BetterBlockPos end;
+    final BlockPos end;
 
     /**
      * The blocks on the path. Guaranteed that path.get(0) equals start and
      * path.get(path.size()-1) equals end
      */
-    final List<BetterBlockPos> path;
+    final List<BlockPos> path;
 
     final List<Movement> movements;
 
@@ -75,7 +75,7 @@ class Path implements IPath {
             throw new IllegalStateException();
         }
         PathNode current = end;
-        LinkedList<BetterBlockPos> tempPath = new LinkedList<>(); // Repeatedly inserting to the beginning of an arraylist is O(n^2)
+        LinkedList<BlockPos> tempPath = new LinkedList<>(); // Repeatedly inserting to the beginning of an arraylist is O(n^2)
         LinkedList<Movement> tempMovements = new LinkedList<>(); // Instead, do it into a linked list, then convert at the end
         while (!current.equals(start)) {
             tempPath.addFirst(current.pos);
@@ -122,7 +122,7 @@ class Path implements IPath {
     }
 
     @Override
-    public List<BetterBlockPos> positions() {
+    public List<BlockPos> positions() {
         return Collections.unmodifiableList(path);
     }
 
@@ -132,12 +132,12 @@ class Path implements IPath {
     }
 
     @Override
-    public BetterBlockPos getSrc() {
+    public BlockPos getSrc() {
         return start;
     }
 
     @Override
-    public BetterBlockPos getDest() {
+    public BlockPos getDest() {
         return end;
     }
 }

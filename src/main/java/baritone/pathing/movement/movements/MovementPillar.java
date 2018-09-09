@@ -25,7 +25,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Rotation;
 import baritone.utils.Utils;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -34,7 +34,7 @@ import net.minecraft.util.math.BlockPos;
 public class MovementPillar extends Movement {
     private int numTicks = 0;
 
-    public MovementPillar(BetterBlockPos start, BetterBlockPos end) {
+    public MovementPillar(BlockPos start, BlockPos end) {
         super(start, end, new BlockPos[]{start.up(2)}, start);
     }
 

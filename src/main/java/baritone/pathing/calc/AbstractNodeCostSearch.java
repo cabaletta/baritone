@@ -20,10 +20,9 @@ package baritone.pathing.calc;
 import baritone.behavior.impl.PathingBehavior;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
-import baritone.utils.pathing.BetterBlockPos;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 /**
@@ -38,11 +37,11 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      */
     protected static AbstractNodeCostSearch currentlyRunning = null;
 
-    protected final BetterBlockPos start;
+    protected final BlockPos start;
 
     protected final Goal goal;
 
-    private final Long2ObjectOpenHashMap<PathNode> map; // see issue #107
+    private final HashMap<BlockPos, PathNode> map; // see issue #107
 
     protected PathNode startNode;
 
@@ -67,9 +66,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     protected final static double MIN_DIST_PATH = 5;
 
     AbstractNodeCostSearch(BlockPos start, Goal goal) {
-        this.start = new BetterBlockPos(start.getX(), start.getY(), start.getZ());
+        this.start = new BlockPos(start.getX(), start.getY(), start.getZ());
         this.goal = goal;
-        this.map = new Long2ObjectOpenHashMap<>();
+        this.map = new HashMap<>();
     }
 
     public void cancel() {
@@ -121,13 +120,12 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @param pos The pos to lookup
      * @return The associated node
      */
-    protected PathNode getNodeAtPosition(BetterBlockPos pos) {
+    protected PathNode getNodeAtPosition(BlockPos pos) {
         // see issue #107
-        long hashCode = pos.hashCode;
-        PathNode node = map.get(hashCode);
+        PathNode node = map.get(pos);
         if (node == null) {
             node = new PathNode(pos, goal);
-            map.put(hashCode, node);
+            map.put(pos, node);
         }
         return node;
     }

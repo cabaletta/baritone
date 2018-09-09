@@ -34,7 +34,7 @@ import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -312,7 +312,7 @@ public class ExampleBaritoneControl extends Behavior {
             return;
         }
         if (msg.toLowerCase().equals("costs")) {
-            Movement[] movements = AStarPathFinder.getConnectedPositions(new BetterBlockPos(playerFeet()), new CalculationContext());
+            Movement[] movements = AStarPathFinder.getConnectedPositions(new BlockPos(playerFeet()), new CalculationContext());
             List<Movement> moves = new ArrayList<>(Arrays.asList(movements));
             while (moves.contains(null)) {
                 moves.remove(null);

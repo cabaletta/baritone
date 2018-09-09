@@ -19,7 +19,7 @@ package baritone.pathing.calc.openset;
 
 import baritone.pathing.calc.PathNode;
 import baritone.pathing.goals.Goal;
-import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
 
@@ -77,7 +77,7 @@ public class OpenSetsTest {
             // can't use an existing goal
             // because they use Baritone.settings()
             // and we can't do that because Minecraft itself isn't initted
-            PathNode pn = new PathNode(new BetterBlockPos(0, 0, 0), new Goal() {
+            PathNode pn = new PathNode(new BlockPos(0, 0, 0), new Goal() {
                 @Override
                 public boolean isInGoal(BlockPos pos) {
                     return false;

@@ -30,7 +30,6 @@ import baritone.pathing.movement.movements.*;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.EnumFacing;
@@ -48,9 +47,9 @@ import java.util.Random;
  */
 public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
-    private final Optional<HashSet<BetterBlockPos>> favoredPositions;
+    private final Optional<HashSet<BlockPos>> favoredPositions;
 
-    public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BetterBlockPos>> favoredPositions) {
+    public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BlockPos>> favoredPositions) {
         super(start, goal);
         this.favoredPositions = favoredPositions.map(HashSet::new); // <-- okay this is epic
     }
@@ -69,7 +68,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             bestHeuristicSoFar[i] = Double.MAX_VALUE;
         }
         CalculationContext calcContext = new CalculationContext();
-        HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
+        HashSet<BlockPos> favored = favoredPositions.orElse(null);
         currentlyRunning = this;
         CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
@@ -98,7 +97,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             PathNode currentNode = openSet.removeLowest();
             currentNode.isOpen = false;
             mostRecentConsidered = currentNode;
-            BetterBlockPos currentNodePos = currentNode.pos;
+            BlockPos currentNodePos = currentNode.pos;
             numNodes++;
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
@@ -111,10 +110,10 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 if (movementToGetToNeighbor == null) {
                     continue;
                 }
-                BetterBlockPos dest = movementToGetToNeighbor.getDest();
-                int chunkX = currentNodePos.x >> 4;
-                int chunkZ = currentNodePos.z >> 4;
-                if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
+                BlockPos dest = movementToGetToNeighbor.getDest();
+                int chunkX = currentNodePos.getX() >> 4;
+                int chunkZ = currentNodePos.getZ() >> 4;
+                if (dest.getX() >> 4 != chunkX || dest.getZ() >> 4 != chunkZ) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
                     if (chunkProvider.getLoadedChunk(chunkX, chunkZ) == null) {
                         // see issue #106
@@ -209,33 +208,33 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
     }
 
 
-    public static Movement[] getConnectedPositions(BetterBlockPos pos, CalculationContext calcContext) {
+    public static Movement[] getConnectedPositions(BlockPos pos, CalculationContext calcContext) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        BetterBlockPos east = new BetterBlockPos(x + 1, y, z);
-        BetterBlockPos west = new BetterBlockPos(x - 1, y, z);
-        BetterBlockPos south = new BetterBlockPos(x, y, z + 1);
-        BetterBlockPos north = new BetterBlockPos(x, y, z - 1);
+        BlockPos east = new BlockPos(x + 1, y, z);
+        BlockPos west = new BlockPos(x - 1, y, z);
+        BlockPos south = new BlockPos(x, y, z + 1);
+        BlockPos north = new BlockPos(x, y, z - 1);
         return new Movement[]{
                 new MovementTraverse(pos, east),
                 new MovementTraverse(pos, west),
                 new MovementTraverse(pos, north),
                 new MovementTraverse(pos, south),
-                new MovementAscend(pos, new BetterBlockPos(x + 1, y + 1, z)),
-                new MovementAscend(pos, new BetterBlockPos(x - 1, y + 1, z)),
-                new MovementAscend(pos, new BetterBlockPos(x, y + 1, z + 1)),
-                new MovementAscend(pos, new BetterBlockPos(x, y + 1, z - 1)),
+                new MovementAscend(pos, new BlockPos(x + 1, y + 1, z)),
+                new MovementAscend(pos, new BlockPos(x - 1, y + 1, z)),
+                new MovementAscend(pos, new BlockPos(x, y + 1, z + 1)),
+                new MovementAscend(pos, new BlockPos(x, y + 1, z - 1)),
                 MovementHelper.generateMovementFallOrDescend(pos, east, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, west, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, north, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, south, calcContext),
-                new MovementDownward(pos, new BetterBlockPos(x, y - 1, z)),
+                new MovementDownward(pos, new BlockPos(x, y - 1, z)),
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),
                 new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
                 new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST),
-                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z)),
+                new MovementPillar(pos, new BlockPos(x, y + 1, z)),
                 MovementParkour.calculate(pos, EnumFacing.NORTH),
                 MovementParkour.calculate(pos, EnumFacing.SOUTH),
                 MovementParkour.calculate(pos, EnumFacing.EAST),
