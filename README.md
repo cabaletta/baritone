@@ -50,7 +50,7 @@ PathingBehavior.INSTANCE.path();
 
 ## Can I use Baritone as a library in my hacked client?
 
-Sure!
+Sure! (As long as usage is in compliance with the GPL 3 License)
 
 ## How is it so fast?
 
