@@ -73,7 +73,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) {
             return true;
         }
-        if (block instanceof BlockFire || block instanceof BlockTripWire || block instanceof BlockWeb || block instanceof BlockEndPortal) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -206,10 +206,11 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidWalkingInto(Block block) {
         return BlockStateInterface.isLava(block)
-                || block instanceof BlockCactus
-                || block instanceof BlockFire
-                || block instanceof BlockEndPortal
-                || block instanceof BlockWeb;
+                || block == Blocks.MAGMA
+                || block == Blocks.CACTUS
+                || block == Blocks.FIRE
+                || block == Blocks.END_PORTAL
+                || block == Blocks.WEB;
     }
 
     /**
@@ -221,31 +222,22 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR) {
+        if (block == Blocks.AIR || block == Blocks.MAGMA) {
             return false;
         }
-        if (block instanceof BlockLadder || (Baritone.settings().allowVines.get() && block instanceof BlockVine)) { // TODO reconsider this
-            return true;
-        }
-        if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
-            return true;
-        }
-        if (Blocks.FARMLAND.equals(block) || Blocks.GRASS_PATH.equals(block)) {
-            return true;
-        }
-        if (Blocks.ENDER_CHEST.equals(block) || Blocks.CHEST.equals(block)) {
-            return true;
-        }
-        if (block instanceof BlockSlab) {
-            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
-                if (((BlockSlab) block).isDouble()) {
-                    return true;
-                }
-                return state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM;
+        if (state.isBlockNormalCube()) {
+            if (BlockStateInterface.isLava(block) || BlockStateInterface.isWater(block)) {
+                throw new IllegalStateException();
             }
             return true;
         }
-        if (block instanceof BlockStairs) {
+        if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.get())) { // TODO reconsider this
+            return true;
+        }
+        if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
+            return true;
+        }
+        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST) {
             return true;
         }
         if (BlockStateInterface.isWater(block)) {
@@ -261,18 +253,26 @@ public interface MovementHelper extends ActionCosts, Helper {
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
             return BlockStateInterface.isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
         }
-        if (Blocks.MAGMA.equals(block)) {
-            return false;
+        if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
+            return true;
         }
-        return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
+        if (block instanceof BlockSlab) {
+            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
+                if (((BlockSlab) block).isDouble()) {
+                    return true;
+                }
+                return state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM;
+            }
+            return true;
+        }
+        if (block instanceof BlockStairs) {
+            return true;
+        }
+        return false;
     }
 
     static boolean canWalkOn(BlockPos pos) {
         return canWalkOn(pos, BlockStateInterface.get(pos));
-    }
-
-    static boolean canFall(BlockPos pos) {
-        return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
     static boolean canPlaceAgainst(BlockPos pos) {
@@ -288,7 +288,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
-        if (!block.equals(Blocks.AIR) && !canWalkThrough(position, state)) { // TODO is the air check really necessary? Isn't air canWalkThrough?
+        if (!canWalkThrough(position, state)) {
             if (!context.allowBreak()) {
                 return COST_INF;
             }
