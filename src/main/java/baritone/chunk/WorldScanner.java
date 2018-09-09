@@ -91,7 +91,7 @@ public enum WorldScanner implements Helper {
             if (allUnloaded) {
                 return res;
             }
-            if (res.size() >= max && searchRadiusSq < 26) {
+            if (res.size() >= max && searchRadiusSq > 26) {
                 return res;
             }
             searchRadiusSq++;
