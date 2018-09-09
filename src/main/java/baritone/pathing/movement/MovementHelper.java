@@ -48,14 +48,18 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockPos pos, IBlockState state) {
         Block b = state.getBlock();
-        Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
-        return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        Block below = BlockStateInterface.get(x, y - 1, z).getBlock();
+        return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1))
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1));
+                // call BlockStateInterface.get directly with x,y,z. no need to make 5 new BlockPos for no reason
+                || BlockStateInterface.get(x, y + 1, z) instanceof BlockLiquid//don't break anything touching liquid on any side
+                || BlockStateInterface.get(x + 1, y, z) instanceof BlockLiquid
+                || BlockStateInterface.get(x - 1, y, z) instanceof BlockLiquid
+                || BlockStateInterface.get(x, y, z + 1) instanceof BlockLiquid
+                || BlockStateInterface.get(x, y, z - 1) instanceof BlockLiquid;
     }
 
     /**
