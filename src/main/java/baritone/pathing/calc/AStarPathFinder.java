@@ -233,7 +233,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),
                 new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
                 new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST),
-                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z))
+                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z)),
+                MovementParkour.calculate(pos, EnumFacing.NORTH),
+                MovementParkour.calculate(pos, EnumFacing.SOUTH),
+                MovementParkour.calculate(pos, EnumFacing.EAST),
+                MovementParkour.calculate(pos, EnumFacing.WEST),
         };
     }
 

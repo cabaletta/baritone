@@ -84,6 +84,13 @@ public class Settings {
     public Setting<Boolean> allowWalkOnBottomSlab = new Setting<>(true);
 
     /**
+     * You know what it is
+     * <p>
+     * But it's very unreliable and falls off when cornering like all the time so.
+     */
+    public Setting<Boolean> allowParkour = new Setting<>(false);
+
+    /**
      * For example, if you have Mining Fatigue or Haste, adjust the costs of breaking blocks accordingly.
      */
     public Setting<Boolean> considerPotionEffects = new Setting<>(true);

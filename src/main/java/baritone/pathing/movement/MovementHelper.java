@@ -70,6 +70,9 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkThrough(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
+        if (block == Blocks.AIR) {
+            return true;
+        }
         if (block instanceof BlockFire || block instanceof BlockTripWire || block instanceof BlockWeb || block instanceof BlockEndPortal) {
             return false;
         }
@@ -99,6 +102,38 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
                 return false;
             }
+        }
+        return block.isPassable(mc.world, pos);
+    }
+
+    /**
+     * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
+     * not including water, and not including ladders or vines or cobwebs (they slow us down)
+     *
+     * @return
+     */
+    static boolean fullyPassable(BlockPos pos) {
+        return fullyPassable(pos, BlockStateInterface.get(pos));
+    }
+
+    static boolean fullyPassable(BlockPos pos, IBlockState state) {
+        Block block = state.getBlock();
+        if (block == Blocks.AIR) {
+            return true;
+        }
+        // exceptions - blocks that are isPassasble true, but we can't actually jump through
+        if (block == Blocks.FIRE
+                || block == Blocks.TRIPWIRE
+                || block == Blocks.WEB
+                || block == Blocks.VINE
+                || block == Blocks.LADDER
+                || block instanceof BlockDoor
+                || block instanceof BlockFenceGate
+                || block instanceof BlockSnow
+                || block instanceof BlockLiquid
+                || block instanceof BlockTrapDoor
+                || block instanceof BlockEndPortal) {
+            return false;
         }
         return block.isPassable(mc.world, pos);
     }

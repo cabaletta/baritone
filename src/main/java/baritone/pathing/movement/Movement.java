@@ -85,6 +85,10 @@ public abstract class Movement implements Helper, MovementHelper {
         return getCost(null);
     }
 
+    protected void override(double cost) {
+        this.cost = cost;
+    }
+
     public double calculateCostWithoutCaching() {
         return calculateCost(new CalculationContext());
     }
