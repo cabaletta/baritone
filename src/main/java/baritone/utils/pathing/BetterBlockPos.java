@@ -83,7 +83,7 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public BlockPos up() {
+    public BetterBlockPos up() {
         // this is unimaginably faster than blockpos.up
         // that literally calls
         // this.up(1)
@@ -97,31 +97,31 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public BlockPos up(int amt) {
+    public BetterBlockPos up(int amt) {
         // see comment in up()
         return amt == 0 ? this : new BetterBlockPos(x, y + amt, z);
     }
 
     @Override
-    public BlockPos down() {
+    public BetterBlockPos down() {
         // see comment in up()
         return new BetterBlockPos(x, y - 1, z);
     }
 
     @Override
-    public BlockPos down(int amt) {
+    public BetterBlockPos down(int amt) {
         // see comment in up()
         return new BetterBlockPos(x, y - amt, z);
     }
 
     @Override
-    public BlockPos offset(EnumFacing dir) {
+    public BetterBlockPos offset(EnumFacing dir) {
         Vec3i vec = dir.getDirectionVec();
         return new BetterBlockPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
     }
 
     @Override
-    public BlockPos offset(EnumFacing dir, int dist) {
+    public BetterBlockPos offset(EnumFacing dir, int dist) {
         Vec3i vec = dir.getDirectionVec();
         return new BetterBlockPos(x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
     }
