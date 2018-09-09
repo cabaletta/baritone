@@ -87,7 +87,7 @@ public class BlockStateInterface implements Helper {
             if (region != null) {
                 prevCached = region;
             }
-            IBlockState type = world.cache.getBlock(x, y, z);
+            IBlockState type = region.getBlock(x & 511, y, z & 511);
             if (type != null) {
                 return type;
             }
