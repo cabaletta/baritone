@@ -23,6 +23,10 @@ import net.minecraft.util.math.Vec3i;
 
 /**
  * A better BlockPos that has fewer hash collisions (and slightly more performant offsets)
+ * <p>
+ * Is it really faster to subclass BlockPos and calculate a hash in the constructor like this, taking everything into account?
+ * Yes. It's called BETTER BlockPos for a reason. Source:
+ * https://docs.google.com/spreadsheets/d/1GWjOjOZINkg_0MkRgKRPH1kUzxjsnEROD9u3UFh_DJc/edit
  *
  * @author leijurv
  */
