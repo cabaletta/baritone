@@ -52,15 +52,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        Block below = BlockStateInterface.get(x, y - 1, z).getBlock();
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call BlockStateInterface.get directly with x,y,z. no need to make 5 new BlockPos for no reason
-                || BlockStateInterface.get(x, y + 1, z) instanceof BlockLiquid//don't break anything touching liquid on any side
-                || BlockStateInterface.get(x + 1, y, z) instanceof BlockLiquid
-                || BlockStateInterface.get(x - 1, y, z) instanceof BlockLiquid
-                || BlockStateInterface.get(x, y, z + 1) instanceof BlockLiquid
-                || BlockStateInterface.get(x, y, z - 1) instanceof BlockLiquid;
+                || BlockStateInterface.get(x, y + 1, z).getBlock() instanceof BlockLiquid//don't break anything touching liquid on any side
+                || BlockStateInterface.get(x + 1, y, z).getBlock() instanceof BlockLiquid
+                || BlockStateInterface.get(x - 1, y, z).getBlock() instanceof BlockLiquid
+                || BlockStateInterface.get(x, y, z + 1).getBlock() instanceof BlockLiquid
+                || BlockStateInterface.get(x, y, z - 1).getBlock() instanceof BlockLiquid;
     }
 
     /**
