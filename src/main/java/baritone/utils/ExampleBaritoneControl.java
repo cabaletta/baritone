@@ -108,7 +108,11 @@ public class ExampleBaritoneControl extends Behavior {
                 if (PathingBehavior.INSTANCE.getGoal() == null) {
                     displayChatMessageRaw("No goal.");
                 } else {
-                    displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                    if (PathingBehavior.INSTANCE.getGoal().isInGoal(playerFeet())) {
+                        displayChatMessageRaw("Already in goal");
+                    } else {
+                        displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                    }
                 }
             }
             event.cancel();
@@ -266,7 +270,9 @@ public class ExampleBaritoneControl extends Behavior {
             Goal goal = new GoalBlock(waypoint.location);
             PathingBehavior.INSTANCE.setGoal(goal);
             if (!PathingBehavior.INSTANCE.path()) {
-                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                if (!goal.isInGoal(playerFeet())) {
+                    displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                }
             }
             event.cancel();
             return;
