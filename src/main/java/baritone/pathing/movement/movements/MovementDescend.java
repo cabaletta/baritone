@@ -67,8 +67,9 @@ public class MovementDescend extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementStatus.RUNNING)
+        if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
+        }
 
         BlockPos playerFeet = playerFeet();
         if (playerFeet.equals(dest)) {

@@ -52,8 +52,9 @@ public class Behavior implements AbstractGameEventListener, Toggleable, Helper {
     @Override
     public final boolean setEnabled(boolean enabled) {
         boolean newState = getNewState(this.enabled, enabled);
-        if (newState == this.enabled)
+        if (newState == this.enabled) {
             return this.enabled;
+        }
 
         if (this.enabled = newState) {
             onStart();

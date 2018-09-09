@@ -70,8 +70,9 @@ public abstract class Movement implements Helper, MovementHelper {
 
     public double getCost(CalculationContext context) {
         if (cost == null) {
-            if (context == null)
+            if (context == null) {
                 context = new CalculationContext();
+            }
             cost = calculateCost(context);
         }
         return cost;
@@ -132,13 +133,15 @@ public abstract class Movement implements Helper, MovementHelper {
         });
         latestState.getInputStates().replaceAll((input, forced) -> false);
 
-        if (!this.didBreakLastTick)
+        if (!this.didBreakLastTick) {
             BlockBreakHelper.stopBreakingBlock();
+        }
 
         currentState = latestState;
 
-        if (isFinished())
+        if (isFinished()) {
             onFinish(latestState);
+        }
 
         return currentState.getStatus();
     }

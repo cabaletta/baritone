@@ -67,9 +67,10 @@ public final class LookBehaviorUtils implements Helper {
             return Optional.of(new Rotation(mc.player.rotationYaw, mc.player.rotationPitch + 0.0001f));
         }
         Optional<Rotation> possibleRotation = reachableCenter(pos);
-        System.out.println("center: " + possibleRotation);
-        if (possibleRotation.isPresent())
+        //System.out.println("center: " + possibleRotation);
+        if (possibleRotation.isPresent()) {
             return possibleRotation;
+        }
 
         IBlockState state = BlockStateInterface.get(pos);
         AxisAlignedBB aabb = state.getBoundingBox(mc.world, pos);
@@ -78,8 +79,9 @@ public final class LookBehaviorUtils implements Helper {
             double yDiff = aabb.minY * sideOffset.y + aabb.maxY * (1 - sideOffset.y);
             double zDiff = aabb.minZ * sideOffset.z + aabb.maxZ * (1 - sideOffset.z);
             possibleRotation = reachableOffset(pos, new Vec3d(pos).add(xDiff, yDiff, zDiff));
-            if (possibleRotation.isPresent())
+            if (possibleRotation.isPresent()) {
                 return possibleRotation;
+            }
         }
         return Optional.empty();
     }

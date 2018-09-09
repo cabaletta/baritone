@@ -389,8 +389,9 @@ public class PathingBehavior extends Behavior {
         });
         long end = System.nanoTime();
         //System.out.println((end - split) + " " + (split - start));
-        // if (end - start > 0)
+        // if (end - start > 0) {
         //   System.out.println("Frame took " + (split - start) + " " + (end - split));
+        //}
 
     }
 }

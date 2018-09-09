@@ -37,7 +37,8 @@ public class MixinKeyBinding {
             cancellable = true
     )
     private void isKeyDown(CallbackInfoReturnable<Boolean> cir) {
-        if (Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this))
+        if (Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this)) {
             cir.setReturnValue(true);
+        }
     }
 }

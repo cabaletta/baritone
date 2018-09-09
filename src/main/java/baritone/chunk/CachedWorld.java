@@ -128,9 +128,11 @@ public final class CachedWorld implements IBlockTypeAccess {
                     int regionX = xoff + playerRegionX;
                     int regionZ = zoff + playerRegionZ;
                     CachedRegion region = getOrCreateRegion(regionX, regionZ);
-                    if (region != null)
-                        for (BlockPos pos : region.getLocationsOf(block))
+                    if (region != null) {
+                        for (BlockPos pos : region.getLocationsOf(block)) {
                             res.add(pos);
+                        }
+                    }
                 }
             }
             if (res.size() >= minimum) {
@@ -153,8 +155,9 @@ public final class CachedWorld implements IBlockTypeAccess {
         }
         long start = System.nanoTime() / 1000000L;
         this.cachedRegions.values().parallelStream().forEach(region -> {
-            if (region != null)
+            if (region != null) {
                 region.save(this.directory);
+            }
         });
         long now = System.nanoTime() / 1000000L;
         System.out.println("World save took " + (now - start) + "ms");
@@ -163,8 +166,9 @@ public final class CachedWorld implements IBlockTypeAccess {
     public final void reloadAllFromDisk() {
         long start = System.nanoTime() / 1000000L;
         this.cachedRegions.values().forEach(region -> {
-            if (region != null)
+            if (region != null) {
                 region.load(this.directory);
+            }
         });
         long now = System.nanoTime() / 1000000L;
         System.out.println("World load took " + (now - start) + "ms");
@@ -199,8 +203,9 @@ public final class CachedWorld implements IBlockTypeAccess {
 
     public void forEachRegion(Consumer<CachedRegion> consumer) {
         this.cachedRegions.forEach((id, r) -> {
-            if (r != null)
+            if (r != null) {
                 consumer.accept(r);
+            }
         });
     }
 
@@ -213,8 +218,9 @@ public final class CachedWorld implements IBlockTypeAccess {
      * @return The region ID
      */
     private long getRegionID(int regionX, int regionZ) {
-        if (!isRegionInWorld(regionX, regionZ))
+        if (!isRegionInWorld(regionX, regionZ)) {
             return 0;
+        }
 
         return (long) regionX & 0xFFFFFFFFL | ((long) regionZ & 0xFFFFFFFFL) << 32;
     }

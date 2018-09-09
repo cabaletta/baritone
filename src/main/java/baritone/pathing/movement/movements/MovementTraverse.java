@@ -125,9 +125,9 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementState.MovementStatus.RUNNING)
+        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
             return state;
-
+        }
         state.setInput(InputOverrideHandler.Input.SNEAK, false);
 
         Block fd = BlockStateInterface.get(src.down()).getBlock();

@@ -39,13 +39,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(NetworkManager.class)
 public class MixinNetworkManager {
 
-    @Shadow private Channel channel;
+    @Shadow
+    private Channel channel;
 
     @Inject(
             method = "dispatchPacket",
             at = @At("HEAD")
     )
-    private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void >>[] futureListeners, CallbackInfo ci) {
+    private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.PRE, inPacket));
     }
 
@@ -53,7 +54,7 @@ public class MixinNetworkManager {
             method = "dispatchPacket",
             at = @At("RETURN")
     )
-    private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void >>[] futureListeners, CallbackInfo ci) {
+    private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.POST, inPacket));
     }
 
@@ -73,7 +74,8 @@ public class MixinNetworkManager {
             at = @At("RETURN")
     )
     private void postProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        if (this.channel.isOpen())
+        if (this.channel.isOpen()) {
             Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.POST, packet));
+        }
     }
 }
