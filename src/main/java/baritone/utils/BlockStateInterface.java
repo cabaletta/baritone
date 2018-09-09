@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.chunk.CachedRegion;
 import baritone.chunk.WorldData;
 import baritone.chunk.WorldProvider;
 import net.minecraft.block.Block;
@@ -35,6 +36,13 @@ import net.minecraft.world.chunk.Chunk;
 public class BlockStateInterface implements Helper {
 
     private static Chunk prev = null;
+    private static CachedRegion prevCached = null;
+
+    private static IBlockState AIR = Blocks.AIR.getDefaultState();
+    public static final Block waterFlowing = Blocks.FLOWING_WATER;
+    public static final Block waterStill = Blocks.WATER;
+    public static final Block lavaFlowing = Blocks.FLOWING_LAVA;
+    public static final Block lavaStill = Blocks.LAVA;
 
     public static IBlockState get(BlockPos pos) {
         return get(pos.getX(), pos.getY(), pos.getZ());
@@ -44,7 +52,7 @@ public class BlockStateInterface implements Helper {
 
         // Invalid vertical position
         if (y < 0 || y >= 256) {
-            return Blocks.AIR.getDefaultState();
+            return AIR;
         }
 
         if (!Baritone.settings().pathThroughCachedOnly.get()) {
@@ -63,30 +71,39 @@ public class BlockStateInterface implements Helper {
                 return chunk.getBlockState(x, y, z);
             }
         }
+        // same idea here, skip the Long2ObjectOpenHashMap.get if at all possible
+        // except here, it's 512x512 tiles instead of 16x16, so even better repetition
+        CachedRegion cached = prevCached;
+        if (cached != null && cached.getX() == x >> 9 && cached.getZ() == z >> 9) {
+            IBlockState type = cached.getBlock(x & 511, y, z & 511);
+            if (type == null) {
+                return AIR;
+            }
+            return type;
+        }
         WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
         if (world != null) {
+            CachedRegion region = world.cache.getRegion(x >> 9, z >> 9);
+            if (region != null) {
+                prevCached = region;
+            }
             IBlockState type = world.cache.getBlock(x, y, z);
             if (type != null) {
                 return type;
             }
         }
-
-
-        return Blocks.AIR.getDefaultState();
+        return AIR;
     }
 
     public static void clearCachedChunk() {
         prev = null;
+        prevCached = null;
     }
 
     public static Block getBlock(BlockPos pos) {
         return get(pos).getBlock();
     }
 
-    public static final Block waterFlowing = Blocks.FLOWING_WATER;
-    public static final Block waterStill = Blocks.WATER;
-    public static final Block lavaFlowing = Blocks.FLOWING_LAVA;
-    public static final Block lavaStill = Blocks.LAVA;
 
     /**
      * Returns whether or not the specified block is

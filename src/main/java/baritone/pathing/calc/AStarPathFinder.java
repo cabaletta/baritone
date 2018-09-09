@@ -28,6 +28,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.pathing.path.IPath;
+import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
@@ -72,6 +73,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         currentlyRunning = this;
         CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
+        BlockStateInterface.clearCachedChunk();
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {
