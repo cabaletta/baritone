@@ -26,6 +26,7 @@ import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -41,7 +42,7 @@ public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
 
-    public MovementAscend(BlockPos src, BlockPos dest) {
+    public MovementAscend(BetterBlockPos src, BetterBlockPos dest) {
         super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, dest.down());
     }
 
@@ -155,8 +156,8 @@ public class MovementAscend extends Movement {
                             if (player().isSneaking()) {
                                 state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                             }
-                            if (ticksWithoutPlacement > 20) {
-                                // After 20 ticks without placement, we might be standing in the way, move back
+                            if (ticksWithoutPlacement > 10) {
+                                // After 10 ticks without placement, we might be standing in the way, move back
                                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                             }
                         } else {

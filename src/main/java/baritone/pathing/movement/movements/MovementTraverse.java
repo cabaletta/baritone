@@ -25,6 +25,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -42,7 +43,7 @@ public class MovementTraverse extends Movement {
      */
     private boolean wasTheBridgeBlockAlwaysThere = true;
 
-    public MovementTraverse(BlockPos from, BlockPos to) {
+    public MovementTraverse(BetterBlockPos from, BetterBlockPos to) {
         super(from, to, new BlockPos[]{to.up(), to}, to.down());
     }
 

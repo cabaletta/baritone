@@ -22,6 +22,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -31,7 +32,7 @@ public class MovementDownward extends Movement {
 
     private int numTicks = 0;
 
-    public MovementDownward(BlockPos start, BlockPos end) {
+    public MovementDownward(BetterBlockPos start, BetterBlockPos end) {
         super(start, end, new BlockPos[]{end});
     }
 

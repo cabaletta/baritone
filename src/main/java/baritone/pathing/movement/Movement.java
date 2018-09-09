@@ -22,6 +22,7 @@ import baritone.behavior.impl.LookBehavior;
 import baritone.behavior.impl.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.*;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -39,9 +40,9 @@ public abstract class Movement implements Helper, MovementHelper {
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
 
-    protected final BlockPos src;
+    protected final BetterBlockPos src;
 
-    protected final BlockPos dest;
+    protected final BetterBlockPos dest;
 
     /**
      * The positions that need to be broken before this movement can ensue
@@ -57,14 +58,14 @@ public abstract class Movement implements Helper, MovementHelper {
 
     private Double cost;
 
-    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak, BlockPos toPlace) {
+    protected Movement(BetterBlockPos src, BetterBlockPos dest, BlockPos[] toBreak, BlockPos toPlace) {
         this.src = src;
         this.dest = dest;
         this.positionsToBreak = toBreak;
         this.positionToPlace = toPlace;
     }
 
-    protected Movement(BlockPos src, BlockPos dest, BlockPos[] toBreak) {
+    protected Movement(BetterBlockPos src, BetterBlockPos dest, BlockPos[] toBreak) {
         this(src, dest, toBreak, null);
     }
 
@@ -185,11 +186,11 @@ public abstract class Movement implements Helper, MovementHelper {
                 && currentState.getStatus() != MovementStatus.WAITING);
     }
 
-    public BlockPos getSrc() {
+    public BetterBlockPos getSrc() {
         return src;
     }
 
-    public BlockPos getDest() {
+    public BetterBlockPos getDest() {
         return dest;
     }
 

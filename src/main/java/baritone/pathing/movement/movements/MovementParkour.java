@@ -24,6 +24,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
@@ -34,14 +35,14 @@ public class MovementParkour extends Movement {
     final EnumFacing direction;
     final int dist;
 
-    private MovementParkour(BlockPos src, int dist, EnumFacing dir) {
+    private MovementParkour(BetterBlockPos src, int dist, EnumFacing dir) {
         super(src, src.offset(dir, dist), new BlockPos[]{});
         this.direction = dir;
         this.dist = dist;
         super.override(costFromJumpDistance(dist));
     }
 
-    public static MovementParkour calculate(BlockPos src, EnumFacing dir) {
+    public static MovementParkour calculate(BetterBlockPos src, EnumFacing dir) {
         if (!Baritone.settings().allowParkour.get()) {
             return null;
         }

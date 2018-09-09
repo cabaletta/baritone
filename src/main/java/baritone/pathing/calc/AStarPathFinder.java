@@ -109,7 +109,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 if (movementToGetToNeighbor == null) {
                     continue;
                 }
-                BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
+                BetterBlockPos dest = movementToGetToNeighbor.getDest();
                 int chunkX = currentNodePos.x >> 4;
                 int chunkZ = currentNodePos.z >> 4;
                 if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
