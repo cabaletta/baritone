@@ -60,20 +60,20 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onTick(TickEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onTick(event);
             }
-        }
+        });
     }
 
     @Override
     public final void onPlayerUpdate(PlayerUpdateEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onPlayerUpdate(event);
             }
-        }
+        });
     }
 
     @Override
@@ -93,20 +93,20 @@ public final class GameEventHandler implements IGameEventListener, Helper {
             }
         }
 
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onProcessKeyBinds();
             }
-        }
+        });
     }
 
     @Override
     public final void onSendChatMessage(ChatEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onSendChatMessage(event);
             }
-        }
+        });
     }
 
     @Override
@@ -132,20 +132,20 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         }
 
 
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onChunkEvent(event);
             }
-        }
+        });
     }
 
     @Override
     public final void onRenderPass(RenderEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onRenderPass(event);
             }
-        }
+        });
     }
 
     @Override
@@ -165,65 +165,65 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 break;
         }
 
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onWorldEvent(event);
             }
-        }
+        });
     }
 
     @Override
     public final void onSendPacket(PacketEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onSendPacket(event);
             }
-        }
+        });
     }
 
     @Override
     public final void onReceivePacket(PacketEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onReceivePacket(event);
             }
-        }
+        });
     }
 
     @Override
     public void onPlayerRelativeMove(RelativeMoveEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onPlayerRelativeMove(event);
             }
-        }
+        });
     }
 
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onBlockInteract(event);
             }
-        }
+        });
     }
 
     @Override
     public void onPlayerDeath() {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onPlayerDeath();
             }
-        }
+        });
     }
 
     @Override
     public void onPathEvent(PathEvent event) {
-        for (IGameEventListener l : listeners) {
+        listeners.forEach(l -> {
             if (canDispatch(l)) {
                 l.onPathEvent(event);
             }
-        }
+        });
     }
 
     public final void registerEventListener(IGameEventListener listener) {

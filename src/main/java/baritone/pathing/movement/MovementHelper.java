@@ -419,6 +419,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
             //this doesn't guarantee descend is possible, it just guarantees fall is impossible
             return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
+            // we can't cost shortcut descend because !canWalkThrough doesn't mean canWalkOn
         }
 
         // we're clear for a fall 2
