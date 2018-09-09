@@ -28,9 +28,10 @@ import net.minecraft.world.chunk.Chunk;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Consumer;
 
 /**
  * @author Brady
@@ -154,7 +155,7 @@ public final class CachedWorld implements IBlockTypeAccess {
             return;
         }
         long start = System.nanoTime() / 1000000L;
-        this.cachedRegions.values().parallelStream().forEach(region -> {
+        allRegions().parallelStream().forEach(region -> {
             if (region != null) {
                 region.save(this.directory);
             }
@@ -163,9 +164,13 @@ public final class CachedWorld implements IBlockTypeAccess {
         System.out.println("World save took " + (now - start) + "ms");
     }
 
+    private synchronized List<CachedRegion> allRegions() {
+        return new ArrayList<>(this.cachedRegions.values());
+    }
+
     public final void reloadAllFromDisk() {
         long start = System.nanoTime() / 1000000L;
-        this.cachedRegions.values().forEach(region -> {
+        allRegions().forEach(region -> {
             if (region != null) {
                 region.load(this.directory);
             }
@@ -181,7 +186,7 @@ public final class CachedWorld implements IBlockTypeAccess {
      * @param regionZ The region Z coordinate
      * @return The region located at the specified coordinates
      */
-    public final CachedRegion getRegion(int regionX, int regionZ) {
+    public final synchronized CachedRegion getRegion(int regionX, int regionZ) {
         return cachedRegions.get(getRegionID(regionX, regionZ));
     }
 
@@ -198,14 +203,6 @@ public final class CachedWorld implements IBlockTypeAccess {
             CachedRegion newRegion = new CachedRegion(regionX, regionZ);
             newRegion.load(this.directory);
             return newRegion;
-        });
-    }
-
-    public void forEachRegion(Consumer<CachedRegion> consumer) {
-        this.cachedRegions.forEach((id, r) -> {
-            if (r != null) {
-                consumer.accept(r);
-            }
         });
     }
 

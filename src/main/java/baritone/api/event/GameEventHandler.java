@@ -48,7 +48,6 @@ import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.input.Keyboard;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Brady
@@ -56,7 +55,7 @@ import java.util.List;
  */
 public final class GameEventHandler implements IGameEventListener, Helper {
 
-    private final List<IGameEventListener> listeners = new ArrayList<>();
+    private final ArrayList<IGameEventListener> listeners = new ArrayList<>();
 
     @Override
     public final void onTick(TickEvent event) {
