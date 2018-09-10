@@ -42,7 +42,7 @@ public class MovementParkour extends Movement {
         super.override(costFromJumpDistance(dist));
     }
 
-    public static MovementParkour calculate(BetterBlockPos src, EnumFacing dir) {
+    public static MovementParkour generate(BetterBlockPos src, EnumFacing dir) {
         if (!Baritone.settings().allowParkour.get()) {
             return null;
         }

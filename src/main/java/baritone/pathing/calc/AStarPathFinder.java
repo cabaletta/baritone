@@ -210,36 +210,43 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
 
     public static Movement[] getConnectedPositions(BetterBlockPos pos, CalculationContext calcContext) {
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
+        int x = pos.x;
+        int y = pos.y;
+        int z = pos.z;
         BetterBlockPos east = new BetterBlockPos(x + 1, y, z);
         BetterBlockPos west = new BetterBlockPos(x - 1, y, z);
         BetterBlockPos south = new BetterBlockPos(x, y, z + 1);
         BetterBlockPos north = new BetterBlockPos(x, y, z - 1);
         return new Movement[]{
+                new MovementDownward(pos, new BetterBlockPos(x, y - 1, z)),
+
+                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z)),
+
                 new MovementTraverse(pos, east),
                 new MovementTraverse(pos, west),
                 new MovementTraverse(pos, north),
                 new MovementTraverse(pos, south),
+
                 new MovementAscend(pos, new BetterBlockPos(x + 1, y + 1, z)),
                 new MovementAscend(pos, new BetterBlockPos(x - 1, y + 1, z)),
                 new MovementAscend(pos, new BetterBlockPos(x, y + 1, z + 1)),
                 new MovementAscend(pos, new BetterBlockPos(x, y + 1, z - 1)),
+
                 MovementHelper.generateMovementFallOrDescend(pos, east, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, west, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, north, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, south, calcContext),
-                new MovementDownward(pos, new BetterBlockPos(x, y - 1, z)),
-                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
+
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),
-                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
+                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
                 new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST),
-                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z)),
-                MovementParkour.calculate(pos, EnumFacing.NORTH),
-                MovementParkour.calculate(pos, EnumFacing.SOUTH),
-                MovementParkour.calculate(pos, EnumFacing.EAST),
-                MovementParkour.calculate(pos, EnumFacing.WEST),
+
+                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
+
+                MovementParkour.generate(pos, EnumFacing.EAST),
+                MovementParkour.generate(pos, EnumFacing.WEST),
+                MovementParkour.generate(pos, EnumFacing.NORTH),
+                MovementParkour.generate(pos, EnumFacing.SOUTH),
         };
     }
 
