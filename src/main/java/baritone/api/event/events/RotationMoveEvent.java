@@ -18,20 +18,28 @@
 package baritone.api.event.events;
 
 import baritone.api.event.events.type.EventState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 
 /**
  * @author Brady
  * @since 8/21/2018
  */
-public final class RelativeMoveEvent {
+public final class RotationMoveEvent {
+
+    /**
+     * The type of event
+     */
+    private final Type type;
 
     /**
      * The state of the event
      */
     private final EventState state;
 
-    public RelativeMoveEvent(EventState state) {
+    public RotationMoveEvent(EventState state, Type type) {
         this.state = state;
+        this.type = type;
     }
 
     /**
@@ -39,5 +47,29 @@ public final class RelativeMoveEvent {
      */
     public final EventState getState() {
         return this.state;
+    }
+
+    /**
+     * @return The type of the event
+     */
+    public final Type getType() {
+        return this.type;
+    }
+
+    public enum Type {
+
+        /**
+         * Called when the player's motion is updated.
+         *
+         * @see Entity#moveRelative(float, float, float, float)
+         */
+        MOTION_UPDATE,
+
+        /**
+         * Called when the player jumps.
+         *
+         * @see EntityLivingBase#jump
+         */
+        JUMP
     }
 }

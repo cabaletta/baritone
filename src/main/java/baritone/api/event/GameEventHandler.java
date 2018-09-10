@@ -190,10 +190,10 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     }
 
     @Override
-    public void onPlayerRelativeMove(RelativeMoveEvent event) {
+    public void onPlayerRotationMove(RotationMoveEvent event) {
         listeners.forEach(l -> {
             if (canDispatch(l)) {
-                l.onPlayerRelativeMove(event);
+                l.onPlayerRotationMove(event);
             }
         });
     }

@@ -20,7 +20,7 @@ package baritone.behavior.impl;
 import baritone.Baritone;
 import baritone.Settings;
 import baritone.api.event.events.PlayerUpdateEvent;
-import baritone.api.event.events.RelativeMoveEvent;
+import baritone.api.event.events.RotationMoveEvent;
 import baritone.behavior.Behavior;
 import baritone.utils.Rotation;
 
@@ -92,7 +92,7 @@ public class LookBehavior extends Behavior {
     }
 
     @Override
-    public void onPlayerRelativeMove(RelativeMoveEvent event) {
+    public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null && !this.force) {
             switch (event.getState()) {
                 case PRE:
@@ -103,7 +103,8 @@ public class LookBehavior extends Behavior {
                     player().rotationYaw = this.lastYaw;
 
                     // If we have antiCheatCompatibility on, we're going to use the target value later in onPlayerUpdate()
-                    if (!Baritone.settings().antiCheatCompatibility.get()) {
+                    // Also the type has to be MOTION_UPDATE because that is called after JUMP
+                    if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE) {
                         this.target = null;
                     }
                     break;
