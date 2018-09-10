@@ -18,6 +18,7 @@
 package baritone.pathing.calc;
 
 import baritone.pathing.goals.Goal;
+import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.Movement;
 import baritone.utils.pathing.BetterBlockPos;
 
@@ -81,7 +82,7 @@ public final class PathNode {
     public PathNode(BetterBlockPos pos, Goal goal) {
         this.pos = pos;
         this.previous = null;
-        this.cost = Short.MAX_VALUE;
+        this.cost = ActionCosts.COST_INF;
         this.goal = goal;
         this.estimatedCostToGoal = goal.heuristic(pos);
         this.previousMovement = null;

@@ -65,6 +65,12 @@ public class MovementParkour extends Movement {
         if (!MovementHelper.fullyPassable(src.up().offset(dir))) {
             return null;
         }
+        if (!MovementHelper.fullyPassable(src.up(2).offset(dir))) {
+            return null;
+        }
+        if (!MovementHelper.fullyPassable(src.up(2))) {
+            return null;
+        }
         for (int i = 2; i <= 4; i++) {
             BlockPos dest = src.offset(dir, i);
             // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
