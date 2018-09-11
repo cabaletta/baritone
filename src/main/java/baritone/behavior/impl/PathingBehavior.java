@@ -196,6 +196,7 @@ public class PathingBehavior extends Behavior {
         next = null;
         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
+        mc.playerController.setPlayerCapabilities(mc.player);
     }
 
     /**

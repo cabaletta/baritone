@@ -236,6 +236,7 @@ public class PathExecutor implements Helper {
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             return true;
         }
+        player().capabilities.allowFlying = false;
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
             logDebug("Movement returns status " + movementStatus);
