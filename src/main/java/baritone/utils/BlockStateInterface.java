@@ -74,25 +74,23 @@ public class BlockStateInterface implements Helper {
         // same idea here, skip the Long2ObjectOpenHashMap.get if at all possible
         // except here, it's 512x512 tiles instead of 16x16, so even better repetition
         CachedRegion cached = prevCached;
-        if (cached != null && cached.getX() == x >> 9 && cached.getZ() == z >> 9) {
-            IBlockState type = cached.getBlock(x & 511, y, z & 511);
-            if (type == null) {
+        if (cached == null || cached.getX() != x >> 9 || cached.getZ() != z >> 9) {
+            WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
+            if (world == null) {
                 return AIR;
             }
-            return type;
-        }
-        WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
-        if (world != null) {
             CachedRegion region = world.cache.getRegion(x >> 9, z >> 9);
-            if (region != null) {
-                prevCached = region;
-                IBlockState type = region.getBlock(x & 511, y, z & 511);
-                if (type != null) {
-                    return type;
-                }
+            if (region == null) {
+                return AIR;
             }
+            prevCached = region;
+            cached = region;
         }
-        return AIR;
+        IBlockState type = cached.getBlock(x & 511, y, z & 511);
+        if (type == null) {
+            return AIR;
+        }
+        return type;
     }
 
     public static void clearCachedChunk() {

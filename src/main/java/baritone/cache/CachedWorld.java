@@ -18,10 +18,9 @@
 package baritone.cache;
 
 import baritone.Baritone;
-import baritone.utils.pathing.IBlockTypeAccess;
+import baritone.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
@@ -37,7 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author Brady
  * @since 8/4/2018 12:02 AM
  */
-public final class CachedWorld implements IBlockTypeAccess {
+public final class CachedWorld implements Helper {
 
     /**
      * The maximum number of regions in any direction from (0,0)
@@ -92,16 +91,6 @@ public final class CachedWorld implements IBlockTypeAccess {
         }
     }
 
-    @Override
-    public final IBlockState getBlock(int x, int y, int z) {
-        // no point in doing getOrCreate region, if we don't have it we don't have it
-        CachedRegion region = getRegion(x >> 9, z >> 9);
-        if (region == null) {
-            return null;
-        }
-        return region.getBlock(x & 511, y, z & 511);
-    }
-
     public final boolean isCached(BlockPos pos) {
         int x = pos.getX();
         int z = pos.getZ();
@@ -111,7 +100,6 @@ public final class CachedWorld implements IBlockTypeAccess {
         }
         return region.isCached(x & 511, z & 511);
     }
-
 
     public final LinkedList<BlockPos> getLocationsOf(String block, int minimum, int maxRegionDistanceSq) {
         LinkedList<BlockPos> res = new LinkedList<>();
