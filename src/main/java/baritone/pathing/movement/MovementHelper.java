@@ -125,7 +125,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) {
             return true;
         }
-        // exceptions - blocks that are isPassasble true, but we can't actually jump through
+        // exceptions - blocks that are isPassable true, but we can't actually jump through
         if (block == Blocks.FIRE
                 || block == Blocks.TRIPWIRE
                 || block == Blocks.WEB

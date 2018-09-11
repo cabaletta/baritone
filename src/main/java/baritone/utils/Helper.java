@@ -77,7 +77,9 @@ public interface Helper {
         if (!Baritone.settings().chatDebug.get()) {
             System.out.println("Suppressed debug message:");
             System.out.println(message);
-            return;
+            /*if (!Stream.of(Thread.currentThread().getStackTrace()).map(StackTraceElement::getClassName).anyMatch(x -> x.equals(ExampleBaritoneControl.class.getName()))) {
+                return;
+            }*/
         }
 
         ITextComponent component = MESSAGE_PREFIX.createCopy();
