@@ -109,7 +109,7 @@ public class MovementParkour extends Movement {
         }
         for (int i = 1; i <= 4; i++) {
             BlockPos d = src.offset(direction, i);
-            for (int y = 0; y < 4; y++) {
+            for (int y = 0; y < (i == 1 ? 3 : 4); y++) {
                 if (!MovementHelper.fullyPassable(d.up(y))) {
                     return COST_INF;
                 }
