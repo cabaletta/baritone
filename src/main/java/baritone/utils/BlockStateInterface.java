@@ -18,9 +18,9 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.chunk.CachedRegion;
-import baritone.chunk.WorldData;
-import baritone.chunk.WorldProvider;
+import baritone.cache.CachedRegion;
+import baritone.cache.WorldData;
+import baritone.cache.WorldProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;

@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.chunk;
+package baritone.cache;
 
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.Helper;

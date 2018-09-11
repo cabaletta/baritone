@@ -18,8 +18,8 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
-import baritone.chunk.CachedWorld;
-import baritone.chunk.WorldProvider;
+import baritone.cache.CachedWorld;
+import baritone.cache.WorldProvider;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
