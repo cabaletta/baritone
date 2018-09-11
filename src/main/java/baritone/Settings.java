@@ -145,6 +145,12 @@ public class Settings {
     public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
 
     /**
+     * If a movement's cost increases by more than this amount between calculation and execution (due to changes
+     * in the environment / world), cancel and recalculate
+     */
+    public Setting<Double> maxCostIncrease = new Setting<>(10D);
+
+    /**
      * Stop 5 movements before anything that made the path COST_INF.
      * For example, if lava has spread across the path, don't walk right up to it then recalculate, it might
      * still be spreading lol

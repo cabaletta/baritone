@@ -236,6 +236,13 @@ public class PathExecutor implements Helper {
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             return true;
         }
+        if (currentCost - currentMovementInitialCostEstimate > Baritone.settings().maxCostIncrease.get()) {
+            logDebug("Original cost " + currentMovementInitialCostEstimate + " current cost " + currentCost + ". Cancelling.");
+            pathPosition = path.length() + 3;
+            failed = true;
+            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+            return true;
+        }
         player().capabilities.allowFlying = false;
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
