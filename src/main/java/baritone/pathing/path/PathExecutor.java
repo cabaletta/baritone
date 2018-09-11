@@ -92,7 +92,7 @@ public class PathExecutor implements Helper {
             if (!Blocks.AIR.equals(BlockStateInterface.getBlock(whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.positions().get(i))) {
-                        displayChatMessageRaw("Skipping back " + (pathPosition - i) + " steps, to " + i);
+                        logDebug("Skipping back " + (pathPosition - i) + " steps, to " + i);
                         int previousPos = pathPosition;
                         pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
                         for (int j = pathPosition; j <= previousPos; j++) {
@@ -105,7 +105,7 @@ public class PathExecutor implements Helper {
                 for (int i = pathPosition + 2; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
                     if (whereAmI.equals(path.positions().get(i))) {
                         if (i - pathPosition > 2) {
-                            displayChatMessageRaw("Skipping forward " + (i - pathPosition) + " steps, to " + i);
+                            logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                         }
                         System.out.println("Double skip sundae");
                         pathPosition = i - 1;
@@ -121,7 +121,7 @@ public class PathExecutor implements Helper {
             ticksAway++;
             System.out.println("FAR AWAY FROM PATH FOR " + ticksAway + " TICKS. Current distance: " + distanceFromPath + ". Threshold: " + MAX_DIST_FROM_PATH);
             if (ticksAway > MAX_TICKS_AWAY) {
-                displayChatMessageRaw("Too far away from path for too long, cancelling path");
+                logDebug("Too far away from path for too long, cancelling path");
                 System.out.println("Too many ticks");
                 pathPosition = path.length() + 3;
                 Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
@@ -134,7 +134,7 @@ public class PathExecutor implements Helper {
         if (distanceFromPath > MAX_MAX_DIST_FROM_PATH) {
             if (!(path.movements().get(pathPosition) instanceof MovementFall)) { // might be midair
                 if (pathPosition == 0 || !(path.movements().get(pathPosition - 1) instanceof MovementFall)) { // might have overshot the landing
-                    displayChatMessageRaw("too far from path");
+                    logDebug("too far from path");
                     pathPosition = path.length() + 3;
                     Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                     failed = true;
@@ -211,7 +211,7 @@ public class PathExecutor implements Helper {
         }
         long end = System.nanoTime() / 1000000L;
         if (end - start > 0) {
-            //displayChatMessageRaw("Recalculating break and place took " + (end - start) + "ms");
+            //logDebug("Recalculating break and place took " + (end - start) + "ms");
         }
         Movement movement = path.movements().get(pathPosition);
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
@@ -220,7 +220,7 @@ public class PathExecutor implements Helper {
             currentMovementInitialCostEstimate = movement.getCost(null);
             for (int i = 1; i < Baritone.settings().costVerificationLookahead.get() && pathPosition + i < path.length() - 1; i++) {
                 if (path.movements().get(pathPosition + i).calculateCostWithoutCaching() >= ActionCosts.COST_INF) {
-                    displayChatMessageRaw("Something has changed in the world and a future movement has become impossible. Cancelling.");
+                    logDebug("Something has changed in the world and a future movement has become impossible. Cancelling.");
                     pathPosition = path.length() + 3;
                     failed = true;
                     Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
@@ -230,7 +230,7 @@ public class PathExecutor implements Helper {
         }
         double currentCost = movement.recalculateCost();
         if (currentCost >= ActionCosts.COST_INF) {
-            displayChatMessageRaw("Something has changed in the world and this movement has become impossible. Cancelling.");
+            logDebug("Something has changed in the world and this movement has become impossible. Cancelling.");
             pathPosition = path.length() + 3;
             failed = true;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
@@ -238,7 +238,7 @@ public class PathExecutor implements Helper {
         }
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
-            displayChatMessageRaw("Movement returns status " + movementStatus);
+            logDebug("Movement returns status " + movementStatus);
             pathPosition = path.length() + 3;
             failed = true;
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
@@ -259,7 +259,7 @@ public class PathExecutor implements Helper {
                 // as you break the blocks required, the remaining cost goes down, to the point where
                 // ticksOnCurrent is greater than recalculateCost + 100
                 // this is why we cache cost at the beginning, and don't recalculate for this comparison every tick
-                displayChatMessageRaw("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + currentMovementInitialCostEstimate + "). Cancelling.");
+                logDebug("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + currentMovementInitialCostEstimate + "). Cancelling.");
                 movement.cancel();
                 Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
                 pathPosition = path.length() + 3;
@@ -318,7 +318,7 @@ public class PathExecutor implements Helper {
                 }
                 return;
             }
-            //displayChatMessageRaw("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
+            //logDebug("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
         }
         player().setSprinting(false);
     }

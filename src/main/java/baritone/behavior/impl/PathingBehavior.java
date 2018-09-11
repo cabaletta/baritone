@@ -77,14 +77,14 @@ public class PathingBehavior extends Behavior {
             if (current.failed() || current.finished()) {
                 current = null;
                 if (goal == null || goal.isInGoal(playerFeet())) {
-                    displayChatMessageRaw("All done. At " + goal);
+                    logDebug("All done. At " + goal);
                     dispatchPathEvent(PathEvent.AT_GOAL);
                     next = null;
                     return;
                 }
                 if (next != null && !next.getPath().positions().contains(playerFeet())) {
                     // if the current path failed, we may not actually be on the next one, so make sure
-                    displayChatMessageRaw("Discarding next path as it does not contain current position");
+                    logDebug("Discarding next path as it does not contain current position");
                     // for example if we had a nicely planned ahead path that starts where current ends
                     // that's all fine and good
                     // but if we fail in the middle of current
@@ -94,7 +94,7 @@ public class PathingBehavior extends Behavior {
                     next = null;
                 }
                 if (next != null) {
-                    displayChatMessageRaw("Continuing on to planned next path");
+                    logDebug("Continuing on to planned next path");
                     dispatchPathEvent(PathEvent.CONTINUING_ONTO_PLANNED_NEXT);
                     current = next;
                     next = null;
@@ -118,7 +118,7 @@ public class PathingBehavior extends Behavior {
                 if (next != null) {
                     if (next.getPath().positions().contains(playerFeet())) {
                         // jump directly onto the next path
-                        displayChatMessageRaw("Splicing into planned next path early...");
+                        logDebug("Splicing into planned next path early...");
                         dispatchPathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
                         current = next;
                         next = null;
@@ -141,7 +141,7 @@ public class PathingBehavior extends Behavior {
                 }
                 if (ticksRemainingInSegment().get() < Baritone.settings().planningTickLookAhead.get()) {
                     // and this path has 5 seconds or less left
-                    displayChatMessageRaw("Path almost over. Planning ahead...");
+                    logDebug("Path almost over. Planning ahead...");
                     dispatchPathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
                     findPathInNewThread(current.getPath().getDest(), false, Optional.of(current.getPath()));
                 }
@@ -248,7 +248,7 @@ public class PathingBehavior extends Behavior {
         }
         new Thread(() -> {
             if (talkAboutIt) {
-                displayChatMessageRaw("Starting to search for path from " + start + " to " + goal);
+                logDebug("Starting to search for path from " + start + " to " + goal);
             }
 
             Optional<IPath> path = findPath(start, previous);
@@ -280,9 +280,9 @@ public class PathingBehavior extends Behavior {
 
             if (talkAboutIt && current != null && current.getPath() != null) {
                 if (goal == null || goal.isInGoal(current.getPath().getDest())) {
-                    displayChatMessageRaw("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                    logDebug("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
                 } else {
-                    displayChatMessageRaw("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                    logDebug("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
 
                 }
             }
@@ -301,7 +301,7 @@ public class PathingBehavior extends Behavior {
     private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous) {
         Goal goal = this.goal;
         if (goal == null) {
-            displayChatMessageRaw("no goal");
+            logDebug("no goal");
             return Optional.empty();
         }
         if (Baritone.settings().simplifyUnloadedYCoord.get()) {
@@ -320,7 +320,7 @@ public class PathingBehavior extends Behavior {
             }
             // TODO simplify each individual goal in a GoalComposite
             if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
-                displayChatMessageRaw("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
+                logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
@@ -334,7 +334,7 @@ public class PathingBehavior extends Behavior {
             IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
             return pf.calculate(timeout);
         } catch (Exception e) {
-            displayChatMessageRaw("Pathing exception: " + e);
+            logDebug("Pathing exception: " + e);
             e.printStackTrace();
             return Optional.empty();
         }

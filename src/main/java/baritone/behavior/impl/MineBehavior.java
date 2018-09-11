@@ -60,7 +60,7 @@ public class MineBehavior extends Behavior {
         }
         List<BlockPos> locs = scanFor(mining, 64);
         if (locs.isEmpty()) {
-            displayChatMessageRaw("No locations for " + mining + " known, cancelling");
+            logDebug("No locations for " + mining + " known, cancelling");
             cancel();
             return;
         }

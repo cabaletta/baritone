@@ -171,7 +171,7 @@ public class MovementTraverse extends Movement {
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionToPlace) || ladder;
         BlockPos whereAmI = playerFeet();
         if (whereAmI.getY() != dest.getY() && !ladder) {
-            displayChatMessageRaw("Wrong Y coordinate");
+            logDebug("Wrong Y coordinate");
             if (whereAmI.getY() < dest.getY()) {
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
             }
@@ -203,7 +203,7 @@ public class MovementTraverse extends Movement {
                 against1 = against1.down();
                 if (MovementHelper.canPlaceAgainst(against1)) {
                     if (!MovementHelper.throwaway(true)) { // get ready to place a throwaway block
-                        displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
+                        logDebug("bb pls get me some blocks. dirt or cobble");
                         return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                     }
                     state.setInput(InputOverrideHandler.Input.SNEAK, true);
@@ -240,7 +240,7 @@ public class MovementTraverse extends Movement {
                 // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
                 if (!MovementHelper.throwaway(true)) {// get ready to place a throwaway block
-                    displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
+                    logDebug("bb pls get me some blocks. dirt or cobble");
                     return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                 }
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;

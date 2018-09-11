@@ -139,7 +139,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             BlockPos against = vine ? getAgainst(src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
-                displayChatMessageRaw("Unable to climb vines");
+                logDebug("Unable to climb vines");
                 return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
             }
 

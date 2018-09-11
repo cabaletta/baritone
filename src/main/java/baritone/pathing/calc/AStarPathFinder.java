@@ -77,7 +77,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {
-            displayChatMessageRaw("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + timeout + "ms");
+            logDebug("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + timeout + "ms");
         }
         long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : timeout);
         //long lastPrintout = 0;
@@ -102,7 +102,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             numNodes++;
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
-                displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
+                logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes));
             }
             Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos, in random order
@@ -191,7 +191,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 bestDist = dist;
             }
             if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
+                logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
                 if (COEFFICIENTS[i] >= 3) {
                     System.out.println("Warning: cost coefficient is greater than three! Probably means that");
                     System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");
@@ -202,8 +202,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 return Optional.of(new Path(startNode, bestSoFar[i], numNodes));
             }
         }
-        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
-        displayChatMessageRaw("No path found =(");
+        logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
+        logDebug("No path found =(");
         currentlyRunning = null;
         return Optional.empty();
     }
