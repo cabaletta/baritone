@@ -19,10 +19,10 @@ package baritone.behavior.impl;
 
 import baritone.api.event.events.PathEvent;
 import baritone.behavior.Behavior;
-import baritone.chunk.CachedChunk;
-import baritone.chunk.ChunkPacker;
-import baritone.chunk.WorldProvider;
-import baritone.chunk.WorldScanner;
+import baritone.cache.CachedChunk;
+import baritone.cache.ChunkPacker;
+import baritone.cache.WorldProvider;
+import baritone.cache.WorldScanner;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
@@ -60,7 +60,7 @@ public class MineBehavior extends Behavior {
         }
         List<BlockPos> locs = scanFor(mining, 64);
         if (locs.isEmpty()) {
-            displayChatMessageRaw("No locations for " + mining + " known, cancelling");
+            logDebug("No locations for " + mining + " known, cancelling");
             cancel();
             return;
         }

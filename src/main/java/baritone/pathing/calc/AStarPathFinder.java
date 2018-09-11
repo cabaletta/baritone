@@ -18,8 +18,8 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
-import baritone.chunk.CachedWorld;
-import baritone.chunk.WorldProvider;
+import baritone.cache.CachedWorld;
+import baritone.cache.WorldProvider;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
@@ -70,10 +70,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         currentlyRunning = this;
         CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
+        BlockStateInterface.clearCachedChunk();
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {
-            displayChatMessageRaw("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + timeout + "ms");
+            logDebug("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + timeout + "ms");
         }
         long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : timeout);
         //long lastPrintout = 0;
@@ -125,7 +126,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             numNodes++;
             if (goal.isInGoal(currentNodePos)) {
                 currentlyRunning = null;
-                displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
+                logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes));
             }
             long constructStart = System.nanoTime();
@@ -140,7 +141,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 if (movementToGetToNeighbor == null) {
                     continue;
                 }
-                BetterBlockPos dest = (BetterBlockPos) movementToGetToNeighbor.getDest();
+                BetterBlockPos dest = movementToGetToNeighbor.getDest();
                 long s = System.nanoTime();
                 int chunkX = currentNodePos.x >> 4;
                 int chunkZ = currentNodePos.z >> 4;
@@ -256,7 +257,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 bestDist = dist;
             }
             if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                displayChatMessageRaw("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
+                logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
                 if (COEFFICIENTS[i] >= 3) {
                     System.out.println("Warning: cost coefficient is greater than three! Probably means that");
                     System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");
@@ -267,40 +268,51 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 return Optional.of(new Path(startNode, bestSoFar[i], numNodes));
             }
         }
-        displayChatMessageRaw("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
-        displayChatMessageRaw("No path found =(");
+        logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
+        logDebug("No path found =(");
         currentlyRunning = null;
         return Optional.empty();
     }
 
 
     public static Movement[] getConnectedPositions(BetterBlockPos pos, CalculationContext calcContext) {
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
+        int x = pos.x;
+        int y = pos.y;
+        int z = pos.z;
         BetterBlockPos east = new BetterBlockPos(x + 1, y, z);
         BetterBlockPos west = new BetterBlockPos(x - 1, y, z);
         BetterBlockPos south = new BetterBlockPos(x, y, z + 1);
         BetterBlockPos north = new BetterBlockPos(x, y, z - 1);
         return new Movement[]{
+                new MovementDownward(pos, new BetterBlockPos(x, y - 1, z)),
+
+                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z)),
+
                 new MovementTraverse(pos, east),
                 new MovementTraverse(pos, west),
                 new MovementTraverse(pos, north),
                 new MovementTraverse(pos, south),
+
                 new MovementAscend(pos, new BetterBlockPos(x + 1, y + 1, z)),
                 new MovementAscend(pos, new BetterBlockPos(x - 1, y + 1, z)),
                 new MovementAscend(pos, new BetterBlockPos(x, y + 1, z + 1)),
                 new MovementAscend(pos, new BetterBlockPos(x, y + 1, z - 1)),
+
                 MovementHelper.generateMovementFallOrDescend(pos, east, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, west, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, north, calcContext),
                 MovementHelper.generateMovementFallOrDescend(pos, south, calcContext),
-                new MovementDownward(pos, new BetterBlockPos(x, y - 1, z)),
-                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
+
                 new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),
-                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
+                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
                 new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST),
-                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z))
+
+                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
+
+                MovementParkour.generate(pos, EnumFacing.EAST),
+                MovementParkour.generate(pos, EnumFacing.WEST),
+                MovementParkour.generate(pos, EnumFacing.NORTH),
+                MovementParkour.generate(pos, EnumFacing.SOUTH),
         };
     }
 

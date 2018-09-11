@@ -17,9 +17,10 @@
 
 package baritone;
 
-import baritone.api.event.GameEventHandler;
+import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.Behavior;
 import baritone.behavior.impl.*;
+import baritone.event.GameEventHandler;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 
@@ -99,7 +100,7 @@ public enum Baritone {
         return this.initialized;
     }
 
-    public final GameEventHandler getGameEventHandler() {
+    public final IGameEventListener getGameEventHandler() {
         return this.gameEventHandler;
     }
 

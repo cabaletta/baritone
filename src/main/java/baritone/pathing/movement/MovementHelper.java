@@ -23,6 +23,7 @@ import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.pathing.movement.movements.MovementDescend;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.*;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
@@ -48,14 +49,17 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockPos pos, IBlockState state) {
         Block b = state.getBlock();
-        Block below = BlockStateInterface.get(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock();
-        return Blocks.ICE.equals(b) // ice becomes water, and water can mess up the path
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY() + 1, pos.getZ()))//don't break anything touching liquid on any side
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()))
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()))
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1))
-                || BlockStateInterface.isLiquid(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1));
+                // call BlockStateInterface.get directly with x,y,z. no need to make 5 new BlockPos for no reason
+                || BlockStateInterface.get(x, y + 1, z).getBlock() instanceof BlockLiquid//don't break anything touching liquid on any side
+                || BlockStateInterface.get(x + 1, y, z).getBlock() instanceof BlockLiquid
+                || BlockStateInterface.get(x - 1, y, z).getBlock() instanceof BlockLiquid
+                || BlockStateInterface.get(x, y, z + 1).getBlock() instanceof BlockLiquid
+                || BlockStateInterface.get(x, y, z - 1).getBlock() instanceof BlockLiquid;
     }
 
     /**
@@ -70,10 +74,10 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkThrough(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
-        if (block instanceof BlockFire
-                || block instanceof BlockTripWire
-                || block instanceof BlockWeb
-                || block instanceof BlockEndPortal) {//you can't actually walk through a lilypad from the side, and you shouldn't walk through fire
+        if (block == Blocks.AIR) {
+            return true;
+        }
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -106,6 +110,38 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block.isPassable(mc.world, pos);
     }
 
+    /**
+     * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
+     * not including water, and not including ladders or vines or cobwebs (they slow us down)
+     *
+     * @return
+     */
+    static boolean fullyPassable(BlockPos pos) {
+        return fullyPassable(pos, BlockStateInterface.get(pos));
+    }
+
+    static boolean fullyPassable(BlockPos pos, IBlockState state) {
+        Block block = state.getBlock();
+        if (block == Blocks.AIR) {
+            return true;
+        }
+        // exceptions - blocks that are isPassable true, but we can't actually jump through
+        if (block == Blocks.FIRE
+                || block == Blocks.TRIPWIRE
+                || block == Blocks.WEB
+                || block == Blocks.VINE
+                || block == Blocks.LADDER
+                || block instanceof BlockDoor
+                || block instanceof BlockFenceGate
+                || block instanceof BlockSnow
+                || block instanceof BlockLiquid
+                || block instanceof BlockTrapDoor
+                || block instanceof BlockEndPortal) {
+            return false;
+        }
+        return block.isPassable(mc.world, pos);
+    }
+
     static boolean isReplacable(BlockPos pos, IBlockState state) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
@@ -127,30 +163,35 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
-        if (playerPos.equals(doorPos))
+        if (playerPos.equals(doorPos)) {
             return false;
+        }
 
         IBlockState state = BlockStateInterface.get(doorPos);
-        if (!(state.getBlock() instanceof BlockDoor))
+        if (!(state.getBlock() instanceof BlockDoor)) {
             return true;
+        }
 
         return isHorizontalBlockPassable(doorPos, state, playerPos, BlockDoor.OPEN);
     }
 
     static boolean isGatePassable(BlockPos gatePos, BlockPos playerPos) {
-        if (playerPos.equals(gatePos))
+        if (playerPos.equals(gatePos)) {
             return false;
+        }
 
         IBlockState state = BlockStateInterface.get(gatePos);
-        if (!(state.getBlock() instanceof BlockFenceGate))
+        if (!(state.getBlock() instanceof BlockFenceGate)) {
             return true;
+        }
 
         return isHorizontalBlockPassable(gatePos, state, playerPos, BlockFenceGate.OPEN);
     }
 
     static boolean isHorizontalBlockPassable(BlockPos blockPos, IBlockState blockState, BlockPos playerPos, PropertyBool propertyOpen) {
-        if (playerPos.equals(blockPos))
+        if (playerPos.equals(blockPos)) {
             return false;
+        }
 
         EnumFacing.Axis facing = blockState.getValue(BlockHorizontal.FACING).getAxis();
         boolean open = blockState.getValue(propertyOpen);
@@ -169,10 +210,11 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidWalkingInto(Block block) {
         return BlockStateInterface.isLava(block)
-                || block instanceof BlockCactus
-                || block instanceof BlockFire
-                || block instanceof BlockEndPortal
-                || block instanceof BlockWeb;
+                || block == Blocks.MAGMA
+                || block == Blocks.CACTUS
+                || block == Blocks.FIRE
+                || block == Blocks.END_PORTAL
+                || block == Blocks.WEB;
     }
 
     /**
@@ -184,31 +226,22 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR) {
+        if (block == Blocks.AIR || block == Blocks.MAGMA) {
             return false;
         }
-        if (block instanceof BlockLadder || (Baritone.settings().allowVines.get() && block instanceof BlockVine)) { // TODO reconsider this
-            return true;
-        }
-        if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
-            return true;
-        }
-        if (Blocks.FARMLAND.equals(block) || Blocks.GRASS_PATH.equals(block)) {
-            return true;
-        }
-        if (Blocks.ENDER_CHEST.equals(block) || Blocks.CHEST.equals(block)) {
-            return true;
-        }
-        if (block instanceof BlockSlab) {
-            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
-                if (((BlockSlab) block).isDouble()) {
-                    return true;
-                }
-                return state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM;
+        if (state.isBlockNormalCube()) {
+            if (BlockStateInterface.isLava(block) || BlockStateInterface.isWater(block)) {
+                throw new IllegalStateException();
             }
             return true;
         }
-        if (block instanceof BlockStairs) {
+        if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.get())) { // TODO reconsider this
+            return true;
+        }
+        if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
+            return true;
+        }
+        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST) {
             return true;
         }
         if (BlockStateInterface.isWater(block)) {
@@ -224,18 +257,26 @@ public interface MovementHelper extends ActionCosts, Helper {
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
             return BlockStateInterface.isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
         }
-        if (Blocks.MAGMA.equals(block)) {
-            return false;
+        if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
+            return true;
         }
-        return state.isBlockNormalCube() && !BlockStateInterface.isLava(block);
+        if (block instanceof BlockSlab) {
+            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
+                if (((BlockSlab) block).isDouble()) {
+                    return true;
+                }
+                return state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM;
+            }
+            return true;
+        }
+        if (block instanceof BlockStairs) {
+            return true;
+        }
+        return false;
     }
 
     static boolean canWalkOn(BlockPos pos) {
         return canWalkOn(pos, BlockStateInterface.get(pos));
-    }
-
-    static boolean canFall(BlockPos pos) {
-        return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
     }
 
     static boolean canPlaceAgainst(BlockPos pos) {
@@ -251,7 +292,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
-        if (!block.equals(Blocks.AIR) && !canWalkThrough(position, state)) { // TODO is the air check really necessary? Isn't air canWalkThrough?
+        if (!canWalkThrough(position, state)) {
             if (!context.allowBreak()) {
                 return COST_INF;
             }
@@ -260,8 +301,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
             double strVsBlock = context.getToolSet().getStrVsBlock(state);
-            if (strVsBlock < 0)
+            if (strVsBlock < 0) {
                 return COST_INF;
+            }
 
             double result = m / strVsBlock;
             if (includeFalling) {
@@ -359,7 +401,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }
 
-    static Movement generateMovementFallOrDescend(BlockPos pos, BlockPos dest, CalculationContext calcContext) {
+    static Movement generateMovementFallOrDescend(BetterBlockPos pos, BetterBlockPos dest, CalculationContext calcContext) {
         // A
         //SA
         // A
@@ -376,12 +418,13 @@ public interface MovementHelper extends ActionCosts, Helper {
 
             //this doesn't guarantee descend is possible, it just guarantees fall is impossible
             return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
+            // we can't cost shortcut descend because !canWalkThrough doesn't mean canWalkOn
         }
 
         // we're clear for a fall 2
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {
-            BlockPos onto = dest.down(fallHeight);
+            BetterBlockPos onto = dest.down(fallHeight);
             if (onto.getY() < 0) {
                 // when pathing in the end, where you could plausibly fall into the void
                 // this check prevents it from getting the block at y=-1 and crashing

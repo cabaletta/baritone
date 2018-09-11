@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.chunk;
+package baritone.cache;
 
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
@@ -47,13 +47,13 @@ public enum WorldScanner implements Helper {
         int playerChunkX = playerFeet().getX() >> 4;
         int playerChunkZ = playerFeet().getZ() >> 4;
 
-        int searchRadius = 2;
+        int searchRadiusSq = 0;
         while (true) {
             boolean allUnloaded = true;
-            for (int xoff = -searchRadius; xoff <= searchRadius; xoff++) {
-                for (int zoff = -searchRadius; zoff <= searchRadius; zoff++) {
+            for (int xoff = -searchRadiusSq; xoff <= searchRadiusSq; xoff++) {
+                for (int zoff = -searchRadiusSq; zoff <= searchRadiusSq; zoff++) {
                     int distance = xoff * xoff + zoff * zoff;
-                    if (distance != searchRadius) {
+                    if (distance != searchRadiusSq) {
                         continue;
                     }
                     int chunkX = xoff + playerChunkX;
@@ -91,10 +91,10 @@ public enum WorldScanner implements Helper {
             if (allUnloaded) {
                 return res;
             }
-            if (res.size() >= max) {
+            if (res.size() >= max && searchRadiusSq > 26) {
                 return res;
             }
-            searchRadius++;
+            searchRadiusSq++;
         }
     }
 }

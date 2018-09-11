@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.chunk;
+package baritone.cache;
 
 import net.minecraft.util.math.BlockPos;
 
@@ -61,8 +61,9 @@ public class Waypoints {
         waypoints.put(tag, new HashSet<>());
 
         Path fileName = directory.resolve(tag.name().toLowerCase() + ".mp4");
-        if (!Files.exists(fileName))
+        if (!Files.exists(fileName)) {
             return;
+        }
 
         try (
                 FileInputStream fileIn = new FileInputStream(fileName.toFile());

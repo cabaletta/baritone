@@ -22,6 +22,7 @@ import baritone.api.event.events.RotationMoveEvent;
 import baritone.api.event.events.type.EventState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,28 +30,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * @author Brady
- * @since 8/21/2018
+ * @since 9/10/2018
  */
-@Mixin(Entity.class)
-public class MixinEntity {
+@Mixin(EntityLivingBase.class)
+public class MixinEntityLivingBase {
 
     @Inject(
-            method = "moveRelative",
+            method = "jump",
             at = @At("HEAD")
     )
-    private void preMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
+    private void preJump(CallbackInfo ci) {
         Entity _this = (Entity) (Object) this;
         if (_this == Minecraft.getMinecraft().player)
-            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.PRE, RotationMoveEvent.Type.MOTION_UPDATE));
+            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.PRE, RotationMoveEvent.Type.JUMP));
     }
 
     @Inject(
-            method = "moveRelative",
+            method = "jump",
             at = @At("RETURN")
     )
-    private void postMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
+    private void postJump(CallbackInfo ci) {
         Entity _this = (Entity) (Object) this;
         if (_this == Minecraft.getMinecraft().player)
-            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.POST, RotationMoveEvent.Type.MOTION_UPDATE));
+            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.POST, RotationMoveEvent.Type.JUMP));
     }
 }

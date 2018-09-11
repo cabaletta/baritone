@@ -25,6 +25,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.*;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -41,7 +42,7 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
     private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
-    public MovementFall(BlockPos src, BlockPos dest) {
+    public MovementFall(BetterBlockPos src, BetterBlockPos dest) {
         super(src, dest, MovementFall.buildPositionsToBreak(src, dest));
     }
 
@@ -96,13 +97,8 @@ public class MovementFall extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
+        if (state.getStatus() != MovementStatus.RUNNING) {
+            return state;
         }
 
         BlockPos playerFeet = playerFeet();
@@ -129,8 +125,7 @@ public class MovementFall extends Movement {
         } else {
             state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), false));
         }
-        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 // lilypads
-                || BlockStateInterface.isWater(dest))) {
+        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 || BlockStateInterface.isWater(dest))) { // 0.094 because lilypads
             if (BlockStateInterface.isWater(dest) && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                 if (player().motionY >= 0) {

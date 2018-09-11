@@ -15,29 +15,10 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.event.events;
+package baritone.utils.interfaces;
 
-import baritone.api.event.events.type.EventState;
+import net.minecraft.util.math.BlockPos;
 
-/**
- * @author Brady
- * @since 8/21/2018
- */
-public final class RelativeMoveEvent {
-
-    /**
-     * The state of the event
-     */
-    private final EventState state;
-
-    public RelativeMoveEvent(EventState state) {
-        this.state = state;
-    }
-
-    /**
-     * @return The state of the event
-     */
-    public final EventState getState() {
-        return this.state;
-    }
+public interface IGoalRenderPos {
+    BlockPos getGoalPos();
 }

@@ -26,6 +26,7 @@ import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -41,7 +42,7 @@ public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
 
-    public MovementAscend(BlockPos src, BlockPos dest) {
+    public MovementAscend(BetterBlockPos src, BetterBlockPos dest) {
         super(src, dest, new BlockPos[]{dest, src.up(2), dest.up()}, dest.down());
     }
 
@@ -69,7 +70,7 @@ public class MovementAscend extends Movement {
             if (!context.hasThrowaway()) {
                 return COST_INF;
             }
-            if (!BlockStateInterface.isAir(toPlace) && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionToPlace, toPlace)) {
+            if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionToPlace, toPlace)) {
                 return COST_INF;
             }
             // TODO: add ability to place against .down() as well as the cardinal directions
@@ -123,13 +124,8 @@ public class MovementAscend extends Movement {
         super.updateState(state);
         // TODO incorporate some behavior from ActionClimb (specifically how it waited until it was at most 1.2 blocks away before starting to jump
         // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
+        if (state.getStatus() != MovementStatus.RUNNING) {
+            return state;
         }
 
         if (playerFeet().equals(dest)) {
@@ -160,8 +156,8 @@ public class MovementAscend extends Movement {
                             if (player().isSneaking()) {
                                 state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                             }
-                            if (ticksWithoutPlacement > 20) {
-                                // After 20 ticks without placement, we might be standing in the way, move back
+                            if (ticksWithoutPlacement > 10) {
+                                // After 10 ticks without placement, we might be standing in the way, move back
                                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                             }
                         } else {

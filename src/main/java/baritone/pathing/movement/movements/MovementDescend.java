@@ -24,13 +24,14 @@ import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDescend extends Movement {
 
-    public MovementDescend(BlockPos start, BlockPos end) {
+    public MovementDescend(BetterBlockPos start, BetterBlockPos end) {
         super(start, end, new BlockPos[]{end.up(2), end.up(), end}, end.down());
     }
 
@@ -67,13 +68,8 @@ public class MovementDescend extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
+        if (state.getStatus() != MovementStatus.RUNNING) {
+            return state;
         }
 
         BlockPos playerFeet = playerFeet();

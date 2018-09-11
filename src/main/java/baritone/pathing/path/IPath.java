@@ -128,12 +128,12 @@ public interface IPath extends Helper {
         for (int i = 0; i < positions().size(); i++) {
             BlockPos pos = positions().get(i);
             if (Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk) {
-                displayChatMessageRaw("Cutting off path at edge of loaded chunks");
-                displayChatMessageRaw("Length decreased by " + (positions().size() - i - 1));
+                logDebug("Cutting off path at edge of loaded chunks");
+                logDebug("Length decreased by " + (positions().size() - i - 1));
                 return new CutoffPath(this, i);
             }
         }
-        displayChatMessageRaw("Path ends within loaded chunks");
+        logDebug("Path ends within loaded chunks");
         return this;
     }
 
@@ -146,7 +146,7 @@ public interface IPath extends Helper {
         }
         double factor = Baritone.settings().pathCutoffFactor.get();
         int newLength = (int) (length() * factor);
-        //displayChatMessageRaw("Static cutoff " + length() + " to " + newLength);
+        //logDebug("Static cutoff " + length() + " to " + newLength);
         return new CutoffPath(this, newLength);
     }
 }

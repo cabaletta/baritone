@@ -39,9 +39,15 @@ public class BaritoneTweaker implements ITweaker {
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
         this.args = new ArrayList<>(args);
-        if (gameDir   != null) addArg("gameDir",   gameDir.getAbsolutePath());
-        if (assetsDir != null) addArg("assetsDir", assetsDir.getAbsolutePath());
-        if (profile   != null) addArg("version",   profile);
+        if (gameDir != null) {
+            addArg("gameDir", gameDir.getAbsolutePath());
+        }
+        if (assetsDir != null) {
+            addArg("assetsDir", assetsDir.getAbsolutePath());
+        }
+        if (profile != null) {
+            addArg("version", profile);
+        }
     }
 
     @Override

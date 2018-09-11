@@ -107,9 +107,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @return The distance, squared
      */
     protected double getDistFromStartSq(PathNode n) {
-        int xDiff = n.pos.getX() - start.getX();
-        int yDiff = n.pos.getY() - start.getY();
-        int zDiff = n.pos.getZ() - start.getZ();
+        int xDiff = n.pos.x - start.x;
+        int yDiff = n.pos.y - start.y;
+        int zDiff = n.pos.z - start.z;
         return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
     }
 

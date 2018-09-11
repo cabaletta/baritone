@@ -15,30 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-package baritone.api.event;
+package baritone.event;
 
 import baritone.Baritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IGameEventListener;
-import baritone.chunk.WorldProvider;
+import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
@@ -48,8 +31,6 @@ import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.input.Keyboard;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * @author Brady
@@ -57,16 +38,24 @@ import java.util.function.Consumer;
  */
 public final class GameEventHandler implements IGameEventListener, Helper {
 
-    private final List<IGameEventListener> listeners = new ArrayList<>();
+    private final ArrayList<IGameEventListener> listeners = new ArrayList<>();
 
     @Override
     public final void onTick(TickEvent event) {
-        dispatch(listener -> listener.onTick(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onTick(event);
+            }
+        });
     }
 
     @Override
     public final void onPlayerUpdate(PlayerUpdateEvent event) {
-        dispatch(listener -> listener.onPlayerUpdate(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onPlayerUpdate(event);
+            }
+        });
     }
 
     @Override
@@ -80,17 +69,26 @@ public final class GameEventHandler implements IGameEventListener, Helper {
             if (inputHandler.isInputForcedDown(keyBinding) && !keyBinding.isKeyDown()) {
                 int keyCode = keyBinding.getKeyCode();
 
-                if (keyCode < Keyboard.KEYBOARD_SIZE)
+                if (keyCode < Keyboard.KEYBOARD_SIZE) {
                     KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
+                }
             }
         }
 
-        dispatch(IGameEventListener::onProcessKeyBinds);
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onProcessKeyBinds();
+            }
+        });
     }
 
     @Override
     public final void onSendChatMessage(ChatEvent event) {
-        dispatch(listener -> listener.onSendChatMessage(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onSendChatMessage(event);
+            }
+        });
     }
 
     @Override
@@ -116,18 +114,20 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         }
 
 
-        dispatch(listener -> listener.onChunkEvent(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onChunkEvent(event);
+            }
+        });
     }
 
     @Override
     public final void onRenderPass(RenderEvent event) {
-        /*
-        WorldProvider.INSTANCE.ifWorldLoaded(world -> world.forEachRegion(region -> region.forEachChunk(chunk -> {
-            drawChunkLine(region.getX() * 512 + chunk.getX() * 16, region.getZ() * 512 + chunk.getZ() * 16, event.getPartialTicks());
-        })));
-        */
-
-        dispatch(listener -> listener.onRenderPass(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onRenderPass(event);
+            }
+        });
     }
 
     @Override
@@ -141,50 +141,75 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 break;
             case POST:
                 cache.closeWorld();
-                if (event.getWorld() != null)
+                if (event.getWorld() != null) {
                     cache.initWorld(event.getWorld());
+                }
                 break;
         }
 
-        dispatch(listener -> listener.onWorldEvent(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onWorldEvent(event);
+            }
+        });
     }
 
     @Override
     public final void onSendPacket(PacketEvent event) {
-        dispatch(listener -> listener.onSendPacket(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onSendPacket(event);
+            }
+        });
     }
 
     @Override
     public final void onReceivePacket(PacketEvent event) {
-        dispatch(listener -> listener.onReceivePacket(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onReceivePacket(event);
+            }
+        });
     }
 
     @Override
-    public void onPlayerRelativeMove(RelativeMoveEvent event) {
-        dispatch(listener -> listener.onPlayerRelativeMove(event));
+    public void onPlayerRotationMove(RotationMoveEvent event) {
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onPlayerRotationMove(event);
+            }
+        });
     }
 
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
-        dispatch(listener -> listener.onBlockInteract(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onBlockInteract(event);
+            }
+        });
     }
 
     @Override
     public void onPlayerDeath() {
-        dispatch(IGameEventListener::onPlayerDeath);
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onPlayerDeath();
+            }
+        });
     }
 
     @Override
     public void onPathEvent(PathEvent event) {
-        dispatch(listener -> listener.onPathEvent(event));
+        listeners.forEach(l -> {
+            if (canDispatch(l)) {
+                l.onPathEvent(event);
+            }
+        });
     }
 
     public final void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
-    }
-
-    private void dispatch(Consumer<IGameEventListener> dispatchFunction) {
-        this.listeners.stream().filter(this::canDispatch).forEach(dispatchFunction);
     }
 
     private boolean canDispatch(IGameEventListener listener) {

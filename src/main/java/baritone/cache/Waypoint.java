@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.chunk;
+package baritone.cache;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.util.math.BlockPos;

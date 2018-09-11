@@ -25,6 +25,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -42,7 +43,7 @@ public class MovementTraverse extends Movement {
      */
     private boolean wasTheBridgeBlockAlwaysThere = true;
 
-    public MovementTraverse(BlockPos from, BlockPos to) {
+    public MovementTraverse(BetterBlockPos from, BetterBlockPos to) {
         super(from, to, new BlockPos[]{to.up(), to}, to.down());
     }
 
@@ -125,15 +126,9 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementState.MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
+        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+            return state;
         }
-
         state.setInput(InputOverrideHandler.Input.SNEAK, false);
 
         Block fd = BlockStateInterface.get(src.down()).getBlock();
@@ -176,7 +171,7 @@ public class MovementTraverse extends Movement {
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(positionToPlace) || ladder;
         BlockPos whereAmI = playerFeet();
         if (whereAmI.getY() != dest.getY() && !ladder) {
-            displayChatMessageRaw("Wrong Y coordinate");
+            logDebug("Wrong Y coordinate");
             if (whereAmI.getY() < dest.getY()) {
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
             }
@@ -208,7 +203,7 @@ public class MovementTraverse extends Movement {
                 against1 = against1.down();
                 if (MovementHelper.canPlaceAgainst(against1)) {
                     if (!MovementHelper.throwaway(true)) { // get ready to place a throwaway block
-                        displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
+                        logDebug("bb pls get me some blocks. dirt or cobble");
                         return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                     }
                     state.setInput(InputOverrideHandler.Input.SNEAK, true);
@@ -245,7 +240,7 @@ public class MovementTraverse extends Movement {
                 // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
                 if (!MovementHelper.throwaway(true)) {// get ready to place a throwaway block
-                    displayChatMessageRaw("bb pls get me some blocks. dirt or cobble");
+                    logDebug("bb pls get me some blocks. dirt or cobble");
                     return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                 }
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;

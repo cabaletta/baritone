@@ -15,12 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.chunk;
+package baritone.cache;
 
 import baritone.Baritone;
+import baritone.utils.Helper;
 import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
-import baritone.utils.Helper;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.WorldServer;
@@ -69,7 +69,7 @@ public enum WorldProvider implements Helper {
 
             directory = new File(directory, "baritone");
             readme = directory;
-            
+
         } else {
             //remote
             directory = new File(Baritone.INSTANCE.getDir(), mc.getCurrentServerData().serverIP);
@@ -102,7 +102,8 @@ public enum WorldProvider implements Helper {
     }
 
     public final void ifWorldLoaded(Consumer<WorldData> currentWorldConsumer) {
-        if (this.currentWorld != null)
+        if (this.currentWorld != null) {
             currentWorldConsumer.accept(this.currentWorld);
+        }
     }
 }

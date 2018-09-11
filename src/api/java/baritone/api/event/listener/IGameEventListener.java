@@ -43,6 +43,7 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.util.text.ITextComponent;
@@ -120,10 +121,12 @@ public interface IGameEventListener {
 
     /**
      * Run once per game tick from before and after the player's moveRelative method is called
+     * and before and after the player jumps.
      *
      * @see Entity#moveRelative(float, float, float, float)
+     * @see EntityLivingBase#jump()
      */
-    void onPlayerRelativeMove(RelativeMoveEvent event);
+    void onPlayerRotationMove(RotationMoveEvent event);
 
     /**
      * Called when the local player interacts with a block, whether it is breaking or opening/placing.

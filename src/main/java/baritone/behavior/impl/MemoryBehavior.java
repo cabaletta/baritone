@@ -1,9 +1,9 @@
 package baritone.behavior.impl;
 
-import baritone.behavior.Behavior;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.behavior.Behavior;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;
@@ -38,8 +38,9 @@ public class MemoryBehavior extends Behavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-        if (event.getState() == EventState.PRE)
+        if (event.getState() == EventState.PRE) {
             updateInventory();
+        }
     }
 
     @Override
@@ -86,13 +87,13 @@ public class MemoryBehavior extends Behavior {
                     this.futureInventories.stream()
                             .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
                             .findFirst().ifPresent(matched -> {
-                                // Remove the future inventory
-                                this.futureInventories.remove(matched);
+                        // Remove the future inventory
+                        this.futureInventories.remove(matched);
 
-                                // Setup the remembered inventory
-                                RememberedInventory inventory = this.rememberedInventories.computeIfAbsent(matched.pos, pos -> new RememberedInventory());
-                                inventory.windowId = packet.getWindowId();
-                                inventory.size = packet.getSlotCount();
+                        // Setup the remembered inventory
+                        RememberedInventory inventory = this.rememberedInventories.computeIfAbsent(matched.pos, pos -> new RememberedInventory());
+                        inventory.windowId = packet.getWindowId();
+                        inventory.size = packet.getSlotCount();
                     });
                 }
 

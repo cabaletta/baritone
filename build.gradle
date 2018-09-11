@@ -87,5 +87,5 @@ mixin {
 }
 
 jar {
-    from sourceSets.launch.output
+    from sourceSets.launch.output, sourceSets.api.output
 }

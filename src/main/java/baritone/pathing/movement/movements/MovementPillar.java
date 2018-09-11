@@ -25,6 +25,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Rotation;
 import baritone.utils.Utils;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -33,7 +34,7 @@ import net.minecraft.util.math.BlockPos;
 public class MovementPillar extends Movement {
     private int numTicks = 0;
 
-    public MovementPillar(BlockPos start, BlockPos end) {
+    public MovementPillar(BetterBlockPos start, BetterBlockPos end) {
         super(start, end, new BlockPos[]{start.up(2)}, start);
     }
 
@@ -121,13 +122,8 @@ public class MovementPillar extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementState.MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
+        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+            return state;
         }
 
         IBlockState fromDown = BlockStateInterface.get(src);
@@ -143,7 +139,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             BlockPos against = vine ? getAgainst(src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
-                displayChatMessageRaw("Unable to climb vines");
+                logDebug("Unable to climb vines");
                 return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
             }
 
@@ -174,7 +170,7 @@ public class MovementPillar extends Movement {
             state.setInput(InputOverrideHandler.Input.SNEAK, true);
 
             // Otherwise jump
-            if (numTicks > 40) {
+            if (numTicks > 20) {
                 double diffX = player().posX - (dest.getX() + 0.5);
                 double diffZ = player().posZ - (dest.getZ() + 0.5);
                 double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);

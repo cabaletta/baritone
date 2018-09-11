@@ -23,6 +23,10 @@ import net.minecraft.util.math.Vec3i;
 
 /**
  * A better BlockPos that has fewer hash collisions (and slightly more performant offsets)
+ * <p>
+ * Is it really faster to subclass BlockPos and calculate a hash in the constructor like this, taking everything into account?
+ * Yes. 20% faster actually. It's called BETTER BlockPos for a reason. Source:
+ * <a href="https://docs.google.com/spreadsheets/d/1GWjOjOZINkg_0MkRgKRPH1kUzxjsnEROD9u3UFh_DJc">Benchmark Spreadsheet</a>
  *
  * @author leijurv
  */
@@ -60,12 +64,12 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         return (int) hashCode;
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
@@ -83,7 +87,7 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public BlockPos up() {
+    public BetterBlockPos up() {
         // this is unimaginably faster than blockpos.up
         // that literally calls
         // this.up(1)
@@ -97,26 +101,32 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public BlockPos up(int amt) {
+    public BetterBlockPos up(int amt) {
         // see comment in up()
         return amt == 0 ? this : new BetterBlockPos(x, y + amt, z);
     }
 
     @Override
-    public BlockPos down() {
+    public BetterBlockPos down() {
         // see comment in up()
         return new BetterBlockPos(x, y - 1, z);
     }
 
     @Override
-    public BlockPos down(int amt) {
+    public BetterBlockPos down(int amt) {
         // see comment in up()
         return new BetterBlockPos(x, y - amt, z);
     }
 
     @Override
-    public BlockPos offset(EnumFacing dir) {
+    public BetterBlockPos offset(EnumFacing dir) {
         Vec3i vec = dir.getDirectionVec();
         return new BetterBlockPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
+    }
+
+    @Override
+    public BetterBlockPos offset(EnumFacing dir, int dist) {
+        Vec3i vec = dir.getDirectionVec();
+        return new BetterBlockPos(x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
     }
 }

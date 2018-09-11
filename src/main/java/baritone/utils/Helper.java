@@ -73,13 +73,24 @@ public interface Helper {
         return new Rotation(player().rotationYaw, player().rotationPitch);
     }
 
-    default void displayChatMessageRaw(String message) {
+    /**
+     * Send a message to chat only if chatDebug is on
+     * @param message
+     */
+    default void logDebug(String message) {
         if (!Baritone.settings().chatDebug.get()) {
             System.out.println("Suppressed debug message:");
             System.out.println(message);
             return;
         }
+        logDirect(message);
+    }
 
+    /**
+     * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a direct response to a chat command)
+     * @param message
+     */
+    default void logDirect(String message) {
         ITextComponent component = MESSAGE_PREFIX.createCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
         component.appendSibling(new TextComponentString(" " + message));

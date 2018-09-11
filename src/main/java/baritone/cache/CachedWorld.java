@@ -15,28 +15,28 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.chunk;
+package baritone.cache;
 
 import baritone.Baritone;
-import baritone.utils.pathing.IBlockTypeAccess;
+import baritone.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Consumer;
 
 /**
  * @author Brady
  * @since 8/4/2018 12:02 AM
  */
-public final class CachedWorld implements IBlockTypeAccess {
+public final class CachedWorld implements Helper {
 
     /**
      * The maximum number of regions in any direction from (0,0)
@@ -91,16 +91,6 @@ public final class CachedWorld implements IBlockTypeAccess {
         }
     }
 
-    @Override
-    public final IBlockState getBlock(int x, int y, int z) {
-        // no point in doing getOrCreate region, if we don't have it we don't have it
-        CachedRegion region = getRegion(x >> 9, z >> 9);
-        if (region == null) {
-            return null;
-        }
-        return region.getBlock(x & 511, y, z & 511);
-    }
-
     public final boolean isCached(BlockPos pos) {
         int x = pos.getX();
         int z = pos.getZ();
@@ -110,7 +100,6 @@ public final class CachedWorld implements IBlockTypeAccess {
         }
         return region.isCached(x & 511, z & 511);
     }
-
 
     public final LinkedList<BlockPos> getLocationsOf(String block, int minimum, int maxRegionDistanceSq) {
         LinkedList<BlockPos> res = new LinkedList<>();
@@ -128,9 +117,11 @@ public final class CachedWorld implements IBlockTypeAccess {
                     int regionX = xoff + playerRegionX;
                     int regionZ = zoff + playerRegionZ;
                     CachedRegion region = getOrCreateRegion(regionX, regionZ);
-                    if (region != null)
-                        for (BlockPos pos : region.getLocationsOf(block))
+                    if (region != null) {
+                        for (BlockPos pos : region.getLocationsOf(block)) {
                             res.add(pos);
+                        }
+                    }
                 }
             }
             if (res.size() >= minimum) {
@@ -152,19 +143,25 @@ public final class CachedWorld implements IBlockTypeAccess {
             return;
         }
         long start = System.nanoTime() / 1000000L;
-        this.cachedRegions.values().parallelStream().forEach(region -> {
-            if (region != null)
+        allRegions().parallelStream().forEach(region -> {
+            if (region != null) {
                 region.save(this.directory);
+            }
         });
         long now = System.nanoTime() / 1000000L;
         System.out.println("World save took " + (now - start) + "ms");
     }
 
+    private synchronized List<CachedRegion> allRegions() {
+        return new ArrayList<>(this.cachedRegions.values());
+    }
+
     public final void reloadAllFromDisk() {
         long start = System.nanoTime() / 1000000L;
-        this.cachedRegions.values().forEach(region -> {
-            if (region != null)
+        allRegions().forEach(region -> {
+            if (region != null) {
                 region.load(this.directory);
+            }
         });
         long now = System.nanoTime() / 1000000L;
         System.out.println("World load took " + (now - start) + "ms");
@@ -177,7 +174,7 @@ public final class CachedWorld implements IBlockTypeAccess {
      * @param regionZ The region Z coordinate
      * @return The region located at the specified coordinates
      */
-    public final CachedRegion getRegion(int regionX, int regionZ) {
+    public final synchronized CachedRegion getRegion(int regionX, int regionZ) {
         return cachedRegions.get(getRegionID(regionX, regionZ));
     }
 
@@ -197,13 +194,6 @@ public final class CachedWorld implements IBlockTypeAccess {
         });
     }
 
-    public void forEachRegion(Consumer<CachedRegion> consumer) {
-        this.cachedRegions.forEach((id, r) -> {
-            if (r != null)
-                consumer.accept(r);
-        });
-    }
-
     /**
      * Returns the region ID based on the region coordinates. 0 will be
      * returned if the specified region coordinates are out of bounds.
@@ -213,8 +203,9 @@ public final class CachedWorld implements IBlockTypeAccess {
      * @return The region ID
      */
     private long getRegionID(int regionX, int regionZ) {
-        if (!isRegionInWorld(regionX, regionZ))
+        if (!isRegionInWorld(regionX, regionZ)) {
             return 0;
+        }
 
         return (long) regionX & 0xFFFFFFFFL | ((long) regionZ & 0xFFFFFFFFL) << 32;
     }

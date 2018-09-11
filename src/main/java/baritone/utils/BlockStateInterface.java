@@ -18,27 +18,44 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.chunk.WorldData;
-import baritone.chunk.WorldProvider;
+import baritone.cache.CachedRegion;
+import baritone.cache.WorldData;
+import baritone.cache.WorldProvider;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
+/**
+ * Wraps get for chuck caching capability
+ *
+ * @author leijurv
+ */
 public class BlockStateInterface implements Helper {
 
     public static int numBlockStateLookups = 0;
     public static int numTimesChunkSucceeded = 0;
     private static Chunk prev = null;
+    private static CachedRegion prevCached = null;
 
-    public static IBlockState get(BlockPos pos) { // wrappers for chunk caching capability
+    private static IBlockState AIR = Blocks.AIR.getDefaultState();
+    public static final Block waterFlowing = Blocks.FLOWING_WATER;
+    public static final Block waterStill = Blocks.WATER;
+    public static final Block lavaFlowing = Blocks.FLOWING_LAVA;
+    public static final Block lavaStill = Blocks.LAVA;
+
+    public static IBlockState get(BlockPos pos) {
+        return get(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public static IBlockState get(int x, int y, int z) {
         numBlockStateLookups++;
         // Invalid vertical position
-        if (pos.getY() < 0 || pos.getY() >= 256)
-            return Blocks.AIR.getDefaultState();
+        if (y < 0 || y >= 256) {
+            return AIR;
+        }
 
         if (!Baritone.settings().pathThroughCachedOnly.get()) {
             Chunk cached = prev;
@@ -47,40 +64,47 @@ public class BlockStateInterface implements Helper {
             // if it's the same chunk as last time
             // we can just skip the mc.world.getChunk lookup
             // which is a Long2ObjectOpenHashMap.get
-            if (cached != null && cached.x == pos.getX() >> 4 && cached.z == pos.getZ() >> 4) {
+            if (cached != null && cached.x == x >> 4 && cached.z == z >> 4) {
                 numTimesChunkSucceeded++;
-                return cached.getBlockState(pos);
+                return cached.getBlockState(x, y, z);
             }
-            Chunk chunk = mc.world.getChunk(pos);
+            Chunk chunk = mc.world.getChunk(x >> 4, z >> 4);
             if (chunk.isLoaded()) {
                 prev = chunk;
-                return chunk.getBlockState(pos);
+                return chunk.getBlockState(x, y, z);
             }
         }
-        WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
-        if (world != null) {
-            IBlockState type = world.cache.getBlock(pos);
-            if (type != null) {
-                return type;
+        // same idea here, skip the Long2ObjectOpenHashMap.get if at all possible
+        // except here, it's 512x512 tiles instead of 16x16, so even better repetition
+        CachedRegion cached = prevCached;
+        if (cached == null || cached.getX() != x >> 9 || cached.getZ() != z >> 9) {
+            WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
+            if (world == null) {
+                return AIR;
             }
+            CachedRegion region = world.cache.getRegion(x >> 9, z >> 9);
+            if (region == null) {
+                return AIR;
+            }
+            prevCached = region;
+            cached = region;
         }
-
-
-        return Blocks.AIR.getDefaultState();
+        IBlockState type = cached.getBlock(x & 511, y, z & 511);
+        if (type == null) {
+            return AIR;
+        }
+        return type;
     }
 
     public static void clearCachedChunk() {
         prev = null;
+        prevCached = null;
     }
 
     public static Block getBlock(BlockPos pos) {
         return get(pos).getBlock();
     }
 
-    public static final Block waterFlowing = Blocks.FLOWING_WATER;
-    public static final Block waterStill = Blocks.WATER;
-    public static final Block lavaFlowing = Blocks.FLOWING_LAVA;
-    public static final Block lavaStill = Blocks.LAVA;
 
     /**
      * Returns whether or not the specified block is
@@ -90,7 +114,7 @@ public class BlockStateInterface implements Helper {
      * @return Whether or not the block is water
      */
     public static boolean isWater(Block b) {
-        return waterFlowing.equals(b) || waterStill.equals(b);
+        return b == waterFlowing || b == waterStill;
     }
 
     /**
@@ -105,7 +129,7 @@ public class BlockStateInterface implements Helper {
     }
 
     public static boolean isLava(Block b) {
-        return lavaFlowing.equals(b) || lavaStill.equals(b);
+        return b == lavaFlowing || b == lavaStill;
     }
 
     /**
@@ -124,18 +148,4 @@ public class BlockStateInterface implements Helper {
                 && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
                 && state.getValue(BlockLiquid.LEVEL) != 0;
     }
-
-    public static boolean isAir(BlockPos pos) {
-        return BlockStateInterface.getBlock(pos).equals(Blocks.AIR);
-    }
-
-    public static boolean isAir(IBlockState state) {
-        return state.getBlock().equals(Blocks.AIR);
-    }
-
-    static boolean canFall(BlockPos pos) {
-        return BlockStateInterface.get(pos).getBlock() instanceof BlockFalling;
-    }
-
-
 }
