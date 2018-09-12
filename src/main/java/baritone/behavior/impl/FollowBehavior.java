@@ -18,7 +18,7 @@
 package baritone.behavior.impl;
 
 import baritone.api.event.events.TickEvent;
-import baritone.behavior.Behavior;
+import baritone.api.behavior.Behavior;
 import baritone.pathing.goals.GoalNear;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;

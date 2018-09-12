@@ -22,7 +22,7 @@ import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
-import baritone.behavior.Behavior;
+import baritone.api.behavior.Behavior;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
@@ -31,6 +31,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -40,7 +41,7 @@ import java.awt.*;
 import java.util.Collections;
 import java.util.Optional;
 
-public final class PathingBehavior extends Behavior {
+public final class PathingBehavior extends Behavior implements Helper {
 
     public static final PathingBehavior INSTANCE = new PathingBehavior();
 

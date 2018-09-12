@@ -15,19 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior;
+package baritone.api.behavior;
 
 import baritone.api.event.listener.AbstractGameEventListener;
-import baritone.utils.Helper;
-import baritone.utils.interfaces.Toggleable;
+import baritone.api.utils.interfaces.Toggleable;
 
 /**
- * A generic bot behavior.
+ * A type of game event listener that can be toggled.
  *
  * @author Brady
  * @since 8/1/2018 6:29 PM
  */
-public class Behavior implements AbstractGameEventListener, Toggleable, Helper {
+public class Behavior implements AbstractGameEventListener, Toggleable {
 
     /**
      * Whether or not this behavior is enabled
@@ -51,33 +50,16 @@ public class Behavior implements AbstractGameEventListener, Toggleable, Helper {
      */
     @Override
     public final boolean setEnabled(boolean enabled) {
-        boolean newState = getNewState(this.enabled, enabled);
-        if (newState == this.enabled) {
+        if (enabled == this.enabled)
             return this.enabled;
-        }
 
-        if (this.enabled = newState) {
-            onStart();
+        if (this.enabled = enabled) {
+            this.onEnable();
         } else {
-            onCancel();
+            this.onDisable();
         }
 
         return this.enabled;
-    }
-
-    /**
-     * Function to determine what the new enabled state of this
-     * {@link Behavior} should be given the old state, and the
-     * proposed state. Intended to be overridden by behaviors
-     * that should always be active, given that the bot itself is
-     * active.
-     *
-     * @param oldState      The old state
-     * @param proposedState The proposed state
-     * @return The new  state
-     */
-    public boolean getNewState(boolean oldState, boolean proposedState) {
-        return proposedState;
     }
 
     /**
@@ -87,14 +69,4 @@ public class Behavior implements AbstractGameEventListener, Toggleable, Helper {
     public final boolean isEnabled() {
         return this.enabled;
     }
-
-    /**
-     * Called when the state changes from disabled to enabled
-     */
-    public void onStart() {}
-
-    /**
-     * Called when the state changes from enabled to disabled
-     */
-    public void onCancel() {}
 }

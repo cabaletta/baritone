@@ -18,7 +18,7 @@
 package baritone.behavior.impl;
 
 import baritone.api.event.events.PathEvent;
-import baritone.behavior.Behavior;
+import baritone.api.behavior.Behavior;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
@@ -27,6 +27,7 @@ import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -42,7 +43,8 @@ import java.util.stream.Collectors;
  *
  * @author leijurv
  */
-public class MineBehavior extends Behavior {
+public class MineBehavior extends Behavior implements Helper {
+
     public static final MineBehavior INSTANCE = new MineBehavior();
 
     private MineBehavior() {

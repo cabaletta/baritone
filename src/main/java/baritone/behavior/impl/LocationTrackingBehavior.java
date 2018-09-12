@@ -17,11 +17,12 @@
 
 package baritone.behavior.impl;
 
-import baritone.behavior.Behavior;
+import baritone.api.behavior.Behavior;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
 import net.minecraft.block.BlockBed;
 
 /**
@@ -33,7 +34,7 @@ import net.minecraft.block.BlockBed;
  * @author Brady
  * @since 8/22/2018
  */
-public final class LocationTrackingBehavior extends Behavior {
+public final class LocationTrackingBehavior extends Behavior implements Helper {
 
     public static final LocationTrackingBehavior INSTANCE = new LocationTrackingBehavior();
 

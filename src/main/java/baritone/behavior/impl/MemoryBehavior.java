@@ -3,7 +3,8 @@ package baritone.behavior.impl;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.behavior.Behavior;
+import baritone.api.behavior.Behavior;
+import baritone.utils.Helper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;
@@ -20,7 +21,7 @@ import java.util.*;
  * @author Brady
  * @since 8/6/2018 9:47 PM
  */
-public class MemoryBehavior extends Behavior {
+public class MemoryBehavior extends Behavior implements Helper {
 
     public static MemoryBehavior INSTANCE = new MemoryBehavior();
 

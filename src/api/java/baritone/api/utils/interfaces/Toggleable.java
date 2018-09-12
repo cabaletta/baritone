@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.interfaces;
+package baritone.api.utils.interfaces;
 
 /**
  * @author Brady
@@ -41,4 +41,14 @@ public interface Toggleable {
      * @return Whether or not this {@link Toggleable} object is enabled
      */
     boolean isEnabled();
+
+    /**
+     * Called when the state changes from disabled to enabled
+     */
+    default void onEnable() {}
+
+    /**
+     * Called when the state changes from enabled to disabled
+     */
+    default void onDisable() {}
 }

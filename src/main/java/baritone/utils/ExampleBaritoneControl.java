@@ -20,7 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.Settings;
 import baritone.api.event.events.ChatEvent;
-import baritone.behavior.Behavior;
+import baritone.api.behavior.Behavior;
 import baritone.behavior.impl.FollowBehavior;
 import baritone.behavior.impl.MineBehavior;
 import baritone.behavior.impl.PathingBehavior;
@@ -41,7 +41,8 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
 
-public class ExampleBaritoneControl extends Behavior {
+public class ExampleBaritoneControl extends Behavior implements Helper  {
+
     public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
 
     private ExampleBaritoneControl() {

@@ -21,10 +21,11 @@ import baritone.Baritone;
 import baritone.Settings;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
-import baritone.behavior.Behavior;
+import baritone.api.behavior.Behavior;
+import baritone.utils.Helper;
 import baritone.utils.Rotation;
 
-public class LookBehavior extends Behavior {
+public class LookBehavior extends Behavior implements Helper {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
 

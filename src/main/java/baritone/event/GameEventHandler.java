@@ -25,7 +25,7 @@ import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.interfaces.Toggleable;
+import baritone.api.utils.interfaces.Toggleable;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.input.Keyboard;
