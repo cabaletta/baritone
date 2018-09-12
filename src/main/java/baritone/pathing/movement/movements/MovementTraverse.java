@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.behavior.impl.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -209,7 +210,9 @@ public class MovementTraverse extends Movement {
                         logDebug("bb pls get me some blocks. dirt or cobble");
                         return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                     }
-                    state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                    if (!Baritone.settings().assumeSafeWalk.get()) {
+                        state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                    }
                     Block standingOn = BlockStateInterface.get(playerFeet().down()).getBlock();
                     if (standingOn.equals(Blocks.SOUL_SAND) || standingOn instanceof BlockSlab) { // see issue #118
                         double dist = Math.max(Math.abs(dest.getX() + 0.5 - player().posX), Math.abs(dest.getZ() + 0.5 - player().posZ));
@@ -238,7 +241,9 @@ public class MovementTraverse extends Movement {
                     return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 }
             }
-            state.setInput(InputOverrideHandler.Input.SNEAK, true);
+            if (!Baritone.settings().assumeSafeWalk.get()) {
+                state.setInput(InputOverrideHandler.Input.SNEAK, true);
+            }
             if (whereAmI.equals(dest)) {
                 // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);

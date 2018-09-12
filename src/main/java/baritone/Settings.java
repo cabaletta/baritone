@@ -68,6 +68,15 @@ public class Settings {
     public Setting<Boolean> assumeStep = new Setting<>(false);
 
     /**
+     * Assume safe walk functionality; don't sneak on a backplace traverse.
+     * <p>
+     * Warning: if you do something janky like sneak-backplace from an ender chest, if this is true
+     * it won't sneak right click, it'll just right click, which means it'll open the chest instead of placing
+     * against it. That's why this defaults to off.
+     */
+    public Setting<Boolean> assumeSafeWalk = new Setting<>(false);
+
+    /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
     public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
