@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.behavior.impl.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -175,6 +176,10 @@ public class MovementAscend extends Movement {
             if (!MovementHelper.isBottomSlab(src.down())) {
                 return state; // don't jump while walking from a non double slab into a bottom slab
             }
+        }
+
+        if (Baritone.settings().assumeStep.get()) {
+            return state;
         }
 
         if (headBonkClear()) {

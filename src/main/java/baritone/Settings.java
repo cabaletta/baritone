@@ -63,6 +63,11 @@ public class Settings {
     public Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
 
     /**
+     * Assume step functionality; don't jump on an Ascend.
+     */
+    public Setting<Boolean> assumeStep = new Setting<>(false);
+
+    /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
     public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
