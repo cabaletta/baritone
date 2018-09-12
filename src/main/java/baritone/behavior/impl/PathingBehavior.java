@@ -40,7 +40,7 @@ import java.awt.*;
 import java.util.Collections;
 import java.util.Optional;
 
-public class PathingBehavior extends Behavior {
+public final class PathingBehavior extends Behavior {
 
     public static final PathingBehavior INSTANCE = new PathingBehavior();
 
@@ -66,7 +66,7 @@ public class PathingBehavior extends Behavior {
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
-            this.cancel();
+            softCancel(); // no player, so can't fix capabilities
             return;
         }
         if (current == null) {
@@ -191,11 +191,15 @@ public class PathingBehavior extends Behavior {
         return Optional.ofNullable(current).map(PathExecutor::getPath);
     }
 
-    public void cancel() {
+    private void softCancel() {
         current = null;
         next = null;
         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
+    }
+
+    public void cancel() {
+        softCancel();
         mc.playerController.setPlayerCapabilities(mc.player);
     }
 

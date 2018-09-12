@@ -291,6 +291,19 @@ public class PathExecutor implements Helper {
         }
         Movement movement = path.movements().get(pathPosition);
         if (movement instanceof MovementDescend && pathPosition < path.length() - 2) {
+            BlockPos descendStart = movement.getSrc();
+            BlockPos descendEnd = movement.getDest();
+            BlockPos into = descendEnd.subtract(descendStart.down()).add(descendEnd);
+            if (into.getY() != descendEnd.getY()) {
+                throw new IllegalStateException(); // sanity check
+            }
+            for (int i = 0; i <= 2; i++) {
+                if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(into.up(i)))) {
+                    logDebug("Sprinting would be unsafe");
+                    player().setSprinting(false);
+                    return;
+                }
+            }
             Movement next = path.movements().get(pathPosition + 1);
             if (next instanceof MovementDescend) {
                 if (next.getDirection().equals(movement.getDirection())) {

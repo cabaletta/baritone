@@ -58,33 +58,6 @@ public interface IPath extends Helper {
         return positions().size();
     }
 
-    /**
-     * What's the next step
-     *
-     * @param currentPosition the current position
-     * @return
-     */
-    default Movement subsequentMovement(BlockPos currentPosition) {
-        List<BetterBlockPos> pos = positions();
-        List<Movement> movements = movements();
-        for (int i = 0; i < pos.size(); i++) {
-            if (currentPosition.equals(pos.get(i))) {
-                return movements.get(i);
-            }
-        }
-        throw new UnsupportedOperationException(currentPosition + " not in path");
-    }
-
-    /**
-     * Determines whether or not a position is within this path.
-     *
-     * @param pos The position to check
-     * @return Whether or not the specified position is in this class
-     */
-    default boolean isInPath(BlockPos pos) {
-        return positions().contains(pos);
-    }
-
     default Tuple<Double, BlockPos> closestPathPos(double x, double y, double z) {
         double best = -1;
         BlockPos bestPos = null;
@@ -146,7 +119,7 @@ public interface IPath extends Helper {
         }
         double factor = Baritone.settings().pathCutoffFactor.get();
         int newLength = (int) (length() * factor);
-        //logDebug("Static cutoff " + length() + " to " + newLength);
+        logDebug("Static cutoff " + length() + " to " + newLength);
         return new CutoffPath(this, newLength);
     }
 }
