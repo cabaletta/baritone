@@ -128,7 +128,7 @@ public final class CachedChunk implements IBlockTypeAccess {
             return state;
         }
         PathingBlockType type = getType(x, y, z);
-        if (type == PathingBlockType.SOLID && y == 128 && mc.player.dimension == -1) {
+        if (type == PathingBlockType.SOLID && y == 127 && mc.player.dimension == -1) {
             return Blocks.BEDROCK.getDefaultState();
         }
         return ChunkPacker.pathingTypeToBlock(type);
