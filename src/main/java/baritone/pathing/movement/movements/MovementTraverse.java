@@ -115,6 +115,9 @@ public class MovementTraverse extends Movement {
                 if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && !((BlockSlab) srcDown).isDouble())) {
                     return COST_INF; // can't sneak and backplace against soul sand or half slabs =/
                 }
+                if (srcDown == Blocks.FLOWING_WATER || srcDown == Blocks.WATER) {
+                    return COST_INF; // this is obviously impossible
+                }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
                 return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
             }
