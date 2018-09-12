@@ -52,7 +52,7 @@ public class MovementParkour extends Movement {
         }
         BlockPos adjBlock = src.down().offset(dir);
         IBlockState adj = BlockStateInterface.get(adjBlock);
-        if (MovementHelper.avoidWalkingInto(adj.getBlock())) { // magma sucks
+        if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
             return null;
         }
         if (MovementHelper.canWalkOn(adjBlock, adj)) { // don't parkour if we could just traverse (for now)
