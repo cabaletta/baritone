@@ -66,9 +66,10 @@ public final class PathingBehavior extends Behavior {
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
-            softCancel(); // no player, so can't fix capabilities
+            this.cancel();
             return;
         }
+        mc.playerController.setPlayerCapabilities(mc.player);
         if (current == null) {
             return;
         }
@@ -191,16 +192,11 @@ public final class PathingBehavior extends Behavior {
         return Optional.ofNullable(current).map(PathExecutor::getPath);
     }
 
-    private void softCancel() {
+    public void cancel() {
         current = null;
         next = null;
         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
-    }
-
-    public void cancel() {
-        softCancel();
-        mc.playerController.setPlayerCapabilities(mc.player);
     }
 
     /**
