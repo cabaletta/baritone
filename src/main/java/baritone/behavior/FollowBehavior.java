@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior.impl;
+package baritone.behavior;
 
 import baritone.api.event.events.TickEvent;
 import baritone.api.behavior.Behavior;
@@ -28,14 +28,14 @@ import net.minecraft.util.math.BlockPos;
  *
  * @author leijurv
  */
-public class FollowBehavior extends Behavior {
+public final class FollowBehavior extends Behavior {
 
     public static final FollowBehavior INSTANCE = new FollowBehavior();
 
     private FollowBehavior() {
     }
 
-    Entity following;
+    private Entity following;
 
     @Override
     public void onTick(TickEvent event) {

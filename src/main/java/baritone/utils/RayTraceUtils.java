@@ -20,7 +20,7 @@ package baritone.utils;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
-import static baritone.behavior.impl.LookBehaviorUtils.calcVec3dFromRotation;
+import static baritone.behavior.LookBehaviorUtils.calcVec3dFromRotation;
 
 /**
  * @author Brady

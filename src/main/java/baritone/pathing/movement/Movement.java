@@ -18,8 +18,8 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
-import baritone.behavior.impl.LookBehavior;
-import baritone.behavior.impl.LookBehaviorUtils;
+import baritone.behavior.LookBehavior;
+import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.*;
 import baritone.utils.pathing.BetterBlockPos;

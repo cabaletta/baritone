@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior.impl;
+package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.Settings;
@@ -25,7 +25,7 @@ import baritone.api.behavior.Behavior;
 import baritone.utils.Helper;
 import baritone.utils.Rotation;
 
-public class LookBehavior extends Behavior implements Helper {
+public final class LookBehavior extends Behavior implements Helper {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
 

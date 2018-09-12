@@ -19,7 +19,7 @@ package baritone;
 
 import baritone.api.event.listener.IGameEventListener;
 import baritone.api.behavior.Behavior;
-import baritone.behavior.impl.*;
+import baritone.behavior.*;
 import baritone.event.GameEventHandler;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;

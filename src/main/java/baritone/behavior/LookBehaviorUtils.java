@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior.impl;
+package baritone.behavior;
 
 import baritone.utils.*;
 import net.minecraft.block.BlockFire;

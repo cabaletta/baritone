@@ -22,7 +22,7 @@ import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.behavior.impl.PathingBehavior;
+import baritone.behavior.PathingBehavior;
 import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;

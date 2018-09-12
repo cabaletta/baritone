@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior.impl;
+package baritone.behavior;
 
 import baritone.api.event.events.PathEvent;
 import baritone.api.behavior.Behavior;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  *
  * @author leijurv
  */
-public class MineBehavior extends Behavior implements Helper {
+public final class MineBehavior extends Behavior implements Helper {
 
     public static final MineBehavior INSTANCE = new MineBehavior();
 

@@ -17,7 +17,7 @@
 
 package baritone.pathing.calc;
 
-import baritone.behavior.impl.PathingBehavior;
+import baritone.behavior.PathingBehavior;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;

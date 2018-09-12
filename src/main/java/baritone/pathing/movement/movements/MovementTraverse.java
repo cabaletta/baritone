@@ -18,7 +18,7 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
-import baritone.behavior.impl.LookBehaviorUtils;
+import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
