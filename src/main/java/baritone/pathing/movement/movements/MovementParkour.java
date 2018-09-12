@@ -25,6 +25,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
@@ -43,6 +44,7 @@ public class MovementParkour extends Movement {
     }
 
     public static MovementParkour generate(BetterBlockPos src, EnumFacing dir) {
+        // MUST BE KEPT IN SYNC WITH calculateCost
         if (!Baritone.settings().allowParkour.get()) {
             return null;
         }
@@ -101,10 +103,12 @@ public class MovementParkour extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
+        // MUST BE KEPT IN SYNC WITH generate
         if (!MovementHelper.canWalkOn(dest.down())) {
             return COST_INF;
         }
-        if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(src.down().offset(direction)).getBlock())) {
+        Block walkOff = BlockStateInterface.get(src.down().offset(direction)).getBlock();
+        if (MovementHelper.avoidWalkingInto(walkOff) && walkOff != Blocks.WATER && walkOff != Blocks.FLOWING_WATER) {
             return COST_INF;
         }
         for (int i = 1; i <= 4; i++) {
