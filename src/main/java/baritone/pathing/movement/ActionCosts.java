@@ -24,8 +24,8 @@ public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieI
      */
     double WALK_ONE_BLOCK_COST = 20 / 4.317; // 4.633
     double WALK_ONE_IN_WATER_COST = 20 / 2.2;
-    double WALK_ONE_OVER_SOUL_SAND_COST = WALK_ONE_BLOCK_COST * 0.5; // 0.4 in BlockSoulSand but effectively about half
-    double SPRINT_ONE_OVER_SOUL_SAND_COST = WALK_ONE_OVER_SOUL_SAND_COST / 0.75;
+    double WALK_ONE_OVER_SOUL_SAND_COST = WALK_ONE_BLOCK_COST * 2; // 0.4 in BlockSoulSand but effectively about half
+    double SPRINT_ONE_OVER_SOUL_SAND_COST = WALK_ONE_OVER_SOUL_SAND_COST * 0.75;
     double LADDER_UP_ONE_COST = 20 / 2.35;
     double LADDER_DOWN_ONE_COST = 20 / 3.0;
     double SNEAK_ONE_BLOCK_COST = 20 / 1.3;
