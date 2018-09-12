@@ -27,6 +27,7 @@ import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
 import baritone.utils.BlockStateInterface;
+import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -47,14 +48,14 @@ public class MineBehavior extends Behavior {
     private MineBehavior() {
     }
 
-    List<String> mining;
+    private List<Block> mining;
 
     @Override
     public void onPathEvent(PathEvent event) {
         updateGoal();
     }
 
-    public void updateGoal() {
+    private void updateGoal() {
         if (mining == null) {
             return;
         }
@@ -68,13 +69,13 @@ public class MineBehavior extends Behavior {
         PathingBehavior.INSTANCE.path();
     }
 
-    public static List<BlockPos> scanFor(List<String> mining, int max) {
+    public static List<BlockPos> scanFor(List<Block> mining, int max) {
         List<BlockPos> locs = new ArrayList<>();
-        List<String> uninteresting = new ArrayList<>();
+        List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
-        for (String m : mining) {
-            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(ChunkPacker.stringToBlock(m))) {
-                locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(m, 1, 1));
+        for (Block m : mining) {
+            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
+                locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(ChunkPacker.blockToString(m), 1, 1));
             } else {
                 uninteresting.add(m);
             }
@@ -91,7 +92,7 @@ public class MineBehavior extends Behavior {
         // remove any that are within loaded chunks that aren't actually what we want
         locs.removeAll(locs.stream()
                 .filter(pos -> !(MineBehavior.INSTANCE.world().getChunk(pos) instanceof EmptyChunk))
-                .filter(pos -> !mining.contains(ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).toLowerCase()))
+                .filter(pos -> !mining.contains(BlockStateInterface.get(pos).getBlock()))
                 .collect(Collectors.toList()));
         if (locs.size() > max) {
             locs = locs.subList(0, max);
@@ -99,13 +100,18 @@ public class MineBehavior extends Behavior {
         return locs;
     }
 
-    public void mine(String... mining) {
-        this.mining = mining == null || mining.length == 0 ? null : new ArrayList<>(Arrays.asList(mining));
+    public void mine(String... blocks) {
+        this.mining = blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).collect(Collectors.toList());
+        updateGoal();
+    }
+
+    public void mine(Block... blocks) {
+        this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
         updateGoal();
     }
 
     public void cancel() {
         PathingBehavior.INSTANCE.cancel();
-        mine();
+        mine((String[]) null);
     }
 }

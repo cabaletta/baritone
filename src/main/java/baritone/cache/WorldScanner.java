@@ -28,18 +28,16 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public enum WorldScanner implements Helper {
     INSTANCE;
 
-    public List<BlockPos> scanLoadedChunks(List<String> blockTypes, int max) {
-        List<Block> asBlocks = blockTypes.stream().map(ChunkPacker::stringToBlock).collect(Collectors.toList());
-        if (asBlocks.contains(null)) {
-            throw new IllegalStateException("Invalid block name should have been caught earlier: " + blockTypes.toString());
+    public List<BlockPos> scanLoadedChunks(List<Block> blocks, int max) {
+        if (blocks.contains(null)) {
+            throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }
         LinkedList<BlockPos> res = new LinkedList<>();
-        if (asBlocks.isEmpty()) {
+        if (blocks.isEmpty()) {
             return res;
         }
         ChunkProviderClient chunkProvider = world().getChunkProvider();
@@ -79,7 +77,7 @@ public enum WorldScanner implements Helper {
                             for (int z = 0; z < 16; z++) {
                                 for (int x = 0; x < 16; x++) {
                                     IBlockState state = bsc.get(x, y, z);
-                                    if (asBlocks.contains(state.getBlock())) {
+                                    if (blocks.contains(state.getBlock())) {
                                         res.add(new BlockPos(chunkX | x, yReal | y, chunkZ | z));
                                     }
                                 }

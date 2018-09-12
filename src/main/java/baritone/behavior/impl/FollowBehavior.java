@@ -29,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
  * @author leijurv
  */
 public class FollowBehavior extends Behavior {
+
     public static final FollowBehavior INSTANCE = new FollowBehavior();
 
     private FollowBehavior() {
@@ -49,8 +50,12 @@ public class FollowBehavior extends Behavior {
         PathingBehavior.INSTANCE.path();
     }
 
-    public void follow(Entity follow) {
-        this.following = follow;
+    public void follow(Entity entity) {
+        this.following = entity;
+    }
+
+    public Entity following() {
+        return this.following;
     }
 
     public void cancel() {

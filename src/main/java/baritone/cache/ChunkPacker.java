@@ -124,8 +124,7 @@ public final class ChunkPacker implements Helper {
                 blockNames[z << 4 | x] = "air";
             }
         }
-        CachedChunk cached = new CachedChunk(chunk.x, chunk.z, bitSet, blockNames, specialBlocks);
-        return cached;
+        return new CachedChunk(chunk.x, chunk.z, bitSet, blockNames, specialBlocks);
     }
 
     public static String blockToString(Block block) {

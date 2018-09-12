@@ -246,13 +246,14 @@ public class ExampleBaritoneControl extends Behavior {
             Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
             if (tag == null) {
                 String mining = waypointType;
+                Block block = ChunkPacker.stringToBlock(mining);
                 //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
-                if (ChunkPacker.stringToBlock(mining) == null) {
+                if (block == null) {
                     logDirect("No locations for " + mining + " known, cancelling");
                     return;
                 }
-                List<BlockPos> locs = MineBehavior.scanFor(Arrays.asList(mining), 64);
+                List<BlockPos> locs = MineBehavior.scanFor(Collections.singletonList(block), 64);
                 if (locs.isEmpty()) {
                     logDirect("No locations for " + mining + " known, cancelling");
                     return;
