@@ -13,7 +13,7 @@
 -overloadaggressively
 -dontusemixedcaseclassnames
 
-# instead of obfing to a, b, c, obf to baritone.a, baritone.b, baritone.c so as to not conflict with mcp
+# instead of obfing to a, b, c, obf to baritone.a, baritone.b, baritone.c so as to not conflict with minecraft's obfd classes
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
