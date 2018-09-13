@@ -9,6 +9,8 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
 <a href="https://github.com/cabaletta/baritone/blob/master/IMPACT.md">Baritone + Impact</a>
 
 # Setup
+
+## IntelliJ's Gradle UI
 - Open the project in IntelliJ as a Gradle project
 - Run the Gradle task `setupDecompWorkspace`
 - Run the Gradle task `genIntellijRuns`
