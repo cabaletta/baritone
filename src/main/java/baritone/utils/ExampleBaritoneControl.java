@@ -238,7 +238,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("save")) {
+        if (msg.toLowerCase().startsWith("save")) {
             String name = msg.substring(4).trim();
             WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint(name, Waypoint.Tag.HOME, playerFeet()));
             logDirect("Saved user defined tag under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
