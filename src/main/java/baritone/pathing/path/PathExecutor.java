@@ -236,7 +236,7 @@ public class PathExecutor implements Helper {
             Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
             return true;
         }
-        if (currentCost - currentMovementInitialCostEstimate > Baritone.settings().maxCostIncrease.get()) {
+        if (!movement.calculatedWhileLoaded() && currentCost - currentMovementInitialCostEstimate > Baritone.settings().maxCostIncrease.get()) {
             logDebug("Original cost " + currentMovementInitialCostEstimate + " current cost " + currentCost + ". Cancelling.");
             pathPosition = path.length() + 3;
             failed = true;

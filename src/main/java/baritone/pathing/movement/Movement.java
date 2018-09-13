@@ -26,6 +26,7 @@ import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -288,6 +289,16 @@ public abstract class Movement implements Helper, MovementHelper {
 
     public BlockPos getDirection() {
         return getDest().subtract(getSrc());
+    }
+
+    private Boolean calculatedWhileLoaded;
+
+    public void checkLoadedChunk() {
+        calculatedWhileLoaded = !(world().getChunk(getDest()) instanceof EmptyChunk);
+    }
+
+    public boolean calculatedWhileLoaded() {
+        return calculatedWhileLoaded;
     }
 
     public List<BlockPos> toBreakCached = null;

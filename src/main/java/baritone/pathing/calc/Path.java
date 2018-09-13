@@ -54,6 +54,8 @@ class Path implements IPath {
 
     private final int numNodes;
 
+    private volatile boolean verified;
+
     Path(PathNode start, PathNode end, int numNodes) {
         this.start = start.pos;
         this.end = end.pos;
@@ -61,7 +63,6 @@ class Path implements IPath {
         this.path = new ArrayList<>();
         this.movements = new ArrayList<>();
         assemblePath(start, end);
-        sanityCheck();
     }
 
     /**
@@ -117,7 +118,21 @@ class Path implements IPath {
     }
 
     @Override
+    public void postprocess() {
+        if (verified) {
+            throw new IllegalStateException();
+        }
+        verified = true;
+        // more post processing here
+        movements.forEach(Movement::checkLoadedChunk);
+        sanityCheck();
+    }
+
+    @Override
     public List<Movement> movements() {
+        if (!verified) {
+            throw new IllegalStateException();
+        }
         return Collections.unmodifiableList(movements);
     }
 

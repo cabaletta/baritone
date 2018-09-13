@@ -50,6 +50,12 @@ public interface IPath extends Helper {
     List<BetterBlockPos> positions();
 
     /**
+     * This path is actually going to be executed in the world. Do whatever additional processing is required.
+     * (as opposed to Path objects that are just constructed every frame for rendering)
+     */
+    default void postprocess() {}
+
+    /**
      * Number of positions in this path
      *
      * @return Number of positions in this path
