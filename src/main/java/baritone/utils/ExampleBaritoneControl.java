@@ -19,8 +19,8 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.Settings;
-import baritone.api.event.events.ChatEvent;
 import baritone.api.behavior.Behavior;
+import baritone.api.event.events.ChatEvent;
 import baritone.behavior.FollowBehavior;
 import baritone.behavior.MineBehavior;
 import baritone.behavior.PathingBehavior;
@@ -41,7 +41,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
 
-public class ExampleBaritoneControl extends Behavior implements Helper  {
+public class ExampleBaritoneControl extends Behavior implements Helper {
 
     public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
 
@@ -235,6 +235,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper  {
             for (Waypoint waypoint : sorted) {
                 logDirect(waypoint.toString());
             }
+            event.cancel();
+            return;
+        }
+        if (msg.toLowerCase().equals("save")) {
+            String name = msg.substring(4).trim();
+            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint(name, Waypoint.Tag.HOME, playerFeet()));
+            logDirect("Saved user defined tag under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
             event.cancel();
             return;
         }
