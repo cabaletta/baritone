@@ -209,9 +209,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.toLowerCase().startsWith("thisway")) {
-            Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-            PathingBehavior.INSTANCE.setGoal(goal);
-            logDirect("Goal: " + goal);
+            try {
+                Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
+                PathingBehavior.INSTANCE.setGoal(goal);
+                logDirect("Goal: " + goal);
+            } catch (NumberFormatException ex) {
+                logDirect("Error unable to parse '" + msg.substring(7).trim() + "' to a double.");
+            }
             event.cancel();
             return;
         }
