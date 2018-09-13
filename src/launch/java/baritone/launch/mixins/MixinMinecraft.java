@@ -85,18 +85,6 @@ public class MixinMinecraft {
         ));
     }
 
-    @Redirect(
-            method = "runTickKeyboard",
-            at = @At(
-                    value = "INVOKE",
-                    target = "org/lwjgl/input/Keyboard.isKeyDown(I)Z",
-                    remap = false
-            )
-    )
-    private boolean Keyboard$isKeyDown(int keyCode) {
-        return Baritone.INSTANCE.getInputOverrideHandler().isKeyDown(keyCode);
-    }
-
     @Inject(
             method = "processKeyBinds",
             at = @At("HEAD")

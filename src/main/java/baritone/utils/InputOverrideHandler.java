@@ -57,14 +57,8 @@ public final class InputOverrideHandler implements Helper {
      */
     private final Map<KeyBinding, Boolean> inputForceStateMap = new HashMap<>();
 
-    /**
-     * Maps keycodes to whether or not we are forcing their state down.
-     */
-    private final Map<Integer, Boolean> keyCodeForceStateMap = new HashMap<>();
-
     public final void clearAllKeys() {
         inputForceStateMap.clear();
-        keyCodeForceStateMap.clear();
     }
 
     /**
@@ -85,25 +79,6 @@ public final class InputOverrideHandler implements Helper {
      */
     public final void setInputForceState(Input input, boolean forced) {
         inputForceStateMap.put(input.getKeyBinding(), forced);
-    }
-
-    /**
-     * A redirection in multiple places of {@link Keyboard#isKeyDown}.
-     *
-     * @return Whether or not the specified key is down or overridden.
-     */
-    public boolean isKeyDown(int keyCode) {
-        return Keyboard.isKeyDown(keyCode) || keyCodeForceStateMap.getOrDefault(keyCode, false);
-    }
-
-    /**
-     * Sets whether or not the specified key code is being forced down.
-     *
-     * @param keyCode The key code
-     * @param forced  Whether or not the state is being forced
-     */
-    public final void setKeyForceState(int keyCode, boolean forced) {
-        keyCodeForceStateMap.put(keyCode, forced);
     }
 
     /**
