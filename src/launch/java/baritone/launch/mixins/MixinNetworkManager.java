@@ -24,8 +24,10 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -42,12 +44,18 @@ public class MixinNetworkManager {
     @Shadow
     private Channel channel;
 
+    @Shadow
+    @Final
+    private EnumPacketDirection direction;
+
     @Inject(
             method = "dispatchPacket",
             at = @At("HEAD")
     )
     private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.PRE, inPacket));
+        if (this.direction == EnumPacketDirection.CLIENTBOUND) {
+            Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.PRE, inPacket));
+        }
     }
 
     @Inject(
@@ -55,7 +63,9 @@ public class MixinNetworkManager {
             at = @At("RETURN")
     )
     private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.POST, inPacket));
+        if (this.direction == EnumPacketDirection.CLIENTBOUND) {
+            Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.POST, inPacket));
+        }
     }
 
     @Inject(
@@ -66,7 +76,8 @@ public class MixinNetworkManager {
             )
     )
     private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.PRE, packet));
+        if (this.direction == EnumPacketDirection.CLIENTBOUND) {
+            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.PRE, packet));}
     }
 
     @Inject(
@@ -74,7 +85,7 @@ public class MixinNetworkManager {
             at = @At("RETURN")
     )
     private void postProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        if (this.channel.isOpen()) {
+        if (this.channel.isOpen() && this.direction == EnumPacketDirection.CLIENTBOUND) {
             Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.POST, packet));
         }
     }
