@@ -322,6 +322,11 @@ public class Settings {
      */
     public Setting<Boolean> leftClickWorkaround = new Setting<>(true);
 
+    /**
+     * Don't stop walking forward when you need to break blocks in your way
+     */
+    public Setting<Boolean> walkWhileBreaking = new Setting<>(true);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 

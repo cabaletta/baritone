@@ -25,6 +25,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.Rotation;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
@@ -131,8 +132,37 @@ public class MovementTraverse extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
-            return state;
+            // if the setting is enabled
+            if (!Baritone.settings().walkWhileBreaking.get()) {
+                return state;
+            }
+            // and if we're prepping (aka mining the block in front)
+            if (state.getStatus() != MovementState.MovementStatus.PREPPING) {
+                return state;
+            }
+            // and if it's fine to walk into the blocks in front
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(positionsToBreak[0]).getBlock())) {
+                return state;
+            }
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(positionsToBreak[1]).getBlock())) {
+                return state;
+            }
+            // and we aren't already pressed up against the block
+            double dist = Math.max(Math.abs(player().posX - (dest.getX() + 0.5D)), Math.abs(player().posZ - (dest.getZ() + 0.5D)));
+            if (dist < 0.83) {
+                return state;
+            }
+
+            // combine the yaw to the center of the destination, and the pitch to the specific block we're trying to break
+            // it's safe to do this since the two blocks we break (in a traverse) are right on top of each other and so will have the same yaw
+            float yawToDest = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world())).getFirst();
+            float pitchToBreak = state.getTarget().getRotation().get().getSecond();
+
+            state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
+            return state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
         }
+
+        //sneak may have been set to true in the PREPPING state while mining an adjacent block
         state.setInput(InputOverrideHandler.Input.SNEAK, false);
 
         Block fd = BlockStateInterface.get(src.down()).getBlock();
