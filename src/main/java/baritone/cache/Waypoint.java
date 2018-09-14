@@ -21,7 +21,8 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * A single waypoint
@@ -75,7 +76,7 @@ public class Waypoint {
         HOME("home", "base"),
         DEATH("death"),
         BED("bed", "spawn"),
-        USER();
+        USER("user");
 
         private static final List<Tag> TAG_LIST = ImmutableList.<Tag>builder().add(Tag.values()).build();
 
