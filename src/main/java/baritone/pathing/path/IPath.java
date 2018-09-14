@@ -64,6 +64,13 @@ public interface IPath extends Helper {
         return positions().size();
     }
 
+    /**
+     * What goal was this path calculated towards?
+     *
+     * @return
+     */
+    Goal getGoal();
+
     default Tuple<Double, BlockPos> closestPathPos(double x, double y, double z) {
         double best = -1;
         BlockPos bestPos = null;

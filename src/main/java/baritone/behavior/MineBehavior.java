@@ -17,8 +17,9 @@
 
 package baritone.behavior;
 
-import baritone.api.event.events.PathEvent;
 import baritone.api.behavior.Behavior;
+import baritone.api.event.events.PathEvent;
+import baritone.api.event.events.TickEvent;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
@@ -26,16 +27,14 @@ import baritone.cache.WorldScanner;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
+import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +50,31 @@ public final class MineBehavior extends Behavior implements Helper {
     }
 
     private List<Block> mining;
+
+    @Override
+    public void onTick(TickEvent event) {
+        if (mining == null) {
+            return;
+        }
+        if (event.getCount() % 5 == 0) {
+            updateGoal();
+        }
+        Optional<IPath> path = PathingBehavior.INSTANCE.getPath();
+        if (!path.isPresent()) {
+            return;
+        }
+        Goal currentGoal = PathingBehavior.INSTANCE.getGoal();
+        if (currentGoal == null) {
+            return;
+        }
+        Goal intended = path.get().getGoal();
+        BlockPos end = path.get().getDest();
+        if (intended.isInGoal(end) && !currentGoal.isInGoal(end)) {
+            // this path used to end in the goal
+            // but the goal has changed, so there's no reason to continue...
+            PathingBehavior.INSTANCE.cancel();
+        }
+    }
 
     @Override
     public void onPathEvent(PathEvent event) {
@@ -113,7 +137,7 @@ public final class MineBehavior extends Behavior implements Helper {
     }
 
     public void cancel() {
-        PathingBehavior.INSTANCE.cancel();
         mine((String[]) null);
+        PathingBehavior.INSTANCE.cancel();
     }
 }

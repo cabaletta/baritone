@@ -17,6 +17,7 @@
 
 package baritone.pathing.path;
 
+import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
 import baritone.utils.pathing.BetterBlockPos;
 
@@ -31,10 +32,18 @@ public class CutoffPath implements IPath {
 
     private final int numNodes;
 
+    final Goal goal;
+
     public CutoffPath(IPath prev, int lastPositionToInclude) {
         path = prev.positions().subList(0, lastPositionToInclude + 1);
         movements = prev.movements().subList(0, lastPositionToInclude + 1);
         numNodes = prev.getNumNodesConsidered();
+        goal = prev.getGoal();
+    }
+
+    @Override
+    public Goal getGoal() {
+        return goal;
     }
 
     @Override

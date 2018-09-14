@@ -140,7 +140,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     @Override
     public Optional<IPath> pathToMostRecentNodeConsidered() {
-        return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0));
+        return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal));
     }
 
     @Override
@@ -153,7 +153,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
                 continue;
             }
             if (getDistFromStartSq(bestSoFar[i]) > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                return Optional.of(new Path(startNode, bestSoFar[i], 0));
+                return Optional.of(new Path(startNode, bestSoFar[i], 0, goal));
             }
         }
         // instead of returning bestSoFar[0], be less misleading

@@ -120,9 +120,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.toLowerCase().equals("cancel")) {
-            PathingBehavior.INSTANCE.cancel();
-            FollowBehavior.INSTANCE.cancel();
             MineBehavior.INSTANCE.cancel();
+            FollowBehavior.INSTANCE.cancel();
+            PathingBehavior.INSTANCE.cancel();
             event.cancel();
             logDirect("ok canceled");
             return;

@@ -17,6 +17,7 @@
 
 package baritone.pathing.calc;
 
+import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
@@ -52,17 +53,25 @@ class Path implements IPath {
 
     final List<Movement> movements;
 
+    final Goal goal;
+
     private final int numNodes;
 
     private volatile boolean verified;
 
-    Path(PathNode start, PathNode end, int numNodes) {
+    Path(PathNode start, PathNode end, int numNodes, Goal goal) {
         this.start = start.pos;
         this.end = end.pos;
         this.numNodes = numNodes;
         this.path = new ArrayList<>();
         this.movements = new ArrayList<>();
+        this.goal = goal;
         assemblePath(start, end);
+    }
+
+    @Override
+    public Goal getGoal() {
+        return goal;
     }
 
     /**

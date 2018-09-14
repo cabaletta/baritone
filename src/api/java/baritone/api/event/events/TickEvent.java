@@ -24,9 +24,16 @@ public final class TickEvent {
     private final EventState state;
     private final Type type;
 
+    private static int count;
+
     public TickEvent(EventState state, Type type) {
         this.state = state;
         this.type = type;
+        count++;
+    }
+
+    public int getCount() {
+        return count;
     }
 
     public Type getType() {
