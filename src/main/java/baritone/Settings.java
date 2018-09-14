@@ -105,6 +105,11 @@ public class Settings {
     public Setting<Boolean> allowParkour = new Setting<>(false);
 
     /**
+     * Like parkour, but even more unreliable!
+     */
+    public Setting<Boolean> allowParkourPlace = new Setting<>(false);
+
+    /**
      * For example, if you have Mining Fatigue or Haste, adjust the costs of breaking blocks accordingly.
      */
     public Setting<Boolean> considerPotionEffects = new Setting<>(true);

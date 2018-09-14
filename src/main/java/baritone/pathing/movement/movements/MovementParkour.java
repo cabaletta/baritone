@@ -81,7 +81,7 @@ public class MovementParkour extends Movement {
         if (!MovementHelper.fullyPassable(src.up(2))) {
             return null;
         }
-        for (int i = 2; i <= 4; i++) {
+        for (int i = 2; i <= (context.canSprint() ? 4 : 3); i++) {
             BlockPos dest = src.offset(dir, i);
             // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
             for (int y = 0; y < 4; y++) {
@@ -92,6 +92,12 @@ public class MovementParkour extends Movement {
             if (MovementHelper.canWalkOn(dest.down())) {
                 return new MovementParkour(src, i, dir);
             }
+        }
+        if (!context.canSprint()) {
+            return null;
+        }
+        if (!Baritone.settings().allowParkourPlace.get()) {
+            return null;
         }
         BlockPos dest = src.offset(dir, 4);
         BlockPos positionToPlace = dest.down();
@@ -133,9 +139,15 @@ public class MovementParkour extends Movement {
     @Override
     protected double calculateCost(CalculationContext context) {
         // MUST BE KEPT IN SYNC WITH generate
+        if (!context.canSprint() && dist >= 4) {
+            return COST_INF;
+        }
         boolean placing = false;
         if (!MovementHelper.canWalkOn(dest.down())) {
             if (dist != 4) {
+                return COST_INF;
+            }
+            if (!Baritone.settings().allowParkourPlace.get()) {
                 return COST_INF;
             }
             BlockPos positionToPlace = dest.down();
