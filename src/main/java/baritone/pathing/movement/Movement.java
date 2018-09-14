@@ -119,18 +119,19 @@ public abstract class Movement implements Helper, MovementHelper {
         this.didBreakLastTick = false;
 
         latestState.getInputStates().forEach((input, forced) -> {
-            RayTraceResult trace = mc.objectMouseOver;
-            boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
-            boolean isLeftClick = forced && input == Input.CLICK_LEFT;
+            if (Baritone.settings().leftClickWorkaround.get()) {
+                RayTraceResult trace = mc.objectMouseOver;
+                boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
+                boolean isLeftClick = forced && input == Input.CLICK_LEFT;
 
-            // If we're forcing left click, we're in a gui screen, and we're looking
-            // at a block, break the block without a direct game input manipulation.
-            if (mc.currentScreen != null && isLeftClick && isBlockTrace) {
-                BlockBreakHelper.tryBreakBlock(trace.getBlockPos(), trace.sideHit);
-                this.didBreakLastTick = true;
-                return;
+                // If we're forcing left click, we're in a gui screen, and we're looking
+                // at a block, break the block without a direct game input manipulation.
+                if (mc.currentScreen != null && isLeftClick && isBlockTrace) {
+                    BlockBreakHelper.tryBreakBlock(trace.getBlockPos(), trace.sideHit);
+                    this.didBreakLastTick = true;
+                    return;
+                }
             }
-
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
         });
         latestState.getInputStates().replaceAll((input, forced) -> false);

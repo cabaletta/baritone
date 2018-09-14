@@ -314,6 +314,14 @@ public class Settings {
      */
     public Setting<Boolean> prefix = new Setting<>(false);
 
+    /**
+     * true: can mine blocks when in inventory, chat, or tabbed away in ESC menu
+     * false: works on cosmic prisons
+     * <p>
+     * LOL
+     */
+    public Setting<Boolean> leftClickWorkaround = new Setting<>(true);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 
