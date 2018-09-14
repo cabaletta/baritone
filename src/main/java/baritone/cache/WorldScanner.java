@@ -44,8 +44,10 @@ public enum WorldScanner implements Helper {
 
         int playerChunkX = playerFeet().getX() >> 4;
         int playerChunkZ = playerFeet().getZ() >> 4;
+        int playerY = playerFeet().getY();
 
         int searchRadiusSq = 0;
+        boolean foundWithinY = false;
         while (true) {
             boolean allUnloaded = true;
             for (int xoff = -searchRadiusSq; xoff <= searchRadiusSq; xoff++) {
@@ -78,7 +80,11 @@ public enum WorldScanner implements Helper {
                                 for (int x = 0; x < 16; x++) {
                                     IBlockState state = bsc.get(x, y, z);
                                     if (blocks.contains(state.getBlock())) {
-                                        res.add(new BlockPos(chunkX | x, yReal | y, chunkZ | z));
+                                        int yy = yReal | y;
+                                        res.add(new BlockPos(chunkX | x, yy, chunkZ | z));
+                                        if (Math.abs(yy - playerY) < 10) {
+                                            foundWithinY = true;
+                                        }
                                     }
                                 }
                             }
@@ -89,7 +95,7 @@ public enum WorldScanner implements Helper {
             if (allUnloaded) {
                 return res;
             }
-            if (res.size() >= max && searchRadiusSq > 26) {
+            if (res.size() >= max && (searchRadiusSq > 26 || (searchRadiusSq > 1 && foundWithinY))) {
                 return res;
             }
             searchRadiusSq++;
