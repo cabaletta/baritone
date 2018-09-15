@@ -83,7 +83,7 @@ public class PathExecutor implements Helper {
         BetterBlockPos whereAmI = playerFeet();
         if (!whereShouldIBe.equals(whereAmI)) {
 
-            if (pathPosition == 0 && whereAmI.equals(whereShouldIBe.up()) && Math.abs(player().motionY) < 0.1) {
+            if (pathPosition == 0 && whereAmI.equals(whereShouldIBe.up()) && Math.abs(player().motionY) < 0.1 && !(path.movements().get(0) instanceof MovementAscend) && !(path.movements().get(0) instanceof MovementPillar)) {
                 // avoid the Wrong Y coordinate bug
                 new MovementDownward(whereAmI, whereShouldIBe).update();
                 return false;
