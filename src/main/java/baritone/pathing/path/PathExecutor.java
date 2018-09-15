@@ -20,13 +20,11 @@ package baritone.pathing.path;
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.pathing.movement.*;
-import baritone.pathing.movement.movements.MovementDescend;
-import baritone.pathing.movement.movements.MovementDiagonal;
-import baritone.pathing.movement.movements.MovementFall;
-import baritone.pathing.movement.movements.MovementTraverse;
+import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.Utils;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
@@ -78,9 +76,16 @@ public class PathExecutor implements Helper {
         if (pathPosition >= path.length() - 1) {
             return true; // stop bugging me, I'm done
         }
-        BlockPos whereShouldIBe = path.positions().get(pathPosition);
-        BlockPos whereAmI = playerFeet();
+        BetterBlockPos whereShouldIBe = path.positions().get(pathPosition);
+        BetterBlockPos whereAmI = playerFeet();
         if (!whereShouldIBe.equals(whereAmI)) {
+
+            if (pathPosition == 0 && whereAmI.equals(whereShouldIBe.up()) && Math.abs(player().motionY) < 0.1) {
+                // avoid the Wrong Y coordinate bug
+                new MovementDownward(whereAmI, whereShouldIBe).update();
+                return false;
+            }
+
             //System.out.println("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
             if (!Blocks.AIR.equals(BlockStateInterface.getBlock(whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks

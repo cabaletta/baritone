@@ -19,6 +19,7 @@ package baritone.utils.pathing;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 
 /**
@@ -57,6 +58,10 @@ public final class BetterBlockPos extends BlockPos {
         hash = 8734625L * hash + y;
         hash = 2873465L * hash + z;
         this.hashCode = hash;
+    }
+
+    public BetterBlockPos(double x, double y, double z) {
+        this(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z));
     }
 
     public BetterBlockPos(BlockPos pos) {
