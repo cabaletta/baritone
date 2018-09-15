@@ -19,6 +19,7 @@ package baritone.utils;
 
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -110,6 +111,16 @@ public final class Utils {
         double ydiff = y - (pos.getY() + 0.5D);
         double zdiff = z - (pos.getZ() + 0.5D);
         return Math.sqrt(xdiff * xdiff + ydiff * ydiff + zdiff * zdiff);
+    }
+
+    public static double playerDistanceToCenter(BlockPos pos) {
+        EntityPlayerSP player = (new Helper() {}).player();
+        return distanceToCenter(pos, player.posX, player.posY, player.posZ);
+    }
+
+    public static double playerFlatDistanceToCenter(BlockPos pos) {
+        EntityPlayerSP player = (new Helper() {}).player();
+        return distanceToCenter(pos, player.posX, pos.getY() + 0.5, player.posZ);
     }
 
     public static double degToRad(double deg) {

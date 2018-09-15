@@ -26,7 +26,7 @@ import baritone.pathing.movement.movements.MovementFall;
 import baritone.pathing.movement.movements.MovementTraverse;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import net.minecraft.client.entity.EntityPlayerSP;
+import baritone.utils.Utils;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
@@ -75,18 +75,11 @@ public class PathExecutor implements Helper {
         if (event.getType() == TickEvent.Type.OUT) {
             throw new IllegalStateException();
         }
-        if (pathPosition >= path.length()) {
-            //stop bugging me, I'm done
-            //TODO Baritone.INSTANCE.behaviors.remove(this)
-            return true;
+        if (pathPosition >= path.length() - 1) {
+            return true; // stop bugging me, I'm done
         }
         BlockPos whereShouldIBe = path.positions().get(pathPosition);
-        EntityPlayerSP thePlayer = mc.player;
         BlockPos whereAmI = playerFeet();
-        if (pathPosition == path.length() - 1) {
-            pathPosition++;
-            return true;
-        }
         if (!whereShouldIBe.equals(whereAmI)) {
             //System.out.println("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
             if (!Blocks.AIR.equals(BlockStateInterface.getBlock(whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
@@ -98,7 +91,7 @@ public class PathExecutor implements Helper {
                         for (int j = pathPosition; j <= previousPos; j++) {
                             path.movements().get(j).reset();
                         }
-                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                        clearKeys();
                         return false;
                     }
                 }
@@ -109,38 +102,28 @@ public class PathExecutor implements Helper {
                         }
                         System.out.println("Double skip sundae");
                         pathPosition = i - 1;
-                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                        clearKeys();
                         return false;
                     }
                 }
             }
         }
-        Tuple<Double, BlockPos> status = path.closestPathPos(thePlayer.posX, thePlayer.posY, thePlayer.posZ);
-        double distanceFromPath = status.getFirst();
-        if (distanceFromPath > MAX_DIST_FROM_PATH) {
+        Tuple<Double, BlockPos> status = path.closestPathPos();
+        if (possiblyOffPath(status, MAX_DIST_FROM_PATH)) {
             ticksAway++;
-            System.out.println("FAR AWAY FROM PATH FOR " + ticksAway + " TICKS. Current distance: " + distanceFromPath + ". Threshold: " + MAX_DIST_FROM_PATH);
+            System.out.println("FAR AWAY FROM PATH FOR " + ticksAway + " TICKS. Current distance: " + status.getFirst() + ". Threshold: " + MAX_DIST_FROM_PATH);
             if (ticksAway > MAX_TICKS_AWAY) {
                 logDebug("Too far away from path for too long, cancelling path");
-                System.out.println("Too many ticks");
-                pathPosition = path.length() + 3;
-                Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-                failed = true;
+                cancel();
                 return false;
             }
         } else {
             ticksAway = 0;
         }
-        if (distanceFromPath > MAX_MAX_DIST_FROM_PATH) {
-            if (!(path.movements().get(pathPosition) instanceof MovementFall)) { // might be midair
-                if (pathPosition == 0 || !(path.movements().get(pathPosition - 1) instanceof MovementFall)) { // might have overshot the landing
-                    logDebug("too far from path");
-                    pathPosition = path.length() + 3;
-                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-                    failed = true;
-                    return false;
-                }
-            }
+        if (possiblyOffPath(status, MAX_MAX_DIST_FROM_PATH)) { // ok, stop right away, we're way too far.
+            logDebug("too far from path");
+            cancel();
+            return false;
         }
         //this commented block is literally cursed.
         /*Out.log(actions.get(pathPosition));
@@ -176,23 +159,24 @@ public class PathExecutor implements Helper {
         }*/
         long start = System.nanoTime() / 1000000L;
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
-            if (i >= 0 && i < path.movements().size()) {
-                Movement m = path.movements().get(i);
-                HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak());
-                HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace());
-                HashSet<BlockPos> prevWalkInto = new HashSet<>(m.toWalkInto());
-                m.toBreakCached = null;
-                m.toPlaceCached = null;
-                m.toWalkIntoCached = null;
-                if (!prevBreak.equals(new HashSet<>(m.toBreak()))) {
-                    recalcBP = true;
-                }
-                if (!prevPlace.equals(new HashSet<>(m.toPlace()))) {
-                    recalcBP = true;
-                }
-                if (!prevWalkInto.equals(new HashSet<>(m.toWalkInto()))) {
-                    recalcBP = true;
-                }
+            if (i < 0 || i >= path.movements().size()) {
+                continue;
+            }
+            Movement m = path.movements().get(i);
+            HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak());
+            HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace());
+            HashSet<BlockPos> prevWalkInto = new HashSet<>(m.toWalkInto());
+            m.toBreakCached = null;
+            m.toPlaceCached = null;
+            m.toWalkIntoCached = null;
+            if (!prevBreak.equals(new HashSet<>(m.toBreak()))) {
+                recalcBP = true;
+            }
+            if (!prevPlace.equals(new HashSet<>(m.toPlace()))) {
+                recalcBP = true;
+            }
+            if (!prevWalkInto.equals(new HashSet<>(m.toWalkInto()))) {
+                recalcBP = true;
             }
         }
         if (recalcBP) {
@@ -221,9 +205,7 @@ public class PathExecutor implements Helper {
             for (int i = 1; i < Baritone.settings().costVerificationLookahead.get() && pathPosition + i < path.length() - 1; i++) {
                 if (path.movements().get(pathPosition + i).calculateCostWithoutCaching() >= ActionCosts.COST_INF) {
                     logDebug("Something has changed in the world and a future movement has become impossible. Cancelling.");
-                    pathPosition = path.length() + 3;
-                    failed = true;
-                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    cancel();
                     return true;
                 }
             }
@@ -231,108 +213,98 @@ public class PathExecutor implements Helper {
         double currentCost = movement.recalculateCost();
         if (currentCost >= ActionCosts.COST_INF) {
             logDebug("Something has changed in the world and this movement has become impossible. Cancelling.");
-            pathPosition = path.length() + 3;
-            failed = true;
-            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+            cancel();
             return true;
         }
         if (!movement.calculatedWhileLoaded() && currentCost - currentMovementInitialCostEstimate > Baritone.settings().maxCostIncrease.get()) {
             logDebug("Original cost " + currentMovementInitialCostEstimate + " current cost " + currentCost + ". Cancelling.");
-            pathPosition = path.length() + 3;
-            failed = true;
-            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+            cancel();
             return true;
         }
-        player().capabilities.allowFlying = false;
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
             logDebug("Movement returns status " + movementStatus);
-            pathPosition = path.length() + 3;
-            failed = true;
-            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+            cancel();
             return true;
         }
         if (movementStatus == SUCCESS) {
             //System.out.println("Movement done, next path");
             pathPosition++;
             ticksOnCurrent = 0;
-            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+            clearKeys();
             onTick(event);
             return true;
         } else {
             sprintIfRequested();
             ticksOnCurrent++;
             if (ticksOnCurrent > currentMovementInitialCostEstimate + Baritone.settings().movementTimeoutTicks.get()) {
-                // only fail if the total time has exceeded the initial estimate
+                // only cancel if the total time has exceeded the initial estimate
                 // as you break the blocks required, the remaining cost goes down, to the point where
                 // ticksOnCurrent is greater than recalculateCost + 100
                 // this is why we cache cost at the beginning, and don't recalculate for this comparison every tick
                 logDebug("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + currentMovementInitialCostEstimate + "). Cancelling.");
-                movement.cancel();
-                Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-                pathPosition = path.length() + 3;
-                failed = true;
+                cancel();
                 return true;
             }
         }
         return false; // movement is in progress
     }
 
+    private boolean possiblyOffPath(Tuple<Double, BlockPos> status, double leniency) {
+        double distanceFromPath = status.getFirst();
+        if (distanceFromPath > leniency) {
+            // when we're midair in the middle of a fall, we're very far from both the beginning and the end, but we aren't actually off path
+            if (path.movements().get(pathPosition) instanceof MovementFall) {
+                BlockPos fallDest = path.positions().get(pathPosition + 1); // .get(pathPosition) is the block we fell off of
+                if (Utils.playerFlatDistanceToCenter(fallDest) < 0.5) {
+                    return false;
+                }
+                return true;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
     private void sprintIfRequested() {
+
+        // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
         if (!new CalculationContext().canSprint()) {
             player().setSprinting(false);
             return;
         }
+
+        // if the movement requested sprinting, then we're done
         if (Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown(mc.gameSettings.keyBindSprint)) {
             if (!player().isSprinting()) {
                 player().setSprinting(true);
             }
             return;
         }
-        Movement movement = path.movements().get(pathPosition);
-        if (movement instanceof MovementDescend && pathPosition < path.length() - 2) {
-            BlockPos descendStart = movement.getSrc();
-            BlockPos descendEnd = movement.getDest();
-            BlockPos into = descendEnd.subtract(descendStart.down()).add(descendEnd);
-            if (into.getY() != descendEnd.getY()) {
-                throw new IllegalStateException(); // sanity check
-            }
-            for (int i = 0; i <= 2; i++) {
-                if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(into.up(i)))) {
+
+        // however, descend doesn't request sprinting, beceause it doesn't know the context of what movement comes after it
+        Movement current = path.movements().get(pathPosition);
+        if (current instanceof MovementDescend && pathPosition < path.length() - 2) {
+
+            // (dest - src) + dest is offset 1 more in the same direction
+            // so it's the block we'd need to worry about running into if we decide to sprint straight through this descend
+
+            BlockPos into = current.getDest().subtract(current.getSrc().down()).add(current.getDest());
+            for (int y = 0; y <= 2; y++) { // we could hit any of the three blocks
+                if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(into.up(y)))) {
                     logDebug("Sprinting would be unsafe");
                     player().setSprinting(false);
                     return;
                 }
             }
+
             Movement next = path.movements().get(pathPosition + 1);
-            if (next instanceof MovementDescend) {
-                if (next.getDirection().equals(movement.getDirection())) {
-                    if (playerFeet().equals(movement.getDest())) {
-                        pathPosition++;
-                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-                    }
-                    if (!player().isSprinting()) {
-                        player().setSprinting(true);
-                    }
-                    return;
-                }
-            }
-            if (next instanceof MovementTraverse) {
-                if (next.getDirection().down().equals(movement.getDirection()) && MovementHelper.canWalkOn(next.getDest().down())) {
-                    if (playerFeet().equals(movement.getDest())) {
-                        pathPosition++;
-                        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
-                    }
-                    if (!player().isSprinting()) {
-                        player().setSprinting(true);
-                    }
-                    return;
-                }
-            }
-            if (next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.get()) {
-                if (playerFeet().equals(movement.getDest())) {
+            if (canSprintInto(current, next)) {
+                if (playerFeet().equals(current.getDest())) {
                     pathPosition++;
-                    Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+                    clearKeys();
                 }
                 if (!player().isSprinting()) {
                     player().setSprinting(true);
@@ -342,6 +314,34 @@ public class PathExecutor implements Helper {
             //logDebug("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
         }
         player().setSprinting(false);
+    }
+
+    private static boolean canSprintInto(Movement current, Movement next) {
+        if (next instanceof MovementDescend) {
+            if (next.getDirection().equals(current.getDirection())) {
+                return true;
+            }
+        }
+        if (next instanceof MovementTraverse) {
+            if (next.getDirection().down().equals(current.getDirection()) && MovementHelper.canWalkOn(next.getDest().down())) {
+                return true;
+            }
+        }
+        if (next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.get()) {
+            return true;
+        }
+        return false;
+    }
+
+    private static void clearKeys() {
+        // i'm just sick and tired of this snippet being everywhere lol
+        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+    }
+
+    private void cancel() {
+        clearKeys();
+        pathPosition = path.length() + 3;
+        failed = true;
     }
 
     public int getPosition() {

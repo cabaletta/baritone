@@ -35,7 +35,6 @@
 package baritone.utils;
 
 import net.minecraft.client.settings.KeyBinding;
-import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -134,7 +133,7 @@ public final class InputOverrideHandler implements Helper {
         /**
          * The actual game {@link KeyBinding} being forced.
          */
-        private KeyBinding keyBinding;
+        private final KeyBinding keyBinding;
 
         Input(KeyBinding keyBinding) {
             this.keyBinding = keyBinding;

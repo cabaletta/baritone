@@ -71,11 +71,11 @@ public interface IPath extends Helper {
      */
     Goal getGoal();
 
-    default Tuple<Double, BlockPos> closestPathPos(double x, double y, double z) {
+    default Tuple<Double, BlockPos> closestPathPos() {
         double best = -1;
         BlockPos bestPos = null;
         for (BlockPos pos : positions()) {
-            double dist = Utils.distanceToCenter(pos, x, y, z);
+            double dist = Utils.playerDistanceToCenter(pos);
             if (dist < best || best == -1) {
                 best = dist;
                 bestPos = pos;

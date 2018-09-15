@@ -31,7 +31,7 @@ public enum EventState {
 
     /**
      * Indicates that whatever movement the event is being
-     * dispatched as a result of has already occured.
+     * dispatched as a result of has already occurred.
      */
     POST
 }
