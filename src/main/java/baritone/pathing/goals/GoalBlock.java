@@ -77,7 +77,7 @@ public class GoalBlock implements Goal, IGoalRenderPos {
 
     @Override
     public String toString() {
-        return "Goal{x=" + x + ",y=" + y + ",z=" + z + "}";
+        return "GoalBlock{x=" + x + ",y=" + y + ",z=" + z + "}";
     }
 
     /**
@@ -92,7 +92,7 @@ public class GoalBlock implements Goal, IGoalRenderPos {
 
         // if yDiff is 1 that means that pos.getY()-this.y==1 which means that we're 1 block below where we should be
         // therefore going from 0,0,0 to a GoalYLevel of pos.getY()-this.y is accurate
-        heuristic += new GoalYLevel(yDiff).heuristic(new BlockPos(0, 0, 0));
+        heuristic += GoalYLevel.calculate(yDiff, 0);
 
         //use the pythagorean and manhattan mixture from GoalXZ
         heuristic += GoalXZ.calculate(xDiff, zDiff);

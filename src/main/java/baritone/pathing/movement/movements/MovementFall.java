@@ -134,15 +134,22 @@ public class MovementFall extends Movement {
             state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), false));
         }
         if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 || BlockStateInterface.isWater(dest))) { // 0.094 because lilypads
-            if (BlockStateInterface.isWater(dest) && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
-                player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
-                if (player().motionY >= 0) {
-                    return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+            if (BlockStateInterface.isWater(dest)) {
+                if (InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
+                    player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
+                    if (player().motionY >= 0) {
+                        return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                    } else {
+                        return state;
+                    }
                 } else {
-                    return state;
+                    if (player().motionY >= 0) {
+                        return state.setStatus(MovementStatus.SUCCESS);
+                    } // don't else return state; we need to stay centered because this water might be flowing under the surface
                 }
+            } else {
+                return state.setStatus(MovementStatus.SUCCESS);
             }
-            return state.setStatus(MovementStatus.SUCCESS);
         }
         Vec3d destCenter = Utils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
         if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {

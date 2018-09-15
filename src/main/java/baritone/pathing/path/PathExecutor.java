@@ -264,7 +264,7 @@ public class PathExecutor implements Helper {
             // when we're midair in the middle of a fall, we're very far from both the beginning and the end, but we aren't actually off path
             if (path.movements().get(pathPosition) instanceof MovementFall) {
                 BlockPos fallDest = path.positions().get(pathPosition + 1); // .get(pathPosition) is the block we fell off of
-                if (Utils.playerFlatDistanceToCenter(fallDest) < 0.5) {
+                if (Utils.playerFlatDistanceToCenter(fallDest) < leniency) { // ignore Y by using flat distance
                     return false;
                 }
                 return true;

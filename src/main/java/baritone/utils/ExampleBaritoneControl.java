@@ -119,6 +119,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             return;
         }
+        if (msg.equals("axis")) {
+            PathingBehavior.INSTANCE.setGoal(new GoalAxis());
+            PathingBehavior.INSTANCE.path();
+            event.cancel();
+            return;
+        }
         if (msg.toLowerCase().equals("cancel")) {
             MineBehavior.INSTANCE.cancel();
             FollowBehavior.INSTANCE.cancel();

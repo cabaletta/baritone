@@ -61,4 +61,9 @@ public class GoalGetToBlock implements Goal, IGoalRenderPos {
         int zDiff = pos.getZ() - this.z;
         return GoalBlock.calculate(xDiff, yDiff, zDiff);
     }
+
+    @Override
+    public String toString() {
+        return "GoalGetToBlock{x=" + x + ",y=" + y + ",z=" + z + "}";
+    }
 }

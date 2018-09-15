@@ -17,11 +17,13 @@
 
 package baritone.pathing.goals;
 
-import java.util.Arrays;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Arrays;
 
 /**
  * Useful for automated combat (retreating specifically)
+ *
  * @author leijurv
  */
 public class GoalRunAway implements Goal {
@@ -65,6 +67,6 @@ public class GoalRunAway implements Goal {
 
     @Override
     public String toString() {
-        return "GoalRunAwayFrom[" + Arrays.asList(from) + "]";
+        return "GoalRunAwayFrom" + Arrays.asList(from);
     }
 }

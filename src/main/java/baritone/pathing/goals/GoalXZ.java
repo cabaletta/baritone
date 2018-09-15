@@ -61,7 +61,7 @@ public class GoalXZ implements Goal {
 
     @Override
     public String toString() {
-        return "Goal{x=" + x + ",z=" + z + "}";
+        return "GoalXZ{x=" + x + ",z=" + z + "}";
     }
 
     public static double calculate(double xDiff, double zDiff) {

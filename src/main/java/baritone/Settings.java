@@ -338,6 +338,11 @@ public class Settings {
      */
     public Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(true);
 
+    /**
+     * The "axis" command (aka GoalAxis) will go to a axis, or diagonal axis, at this Y level.
+     */
+    public Setting<Integer> axisHeight = new Setting<>(120);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 

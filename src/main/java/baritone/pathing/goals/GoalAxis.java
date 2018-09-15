@@ -17,48 +17,38 @@
 
 package baritone.pathing.goals;
 
+import baritone.Baritone;
 import net.minecraft.util.math.BlockPos;
 
-/**
- * Useful for mining (getting to diamond / iron level)
- *
- * @author leijurv
- */
-public class GoalYLevel implements Goal {
+public class GoalAxis implements Goal {
 
-    /**
-     * The target Y level
-     */
-    private final int level;
-
-    public GoalYLevel(int level) {
-        this.level = level;
-    }
+    private static final double SQRT_2_OVER_2 = Math.sqrt(2) / 2;
 
     @Override
     public boolean isInGoal(BlockPos pos) {
-        return pos.getY() == level;
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        return y == Baritone.settings().axisHeight.get() && (x == 0 || z == 0 || Math.abs(x) == Math.abs(z));
     }
 
     @Override
     public double heuristic(BlockPos pos) {
-        return calculate(level, pos.getY());
-    }
+        int x = Math.abs(pos.getX());
+        int y = pos.getY();
+        int z = Math.abs(pos.getZ());
 
-    static double calculate(int goalY, int currentY) {
-        if (currentY > goalY) {
-            // need to descend
-            return FALL_N_BLOCKS_COST[2] / 2 * (currentY - goalY);
-        }
-        if (currentY < goalY) {
-            // need to ascend
-            return (goalY - currentY) * JUMP_ONE_BLOCK_COST;
-        }
-        return 0;
+        int shrt = Math.min(x, z);
+        int lng = Math.max(x, z);
+        int diff = lng - shrt;
+
+        double flatAxisDistance = Math.min(x, Math.min(z, diff * SQRT_2_OVER_2));
+
+        return flatAxisDistance * Baritone.settings().costHeuristic.get() + GoalYLevel.calculate(Baritone.settings().axisHeight.get(), y);
     }
 
     @Override
     public String toString() {
-        return "GoalYLevel{y=" + level + "}";
+        return "GoalAxis";
     }
 }
