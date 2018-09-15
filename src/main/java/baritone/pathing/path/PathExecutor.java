@@ -73,7 +73,10 @@ public class PathExecutor implements Helper {
         if (event.getType() == TickEvent.Type.OUT) {
             throw new IllegalStateException();
         }
-        if (pathPosition >= path.length() - 1) {
+        if (pathPosition == path.length() - 1) {
+            pathPosition++;
+        }
+        if (pathPosition >= path.length()) {
             return true; // stop bugging me, I'm done
         }
         BetterBlockPos whereShouldIBe = path.positions().get(pathPosition);
