@@ -60,7 +60,8 @@ public class MovementFall extends Movement {
             return COST_INF; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
         }
         double placeBucketCost = 0.0;
-        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > context.maxFallHeightNoWater()) {
+        boolean destIsWater = BlockStateInterface.isWater(dest);
+        if (!destIsWater && src.getY() - dest.getY() > context.maxFallHeightNoWater()) {
             if (!context.hasWaterBucket()) {
                 return COST_INF;
             }
@@ -88,7 +89,14 @@ public class MovementFall extends Movement {
             // And falling through signs is possible, but they do have a mining duration, right?
             if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i], false) > 0) {
                 //can't break while falling
-                return COST_INF;
+
+                if (i != positionsToBreak.length - 1 || !destIsWater) {
+                    // if we're checking the very last block to mine
+                    // and it's water (so this is a water fall)
+                    // don't consider the cost of "mining" it
+                    // (if assumeWalkOnWater is true, water isn't canWalkThrough)
+                    return COST_INF;
+                }
             }
         }
         return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost + frontThree;
