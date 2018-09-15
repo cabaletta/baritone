@@ -250,7 +250,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (up instanceof BlockLilyPad) {
                 return true;
             }
-            if (BlockStateInterface.isFlowing(state)) {
+            if (BlockStateInterface.isFlowing(state) || block == Blocks.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
                 return BlockStateInterface.isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
             }
