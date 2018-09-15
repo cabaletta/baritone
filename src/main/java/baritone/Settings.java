@@ -327,6 +327,17 @@ public class Settings {
      */
     public Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
+    /**
+     * Rescan for the goal once every 5 ticks.
+     * Set to 0 to disable.
+     */
+    public Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
+
+    /**
+     * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore
+     */
+    public Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(true);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 

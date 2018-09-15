@@ -17,6 +17,7 @@
 
 package baritone.behavior;
 
+import baritone.Baritone;
 import baritone.api.behavior.Behavior;
 import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.TickEvent;
@@ -56,8 +57,14 @@ public final class MineBehavior extends Behavior implements Helper {
         if (mining == null) {
             return;
         }
-        if (event.getCount() % 5 == 0) {
-            updateGoal();
+        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
+        if (mineGoalUpdateInterval != 0) {
+            if (event.getCount() % mineGoalUpdateInterval == 0) {
+                updateGoal();
+            }
+        }
+        if (!Baritone.settings().cancelOnGoalInvalidation.get()) {
+            return;
         }
         Optional<IPath> path = PathingBehavior.INSTANCE.getPath();
         if (!path.isPresent()) {
