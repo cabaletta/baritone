@@ -51,6 +51,7 @@ public final class MineBehavior extends Behavior implements Helper {
     }
 
     private List<Block> mining;
+    private List<BlockPos> locationsCache;
 
     @Override
     public void onTick(TickEvent event) {
@@ -92,12 +93,18 @@ public final class MineBehavior extends Behavior implements Helper {
         if (mining == null) {
             return;
         }
+        if (!locationsCache.isEmpty()) {
+            locationsCache = prune(new ArrayList<>(locationsCache), mining, 64);
+            PathingBehavior.INSTANCE.setGoal(new GoalComposite(locationsCache.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
+            PathingBehavior.INSTANCE.path();
+        }
         List<BlockPos> locs = scanFor(mining, 64);
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
             cancel();
             return;
         }
+        locationsCache = locs;
         PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
         PathingBehavior.INSTANCE.path();
     }
@@ -119,6 +126,10 @@ public final class MineBehavior extends Behavior implements Helper {
             locs.addAll(WorldScanner.INSTANCE.scanLoadedChunks(uninteresting, max));
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
+        return prune(locs, mining, max);
+    }
+
+    public static List<BlockPos> prune(List<BlockPos> locs, List<Block> mining, int max) {
         BlockPos playerFeet = MineBehavior.INSTANCE.playerFeet();
         locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
 
@@ -135,11 +146,13 @@ public final class MineBehavior extends Behavior implements Helper {
 
     public void mine(String... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).collect(Collectors.toList());
+        this.locationsCache = new ArrayList<>();
         updateGoal();
     }
 
     public void mine(Block... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
+        this.locationsCache = new ArrayList<>();
         updateGoal();
     }
 
