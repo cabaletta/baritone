@@ -64,6 +64,7 @@ public final class CachedChunk implements IBlockTypeAccess {
         add(Blocks.JUKEBOX);
         add(Blocks.END_GATEWAY);
         add(Blocks.WEB);
+        add(Blocks.NETHER_WART);
     }});
 
     /**
