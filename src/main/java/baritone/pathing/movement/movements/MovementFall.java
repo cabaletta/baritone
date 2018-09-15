@@ -162,4 +162,9 @@ public class MovementFall extends Movement {
         }
         return toBreak;
     }
+
+    @Override
+    protected boolean prepared(MovementState state) {
+        return true;
+    }
 }

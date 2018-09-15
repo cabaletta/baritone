@@ -57,3 +57,7 @@ Sure! (As long as usage is in compliance with the GPL 3 License)
 ## How is it so fast?
 
 Magic
+
+## Why is it called Baritone?
+
+It's named for FitMC's deep sultry voice. 
