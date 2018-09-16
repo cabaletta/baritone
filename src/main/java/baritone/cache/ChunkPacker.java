@@ -111,14 +111,14 @@ public final class ChunkPacker implements Helper {
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         String[] blockNames = new String[256];
         for (int z = 0; z < 16; z++) {
-            outerLoop:
+            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
                     if (bitSet.get(index) || bitSet.get(index + 1)) {
                         String name = blockToString(chunk.getBlockState(x, y, z).getBlock());
                         blockNames[z << 4 | x] = name;
-                        continue outerLoop;
+                        continue https;
                     }
                 }
                 blockNames[z << 4 | x] = "air";
