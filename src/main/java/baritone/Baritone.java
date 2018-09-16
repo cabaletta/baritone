@@ -114,7 +114,11 @@ public enum Baritone {
 
     public void registerBehavior(Behavior behavior) {
         this.behaviors.add(behavior);
-        this.gameEventHandler.registerEventListener(behavior);
+        this.registerEventListener(behavior);
+    }
+
+    public void registerEventListener(IGameEventListener listener) {
+        this.gameEventHandler.registerEventListener(listener);
     }
 
     public final boolean isActive() {
