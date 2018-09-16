@@ -57,16 +57,6 @@ public class GoalBlock implements Goal, IGoalRenderPos {
         return pos.getX() == this.x && pos.getY() == this.y && pos.getZ() == this.z;
     }
 
-    /**
-     * The min range value over which to begin considering Y coordinate in the heuristic
-     */
-    private static final double MIN = 20;
-
-    /**
-     * The max range value over which to begin considering Y coordinate in the heuristic
-     */
-    private static final double MAX = 150;
-
     @Override
     public double heuristic(BlockPos pos) {
         int xDiff = pos.getX() - this.x;
