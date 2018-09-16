@@ -49,7 +49,7 @@ public class PathExecutor implements Helper {
     private int pathPosition;
     private int ticksAway;
     private int ticksOnCurrent;
-    private Double currentMovementInitialCostEstimate;
+    private Double currentMovementOriginalCostEstimate;
     private Integer costEstimateIndex;
     private boolean failed;
     private boolean recalcBP = true;
@@ -209,7 +209,7 @@ public class PathExecutor implements Helper {
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
             costEstimateIndex = pathPosition;
             // do this only once, when the movement starts, and deliberately get the cost as cached when this path was calculated, not the cost as it is right now
-            currentMovementInitialCostEstimate = movement.getCost(null);
+            currentMovementOriginalCostEstimate = movement.getCost(null);
             for (int i = 1; i < Baritone.settings().costVerificationLookahead.get() && pathPosition + i < path.length() - 1; i++) {
                 if (path.movements().get(pathPosition + i).calculateCostWithoutCaching() >= ActionCosts.COST_INF) {
                     logDebug("Something has changed in the world and a future movement has become impossible. Cancelling.");
@@ -224,8 +224,8 @@ public class PathExecutor implements Helper {
             cancel();
             return true;
         }
-        if (!movement.calculatedWhileLoaded() && currentCost - currentMovementInitialCostEstimate > Baritone.settings().maxCostIncrease.get()) {
-            logDebug("Original cost " + currentMovementInitialCostEstimate + " current cost " + currentCost + ". Cancelling.");
+        if (!movement.calculatedWhileLoaded() && currentCost - currentMovementOriginalCostEstimate > Baritone.settings().maxCostIncrease.get()) {
+            logDebug("Original cost " + currentMovementOriginalCostEstimate + " current cost " + currentCost + ". Cancelling.");
             cancel();
             return true;
         }
@@ -245,12 +245,12 @@ public class PathExecutor implements Helper {
         } else {
             sprintIfRequested();
             ticksOnCurrent++;
-            if (ticksOnCurrent > currentMovementInitialCostEstimate + Baritone.settings().movementTimeoutTicks.get()) {
+            if (ticksOnCurrent > currentMovementOriginalCostEstimate + Baritone.settings().movementTimeoutTicks.get()) {
                 // only cancel if the total time has exceeded the initial estimate
                 // as you break the blocks required, the remaining cost goes down, to the point where
                 // ticksOnCurrent is greater than recalculateCost + 100
                 // this is why we cache cost at the beginning, and don't recalculate for this comparison every tick
-                logDebug("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + currentMovementInitialCostEstimate + "). Cancelling.");
+                logDebug("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + currentMovementOriginalCostEstimate + "). Cancelling.");
                 cancel();
                 return true;
             }
