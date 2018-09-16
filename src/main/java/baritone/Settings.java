@@ -129,7 +129,7 @@ public class Settings {
      * <p>
      * Finding the optimal path is worth it, so it's the default.
      */
-    public Setting<Double> costHeuristic = this.new <Double>Setting<Double>(3.5D);
+    public Setting<Double> costHeuristic = new Setting<>(3.5D);
 
     // a bunch of obscure internal A* settings that you probably don't want to change
     /**
@@ -222,12 +222,12 @@ public class Settings {
     /**
      * Pathing can never take longer than this
      */
-    public Setting<Number> pathTimeoutMS = new Setting<>(2000L);
+    public Setting<Long> pathTimeoutMS = new Setting<>(2000L);
 
     /**
      * Planning ahead while executing a segment can never take longer than this
      */
-    public Setting<Number> planAheadTimeoutMS = new Setting<>(4000L);
+    public Setting<Long> planAheadTimeoutMS = new Setting<>(4000L);
 
     /**
      * For debugging, consider nodes much much slower
@@ -237,12 +237,12 @@ public class Settings {
     /**
      * Milliseconds between each node
      */
-    public Setting<Number> slowPathTimeDelayMS = new Setting<>(100L);
+    public Setting<Long> slowPathTimeDelayMS = new Setting<>(100L);
 
     /**
      * The alternative timeout number when slowPath is on
      */
-    public Setting<Number> slowPathTimeoutMS = new Setting<>(40000L);
+    public Setting<Long> slowPathTimeoutMS = new Setting<>(40000L);
 
     /**
      * The big one. Download all chunks in simplified 2-bit format and save them for better very-long-distance pathing.
