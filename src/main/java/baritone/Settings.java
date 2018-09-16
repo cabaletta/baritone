@@ -139,8 +139,9 @@ public class Settings {
     public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
 
     /**
-     * See issue #18
      * Set to 1.0 to effectively disable this feature
+     *
+     * @see <a href="https://github.com/cabaletta/baritone/issues/18">Issue #18</a>
      */
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);
 
@@ -153,7 +154,8 @@ public class Settings {
     /**
      * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
      * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
-     * See issue #114 for why this is disabled.
+     *
+     * @see <a href="https://github.com/cabaletta/baritone/issues/144">Issue #144</a>
      */
     public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
 

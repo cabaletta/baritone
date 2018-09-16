@@ -42,7 +42,10 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     protected final Goal goal;
 
-    private final Long2ObjectOpenHashMap<PathNode> map; // see issue #107
+    /**
+     * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
+     */
+    private final Long2ObjectOpenHashMap<PathNode> map;
 
     protected PathNode startNode;
 
@@ -119,11 +122,12 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * for the node mapped to the specified pos. If no node is found,
      * a new node is created.
      *
+     * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
+     *
      * @param pos The pos to lookup
      * @return The associated node
      */
     protected PathNode getNodeAtPosition(BetterBlockPos pos) {
-        // see issue #107
         long hashCode = pos.hashCode;
         PathNode node = map.get(hashCode);
         if (node == null) {

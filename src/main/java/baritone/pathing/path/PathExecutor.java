@@ -44,7 +44,16 @@ import static baritone.pathing.movement.MovementState.MovementStatus.*;
 public class PathExecutor implements Helper {
     private static final double MAX_MAX_DIST_FROM_PATH = 3;
     private static final double MAX_DIST_FROM_PATH = 2;
-    private static final double MAX_TICKS_AWAY = 200; // ten seconds. ok to decrease this, but it must be at least 110, see issue #102
+
+    /**
+     * Default value is equal to 10 seconds. It's find to decrease it, but it must be at least 5.5s (110 ticks).
+     * For more information, see issue #102.
+     *
+     * @see <a href="https://github.com/cabaletta/baritone/issues/102">Issue #102</a>
+     * @see <a href="https://i.imgur.com/5s5GLnI.png">Anime</a>
+     */
+    private static final double MAX_TICKS_AWAY = 200;
+
     private final IPath path;
     private int pathPosition;
     private int ticksAway;
