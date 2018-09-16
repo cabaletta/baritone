@@ -36,8 +36,10 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
+import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
 
@@ -116,6 +118,24 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     }
                 }
             }
+            event.cancel();
+            return;
+        }
+        if (msg.equals("repack") || msg.equals("rescan")) {
+            ChunkProviderClient cli = world().getChunkProvider();
+            int playerChunkX = playerFeet().getX() >> 4;
+            int playerChunkZ = playerFeet().getZ() >> 4;
+            int count = 0;
+            for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
+                for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
+                    Chunk chunk = cli.getLoadedChunk(x, z);
+                    if (chunk != null) {
+                        count++;
+                        WorldProvider.INSTANCE.getCurrentWorld().cache.queueForPacking(chunk);
+                    }
+                }
+            }
+            logDirect("Queued " + count + " chunks for repacking");
             event.cancel();
             return;
         }
