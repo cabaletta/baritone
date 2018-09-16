@@ -61,7 +61,7 @@ public final class PathingBehavior extends Behavior implements Helper {
     private boolean lastAutoJump;
 
     private void dispatchPathEvent(PathEvent event) {
-        new Thread(() -> Baritone.INSTANCE.getGameEventHandler().onPathEvent(event)).start();
+        Baritone.INSTANCE.getExecutor().execute(() -> Baritone.INSTANCE.getGameEventHandler().onPathEvent(event));
     }
 
     @Override
@@ -249,7 +249,7 @@ public final class PathingBehavior extends Behavior implements Helper {
             }
             isPathCalcInProgress = true;
         }
-        new Thread(() -> {
+        Baritone.INSTANCE.getExecutor().execute(() -> {
             if (talkAboutIt) {
                 logDebug("Starting to search for path from " + start + " to " + goal);
             }
@@ -292,7 +292,7 @@ public final class PathingBehavior extends Behavior implements Helper {
             synchronized (pathCalcLock) {
                 isPathCalcInProgress = false;
             }
-        }).start();
+        });
     }
 
     /**

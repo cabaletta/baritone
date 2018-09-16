@@ -17,8 +17,8 @@
 
 package baritone;
 
-import baritone.api.event.listener.IGameEventListener;
 import baritone.api.behavior.Behavior;
+import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
 import baritone.event.GameEventHandler;
 import baritone.utils.InputOverrideHandler;
@@ -29,6 +29,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -52,6 +56,8 @@ public enum Baritone {
     private Settings settings;
     private List<Behavior> behaviors;
     private File dir;
+    private ThreadPoolExecutor threadPool;
+
 
     /**
      * List of consumers to be called after Baritone has initialized
@@ -71,6 +77,7 @@ public enum Baritone {
         if (initialized) {
             return;
         }
+        this.threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
         this.gameEventHandler = new GameEventHandler();
         this.inputOverrideHandler = new InputOverrideHandler();
         this.settings = new Settings();
@@ -96,20 +103,24 @@ public enum Baritone {
         this.onInitConsumers.forEach(consumer -> consumer.accept(this));
     }
 
-    public final boolean isInitialized() {
+    public boolean isInitialized() {
         return this.initialized;
     }
 
-    public final IGameEventListener getGameEventHandler() {
+    public IGameEventListener getGameEventHandler() {
         return this.gameEventHandler;
     }
 
-    public final InputOverrideHandler getInputOverrideHandler() {
+    public InputOverrideHandler getInputOverrideHandler() {
         return this.inputOverrideHandler;
     }
 
-    public final List<Behavior> getBehaviors() {
+    public List<Behavior> getBehaviors() {
         return this.behaviors;
+    }
+
+    public Executor getExecutor() {
+        return threadPool;
     }
 
     public void registerBehavior(Behavior behavior) {
@@ -121,11 +132,11 @@ public enum Baritone {
         this.gameEventHandler.registerEventListener(listener);
     }
 
-    public final boolean isActive() {
+    public boolean isActive() {
         return this.active;
     }
 
-    public final Settings getSettings() {
+    public Settings getSettings() {
         return this.settings;
     }
 
@@ -133,11 +144,11 @@ public enum Baritone {
         return Baritone.INSTANCE.settings; // yolo
     }
 
-    public final File getDir() {
+    public File getDir() {
         return this.dir;
     }
 
-    public final void registerInitListener(Consumer<Baritone> runnable) {
+    public void registerInitListener(Consumer<Baritone> runnable) {
         this.onInitConsumers.add(runnable);
     }
 }

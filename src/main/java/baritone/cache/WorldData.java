@@ -17,6 +17,8 @@
 
 package baritone.cache;
 
+import baritone.Baritone;
+
 import java.nio.file.Path;
 
 /**
@@ -37,11 +39,9 @@ public class WorldData {
     }
 
     void onClose() {
-        new Thread() {
-            public void run() {
-                System.out.println("Started saving the world in a new thread");
-                cache.save();
-            }
-        }.start();
+        Baritone.INSTANCE.getExecutor().execute(() -> {
+            System.out.println("Started saving the world in a new thread");
+            cache.save();
+        });
     }
 }

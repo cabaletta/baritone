@@ -66,8 +66,8 @@ public final class CachedWorld implements Helper {
         System.out.println("Cached world directory: " + directory);
         // Insert an invalid region element
         cachedRegions.put(0, null);
-        new PackerThread().start();
-        new Thread(() -> {
+        Baritone.INSTANCE.getExecutor().execute(new PackerThread());
+        Baritone.INSTANCE.getExecutor().execute(() -> {
             try {
                 Thread.sleep(30000);
                 while (true) {
@@ -80,7 +80,7 @@ public final class CachedWorld implements Helper {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public final void queueForPacking(Chunk chunk) {
@@ -221,7 +221,7 @@ public final class CachedWorld implements Helper {
         return regionX <= REGION_MAX && regionX >= -REGION_MAX && regionZ <= REGION_MAX && regionZ >= -REGION_MAX;
     }
 
-    private class PackerThread extends Thread {
+    private class PackerThread implements Runnable {
         public void run() {
             while (true) {
                 LinkedBlockingQueue<Chunk> queue = toPack;
