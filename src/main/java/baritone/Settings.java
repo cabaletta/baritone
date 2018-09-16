@@ -343,6 +343,19 @@ public class Settings {
      */
     public Setting<Integer> axisHeight = new Setting<>(120);
 
+    /**
+     * When mining block of a certain type, try to mine two at once instead of one.
+     * If the block above is also a goal block, set GoalBlock instead of GoalTwoBlocks
+     * If the block below is also a goal block, set GoalBlock to the position one down instead of GoalTwoBlocks
+     */
+    public Setting<Boolean> forceInternalMining = new Setting<>(true);
+
+    /**
+     * Modification to the previous setting, only has effect if forceInternalMining is true
+     * If true, only apply the previous setting if the block adjacent to the goal isn't air.
+     */
+    public Setting<Boolean> internalMiningAirException = new Setting<>(true);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 

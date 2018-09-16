@@ -26,12 +26,14 @@ import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
 import baritone.pathing.goals.Goal;
+import baritone.pathing.goals.GoalBlock;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -95,7 +97,7 @@ public final class MineBehavior extends Behavior implements Helper {
         }
         if (!locationsCache.isEmpty()) {
             locationsCache = prune(new ArrayList<>(locationsCache), mining, 64);
-            PathingBehavior.INSTANCE.setGoal(new GoalComposite(locationsCache.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
+            PathingBehavior.INSTANCE.setGoal(coalesce(locationsCache));
             PathingBehavior.INSTANCE.path();
         }
         List<BlockPos> locs = scanFor(mining, 64);
@@ -105,8 +107,32 @@ public final class MineBehavior extends Behavior implements Helper {
             return;
         }
         locationsCache = locs;
-        PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalTwoBlocks::new).toArray(Goal[]::new)));
+        PathingBehavior.INSTANCE.setGoal(coalesce(locs));
         PathingBehavior.INSTANCE.path();
+    }
+
+    public static GoalComposite coalesce(List<BlockPos> locs) {
+        return new GoalComposite(locs.stream().map(loc -> {
+            if (!Baritone.settings().forceInternalMining.get()) {
+                return new GoalTwoBlocks(loc);
+            }
+
+            boolean noUp = locs.contains(loc.up()) && !(Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
+            boolean noDown = locs.contains(loc.down()) && !(Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
+            if (noUp) {
+                if (noDown) {
+                    return new GoalTwoBlocks(loc);
+                } else {
+                    return new GoalBlock(loc.down());
+                }
+            } else {
+                if (noDown) {
+                    return new GoalBlock(loc);
+                } else {
+                    return new GoalTwoBlocks(loc);
+                }
+            }
+        }).toArray(Goal[]::new));
     }
 
     public static List<BlockPos> scanFor(List<Block> mining, int max) {
