@@ -147,6 +147,9 @@ public final class MineBehavior extends Behavior implements Helper {
             }
         }
         //System.out.println("Scan of cached chunks took " + (System.currentTimeMillis() - b) + "ms");
+        if (locs.isEmpty()) {
+            uninteresting = mining;
+        }
         if (!uninteresting.isEmpty()) {
             //long before = System.currentTimeMillis();
             locs.addAll(WorldScanner.INSTANCE.scanLoadedChunks(uninteresting, max));
