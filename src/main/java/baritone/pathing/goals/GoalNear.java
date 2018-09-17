@@ -21,10 +21,10 @@ import baritone.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
 public class GoalNear implements Goal, IGoalRenderPos {
-    final int x;
-    final int y;
-    final int z;
-    final int rangeSq;
+    private final int x;
+    private final int y;
+    private final int z;
+    private final int rangeSq;
 
     public GoalNear(BlockPos pos, int range) {
         this.x = pos.getX();

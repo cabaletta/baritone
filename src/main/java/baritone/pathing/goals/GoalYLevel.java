@@ -45,7 +45,7 @@ public class GoalYLevel implements Goal {
         return calculate(level, pos.getY());
     }
 
-    static double calculate(int goalY, int currentY) {
+    public static double calculate(int goalY, int currentY) {
         if (currentY > goalY) {
             // need to descend
             return FALL_N_BLOCKS_COST[2] / 2 * (currentY - goalY);

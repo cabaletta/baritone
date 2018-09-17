@@ -26,13 +26,13 @@ import java.util.List;
 
 public class CutoffPath implements IPath {
 
-    final List<BetterBlockPos> path;
+    private final List<BetterBlockPos> path;
 
-    final List<Movement> movements;
+    private final List<Movement> movements;
 
     private final int numNodes;
 
-    final Goal goal;
+    private final Goal goal;
 
     public CutoffPath(IPath prev, int lastPositionToInclude) {
         path = prev.positions().subList(0, lastPositionToInclude + 1);

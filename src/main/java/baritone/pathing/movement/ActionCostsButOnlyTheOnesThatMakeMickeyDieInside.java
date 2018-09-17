@@ -57,16 +57,15 @@ public interface ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
         if (distance == 0) {
             return 0; // Avoid 0/0 NaN
         }
+        double tmpDistance = distance;
         int tickCount = 0;
         while (true) {
             double fallDistance = velocity(tickCount);
-            if (distance <= fallDistance) {
-                return tickCount + distance / fallDistance;
+            if (tmpDistance <= fallDistance) {
+                return tickCount + tmpDistance / fallDistance;
             }
-            distance -= fallDistance;
+            tmpDistance -= fallDistance;
             tickCount++;
         }
     }
-
-
 }

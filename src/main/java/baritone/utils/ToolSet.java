@@ -42,11 +42,6 @@ public class ToolSet implements Helper {
     private Map<Block, Double> breakStrengthCache = new HashMap<>();
 
     /**
-     * Create a toolset from the current player's inventory (but don't calculate any hardness values just yet)
-     */
-    public ToolSet() {}
-
-    /**
      * Calculate which tool on the hotbar is best for mining
      *
      * @param b the blockstate to be mined

@@ -91,8 +91,7 @@ public final class ChunkPacker implements Helper {
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         String[] blockNames = new String[256];
         for (int z = 0; z < 16; z++) {
-            https:
-//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
@@ -119,10 +118,7 @@ public final class ChunkPacker implements Helper {
     }
 
     public static Block stringToBlock(String name) {
-        if (!name.contains(":")) {
-            name = "minecraft:" + name;
-        }
-        return Block.getBlockFromName(name);
+        return Block.getBlockFromName(name.contains(":") ? name : "minecraft:" + name);
     }
 
     private static PathingBlockType getPathingBlockType(IBlockState state) {
@@ -146,7 +142,7 @@ public final class ChunkPacker implements Helper {
         return PathingBlockType.SOLID;
     }
 
-    static IBlockState pathingTypeToBlock(PathingBlockType type) {
+    public static IBlockState pathingTypeToBlock(PathingBlockType type) {
         if (type != null) {
             switch (type) {
                 case AIR:

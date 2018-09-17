@@ -38,22 +38,22 @@ class Path implements IPath {
     /**
      * The start position of this path
      */
-    final BetterBlockPos start;
+    private final BetterBlockPos start;
 
     /**
      * The end position of this path
      */
-    final BetterBlockPos end;
+    private final BetterBlockPos end;
 
     /**
      * The blocks on the path. Guaranteed that path.get(0) equals start and
      * path.get(path.size()-1) equals end
      */
-    final List<BetterBlockPos> path;
+    private final List<BetterBlockPos> path;
 
-    final List<Movement> movements;
+    private final List<Movement> movements;
 
-    final Goal goal;
+    private final Goal goal;
 
     private final int numNodes;
 

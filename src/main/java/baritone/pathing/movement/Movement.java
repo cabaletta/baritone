@@ -72,10 +72,7 @@ public abstract class Movement implements Helper, MovementHelper {
 
     public double getCost(CalculationContext context) {
         if (cost == null) {
-            if (context == null) {
-                context = new CalculationContext();
-            }
-            cost = calculateCost(context);
+            cost = calculateCost(context != null ? context : new CalculationContext());
         }
         return cost;
     }

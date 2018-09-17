@@ -28,9 +28,9 @@ import java.util.Arrays;
  */
 public class GoalRunAway implements Goal {
 
-    public final BlockPos[] from;
+    private final BlockPos[] from;
 
-    final double distanceSq;
+    private final double distanceSq;
 
     public GoalRunAway(double distance, BlockPos... from) {
         if (from.length == 0) {

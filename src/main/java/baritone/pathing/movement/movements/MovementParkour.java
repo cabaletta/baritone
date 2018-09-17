@@ -38,11 +38,10 @@ import net.minecraft.util.math.Vec3d;
 import java.util.Objects;
 
 public class MovementParkour extends Movement {
-    protected static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN_SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
+    private static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN_SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
 
-
-    final EnumFacing direction;
-    final int dist;
+    private final EnumFacing direction;
+    private final int dist;
 
     private MovementParkour(BetterBlockPos src, int dist, EnumFacing dir) {
         super(src, src.offset(dir, dist), new BlockPos[]{});

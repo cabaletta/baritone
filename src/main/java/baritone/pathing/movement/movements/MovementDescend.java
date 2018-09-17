@@ -31,6 +31,8 @@ import net.minecraft.util.math.BlockPos;
 
 public class MovementDescend extends Movement {
 
+    private int numTicks = 0;
+
     public MovementDescend(BetterBlockPos start, BetterBlockPos end) {
         super(start, end, new BlockPos[]{end.up(2), end.up(), end}, end.down());
     }
@@ -62,8 +64,6 @@ public class MovementDescend extends Movement {
         }
         return walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST) + getTotalHardnessOfBlocksToBreak(context);
     }
-
-    int numTicks = 0;
 
     @Override
     public MovementState updateState(MovementState state) {

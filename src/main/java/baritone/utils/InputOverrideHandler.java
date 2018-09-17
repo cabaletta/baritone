@@ -49,8 +49,6 @@ import java.util.Map;
  */
 public final class InputOverrideHandler implements Helper {
 
-    public InputOverrideHandler() {}
-
     /**
      * Maps keybinds to whether or not we are forcing their state down.
      */

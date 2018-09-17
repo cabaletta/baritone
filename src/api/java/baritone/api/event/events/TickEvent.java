@@ -23,13 +23,18 @@ public final class TickEvent {
 
     private final EventState state;
     private final Type type;
+    private final int count;
 
-    private static int count;
+    private static int overallTickCount;
 
     public TickEvent(EventState state, Type type) {
         this.state = state;
         this.type = type;
-        count++;
+        this.count = incrementCount();
+    }
+
+    private static synchronized int incrementCount() {
+        return overallTickCount++;
     }
 
     public int getCount() {

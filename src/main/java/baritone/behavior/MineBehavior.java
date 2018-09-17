@@ -168,7 +168,7 @@ public final class MineBehavior extends Behavior implements Helper {
                 .filter(pos -> !mining.contains(BlockStateInterface.get(pos).getBlock()))
                 .collect(Collectors.toList()));
         if (locs.size() > max) {
-            locs = locs.subList(0, max);
+            return locs.subList(0, max);
         }
         return locs;
     }

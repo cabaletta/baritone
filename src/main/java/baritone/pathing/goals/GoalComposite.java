@@ -17,9 +17,10 @@
 
 package baritone.pathing.goals;
 
+import net.minecraft.util.math.BlockPos;
+
 import java.util.Arrays;
 import java.util.Collection;
-import net.minecraft.util.math.BlockPos;
 
 /**
  * A composite of many goals, any one of which satisfies the composite.
@@ -33,7 +34,7 @@ public class GoalComposite implements Goal {
     /**
      * An array of goals that any one of must be satisfied
      */
-    public final Goal[] goals;
+    private final Goal[] goals;
 
     public GoalComposite(Goal... goals) {
         this.goals = goals;
