@@ -143,29 +143,28 @@ public final class ChunkPacker implements Helper {
     }
 
     public static IBlockState pathingTypeToBlock(PathingBlockType type) {
-        if (type != null) {
-            switch (type) {
-                case AIR:
-                    return Blocks.AIR.getDefaultState();
-                case WATER:
-                    return Blocks.WATER.getDefaultState();
-                case AVOID:
-                    return Blocks.LAVA.getDefaultState();
-                case SOLID:
-                    // Dimension solid types
-                    switch (mc.player.dimension) {
-                        case -1:
-                            return Blocks.NETHERRACK.getDefaultState();
-                        case 0:
-                            return Blocks.STONE.getDefaultState();
-                        case 1:
-                            return Blocks.END_STONE.getDefaultState();
-                    }
+        switch (type) {
+            case AIR:
+                return Blocks.AIR.getDefaultState();
+            case WATER:
+                return Blocks.WATER.getDefaultState();
+            case AVOID:
+                return Blocks.LAVA.getDefaultState();
+            case SOLID:
+                // Dimension solid types
+                switch (mc.player.dimension) {
+                    case -1:
+                        return Blocks.NETHERRACK.getDefaultState();
+                    case 0:
+                        return Blocks.STONE.getDefaultState();
+                    case 1:
+                        return Blocks.END_STONE.getDefaultState();
+                }
 
-                    // The fallback solid type
-                    return Blocks.STONE.getDefaultState();
-            }
+                // The fallback solid type
+                return Blocks.STONE.getDefaultState();
+            default:
+                return null;
         }
-        return null;
     }
 }
