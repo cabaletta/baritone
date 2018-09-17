@@ -19,9 +19,9 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.Settings;
+import baritone.api.behavior.Behavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
-import baritone.api.behavior.Behavior;
 import baritone.utils.Helper;
 import baritone.utils.Rotation;
 
@@ -89,6 +89,8 @@ public final class LookBehavior extends Behavior implements Helper {
                 }
                 break;
             }
+            default:
+                break;
         }
     }
 

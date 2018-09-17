@@ -130,8 +130,9 @@ public class MovementParkour extends Movement {
                 return WALK_ONE_BLOCK_COST * 3;
             case 4:
                 return SPRINT_ONE_BLOCK_COST * 4;
+            default:
+                throw new IllegalStateException("LOL");
         }
-        throw new IllegalStateException("LOL");
     }
 
 

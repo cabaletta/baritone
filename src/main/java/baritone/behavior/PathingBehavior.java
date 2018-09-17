@@ -26,7 +26,8 @@ import baritone.api.event.events.TickEvent;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
-import baritone.pathing.goals.*;
+import baritone.pathing.goals.Goal;
+import baritone.pathing.goals.GoalXZ;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
@@ -162,6 +163,8 @@ public final class PathingBehavior extends Behavior implements Helper {
                     break;
                 case POST:
                     mc.gameSettings.autoJump = lastAutoJump;
+                    break;
+                default:
                     break;
             }
         }

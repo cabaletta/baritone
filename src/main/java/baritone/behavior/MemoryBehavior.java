@@ -17,10 +17,10 @@
 
 package baritone.behavior;
 
+import baritone.api.behavior.Behavior;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.api.behavior.Behavior;
 import baritone.utils.Helper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
@@ -94,31 +94,28 @@ public final class MemoryBehavior extends Behavior implements Helper {
     public void onReceivePacket(PacketEvent event) {
         Packet p = event.getPacket();
 
-        switch (event.getState()) {
-            case PRE: {
-                if (p instanceof SPacketOpenWindow) {
-                    SPacketOpenWindow packet = event.cast();
+        if (event.getState() == EventState.PRE) {
+            if (p instanceof SPacketOpenWindow) {
+                SPacketOpenWindow packet = event.cast();
 
-                    // Remove any entries that were created over a second ago, this should make up for INSANE latency
-                    this.futureInventories.removeIf(i -> System.nanoTime() / 1000000L - i.time > 1000);
+                // Remove any entries that were created over a second ago, this should make up for INSANE latency
+                this.futureInventories.removeIf(i -> System.nanoTime() / 1000000L - i.time > 1000);
 
-                    this.futureInventories.stream()
-                            .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
-                            .findFirst().ifPresent(matched -> {
-                        // Remove the future inventory
-                        this.futureInventories.remove(matched);
+                this.futureInventories.stream()
+                        .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
+                        .findFirst().ifPresent(matched -> {
+                    // Remove the future inventory
+                    this.futureInventories.remove(matched);
 
-                        // Setup the remembered inventory
-                        RememberedInventory inventory = this.rememberedInventories.computeIfAbsent(matched.pos, pos -> new RememberedInventory());
-                        inventory.windowId = packet.getWindowId();
-                        inventory.size = packet.getSlotCount();
-                    });
-                }
+                    // Setup the remembered inventory
+                    RememberedInventory inventory = this.rememberedInventories.computeIfAbsent(matched.pos, pos -> new RememberedInventory());
+                    inventory.windowId = packet.getWindowId();
+                    inventory.size = packet.getSlotCount();
+                });
+            }
 
-                if (p instanceof SPacketCloseWindow) {
-                    updateInventory();
-                }
-                break;
+            if (p instanceof SPacketCloseWindow) {
+                updateInventory();
             }
         }
     }

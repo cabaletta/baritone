@@ -21,11 +21,11 @@ import baritone.Baritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.utils.interfaces.Toggleable;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
-import baritone.api.utils.interfaces.Toggleable;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.input.Keyboard;
@@ -136,15 +136,11 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
         BlockStateInterface.clearCachedChunk();
 
-        switch (event.getState()) {
-            case PRE:
-                break;
-            case POST:
-                cache.closeWorld();
-                if (event.getWorld() != null) {
-                    cache.initWorld(event.getWorld());
-                }
-                break;
+        if (event.getState() == EventState.POST) {
+            cache.closeWorld();
+            if (event.getWorld() != null) {
+                cache.initWorld(event.getWorld());
+            }
         }
 
         listeners.forEach(l -> {
