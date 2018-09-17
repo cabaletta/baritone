@@ -39,10 +39,6 @@ public class BlockStateInterface implements Helper {
     private static CachedRegion prevCached = null;
 
     private static IBlockState AIR = Blocks.AIR.getDefaultState();
-    public static final Block waterFlowing = Blocks.FLOWING_WATER;
-    public static final Block waterStill = Blocks.WATER;
-    public static final Block lavaFlowing = Blocks.FLOWING_LAVA;
-    public static final Block lavaStill = Blocks.LAVA;
 
     public static IBlockState get(BlockPos pos) {
         return get(pos.getX(), pos.getY(), pos.getZ());
@@ -111,7 +107,7 @@ public class BlockStateInterface implements Helper {
      * @return Whether or not the block is water
      */
     public static boolean isWater(Block b) {
-        return b == waterFlowing || b == waterStill;
+        return b == Blocks.FLOWING_WATER || b == Blocks.WATER;
     }
 
     /**
@@ -126,7 +122,7 @@ public class BlockStateInterface implements Helper {
     }
 
     public static boolean isLava(Block b) {
-        return b == lavaFlowing || b == lavaStill;
+        return b == Blocks.FLOWING_LAVA || b == Blocks.LAVA;
     }
 
     /**
