@@ -69,6 +69,7 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
         return GoalBlock.calculate(xDiff, yDiff, zDiff);
     }
 
+    @Override
     public BlockPos getGoalPos() {
         return new BlockPos(x, y, z);
     }

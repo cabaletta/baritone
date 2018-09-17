@@ -49,6 +49,7 @@ public class GoalNear implements Goal, IGoalRenderPos {
         return GoalBlock.calculate(diffX, diffY, diffZ);
     }
 
+    @Override
     public BlockPos getGoalPos() {
         return new BlockPos(x, y, z);
     }

@@ -73,6 +73,7 @@ public class GoalBlock implements Goal, IGoalRenderPos {
     /**
      * @return The position of this goal as a {@link BlockPos}
      */
+    @Override
     public BlockPos getGoalPos() {
         return new BlockPos(x, y, z);
     }

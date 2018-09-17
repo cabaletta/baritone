@@ -39,6 +39,7 @@ public class GoalGetToBlock implements Goal, IGoalRenderPos {
         this.z = pos.getZ();
     }
 
+    @Override
     public BlockPos getGoalPos() {
         return new BetterBlockPos(x, y, z);
     }

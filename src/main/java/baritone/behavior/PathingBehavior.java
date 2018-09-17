@@ -33,6 +33,7 @@ import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
+import baritone.utils.interfaces.IGoalRenderPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -309,18 +310,9 @@ public final class PathingBehavior extends Behavior implements Helper {
         }
         if (Baritone.settings().simplifyUnloadedYCoord.get()) {
             BlockPos pos = null;
-            if (goal instanceof GoalBlock) {
-                pos = ((GoalBlock) goal).getGoalPos();
-            }
-            if (goal instanceof GoalTwoBlocks) {
-                pos = ((GoalTwoBlocks) goal).getGoalPos();
-            }
-            if (goal instanceof GoalNear) {
-                pos = ((GoalNear) goal).getGoalPos();
-            }
-            if (goal instanceof GoalGetToBlock) {
-                pos = ((GoalGetToBlock) goal).getGoalPos();
-            }
+            if (goal instanceof IGoalRenderPos)
+                pos = ((IGoalRenderPos) goal).getGoalPos();
+
             // TODO simplify each individual goal in a GoalComposite
             if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
                 logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
