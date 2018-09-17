@@ -263,9 +263,8 @@ public class MovementTraverse extends Movement {
                     if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && Minecraft.getMinecraft().player.isSneaking()) {
                         if (LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                             return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                        } else {
-                            // Out.gui("Wrong. " + side + " " + LookBehaviorUtils.getSelectedBlock().get().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);
                         }
+                        // wrong side?
                     }
                     System.out.println("Trying to look at " + against1 + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
                     return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);

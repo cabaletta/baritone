@@ -212,7 +212,7 @@ public class PathExecutor implements Helper {
         }
         long end = System.nanoTime() / 1000000L;
         if (end - start > 0) {
-            //logDebug("Recalculating break and place took " + (end - start) + "ms");
+            System.out.println("Recalculating break and place took " + (end - start) + "ms");
         }
         Movement movement = path.movements().get(pathPosition);
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {

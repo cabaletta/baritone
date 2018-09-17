@@ -20,6 +20,8 @@ package baritone.utils.pathing;
 import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
 
+import static org.junit.Assert.assertTrue;
+
 public class BetterBlockPosTest {
 
     @Test
@@ -33,7 +35,9 @@ public class BetterBlockPosTest {
         for (int i = 0; i < 10; i++) {
             // eliminate any advantage to going first
             benchN();
+            assertTrue(i<10);
         }
+
     }
 
     public void benchOne() {

@@ -22,24 +22,37 @@ import baritone.pathing.goals.Goal;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.*;
 
 import static org.junit.Assert.*;
 
+@RunWith(Parameterized.class)
 public class OpenSetsTest {
 
-    @Test
-    public void testOpenSets() {
-        for (int size = 1; size < 100; size++) {
-            testSize(size);
-        }
-        for (int size = 100; size < 10000; size += 100) {
-            testSize(size);
-        }
+    private final int size;
+
+    public OpenSetsTest(int size) {
+        this.size = size;
     }
 
-    public void removeAndTest(int amount, IOpenSet[] test, Optional<Collection<PathNode>> mustContain) {
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        ArrayList<Object[]> testSizes = new ArrayList<>();
+        for (int size = 1; size < 20; size++) {
+            testSizes.add(new Object[]{size});
+        }
+        for (int size = 100; size <= 1000; size += 100) {
+            testSizes.add(new Object[]{size});
+        }
+        testSizes.add(new Object[]{5000});
+        testSizes.add(new Object[]{10000});
+        return testSizes;
+    }
+
+    private static void removeAndTest(int amount, IOpenSet[] test, Optional<Collection<PathNode>> mustContain) {
         double[][] results = new double[test.length][amount];
         for (int i = 0; i < test.length; i++) {
             long before = System.nanoTime() / 1000000L;
@@ -62,7 +75,8 @@ public class OpenSetsTest {
         }
     }
 
-    public void testSize(int size) {
+    @Test
+    public void testSize() {
         System.out.println("Testing size " + size);
         // Include LinkedListOpenSet even though it's not performant because I absolutely trust that it behaves properly
         // I'm really testing the heap implementations against it as the ground truth
