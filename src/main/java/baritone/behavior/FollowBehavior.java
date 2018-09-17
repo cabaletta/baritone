@@ -17,9 +17,12 @@
 
 package baritone.behavior;
 
+import baritone.Baritone;
 import baritone.api.behavior.Behavior;
 import baritone.api.event.events.TickEvent;
 import baritone.pathing.goals.GoalNear;
+import baritone.pathing.goals.GoalXZ;
+import baritone.utils.Helper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
@@ -28,7 +31,7 @@ import net.minecraft.util.math.BlockPos;
  *
  * @author leijurv
  */
-public final class FollowBehavior extends Behavior {
+public final class FollowBehavior extends Behavior implements Helper {
 
     public static final FollowBehavior INSTANCE = new FollowBehavior();
 
@@ -45,7 +48,8 @@ public final class FollowBehavior extends Behavior {
             return;
         }
         // lol this is trashy but it works
-        PathingBehavior.INSTANCE.setGoal(new GoalNear(new BlockPos(following), 3));
+        GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.get(), Baritone.settings().followOffsetDistance.get());
+        PathingBehavior.INSTANCE.setGoal(new GoalNear(new BlockPos(g.getX(), following.posY, g.getZ()), Baritone.settings().followRadius.get()));
         PathingBehavior.INSTANCE.path();
     }
 

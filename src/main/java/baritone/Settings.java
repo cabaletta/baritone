@@ -358,6 +358,23 @@ public class Settings {
      */
     public Setting<Boolean> internalMiningAirException = new Setting<>(true);
 
+    /**
+     * The actual GoalNear is set this distance away from the entity you're following
+     * <p>
+     * For example, set followOffsetDistance to 5 and followRadius to 0 to always stay precisely 5 blocks north of your follow target.
+     */
+    public Setting<Double> followOffsetDistance = new Setting<>(0D);
+
+    /**
+     * The actual GoalNear is set in this direction from the entity you're following
+     */
+    public Setting<Float> followOffsetDirection = new Setting<>(0F);
+
+    /**
+     * The radius (for the GoalNear) of how close to your target position you actually have to be
+     */
+    public Setting<Integer> followRadius = new Setting<>(3);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 

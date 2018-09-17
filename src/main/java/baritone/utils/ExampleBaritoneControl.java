@@ -400,6 +400,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                         if (setting.value.getClass() == Double.class) {
                             setting.value = Double.parseDouble(data[1]);
                         }
+                        if (setting.value.getClass() == Float.class) {
+                            setting.value = Float.parseFloat(data[1]);
+                        }
                     } catch (NumberFormatException e) {
                         logDirect("Unable to parse " + data[1]);
                         event.cancel();
