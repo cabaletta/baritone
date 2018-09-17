@@ -26,14 +26,14 @@ import net.minecraft.util.math.BlockPos;
  * @since 8/25/2018
  */
 public final class BlockBreakHelper implements Helper {
-
-    private BlockBreakHelper() {}
-
+    
     /**
      * The last block that we tried to break, if this value changes
      * between attempts, then we re-initialize the breaking process.
      */
     private static BlockPos lastBlock;
+
+    private BlockBreakHelper() {}
 
     public static void tryBreakBlock(BlockPos pos, EnumFacing side) {
         if (!pos.equals(lastBlock)) {

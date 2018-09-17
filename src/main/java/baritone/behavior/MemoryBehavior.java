@@ -42,8 +42,6 @@ public final class MemoryBehavior extends Behavior implements Helper {
 
     public static MemoryBehavior INSTANCE = new MemoryBehavior();
 
-    private MemoryBehavior() {}
-
     /**
      * Possible future inventories that we will be able to remember
      */
@@ -53,6 +51,8 @@ public final class MemoryBehavior extends Behavior implements Helper {
      * The current remembered inventories
      */
     private final Map<BlockPos, RememberedInventory> rememberedInventories = new HashMap<>();
+
+    private MemoryBehavior() {}
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {

@@ -49,12 +49,11 @@ import static org.lwjgl.opengl.GL11.*;
  * @since 8/9/2018 4:39 PM
  */
 public final class PathRenderer implements Helper {
-
-    private PathRenderer() {
-    }
-
+    
     private static final Tessellator TESSELLATOR = Tessellator.getInstance();
     private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
+
+    private PathRenderer() {}
 
     public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         GlStateManager.enableBlend();

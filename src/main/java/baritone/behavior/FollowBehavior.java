@@ -17,8 +17,8 @@
 
 package baritone.behavior;
 
-import baritone.api.event.events.TickEvent;
 import baritone.api.behavior.Behavior;
+import baritone.api.event.events.TickEvent;
 import baritone.pathing.goals.GoalNear;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -32,10 +32,9 @@ public final class FollowBehavior extends Behavior {
 
     public static final FollowBehavior INSTANCE = new FollowBehavior();
 
-    private FollowBehavior() {
-    }
-
     private Entity following;
+
+    private FollowBehavior() {}
 
     @Override
     public void onTick(TickEvent event) {

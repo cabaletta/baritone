@@ -29,8 +29,6 @@ public final class LookBehavior extends Behavior implements Helper {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
 
-    private LookBehavior() {}
-
     /**
      * Target's values are as follows:
      * <p>
@@ -50,6 +48,8 @@ public final class LookBehavior extends Behavior implements Helper {
      * @see Settings#freeLook
      */
     private float lastYaw;
+
+    private LookBehavior() {}
 
     public void updateTarget(Rotation target, boolean force) {
         this.target = target;

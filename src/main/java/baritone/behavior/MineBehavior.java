@@ -49,11 +49,10 @@ public final class MineBehavior extends Behavior implements Helper {
 
     public static final MineBehavior INSTANCE = new MineBehavior();
 
-    private MineBehavior() {
-    }
-
     private List<Block> mining;
     private List<BlockPos> locationsCache;
+
+    private MineBehavior() {}
 
     @Override
     public void onTick(TickEvent event) {

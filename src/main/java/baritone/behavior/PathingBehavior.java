@@ -47,9 +47,6 @@ public final class PathingBehavior extends Behavior implements Helper {
 
     public static final PathingBehavior INSTANCE = new PathingBehavior();
 
-    private PathingBehavior() {
-    }
-
     private PathExecutor current;
     private PathExecutor next;
 
@@ -61,6 +58,8 @@ public final class PathingBehavior extends Behavior implements Helper {
     private final Object pathPlanLock = new Object();
 
     private boolean lastAutoJump;
+
+    private PathingBehavior() {}
 
     private void dispatchPathEvent(PathEvent event) {
         Baritone.INSTANCE.getExecutor().execute(() -> Baritone.INSTANCE.getGameEventHandler().onPathEvent(event));
@@ -391,6 +390,5 @@ public final class PathingBehavior extends Behavior implements Helper {
         // if (end - start > 0) {
         //   System.out.println("Frame took " + (split - start) + " " + (end - split));
         //}
-
     }
 }

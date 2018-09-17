@@ -50,6 +50,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
     private final Optional<HashSet<BetterBlockPos>> favoredPositions;
 
+    private final Random random = new Random();
+
     public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BetterBlockPos>> favoredPositions) {
         super(start, goal);
         this.favoredPositions = favoredPositions.map(HashSet::new); // <-- okay this is epic
@@ -249,8 +251,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 MovementParkour.generate(pos, EnumFacing.SOUTH, calcContext),
         };
     }
-
-    private final Random random = new Random();
 
     private <T> void shuffle(T[] list) {
         int len = list.length;

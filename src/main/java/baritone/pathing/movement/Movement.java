@@ -59,6 +59,12 @@ public abstract class Movement implements Helper, MovementHelper {
 
     private Double cost;
 
+    public List<BlockPos> toBreakCached = null;
+    public List<BlockPos> toPlaceCached = null;
+    public List<BlockPos> toWalkIntoCached = null;
+
+    private Boolean calculatedWhileLoaded;
+
     protected Movement(BetterBlockPos src, BetterBlockPos dest, BlockPos[] toBreak, BlockPos toPlace) {
         this.src = src;
         this.dest = dest;
@@ -290,8 +296,6 @@ public abstract class Movement implements Helper, MovementHelper {
         return getDest().subtract(getSrc());
     }
 
-    private Boolean calculatedWhileLoaded;
-
     public void checkLoadedChunk() {
         calculatedWhileLoaded = !(world().getChunk(getDest()) instanceof EmptyChunk);
     }
@@ -299,10 +303,6 @@ public abstract class Movement implements Helper, MovementHelper {
     public boolean calculatedWhileLoaded() {
         return calculatedWhileLoaded;
     }
-
-    public List<BlockPos> toBreakCached = null;
-    public List<BlockPos> toPlaceCached = null;
-    public List<BlockPos> toWalkIntoCached = null;
 
     public List<BlockPos> toBreak() {
         if (toBreakCached != null) {
