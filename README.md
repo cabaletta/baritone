@@ -1,5 +1,5 @@
 # Baritone
-[![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone)
+[![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7150d8ccf6094057b1782aa7a8f92d7d)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
 
 A Minecraft bot. This project is an updated version of [Minebot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
