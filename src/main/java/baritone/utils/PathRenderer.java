@@ -56,7 +56,7 @@ public final class PathRenderer implements Helper {
     private static final Tessellator TESSELLATOR = Tessellator.getInstance();
     private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
 
-    public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart, int fadeEnd) {
+    public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
@@ -66,8 +66,8 @@ public final class PathRenderer implements Helper {
         List<BetterBlockPos> positions = path.positions();
         int next;
         Tessellator tessellator = Tessellator.getInstance();
-        fadeStart += startIndex;
-        fadeEnd += startIndex;
+        int fadeStart = fadeStart0 + startIndex;
+        int fadeEnd = fadeEnd0 + startIndex;
         for (int i = startIndex; i < positions.size() - 1; i = next) {
             BlockPos start = positions.get(i);
 
