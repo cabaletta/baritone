@@ -53,13 +53,11 @@ public class Behavior implements AbstractGameEventListener, Toggleable {
         if (enabled == this.enabled) {
             return this.enabled;
         }
-
         if (this.enabled = enabled) {
             this.onEnable();
         } else {
             this.onDisable();
         }
-
         return this.enabled;
     }
 
