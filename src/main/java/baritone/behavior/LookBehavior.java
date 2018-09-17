@@ -92,6 +92,7 @@ public final class LookBehavior extends Behavior implements Helper {
             default:
                 break;
         }
+        new Thread().start();
     }
 
     @Override
@@ -110,6 +111,8 @@ public final class LookBehavior extends Behavior implements Helper {
                     if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE) {
                         this.target = null;
                     }
+                    break;
+                default:
                     break;
             }
         }

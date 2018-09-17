@@ -65,27 +65,24 @@ public final class MemoryBehavior extends Behavior implements Helper {
     public void onSendPacket(PacketEvent event) {
         Packet p = event.getPacket();
 
-        switch (event.getState()) {
-            case PRE: {
-                if (p instanceof CPacketPlayerTryUseItemOnBlock) {
-                    CPacketPlayerTryUseItemOnBlock packet = event.cast();
+        if (event.getState() == EventState.PRE) {
+            if (p instanceof CPacketPlayerTryUseItemOnBlock) {
+                CPacketPlayerTryUseItemOnBlock packet = event.cast();
 
-                    TileEntity tileEntity = world().getTileEntity(packet.getPos());
+                TileEntity tileEntity = world().getTileEntity(packet.getPos());
 
-                    // Ensure the TileEntity is a container of some sort
-                    if (tileEntity instanceof TileEntityLockable) {
+                // Ensure the TileEntity is a container of some sort
+                if (tileEntity instanceof TileEntityLockable) {
 
-                        TileEntityLockable lockable = (TileEntityLockable) tileEntity;
-                        int size = lockable.getSizeInventory();
+                    TileEntityLockable lockable = (TileEntityLockable) tileEntity;
+                    int size = lockable.getSizeInventory();
 
-                        this.futureInventories.add(new FutureInventory(System.nanoTime() / 1000000L, size, lockable.getGuiID(), tileEntity.getPos()));
-                    }
+                    this.futureInventories.add(new FutureInventory(System.nanoTime() / 1000000L, size, lockable.getGuiID(), tileEntity.getPos()));
                 }
+            }
 
-                if (p instanceof CPacketCloseWindow) {
-                    updateInventory();
-                }
-                break;
+            if (p instanceof CPacketCloseWindow) {
+                updateInventory();
             }
         }
     }
