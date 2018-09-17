@@ -33,13 +33,12 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +52,7 @@ public final class MineBehavior extends Behavior implements Helper {
 
     private List<Block> mining;
     private List<BlockPos> locationsCache;
+    private int quantity;
 
     private MineBehavior() {}
 
@@ -60,6 +60,16 @@ public final class MineBehavior extends Behavior implements Helper {
     public void onTick(TickEvent event) {
         if (mining == null) {
             return;
+        }
+        if (quantity > 0) {
+            Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
+            int curr = player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
+            System.out.println("Currently have " + curr + " " + item);
+            if (curr >= quantity) {
+                logDirect("Have " + curr + " " + item.getItemStackDisplayName(new ItemStack(item, 1)));
+                cancel();
+                return;
+            }
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0) {
@@ -93,6 +103,8 @@ public final class MineBehavior extends Behavior implements Helper {
         locationsCache = locs;
         PathingBehavior.INSTANCE.setGoal(coalesce(locs));
         PathingBehavior.INSTANCE.path();
+
+        Blocks.DIAMOND_ORE.getItemDropped(Blocks.DIAMOND_ORE.getDefaultState(), new Random(), 0);
     }
 
     public static GoalComposite coalesce(List<BlockPos> locs) {
@@ -157,8 +169,9 @@ public final class MineBehavior extends Behavior implements Helper {
         return locs;
     }
 
-    public void mine(String... blocks) {
+    public void mine(int quantity, String... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).collect(Collectors.toList());
+        this.quantity = quantity;
         this.locationsCache = new ArrayList<>();
         updateGoal();
     }
@@ -170,7 +183,7 @@ public final class MineBehavior extends Behavior implements Helper {
     }
 
     public void cancel() {
-        mine((String[]) null);
+        mine(0, (String[]) null);
         PathingBehavior.INSTANCE.cancel();
     }
 }
