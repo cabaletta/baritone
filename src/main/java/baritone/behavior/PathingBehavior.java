@@ -355,7 +355,7 @@ public final class PathingBehavior extends Behavior implements Helper {
             return;
         }
 
-        long start = System.nanoTime();
+        //long start = System.nanoTime();
 
 
         PathExecutor current = this.current; // this should prevent most race conditions?
@@ -372,7 +372,7 @@ public final class PathingBehavior extends Behavior implements Helper {
             PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.MAGENTA, Baritone.settings().fadePath.get(), 10, 20);
         }
 
-        long split = System.nanoTime();
+        //long split = System.nanoTime();
         if (current != null) {
             PathRenderer.drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Color.RED);
             PathRenderer.drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Color.GREEN);
@@ -390,7 +390,7 @@ public final class PathingBehavior extends Behavior implements Helper {
                 });
             });
         });
-        long end = System.nanoTime();
+        //long end = System.nanoTime();
         //System.out.println((end - split) + " " + (split - start));
         // if (end - start > 0) {
         //   System.out.println("Frame took " + (split - start) + " " + (end - split));

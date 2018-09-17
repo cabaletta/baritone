@@ -109,6 +109,8 @@ public interface IGameEventListener {
      * Runs before a outbound packet is sent
      *
      * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
+     * @see Packet
+     * @see GenericFutureListener
      */
     void onSendPacket(PacketEvent event);
 
@@ -116,6 +118,8 @@ public interface IGameEventListener {
      * Runs before an inbound packet is processed
      *
      * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
+     * @see Packet
+     * @see GenericFutureListener
      */
     void onReceivePacket(PacketEvent event);
 
@@ -140,6 +144,7 @@ public interface IGameEventListener {
      * Called when the local player dies, as indicated by the creation of the {@link GuiGameOver} screen.
      *
      * @see GuiGameOver(ITextComponent)
+     * @see ITextComponent
      */
     void onPlayerDeath();
 

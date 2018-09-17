@@ -42,24 +42,8 @@ public final class ChunkPacker implements Helper {
 
     private ChunkPacker() {}
 
-    private static BitSet originalPacker(Chunk chunk) {
-        BitSet bitSet = new BitSet(CachedChunk.SIZE);
-        for (int y = 0; y < 256; y++) {
-            for (int z = 0; z < 16; z++) {
-                for (int x = 0; x < 16; x++) {
-                    int index = CachedChunk.getPositionIndex(x, y, z);
-                    IBlockState state = chunk.getBlockState(x, y, z);
-                    boolean[] bits = getPathingBlockType(state).getBits();
-                    bitSet.set(index, bits[0]);
-                    bitSet.set(index + 1, bits[1]);
-                }
-            }
-        }
-        return bitSet;
-    }
-
     public static CachedChunk pack(Chunk chunk) {
-        long start = System.nanoTime() / 1000000L;
+        //long start = System.nanoTime() / 1000000L;
 
         Map<String, List<BlockPos>> specialBlocks = new HashMap<>();
         BitSet bitSet = new BitSet(CachedChunk.SIZE);
@@ -100,18 +84,15 @@ public final class ChunkPacker implements Helper {
                     }
                 }
             }
-            /*if (!bitSet.equals(originalPacker(chunk))) {
-                throw new IllegalStateException();
-            }*/
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //System.out.println("Packed special blocks: " + specialBlocks);
-        long end = System.nanoTime() / 1000000L;
+        //long end = System.nanoTime() / 1000000L;
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         String[] blockNames = new String[256];
         for (int z = 0; z < 16; z++) {
-            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            https:
+//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
