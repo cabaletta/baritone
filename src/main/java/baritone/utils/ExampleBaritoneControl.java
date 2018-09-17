@@ -69,6 +69,59 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             msg = msg.substring(1);
         }
+
+        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
+        for (Settings.Setting<Boolean> setting : toggleable) {
+            if (msg.equalsIgnoreCase(setting.getName())) {
+                setting.value ^= true;
+                event.cancel();
+                logDirect("Toggled " + setting.getName() + " to " + setting.value);
+                return;
+            }
+        }
+        if (msg.equals("baritone") || msg.equals("settings")) {
+            for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
+                logDirect(setting.toString());
+            }
+            event.cancel();
+            return;
+        }
+        if (msg.contains(" ")) {
+            String[] data = msg.split(" ");
+            if (data.length == 2) {
+                Settings.Setting setting = Baritone.settings().byLowerName.get(data[0]);
+                if (setting != null) {
+                    try {
+                        if (setting.value.getClass() == Long.class) {
+                            setting.value = Long.parseLong(data[1]);
+                        }
+                        if (setting.value.getClass() == Integer.class) {
+                            setting.value = Integer.parseInt(data[1]);
+                        }
+                        if (setting.value.getClass() == Double.class) {
+                            setting.value = Double.parseDouble(data[1]);
+                        }
+                        if (setting.value.getClass() == Float.class) {
+                            setting.value = Float.parseFloat(data[1]);
+                        }
+                    } catch (NumberFormatException e) {
+                        logDirect("Unable to parse " + data[1]);
+                        event.cancel();
+                        return;
+                    }
+                    logDirect(setting.toString());
+                    event.cancel();
+                    return;
+                }
+            }
+        }
+        if (Baritone.settings().byLowerName.containsKey(msg)) {
+            Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg);
+            logDirect(setting.toString());
+            event.cancel();
+            return;
+        }
+
         if (msg.startsWith("goal")) {
             event.cancel();
             String[] params = msg.substring(4).trim().split(" ");
@@ -366,57 +419,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
                 logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
             }
-            event.cancel();
-            return;
-        }
-        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
-        for (Settings.Setting<Boolean> setting : toggleable) {
-            if (msg.equalsIgnoreCase(setting.getName())) {
-                setting.value ^= true;
-                event.cancel();
-                logDirect("Toggled " + setting.getName() + " to " + setting.value);
-                return;
-            }
-        }
-        if (msg.equals("baritone") || msg.equals("settings")) {
-            for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
-                logDirect(setting.toString());
-            }
-            event.cancel();
-            return;
-        }
-        if (msg.contains(" ")) {
-            String[] data = msg.split(" ");
-            if (data.length == 2) {
-                Settings.Setting setting = Baritone.settings().byLowerName.get(data[0]);
-                if (setting != null) {
-                    try {
-                        if (setting.value.getClass() == Long.class) {
-                            setting.value = Long.parseLong(data[1]);
-                        }
-                        if (setting.value.getClass() == Integer.class) {
-                            setting.value = Integer.parseInt(data[1]);
-                        }
-                        if (setting.value.getClass() == Double.class) {
-                            setting.value = Double.parseDouble(data[1]);
-                        }
-                        if (setting.value.getClass() == Float.class) {
-                            setting.value = Float.parseFloat(data[1]);
-                        }
-                    } catch (NumberFormatException e) {
-                        logDirect("Unable to parse " + data[1]);
-                        event.cancel();
-                        return;
-                    }
-                    logDirect(setting.toString());
-                    event.cancel();
-                    return;
-                }
-            }
-        }
-        if (Baritone.settings().byLowerName.containsKey(msg)) {
-            Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg);
-            logDirect(setting.toString());
             event.cancel();
             return;
         }
