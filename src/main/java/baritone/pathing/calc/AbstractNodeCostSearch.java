@@ -89,14 +89,10 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             path.ifPresent(IPath::postprocess);
             isFinished = true;
             return path;
-        } catch (Exception e) {
+        } finally {
+            // this is run regardless of what exception may or may not be raised by calculate0
             currentlyRunning = null;
             isFinished = true;
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            } else {
-                throw new RuntimeException(e);
-            }
         }
     }
 
@@ -122,10 +118,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * for the node mapped to the specified pos. If no node is found,
      * a new node is created.
      *
-     * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
-     *
      * @param pos The pos to lookup
      * @return The associated node
+     * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */
     protected PathNode getNodeAtPosition(BetterBlockPos pos) {
         long hashCode = pos.hashCode;
