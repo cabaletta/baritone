@@ -310,8 +310,9 @@ public final class PathingBehavior extends Behavior implements Helper {
         }
         if (Baritone.settings().simplifyUnloadedYCoord.get()) {
             BlockPos pos = null;
-            if (goal instanceof IGoalRenderPos)
+            if (goal instanceof IGoalRenderPos) {
                 pos = ((IGoalRenderPos) goal).getGoalPos();
+            }
 
             // TODO simplify each individual goal in a GoalComposite
             if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
