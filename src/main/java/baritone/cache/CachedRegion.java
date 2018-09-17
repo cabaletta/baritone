@@ -100,7 +100,7 @@ public final class CachedRegion implements IBlockTypeAccess {
         return res;
     }
 
-    final synchronized void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
+    public final synchronized void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
         this.chunks[chunkX][chunkZ] = chunk;
         hasUnsavedChanges = true;
     }

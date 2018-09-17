@@ -414,7 +414,7 @@ public class Settings {
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
         byLowerName = Collections.unmodifiableMap(tmpByName);
         allSettings = Collections.unmodifiableList(tmpAll);

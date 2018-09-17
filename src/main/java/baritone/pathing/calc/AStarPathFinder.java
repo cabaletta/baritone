@@ -116,7 +116,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 int chunkZ = currentNodePos.z >> 4;
                 if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
-                    if (chunkProvider.getLoadedChunk(chunkX, chunkZ) == null) {
+                    if (chunkProvider.isChunkGeneratedAt(chunkX, chunkZ)) {
                         // see issue #106
                         if (cachedWorld == null || !cachedWorld.isCached(dest)) {
                             numEmptyChunk++;

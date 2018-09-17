@@ -83,7 +83,7 @@ class LinkedListOpenSet implements IOpenSet {
     }
 
     public static class Node { //wrapper with next
-        Node nextOpen;
-        PathNode val;
+        private Node nextOpen;
+        private PathNode val;
     }
 }
