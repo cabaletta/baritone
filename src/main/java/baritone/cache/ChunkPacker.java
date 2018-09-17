@@ -156,13 +156,11 @@ public final class ChunkPacker implements Helper {
                     case -1:
                         return Blocks.NETHERRACK.getDefaultState();
                     case 0:
+                    default: // The fallback solid type
                         return Blocks.STONE.getDefaultState();
                     case 1:
                         return Blocks.END_STONE.getDefaultState();
                 }
-
-                // The fallback solid type
-                return Blocks.STONE.getDefaultState();
             default:
                 return null;
         }
