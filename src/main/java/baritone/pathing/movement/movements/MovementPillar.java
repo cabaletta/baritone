@@ -160,8 +160,7 @@ public class MovementPillar extends Movement {
         } else {
             // Get ready to place a throwaway block
             if (!MovementHelper.throwaway(true)) {
-                state.setStatus(MovementState.MovementStatus.UNREACHABLE);
-                return state;
+                return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
             }
 
             numTicks++;

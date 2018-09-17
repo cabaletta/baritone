@@ -66,8 +66,7 @@ public class MovementDownward extends Movement {
         }
 
         if (playerFeet().equals(dest)) {
-            state.setStatus(MovementState.MovementStatus.SUCCESS);
-            return state;
+            return state.setStatus(MovementState.MovementStatus.SUCCESS);
         }
         double diffX = player().posX - (dest.getX() + 0.5);
         double diffZ = player().posZ - (dest.getZ() + 0.5);

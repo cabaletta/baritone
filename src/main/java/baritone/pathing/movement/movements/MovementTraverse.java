@@ -180,9 +180,8 @@ public class MovementTraverse extends Movement {
             }
             if (isDoorActuallyBlockingUs) {
                 if (!(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
-                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world())), true));
-                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                    return state;
+                    return state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world())), true))
+                            .setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }
         }
@@ -196,9 +195,8 @@ public class MovementTraverse extends Movement {
             }
 
             if (blocked != null) {
-                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(blocked, world())), true));
-                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                return state;
+                return state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(blocked, world())), true))
+                        .setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
             }
         }
 
@@ -214,8 +212,7 @@ public class MovementTraverse extends Movement {
 
         if (isTheBridgeBlockThere) {
             if (playerFeet().equals(dest)) {
-                state.setStatus(MovementState.MovementStatus.SUCCESS);
-                return state;
+                return state.setStatus(MovementState.MovementStatus.SUCCESS);
             }
             if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
                 state.setInput(InputOverrideHandler.Input.SPRINT, true);
@@ -248,9 +245,8 @@ public class MovementTraverse extends Movement {
                         double dist = Math.max(Math.abs(dest.getX() + 0.5 - player().posX), Math.abs(dest.getZ() + 0.5 - player().posZ));
                         if (dist < 0.85) { // 0.5 + 0.3 + epsilon
                             MovementHelper.moveTowards(state, dest);
-                            state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
-                            state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
-                            return state;
+                            return state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false)
+                                    .setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                         }
                     }
                     state.setInput(InputOverrideHandler.Input.MOVE_BACK, false);
@@ -290,8 +286,7 @@ public class MovementTraverse extends Movement {
                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);
                 if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), goalLook)) {
-                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true); // wait to right click until we are able to place
-                    return state;
+                    return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
                 return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);

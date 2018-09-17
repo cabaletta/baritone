@@ -113,8 +113,7 @@ public class MovementFall extends Movement {
         Rotation targetRotation = null;
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) || world().provider.isNether()) {
-                state.setStatus(MovementStatus.UNREACHABLE);
-                return state;
+                return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
             if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
