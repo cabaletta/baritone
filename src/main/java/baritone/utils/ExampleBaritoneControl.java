@@ -38,6 +38,7 @@ import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
@@ -236,15 +237,28 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             return;
         }
-        if (msg.equals("follow")) {
-            Optional<Entity> entity = MovementHelper.whatEntityAmILookingAt();
-            if (!entity.isPresent()) {
-                logDirect("You aren't looking at an entity bruh");
+        if (msg.startsWith("follow")) {
+            String name = msg.substring(6).trim();
+            Optional<Entity> toFollow = Optional.empty();
+            if (name.length() == 0) {
+                toFollow = MovementHelper.whatEntityAmILookingAt();
+            } else {
+                for (EntityPlayer pl : world().playerEntities) {
+                    String theirName = pl.getName().trim().toLowerCase();
+                    if (!theirName.equals(player().getName().trim().toLowerCase())) { // don't follow ourselves lol
+                        if (theirName.contains(name) || name.contains(theirName)) {
+                            toFollow = Optional.of(pl);
+                        }
+                    }
+                }
+            }
+            if (!toFollow.isPresent()) {
+                logDirect("Not found");
                 event.cancel();
                 return;
             }
-            FollowBehavior.INSTANCE.follow(entity.get());
-            logDirect("Following " + entity.get());
+            FollowBehavior.INSTANCE.follow(toFollow.get());
+            logDirect("Following " + toFollow.get());
             event.cancel();
             return;
         }

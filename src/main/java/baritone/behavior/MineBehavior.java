@@ -29,7 +29,6 @@ import baritone.pathing.goals.Goal;
 import baritone.pathing.goals.GoalBlock;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
-import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
@@ -37,7 +36,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -65,24 +67,7 @@ public final class MineBehavior extends Behavior implements Helper {
                 updateGoal();
             }
         }
-        if (!Baritone.settings().cancelOnGoalInvalidation.get()) {
-            return;
-        }
-        Optional<IPath> path = PathingBehavior.INSTANCE.getPath();
-        if (!path.isPresent()) {
-            return;
-        }
-        Goal currentGoal = PathingBehavior.INSTANCE.getGoal();
-        if (currentGoal == null) {
-            return;
-        }
-        Goal intended = path.get().getGoal();
-        BlockPos end = path.get().getDest();
-        if (intended.isInGoal(end) && !currentGoal.isInGoal(end)) {
-            // this path used to end in the goal
-            // but the goal has changed, so there's no reason to continue...
-            PathingBehavior.INSTANCE.cancel();
-        }
+        PathingBehavior.INSTANCE.revalidateGoal();
     }
 
     @Override
