@@ -67,20 +67,25 @@ public class MovementPillar extends Movement {
                 return COST_INF;
             }
         }
-        double hardness = getTotalHardnessOfBlocksToBreak(context);
+        BlockPos toBreakPos = src.up(2);
+        IBlockState toBreak = BlockStateInterface.get(toBreakPos);
+        Block toBreakBlock = toBreak.getBlock();
+        if (toBreakBlock instanceof BlockFenceGate) {
+            return COST_INF;
+        }
+        double hardness = MovementHelper.getMiningDurationTicks(context, toBreakPos, toBreak, true);
         if (hardness >= COST_INF) {
             return COST_INF;
         }
         if (hardness != 0) {
-            Block tmp = BlockStateInterface.get(src.up(2)).getBlock();
-            if (tmp instanceof BlockLadder || tmp instanceof BlockVine) {
+            if (toBreakBlock instanceof BlockLadder || toBreakBlock instanceof BlockVine) {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
                 BlockPos chkPos = src.up(3);
                 IBlockState check = BlockStateInterface.get(chkPos);
                 if (check.getBlock() instanceof BlockFalling) {
                     // see MovementAscend's identical check for breaking a falling block above our head
-                    if (!(tmp instanceof BlockFalling) || !(BlockStateInterface.get(src.up(1)).getBlock() instanceof BlockFalling)) {
+                    if (!(toBreakBlock instanceof BlockFalling) || !(BlockStateInterface.get(src.up(1)).getBlock() instanceof BlockFalling)) {
                         return COST_INF;
                     }
                 }
