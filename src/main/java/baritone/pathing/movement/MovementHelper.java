@@ -432,7 +432,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 break;
             }
             IBlockState ontoBlock = BlockStateInterface.get(onto);
-            if (BlockStateInterface.isWater(ontoBlock.getBlock())) {
+            if (ontoBlock.getBlock() == Blocks.WATER) {
                 return new MovementFall(pos, onto);
             }
             if (canWalkThrough(onto, ontoBlock)) {
