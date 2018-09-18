@@ -29,6 +29,7 @@ import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementPillar extends Movement {
@@ -102,7 +103,7 @@ public class MovementPillar extends Movement {
             return COST_INF;
         }
         if (ladder) {
-            return LADDER_UP_ONE_COST + hardness;
+            return LADDER_UP_ONE_COST + hardness * 5;
         } else {
             return JUMP_ONE_BLOCK_COST + context.placeBlockCost() + hardness;
         }
@@ -204,5 +205,16 @@ public class MovementPillar extends Movement {
         }
 
         return state;
+    }
+
+    @Override
+    protected boolean prepared(MovementState state) {
+        if (playerFeet().equals(src) || playerFeet().equals(src.down())) {
+            Block block = BlockStateInterface.getBlock(src.down());
+            if (block == Blocks.LADDER || block == Blocks.VINE) {
+                state.setInput(InputOverrideHandler.Input.SNEAK, true);
+            }
+        }
+        return super.prepared(state);
     }
 }
