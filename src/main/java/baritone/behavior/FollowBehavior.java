@@ -48,8 +48,14 @@ public final class FollowBehavior extends Behavior implements Helper {
             return;
         }
         // lol this is trashy but it works
-        GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.get(), Baritone.settings().followOffsetDistance.get());
-        PathingBehavior.INSTANCE.setGoal(new GoalNear(new BlockPos(g.getX(), following.posY, g.getZ()), Baritone.settings().followRadius.get()));
+        BlockPos pos;
+        if (Baritone.settings().followOffsetDistance.get() == 0) {
+            pos = following.getPosition();
+        } else {
+            GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.get(), Baritone.settings().followOffsetDistance.get());
+            pos = new BlockPos(g.getX(), following.posY, g.getZ());
+        }
+        PathingBehavior.INSTANCE.setGoal(new GoalNear(pos, Baritone.settings().followRadius.get()));
         PathingBehavior.INSTANCE.revalidateGoal();
         PathingBehavior.INSTANCE.path();
     }
