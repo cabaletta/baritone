@@ -36,7 +36,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     /**
      * The currently running search task
      */
-    protected static AbstractNodeCostSearch currentlyRunning = null;
+    private static AbstractNodeCostSearch currentlyRunning = null;
 
     protected final BetterBlockPos start;
 
@@ -55,7 +55,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     private volatile boolean isFinished;
 
-    protected boolean cancelRequested;
+    protected volatile boolean cancelRequested;
 
     /**
      * This is really complicated and hard to explain. I wrote a comment in the old version of MineBot but it was so
@@ -85,6 +85,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         }
         this.cancelRequested = false;
         try {
+            currentlyRunning = this;
             Optional<IPath> path = calculate0(timeout);
             path.ifPresent(IPath::postprocess);
             isFinished = true;

@@ -72,7 +72,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         }
         CalculationContext calcContext = new CalculationContext();
         HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
-        currentlyRunning = this;
         CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
         BlockStateInterface.clearCachedChunk();
@@ -103,7 +102,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
             if (goal.isInGoal(currentNodePos)) {
-                currentlyRunning = null;
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal));
             }
@@ -177,7 +175,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             }
         }
         if (cancelRequested) {
-            currentlyRunning = null;
             return Optional.empty();
         }
         System.out.println(numMovementsConsidered + " movements considered");
@@ -200,13 +197,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     System.out.println("But I'm going to do it anyway, because yolo");
                 }
                 System.out.println("Path goes for " + Math.sqrt(dist) + " blocks");
-                currentlyRunning = null;
                 return Optional.of(new Path(startNode, bestSoFar[i], numNodes, goal));
             }
         }
         logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
         logDebug("No path found =(");
-        currentlyRunning = null;
         return Optional.empty();
     }
 
