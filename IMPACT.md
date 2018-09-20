@@ -27,7 +27,7 @@ command line
 
 ### Cutting Edge Release
 If you want to trust @Plutie#9079, you can download an automatically generated build of the latest commit
-from his Jenkins server, found <a href="http://24.202.239.85:8080/job/baritone/lastSuccessfulBuild/">here</a>.
+from his Jenkins server, found <a href="https://plutiejenkins.leijurv.com/job/baritone/lastSuccessfulBuild/">here</a>.
 
 ## Placing Baritone in the libraries directory
 ``/libraries`` is a neat directory in your <a href="https://minecraft.gamepedia.com/.minecraft">Minecraft Installation Directory</a>

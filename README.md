@@ -10,7 +10,7 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
 
 <a href="https://github.com/cabaletta/baritone/blob/master/IMPACT.md">Baritone + Impact</a>
 
-Unofficial Jenkins: [![Build Status](http://24.202.239.85:8080/job/baritone/badge/icon)](http://24.202.239.85:8080/job/baritone/lastSuccessfulBuild/)
+Unofficial Jenkins: [![Build Status](https://plutiejenkins.leijurv.com/job/baritone/badge/icon)](https://plutiejenkins.leijurv.com/job/baritone/lastSuccessfulBuild/)
 
 # Setup
 
