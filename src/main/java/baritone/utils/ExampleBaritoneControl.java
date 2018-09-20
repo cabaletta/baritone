@@ -421,7 +421,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             } else {
                 Goal goal = new GoalBlock(waypoint.location);
                 PathingBehavior.INSTANCE.setGoal(goal);
-                logDirect("Set goal to saved home " + goal);
+                PathingBehavior.INSTANCE.path();
+                logDirect("Going to saved home " + goal);
             }
             event.cancel();
             return;
