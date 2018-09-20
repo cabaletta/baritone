@@ -31,6 +31,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class MovementPillar extends Movement {
     private int numTicks = 0;
@@ -74,6 +75,13 @@ public class MovementPillar extends Movement {
         if (toBreakBlock instanceof BlockFenceGate) {
             return COST_INF;
         }
+        Block srcUp = null;
+        if (BlockStateInterface.isWater(toBreakBlock) && BlockStateInterface.isWater(fromDown)) {
+            srcUp = BlockStateInterface.get(dest).getBlock();
+            if (BlockStateInterface.isWater(srcUp)) {
+                return LADDER_UP_ONE_COST;
+            }
+        }
         double hardness = MovementHelper.getMiningDurationTicks(context, toBreakPos, toBreak, true);
         if (hardness >= COST_INF) {
             return COST_INF;
@@ -86,7 +94,10 @@ public class MovementPillar extends Movement {
                 IBlockState check = BlockStateInterface.get(chkPos);
                 if (check.getBlock() instanceof BlockFalling) {
                     // see MovementAscend's identical check for breaking a falling block above our head
-                    if (!(toBreakBlock instanceof BlockFalling) || !(BlockStateInterface.get(src.up(1)).getBlock() instanceof BlockFalling)) {
+                    if (srcUp == null) {
+                        srcUp = BlockStateInterface.get(dest).getBlock();
+                    }
+                    if (!(toBreakBlock instanceof BlockFalling) || !(srcUp instanceof BlockFalling)) {
                         return COST_INF;
                     }
                 }
@@ -133,6 +144,18 @@ public class MovementPillar extends Movement {
         }
 
         IBlockState fromDown = BlockStateInterface.get(src);
+        if (BlockStateInterface.isWater(fromDown.getBlock()) && BlockStateInterface.isWater(dest)) {
+            // stay centered while swimming up a water column
+            state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), false));
+            Vec3d destCenter = Utils.getBlockPosCenter(dest);
+            if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
+                state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+            }
+            if (playerFeet().equals(dest)) {
+                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+            }
+            return state;
+        }
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
         if (!ladder) {
@@ -214,6 +237,9 @@ public class MovementPillar extends Movement {
             if (block == Blocks.LADDER || block == Blocks.VINE) {
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);
             }
+        }
+        if (BlockStateInterface.isWater(dest.up())) {
+            return true;
         }
         return super.prepared(state);
     }
