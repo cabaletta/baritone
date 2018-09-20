@@ -32,7 +32,16 @@ import java.util.List;
 public enum WorldScanner implements Helper {
     INSTANCE;
 
-    public List<BlockPos> scanLoadedChunks(List<Block> blocks, int max) {
+    /**
+     * Scans the world, up to your render distance, for the specified blocks.
+     *
+     * @param blocks The blocks to scan for
+     * @param max The maximum number of blocks to scan before cutoff
+     * @param yLevelThreshold If a block is found within this Y level, the current result will be
+     *                        returned, if the value is negative, then this condition doesn't apply.
+     * @return The matching block positions
+     */
+    public List<BlockPos> scanLoadedChunks(List<Block> blocks, int max, int yLevelThreshold) {
         if (blocks.contains(null)) {
             throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }
@@ -84,7 +93,7 @@ public enum WorldScanner implements Helper {
                                     if (blocks.contains(state.getBlock())) {
                                         int yy = yReal | y;
                                         res.add(new BlockPos(chunkX | x, yy, chunkZ | z));
-                                        if (Math.abs(yy - playerY) < 10) {
+                                        if (Math.abs(yy - playerY) < yLevelThreshold) {
                                             foundWithinY = true;
                                         }
                                     }
