@@ -9,7 +9,6 @@
 -verbose
 
 -allowaccessmodification # anything not kept can be changed from public to private and inlined etc
--mergeinterfacesaggressively
 -overloadaggressively
 -dontusemixedcaseclassnames
 
