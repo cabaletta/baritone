@@ -1,4 +1,5 @@
 # Integration between Baritone and Impact
+Impact 4.4 will have Baritone included on release, however, if you're impatient, you can install Baritone into Impact 4.3 right now!
 
 ## An Introduction
 There are some basic steps to getting Baritone setup with Impact.
