@@ -68,7 +68,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
         double[] bestHeuristicSoFar = new double[COEFFICIENTS.length];
         for (int i = 0; i < bestHeuristicSoFar.length; i++) {
-            bestHeuristicSoFar[i] = Double.MAX_VALUE;
+            bestHeuristicSoFar[i] = startNode.estimatedCostToGoal;
+            bestSoFar[i] = startNode;
         }
         CalculationContext calcContext = new CalculationContext();
         HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
