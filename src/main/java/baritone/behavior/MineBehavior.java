@@ -119,11 +119,11 @@ public final class MineBehavior extends Behavior implements Helper {
                 if (noDown) {
                     return new GoalTwoBlocks(loc);
                 } else {
-                    return new GoalBlock(loc.down());
+                    return new GoalBlock(loc);
                 }
             } else {
                 if (noDown) {
-                    return new GoalBlock(loc);
+                    return new GoalBlock(loc.down());
                 } else {
                     return new GoalTwoBlocks(loc);
                 }
