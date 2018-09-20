@@ -96,6 +96,11 @@ public interface Helper {
         ITextComponent component = MESSAGE_PREFIX.createCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
         component.appendSibling(new TextComponentString(" " + message));
-        mc.ingameGUI.getChatGUI().printChatMessage(component);
+        Baritone.settings().logger.get().accept(component);
     }
+
+    default void addToChat(ITextComponent msg) {
+        mc.ingameGUI.getChatGUI().printChatMessage(msg);
+    }
+
 }

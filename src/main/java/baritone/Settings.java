@@ -17,11 +17,14 @@
 
 package baritone;
 
+import baritone.utils.Helper;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.util.text.ITextComponent;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Baritone's settings
@@ -374,6 +377,11 @@ public class Settings {
      * The radius (for the GoalNear) of how close to your target position you actually have to be
      */
     public Setting<Integer> followRadius = new Setting<>(3);
+
+    /**
+     * Instead of Baritone logging to chat, set a custom consumer.
+     */
+    public Setting<Consumer<ITextComponent>> logger = new Setting<>(new Helper() {}::addToChat);
 
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
