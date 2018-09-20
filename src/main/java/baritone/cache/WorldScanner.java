@@ -39,9 +39,10 @@ public enum WorldScanner implements Helper {
      * @param max The maximum number of blocks to scan before cutoff
      * @param yLevelThreshold If a block is found within this Y level, the current result will be
      *                        returned, if the value is negative, then this condition doesn't apply.
+     * @param maxSearchRadius The maximum chunk search radius
      * @return The matching block positions
      */
-    public List<BlockPos> scanLoadedChunks(List<Block> blocks, int max, int yLevelThreshold) {
+    public List<BlockPos> scanLoadedChunks(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
         if (blocks.contains(null)) {
             throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }
@@ -51,6 +52,7 @@ public enum WorldScanner implements Helper {
         }
         ChunkProviderClient chunkProvider = world().getChunkProvider();
 
+        int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
         int playerChunkX = playerFeet().getX() >> 4;
         int playerChunkZ = playerFeet().getZ() >> 4;
         int playerY = playerFeet().getY();
@@ -105,7 +107,7 @@ public enum WorldScanner implements Helper {
             }
             if ((allUnloaded && foundChunks)
                     || res.size() >= max
-                    || (searchRadiusSq > 26 || (searchRadiusSq > 1 && foundWithinY))
+                    || (searchRadiusSq > maxSearchRadiusSq || (searchRadiusSq > 1 && foundWithinY))
             ) {
                 return res;
             }
