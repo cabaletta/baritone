@@ -50,12 +50,14 @@ public enum WorldScanner implements Helper {
         boolean foundWithinY = false;
         while (true) {
             boolean allUnloaded = true;
+            boolean foundChunks = false;
             for (int xoff = -searchRadiusSq; xoff <= searchRadiusSq; xoff++) {
                 for (int zoff = -searchRadiusSq; zoff <= searchRadiusSq; zoff++) {
                     int distance = xoff * xoff + zoff * zoff;
                     if (distance != searchRadiusSq) {
                         continue;
                     }
+                    foundChunks = true;
                     int chunkX = xoff + playerChunkX;
                     int chunkZ = zoff + playerChunkZ;
                     Chunk chunk = chunkProvider.getLoadedChunk(chunkX, chunkZ);
@@ -92,7 +94,7 @@ public enum WorldScanner implements Helper {
                     }
                 }
             }
-            if (allUnloaded) {
+            if (allUnloaded && foundChunks) {
                 return res;
             }
             if (res.size() >= max && (searchRadiusSq > 26 || (searchRadiusSq > 1 && foundWithinY))) {
