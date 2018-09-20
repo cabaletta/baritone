@@ -78,7 +78,6 @@ The final step is "registering" the Baritone library with Impact, so that it loa
 - Now find the ``"minecraftArguments": "..."`` text near the top.
 - At the very end of the quotes where it says ``--tweakClass clientapi.load.ClientTweaker"``, add on the following so it looks like:
   - ``--tweakClass clientapi.load.ClientTweaker --tweakClass baritone.launch.BaritoneTweakerOptifine"``
-  - It should now read something like 
 - If you didn't close your launcher for this step, restart it now.
 - You can now launch Impact 4.3 as normal, and Baritone should start up
  
