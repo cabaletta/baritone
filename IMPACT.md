@@ -45,7 +45,7 @@ putting baritone.
 The final step is "registering" the Baritone library with Impact, so that it loads on launch.
 - Ensure your Minecraft launcher is closed
 - Navigate back to the Minecraft Installation Directory
-- Find the ``profiles`` directory, and open in
+- Find the ``versions`` directory, and open in
 - In here there should be a ``1.12.2-Impact_4.3`` folder.
   - If you don't have any Impact folder or have a version older than 4.3, you can download Impact <a href="https://impactdevelopment.github.io">here</a>.
 - Open the folder and inside there should be a file called ``1.12.2-Impact_4.3.json``
