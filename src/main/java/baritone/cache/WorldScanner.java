@@ -35,8 +35,8 @@ public enum WorldScanner implements Helper {
     /**
      * Scans the world, up to your render distance, for the specified blocks.
      *
-     * @param blocks The blocks to scan for
-     * @param max The maximum number of blocks to scan before cutoff
+     * @param blocks          The blocks to scan for
+     * @param max             The maximum number of blocks to scan before cutoff
      * @param yLevelThreshold If a block is found within this Y level, the current result will be
      *                        returned, if the value is negative, then this condition doesn't apply.
      * @param maxSearchRadius The maximum chunk search radius
@@ -106,8 +106,8 @@ public enum WorldScanner implements Helper {
                 }
             }
             if ((allUnloaded && foundChunks)
-                    || res.size() >= max
-                    || (searchRadiusSq > maxSearchRadiusSq || (searchRadiusSq > 1 && foundWithinY))
+                    || (res.size() >= max
+                    && (searchRadiusSq > maxSearchRadiusSq || (searchRadiusSq > 1 && foundWithinY)))
             ) {
                 return res;
             }
