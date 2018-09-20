@@ -103,10 +103,10 @@ public enum WorldScanner implements Helper {
                     }
                 }
             }
-            if (allUnloaded && foundChunks) {
-                return res;
-            }
-            if (res.size() >= max && (searchRadiusSq > 26 || (searchRadiusSq > 1 && foundWithinY))) {
+            if ((allUnloaded && foundChunks)
+                    || res.size() >= max
+                    || (searchRadiusSq > 26 || (searchRadiusSq > 1 && foundWithinY))
+            ) {
                 return res;
             }
             searchRadiusSq++;
