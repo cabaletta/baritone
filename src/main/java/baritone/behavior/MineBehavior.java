@@ -103,8 +103,6 @@ public final class MineBehavior extends Behavior implements Helper {
         locationsCache = locs;
         PathingBehavior.INSTANCE.setGoal(coalesce(locs));
         PathingBehavior.INSTANCE.path();
-
-        Blocks.DIAMOND_ORE.getItemDropped(Blocks.DIAMOND_ORE.getDefaultState(), new Random(), 0);
     }
 
     public static GoalComposite coalesce(List<BlockPos> locs) {
