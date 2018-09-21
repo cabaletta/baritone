@@ -339,7 +339,17 @@ public class Settings {
     public Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
 
     /**
-     * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore
+     * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.
+     * <p>
+     * Currently only runs when either MineBehavior or FollowBehavior is active.
+     * <p>
+     * For example, if Baritone is doing "mine iron_ore", the instant it breaks the ore (and it becomes air), that location
+     * is no longer a goal. This means that if this setting is true, it will stop there. If this setting were off, it would
+     * continue with its path, and walk into that location. The tradeoff is if this setting is true, it mines ores much faster
+     * since it doesn't waste any time getting into locations that no longer contain ores, but on the other hand, it misses
+     * some drops, and continues on without ever picking them up.
+     * <p>
+     * Also on cosmic prisons this should be set to true since you don't actually mine the ore it just gets replaced with stone.
      */
     public Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(true);
 
