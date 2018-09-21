@@ -113,16 +113,16 @@ public final class MineBehavior extends Behavior implements Helper {
                 return new GoalTwoBlocks(loc);
             }
 
-            boolean noUp = locs.contains(loc.up()) && !(Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
-            boolean noDown = locs.contains(loc.down()) && !(Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
-            if (noUp) {
-                if (noDown) {
+            boolean upwardGoal = locs.contains(loc.up()) || (Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
+            boolean downwardGoal = locs.contains(loc.down()) || (Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
+            if (upwardGoal) {
+                if (downwardGoal) {
                     return new GoalTwoBlocks(loc);
                 } else {
                     return new GoalBlock(loc);
                 }
             } else {
-                if (noDown) {
+                if (downwardGoal) {
                     return new GoalBlock(loc.down());
                 } else {
                     return new GoalTwoBlocks(loc);
