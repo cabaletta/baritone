@@ -334,7 +334,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
             double strVsBlock = context.getToolSet().getStrVsBlock(state);
-            if (strVsBlock < 0) {
+            if (strVsBlock <= 0) {
                 return COST_INF;
             }
 
