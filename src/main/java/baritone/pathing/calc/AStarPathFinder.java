@@ -39,7 +39,6 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Random;
 
 /**
  * The actual A* pathfinding
@@ -49,8 +48,6 @@ import java.util.Random;
 public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
     private final Optional<HashSet<BetterBlockPos>> favoredPositions;
-
-    private final Random random = new Random();
 
     public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BetterBlockPos>> favoredPositions) {
         super(start, goal);
@@ -107,8 +104,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal));
             }
-            Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos, in random order
-            shuffle(possibleMovements);
+            Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos
             for (Movement movementToGetToNeighbor : possibleMovements) {
                 if (movementToGetToNeighbor == null) {
                     continue;
@@ -247,15 +243,5 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 MovementParkour.generate(pos, EnumFacing.NORTH, calcContext),
                 MovementParkour.generate(pos, EnumFacing.SOUTH, calcContext),
         };
-    }
-
-    private <T> void shuffle(T[] list) {
-        int len = list.length;
-        for (int i = 0; i < len; i++) {
-            int j = random.nextInt(len);
-            T t = list[j];
-            list[j] = list[i];
-            list[i] = t;
-        }
     }
 }
