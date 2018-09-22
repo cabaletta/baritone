@@ -87,7 +87,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
-        
+
         HashMap<Class<? extends Movement>, Long> timeConsumed = new HashMap<>();
         HashMap<Class<? extends Movement>, Integer> count = new HashMap<>();
         HashMap<Class<? extends Movement>, Integer> stateLookup = new HashMap<>();
@@ -112,6 +112,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         int getNodeCount = 0;
         int startVal = BlockStateInterface.numTimesChunkSucceeded;
         int startVal2 = BlockStateInterface.numBlockStateLookups;
+        long startVal3 = BetterBlockPos.numCreated;
 
         loopBegin();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.nanoTime() / 1000000L - timeoutTime < 0 && !cancelRequested) {
@@ -231,7 +232,9 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         }
         int numBlockState = BlockStateInterface.numBlockStateLookups - startVal2;
         int numSucc = BlockStateInterface.numTimesChunkSucceeded - startVal;
+        long numSuccc = BetterBlockPos.numCreated - startVal3;
         System.out.println("Out of " + numBlockState + " block state lookups, " + numSucc + " were in the same chunk as the previous and could be cached");
+        System.out.println("Instantiated " + numSuccc + " BetterBlockPos objects");
         System.out.println("Remove " + (heapRemove / heapRemoveCount) + " " + heapRemove / 1000000 + " " + heapRemoveCount);
         System.out.println("Add " + (heapAdd / heapAddCount) + " " + heapAdd / 1000000 + " " + heapAddCount);
         System.out.println("Update " + (heapUpdate / heapUpdateCount) + " " + heapUpdate / 1000000 + " " + heapUpdateCount);
