@@ -76,6 +76,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkThrough(pos.x, pos.y, pos.z, state);
     }
 
+    static boolean canWalkThrough(int x, int y, int z) {
+        return canWalkThrough(x, y, z, BlockStateInterface.get(x, y, z));
+    }
+
     static boolean canWalkThrough(int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) {
@@ -243,7 +247,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      *
      * @return
      */
-    static boolean canWalkOn(BetterBlockPos pos, IBlockState state) {
+    static boolean canWalkOn(int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR || block == Blocks.MAGMA) {
             return false;
@@ -266,7 +270,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (BlockStateInterface.isWater(block)) {
             // since this is called literally millions of times per second, the benefit of not allocating millions of useless "pos.up()"
             // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
-            Block up = BlockStateInterface.get(pos.x, pos.y + 1, pos.z).getBlock();
+            Block up = BlockStateInterface.get(x, y + 1, z).getBlock();
             if (up == Blocks.WATERLILY) {
                 return true;
             }
@@ -296,8 +300,16 @@ public interface MovementHelper extends ActionCosts, Helper {
         return false;
     }
 
+    static boolean canWalkOn(BetterBlockPos pos, IBlockState state) {
+        return canWalkOn(pos.x, pos.y, pos.z, state);
+    }
+
     static boolean canWalkOn(BetterBlockPos pos) {
-        return canWalkOn(pos, BlockStateInterface.get(pos));
+        return canWalkOn(pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
+    }
+
+    static boolean canWalkOn(int x, int y, int z) {
+        return canWalkOn(x, y, z, BlockStateInterface.get(x, y, z));
     }
 
     static boolean canPlaceAgainst(BlockPos pos) {
@@ -433,7 +445,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         //A is plausibly breakable by either descend or fall
         //C, D, etc determine the length of the fall
 
-        if (!canWalkThrough(dest.down(2))) {
+        int x = dest.x;
+        int y = dest.y;
+        int z = dest.z;
+        if (!canWalkThrough(x, y - 2, z)) {
             //if B in the diagram aren't air
             //have to do a descend, because fall is impossible
 
@@ -445,25 +460,25 @@ public interface MovementHelper extends ActionCosts, Helper {
         // we're clear for a fall 2
         // let's see how far we can fall
         for (int fallHeight = 3; true; fallHeight++) {
-            BetterBlockPos onto = dest.down(fallHeight);
-            if (onto.getY() < 0) {
+            int newY = y - fallHeight;
+            if (newY < 0) {
                 // when pathing in the end, where you could plausibly fall into the void
                 // this check prevents it from getting the block at y=-1 and crashing
                 break;
             }
-            IBlockState ontoBlock = BlockStateInterface.get(onto);
+            IBlockState ontoBlock = BlockStateInterface.get(x, newY, z);
             if (ontoBlock.getBlock() == Blocks.WATER) {
-                return new MovementFall(pos, onto);
+                return new MovementFall(pos, new BetterBlockPos(x, newY, z));
             }
-            if (canWalkThrough(onto, ontoBlock)) {
+            if (canWalkThrough(x, newY, z, ontoBlock)) {
                 continue;
             }
-            if (!canWalkOn(onto, ontoBlock)) {
+            if (!canWalkOn(x, newY, z, ontoBlock)) {
                 break;
             }
             if ((calcContext.hasWaterBucket() && fallHeight <= calcContext.maxFallHeightBucket() + 1) || fallHeight <= calcContext.maxFallHeightNoWater() + 1) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
-                return new MovementFall(pos, onto.up());
+                return new MovementFall(pos, new BetterBlockPos(x, newY + 1, z));
             } else {
                 return null;
             }
