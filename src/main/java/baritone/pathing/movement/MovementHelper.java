@@ -82,7 +82,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkThrough(int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR) {
+        if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
         if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL) {
@@ -143,7 +143,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean fullyPassable(IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR) {
+        if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
         // exceptions - blocks that are isPassable true, but we can't actually jump through
@@ -250,6 +250,8 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean canWalkOn(int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR || block == Blocks.MAGMA) {
+            // early return for most common case (air)
+            // plus magma, which is a normal cube but it hurts you
             return false;
         }
         if (state.isBlockNormalCube()) {
