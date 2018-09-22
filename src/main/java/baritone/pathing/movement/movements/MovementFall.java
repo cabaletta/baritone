@@ -157,14 +157,14 @@ public class MovementFall extends Movement {
         return state;
     }
 
-    private static BlockPos[] buildPositionsToBreak(BlockPos src, BlockPos dest) {
-        BlockPos[] toBreak;
+    private static BetterBlockPos[] buildPositionsToBreak(BetterBlockPos src, BetterBlockPos dest) {
+        BetterBlockPos[] toBreak;
         int diffX = src.getX() - dest.getX();
         int diffZ = src.getZ() - dest.getZ();
         int diffY = src.getY() - dest.getY();
-        toBreak = new BlockPos[diffY + 2];
+        toBreak = new BetterBlockPos[diffY + 2];
         for (int i = 0; i < toBreak.length; i++) {
-            toBreak[i] = new BlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ);
+            toBreak[i] = new BetterBlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ);
         }
         return toBreak;
     }
