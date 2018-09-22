@@ -1,9 +1,27 @@
-package baritone.behavior.impl;
+/*
+ * This file is part of Baritone.
+ *
+ * Baritone is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Baritone is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
+package baritone.behavior;
+
+import baritone.api.behavior.Behavior;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.behavior.Behavior;
+import baritone.utils.Helper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;
@@ -20,11 +38,9 @@ import java.util.*;
  * @author Brady
  * @since 8/6/2018 9:47 PM
  */
-public class MemoryBehavior extends Behavior {
+public final class MemoryBehavior extends Behavior implements Helper {
 
     public static MemoryBehavior INSTANCE = new MemoryBehavior();
-
-    private MemoryBehavior() {}
 
     /**
      * Possible future inventories that we will be able to remember
@@ -35,6 +51,8 @@ public class MemoryBehavior extends Behavior {
      * The current remembered inventories
      */
     private final Map<BlockPos, RememberedInventory> rememberedInventories = new HashMap<>();
+
+    private MemoryBehavior() {}
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
@@ -47,27 +65,24 @@ public class MemoryBehavior extends Behavior {
     public void onSendPacket(PacketEvent event) {
         Packet p = event.getPacket();
 
-        switch (event.getState()) {
-            case PRE: {
-                if (p instanceof CPacketPlayerTryUseItemOnBlock) {
-                    CPacketPlayerTryUseItemOnBlock packet = event.cast();
+        if (event.getState() == EventState.PRE) {
+            if (p instanceof CPacketPlayerTryUseItemOnBlock) {
+                CPacketPlayerTryUseItemOnBlock packet = event.cast();
 
-                    TileEntity tileEntity = world().getTileEntity(packet.getPos());
+                TileEntity tileEntity = world().getTileEntity(packet.getPos());
 
-                    // Ensure the TileEntity is a container of some sort
-                    if (tileEntity instanceof TileEntityLockable) {
+                // Ensure the TileEntity is a container of some sort
+                if (tileEntity instanceof TileEntityLockable) {
 
-                        TileEntityLockable lockable = (TileEntityLockable) tileEntity;
-                        int size = lockable.getSizeInventory();
+                    TileEntityLockable lockable = (TileEntityLockable) tileEntity;
+                    int size = lockable.getSizeInventory();
 
-                        this.futureInventories.add(new FutureInventory(System.nanoTime() / 1000000L, size, lockable.getGuiID(), tileEntity.getPos()));
-                    }
+                    this.futureInventories.add(new FutureInventory(System.nanoTime() / 1000000L, size, lockable.getGuiID(), tileEntity.getPos()));
                 }
+            }
 
-                if (p instanceof CPacketCloseWindow) {
-                    updateInventory();
-                }
-                break;
+            if (p instanceof CPacketCloseWindow) {
+                updateInventory();
             }
         }
     }
@@ -76,31 +91,28 @@ public class MemoryBehavior extends Behavior {
     public void onReceivePacket(PacketEvent event) {
         Packet p = event.getPacket();
 
-        switch (event.getState()) {
-            case PRE: {
-                if (p instanceof SPacketOpenWindow) {
-                    SPacketOpenWindow packet = event.cast();
+        if (event.getState() == EventState.PRE) {
+            if (p instanceof SPacketOpenWindow) {
+                SPacketOpenWindow packet = event.cast();
 
-                    // Remove any entries that were created over a second ago, this should make up for INSANE latency
-                    this.futureInventories.removeIf(i -> System.nanoTime() / 1000000L - i.time > 1000);
+                // Remove any entries that were created over a second ago, this should make up for INSANE latency
+                this.futureInventories.removeIf(i -> System.nanoTime() / 1000000L - i.time > 1000);
 
-                    this.futureInventories.stream()
-                            .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
-                            .findFirst().ifPresent(matched -> {
-                        // Remove the future inventory
-                        this.futureInventories.remove(matched);
+                this.futureInventories.stream()
+                        .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
+                        .findFirst().ifPresent(matched -> {
+                    // Remove the future inventory
+                    this.futureInventories.remove(matched);
 
-                        // Setup the remembered inventory
-                        RememberedInventory inventory = this.rememberedInventories.computeIfAbsent(matched.pos, pos -> new RememberedInventory());
-                        inventory.windowId = packet.getWindowId();
-                        inventory.size = packet.getSlotCount();
-                    });
-                }
+                    // Setup the remembered inventory
+                    RememberedInventory inventory = this.rememberedInventories.computeIfAbsent(matched.pos, pos -> new RememberedInventory());
+                    inventory.windowId = packet.getWindowId();
+                    inventory.size = packet.getSlotCount();
+                });
+            }
 
-                if (p instanceof SPacketCloseWindow) {
-                    updateInventory();
-                }
-                break;
+            if (p instanceof SPacketCloseWindow) {
+                updateInventory();
             }
         }
     }

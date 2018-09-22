@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -60,7 +60,8 @@ public class MovementFall extends Movement {
             return COST_INF; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
         }
         double placeBucketCost = 0.0;
-        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > context.maxFallHeightNoWater()) {
+        boolean destIsWater = BlockStateInterface.isWater(dest);
+        if (!destIsWater && src.getY() - dest.getY() > context.maxFallHeightNoWater()) {
             if (!context.hasWaterBucket()) {
                 return COST_INF;
             }
@@ -88,7 +89,14 @@ public class MovementFall extends Movement {
             // And falling through signs is possible, but they do have a mining duration, right?
             if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i], false) > 0) {
                 //can't break while falling
-                return COST_INF;
+
+                if (i != positionsToBreak.length - 1 || !destIsWater) {
+                    // if we're checking the very last block to mine
+                    // and it's water (so this is a water fall)
+                    // don't consider the cost of "mining" it
+                    // (if assumeWalkOnWater is true, water isn't canWalkThrough)
+                    return COST_INF;
+                }
             }
         }
         return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost + frontThree;
@@ -105,8 +113,7 @@ public class MovementFall extends Movement {
         Rotation targetRotation = null;
         if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) || world().provider.isNether()) {
-                state.setStatus(MovementStatus.UNREACHABLE);
-                return state;
+                return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
             if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
@@ -126,15 +133,22 @@ public class MovementFall extends Movement {
             state.setTarget(new MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), false));
         }
         if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 || BlockStateInterface.isWater(dest))) { // 0.094 because lilypads
-            if (BlockStateInterface.isWater(dest) && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
-                player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
-                if (player().motionY >= 0) {
-                    return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+            if (BlockStateInterface.isWater(dest)) {
+                if (InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
+                    player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
+                    if (player().motionY >= 0) {
+                        return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                    } else {
+                        return state;
+                    }
                 } else {
-                    return state;
+                    if (player().motionY >= 0) {
+                        return state.setStatus(MovementStatus.SUCCESS);
+                    } // don't else return state; we need to stay centered because this water might be flowing under the surface
                 }
+            } else {
+                return state.setStatus(MovementStatus.SUCCESS);
             }
-            return state.setStatus(MovementStatus.SUCCESS);
         }
         Vec3d destCenter = Utils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
         if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
@@ -153,5 +167,20 @@ public class MovementFall extends Movement {
             toBreak[i] = new BlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ);
         }
         return toBreak;
+    }
+
+    @Override
+    protected boolean prepared(MovementState state) {
+        if (state.getStatus() == MovementStatus.WAITING) {
+            return true;
+        }
+        // only break if one of the first three needs to be broken
+        // specifically ignore the last one which might be water
+        for (int i = 0; i < 4 && i < positionsToBreak.length; i++) {
+            if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
+                return super.prepared(state);
+            }
+        }
+        return true;
     }
 }

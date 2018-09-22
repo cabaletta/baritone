@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -47,6 +47,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
     private final Optional<HashSet<BetterBlockPos>> favoredPositions;
 
+    private final Random random = new Random();
+
     public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BetterBlockPos>> favoredPositions) {
         super(start, goal);
         this.favoredPositions = favoredPositions.map(HashSet::new); // <-- okay this is epic
@@ -63,11 +65,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
         double[] bestHeuristicSoFar = new double[COEFFICIENTS.length];
         for (int i = 0; i < bestHeuristicSoFar.length; i++) {
-            bestHeuristicSoFar[i] = Double.MAX_VALUE;
+            bestHeuristicSoFar[i] = startNode.estimatedCostToGoal;
+            bestSoFar[i] = startNode;
         }
         CalculationContext calcContext = new CalculationContext();
         HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
-        currentlyRunning = this;
         CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
         BlockStateInterface.clearCachedChunk();
@@ -125,9 +127,8 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
             if (goal.isInGoal(currentNodePos)) {
-                currentlyRunning = null;
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
-                return Optional.of(new Path(startNode, currentNode, numNodes));
+                return Optional.of(new Path(startNode, currentNode, numNodes, goal));
             }
             long constructStart = System.nanoTime();
             goalCheck += constructStart - t;
@@ -147,7 +148,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 int chunkZ = currentNodePos.z >> 4;
                 if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
-                    if (chunkProvider.getLoadedChunk(chunkX, chunkZ) == null) {
+                    if (chunkProvider.isChunkGeneratedAt(chunkX, chunkZ)) {
                         // see issue #106
                         if (cachedWorld == null || !cachedWorld.isCached(dest)) {
                             numEmptyChunk++;
@@ -241,7 +242,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             System.out.println(stateLookup.get(klass) / num + " " + stateLookup.get(klass));
         }
         if (cancelRequested) {
-            currentlyRunning = null;
             return Optional.empty();
         }
         System.out.println(numMovementsConsidered + " movements considered");
@@ -264,13 +264,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                     System.out.println("But I'm going to do it anyway, because yolo");
                 }
                 System.out.println("Path goes for " + Math.sqrt(dist) + " blocks");
-                currentlyRunning = null;
-                return Optional.of(new Path(startNode, bestSoFar[i], numNodes));
+                return Optional.of(new Path(startNode, bestSoFar[i], numNodes, goal));
             }
         }
         logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
         logDebug("No path found =(");
-        currentlyRunning = null;
         return Optional.empty();
     }
 
@@ -309,14 +307,12 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
                 new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
 
-                MovementParkour.generate(pos, EnumFacing.EAST),
-                MovementParkour.generate(pos, EnumFacing.WEST),
-                MovementParkour.generate(pos, EnumFacing.NORTH),
-                MovementParkour.generate(pos, EnumFacing.SOUTH),
+                MovementParkour.generate(pos, EnumFacing.EAST, calcContext),
+                MovementParkour.generate(pos, EnumFacing.WEST, calcContext),
+                MovementParkour.generate(pos, EnumFacing.NORTH, calcContext),
+                MovementParkour.generate(pos, EnumFacing.SOUTH, calcContext),
         };
     }
-
-    private final Random random = new Random();
 
     private <T> void shuffle(T[] list) {
         int len = list.length;

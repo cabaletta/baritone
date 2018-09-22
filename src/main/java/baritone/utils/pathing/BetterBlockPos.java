@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -19,6 +19,7 @@ package baritone.utils.pathing;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 
 /**
@@ -57,6 +58,10 @@ public final class BetterBlockPos extends BlockPos {
         hash = 8734625L * hash + y;
         hash = 2873465L * hash + z;
         this.hashCode = hash;
+    }
+
+    public BetterBlockPos(double x, double y, double z) {
+        this(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z));
     }
 
     public BetterBlockPos(BlockPos pos) {

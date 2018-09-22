@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -21,11 +21,11 @@ import baritone.Baritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.utils.interfaces.Toggleable;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.interfaces.Toggleable;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.input.Keyboard;
@@ -136,15 +136,11 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
         BlockStateInterface.clearCachedChunk();
 
-        switch (event.getState()) {
-            case PRE:
-                break;
-            case POST:
-                cache.closeWorld();
-                if (event.getWorld() != null) {
-                    cache.initWorld(event.getWorld());
-                }
-                break;
+        if (event.getState() == EventState.POST) {
+            cache.closeWorld();
+            if (event.getWorld() != null) {
+                cache.initWorld(event.getWorld());
+            }
         }
 
         listeners.forEach(l -> {

@@ -2,22 +2,22 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.pathing.calc;
 
-import baritone.behavior.impl.PathingBehavior;
+import baritone.behavior.PathingBehavior;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
@@ -36,13 +36,16 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     /**
      * The currently running search task
      */
-    protected static AbstractNodeCostSearch currentlyRunning = null;
+    private static AbstractNodeCostSearch currentlyRunning = null;
 
     protected final BetterBlockPos start;
 
     protected final Goal goal;
 
-    private final Long2ObjectOpenHashMap<PathNode> map; // see issue #107
+    /**
+     * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
+     */
+    private final Long2ObjectOpenHashMap<PathNode> map;
 
     protected PathNode startNode;
 
@@ -52,7 +55,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     private volatile boolean isFinished;
 
-    protected boolean cancelRequested;
+    protected volatile boolean cancelRequested;
 
     /**
      * This is really complicated and hard to explain. I wrote a comment in the old version of MineBot but it was so
@@ -82,17 +85,15 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         }
         this.cancelRequested = false;
         try {
+            currentlyRunning = this;
             Optional<IPath> path = calculate0(timeout);
+            path.ifPresent(IPath::postprocess);
             isFinished = true;
             return path;
-        } catch (Exception e) {
+        } finally {
+            // this is run regardless of what exception may or may not be raised by calculate0
             currentlyRunning = null;
             isFinished = true;
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            } else {
-                throw new RuntimeException(e);
-            }
         }
     }
 
@@ -120,9 +121,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      *
      * @param pos The pos to lookup
      * @return The associated node
+     * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */
     protected PathNode getNodeAtPosition(BetterBlockPos pos) {
-        // see issue #107
         long hashCode = pos.hashCode;
         PathNode node = map.get(hashCode);
         if (node == null) {
@@ -139,7 +140,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     @Override
     public Optional<IPath> pathToMostRecentNodeConsidered() {
-        return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0));
+        return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal));
     }
 
     @Override
@@ -152,7 +153,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
                 continue;
             }
             if (getDistFromStartSq(bestSoFar[i]) > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                return Optional.of(new Path(startNode, bestSoFar[i], 0));
+                return Optional.of(new Path(startNode, bestSoFar[i], 0, goal));
             }
         }
         // instead of returning bestSoFar[0], be less misleading

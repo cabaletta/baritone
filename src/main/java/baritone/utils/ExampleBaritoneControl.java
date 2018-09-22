@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -19,11 +19,11 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.Settings;
+import baritone.api.behavior.Behavior;
 import baritone.api.event.events.ChatEvent;
-import baritone.behavior.Behavior;
-import baritone.behavior.impl.FollowBehavior;
-import baritone.behavior.impl.MineBehavior;
-import baritone.behavior.impl.PathingBehavior;
+import baritone.behavior.FollowBehavior;
+import baritone.behavior.MineBehavior;
+import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
@@ -36,12 +36,16 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
+import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
 
-public class ExampleBaritoneControl extends Behavior {
+public class ExampleBaritoneControl extends Behavior implements Helper {
+
     public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
 
     private ExampleBaritoneControl() {
@@ -59,16 +63,69 @@ public class ExampleBaritoneControl extends Behavior {
                 return;
             }
         }
-        String msg = event.getMessage();
+        String msg = event.getMessage().toLowerCase(Locale.US);
         if (Baritone.settings().prefix.get()) {
             if (!msg.startsWith("#")) {
                 return;
             }
             msg = msg.substring(1);
         }
-        if (msg.toLowerCase().startsWith("goal")) {
+
+        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
+        for (Settings.Setting<Boolean> setting : toggleable) {
+            if (msg.equalsIgnoreCase(setting.getName())) {
+                setting.value ^= true;
+                event.cancel();
+                logDirect("Toggled " + setting.getName() + " to " + setting.value);
+                return;
+            }
+        }
+        if (msg.equals("baritone") || msg.equals("settings")) {
+            for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
+                logDirect(setting.toString());
+            }
             event.cancel();
-            String[] params = msg.toLowerCase().substring(4).trim().split(" ");
+            return;
+        }
+        if (msg.contains(" ")) {
+            String[] data = msg.split(" ");
+            if (data.length == 2) {
+                Settings.Setting setting = Baritone.settings().byLowerName.get(data[0]);
+                if (setting != null) {
+                    try {
+                        if (setting.value.getClass() == Long.class) {
+                            setting.value = Long.parseLong(data[1]);
+                        }
+                        if (setting.value.getClass() == Integer.class) {
+                            setting.value = Integer.parseInt(data[1]);
+                        }
+                        if (setting.value.getClass() == Double.class) {
+                            setting.value = Double.parseDouble(data[1]);
+                        }
+                        if (setting.value.getClass() == Float.class) {
+                            setting.value = Float.parseFloat(data[1]);
+                        }
+                    } catch (NumberFormatException e) {
+                        logDirect("Unable to parse " + data[1]);
+                        event.cancel();
+                        return;
+                    }
+                    logDirect(setting.toString());
+                    event.cancel();
+                    return;
+                }
+            }
+        }
+        if (Baritone.settings().byLowerName.containsKey(msg)) {
+            Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg);
+            logDirect(setting.toString());
+            event.cancel();
+            return;
+        }
+
+        if (msg.startsWith("goal")) {
+            event.cancel();
+            String[] params = msg.substring(4).trim().split(" ");
             if (params[0].equals("")) {
                 params = new String[]{};
             }
@@ -118,21 +175,45 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("cancel")) {
-            PathingBehavior.INSTANCE.cancel();
-            FollowBehavior.INSTANCE.cancel();
+        if (msg.equals("repack") || msg.equals("rescan")) {
+            ChunkProviderClient cli = world().getChunkProvider();
+            int playerChunkX = playerFeet().getX() >> 4;
+            int playerChunkZ = playerFeet().getZ() >> 4;
+            int count = 0;
+            for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
+                for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
+                    Chunk chunk = cli.getLoadedChunk(x, z);
+                    if (chunk != null) {
+                        count++;
+                        WorldProvider.INSTANCE.getCurrentWorld().cache.queueForPacking(chunk);
+                    }
+                }
+            }
+            logDirect("Queued " + count + " chunks for repacking");
+            event.cancel();
+            return;
+        }
+        if (msg.equals("axis")) {
+            PathingBehavior.INSTANCE.setGoal(new GoalAxis());
+            PathingBehavior.INSTANCE.path();
+            event.cancel();
+            return;
+        }
+        if (msg.equals("cancel")) {
             MineBehavior.INSTANCE.cancel();
+            FollowBehavior.INSTANCE.cancel();
+            PathingBehavior.INSTANCE.cancel();
             event.cancel();
             logDirect("ok canceled");
             return;
         }
-        if (msg.toLowerCase().equals("forcecancel")) {
+        if (msg.equals("forcecancel")) {
             AbstractNodeCostSearch.forceCancel();
             event.cancel();
             logDirect("ok force canceled");
             return;
         }
-        if (msg.toLowerCase().equals("invert")) {
+        if (msg.equals("invert")) {
             Goal goal = PathingBehavior.INSTANCE.getGoal();
             BlockPos runAwayFrom;
             if (goal instanceof GoalXZ) {
@@ -156,32 +237,45 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("follow")) {
-            Optional<Entity> entity = MovementHelper.whatEntityAmILookingAt();
-            if (!entity.isPresent()) {
-                logDirect("You aren't looking at an entity bruh");
+        if (msg.startsWith("follow")) {
+            String name = msg.substring(6).trim();
+            Optional<Entity> toFollow = Optional.empty();
+            if (name.length() == 0) {
+                toFollow = MovementHelper.whatEntityAmILookingAt();
+            } else {
+                for (EntityPlayer pl : world().playerEntities) {
+                    String theirName = pl.getName().trim().toLowerCase();
+                    if (!theirName.equals(player().getName().trim().toLowerCase())) { // don't follow ourselves lol
+                        if (theirName.contains(name) || name.contains(theirName)) {
+                            toFollow = Optional.of(pl);
+                        }
+                    }
+                }
+            }
+            if (!toFollow.isPresent()) {
+                logDirect("Not found");
                 event.cancel();
                 return;
             }
-            FollowBehavior.INSTANCE.follow(entity.get());
-            logDirect("Following " + entity.get());
+            FollowBehavior.INSTANCE.follow(toFollow.get());
+            logDirect("Following " + toFollow.get());
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("reloadall")) {
+        if (msg.equals("reloadall")) {
             WorldProvider.INSTANCE.getCurrentWorld().cache.reloadAllFromDisk();
             logDirect("ok");
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("saveall")) {
+        if (msg.equals("saveall")) {
             WorldProvider.INSTANCE.getCurrentWorld().cache.save();
             logDirect("ok");
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("find")) {
-            String blockType = msg.toLowerCase().substring(4).trim();
+        if (msg.startsWith("find")) {
+            String blockType = msg.substring(4).trim();
             LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(blockType, 1, 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
@@ -193,29 +287,42 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("mine")) {
-            String[] blockTypes = msg.toLowerCase().substring(4).trim().split(" ");
+        if (msg.startsWith("mine")) {
+            String[] blockTypes = msg.substring(4).trim().split(" ");
+            try {
+                int quantity = Integer.parseInt(blockTypes[1]);
+                ChunkPacker.stringToBlock(blockTypes[0]).hashCode();
+                MineBehavior.INSTANCE.mine(quantity, blockTypes[0]);
+                logDirect("Will mine " + quantity + " " + blockTypes[0]);
+                event.cancel();
+                return;
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
             for (String s : blockTypes) {
                 if (ChunkPacker.stringToBlock(s) == null) {
                     logDirect(s + " isn't a valid block name");
                     event.cancel();
                     return;
                 }
+
             }
-            MineBehavior.INSTANCE.mine(blockTypes);
+            MineBehavior.INSTANCE.mine(0, blockTypes);
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("thisway")) {
-            Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-            PathingBehavior.INSTANCE.setGoal(goal);
-            logDirect("Goal: " + goal);
+        if (msg.startsWith("thisway")) {
+            try {
+                Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
+                PathingBehavior.INSTANCE.setGoal(goal);
+                logDirect("Goal: " + goal);
+            } catch (NumberFormatException ex) {
+                logDirect("Error unable to parse '" + msg.substring(7).trim() + "' to a double.");
+            }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("list") || msg.toLowerCase().startsWith("get ") || msg.toLowerCase().startsWith("show")) {
-            String waypointType = msg.toLowerCase().substring(4).trim();
+        if (msg.startsWith("list") || msg.startsWith("get ") || msg.startsWith("show")) {
+            String waypointType = msg.substring(4).trim();
             if (waypointType.endsWith("s")) {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
@@ -237,8 +344,15 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("goto")) {
-            String waypointType = msg.toLowerCase().substring(4).trim();
+        if (msg.startsWith("save")) {
+            String name = msg.substring(4).trim();
+            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint(name, Waypoint.Tag.USER, playerFeet()));
+            logDirect("Saved user defined tag under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
+            event.cancel();
+            return;
+        }
+        if (msg.startsWith("goto")) {
+            String waypointType = msg.substring(4).trim();
             if (waypointType.endsWith("s") && Waypoint.Tag.fromString(waypointType.substring(0, waypointType.length() - 1)) != null) {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
@@ -246,13 +360,14 @@ public class ExampleBaritoneControl extends Behavior {
             Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
             if (tag == null) {
                 String mining = waypointType;
+                Block block = ChunkPacker.stringToBlock(mining);
                 //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
-                if (ChunkPacker.stringToBlock(mining) == null) {
+                if (block == null) {
                     logDirect("No locations for " + mining + " known, cancelling");
                     return;
                 }
-                List<BlockPos> locs = MineBehavior.scanFor(Arrays.asList(mining), 64);
+                List<BlockPos> locs = MineBehavior.scanFor(Collections.singletonList(block), 64);
                 if (locs.isEmpty()) {
                     logDirect("No locations for " + mining + " known, cancelling");
                     return;
@@ -277,7 +392,7 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("spawn") || msg.toLowerCase().equals("bed")) {
+        if (msg.equals("spawn") || msg.equals("bed")) {
             Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.BED);
             if (waypoint == null) {
                 BlockPos spawnPoint = player().getBedLocation();
@@ -293,25 +408,26 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("sethome")) {
+        if (msg.equals("sethome")) {
             WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
             logDirect("Saved. Say home to set goal.");
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("home")) {
+        if (msg.equals("home")) {
             Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.HOME);
             if (waypoint == null) {
                 logDirect("home not saved");
             } else {
                 Goal goal = new GoalBlock(waypoint.location);
                 PathingBehavior.INSTANCE.setGoal(goal);
-                logDirect("Set goal to saved home " + goal);
+                PathingBehavior.INSTANCE.path();
+                logDirect("Going to saved home " + goal);
             }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("costs")) {
+        if (msg.equals("costs")) {
             Movement[] movements = AStarPathFinder.getConnectedPositions(new BetterBlockPos(playerFeet()), new CalculationContext());
             List<Movement> moves = new ArrayList<>(Arrays.asList(movements));
             while (moves.contains(null)) {
@@ -327,54 +443,6 @@ public class ExampleBaritoneControl extends Behavior {
                 }
                 logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
             }
-            event.cancel();
-            return;
-        }
-        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
-        for (Settings.Setting<Boolean> setting : toggleable) {
-            if (msg.equalsIgnoreCase(setting.getName())) {
-                setting.value ^= true;
-                event.cancel();
-                logDirect("Toggled " + setting.getName() + " to " + setting.value);
-                return;
-            }
-        }
-        if (msg.toLowerCase().equals("baritone") || msg.toLowerCase().equals("settings")) {
-            for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
-                logDirect(setting.toString());
-            }
-            event.cancel();
-            return;
-        }
-        if (msg.contains(" ")) {
-            String[] data = msg.split(" ");
-            if (data.length == 2) {
-                Settings.Setting setting = Baritone.settings().byLowerName.get(data[0].toLowerCase());
-                if (setting != null) {
-                    try {
-                        if (setting.value.getClass() == Long.class) {
-                            setting.value = Long.parseLong(data[1]);
-                        }
-                        if (setting.value.getClass() == Integer.class) {
-                            setting.value = Integer.parseInt(data[1]);
-                        }
-                        if (setting.value.getClass() == Double.class) {
-                            setting.value = Double.parseDouble(data[1]);
-                        }
-                    } catch (NumberFormatException e) {
-                        logDirect("Unable to parse " + data[1]);
-                        event.cancel();
-                        return;
-                    }
-                    logDirect(setting.toString());
-                    event.cancel();
-                    return;
-                }
-            }
-        }
-        if (Baritone.settings().byLowerName.containsKey(msg.toLowerCase())) {
-            Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg.toLowerCase());
-            logDirect(setting.toString());
             event.cancel();
             return;
         }

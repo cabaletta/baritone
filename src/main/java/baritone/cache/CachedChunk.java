@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -63,6 +63,8 @@ public final class CachedChunk implements IBlockTypeAccess {
         add(Blocks.DRAGON_EGG);
         add(Blocks.JUKEBOX);
         add(Blocks.END_GATEWAY);
+        add(Blocks.WEB);
+        add(Blocks.NETHER_WART);
     }});
 
     /**
@@ -128,6 +130,9 @@ public final class CachedChunk implements IBlockTypeAccess {
             return state;
         }
         PathingBlockType type = getType(x, y, z);
+        if (type == PathingBlockType.SOLID && y == 127 && mc.player.dimension == -1) {
+            return Blocks.BEDROCK.getDefaultState();
+        }
         return ChunkPacker.pathingTypeToBlock(type);
     }
 

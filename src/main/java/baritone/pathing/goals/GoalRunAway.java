@@ -2,33 +2,35 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.pathing.goals;
 
-import java.util.Arrays;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Arrays;
 
 /**
  * Useful for automated combat (retreating specifically)
+ *
  * @author leijurv
  */
 public class GoalRunAway implements Goal {
 
-    public final BlockPos[] from;
+    private final BlockPos[] from;
 
-    final double distanceSq;
+    private final double distanceSq;
 
     public GoalRunAway(double distance, BlockPos... from) {
         if (from.length == 0) {
@@ -65,6 +67,6 @@ public class GoalRunAway implements Goal {
 
     @Override
     public String toString() {
-        return "GoalRunAwayFrom[" + Arrays.asList(from) + "]";
+        return "GoalRunAwayFrom" + Arrays.asList(from);
     }
 }

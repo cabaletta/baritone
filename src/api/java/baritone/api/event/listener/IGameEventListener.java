@@ -2,33 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -109,6 +92,8 @@ public interface IGameEventListener {
      * Runs before a outbound packet is sent
      *
      * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
+     * @see Packet
+     * @see GenericFutureListener
      */
     void onSendPacket(PacketEvent event);
 
@@ -116,6 +101,8 @@ public interface IGameEventListener {
      * Runs before an inbound packet is processed
      *
      * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
+     * @see Packet
+     * @see GenericFutureListener
      */
     void onReceivePacket(PacketEvent event);
 
@@ -140,6 +127,7 @@ public interface IGameEventListener {
      * Called when the local player dies, as indicated by the creation of the {@link GuiGameOver} screen.
      *
      * @see GuiGameOver(ITextComponent)
+     * @see ITextComponent
      */
     void onPlayerDeath();
 

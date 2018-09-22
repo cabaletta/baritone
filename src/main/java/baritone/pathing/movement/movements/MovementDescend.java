@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -30,6 +30,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 public class MovementDescend extends Movement {
+
+    private int numTicks = 0;
 
     public MovementDescend(BetterBlockPos start, BetterBlockPos end) {
         super(start, end, new BlockPos[]{end.up(2), end.up(), end}, end.down());
@@ -63,8 +65,6 @@ public class MovementDescend extends Movement {
         return walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST) + getTotalHardnessOfBlocksToBreak(context);
     }
 
-    int numTicks = 0;
-
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
@@ -76,8 +76,7 @@ public class MovementDescend extends Movement {
         if (playerFeet.equals(dest)) {
             if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094) { // lilypads
                 // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
-                state.setStatus(MovementStatus.SUCCESS);
-                return state;
+                return state.setStatus(MovementStatus.SUCCESS);
             } else {
                 System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
             }

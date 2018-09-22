@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -21,10 +21,10 @@ import baritone.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
 public class GoalNear implements Goal, IGoalRenderPos {
-    final int x;
-    final int y;
-    final int z;
-    final int rangeSq;
+    private final int x;
+    private final int y;
+    private final int z;
+    private final int rangeSq;
 
     public GoalNear(BlockPos pos, int range) {
         this.x = pos.getX();
@@ -49,6 +49,7 @@ public class GoalNear implements Goal, IGoalRenderPos {
         return GoalBlock.calculate(diffX, diffY, diffZ);
     }
 
+    @Override
     public BlockPos getGoalPos() {
         return new BlockPos(x, y, z);
     }

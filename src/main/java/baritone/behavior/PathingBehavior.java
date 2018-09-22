@@ -2,36 +2,39 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior.impl;
+package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.behavior.Behavior;
 import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
-import baritone.behavior.Behavior;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
-import baritone.pathing.goals.*;
+import baritone.pathing.goals.Goal;
+import baritone.pathing.goals.GoalXZ;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
+import baritone.utils.interfaces.IGoalRenderPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -40,12 +43,9 @@ import java.awt.*;
 import java.util.Collections;
 import java.util.Optional;
 
-public class PathingBehavior extends Behavior {
+public final class PathingBehavior extends Behavior implements Helper {
 
     public static final PathingBehavior INSTANCE = new PathingBehavior();
-
-    private PathingBehavior() {
-    }
 
     private PathExecutor current;
     private PathExecutor next;
@@ -59,8 +59,10 @@ public class PathingBehavior extends Behavior {
 
     private boolean lastAutoJump;
 
+    private PathingBehavior() {}
+
     private void dispatchPathEvent(PathEvent event) {
-        new Thread(() -> Baritone.INSTANCE.getGameEventHandler().onPathEvent(event)).start();
+        Baritone.INSTANCE.getExecutor().execute(() -> Baritone.INSTANCE.getGameEventHandler().onPathEvent(event));
     }
 
     @Override
@@ -69,6 +71,7 @@ public class PathingBehavior extends Behavior {
             this.cancel();
             return;
         }
+        mc.playerController.setPlayerCapabilities(mc.player);
         if (current == null) {
             return;
         }
@@ -160,6 +163,8 @@ public class PathingBehavior extends Behavior {
                 case POST:
                     mc.gameSettings.autoJump = lastAutoJump;
                     break;
+                default:
+                    break;
             }
         }
     }
@@ -192,6 +197,7 @@ public class PathingBehavior extends Behavior {
     }
 
     public void cancel() {
+        dispatchPathEvent(PathEvent.CANCELED);
         current = null;
         next = null;
         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
@@ -246,7 +252,7 @@ public class PathingBehavior extends Behavior {
             }
             isPathCalcInProgress = true;
         }
-        new Thread(() -> {
+        Baritone.INSTANCE.getExecutor().execute(() -> {
             if (talkAboutIt) {
                 logDebug("Starting to search for path from " + start + " to " + goal);
             }
@@ -289,7 +295,7 @@ public class PathingBehavior extends Behavior {
             synchronized (pathCalcLock) {
                 isPathCalcInProgress = false;
             }
-        }).start();
+        });
     }
 
     /**
@@ -306,18 +312,10 @@ public class PathingBehavior extends Behavior {
         }
         if (Baritone.settings().simplifyUnloadedYCoord.get()) {
             BlockPos pos = null;
-            if (goal instanceof GoalBlock) {
-                pos = ((GoalBlock) goal).getGoalPos();
+            if (goal instanceof IGoalRenderPos) {
+                pos = ((IGoalRenderPos) goal).getGoalPos();
             }
-            if (goal instanceof GoalTwoBlocks) {
-                pos = ((GoalTwoBlocks) goal).getGoalPos();
-            }
-            if (goal instanceof GoalNear) {
-                pos = ((GoalNear) goal).getGoalPos();
-            }
-            if (goal instanceof GoalGetToBlock) {
-                pos = ((GoalGetToBlock) goal).getGoalPos();
-            }
+
             // TODO simplify each individual goal in a GoalComposite
             if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
                 logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
@@ -340,6 +338,22 @@ public class PathingBehavior extends Behavior {
         }
     }
 
+    public void revalidateGoal() {
+        if (!Baritone.settings().cancelOnGoalInvalidation.get()) {
+            return;
+        }
+        if (current == null || goal == null) {
+            return;
+        }
+        Goal intended = current.getPath().getGoal();
+        BlockPos end = current.getPath().getDest();
+        if (intended.isInGoal(end) && !goal.isInGoal(end)) {
+            // this path used to end in the goal
+            // but the goal has changed, so there's no reason to continue...
+            cancel();
+        }
+    }
+
     @Override
     public void onRenderPass(RenderEvent event) {
         // System.out.println("Render passing");
@@ -352,7 +366,7 @@ public class PathingBehavior extends Behavior {
             return;
         }
 
-        long start = System.nanoTime();
+        //long start = System.nanoTime();
 
 
         PathExecutor current = this.current; // this should prevent most race conditions?
@@ -369,7 +383,7 @@ public class PathingBehavior extends Behavior {
             PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.MAGENTA, Baritone.settings().fadePath.get(), 10, 20);
         }
 
-        long split = System.nanoTime();
+        //long split = System.nanoTime();
         if (current != null) {
             PathRenderer.drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Color.RED);
             PathRenderer.drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Color.GREEN);
@@ -387,11 +401,10 @@ public class PathingBehavior extends Behavior {
                 });
             });
         });
-        long end = System.nanoTime();
+        //long end = System.nanoTime();
         //System.out.println((end - split) + " " + (split - start));
         // if (end - start > 0) {
         //   System.out.println("Frame took " + (split - start) + " " + (end - split));
         //}
-
     }
 }

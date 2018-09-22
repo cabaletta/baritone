@@ -2,33 +2,32 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior.impl;
+package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.Settings;
+import baritone.api.behavior.Behavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
-import baritone.behavior.Behavior;
+import baritone.utils.Helper;
 import baritone.utils.Rotation;
 
-public class LookBehavior extends Behavior {
+public final class LookBehavior extends Behavior implements Helper {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
-
-    private LookBehavior() {}
 
     /**
      * Target's values are as follows:
@@ -49,6 +48,8 @@ public class LookBehavior extends Behavior {
      * @see Settings#freeLook
      */
     private float lastYaw;
+
+    private LookBehavior() {}
 
     public void updateTarget(Rotation target, boolean force) {
         this.target = target;
@@ -88,7 +89,10 @@ public class LookBehavior extends Behavior {
                 }
                 break;
             }
+            default:
+                break;
         }
+        new Thread().start();
     }
 
     @Override
@@ -107,6 +111,8 @@ public class LookBehavior extends Behavior {
                     if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE) {
                         this.target = null;
                     }
+                    break;
+                default:
                     break;
             }
         }

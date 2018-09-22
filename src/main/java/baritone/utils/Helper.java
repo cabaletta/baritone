@@ -2,27 +2,27 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -52,9 +52,9 @@ public interface Helper {
         return mc.world;
     }
 
-    default BlockPos playerFeet() {
+    default BetterBlockPos playerFeet() {
         // TODO find a better way to deal with soul sand!!!!!
-        BlockPos feet = new BlockPos(player().posX, player().posY + 0.1251, player().posZ);
+        BetterBlockPos feet = new BetterBlockPos(player().posX, player().posY + 0.1251, player().posZ);
         if (BlockStateInterface.get(feet).getBlock() instanceof BlockSlab) {
             return feet.up();
         }
@@ -75,6 +75,7 @@ public interface Helper {
 
     /**
      * Send a message to chat only if chatDebug is on
+     *
      * @param message
      */
     default void logDebug(String message) {
@@ -88,12 +89,18 @@ public interface Helper {
 
     /**
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a direct response to a chat command)
+     *
      * @param message
      */
     default void logDirect(String message) {
         ITextComponent component = MESSAGE_PREFIX.createCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
         component.appendSibling(new TextComponentString(" " + message));
-        mc.ingameGUI.getChatGUI().printChatMessage(component);
+        Baritone.settings().logger.get().accept(component);
     }
+
+    default void addToChat(ITextComponent msg) {
+        mc.ingameGUI.getChatGUI().printChatMessage(msg);
+    }
+
 }

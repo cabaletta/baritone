@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -57,16 +57,15 @@ public interface ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
         if (distance == 0) {
             return 0; // Avoid 0/0 NaN
         }
+        double tmpDistance = distance;
         int tickCount = 0;
         while (true) {
             double fallDistance = velocity(tickCount);
-            if (distance <= fallDistance) {
-                return tickCount + distance / fallDistance;
+            if (tmpDistance <= fallDistance) {
+                return tickCount + tmpDistance / fallDistance;
             }
-            distance -= fallDistance;
+            tmpDistance -= fallDistance;
             tickCount++;
         }
     }
-
-
 }

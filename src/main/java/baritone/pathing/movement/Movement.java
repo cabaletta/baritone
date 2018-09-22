@@ -2,30 +2,31 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.pathing.movement;
 
 import baritone.Baritone;
-import baritone.behavior.impl.LookBehavior;
-import baritone.behavior.impl.LookBehaviorUtils;
+import baritone.behavior.LookBehavior;
+import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.*;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,12 @@ public abstract class Movement implements Helper, MovementHelper {
 
     private Double cost;
 
+    public List<BlockPos> toBreakCached = null;
+    public List<BlockPos> toPlaceCached = null;
+    public List<BlockPos> toWalkIntoCached = null;
+
+    private Boolean calculatedWhileLoaded;
+
     protected Movement(BetterBlockPos src, BetterBlockPos dest, BlockPos[] toBreak, BlockPos toPlace) {
         this.src = src;
         this.dest = dest;
@@ -71,10 +78,7 @@ public abstract class Movement implements Helper, MovementHelper {
 
     public double getCost(CalculationContext context) {
         if (cost == null) {
-            if (context == null) {
-                context = new CalculationContext();
-            }
-            cost = calculateCost(context);
+            cost = calculateCost(context != null ? context : new CalculationContext());
         }
         return cost;
     }
@@ -101,6 +105,7 @@ public abstract class Movement implements Helper, MovementHelper {
      * @return Status
      */
     public MovementStatus update() {
+        player().capabilities.allowFlying = false;
         MovementState latestState = updateState(currentState);
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
@@ -118,18 +123,19 @@ public abstract class Movement implements Helper, MovementHelper {
         this.didBreakLastTick = false;
 
         latestState.getInputStates().forEach((input, forced) -> {
-            RayTraceResult trace = mc.objectMouseOver;
-            boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
-            boolean isLeftClick = forced && input == Input.CLICK_LEFT;
+            if (Baritone.settings().leftClickWorkaround.get()) {
+                RayTraceResult trace = mc.objectMouseOver;
+                boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
+                boolean isLeftClick = forced && input == Input.CLICK_LEFT;
 
-            // If we're forcing left click, we're in a gui screen, and we're looking
-            // at a block, break the block without a direct game input manipulation.
-            if (mc.currentScreen != null && isLeftClick && isBlockTrace) {
-                BlockBreakHelper.tryBreakBlock(trace.getBlockPos(), trace.sideHit);
-                this.didBreakLastTick = true;
-                return;
+                // If we're forcing left click, we're in a gui screen, and we're looking
+                // at a block, break the block without a direct game input manipulation.
+                if (mc.currentScreen != null && isLeftClick && isBlockTrace) {
+                    BlockBreakHelper.tryBreakBlock(trace.getBlockPos(), trace.sideHit);
+                    this.didBreakLastTick = true;
+                    return;
+                }
             }
-
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
         });
         latestState.getInputStates().replaceAll((input, forced) -> false);
@@ -290,9 +296,13 @@ public abstract class Movement implements Helper, MovementHelper {
         return getDest().subtract(getSrc());
     }
 
-    public List<BlockPos> toBreakCached = null;
-    public List<BlockPos> toPlaceCached = null;
-    public List<BlockPos> toWalkIntoCached = null;
+    public void checkLoadedChunk() {
+        calculatedWhileLoaded = !(world().getChunk(getDest()) instanceof EmptyChunk);
+    }
+
+    public boolean calculatedWhileLoaded() {
+        return calculatedWhileLoaded;
+    }
 
     public List<BlockPos> toBreak() {
         if (toBreakCached != null) {

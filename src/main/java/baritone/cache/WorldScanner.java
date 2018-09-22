@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -28,34 +28,47 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public enum WorldScanner implements Helper {
     INSTANCE;
 
-    public List<BlockPos> scanLoadedChunks(List<String> blockTypes, int max) {
-        List<Block> asBlocks = blockTypes.stream().map(ChunkPacker::stringToBlock).collect(Collectors.toList());
-        if (asBlocks.contains(null)) {
-            throw new IllegalStateException("Invalid block name should have been caught earlier: " + blockTypes.toString());
+    /**
+     * Scans the world, up to your render distance, for the specified blocks.
+     *
+     * @param blocks          The blocks to scan for
+     * @param max             The maximum number of blocks to scan before cutoff
+     * @param yLevelThreshold If a block is found within this Y level, the current result will be
+     *                        returned, if the value is negative, then this condition doesn't apply.
+     * @param maxSearchRadius The maximum chunk search radius
+     * @return The matching block positions
+     */
+    public List<BlockPos> scanLoadedChunks(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
+        if (blocks.contains(null)) {
+            throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }
         LinkedList<BlockPos> res = new LinkedList<>();
-        if (asBlocks.isEmpty()) {
+        if (blocks.isEmpty()) {
             return res;
         }
         ChunkProviderClient chunkProvider = world().getChunkProvider();
 
+        int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
         int playerChunkX = playerFeet().getX() >> 4;
         int playerChunkZ = playerFeet().getZ() >> 4;
+        int playerY = playerFeet().getY();
 
         int searchRadiusSq = 0;
+        boolean foundWithinY = false;
         while (true) {
             boolean allUnloaded = true;
+            boolean foundChunks = false;
             for (int xoff = -searchRadiusSq; xoff <= searchRadiusSq; xoff++) {
                 for (int zoff = -searchRadiusSq; zoff <= searchRadiusSq; zoff++) {
                     int distance = xoff * xoff + zoff * zoff;
                     if (distance != searchRadiusSq) {
                         continue;
                     }
+                    foundChunks = true;
                     int chunkX = xoff + playerChunkX;
                     int chunkZ = zoff + playerChunkZ;
                     Chunk chunk = chunkProvider.getLoadedChunk(chunkX, chunkZ);
@@ -79,8 +92,12 @@ public enum WorldScanner implements Helper {
                             for (int z = 0; z < 16; z++) {
                                 for (int x = 0; x < 16; x++) {
                                     IBlockState state = bsc.get(x, y, z);
-                                    if (asBlocks.contains(state.getBlock())) {
-                                        res.add(new BlockPos(chunkX | x, yReal | y, chunkZ | z));
+                                    if (blocks.contains(state.getBlock())) {
+                                        int yy = yReal | y;
+                                        res.add(new BlockPos(chunkX | x, yy, chunkZ | z));
+                                        if (Math.abs(yy - playerY) < yLevelThreshold) {
+                                            foundWithinY = true;
+                                        }
                                     }
                                 }
                             }
@@ -88,10 +105,10 @@ public enum WorldScanner implements Helper {
                     }
                 }
             }
-            if (allUnloaded) {
-                return res;
-            }
-            if (res.size() >= max && searchRadiusSq > 26) {
+            if ((allUnloaded && foundChunks)
+                    || (res.size() >= max
+                    && (searchRadiusSq > maxSearchRadiusSq || (searchRadiusSq > 1 && foundWithinY)))
+            ) {
                 return res;
             }
             searchRadiusSq++;

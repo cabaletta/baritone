@@ -2,28 +2,30 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.pathing.movement.movements;
 
-import baritone.behavior.impl.LookBehaviorUtils;
+import baritone.Baritone;
+import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.Rotation;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
@@ -115,6 +117,9 @@ public class MovementTraverse extends Movement {
                 if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && !((BlockSlab) srcDown).isDouble())) {
                     return COST_INF; // can't sneak and backplace against soul sand or half slabs =/
                 }
+                if (srcDown == Blocks.FLOWING_WATER || srcDown == Blocks.WATER) {
+                    return COST_INF; // this is obviously impossible
+                }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
                 return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
             }
@@ -127,8 +132,37 @@ public class MovementTraverse extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
-            return state;
+            // if the setting is enabled
+            if (!Baritone.settings().walkWhileBreaking.get()) {
+                return state;
+            }
+            // and if we're prepping (aka mining the block in front)
+            if (state.getStatus() != MovementState.MovementStatus.PREPPING) {
+                return state;
+            }
+            // and if it's fine to walk into the blocks in front
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(positionsToBreak[0]).getBlock())) {
+                return state;
+            }
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(positionsToBreak[1]).getBlock())) {
+                return state;
+            }
+            // and we aren't already pressed up against the block
+            double dist = Math.max(Math.abs(player().posX - (dest.getX() + 0.5D)), Math.abs(player().posZ - (dest.getZ() + 0.5D)));
+            if (dist < 0.83) {
+                return state;
+            }
+
+            // combine the yaw to the center of the destination, and the pitch to the specific block we're trying to break
+            // it's safe to do this since the two blocks we break (in a traverse) are right on top of each other and so will have the same yaw
+            float yawToDest = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world())).getFirst();
+            float pitchToBreak = state.getTarget().getRotation().get().getSecond();
+
+            state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
+            return state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
         }
+
+        //sneak may have been set to true in the PREPPING state while mining an adjacent block
         state.setInput(InputOverrideHandler.Input.SNEAK, false);
 
         Block fd = BlockStateInterface.get(src.down()).getBlock();
@@ -146,9 +180,8 @@ public class MovementTraverse extends Movement {
             }
             if (isDoorActuallyBlockingUs) {
                 if (!(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
-                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world())), true));
-                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                    return state;
+                    return state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(positionsToBreak[0], world())), true))
+                            .setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }
         }
@@ -162,9 +195,8 @@ public class MovementTraverse extends Movement {
             }
 
             if (blocked != null) {
-                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(blocked, world())), true));
-                state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                return state;
+                return state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(blocked, world())), true))
+                        .setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
             }
         }
 
@@ -180,8 +212,7 @@ public class MovementTraverse extends Movement {
 
         if (isTheBridgeBlockThere) {
             if (playerFeet().equals(dest)) {
-                state.setStatus(MovementState.MovementStatus.SUCCESS);
-                return state;
+                return state.setStatus(MovementState.MovementStatus.SUCCESS);
             }
             if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
                 state.setInput(InputOverrideHandler.Input.SPRINT, true);
@@ -206,15 +237,16 @@ public class MovementTraverse extends Movement {
                         logDebug("bb pls get me some blocks. dirt or cobble");
                         return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
                     }
-                    state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                    if (!Baritone.settings().assumeSafeWalk.get()) {
+                        state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                    }
                     Block standingOn = BlockStateInterface.get(playerFeet().down()).getBlock();
                     if (standingOn.equals(Blocks.SOUL_SAND) || standingOn instanceof BlockSlab) { // see issue #118
                         double dist = Math.max(Math.abs(dest.getX() + 0.5 - player().posX), Math.abs(dest.getZ() + 0.5 - player().posZ));
                         if (dist < 0.85) { // 0.5 + 0.3 + epsilon
                             MovementHelper.moveTowards(state, dest);
-                            state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
-                            state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
-                            return state;
+                            return state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false)
+                                    .setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                         }
                     }
                     state.setInput(InputOverrideHandler.Input.MOVE_BACK, false);
@@ -227,15 +259,16 @@ public class MovementTraverse extends Movement {
                     if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && Minecraft.getMinecraft().player.isSneaking()) {
                         if (LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                             return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                        } else {
-                            // Out.gui("Wrong. " + side + " " + LookBehaviorUtils.getSelectedBlock().get().offset(side) + " " + positionsToPlace[0], Out.Mode.Debug);
                         }
+                        // wrong side?
                     }
                     System.out.println("Trying to look at " + against1 + ", actually looking at" + LookBehaviorUtils.getSelectedBlock());
                     return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 }
             }
-            state.setInput(InputOverrideHandler.Input.SNEAK, true);
+            if (!Baritone.settings().assumeSafeWalk.get()) {
+                state.setInput(InputOverrideHandler.Input.SNEAK, true);
+            }
             if (whereAmI.equals(dest)) {
                 // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
@@ -253,8 +286,7 @@ public class MovementTraverse extends Movement {
                 state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);
                 if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), goalLook)) {
-                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true); // wait to right click until we are able to place
-                    return state;
+                    return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
                 return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);

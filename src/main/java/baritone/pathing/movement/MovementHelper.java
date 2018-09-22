@@ -2,23 +2,23 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.pathing.movement;
 
 import baritone.Baritone;
-import baritone.behavior.impl.LookBehaviorUtils;
+import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.pathing.movement.movements.MovementDescend;
 import baritone.pathing.movement.movements.MovementFall;
@@ -81,10 +81,10 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
-            if (block == Blocks.IRON_DOOR) {
-                return false;
-            }
-            return true; // we can just open the door
+            // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
+            // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
+            // be opened by just interacting.
+            return block != Blocks.IRON_DOOR;
         }
         if (block instanceof BlockSnow || block instanceof BlockTrapDoor) {
             // we've already checked doors
@@ -209,7 +209,8 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean avoidWalkingInto(Block block) {
-        return BlockStateInterface.isLava(block)
+        return block instanceof BlockLiquid
+                || block instanceof BlockDynamicLiquid
                 || block == Blocks.MAGMA
                 || block == Blocks.CACTUS
                 || block == Blocks.FIRE
@@ -249,7 +250,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (up instanceof BlockLilyPad) {
                 return true;
             }
-            if (BlockStateInterface.isFlowing(state)) {
+            if (BlockStateInterface.isFlowing(state) || block == Blocks.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
                 return BlockStateInterface.isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
             }
@@ -431,21 +432,21 @@ public interface MovementHelper extends ActionCosts, Helper {
                 break;
             }
             IBlockState ontoBlock = BlockStateInterface.get(onto);
-            if (BlockStateInterface.isWater(ontoBlock.getBlock())) {
+            if (ontoBlock.getBlock() == Blocks.WATER) {
                 return new MovementFall(pos, onto);
             }
             if (canWalkThrough(onto, ontoBlock)) {
                 continue;
             }
-            if (canWalkOn(onto, ontoBlock)) {
-                if ((calcContext.hasWaterBucket() && fallHeight <= calcContext.maxFallHeightBucket() + 1) || fallHeight <= calcContext.maxFallHeightNoWater() + 1) {
-                    // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
-                    return new MovementFall(pos, onto.up());
-                } else {
-                    return null;
-                }
+            if (!canWalkOn(onto, ontoBlock)) {
+                break;
             }
-            break;
+            if ((calcContext.hasWaterBucket() && fallHeight <= calcContext.maxFallHeightBucket() + 1) || fallHeight <= calcContext.maxFallHeightNoWater() + 1) {
+                // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
+                return new MovementFall(pos, onto.up());
+            } else {
+                return null;
+            }
         }
         return null;
     }
