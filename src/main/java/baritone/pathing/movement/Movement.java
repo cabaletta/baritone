@@ -48,12 +48,12 @@ public abstract class Movement implements Helper, MovementHelper {
     /**
      * The positions that need to be broken before this movement can ensue
      */
-    protected final BlockPos[] positionsToBreak;
+    protected final BetterBlockPos[] positionsToBreak;
 
     /**
      * The position where we need to place a block before this movement can ensue
      */
-    protected final BlockPos positionToPlace;
+    protected final BetterBlockPos positionToPlace;
 
     private boolean didBreakLastTick;
 
@@ -65,14 +65,14 @@ public abstract class Movement implements Helper, MovementHelper {
 
     private Boolean calculatedWhileLoaded;
 
-    protected Movement(BetterBlockPos src, BetterBlockPos dest, BlockPos[] toBreak, BlockPos toPlace) {
+    protected Movement(BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak, BetterBlockPos toPlace) {
         this.src = src;
         this.dest = dest;
         this.positionsToBreak = toBreak;
         this.positionToPlace = toPlace;
     }
 
-    protected Movement(BetterBlockPos src, BetterBlockPos dest, BlockPos[] toBreak) {
+    protected Movement(BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
         this(src, dest, toBreak, null);
     }
 

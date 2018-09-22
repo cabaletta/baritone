@@ -46,7 +46,7 @@ public class MovementTraverse extends Movement {
     private boolean wasTheBridgeBlockAlwaysThere = true;
 
     public MovementTraverse(BetterBlockPos from, BetterBlockPos to) {
-        super(from, to, new BlockPos[]{to.up(), to}, to.down());
+        super(from, to, new BetterBlockPos[]{to.up(), to}, to.down());
     }
 
     @Override

@@ -48,7 +48,7 @@ public class MovementDiagonal extends Movement {
     }
 
     private MovementDiagonal(BetterBlockPos start, BetterBlockPos end, BetterBlockPos dir1, BetterBlockPos dir2) {
-        super(start, end, new BlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
+        super(start, end, new BetterBlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
     }
 
     @Override
@@ -60,7 +60,7 @@ public class MovementDiagonal extends Movement {
         if (!MovementHelper.canWalkThrough(positionsToBreak[4]) || !MovementHelper.canWalkThrough(positionsToBreak[5])) {
             return COST_INF;
         }
-        BlockPos destDown = dest.down();
+        BetterBlockPos destDown = dest.down();
         IBlockState destWalkOn = BlockStateInterface.get(destDown);
         if (!MovementHelper.canWalkOn(destDown, destWalkOn)) {
             return COST_INF;

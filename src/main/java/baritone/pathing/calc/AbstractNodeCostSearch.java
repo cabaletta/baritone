@@ -55,7 +55,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     private volatile boolean isFinished;
 
-    protected volatile boolean cancelRequested;
+    protected boolean cancelRequested;
 
     /**
      * This is really complicated and hard to explain. I wrote a comment in the old version of MineBot but it was so

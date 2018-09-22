@@ -213,6 +213,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("ok force canceled");
             return;
         }
+        if (msg.equals("gc")) {
+            System.gc();
+            event.cancel();
+            logDirect("Called System.gc();");
+            return;
+        }
         if (msg.equals("invert")) {
             Goal goal = PathingBehavior.INSTANCE.getGoal();
             BlockPos runAwayFrom;
