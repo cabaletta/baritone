@@ -37,7 +37,7 @@ public class MovementPillar extends Movement {
     private int numTicks = 0;
 
     public MovementPillar(BetterBlockPos start, BetterBlockPos end) {
-        super(start, end, new BlockPos[]{start.up(2)}, start);
+        super(start, end, new BetterBlockPos[]{start.up(2)}, start);
     }
 
     @Override

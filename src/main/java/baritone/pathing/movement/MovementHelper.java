@@ -106,8 +106,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
                 return false;
             }
+            return block == Blocks.WATER || block == Blocks.FLOWING_WATER;
         }
-        return block.isPassable(mc.world, pos);
+        return block.isPassable(mc.world, pos); // only blocks that can get here and actually that use world and pos for this call are snow and trapdoor
     }
 
     /**
@@ -225,7 +226,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      *
      * @return
      */
-    static boolean canWalkOn(BlockPos pos, IBlockState state) {
+    static boolean canWalkOn(BetterBlockPos pos, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR || block == Blocks.MAGMA) {
             return false;
@@ -246,8 +247,10 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
         if (BlockStateInterface.isWater(block)) {
-            Block up = BlockStateInterface.get(pos.up()).getBlock();
-            if (up instanceof BlockLilyPad) {
+            // since this is called literally millions of times per second, the benefit of not allocating millions of useless "pos.up()"
+            // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
+            Block up = BlockStateInterface.get(pos.x, pos.y + 1, pos.z).getBlock();
+            if (up == Blocks.WATERLILY) {
                 return true;
             }
             if (BlockStateInterface.isFlowing(state) || block == Blocks.FLOWING_WATER) {
@@ -276,7 +279,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return false;
     }
 
-    static boolean canWalkOn(BlockPos pos) {
+    static boolean canWalkOn(BetterBlockPos pos) {
         return canWalkOn(pos, BlockStateInterface.get(pos));
     }
 

@@ -35,6 +35,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
 import baritone.utils.interfaces.IGoalRenderPos;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -232,7 +233,7 @@ public final class PathingBehavior extends Behavior implements Helper {
     }
 
     public BlockPos pathStart() {
-        BlockPos feet = playerFeet();
+        BetterBlockPos feet = playerFeet();
         if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR) && MovementHelper.canWalkOn(feet.down().down())) {
             return feet.down();
         }

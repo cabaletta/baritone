@@ -34,7 +34,7 @@ public class MovementDescend extends Movement {
     private int numTicks = 0;
 
     public MovementDescend(BetterBlockPos start, BetterBlockPos end) {
-        super(start, end, new BlockPos[]{end.up(2), end.up(), end}, end.down());
+        super(start, end, new BetterBlockPos[]{end.up(2), end.up(), end}, end.down());
     }
 
     @Override

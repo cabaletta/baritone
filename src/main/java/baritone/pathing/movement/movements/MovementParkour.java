@@ -39,12 +39,13 @@ import java.util.Objects;
 
 public class MovementParkour extends Movement {
     private static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN_SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
+    private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
 
     private final EnumFacing direction;
     private final int dist;
 
     private MovementParkour(BetterBlockPos src, int dist, EnumFacing dir) {
-        super(src, src.offset(dir, dist), new BlockPos[]{});
+        super(src, src.offset(dir, dist), EMPTY);
         this.direction = dir;
         this.dist = dist;
         super.override(costFromJumpDistance(dist));
@@ -59,7 +60,7 @@ public class MovementParkour extends Movement {
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || MovementHelper.isBottomSlab(standingOn)) {
             return null;
         }
-        BlockPos adjBlock = src.down().offset(dir);
+        BetterBlockPos adjBlock = src.down().offset(dir);
         IBlockState adj = BlockStateInterface.get(adjBlock);
         if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
             return null;
@@ -81,7 +82,7 @@ public class MovementParkour extends Movement {
             return null;
         }
         for (int i = 2; i <= (context.canSprint() ? 4 : 3); i++) {
-            BlockPos dest = src.offset(dir, i);
+            BetterBlockPos dest = src.offset(dir, i);
             // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
             for (int y = 0; y < 4; y++) {
                 if (!MovementHelper.fullyPassable(dest.up(y))) {
