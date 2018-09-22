@@ -85,7 +85,6 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         }
         this.cancelRequested = false;
         try {
-            currentlyRunning = this;
             Optional<IPath> path = calculate0(timeout);
             path.ifPresent(IPath::postprocess);
             isFinished = true;
@@ -95,6 +94,14 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             currentlyRunning = null;
             isFinished = true;
         }
+    }
+
+    /**
+     * Don't set currentlyRunning to this until everything is all ready to go, and we're about to enter the main loop.
+     * For example, bestSoFar is null so bestPathSoFar (which gets bestSoFar[0]) could NPE if we set currentlyRunning before calculate0
+     */
+    protected void loopBegin() {
+        currentlyRunning = this;
     }
 
     protected abstract Optional<IPath> calculate0(long timeout);
@@ -141,6 +148,10 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public Optional<IPath> pathToMostRecentNodeConsidered() {
         return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal));
+    }
+
+    protected int mapSize() {
+        return map.size();
     }
 
     @Override

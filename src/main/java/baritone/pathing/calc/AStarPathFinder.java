@@ -90,6 +90,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
+        loopBegin();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.nanoTime() / 1000000L - timeoutTime < 0 && !cancelRequested) {
             if (slowPath) {
                 try {
@@ -180,6 +181,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         }
         System.out.println(numMovementsConsidered + " movements considered");
         System.out.println("Open set size: " + openSet.size());
+        System.out.println("PathNode map size: " + mapSize());
         System.out.println((int) (numNodes * 1.0 / ((System.nanoTime() / 1000000L - startTime) / 1000F)) + " nodes per second");
         double bestDist = 0;
         for (int i = 0; i < bestSoFar.length; i++) {
