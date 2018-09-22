@@ -69,7 +69,7 @@ public class MovementPillar extends Movement {
                 return COST_INF;
             }
         }
-        BlockPos toBreakPos = src.up(2);
+        BetterBlockPos toBreakPos = src.up(2);
         IBlockState toBreak = BlockStateInterface.get(toBreakPos);
         Block toBreakBlock = toBreak.getBlock();
         if (toBreakBlock instanceof BlockFenceGate) {

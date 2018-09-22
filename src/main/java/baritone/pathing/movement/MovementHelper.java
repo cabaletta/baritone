@@ -68,11 +68,15 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param pos
      * @return
      */
-    static boolean canWalkThrough(BlockPos pos) {
-        return canWalkThrough(pos, BlockStateInterface.get(pos));
+    static boolean canWalkThrough(BetterBlockPos pos) {
+        return canWalkThrough(pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
     }
 
-    static boolean canWalkThrough(BlockPos pos, IBlockState state) {
+    static boolean canWalkThrough(BetterBlockPos pos, IBlockState state) {
+        return canWalkThrough(pos.x, pos.y, pos.z, state);
+    }
+
+    static boolean canWalkThrough(int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) {
             return true;
@@ -86,14 +90,23 @@ public interface MovementHelper extends ActionCosts, Helper {
             // be opened by just interacting.
             return block != Blocks.IRON_DOOR;
         }
-        if (block instanceof BlockSnow || block instanceof BlockTrapDoor) {
-            // we've already checked doors
-            // so the only remaining dynamic isPassables are snow, fence gate, and trapdoor
+        boolean snow = block instanceof BlockSnow;
+        boolean trapdoor = block instanceof BlockTrapDoor;
+        if (snow || trapdoor) {
+            // we've already checked doors and fence gates
+            // so the only remaining dynamic isPassables are snow and trapdoor
             // if they're cached as a top block, we don't know their metadata
             // default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (mc.world.getChunk(pos) instanceof EmptyChunk) {
+            if (mc.world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
                 return true;
             }
+            if (snow) {
+                return state.getValue(BlockSnow.LAYERS) < 5; // see BlockSnow.isPassable
+            }
+            if (trapdoor) {
+                return !state.getValue(BlockTrapDoor.OPEN); // see BlockTrapDoor.isPassable
+            }
+            throw new IllegalStateException();
         }
         if (BlockStateInterface.isFlowing(state)) {
             return false; // Don't walk through flowing liquids
@@ -102,13 +115,16 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (Baritone.settings().assumeWalkOnWater.get()) {
                 return false;
             }
-            IBlockState up = BlockStateInterface.get(pos.up());
+            IBlockState up = BlockStateInterface.get(x, y + 1, z);
             if (up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
                 return false;
             }
             return block == Blocks.WATER || block == Blocks.FLOWING_WATER;
         }
-        return block.isPassable(mc.world, pos); // only blocks that can get here and actually that use world and pos for this call are snow and trapdoor
+        // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
+        // has already been accounted for above
+        // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
+        return block.isPassable(null, null);
     }
 
     /**
@@ -118,10 +134,10 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @return
      */
     static boolean fullyPassable(BlockPos pos) {
-        return fullyPassable(pos, BlockStateInterface.get(pos));
+        return fullyPassable(BlockStateInterface.get(pos));
     }
 
-    static boolean fullyPassable(BlockPos pos, IBlockState state) {
+    static boolean fullyPassable(IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) {
             return true;
@@ -140,7 +156,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockEndPortal) {
             return false;
         }
-        return block.isPassable(mc.world, pos);
+        // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
+        return block.isPassable(null, null);
     }
 
     static boolean isReplacable(BlockPos pos, IBlockState state) {
@@ -289,12 +306,12 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.isBlockNormalCube();
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BlockPos position, boolean includeFalling) {
+    static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, boolean includeFalling) {
         IBlockState state = BlockStateInterface.get(position);
         return getMiningDurationTicks(context, position, state, includeFalling);
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BlockPos position, IBlockState state, boolean includeFalling) {
+    static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(position, state)) {
             if (!context.allowBreak()) {
@@ -311,7 +328,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
             double result = m / strVsBlock;
             if (includeFalling) {
-                BlockPos up = position.up();
+                BetterBlockPos up = position.up();
                 IBlockState above = BlockStateInterface.get(up);
                 if (above.getBlock() instanceof BlockFalling) {
                     result += getMiningDurationTicks(context, up, above, true);

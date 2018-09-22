@@ -158,7 +158,7 @@ public abstract class Movement implements Helper, MovementHelper {
             return true;
         }
         boolean somethingInTheWay = false;
-        for (BlockPos blockPos : positionsToBreak) {
+        for (BetterBlockPos blockPos : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(blockPos)) {
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
@@ -309,7 +309,7 @@ public abstract class Movement implements Helper, MovementHelper {
             return toBreakCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        for (BlockPos positionToBreak : positionsToBreak) {
+        for (BetterBlockPos positionToBreak : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(positionToBreak)) {
                 result.add(positionToBreak);
             }
