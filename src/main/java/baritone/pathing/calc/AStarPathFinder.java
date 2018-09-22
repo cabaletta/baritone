@@ -90,6 +90,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         HashMap<Class<? extends Movement>, Long> timeConsumed = new HashMap<>();
         HashMap<Class<? extends Movement>, Integer> count = new HashMap<>();
         HashMap<Class<? extends Movement>, Integer> stateLookup = new HashMap<>();
+        HashMap<Class<? extends Movement>, Long> posCreation = new HashMap<>();
         long heapRemove = 0;
         int heapRemoveCount = 0;
         long heapAdd = 0;
@@ -161,9 +162,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 chunkCount++;
                 // TODO cache cost
                 int numLookupsBefore = BlockStateInterface.numBlockStateLookups;
+                long numCreatedBefore = BetterBlockPos.numCreated;
                 double actionCost = movementToGetToNeighbor.getCost(calcContext);
                 long costEnd = System.nanoTime();
                 stateLookup.put(movementToGetToNeighbor.getClass(), BlockStateInterface.numBlockStateLookups - numLookupsBefore + stateLookup.getOrDefault(movementToGetToNeighbor.getClass(), 0));
+                posCreation.put(movementToGetToNeighbor.getClass(), BetterBlockPos.numCreated - numCreatedBefore + posCreation.getOrDefault(movementToGetToNeighbor.getClass(), 0L));
                 timeConsumed.put(movementToGetToNeighbor.getClass(), costEnd - costStart + timeConsumed.getOrDefault(movementToGetToNeighbor.getClass(), 0L));
                 count.put(movementToGetToNeighbor.getClass(), 1 + count.getOrDefault(movementToGetToNeighbor.getClass(), 0));
                 numMovementsConsidered++;
@@ -240,6 +243,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             long nanoTime = timeConsumed.get(klass);
             System.out.println(nanoTime / num + " " + klass + " " + nanoTime / 1000000 + "ms " + num);
             System.out.println(stateLookup.get(klass) / num + " " + stateLookup.get(klass));
+            System.out.println(posCreation.get(klass) / num + " " + posCreation.get(klass));
         }
         if (cancelRequested) {
             return Optional.empty();

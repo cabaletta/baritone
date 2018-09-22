@@ -36,6 +36,15 @@ public final class BetterBlockPos extends BlockPos {
     public final int y;
     public final int z;
     public final long hashCode;
+    public static long numCreated;
+
+    static {
+        numCreated = 0;
+    }
+
+    {
+        numCreated++;
+    }
 
     public BetterBlockPos(int x, int y, int z) {
         super(x, y, z);
