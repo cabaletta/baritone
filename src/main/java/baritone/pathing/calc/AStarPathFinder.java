@@ -22,6 +22,8 @@ import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.Moves;
+import baritone.pathing.movement.movements.result.MoveResult;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
@@ -97,7 +99,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
                     if (!BlockStateInterface.isLoaded(newX, newZ)) {
-                        numEmptyChunk++;
+                        if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
+                            numEmptyChunk++;
+                        }
                         continue;
                     }
                 }

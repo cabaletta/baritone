@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.calc;
+package baritone.pathing.movement.movements.result;
 
 public final class MoveResult {
     public final int destX;
