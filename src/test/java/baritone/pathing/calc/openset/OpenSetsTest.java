@@ -83,7 +83,7 @@ public class OpenSetsTest {
             assertTrue(set.isEmpty());
         }
 
-        // cost the pathnodes that we'll be testing the sets on
+        // generate the pathnodes that we'll be testing the sets on
         PathNode[] toInsert = new PathNode[size];
         for (int i = 0; i < size; i++) {
             // can't use an existing goal
