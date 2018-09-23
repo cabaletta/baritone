@@ -41,8 +41,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.awt.*;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class PathingBehavior extends Behavior implements Helper {
 
@@ -329,8 +332,9 @@ public final class PathingBehavior extends Behavior implements Helper {
         } else {
             timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
         }
+        Optional<HashSet<Long>> favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(y -> y.hashCode)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
         try {
-            IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
+            IPathFinder pf = new AStarPathFinder(start, goal, favoredPositions);
             return pf.calculate(timeout);
         } catch (Exception e) {
             logDebug("Pathing exception: " + e);

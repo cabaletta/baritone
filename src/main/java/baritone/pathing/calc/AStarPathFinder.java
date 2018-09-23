@@ -27,15 +27,12 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * The actual A* pathfinding
@@ -46,9 +43,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
 
     private final Optional<HashSet<Long>> favoredPositions;
 
-    public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BetterBlockPos>> favoredPositions) {
+    public AStarPathFinder(BlockPos start, Goal goal, Optional<HashSet<Long>> favoredPositions) {
         super(start, goal);
-        this.favoredPositions = favoredPositions.map(Collection::stream).map(x -> x.map(y -> y.hashCode)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
+        this.favoredPositions = favoredPositions;
     }
 
     @Override
