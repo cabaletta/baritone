@@ -20,9 +20,10 @@ package baritone.pathing.calc;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.movements.*;
+import baritone.pathing.movement.movements.result.DescendResult;
+import baritone.pathing.movement.movements.result.ParkourResult;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Tuple;
 
 public enum Moves {
     DOWNWARD(0, 0) {
@@ -158,8 +159,8 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            Tuple<Integer, Double> res = MovementDescend.cost(context, x, y, z, x + 1, z);
-            return new MoveResult(x + 1, res.getFirst(), z, res.getSecond());
+            DescendResult res = MovementDescend.cost(context, x, y, z, x + 1, z);
+            return new MoveResult(x + 1, res.y, z, res.cost);
         }
     },
 
@@ -176,8 +177,8 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            Tuple<Integer, Double> res = MovementDescend.cost(context, x, y, z, x - 1, z);
-            return new MoveResult(x - 1, res.getFirst(), z, res.getSecond());
+            DescendResult res = MovementDescend.cost(context, x, y, z, x - 1, z);
+            return new MoveResult(x - 1, res.y, z, res.cost);
         }
     },
 
@@ -194,8 +195,8 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            Tuple<Integer, Double> res = MovementDescend.cost(context, x, y, z, x, z - 1);
-            return new MoveResult(x, res.getFirst(), z - 1, res.getSecond());
+            DescendResult res = MovementDescend.cost(context, x, y, z, x, z - 1);
+            return new MoveResult(x, res.y, z - 1, res.cost);
         }
     },
 
@@ -212,8 +213,8 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            Tuple<Integer, Double> res = MovementDescend.cost(context, x, y, z, x, z + 1);
-            return new MoveResult(x, res.getFirst(), z + 1, res.getSecond());
+            DescendResult res = MovementDescend.cost(context, x, y, z, x, z + 1);
+            return new MoveResult(x, res.y, z + 1, res.cost);
         }
     },
 
@@ -273,8 +274,8 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            Tuple<Tuple<Integer, Integer>, Double> res = MovementParkour.cost(context, x, y, z, EnumFacing.NORTH);
-            return new MoveResult(res.getFirst().getFirst(), y, res.getFirst().getSecond(), res.getSecond());
+            ParkourResult res = MovementParkour.cost(context, x, y, z, EnumFacing.NORTH);
+            return new MoveResult(res.x, y, res.z, res.cost);
         }
     },
 
@@ -286,8 +287,8 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            Tuple<Tuple<Integer, Integer>, Double> res = MovementParkour.cost(context, x, y, z, EnumFacing.SOUTH);
-            return new MoveResult(res.getFirst().getFirst(), y, res.getFirst().getSecond(), res.getSecond());
+            ParkourResult res = MovementParkour.cost(context, x, y, z, EnumFacing.SOUTH);
+            return new MoveResult(res.x, y, res.z, res.cost);
         }
     },
 
@@ -299,8 +300,8 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            Tuple<Tuple<Integer, Integer>, Double> res = MovementParkour.cost(context, x, y, z, EnumFacing.EAST);
-            return new MoveResult(res.getFirst().getFirst(), y, res.getFirst().getSecond(), res.getSecond());
+            ParkourResult res = MovementParkour.cost(context, x, y, z, EnumFacing.EAST);
+            return new MoveResult(res.x, y, res.z, res.cost);
         }
     },
 
@@ -312,13 +313,12 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            Tuple<Tuple<Integer, Integer>, Double> res = MovementParkour.cost(context, x, y, z, EnumFacing.WEST);
-            return new MoveResult(res.getFirst().getFirst(), y, res.getFirst().getSecond(), res.getSecond());
+            ParkourResult res = MovementParkour.cost(context, x, y, z, EnumFacing.WEST);
+            return new MoveResult(res.x, y, res.z, res.cost);
         }
     };
 
     protected abstract Movement apply0(BetterBlockPos src);
-
 
     public abstract MoveResult apply(CalculationContext context, int x, int y, int z);
 

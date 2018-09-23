@@ -23,6 +23,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
+import baritone.pathing.movement.movements.result.ParkourResult;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
@@ -31,16 +32,17 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
 
+import static baritone.pathing.movement.movements.result.ParkourResult.IMPOSSIBLE;
+
 public class MovementParkour extends Movement {
+
     private static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
-    private static final Tuple<Tuple<Integer, Integer>, Double> IMPOSSIBLE = new Tuple<>(new Tuple<>(0, 0), COST_INF);
 
     private final EnumFacing direction;
     private final int dist;
@@ -52,12 +54,12 @@ public class MovementParkour extends Movement {
     }
 
     public static MovementParkour cost(CalculationContext context, BetterBlockPos src, EnumFacing direction) {
-        Tuple<Tuple<Integer, Integer>, Double> res = cost(context, src.x, src.y, src.z, direction);
-        int dist = Math.abs(res.getFirst().getFirst() - src.x) + Math.abs(res.getFirst().getSecond() - src.z);
+        ParkourResult res = cost(context, src.x, src.y, src.z, direction);
+        int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
         return new MovementParkour(src, dist, direction);
     }
 
-    public static Tuple<Tuple<Integer, Integer>, Double> cost(CalculationContext context, int x, int y, int z, EnumFacing dir) {
+    public static ParkourResult cost(CalculationContext context, int x, int y, int z, EnumFacing dir) {
         if (!Baritone.settings().allowParkour.get()) {
             return IMPOSSIBLE;
         }
@@ -95,7 +97,7 @@ public class MovementParkour extends Movement {
                 }
             }
             if (MovementHelper.canWalkOn(x + xDiff * i, y - 1, z + zDiff * i)) {
-                return new Tuple<>(new Tuple<>(x + xDiff * i, z + zDiff * i), costFromJumpDistance(i));
+                return new ParkourResult(x + xDiff * i, z + zDiff * i, costFromJumpDistance(i));
             }
         }
         if (!context.canSprint()) {
@@ -120,7 +122,7 @@ public class MovementParkour extends Movement {
                 continue;
             }
             if (MovementHelper.canPlaceAgainst(againstX, y - 1, againstZ)) {
-                return new Tuple<>(new Tuple<>(destX, destZ), costFromJumpDistance(i) + context.placeBlockCost());
+                return new ParkourResult(destX, destZ, costFromJumpDistance(i) + context.placeBlockCost());
             }
         }
         return IMPOSSIBLE;
@@ -142,11 +144,11 @@ public class MovementParkour extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        Tuple<Tuple<Integer, Integer>, Double> res = cost(context, src.x, src.y, src.z, direction);
-        if (res.getFirst().getFirst() != dest.x || res.getFirst().getSecond() != dest.z) {
+        ParkourResult res = cost(context, src.x, src.y, src.z, direction);
+        if (res.x != dest.x || res.z != dest.z) {
             return COST_INF;
         }
-        return res.getSecond();
+        return res.cost;
     }
 
     @Override
