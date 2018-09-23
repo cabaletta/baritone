@@ -17,12 +17,15 @@
 
 package baritone.pathing.goals;
 
+import baritone.api.pathing.goals.Goal;
+import baritone.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside;
+
 /**
  * Useful for mining (getting to diamond / iron level)
  *
  * @author leijurv
  */
-public class GoalYLevel implements Goal {
+public class GoalYLevel implements Goal, ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
 
     /**
      * The target Y level

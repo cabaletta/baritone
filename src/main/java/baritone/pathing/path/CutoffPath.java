@@ -17,7 +17,7 @@
 
 package baritone.pathing.path;
 
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
 import baritone.utils.pathing.BetterBlockPos;
 

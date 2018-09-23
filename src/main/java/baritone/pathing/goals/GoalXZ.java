@@ -18,6 +18,7 @@
 package baritone.pathing.goals;
 
 import baritone.Baritone;
+import baritone.api.pathing.goals.Goal;
 import baritone.utils.Utils;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;

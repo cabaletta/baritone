@@ -25,7 +25,7 @@ import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.goals.GoalBlock;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;

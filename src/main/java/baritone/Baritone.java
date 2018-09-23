@@ -17,6 +17,7 @@
 
 package baritone;
 
+import baritone.api.BaritoneAPI;
 import baritone.behavior.Behavior;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
@@ -89,6 +90,16 @@ public enum Baritone {
             registerBehavior(LocationTrackingBehavior.INSTANCE);
             registerBehavior(FollowBehavior.INSTANCE);
             registerBehavior(MineBehavior.INSTANCE);
+
+            // TODO: Clean this up
+            // Maybe combine this call in someway with the registerBehavior calls?
+            BaritoneAPI.registerDefaultBehaviors(
+                    FollowBehavior.INSTANCE,
+                    LookBehavior.INSTANCE,
+                    MemoryBehavior.INSTANCE,
+                    MineBehavior.INSTANCE,
+                    PathingBehavior.INSTANCE
+            );
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {

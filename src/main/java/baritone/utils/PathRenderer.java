@@ -18,7 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
 import baritone.pathing.goals.GoalXZ;

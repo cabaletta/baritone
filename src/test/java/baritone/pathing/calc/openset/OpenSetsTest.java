@@ -18,7 +18,7 @@
 package baritone.pathing.calc.openset;
 
 import baritone.pathing.calc.PathNode;
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

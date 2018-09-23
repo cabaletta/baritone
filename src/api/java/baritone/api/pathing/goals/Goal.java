@@ -15,9 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.pathing.movement.ActionCosts;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -25,7 +24,7 @@ import net.minecraft.util.math.BlockPos;
  *
  * @author leijurv
  */
-public interface Goal extends ActionCosts {
+public interface Goal {
 
     /**
      * Returns whether or not the specified position

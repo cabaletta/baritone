@@ -18,7 +18,7 @@
 package baritone.pathing.path;
 
 import baritone.Baritone;
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
 import baritone.utils.Helper;
 import baritone.utils.Utils;

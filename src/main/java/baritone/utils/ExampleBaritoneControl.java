@@ -19,6 +19,7 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.Settings;
+import baritone.api.pathing.goals.Goal;
 import baritone.behavior.Behavior;
 import baritone.api.event.events.ChatEvent;
 import baritone.behavior.FollowBehavior;

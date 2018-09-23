@@ -18,6 +18,7 @@
 package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RenderEvent;
@@ -25,7 +26,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.goals.GoalXZ;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
@@ -46,7 +47,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public final class PathingBehavior extends Behavior implements Helper {
+public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
 
     public static final PathingBehavior INSTANCE = new PathingBehavior();
 
@@ -172,6 +173,7 @@ public final class PathingBehavior extends Behavior implements Helper {
         }
     }
 
+    @Override
     public Optional<Double> ticksRemainingInSegment() {
         if (current == null) {
             return Optional.empty();
@@ -179,10 +181,12 @@ public final class PathingBehavior extends Behavior implements Helper {
         return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
     }
 
+    @Override
     public void setGoal(Goal goal) {
         this.goal = goal;
     }
 
+    @Override
     public Goal getGoal() {
         return goal;
     }
@@ -195,10 +199,19 @@ public final class PathingBehavior extends Behavior implements Helper {
         return next;
     }
 
+    // TODO: Expose this method in the API?
+    // In order to do so, we'd need to move over IPath which has a whole lot of references to other
+    // things that may not need to be exposed necessarily, so we'll need to figure that out.
     public Optional<IPath> getPath() {
         return Optional.ofNullable(current).map(PathExecutor::getPath);
     }
 
+    @Override
+    public boolean isPathing() {
+        return this.current != null;
+    }
+
+    @Override
     public void cancel() {
         dispatchPathEvent(PathEvent.CANCELED);
         current = null;
@@ -212,6 +225,7 @@ public final class PathingBehavior extends Behavior implements Helper {
      *
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
+    @Override
     public boolean path() {
         if (goal == null) {
             return false;
@@ -234,7 +248,10 @@ public final class PathingBehavior extends Behavior implements Helper {
         }
     }
 
-    public BlockPos pathStart() {
+    /**
+     * @return The starting {@link BlockPos} for a new path
+     */
+    private BlockPos pathStart() {
         BetterBlockPos feet = playerFeet();
         if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR) && MovementHelper.canWalkOn(feet.down().down())) {
             return feet.down();

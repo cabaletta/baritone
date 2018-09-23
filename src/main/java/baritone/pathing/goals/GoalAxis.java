@@ -18,6 +18,7 @@
 package baritone.pathing.goals;
 
 import baritone.Baritone;
+import baritone.api.pathing.goals.Goal;
 
 public class GoalAxis implements Goal {
 
