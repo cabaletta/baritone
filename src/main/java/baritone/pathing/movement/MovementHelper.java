@@ -462,15 +462,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static Movement generateMovementFallOrDescend(BetterBlockPos pos, BetterBlockPos dest, CalculationContext calcContext) {
-        // A
-        //SA
-        // A
-        // B
-        // C
-        // D
-        //if S is where you start, B needs to be air for a movementfall
-        //A is plausibly breakable by either descend or fall
-        //C, D, etc determine the length of the fall
+
 
         int x = dest.x;
         int y = dest.y;

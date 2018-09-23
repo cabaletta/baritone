@@ -134,4 +134,24 @@ public final class BetterBlockPos extends BlockPos {
         Vec3i vec = dir.getDirectionVec();
         return new BetterBlockPos(x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
     }
+
+    @Override
+    public BetterBlockPos north() {
+        return new BetterBlockPos(x, y, z - 1);
+    }
+
+    @Override
+    public BetterBlockPos south() {
+        return new BetterBlockPos(x, y, z + 1);
+    }
+
+    @Override
+    public BetterBlockPos east() {
+        return new BetterBlockPos(x + 1, y, z);
+    }
+
+    @Override
+    public BetterBlockPos west() {
+        return new BetterBlockPos(x - 1, y, z);
+    }
 }
