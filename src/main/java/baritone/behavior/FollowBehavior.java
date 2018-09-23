@@ -42,6 +42,7 @@ public final class FollowBehavior extends Behavior implements Helper {
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
+            following = null;
             return;
         }
         if (following == null) {

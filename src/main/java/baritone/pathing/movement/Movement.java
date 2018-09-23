@@ -23,6 +23,7 @@ import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.*;
 import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -158,7 +159,7 @@ public abstract class Movement implements Helper, MovementHelper {
         }
         boolean somethingInTheWay = false;
         for (BetterBlockPos blockPos : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(blockPos)) {
+            if (!MovementHelper.canWalkThrough(blockPos) && !(BlockStateInterface.getBlock(blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
@@ -216,7 +217,7 @@ public abstract class Movement implements Helper, MovementHelper {
     public void reset() {
         currentState = new MovementState().setStatus(MovementStatus.PREPPING);
     }
-    
+
     /**
      * Calculate latest movement state.
      * Gets called once a tick.

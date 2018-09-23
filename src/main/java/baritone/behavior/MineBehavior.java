@@ -58,6 +58,10 @@ public final class MineBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
+        if (event.getType() == TickEvent.Type.OUT) {
+            cancel();
+            return;
+        }
         if (mining == null) {
             return;
         }

@@ -87,8 +87,10 @@ public class MovementDescend extends Movement {
         //if S is where you start, B needs to be air for a movementfall
         //A is plausibly breakable by either descend or fall
         //C, D, etc determine the length of the fall
-        if (!MovementHelper.canWalkOn(destX, y - 2, destZ)) {
-            return dynamicFallCost(context, x, y, z, destX, destZ, totalCost);
+
+        IBlockState below = BlockStateInterface.get(destX, y - 2, destZ);
+        if (!MovementHelper.canWalkOn(destX, y - 2, destZ, below)) {
+            return dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below);
         }
 
         Block tmp1 = BlockStateInterface.get(destX, y - 1, destZ).getBlock();
@@ -106,11 +108,14 @@ public class MovementDescend extends Movement {
         return new Tuple<>(y - 1, totalCost);
     }
 
-    public static Tuple<Integer, Double> dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak) {
+    public static Tuple<Integer, Double> dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below) {
         if (frontBreak != 0 && BlockStateInterface.get(destX, y + 2, destZ).getBlock() instanceof BlockFalling) {
             // if frontBreak is 0 we can actually get through this without updating the falling block and making it actually fall
             // but if frontBreak is nonzero, we're breaking blocks in front, so don't let anything fall through this column,
             // and potentially replace the water we're going to fall into
+            return IMPOSSIBLE;
+        }
+        if (!MovementHelper.canWalkThrough(destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
             return IMPOSSIBLE;
         }
         for (int fallHeight = 3; true; fallHeight++) {
@@ -122,12 +127,15 @@ public class MovementDescend extends Movement {
             }
             IBlockState ontoBlock = BlockStateInterface.get(destX, newY, destZ);
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[fallHeight] + frontBreak;
-            if (ontoBlock.getBlock() == Blocks.WATER) { // TODO flowing check required here?
+            if (ontoBlock.getBlock() == Blocks.WATER && !BlockStateInterface.isFlowing(ontoBlock)) { // TODO flowing check required here?
                 if (Baritone.settings().assumeWalkOnWater.get()) {
                     return IMPOSSIBLE; // TODO fix
                 }
                 // found a fall into water
                 return new Tuple<>(newY, tentativeCost); // TODO incorporate water swim up cost?
+            }
+            if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
+                return IMPOSSIBLE;
             }
             if (MovementHelper.canWalkThrough(destX, newY, destZ, ontoBlock)) {
                 continue;

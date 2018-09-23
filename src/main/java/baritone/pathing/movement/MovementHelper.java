@@ -360,6 +360,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (avoidBreaking(x, y, z, state)) {
                 return COST_INF;
             }
+            if (block instanceof BlockLiquid) {
+                return COST_INF;
+            }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
             double strVsBlock = context.getToolSet().getStrVsBlock(state);
             if (strVsBlock <= 0) {
