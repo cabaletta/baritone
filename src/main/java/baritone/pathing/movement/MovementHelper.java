@@ -47,11 +47,12 @@ import java.util.Optional;
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
-    static boolean avoidBreaking(BlockPos pos, IBlockState state) {
+    static boolean avoidBreaking(BetterBlockPos pos, IBlockState state) {
+        return avoidBreaking(pos.x, pos.y, pos.z, state);
+    }
+
+    static boolean avoidBreaking(int x, int y, int z, IBlockState state) {
         Block b = state.getBlock();
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call BlockStateInterface.get directly with x,y,z. no need to make 5 new BlockPos for no reason
@@ -322,16 +323,20 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, boolean includeFalling) {
         IBlockState state = BlockStateInterface.get(position);
-        return getMiningDurationTicks(context, position, state, includeFalling);
+        return getMiningDurationTicks(context, position.x, position.y, position.z, state, includeFalling);
     }
 
     static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, IBlockState state, boolean includeFalling) {
+        return getMiningDurationTicks(context, position.x, position.y, position.z, state, includeFalling);
+    }
+
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
-        if (!canWalkThrough(position, state)) {
+        if (!canWalkThrough(x, y, z, state)) {
             if (!context.allowBreak()) {
                 return COST_INF;
             }
-            if (avoidBreaking(position, state)) {
+            if (avoidBreaking(x, y, z, state)) {
                 return COST_INF;
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
@@ -342,10 +347,9 @@ public interface MovementHelper extends ActionCosts, Helper {
 
             double result = m / strVsBlock;
             if (includeFalling) {
-                BetterBlockPos up = position.up();
-                IBlockState above = BlockStateInterface.get(up);
+                IBlockState above = BlockStateInterface.get(x, y + 1, z);
                 if (above.getBlock() instanceof BlockFalling) {
-                    result += getMiningDurationTicks(context, up, above, true);
+                    result += getMiningDurationTicks(context, x, y + 1, z, above, true);
                 }
             }
             return result;
