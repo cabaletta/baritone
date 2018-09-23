@@ -107,6 +107,7 @@ class Path implements IPath {
                 return move;
             }
         }
+        // leave this as IllegalStateException; it's caught in AbstractNodeCostSearch
         throw new IllegalStateException("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
     }
 
