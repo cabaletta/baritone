@@ -39,7 +39,7 @@ public enum Moves {
 
     PILLAR(0, 0) {
         @Override
-        protected Movement apply0(BetterBlockPos src) { // TODO specific return types
+        protected Movement apply0(BetterBlockPos src) {
             return new MovementPillar(src, src.up());
         }
 
