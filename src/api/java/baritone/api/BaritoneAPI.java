@@ -29,6 +29,10 @@ import baritone.api.behavior.*;
  */
 public class BaritoneAPI {
 
+    // General
+    private static final Settings settings = new Settings();
+
+    // Behaviors
     private static IFollowBehavior followBehavior;
     private static ILookBehavior lookBehavior;
     private static IMemoryBehavior memoryBehavior;
@@ -53,6 +57,10 @@ public class BaritoneAPI {
 
     public static IPathingBehavior getPathingBehavior() {
         return pathingBehavior;
+    }
+
+    public static Settings getSettings() {
+        return settings;
     }
 
     /**

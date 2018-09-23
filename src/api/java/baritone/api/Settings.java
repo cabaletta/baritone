@@ -15,9 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone;
+package baritone.api;
 
-import baritone.utils.Helper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.util.text.ITextComponent;
@@ -32,6 +32,7 @@ import java.util.function.Consumer;
  * @author leijurv
  */
 public class Settings {
+
     /**
      * Allow Baritone to break blocks
      */
@@ -389,9 +390,11 @@ public class Settings {
     public Setting<Integer> followRadius = new Setting<>(3);
 
     /**
-     * Instead of Baritone logging to chat, set a custom consumer.
+     * The function that is called when Baritone will log to chat. This function can be added to
+     * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
+     * {@link Setting#value};
      */
-    public Setting<Consumer<ITextComponent>> logger = new Setting<>(new Helper() {}::addToChat);
+    public Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getMinecraft().ingameGUI.getChatGUI()::printChatMessage);
 
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;

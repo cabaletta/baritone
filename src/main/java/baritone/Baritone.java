@@ -18,6 +18,7 @@
 package baritone;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.Settings;
 import baritone.behavior.Behavior;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
@@ -81,7 +82,11 @@ public enum Baritone {
         this.threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
         this.gameEventHandler = new GameEventHandler();
         this.inputOverrideHandler = new InputOverrideHandler();
-        this.settings = new Settings();
+
+        // Acquire the "singleton" instance of the settings directly from the API
+        // We might want to change this...
+        this.settings = BaritoneAPI.getSettings();
+
         this.behaviors = new ArrayList<>();
         {
             registerBehavior(PathingBehavior.INSTANCE);

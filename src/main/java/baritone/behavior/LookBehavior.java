@@ -18,7 +18,7 @@
 package baritone.behavior;
 
 import baritone.Baritone;
-import baritone.Settings;
+import baritone.api.Settings;
 import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;

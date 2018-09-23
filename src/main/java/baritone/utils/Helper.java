@@ -99,9 +99,4 @@ public interface Helper {
         component.appendSibling(new TextComponentString(" " + message));
         Baritone.settings().logger.get().accept(component);
     }
-
-    default void addToChat(ITextComponent msg) {
-        mc.ingameGUI.getChatGUI().printChatMessage(msg);
-    }
-
 }
