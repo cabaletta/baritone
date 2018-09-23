@@ -89,7 +89,7 @@ class Path implements IPath {
         LinkedList<Movement> tempMovements = new LinkedList<>(); // Instead, do it into a linked list, then convert at the end
         while (!current.equals(start)) {
             tempPath.addFirst(current.pos);
-            tempMovements.addFirst(current.previousMovement);
+            tempMovements.addFirst(runBackwards(current.previous.pos, current.pos));
             current = current.previous;
         }
         tempPath.addFirst(start.pos);
@@ -98,6 +98,16 @@ class Path implements IPath {
         // to performantly do that conversion since it knows the length.
         path.addAll(tempPath);
         movements.addAll(tempMovements);
+    }
+
+    private static Movement runBackwards(BetterBlockPos src, BetterBlockPos dest) { // TODO this is horrifying
+        for (Moves moves : Moves.values()) {
+            Movement move = moves.apply0(src);
+            if (move.getDest().equals(dest)) {
+                return move;
+            }
+        }
+        throw new IllegalStateException("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
     }
 
     /**

@@ -24,16 +24,12 @@ import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.movement.movements.*;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Collection;
@@ -45,7 +41,7 @@ import java.util.Optional;
  *
  * @author leijurv
  */
-public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
+public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
     private final Optional<HashSet<BetterBlockPos>> favoredPositions;
 
@@ -104,12 +100,14 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal));
             }
-            Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos
-            for (Movement movementToGetToNeighbor : possibleMovements) {
-                if (movementToGetToNeighbor == null) {
+            for (Moves moves : Moves.values()) {
+                MoveResult res = moves.apply(calcContext, currentNodePos.x, currentNodePos.y, currentNodePos.z);
+                numMovementsConsidered++;
+                double actionCost = res.cost;
+                if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
-                BetterBlockPos dest = movementToGetToNeighbor.getDest();
+                BetterBlockPos dest = new BetterBlockPos(res.destX, res.destY, res.destZ);
                 int chunkX = currentNodePos.x >> 4;
                 int chunkZ = currentNodePos.z >> 4;
                 if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
@@ -122,14 +120,11 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                         }
                     }
                 }
-                // TODO cache cost
-                double actionCost = movementToGetToNeighbor.getCost(calcContext);
-                numMovementsConsidered++;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
                 if (actionCost <= 0) {
-                    throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " calculated implausible cost " + actionCost);
+                    throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
                 if (favoring && favored.contains(dest)) {
                     // see issue #18
@@ -139,7 +134,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
                     if (tentativeCost < 0) {
-                        throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " overflowed into negative " + actionCost + " " + neighbor.cost + " " + tentativeCost);
+                        throw new IllegalStateException(moves + " overflowed into negative " + actionCost + " " + neighbor.cost + " " + tentativeCost);
                     }
                     double improvementBy = neighbor.cost - tentativeCost;
                     // there are floating point errors caused by random combinations of traverse and diagonal over a flat area
@@ -150,7 +145,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                         continue;
                     }
                     neighbor.previous = currentNode;
-                    neighbor.previousMovement = movementToGetToNeighbor;
                     neighbor.cost = tentativeCost;
                     neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
                     if (neighbor.isOpen) {
@@ -202,46 +196,5 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
         logDebug("No path found =(");
         return Optional.empty();
-    }
-
-
-    public static Movement[] getConnectedPositions(BetterBlockPos pos, CalculationContext calcContext) {
-        int x = pos.x;
-        int y = pos.y;
-        int z = pos.z;
-        BetterBlockPos east = new BetterBlockPos(x + 1, y, z);
-        BetterBlockPos west = new BetterBlockPos(x - 1, y, z);
-        BetterBlockPos south = new BetterBlockPos(x, y, z + 1);
-        BetterBlockPos north = new BetterBlockPos(x, y, z - 1);
-        return new Movement[]{
-                new MovementDownward(pos, new BetterBlockPos(x, y - 1, z)),
-
-                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z)),
-
-                new MovementTraverse(pos, east),
-                new MovementTraverse(pos, west),
-                new MovementTraverse(pos, north),
-                new MovementTraverse(pos, south),
-
-                new MovementAscend(pos, new BetterBlockPos(x + 1, y + 1, z)),
-                new MovementAscend(pos, new BetterBlockPos(x - 1, y + 1, z)),
-                new MovementAscend(pos, new BetterBlockPos(x, y + 1, z + 1)),
-                new MovementAscend(pos, new BetterBlockPos(x, y + 1, z - 1)),
-
-                MovementHelper.generateMovementFallOrDescend(pos, east, calcContext),
-                MovementHelper.generateMovementFallOrDescend(pos, west, calcContext),
-                MovementHelper.generateMovementFallOrDescend(pos, north, calcContext),
-                MovementHelper.generateMovementFallOrDescend(pos, south, calcContext),
-
-                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),
-                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
-                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST),
-                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
-
-                MovementParkour.generate(pos, EnumFacing.EAST, calcContext),
-                MovementParkour.generate(pos, EnumFacing.WEST, calcContext),
-                MovementParkour.generate(pos, EnumFacing.NORTH, calcContext),
-                MovementParkour.generate(pos, EnumFacing.SOUTH, calcContext),
-        };
     }
 }

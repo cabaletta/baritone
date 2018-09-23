@@ -19,7 +19,6 @@ package baritone.pathing.calc;
 
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
-import baritone.pathing.movement.Movement;
 import baritone.utils.pathing.BetterBlockPos;
 
 /**
@@ -63,12 +62,6 @@ public final class PathNode {
     PathNode previous;
 
     /**
-     * In the graph search, what previous movement (edge) was taken to get to here
-     * Mutable and changed by PathFinder
-     */
-    Movement previousMovement;
-
-    /**
      * Is this a member of the open set in A*? (only used during pathfinding)
      * Instead of doing a costly member check in the open set, cache membership in each node individually too.
      */
@@ -85,7 +78,6 @@ public final class PathNode {
         this.cost = ActionCosts.COST_INF;
         this.goal = goal;
         this.estimatedCostToGoal = goal.heuristic(pos);
-        this.previousMovement = null;
         this.isOpen = false;
     }
 

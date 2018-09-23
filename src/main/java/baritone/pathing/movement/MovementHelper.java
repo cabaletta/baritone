@@ -47,11 +47,12 @@ import java.util.Optional;
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
-    static boolean avoidBreaking(BlockPos pos, IBlockState state) {
+    static boolean avoidBreaking(BetterBlockPos pos, IBlockState state) {
+        return avoidBreaking(pos.x, pos.y, pos.z, state);
+    }
+
+    static boolean avoidBreaking(int x, int y, int z, IBlockState state) {
         Block b = state.getBlock();
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call BlockStateInterface.get directly with x,y,z. no need to make 5 new BlockPos for no reason
@@ -165,6 +166,10 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean isReplacable(BlockPos pos, IBlockState state) {
+        return isReplacable(pos.getX(), pos.getY(), pos.getZ(), state);
+    }
+
+    static boolean isReplacable(int x, int y, int z, IBlockState state) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
         // all other overrides just return true or false
@@ -175,13 +180,19 @@ public interface MovementHelper extends ActionCosts, Helper {
          *         return ((Integer)worldIn.getBlockState(pos).getValue(LAYERS)).intValue() == 1;
          *     }
          */
-        if (state.getBlock() instanceof BlockSnow) {
+        Block block = state.getBlock();
+        if (block instanceof BlockSnow) {
             // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (mc.world.getChunk(pos) instanceof EmptyChunk) {
+            if (mc.world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
                 return true;
             }
+            return state.getValue(BlockSnow.LAYERS) == 1;
         }
-        return state.getBlock().isReplaceable(mc.world, pos);
+        if (block instanceof BlockDoublePlant) {
+            BlockDoublePlant.EnumPlantType kek = state.getValue(BlockDoublePlant.VARIANT);
+            return kek == BlockDoublePlant.EnumPlantType.FERN || kek == BlockDoublePlant.EnumPlantType.GRASS;
+        }
+        return state.getBlock().isReplaceable(null, null);
     }
 
     static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
@@ -314,24 +325,39 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkOn(x, y, z, BlockStateInterface.get(x, y, z));
     }
 
+    static boolean canPlaceAgainst(int x, int y, int z) {
+        return canPlaceAgainst(BlockStateInterface.get(x, y, z));
+    }
+
     static boolean canPlaceAgainst(BlockPos pos) {
-        IBlockState state = BlockStateInterface.get(pos);
+        return canPlaceAgainst(BlockStateInterface.get(pos));
+    }
+
+    static boolean canPlaceAgainst(IBlockState state) {
         // TODO isBlockNormalCube isn't the best check for whether or not we can place a block against it. e.g. glass isn't normalCube but we can place against it
         return state.isBlockNormalCube();
     }
 
     static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, boolean includeFalling) {
         IBlockState state = BlockStateInterface.get(position);
-        return getMiningDurationTicks(context, position, state, includeFalling);
+        return getMiningDurationTicks(context, position.x, position.y, position.z, state, includeFalling);
     }
 
     static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, IBlockState state, boolean includeFalling) {
+        return getMiningDurationTicks(context, position.x, position.y, position.z, state, includeFalling);
+    }
+
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling) {
+        return getMiningDurationTicks(context, x, y, z, BlockStateInterface.get(x, y, z), includeFalling);
+    }
+
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
-        if (!canWalkThrough(position, state)) {
+        if (!canWalkThrough(x, y, z, state)) {
             if (!context.allowBreak()) {
                 return COST_INF;
             }
-            if (avoidBreaking(position, state)) {
+            if (avoidBreaking(x, y, z, state)) {
                 return COST_INF;
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
@@ -342,10 +368,9 @@ public interface MovementHelper extends ActionCosts, Helper {
 
             double result = m / strVsBlock;
             if (includeFalling) {
-                BetterBlockPos up = position.up();
-                IBlockState above = BlockStateInterface.get(up);
+                IBlockState above = BlockStateInterface.get(x, y + 1, z);
                 if (above.getBlock() instanceof BlockFalling) {
-                    result += getMiningDurationTicks(context, up, above, true);
+                    result += getMiningDurationTicks(context, x, y + 1, z, above, true);
                 }
             }
             return result;
@@ -437,15 +462,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static Movement generateMovementFallOrDescend(BetterBlockPos pos, BetterBlockPos dest, CalculationContext calcContext) {
-        // A
-        //SA
-        // A
-        // B
-        // C
-        // D
-        //if S is where you start, B needs to be air for a movementfall
-        //A is plausibly breakable by either descend or fall
-        //C, D, etc determine the length of the fall
+
 
         int x = dest.x;
         int y = dest.y;

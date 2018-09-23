@@ -3,8 +3,8 @@
 [![License](https://img.shields.io/github/license/cabaletta/baritone.svg)](LICENSE)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7150d8ccf6094057b1782aa7a8f92d7d)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
 
-A Minecraft pathfinder bot. This project is an updated version of [Minebot](https://github.com/leijurv/MineBot/),
-the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2.
+A Minecraft pathfinder bot. This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
+the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2. Baritone focuses on reliability and particularly performance (it's over 20x faster than MineBot at calculating paths).
 
 <a href="https://github.com/cabaletta/baritone/blob/master/FEATURES.md">Features</a>
 

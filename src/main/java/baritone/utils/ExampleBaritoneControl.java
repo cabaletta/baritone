@@ -27,14 +27,9 @@ import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
-import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.goals.*;
-import baritone.pathing.movement.ActionCosts;
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
@@ -433,7 +428,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             return;
         }
-        if (msg.equals("costs")) {
+        // TODO
+        /*if (msg.equals("costs")) {
             Movement[] movements = AStarPathFinder.getConnectedPositions(new BetterBlockPos(playerFeet()), new CalculationContext());
             List<Movement> moves = new ArrayList<>(Arrays.asList(movements));
             while (moves.contains(null)) {
@@ -451,6 +447,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             event.cancel();
             return;
-        }
+        }*/
     }
 }
