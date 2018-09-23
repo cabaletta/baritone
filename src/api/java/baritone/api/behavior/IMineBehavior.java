@@ -23,7 +23,7 @@ import net.minecraft.block.Block;
  * @author Brady
  * @since 9/23/2018
  */
-public interface IMineBehavior {
+public interface IMineBehavior extends IBehavior {
 
     /**
      * Begin to search for and mine the specified blocks until
