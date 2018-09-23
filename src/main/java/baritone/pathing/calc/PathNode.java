@@ -85,7 +85,7 @@ public final class PathNode {
      */
     @Override
     public int hashCode() {
-        return (x * 935847 + y) * 239761 + z;
+        return (int) AbstractNodeCostSearch.posHash(x, y, z);
     }
 
     @Override
