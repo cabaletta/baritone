@@ -18,6 +18,7 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehavior;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementStatus;

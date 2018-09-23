@@ -20,12 +20,13 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.Settings;
 import baritone.api.behavior.Behavior;
+import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
 import baritone.utils.Helper;
-import baritone.utils.Rotation;
+import baritone.api.utils.Rotation;
 
-public final class LookBehavior extends Behavior implements Helper {
+public final class LookBehavior extends Behavior implements ILookBehavior, Helper {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
 
@@ -51,6 +52,7 @@ public final class LookBehavior extends Behavior implements Helper {
 
     private LookBehavior() {}
 
+    @Override
     public void updateTarget(Rotation target, boolean force) {
         this.target = target;
         this.force = force || !Baritone.settings().freeLook.get();

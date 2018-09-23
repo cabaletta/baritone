@@ -368,7 +368,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     logDirect("No locations for " + mining + " known, cancelling");
                     return;
                 }
-                List<BlockPos> locs = MineBehavior.scanFor(Collections.singletonList(block), 64);
+                List<BlockPos> locs = MineBehavior.INSTANCE.scanFor(Collections.singletonList(block), 64);
                 if (locs.isEmpty()) {
                     logDirect("No locations for " + mining + " known, cancelling");
                     return;

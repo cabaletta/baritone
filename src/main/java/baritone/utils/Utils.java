@@ -17,6 +17,7 @@
 
 package baritone.utils;
 
+import baritone.api.utils.Rotation;
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;

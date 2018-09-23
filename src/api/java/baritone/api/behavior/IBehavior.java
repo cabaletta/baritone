@@ -15,13 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.api.behavior;
 
-import net.minecraft.util.Tuple;
+import baritone.api.event.listener.AbstractGameEventListener;
+import baritone.api.utils.interfaces.Toggleable;
 
-public class Rotation extends Tuple<Float, Float> {
-
-    public Rotation(Float yaw, Float pitch) {
-        super(yaw, pitch);
-    }
-}
+/**
+ * @author Brady
+ * @since 9/23/2018
+ */
+public interface IBehavior extends AbstractGameEventListener, Toggleable {}

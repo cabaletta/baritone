@@ -17,16 +17,13 @@
 
 package baritone.api.behavior;
 
-import baritone.api.event.listener.AbstractGameEventListener;
-import baritone.api.utils.interfaces.Toggleable;
-
 /**
  * A type of game event listener that can be toggled.
  *
  * @author Brady
  * @since 8/1/2018 6:29 PM
  */
-public class Behavior implements AbstractGameEventListener, Toggleable {
+public class Behavior implements IBehavior {
 
     /**
      * Whether or not this behavior is enabled

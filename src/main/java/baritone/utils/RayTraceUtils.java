@@ -17,6 +17,7 @@
 
 package baritone.utils;
 
+import baritone.api.utils.Rotation;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
