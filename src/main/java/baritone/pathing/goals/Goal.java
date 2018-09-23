@@ -31,16 +31,22 @@ public interface Goal extends ActionCosts {
      * Returns whether or not the specified position
      * meets the requirement for this goal based.
      *
-     * @param pos The position
      * @return Whether or not it satisfies this goal
      */
-    boolean isInGoal(BlockPos pos);
+    boolean isInGoal(int x, int y, int z);
 
     /**
      * Estimate the number of ticks it will take to get to the goal
      *
-     * @param pos The
      * @return The estimate number of ticks to satisfy the goal
      */
-    double heuristic(BlockPos pos);
+    double heuristic(int x, int y, int z);
+
+    default boolean isInGoal(BlockPos pos) {
+        return isInGoal(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    default double heuristic(BlockPos pos) {
+        return heuristic(pos.getX(), pos.getY(), pos.getZ());
+    }
 }

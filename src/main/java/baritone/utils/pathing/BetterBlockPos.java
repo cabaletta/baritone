@@ -17,6 +17,7 @@
 
 package baritone.utils.pathing;
 
+import baritone.pathing.calc.AbstractNodeCostSearch;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -42,22 +43,7 @@ public final class BetterBlockPos extends BlockPos {
         this.x = x;
         this.y = y;
         this.z = z;
-        /*
-         *   This is the hashcode implementation of Vec3i, the superclass of BlockPos
-         *
-         *   public int hashCode() {
-         *       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
-         *   }
-         *
-         *   That is terrible and has tons of collisions and makes the HashMap terribly inefficient.
-         *
-         *   That's why we grab out the X, Y, Z and calculate our own hashcode
-         */
-        long hash = 3241;
-        hash = 3457689L * hash + x;
-        hash = 8734625L * hash + y;
-        hash = 2873465L * hash + z;
-        this.hashCode = hash;
+        this.hashCode = AbstractNodeCostSearch.posHash(x, y, z);
     }
 
     public BetterBlockPos(double x, double y, double z) {

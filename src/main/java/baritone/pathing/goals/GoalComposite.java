@@ -49,15 +49,21 @@ public class GoalComposite implements Goal {
     }
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
-        return Arrays.stream(this.goals).anyMatch(goal -> goal.isInGoal(pos));
+    public boolean isInGoal(int x, int y, int z) {
+        for (Goal goal : goals) {
+            if (goal.isInGoal(x, y, z)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
-    public double heuristic(BlockPos pos) {
+    public double heuristic(int x, int y, int z) {
         double min = Double.MAX_VALUE;
         for (Goal g : goals) {
-            min = Math.min(min, g.heuristic(pos)); // whichever is closest
+            // TODO technically this isn't admissible...?
+            min = Math.min(min, g.heuristic(x, y, z)); // whichever is closest
         }
         return min;
     }

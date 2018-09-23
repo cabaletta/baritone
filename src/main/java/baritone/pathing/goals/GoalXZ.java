@@ -19,7 +19,6 @@ package baritone.pathing.goals;
 
 import baritone.Baritone;
 import baritone.utils.Utils;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -48,14 +47,14 @@ public class GoalXZ implements Goal {
     }
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
-        return pos.getX() == x && pos.getZ() == z;
+    public boolean isInGoal(int x, int y, int z) {
+        return x == this.x && z == this.z;
     }
 
     @Override
-    public double heuristic(BlockPos pos) {//mostly copied from GoalBlock
-        double xDiff = pos.getX() - this.x;
-        double zDiff = pos.getZ() - this.z;
+    public double heuristic(int x, int y, int z) {//mostly copied from GoalBlock
+        int xDiff = x - this.x;
+        int zDiff = z - this.z;
         return calculate(xDiff, zDiff);
     }
 

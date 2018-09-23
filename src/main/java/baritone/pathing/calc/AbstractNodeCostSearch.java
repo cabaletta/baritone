@@ -115,9 +115,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @return The distance, squared
      */
     protected double getDistFromStartSq(PathNode n) {
-        int xDiff = n.pos.x - start.x;
-        int yDiff = n.pos.y - start.y;
-        int zDiff = n.pos.z - start.z;
+        int xDiff = n.x - start.x;
+        int yDiff = n.y - start.y;
+        int zDiff = n.z - start.z;
         return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
     }
 
@@ -126,18 +126,36 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * for the node mapped to the specified pos. If no node is found,
      * a new node is created.
      *
-     * @param pos The pos to lookup
      * @return The associated node
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */
-    protected PathNode getNodeAtPosition(BetterBlockPos pos) {
-        long hashCode = pos.hashCode;
+    protected PathNode getNodeAtPosition(int x, int y, int z) {
+        long hashCode = posHash(x, y, z);
         PathNode node = map.get(hashCode);
         if (node == null) {
-            node = new PathNode(pos, goal);
+            node = new PathNode(x, y, z, goal);
             map.put(hashCode, node);
         }
         return node;
+    }
+
+    public static long posHash(int x, int y, int z) {
+        /*
+         *   This is the hashcode implementation of Vec3i, the superclass of BlockPos
+         *
+         *   public int hashCode() {
+         *       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
+         *   }
+         *
+         *   That is terrible and has tons of collisions and makes the HashMap terribly inefficient.
+         *
+         *   That's why we grab out the X, Y, Z and calculate our own hashcode
+         */
+        long hash = 3241;
+        hash = 3457689L * hash + x;
+        hash = 8734625L * hash + y;
+        hash = 2873465L * hash + z;
+        return hash;
     }
 
     public static void forceCancel() {

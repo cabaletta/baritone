@@ -18,25 +18,20 @@
 package baritone.pathing.goals;
 
 import baritone.Baritone;
-import net.minecraft.util.math.BlockPos;
 
 public class GoalAxis implements Goal {
 
     private static final double SQRT_2_OVER_2 = Math.sqrt(2) / 2;
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
+    public boolean isInGoal(int x, int y, int z) {
         return y == Baritone.settings().axisHeight.get() && (x == 0 || z == 0 || Math.abs(x) == Math.abs(z));
     }
 
     @Override
-    public double heuristic(BlockPos pos) {
-        int x = Math.abs(pos.getX());
-        int y = pos.getY();
-        int z = Math.abs(pos.getZ());
+    public double heuristic(int x0, int y, int z0) {
+        int x = Math.abs(x0);
+        int z = Math.abs(z0);
 
         int shrt = Math.min(x, z);
         int lng = Math.max(x, z);

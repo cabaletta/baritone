@@ -91,14 +91,12 @@ public final class CachedWorld implements Helper {
         }
     }
 
-    public final boolean isCached(BlockPos pos) {
-        int x = pos.getX();
-        int z = pos.getZ();
-        CachedRegion region = getRegion(x >> 9, z >> 9);
+    public final boolean isCached(int blockX, int blockZ) {
+        CachedRegion region = getRegion(blockX >> 9, blockZ >> 9);
         if (region == null) {
             return false;
         }
-        return region.isCached(x & 511, z & 511);
+        return region.isCached(blockX & 511, blockZ & 511);
     }
 
     public final LinkedList<BlockPos> getLocationsOf(String block, int minimum, int maxRegionDistanceSq) {

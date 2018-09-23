@@ -17,8 +17,6 @@
 
 package baritone.pathing.goals;
 
-import net.minecraft.util.math.BlockPos;
-
 /**
  * Useful for mining (getting to diamond / iron level)
  *
@@ -36,13 +34,13 @@ public class GoalYLevel implements Goal {
     }
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
-        return pos.getY() == level;
+    public boolean isInGoal(int x, int y, int z) {
+        return y == level;
     }
 
     @Override
-    public double heuristic(BlockPos pos) {
-        return calculate(level, pos.getY());
+    public double heuristic(int x, int y, int z) {
+        return calculate(level, y);
     }
 
     public static double calculate(int goalY, int currentY) {

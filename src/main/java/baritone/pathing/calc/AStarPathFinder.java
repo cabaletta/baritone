@@ -35,6 +35,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * The actual A* pathfinding
@@ -43,16 +44,16 @@ import java.util.Optional;
  */
 public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
-    private final Optional<HashSet<BetterBlockPos>> favoredPositions;
+    private final Optional<HashSet<Long>> favoredPositions;
 
     public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BetterBlockPos>> favoredPositions) {
         super(start, goal);
-        this.favoredPositions = favoredPositions.map(HashSet::new); // <-- okay this is epic
+        this.favoredPositions = favoredPositions.map(Collection::stream).map(x -> x.map(y -> y.hashCode)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
     }
 
     @Override
     protected Optional<IPath> calculate0(long timeout) {
-        startNode = getNodeAtPosition(start);
+        startNode = getNodeAtPosition(start.x, start.y, start.z);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
@@ -65,7 +66,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             bestSoFar[i] = startNode;
         }
         CalculationContext calcContext = new CalculationContext();
-        HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
+        HashSet<Long> favored = favoredPositions.orElse(null);
         CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
         ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
         BlockStateInterface.clearCachedChunk();
@@ -94,43 +95,42 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             PathNode currentNode = openSet.removeLowest();
             currentNode.isOpen = false;
             mostRecentConsidered = currentNode;
-            BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
-            if (goal.isInGoal(currentNodePos)) {
+            if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal));
             }
             for (Moves moves : Moves.values()) {
-                MoveResult res = moves.apply(calcContext, currentNodePos.x, currentNodePos.y, currentNodePos.z);
-                numMovementsConsidered++;
-                double actionCost = res.cost;
-                if (actionCost >= ActionCosts.COST_INF) {
-                    continue;
-                }
-                BetterBlockPos dest = new BetterBlockPos(res.destX, res.destY, res.destZ);
-                int chunkX = currentNodePos.x >> 4;
-                int chunkZ = currentNodePos.z >> 4;
-                if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
+                int newX = currentNode.x + moves.xOffset;
+                int newZ = currentNode.z + moves.zOffset;
+                if (newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
-                    if (chunkProvider.isChunkGeneratedAt(chunkX, chunkZ)) {
+                    if (chunkProvider.isChunkGeneratedAt(newX >> 4, newZ >> 4)) { // TODO could also call BlockStateInterface here
                         // see issue #106
-                        if (cachedWorld == null || !cachedWorld.isCached(dest)) {
+                        if (cachedWorld == null || !cachedWorld.isCached(newX, newZ)) { // TODO isCached could call BlockStateInterface to skip a hashmap lookup
                             numEmptyChunk++;
                             continue;
                         }
                     }
                 }
+                MoveResult res = moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z);
+                if (res.destX != newX || res.destZ != newZ) {
+                    throw new IllegalStateException(moves + " " + res.destX + " " + newX + " " + res.destZ + " " + newZ);
+                }
+                numMovementsConsidered++;
+                double actionCost = res.cost;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
+
                 if (actionCost <= 0) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
-                if (favoring && favored.contains(dest)) {
+                if (favoring && favored.contains(posHash(res.destX, res.destY, res.destZ))) {
                     // see issue #18
                     actionCost *= favorCoeff;
                 }
-                PathNode neighbor = getNodeAtPosition(dest);
+                PathNode neighbor = getNodeAtPosition(res.destX, res.destY, res.destZ);
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
                     if (tentativeCost < 0) {

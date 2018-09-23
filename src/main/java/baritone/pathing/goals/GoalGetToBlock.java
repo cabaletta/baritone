@@ -45,10 +45,10 @@ public class GoalGetToBlock implements Goal, IGoalRenderPos {
     }
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
-        int xDiff = pos.getX() - this.x;
-        int yDiff = pos.getY() - this.y;
-        int zDiff = pos.getZ() - this.z;
+    public boolean isInGoal(int x, int y, int z) {
+        int xDiff = x - this.x;
+        int yDiff = y - this.y;
+        int zDiff = z - this.z;
         if (yDiff < 0) {
             yDiff++;
         }
@@ -56,10 +56,10 @@ public class GoalGetToBlock implements Goal, IGoalRenderPos {
     }
 
     @Override
-    public double heuristic(BlockPos pos) {
-        int xDiff = pos.getX() - this.x;
-        int yDiff = pos.getY() - this.y;
-        int zDiff = pos.getZ() - this.z;
+    public double heuristic(int x, int y, int z) {
+        int xDiff = x - this.x;
+        int yDiff = y - this.y;
+        int zDiff = z - this.z;
         return GoalBlock.calculate(xDiff, yDiff, zDiff);
     }
 

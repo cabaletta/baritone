@@ -19,7 +19,6 @@ package baritone.pathing.calc;
 
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
-import baritone.utils.pathing.BetterBlockPos;
 
 /**
  * A node in the path, containing the cost and steps to get to it.
@@ -31,12 +30,9 @@ public final class PathNode {
     /**
      * The position of this node
      */
-    final BetterBlockPos pos;
-
-    /**
-     * The goal it's going towards
-     */
-    final Goal goal;
+    final int x;
+    final int y;
+    final int z;
 
     /**
      * Cached, should always be equal to goal.heuristic(pos)
@@ -72,13 +68,14 @@ public final class PathNode {
      */
     public int heapPosition;
 
-    public PathNode(BetterBlockPos pos, Goal goal) {
-        this.pos = pos;
+    public PathNode(int x, int y, int z, Goal goal) {
         this.previous = null;
         this.cost = ActionCosts.COST_INF;
-        this.goal = goal;
-        this.estimatedCostToGoal = goal.heuristic(pos);
+        this.estimatedCostToGoal = goal.heuristic(x, y, z);
         this.isOpen = false;
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
     /**
@@ -88,7 +85,7 @@ public final class PathNode {
      */
     @Override
     public int hashCode() {
-        return pos.hashCode() * 7 + 3;
+        return (x * 935847 + y) * 239761 + z;
     }
 
     @Override
@@ -100,8 +97,9 @@ public final class PathNode {
         //    return false;
         //}
 
-        //final PathNode other = (PathNode) obj;
+        final PathNode other = (PathNode) obj;
         //return Objects.equals(this.pos, other.pos) && Objects.equals(this.goal, other.goal);
-        return this.pos.equals(((PathNode) obj).pos);
+
+        return x == other.x && y == other.y && z == other.z;
     }
 }
