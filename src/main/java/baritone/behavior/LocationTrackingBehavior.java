@@ -17,7 +17,6 @@
 
 package baritone.behavior;
 
-import baritone.api.behavior.Behavior;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
 import baritone.api.event.events.BlockInteractEvent;

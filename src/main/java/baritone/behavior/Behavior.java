@@ -15,7 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.behavior;
+
+import baritone.api.behavior.IBehavior;
 
 /**
  * A type of game event listener that can be toggled.

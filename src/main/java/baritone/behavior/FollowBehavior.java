@@ -18,7 +18,6 @@
 package baritone.behavior;
 
 import baritone.Baritone;
-import baritone.api.behavior.Behavior;
 import baritone.api.behavior.IFollowBehavior;
 import baritone.api.event.events.TickEvent;
 import baritone.pathing.goals.GoalNear;

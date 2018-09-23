@@ -17,7 +17,6 @@
 
 package baritone.behavior;
 
-import baritone.api.behavior.Behavior;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
