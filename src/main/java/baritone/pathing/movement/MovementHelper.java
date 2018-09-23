@@ -20,8 +20,6 @@ package baritone.pathing.movement;
 import baritone.Baritone;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementTarget;
-import baritone.pathing.movement.movements.MovementDescend;
-import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.*;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
@@ -140,6 +138,10 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean fullyPassable(BlockPos pos) {
         return fullyPassable(BlockStateInterface.get(pos));
+    }
+
+    static boolean fullyPassable(int x, int y, int z) {
+        return fullyPassable(BlockStateInterface.get(x, y, z));
     }
 
     static boolean fullyPassable(IBlockState state) {
@@ -462,49 +464,5 @@ public interface MovementHelper extends ActionCosts, Helper {
                         new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getFirst(), mc.player.rotationPitch),
                 false
         )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-    }
-
-    static Movement generateMovementFallOrDescend(BetterBlockPos pos, BetterBlockPos dest, CalculationContext calcContext) {
-
-
-        int x = dest.x;
-        int y = dest.y;
-        int z = dest.z;
-        if (!canWalkThrough(x, y - 2, z)) {
-            //if B in the diagram aren't air
-            //have to do a descend, because fall is impossible
-
-            //this doesn't guarantee descend is possible, it just guarantees fall is impossible
-            return new MovementDescend(pos, dest.down()); // standard move out by 1 and descend by 1
-            // we can't cost shortcut descend because !canWalkThrough doesn't mean canWalkOn
-        }
-
-        // we're clear for a fall 2
-        // let's see how far we can fall
-        for (int fallHeight = 3; true; fallHeight++) {
-            int newY = y - fallHeight;
-            if (newY < 0) {
-                // when pathing in the end, where you could plausibly fall into the void
-                // this check prevents it from getting the block at y=-1 and crashing
-                break;
-            }
-            IBlockState ontoBlock = BlockStateInterface.get(x, newY, z);
-            if (ontoBlock.getBlock() == Blocks.WATER) {
-                return new MovementFall(pos, new BetterBlockPos(x, newY, z));
-            }
-            if (canWalkThrough(x, newY, z, ontoBlock)) {
-                continue;
-            }
-            if (!canWalkOn(x, newY, z, ontoBlock)) {
-                break;
-            }
-            if ((calcContext.hasWaterBucket() && fallHeight <= calcContext.maxFallHeightBucket() + 1) || fallHeight <= calcContext.maxFallHeightNoWater() + 1) {
-                // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
-                return new MovementFall(pos, new BetterBlockPos(x, newY + 1, z));
-            } else {
-                return null;
-            }
-        }
-        return null;
     }
 }

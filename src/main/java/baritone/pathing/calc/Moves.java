@@ -264,19 +264,76 @@ public enum Moves {
             return new MoveResult(x - 1, y, z + 1, MovementDiagonal.cost(context, x, y, z, x - 1, z + 1));
         }
     },
-    // TODO parkour
-    ;
+
+    PARKOUR_NORTH(0, -4, true) {
+        @Override
+        protected Movement apply0(BetterBlockPos src) {
+            return MovementParkour.cost(new CalculationContext(), src, EnumFacing.NORTH);
+        }
+
+        @Override
+        public MoveResult apply(CalculationContext context, int x, int y, int z) {
+            Tuple<Tuple<Integer, Integer>, Double> res = MovementParkour.cost(context, x, y, z, EnumFacing.NORTH);
+            return new MoveResult(res.getFirst().getFirst(), y, res.getFirst().getSecond(), res.getSecond());
+        }
+    },
+
+    PARKOUR_SOUTH(0, +4, true) {
+        @Override
+        protected Movement apply0(BetterBlockPos src) {
+            return MovementParkour.cost(new CalculationContext(), src, EnumFacing.SOUTH);
+        }
+
+        @Override
+        public MoveResult apply(CalculationContext context, int x, int y, int z) {
+            Tuple<Tuple<Integer, Integer>, Double> res = MovementParkour.cost(context, x, y, z, EnumFacing.SOUTH);
+            return new MoveResult(res.getFirst().getFirst(), y, res.getFirst().getSecond(), res.getSecond());
+        }
+    },
+
+    PARKOUR_EAST(+4, 0, true) {
+        @Override
+        protected Movement apply0(BetterBlockPos src) {
+            return MovementParkour.cost(new CalculationContext(), src, EnumFacing.EAST);
+        }
+
+        @Override
+        public MoveResult apply(CalculationContext context, int x, int y, int z) {
+            Tuple<Tuple<Integer, Integer>, Double> res = MovementParkour.cost(context, x, y, z, EnumFacing.EAST);
+            return new MoveResult(res.getFirst().getFirst(), y, res.getFirst().getSecond(), res.getSecond());
+        }
+    },
+
+    PARKOUR_WEST(-4, 0, true) {
+        @Override
+        protected Movement apply0(BetterBlockPos src) {
+            return MovementParkour.cost(new CalculationContext(), src, EnumFacing.WEST);
+        }
+
+        @Override
+        public MoveResult apply(CalculationContext context, int x, int y, int z) {
+            Tuple<Tuple<Integer, Integer>, Double> res = MovementParkour.cost(context, x, y, z, EnumFacing.WEST);
+            return new MoveResult(res.getFirst().getFirst(), y, res.getFirst().getSecond(), res.getSecond());
+        }
+    };
 
     protected abstract Movement apply0(BetterBlockPos src);
 
 
     public abstract MoveResult apply(CalculationContext context, int x, int y, int z);
 
+    public final boolean dynamicXZ;
+
     public final int xOffset;
     public final int zOffset;
 
-    Moves(int x, int z) {
+    Moves(int x, int z, boolean dynamicXZ) {
         this.xOffset = x;
         this.zOffset = z;
+        this.dynamicXZ = dynamicXZ;
+    }
+
+    Moves(int x, int z) {
+        this(x, z, false);
     }
 }

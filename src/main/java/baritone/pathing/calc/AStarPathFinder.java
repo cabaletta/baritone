@@ -102,7 +102,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     }
                 }
                 MoveResult res = moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z);
-                if (res.destX != newX || res.destZ != newZ) {
+                if (!moves.dynamicXZ && (res.destX != newX || res.destZ != newZ)) {
                     throw new IllegalStateException(moves + " " + res.destX + " " + newX + " " + res.destZ + " " + newZ);
                 }
                 numMovementsConsidered++;
