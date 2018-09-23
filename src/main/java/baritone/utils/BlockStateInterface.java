@@ -90,6 +90,29 @@ public class BlockStateInterface implements Helper {
         return type;
     }
 
+    public static boolean isLoaded(int x, int z) {
+        Chunk prevChunk = prev;
+        if (prevChunk != null && prevChunk.x == x >> 4 && prevChunk.z == z >> 4) {
+            return true;
+        }
+        if (mc.world.getChunk(x >> 4, z >> 4).isLoaded()) {
+            return true;
+        }
+        CachedRegion prevRegion = prevCached;
+        if (prevRegion != null && prevRegion.getX() == x >> 9 && prevRegion.getZ() == z >> 9) {
+            return prevRegion.isCached(x & 511, z & 511);
+        }
+        WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
+        if (world == null) {
+            return false;
+        }
+        CachedRegion region = world.cache.getRegion(x >> 9, z >> 9);
+        if (region == null) {
+            return false;
+        }
+        return region.isCached(x & 511, z & 511);
+    }
+
     public static void clearCachedChunk() {
         prev = null;
         prevCached = null;

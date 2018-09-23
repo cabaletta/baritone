@@ -18,8 +18,6 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
-import baritone.cache.CachedWorld;
-import baritone.cache.WorldProvider;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
@@ -27,8 +25,6 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashSet;
@@ -64,8 +60,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         }
         CalculationContext calcContext = new CalculationContext();
         HashSet<Long> favored = favoredPositions.orElse(null);
-        CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
-        ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
         BlockStateInterface.clearCachedChunk();
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
@@ -102,12 +96,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 int newZ = currentNode.z + moves.zOffset;
                 if (newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
-                    if (chunkProvider.isChunkGeneratedAt(newX >> 4, newZ >> 4)) { // TODO could also call BlockStateInterface here
-                        // see issue #106
-                        if (cachedWorld == null || !cachedWorld.isCached(newX, newZ)) { // TODO isCached could call BlockStateInterface to skip a hashmap lookup
-                            numEmptyChunk++;
-                            continue;
-                        }
+                    if (!BlockStateInterface.isLoaded(newX, newZ)) {
+                        numEmptyChunk++;
+                        continue;
                     }
                 }
                 MoveResult res = moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z);
@@ -119,7 +110,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
-
                 if (actionCost <= 0) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
