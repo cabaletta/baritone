@@ -28,7 +28,6 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -55,46 +54,53 @@ public class MovementAscend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        IBlockState srcDown = BlockStateInterface.get(src.down());
+        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+    }
+
+    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+        IBlockState srcDown = BlockStateInterface.get(x, y - 1, z);
         if (srcDown.getBlock() == Blocks.LADDER || srcDown.getBlock() == Blocks.VINE) {
             return COST_INF;
         }
         // we can jump from soul sand, but not from a bottom slab
         boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
-        IBlockState toPlace = BlockStateInterface.get(positionToPlace);
+        IBlockState toPlace = BlockStateInterface.get(destX, y, destZ);
         boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
 
         if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
             return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
         }
-        if (!MovementHelper.canWalkOn(positionToPlace, toPlace)) {
+        boolean hasToPlace = false;
+        if (!MovementHelper.canWalkOn(destX, y, z, toPlace)) {
             if (!context.hasThrowaway()) {
                 return COST_INF;
             }
-            if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(positionToPlace, toPlace)) {
+            if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace)) {
                 return COST_INF;
             }
             // TODO: add ability to place against .down() as well as the cardinal directions
             // useful for when you are starting a staircase without anything to place against
             // Counterpoint to the above TODO ^ you should move then pillar instead of ascend
             for (int i = 0; i < 4; i++) {
-                BlockPos against1 = positionToPlace.offset(HORIZONTALS[i]);
-                if (against1.equals(src)) {
+                int againstX = destX + HORIZONTALS[i].getXOffset();
+                int againstZ = destZ + HORIZONTALS[i].getZOffset();
+                if (againstX == x && againstZ == z) {
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(against1)) {
-                    return JUMP_ONE_BLOCK_COST + WALK_ONE_BLOCK_COST + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
+                if (MovementHelper.canPlaceAgainst(againstX, y, againstZ)) {
+                    hasToPlace = true;
+                    break;
                 }
             }
-            return COST_INF;
+            if (!hasToPlace) { // didn't find a valid place =(
+                return COST_INF;
+            }
         }
-        if (BlockStateInterface.get(src.up(3)).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
+        if (BlockStateInterface.get(x, y + 3, z).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
-            Block srcUp = BlockStateInterface.get(src.up(1)).getBlock();
-            Block srcUp2 = BlockStateInterface.get(src.up(2)).getBlock();
-            if (!(srcUp instanceof BlockFalling) || !(srcUp2 instanceof BlockFalling)) {
+            if (!(BlockStateInterface.getBlock(x, y + 1, z) instanceof BlockFalling) || !(BlockStateInterface.getBlock(x, y + 2, z) instanceof BlockFalling)) {
                 // if both of those are BlockFalling, that means that by standing on src
                 // (the presupposition of this Movement)
                 // we have necessarily already cleared the entire BlockFalling stack
@@ -109,15 +115,38 @@ public class MovementAscend extends Movement {
             // it's possible srcUp is AIR from the start, and srcUp2 is falling
             // and in that scenario, when we arrive and break srcUp2, that lets srcUp3 fall on us and suffocate us
         }
-        double walk = WALK_ONE_BLOCK_COST;
-        if (jumpingToBottomSlab && !jumpingFromBottomSlab) {
-            return walk + getTotalHardnessOfBlocksToBreak(context); // we don't hit space we just walk into the slab
+        double walk;
+        if (jumpingToBottomSlab) {
+            if (jumpingFromBottomSlab) {
+                walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST); // we hit space immediately on entering this action
+            } else {
+                walk = WALK_ONE_BLOCK_COST; // we don't hit space we just walk into the slab
+            }
+        } else {
+            if (toPlace.getBlock() == Blocks.SOUL_SAND) {
+                walk = WALK_ONE_OVER_SOUL_SAND_COST;
+            } else {
+                walk = WALK_ONE_BLOCK_COST;
+            }
         }
-        if (!jumpingToBottomSlab && toPlace.getBlock().equals(Blocks.SOUL_SAND)) {
-            walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
+
+        // cracks knuckles
+
+        double totalCost = 0;
+        totalCost += walk;
+        if (hasToPlace) {
+            totalCost += context.placeBlockCost();
         }
-        // we hit space immediately on entering this action
-        return Math.max(JUMP_ONE_BLOCK_COST, walk) + getTotalHardnessOfBlocksToBreak(context);
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, false); // TODO MAKE ABSOLUTELY SURE we don't need includeFalling here, from the falling check above
+        if (totalCost >= COST_INF) {
+            return COST_INF;
+        }
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, false);
+        if (totalCost >= COST_INF) {
+            return COST_INF;
+        }
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 2, destZ, true);
+        return totalCost;
     }
 
     @Override

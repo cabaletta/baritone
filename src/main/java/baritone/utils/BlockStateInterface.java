@@ -98,6 +98,9 @@ public class BlockStateInterface implements Helper {
         return get(pos).getBlock();
     }
 
+    public static Block getBlock(int x, int y, int z) {
+        return get(x, y, z).getBlock();
+    }
 
     /**
      * Returns whether or not the specified block is

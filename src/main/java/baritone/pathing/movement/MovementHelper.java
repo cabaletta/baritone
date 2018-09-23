@@ -166,6 +166,10 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean isReplacable(BlockPos pos, IBlockState state) {
+        return isReplacable(pos.getX(), pos.getY(), pos.getZ(), state);
+    }
+
+    static boolean isReplacable(int x, int y, int z, IBlockState state) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
         // all other overrides just return true or false
@@ -176,13 +180,19 @@ public interface MovementHelper extends ActionCosts, Helper {
          *         return ((Integer)worldIn.getBlockState(pos).getValue(LAYERS)).intValue() == 1;
          *     }
          */
-        if (state.getBlock() instanceof BlockSnow) {
+        Block block = state.getBlock();
+        if (block instanceof BlockSnow) {
             // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (mc.world.getChunk(pos) instanceof EmptyChunk) {
+            if (mc.world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
                 return true;
             }
+            return state.getValue(BlockSnow.LAYERS) == 1;
         }
-        return state.getBlock().isReplaceable(mc.world, pos);
+        if (block instanceof BlockDoublePlant) {
+            BlockDoublePlant.EnumPlantType kek = state.getValue(BlockDoublePlant.VARIANT);
+            return kek == BlockDoublePlant.EnumPlantType.FERN || kek == BlockDoublePlant.EnumPlantType.GRASS;
+        }
+        return state.getBlock().isReplaceable(null, null);
     }
 
     static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
@@ -315,8 +325,15 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkOn(x, y, z, BlockStateInterface.get(x, y, z));
     }
 
+    static boolean canPlaceAgainst(int x, int y, int z) {
+        return canPlaceAgainst(BlockStateInterface.get(x, y, z));
+    }
+
     static boolean canPlaceAgainst(BlockPos pos) {
-        IBlockState state = BlockStateInterface.get(pos);
+        return canPlaceAgainst(BlockStateInterface.get(pos));
+    }
+
+    static boolean canPlaceAgainst(IBlockState state) {
         // TODO isBlockNormalCube isn't the best check for whether or not we can place a block against it. e.g. glass isn't normalCube but we can place against it
         return state.isBlockNormalCube();
     }
@@ -328,6 +345,10 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, IBlockState state, boolean includeFalling) {
         return getMiningDurationTicks(context, position.x, position.y, position.z, state, includeFalling);
+    }
+
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling) {
+        return getMiningDurationTicks(context, x, y, z, BlockStateInterface.get(x, y, z), includeFalling);
     }
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
