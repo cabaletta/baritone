@@ -58,6 +58,7 @@ public class BlockStateInterface implements Helper {
             // if it's the same chunk as last time
             // we can just skip the mc.world.getChunk lookup
             // which is a Long2ObjectOpenHashMap.get
+            // see issue #113
             if (cached != null && cached.x == x >> 4 && cached.z == z >> 4) {
                 return cached.getBlockState(x, y, z);
             }
