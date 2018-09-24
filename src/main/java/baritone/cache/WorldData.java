@@ -31,7 +31,7 @@ import java.nio.file.Path;
  */
 public class WorldData implements IWorldData {
 
-    private final CachedWorld cache;
+    public final CachedWorld cache;
     private final Waypoints waypoints;
     //public final MapData map;
     public final Path directory;
