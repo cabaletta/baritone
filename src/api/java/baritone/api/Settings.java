@@ -22,8 +22,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.util.text.ITextComponent;
 
+import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -395,6 +397,41 @@ public class Settings {
      * {@link Setting#value};
      */
     public Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getMinecraft().ingameGUI.getChatGUI()::printChatMessage);
+
+    /**
+     * The color of the current path
+     */
+    public Setting<Color> colorCurrentPath = new Setting<>(Color.RED);
+
+    /**
+     * The color of the next path
+     */
+    public Setting<Color> colorNextPath = new Setting<>(Color.MAGENTA);
+
+    /**
+     * The color of the blocks to break
+     */
+    public Setting<Color> colorBlocksToBreak = new Setting<>(Color.RED);
+
+    /**
+     * The color of the blocks to place
+     */
+    public Setting<Color> colorBlocksToPlace = new Setting<>(Color.GREEN);
+
+    /**
+     * The color of the blocks to walk into
+     */
+    public Setting<Color> colorBlocksToWalkInto = new Setting<>(Color.MAGENTA);
+
+    /**
+     * The color of the best path so far
+     */
+    public Setting<Color> colorBestPathSoFar = new Setting<>(Color.BLUE);
+
+    /**
+     * The color of the path to the most recent considered node
+     */
+    public Setting<Color> colorMostRecentConsidered = new Setting<>(Color.CYAN);
 
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
