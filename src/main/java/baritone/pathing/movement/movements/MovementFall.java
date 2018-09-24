@@ -25,8 +25,11 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
-import baritone.pathing.movement.movements.result.DescendResult;
-import baritone.utils.*;
+import baritone.pathing.movement.movements.result.MoveResult;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.InputOverrideHandler;
+import baritone.utils.RayTraceUtils;
+import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
@@ -46,8 +49,8 @@ public class MovementFall extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        DescendResult result = MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z);
-        if (result.y != dest.y) {
+        MoveResult result = MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        if (result.destY != dest.y) {
             return COST_INF; // doesn't apply to us, this position is a descend not a fall
         }
         return result.cost;

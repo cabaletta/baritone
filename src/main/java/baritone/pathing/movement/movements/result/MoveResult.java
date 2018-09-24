@@ -17,7 +17,10 @@
 
 package baritone.pathing.movement.movements.result;
 
+import static baritone.pathing.movement.ActionCosts.COST_INF;
+
 public final class MoveResult {
+    public static final MoveResult IMPOSSIBLE = new MoveResult(0, 0, 0, COST_INF);
     public final int destX;
     public final int destY;
     public final int destZ;

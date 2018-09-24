@@ -23,7 +23,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
-import baritone.pathing.movement.movements.result.DescendResult;
+import baritone.pathing.movement.movements.result.MoveResult;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.BetterBlockPos;
@@ -33,7 +33,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
-import static baritone.pathing.movement.movements.result.DescendResult.IMPOSSIBLE;
+import static baritone.pathing.movement.movements.result.MoveResult.IMPOSSIBLE;
 
 public class MovementDescend extends Movement {
 
@@ -51,14 +51,14 @@ public class MovementDescend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        DescendResult result = cost(context, src.x, src.y, src.z, dest.x, dest.z);
-        if (result.y != dest.y) {
+        MoveResult result = cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        if (result.destY != dest.y) {
             return COST_INF; // doesn't apply to us, this position is a fall not a descend
         }
         return result.cost;
     }
 
-    public static DescendResult cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+    public static MoveResult cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
         Block fromDown = BlockStateInterface.get(x, y - 1, z).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return IMPOSSIBLE;
@@ -105,10 +105,10 @@ public class MovementDescend extends Movement {
             walk = WALK_ONE_OVER_SOUL_SAND_COST;
         }
         totalCost += walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
-        return new DescendResult(y - 1, totalCost);
+        return new MoveResult(destX, y - 1, destZ, totalCost);
     }
 
-    public static DescendResult dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below) {
+    public static MoveResult dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below) {
         if (frontBreak != 0 && BlockStateInterface.get(destX, y + 2, destZ).getBlock() instanceof BlockFalling) {
             // if frontBreak is 0 we can actually get through this without updating the falling block and making it actually fall
             // but if frontBreak is nonzero, we're breaking blocks in front, so don't let anything fall through this column,
@@ -132,7 +132,7 @@ public class MovementDescend extends Movement {
                     return IMPOSSIBLE; // TODO fix
                 }
                 // found a fall into water
-                return new DescendResult(newY, tentativeCost); // TODO incorporate water swim up cost?
+                return new MoveResult(destX, newY, destZ, tentativeCost); // TODO incorporate water swim up cost?
             }
             if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
                 return IMPOSSIBLE;
@@ -147,11 +147,11 @@ public class MovementDescend extends Movement {
                 return IMPOSSIBLE; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
             }
             if (context.hasWaterBucket() && fallHeight <= context.maxFallHeightBucket() + 1) {
-                return new DescendResult(newY + 1, tentativeCost + context.placeBlockCost()); // this is the block we're falling onto, so dest is +1
+                return new MoveResult(destX, newY + 1, destZ, tentativeCost + context.placeBlockCost()); // this is the block we're falling onto, so dest is +1
             }
             if (fallHeight <= context.maxFallHeightNoWater() + 1) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
-                return new DescendResult(newY + 1, tentativeCost);
+                return new MoveResult(destX, newY + 1, destZ, tentativeCost);
             } else {
                 return IMPOSSIBLE;
             }

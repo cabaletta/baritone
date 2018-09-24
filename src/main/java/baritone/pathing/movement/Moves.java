@@ -18,7 +18,6 @@
 package baritone.pathing.movement;
 
 import baritone.pathing.movement.movements.*;
-import baritone.pathing.movement.movements.result.DescendResult;
 import baritone.pathing.movement.movements.result.MoveResult;
 import baritone.pathing.movement.movements.result.ParkourResult;
 import baritone.utils.pathing.BetterBlockPos;
@@ -163,8 +162,7 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            DescendResult res = MovementDescend.cost(context, x, y, z, x + 1, z);
-            return new MoveResult(x + 1, res.y, z, res.cost);
+            return MovementDescend.cost(context, x, y, z, x + 1, z);
         }
     },
 
@@ -181,8 +179,7 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            DescendResult res = MovementDescend.cost(context, x, y, z, x - 1, z);
-            return new MoveResult(x - 1, res.y, z, res.cost);
+            return MovementDescend.cost(context, x, y, z, x - 1, z);
         }
     },
 
@@ -199,8 +196,7 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            DescendResult res = MovementDescend.cost(context, x, y, z, x, z - 1);
-            return new MoveResult(x, res.y, z - 1, res.cost);
+            return MovementDescend.cost(context, x, y, z, x, z - 1);
         }
     },
 
@@ -217,8 +213,7 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            DescendResult res = MovementDescend.cost(context, x, y, z, x, z + 1);
-            return new MoveResult(x, res.y, z + 1, res.cost);
+            return MovementDescend.cost(context, x, y, z, x, z + 1);
         }
     },
 
