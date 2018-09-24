@@ -61,7 +61,8 @@ public class MovementDiagonal extends Movement {
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return COST_INF;
         }
-        if (!MovementHelper.canWalkThrough(destX, y, destZ) || !MovementHelper.canWalkThrough(destX, y + 1, destZ)) {
+        IBlockState destInto = BlockStateInterface.get(destX, y, destZ);
+        if (!MovementHelper.canWalkThrough(destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(destX, y + 1, destZ)) {
             return COST_INF;
         }
         IBlockState destWalkOn = BlockStateInterface.get(destX, y - 1, destZ);
@@ -103,7 +104,7 @@ public class MovementDiagonal extends Movement {
                 return COST_INF;
             }
         }
-        if (BlockStateInterface.isWater(BlockStateInterface.getBlock(x, y, z)) || BlockStateInterface.isWater(BlockStateInterface.getBlock(destX, y, destZ))) {
+        if (BlockStateInterface.isWater(BlockStateInterface.getBlock(x, y, z)) || BlockStateInterface.isWater(destInto.getBlock())) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
