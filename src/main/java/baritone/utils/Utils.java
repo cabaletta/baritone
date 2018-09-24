@@ -27,6 +27,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import static baritone.utils.Helper.HELPER;
+
 /**
  * @author Brady
  * @since 8/1/2018 12:56 AM
@@ -115,12 +117,12 @@ public final class Utils {
     }
 
     public static double playerDistanceToCenter(BlockPos pos) {
-        EntityPlayerSP player = (new Helper() {}).player();
+        EntityPlayerSP player = HELPER.player();
         return distanceToCenter(pos, player.posX, player.posY, player.posZ);
     }
 
     public static double playerFlatDistanceToCenter(BlockPos pos) {
-        EntityPlayerSP player = (new Helper() {}).player();
+        EntityPlayerSP player = HELPER.player();
         return distanceToCenter(pos, player.posX, pos.getY() + 0.5, player.posZ);
     }
 

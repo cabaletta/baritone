@@ -35,6 +35,11 @@ import net.minecraft.util.text.TextFormatting;
  */
 public interface Helper {
 
+    /**
+     * Instance of {@link Helper}. Used for static-context reference.
+     */
+    Helper HELPER = new Helper() {};
+
     ITextComponent MESSAGE_PREFIX = new TextComponentString(String.format(
             "%s[%sBaritone%s]%s",
             TextFormatting.DARK_PURPLE,
