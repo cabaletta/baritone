@@ -95,7 +95,9 @@ public class BlockStateInterface implements Helper {
         if (prevChunk != null && prevChunk.x == x >> 4 && prevChunk.z == z >> 4) {
             return true;
         }
-        if (mc.world.getChunk(x >> 4, z >> 4).isLoaded()) {
+        prevChunk = mc.world.getChunk(x >> 4, z >> 4);
+        if (prevChunk.isLoaded()) {
+            prev = prevChunk;
             return true;
         }
         CachedRegion prevRegion = prevCached;
@@ -106,11 +108,12 @@ public class BlockStateInterface implements Helper {
         if (world == null) {
             return false;
         }
-        CachedRegion region = world.cache.getRegion(x >> 9, z >> 9);
-        if (region == null) {
+        prevRegion = world.cache.getRegion(x >> 9, z >> 9);
+        if (prevRegion == null) {
             return false;
         }
-        return region.isCached(x & 511, z & 511);
+        prevCached = prevRegion;
+        return prevRegion.isCached(x & 511, z & 511);
     }
 
     public static void clearCachedChunk() {
