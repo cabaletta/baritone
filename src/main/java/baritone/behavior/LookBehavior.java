@@ -22,8 +22,8 @@ import baritone.api.Settings;
 import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
-import baritone.utils.Helper;
 import baritone.api.utils.Rotation;
+import baritone.utils.Helper;
 
 public final class LookBehavior extends Behavior implements ILookBehavior, Helper {
 
@@ -93,7 +93,6 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
             default:
                 break;
         }
-        new Thread().start();
     }
 
     @Override

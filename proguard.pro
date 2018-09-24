@@ -17,7 +17,7 @@
 -repackageclasses 'baritone'
 
 #-keep class baritone.behavior.** { *; }
-#-keep class baritone.api.** { *; }
+-keep class baritone.api.** { *; }
 #-keep class baritone.* { *; }
 #-keep class baritone.pathing.goals.** { *; }
 
