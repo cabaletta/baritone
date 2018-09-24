@@ -23,7 +23,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
-import baritone.pathing.movement.movements.result.MoveResult;
+import baritone.utils.pathing.MoveResult;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.BetterBlockPos;
@@ -33,7 +33,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
-import static baritone.pathing.movement.movements.result.MoveResult.IMPOSSIBLE;
+import static baritone.utils.pathing.MoveResult.IMPOSSIBLE;
 
 public class MovementDescend extends Movement {
 

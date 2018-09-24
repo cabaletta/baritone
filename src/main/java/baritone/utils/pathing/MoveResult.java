@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.movement.movements.result;
+package baritone.utils.pathing;
 
 import static baritone.pathing.movement.ActionCosts.COST_INF;
 

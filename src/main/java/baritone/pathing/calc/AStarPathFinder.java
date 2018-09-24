@@ -23,7 +23,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
-import baritone.pathing.movement.movements.result.MoveResult;
+import baritone.utils.pathing.MoveResult;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;

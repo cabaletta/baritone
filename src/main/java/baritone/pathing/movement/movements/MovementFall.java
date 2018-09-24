@@ -25,7 +25,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
-import baritone.pathing.movement.movements.result.MoveResult;
+import baritone.utils.pathing.MoveResult;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.RayTraceUtils;

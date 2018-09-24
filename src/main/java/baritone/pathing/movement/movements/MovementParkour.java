@@ -23,7 +23,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.pathing.movement.movements.result.MoveResult;
+import baritone.utils.pathing.MoveResult;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
@@ -37,7 +37,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
 
-import static baritone.pathing.movement.movements.result.MoveResult.IMPOSSIBLE;
+import static baritone.utils.pathing.MoveResult.IMPOSSIBLE;
 
 public class MovementParkour extends Movement {
 
