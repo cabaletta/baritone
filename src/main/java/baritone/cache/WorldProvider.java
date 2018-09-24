@@ -49,7 +49,7 @@ public enum WorldProvider implements IWorldProvider, Helper {
     private WorldData currentWorld;
 
     @Override
-    public final IWorldData getCurrentWorld() {
+    public final WorldData getCurrentWorld() {
         return this.currentWorld;
     }
 
