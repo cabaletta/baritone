@@ -42,7 +42,7 @@ $ gradlew genIntellijRuns
 ```
 
 # Chat control
-<a href="https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java">Defined here</a>
+[Defined Here](src/main/java/baritone/utils/ExampleBaritoneControl.java)
 
 Quick start example: `thisway 1000` or `goal 70` to set the goal, `path` to actually start pathing. Also try `mine diamond_ore`. `cancel` to cancel.
 
