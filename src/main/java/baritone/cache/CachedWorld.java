@@ -18,6 +18,7 @@
 package baritone.cache;
 
 import baritone.Baritone;
+import baritone.api.cache.ICachedWorld;
 import baritone.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -36,7 +37,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author Brady
  * @since 8/4/2018 12:02 AM
  */
-public final class CachedWorld implements Helper {
+public final class CachedWorld implements ICachedWorld, Helper {
 
     /**
      * The maximum number of regions in any direction from (0,0)
@@ -83,6 +84,7 @@ public final class CachedWorld implements Helper {
         });
     }
 
+    @Override
     public final void queueForPacking(Chunk chunk) {
         try {
             toPack.put(chunk);
@@ -91,6 +93,7 @@ public final class CachedWorld implements Helper {
         }
     }
 
+    @Override
     public final boolean isCached(int blockX, int blockZ) {
         CachedRegion region = getRegion(blockX >> 9, blockZ >> 9);
         if (region == null) {
@@ -99,7 +102,8 @@ public final class CachedWorld implements Helper {
         return region.isCached(blockX & 511, blockZ & 511);
     }
 
-    public final LinkedList<BlockPos> getLocationsOf(String block, int minimum, int maxRegionDistanceSq) {
+    @Override
+    public final LinkedList<BlockPos> getLocationsOf(String block, int maximum, int maxRegionDistanceSq) {
         LinkedList<BlockPos> res = new LinkedList<>();
         int playerRegionX = playerFeet().getX() >> 9;
         int playerRegionZ = playerFeet().getZ() >> 9;
@@ -121,7 +125,7 @@ public final class CachedWorld implements Helper {
                     }
                 }
             }
-            if (res.size() >= minimum) {
+            if (res.size() >= maximum) {
                 return res;
             }
             searchRadius++;
@@ -134,6 +138,7 @@ public final class CachedWorld implements Helper {
         region.updateCachedChunk(chunk.x & 31, chunk.z & 31, chunk);
     }
 
+    @Override
     public final void save() {
         if (!Baritone.settings().chunkCaching.get()) {
             System.out.println("Not saving to disk; chunk caching is disabled.");
@@ -153,6 +158,7 @@ public final class CachedWorld implements Helper {
         return new ArrayList<>(this.cachedRegions.values());
     }
 
+    @Override
     public final void reloadAllFromDisk() {
         long start = System.nanoTime() / 1000000L;
         allRegions().forEach(region -> {
@@ -164,13 +170,7 @@ public final class CachedWorld implements Helper {
         System.out.println("World load took " + (now - start) + "ms");
     }
 
-    /**
-     * Returns the region at the specified region coordinates
-     *
-     * @param regionX The region X coordinate
-     * @param regionZ The region Z coordinate
-     * @return The region located at the specified coordinates
-     */
+    @Override
     public final synchronized CachedRegion getRegion(int regionX, int regionZ) {
         return cachedRegions.get(getRegionID(regionX, regionZ));
     }

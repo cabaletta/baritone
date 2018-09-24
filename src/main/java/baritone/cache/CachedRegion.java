@@ -17,7 +17,7 @@
 
 package baritone.cache;
 
-import baritone.utils.pathing.IBlockTypeAccess;
+import baritone.api.cache.ICachedRegion;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
@@ -33,7 +33,8 @@ import java.util.zip.GZIPOutputStream;
  * @author Brady
  * @since 8/3/2018 9:35 PM
  */
-public final class CachedRegion implements IBlockTypeAccess {
+public final class CachedRegion implements ICachedRegion {
+
     private static final byte CHUNK_NOT_PRESENT = 0;
     private static final byte CHUNK_PRESENT = 1;
 
@@ -77,6 +78,7 @@ public final class CachedRegion implements IBlockTypeAccess {
         return null;
     }
 
+    @Override
     public final boolean isCached(int x, int z) {
         return chunks[x >> 4][z >> 4] != null;
     }
@@ -280,6 +282,7 @@ public final class CachedRegion implements IBlockTypeAccess {
     /**
      * @return The region x coordinate
      */
+    @Override
     public final int getX() {
         return this.x;
     }
@@ -287,6 +290,7 @@ public final class CachedRegion implements IBlockTypeAccess {
     /**
      * @return The region z coordinate
      */
+    @Override
     public final int getZ() {
         return this.z;
     }

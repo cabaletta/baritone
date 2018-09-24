@@ -184,7 +184,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     Chunk chunk = cli.getLoadedChunk(x, z);
                     if (chunk != null) {
                         count++;
-                        WorldProvider.INSTANCE.getCurrentWorld().cache.queueForPacking(chunk);
+                        WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().queueForPacking(chunk);
                     }
                 }
             }
@@ -272,20 +272,20 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("reloadall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().cache.reloadAllFromDisk();
+            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().reloadAllFromDisk();
             logDirect("ok");
             event.cancel();
             return;
         }
         if (msg.equals("saveall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().cache.save();
+            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().save();
             logDirect("ok");
             event.cancel();
             return;
         }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(blockType, 1, 4);
+            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(pos).getBlock();

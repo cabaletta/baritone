@@ -17,7 +17,8 @@
 
 package baritone.cache;
 
-import baritone.utils.pathing.IBlockTypeAccess;
+import baritone.api.cache.IBlockTypeAccess;
+import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -30,7 +31,7 @@ import java.util.*;
  * @author Brady
  * @since 8/3/2018 1:04 AM
  */
-public final class CachedChunk implements IBlockTypeAccess {
+public final class CachedChunk implements IBlockTypeAccess, Helper {
 
     public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(new HashSet<Block>() {{
         add(Blocks.DIAMOND_ORE);

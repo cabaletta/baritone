@@ -18,6 +18,7 @@
 package baritone.cache;
 
 import baritone.Baritone;
+import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.cache.IWorldData;
 
@@ -30,7 +31,7 @@ import java.nio.file.Path;
  */
 public class WorldData implements IWorldData {
 
-    public final CachedWorld cache;
+    private final CachedWorld cache;
     private final Waypoints waypoints;
     //public final MapData map;
     public final Path directory;
@@ -46,6 +47,11 @@ public class WorldData implements IWorldData {
             System.out.println("Started saving the world in a new thread");
             cache.save();
         });
+    }
+
+    @Override
+    public ICachedWorld getCachedWorld() {
+        return this.cache;
     }
 
     @Override

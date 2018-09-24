@@ -15,9 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.pathing;
+package baritone.api.cache;
 
-import baritone.utils.Helper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
@@ -25,7 +24,7 @@ import net.minecraft.util.math.BlockPos;
  * @author Brady
  * @since 8/4/2018 2:01 AM
  */
-public interface IBlockTypeAccess extends Helper {
+public interface IBlockTypeAccess {
 
     IBlockState getBlock(int x, int y, int z);
 

@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.cache.ICachedRegion;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.cache.WorldProvider;
@@ -36,7 +37,7 @@ import net.minecraft.world.chunk.Chunk;
 public class BlockStateInterface implements Helper {
 
     private static Chunk prev = null;
-    private static CachedRegion prevCached = null;
+    private static ICachedRegion prevCached = null;
 
     private static IBlockState AIR = Blocks.AIR.getDefaultState();
 
@@ -70,13 +71,13 @@ public class BlockStateInterface implements Helper {
         }
         // same idea here, skip the Long2ObjectOpenHashMap.get if at all possible
         // except here, it's 512x512 tiles instead of 16x16, so even better repetition
-        CachedRegion cached = prevCached;
+        ICachedRegion cached = prevCached;
         if (cached == null || cached.getX() != x >> 9 || cached.getZ() != z >> 9) {
             WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
             if (world == null) {
                 return AIR;
             }
-            CachedRegion region = world.cache.getRegion(x >> 9, z >> 9);
+            ICachedRegion region = world.getCachedWorld().getRegion(x >> 9, z >> 9);
             if (region == null) {
                 return AIR;
             }
@@ -100,7 +101,7 @@ public class BlockStateInterface implements Helper {
             prev = prevChunk;
             return true;
         }
-        CachedRegion prevRegion = prevCached;
+        ICachedRegion prevRegion = prevCached;
         if (prevRegion != null && prevRegion.getX() == x >> 9 && prevRegion.getZ() == z >> 9) {
             return prevRegion.isCached(x & 511, z & 511);
         }
@@ -108,7 +109,7 @@ public class BlockStateInterface implements Helper {
         if (world == null) {
             return false;
         }
-        prevRegion = world.cache.getRegion(x >> 9, z >> 9);
+        prevRegion = world.getCachedWorld().getRegion(x >> 9, z >> 9);
         if (prevRegion == null) {
             return false;
         }

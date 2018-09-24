@@ -21,19 +21,29 @@ package baritone.api.cache;
  * @author Brady
  * @since 9/24/2018
  */
-public interface IWorldData {
+public interface ICachedRegion extends IBlockTypeAccess {
 
     /**
-     * Returns the cached world for this world. A cached world is a simplified format
-     * of a regular world, intended for use on multiplayer servers where chunks are not
-     * traditionally stored to disk, allowing for long distance pathing with minimal disk usage.
-     */
-    ICachedWorld getCachedWorld();
-
-    /**
-     * Returns the waypoint collection for this world.
+     * Returns whether or not the block at the specified X and Z coordinates
+     * is cached in this world. Similar to {@link ICachedWorld#isCached(int, int)},
+     * however, the block coordinates should in on a scale from 0 to 511 (inclusive)
+     * because region sizes are 512x512 blocks.
      *
-     * @return The waypoint collection for this world
+     * @see ICachedWorld#isCached(int, int)
+     *
+     * @param blockX The block X coordinate
+     * @param blockZ The block Z coordinate
+     * @return Whether or not the specified XZ location is cached
      */
-    IWaypointCollection getWaypoints();
+    boolean isCached(int blockX, int blockZ);
+
+    /**
+     * The X coordinate of this region
+     */
+    int getX();
+
+    /**
+     * The Z coordinate of this region
+     */
+    int getZ();
 }
