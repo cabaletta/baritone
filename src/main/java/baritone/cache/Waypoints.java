@@ -17,19 +17,22 @@
 
 package baritone.cache;
 
+import baritone.api.cache.IWaypoint;
+import baritone.api.cache.IWaypointCollection;
 import net.minecraft.util.math.BlockPos;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Waypoints for a world
  *
  * @author leijurv
  */
-public class Waypoints {
+public class Waypoints implements IWaypointCollection {
 
     /**
      * Magic value to detect invalid waypoint files
@@ -37,7 +40,7 @@ public class Waypoints {
     private static final long WAYPOINT_MAGIC_VALUE = 121977993584L; // good value
 
     private final Path directory;
-    private final Map<Waypoint.Tag, Set<Waypoint>> waypoints;
+    private final Map<IWaypoint.Tag, Set<IWaypoint>> waypoints;
 
     Waypoints(Path directory) {
         this.directory = directory;
@@ -58,9 +61,9 @@ public class Waypoints {
     }
 
     private synchronized void load(Waypoint.Tag tag) {
-        waypoints.put(tag, new HashSet<>());
+        this.waypoints.put(tag, new HashSet<>());
 
-        Path fileName = directory.resolve(tag.name().toLowerCase() + ".mp4");
+        Path fileName = this.directory.resolve(tag.name().toLowerCase() + ".mp4");
         if (!Files.exists(fileName)) {
             return;
         }
@@ -82,21 +85,21 @@ public class Waypoints {
                 int x = in.readInt();
                 int y = in.readInt();
                 int z = in.readInt();
-                waypoints.get(tag).add(new Waypoint(name, tag, new BlockPos(x, y, z), creationTimestamp));
+                this.waypoints.get(tag).add(new Waypoint(name, tag, new BlockPos(x, y, z), creationTimestamp));
             }
         } catch (IOException ignored) {}
     }
 
     private synchronized void save(Waypoint.Tag tag) {
-        Path fileName = directory.resolve(tag.name().toLowerCase() + ".mp4");
+        Path fileName = this.directory.resolve(tag.name().toLowerCase() + ".mp4");
         try (
                 FileOutputStream fileOut = new FileOutputStream(fileName.toFile());
                 BufferedOutputStream bufOut = new BufferedOutputStream(fileOut);
                 DataOutputStream out = new DataOutputStream(bufOut)
         ) {
             out.writeLong(WAYPOINT_MAGIC_VALUE);
-            out.writeLong(waypoints.get(tag).size());
-            for (Waypoint waypoint : waypoints.get(tag)) {
+            out.writeLong(this.waypoints.get(tag).size());
+            for (IWaypoint waypoint : this.waypoints.get(tag)) {
                 out.writeUTF(waypoint.getName());
                 out.writeLong(waypoint.getCreationTimestamp());
                 out.writeInt(waypoint.getLocation().getX());
@@ -108,18 +111,34 @@ public class Waypoints {
         }
     }
 
-    public Set<Waypoint> getByTag(Waypoint.Tag tag) {
-        return Collections.unmodifiableSet(waypoints.get(tag));
+    @Override
+    public void addWaypoint(IWaypoint waypoint) {
+        // no need to check for duplicate, because it's a Set not a List
+        if (waypoints.get(waypoint.getTag()).add(waypoint)) {
+            save(waypoint.getTag());
+        }
     }
 
-    public Waypoint getMostRecentByTag(Waypoint.Tag tag) {
+    @Override
+    public void removeWaypoint(IWaypoint waypoint) {
+        if (waypoints.get(waypoint.getTag()).remove(waypoint)) {
+            save(waypoint.getTag());
+        }
+    }
+
+    @Override
+    public IWaypoint getMostRecentByTag(IWaypoint.Tag tag) {
         // Find a waypoint of the given tag which has the greatest timestamp value, indicating the most recent
         return this.waypoints.get(tag).stream().min(Comparator.comparingLong(w -> -w.getCreationTimestamp())).orElse(null);
     }
 
-    public void addWaypoint(Waypoint waypoint) {
-        // no need to check for duplicate, because it's a Set not a List
-        waypoints.get(waypoint.getTag()).add(waypoint);
-        save(waypoint.getTag());
+    @Override
+    public Set<IWaypoint> getByTag(IWaypoint.Tag tag) {
+        return Collections.unmodifiableSet(this.waypoints.get(tag));
+    }
+
+    @Override
+    public Set<IWaypoint> getAllWaypoints() {
+        return this.waypoints.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
     }
 }
