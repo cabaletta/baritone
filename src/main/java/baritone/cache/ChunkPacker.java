@@ -89,7 +89,8 @@ public final class ChunkPacker implements Helper {
         }
         //long end = System.nanoTime() / 1000000L;
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
-        String[] blockNames = new String[256];
+        IBlockState[] blocks = new IBlockState[256];
+
         for (int z = 0; z < 16; z++) {
             // @formatter:off
             https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
@@ -98,15 +99,14 @@ public final class ChunkPacker implements Helper {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
                     if (bitSet.get(index) || bitSet.get(index + 1)) {
-                        String name = blockToString(chunk.getBlockState(x, y, z).getBlock());
-                        blockNames[z << 4 | x] = name;
+                        blocks[z << 4 | x] = chunk.getBlockState(x, y, z);
                         continue https;
                     }
                 }
-                blockNames[z << 4 | x] = "air";
+                blocks[z << 4 | x] = Blocks.AIR.getDefaultState();
             }
         }
-        return new CachedChunk(chunk.x, chunk.z, bitSet, blockNames, specialBlocks);
+        return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks);
     }
 
     public static String blockToString(Block block) {

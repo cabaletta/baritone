@@ -145,7 +145,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                     for (int x = 0; x < 32; x++) {
                         if (chunks[x][z] != null) {
                             for (int i = 0; i < 256; i++) {
-                                out.writeUTF(chunks[x][z].getOverview()[i]);
+                                out.writeUTF(ChunkPacker.blockToString(chunks[x][z].getOverview()[i].getBlock()));
                             }
                         }
                     }
@@ -215,7 +215,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                                 int regionZ = this.z;
                                 int chunkX = x + 32 * regionX;
                                 int chunkZ = z + 32 * regionZ;
-                                tmpCached[x][z] = new CachedChunk(chunkX, chunkZ, BitSet.valueOf(bytes), new String[256], location[x][z]);
+                                tmpCached[x][z] = new CachedChunk(chunkX, chunkZ, BitSet.valueOf(bytes), new IBlockState[256], location[x][z]);
                                 break;
                             case CHUNK_NOT_PRESENT:
                                 tmpCached[x][z] = null;
@@ -229,7 +229,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                     for (int x = 0; x < 32; x++) {
                         if (tmpCached[x][z] != null) {
                             for (int i = 0; i < 256; i++) {
-                                tmpCached[x][z].getOverview()[i] = in.readUTF();
+                                tmpCached[x][z].getOverview()[i] = ChunkPacker.stringToBlock(in.readUTF()).getDefaultState();
                             }
                         }
                     }

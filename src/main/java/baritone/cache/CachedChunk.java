@@ -99,13 +99,13 @@ public final class CachedChunk implements IBlockTypeAccess {
     /**
      * The block names of each surface level block for generating an overview
      */
-    private final String[] overview;
+    private final IBlockState[] overview;
 
     private final int[] heightMap;
 
     private final Map<String, List<BlockPos>> specialBlockLocations;
 
-    CachedChunk(int x, int z, BitSet data, String[] overview, Map<String, List<BlockPos>> specialBlockLocations) {
+    CachedChunk(int x, int z, BitSet data, IBlockState[] overview, Map<String, List<BlockPos>> specialBlockLocations) {
         validateSize(data);
 
         this.x = x;
@@ -122,12 +122,11 @@ public final class CachedChunk implements IBlockTypeAccess {
         int internalPos = z << 4 | x;
         if (heightMap[internalPos] == y) {
             // we have this exact block, it's a surface block
-            IBlockState state = ChunkPacker.stringToBlock(overview[internalPos]).getDefaultState();
             /*System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
             if (!Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock().equals(state.getBlock())) {
                 throw new IllegalStateException("failed " + Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock() + " " + state.getBlock() + " " + (x + this.x * 16) + " " + y + " " + (z + this.z * 16));
             }*/
-            return state;
+            return overview[internalPos];
         }
         PathingBlockType type = getType(x, y, z);
         if (type == PathingBlockType.SOLID && y == 127 && mc.player.dimension == -1) {
@@ -157,7 +156,7 @@ public final class CachedChunk implements IBlockTypeAccess {
         }
     }
 
-    public final String[] getOverview() {
+    public final IBlockState[] getOverview() {
         return overview;
     }
 
