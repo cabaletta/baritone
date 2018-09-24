@@ -354,10 +354,26 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.startsWith("save")) {
-            String name = msg.substring(4).trim();
-            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, playerFeet()));
-            logDirect("Saved user defined tag under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
             event.cancel();
+            String name = msg.substring(4).trim();
+            BlockPos pos = playerFeet();
+            if (name.contains(" ")) {
+                logDirect("Name contains a space, assuming it's in the format 'save waypointName X Y Z'");
+                String[] parts = name.split(" ");
+                if (parts.length != 4) {
+                    logDirect("Unable to parse, expected four things");
+                    return;
+                }
+                try {
+                    pos = new BlockPos(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
+                } catch (NumberFormatException ex) {
+                    logDirect("Unable to parse coordinate integers");
+                    return;
+                }
+                name = parts[0];
+            }
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
+            logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
             return;
         }
         if (msg.startsWith("goto")) {
