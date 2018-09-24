@@ -383,29 +383,35 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
             Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
+            IWaypoint waypoint;
             if (tag == null) {
                 String mining = waypointType;
                 Block block = ChunkPacker.stringToBlock(mining);
                 //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
                 if (block == null) {
-                    logDirect("No locations for " + mining + " known, cancelling");
+                    waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
+                    if (waypoint == null) {
+                        logDirect("No locations for " + mining + " known, cancelling");
+                        return;
+                    }
+                } else {
+                    List<BlockPos> locs = MineBehavior.INSTANCE.scanFor(Collections.singletonList(block), 64);
+                    if (locs.isEmpty()) {
+                        logDirect("No locations for " + mining + " known, cancelling");
+                        return;
+                    }
+                    PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
+                    PathingBehavior.INSTANCE.path();
                     return;
                 }
-                List<BlockPos> locs = MineBehavior.INSTANCE.scanFor(Collections.singletonList(block), 64);
-                if (locs.isEmpty()) {
-                    logDirect("No locations for " + mining + " known, cancelling");
+            } else {
+                waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
+                if (waypoint == null) {
+                    logDirect("None saved for tag " + tag);
+                    event.cancel();
                     return;
                 }
-                PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
-                PathingBehavior.INSTANCE.path();
-                return;
-            }
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
-            if (waypoint == null) {
-                logDirect("None saved for tag " + tag);
-                event.cancel();
-                return;
             }
             Goal goal = new GoalBlock(waypoint.getLocation());
             PathingBehavior.INSTANCE.setGoal(goal);
