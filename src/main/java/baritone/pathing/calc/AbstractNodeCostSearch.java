@@ -17,8 +17,8 @@
 
 package baritone.pathing.calc;
 
-import baritone.behavior.PathingBehavior;
 import baritone.api.pathing.goals.Goal;
+import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -161,6 +161,18 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     public static void forceCancel() {
         PathingBehavior.INSTANCE.cancel();
         currentlyRunning = null;
+    }
+
+    public PathNode mostRecentNodeConsidered() {
+        return mostRecentConsidered;
+    }
+
+    public PathNode bestNodeSoFar() {
+        return bestSoFar[0];
+    }
+
+    public PathNode startNode() {
+        return startNode;
     }
 
     @Override
