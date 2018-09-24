@@ -91,7 +91,9 @@ public final class ChunkPacker implements Helper {
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         String[] blockNames = new String[256];
         for (int z = 0; z < 16; z++) {
+            // @formatter:off
             https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            // @formatter:on
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
