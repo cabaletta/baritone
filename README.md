@@ -61,7 +61,7 @@ Sure! (As long as usage is in compliance with the LGPL 3 License)
 
 ## How is it so fast?
 
-Magic
+Magic. (Hours of [Leijurv](https://github.com/leijurv) enduring excruciating pain)
 
 ## Why is it called Baritone?
 
