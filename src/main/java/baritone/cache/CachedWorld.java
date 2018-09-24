@@ -116,9 +116,8 @@ public final class CachedWorld implements Helper {
                     int regionZ = zoff + playerRegionZ;
                     CachedRegion region = getOrCreateRegion(regionX, regionZ);
                     if (region != null) {
-                        for (BlockPos pos : region.getLocationsOf(block)) {
-                            res.add(pos);
-                        }
+                        // TODO: 100% verify if this or addAll is faster.
+                        region.getLocationsOf(block).forEach(res::add);
                     }
                 }
             }
