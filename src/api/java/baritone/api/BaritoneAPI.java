@@ -18,6 +18,7 @@
 package baritone.api;
 
 import baritone.api.behavior.*;
+import baritone.api.cache.IWorldProvider;
 
 /**
  * API exposure for various things implemented in Baritone.
@@ -31,6 +32,7 @@ public class BaritoneAPI {
 
     // General
     private static final Settings settings = new Settings();
+    private static IWorldProvider worldProvider;
 
     // Behaviors
     private static IFollowBehavior followBehavior;
@@ -61,6 +63,15 @@ public class BaritoneAPI {
 
     public static Settings getSettings() {
         return settings;
+    }
+
+    /**
+     * FOR INTERNAL USE ONLY
+     */
+    public static void registerProviders(
+            IWorldProvider worldProvider
+    ) {
+        BaritoneAPI.worldProvider = worldProvider;
     }
 
     /**

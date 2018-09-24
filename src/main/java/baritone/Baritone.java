@@ -22,6 +22,7 @@ import baritone.api.Settings;
 import baritone.behavior.Behavior;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
+import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
@@ -86,6 +87,8 @@ public enum Baritone {
         // Acquire the "singleton" instance of the settings directly from the API
         // We might want to change this...
         this.settings = BaritoneAPI.getSettings();
+
+        BaritoneAPI.registerProviders(WorldProvider.INSTANCE);
 
         this.behaviors = new ArrayList<>();
         {

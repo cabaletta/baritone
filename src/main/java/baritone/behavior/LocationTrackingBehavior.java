@@ -42,12 +42,12 @@ public final class LocationTrackingBehavior extends Behavior implements Helper {
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
         if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(event.getPos()) instanceof BlockBed) {
-            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
         }
     }
 
     @Override
     public void onPlayerDeath() {
-        WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, playerFeet()));
+        WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, playerFeet()));
     }
 }

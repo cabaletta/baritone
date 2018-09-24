@@ -342,7 +342,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 event.cancel();
                 return;
             }
-            Set<IWaypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getByTag(tag);
+            Set<IWaypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getByTag(tag);
             // might as well show them from oldest to newest
             List<IWaypoint> sorted = new ArrayList<>(waypoints);
             sorted.sort(Comparator.comparingLong(IWaypoint::getCreationTimestamp));
@@ -355,7 +355,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.startsWith("save")) {
             String name = msg.substring(4).trim();
-            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint(name, Waypoint.Tag.USER, playerFeet()));
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, playerFeet()));
             logDirect("Saved user defined tag under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
             event.cancel();
             return;
@@ -385,7 +385,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 PathingBehavior.INSTANCE.path();
                 return;
             }
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(tag);
+            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
             if (waypoint == null) {
                 logDirect("None saved for tag " + tag);
                 event.cancel();
@@ -402,7 +402,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("spawn") || msg.equals("bed")) {
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.BED);
+            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
             if (waypoint == null) {
                 BlockPos spawnPoint = player().getBedLocation();
                 // for some reason the default spawnpoint is underground sometimes
@@ -418,13 +418,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("sethome")) {
-            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
             logDirect("Saved. Say home to set goal.");
             event.cancel();
             return;
         }
         if (msg.equals("home")) {
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.HOME);
+            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
             if (waypoint == null) {
                 logDirect("home not saved");
             } else {
