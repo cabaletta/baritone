@@ -19,6 +19,11 @@ package baritone.pathing.movement.movements.result;
 
 import static baritone.pathing.movement.ActionCosts.COST_INF;
 
+/**
+ * The result of a calculated movement, with destination x, y, z, and the cost of performing the movement
+ *
+ * @author leijurv
+ */
 public final class MoveResult {
     public static final MoveResult IMPOSSIBLE = new MoveResult(0, 0, 0, COST_INF);
     public final int destX;

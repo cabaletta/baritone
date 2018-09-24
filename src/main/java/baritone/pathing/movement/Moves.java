@@ -19,7 +19,6 @@ package baritone.pathing.movement;
 
 import baritone.pathing.movement.movements.*;
 import baritone.pathing.movement.movements.result.MoveResult;
-import baritone.pathing.movement.movements.result.ParkourResult;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.EnumFacing;
 
@@ -273,8 +272,7 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            ParkourResult res = MovementParkour.cost(context, x, y, z, EnumFacing.NORTH);
-            return new MoveResult(res.x, y, res.z, res.cost);
+            return MovementParkour.cost(context, x, y, z, EnumFacing.NORTH);
         }
     },
 
@@ -286,8 +284,7 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            ParkourResult res = MovementParkour.cost(context, x, y, z, EnumFacing.SOUTH);
-            return new MoveResult(res.x, y, res.z, res.cost);
+            return MovementParkour.cost(context, x, y, z, EnumFacing.SOUTH);
         }
     },
 
@@ -299,8 +296,7 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            ParkourResult res = MovementParkour.cost(context, x, y, z, EnumFacing.EAST);
-            return new MoveResult(res.x, y, res.z, res.cost);
+            return MovementParkour.cost(context, x, y, z, EnumFacing.EAST);
         }
     },
 
@@ -312,8 +308,7 @@ public enum Moves {
 
         @Override
         public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            ParkourResult res = MovementParkour.cost(context, x, y, z, EnumFacing.WEST);
-            return new MoveResult(res.x, y, res.z, res.cost);
+            return MovementParkour.cost(context, x, y, z, EnumFacing.WEST);
         }
     };
 

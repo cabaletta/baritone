@@ -23,7 +23,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.pathing.movement.movements.result.ParkourResult;
+import baritone.pathing.movement.movements.result.MoveResult;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
@@ -37,7 +37,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
 
-import static baritone.pathing.movement.movements.result.ParkourResult.IMPOSSIBLE;
+import static baritone.pathing.movement.movements.result.MoveResult.IMPOSSIBLE;
 
 public class MovementParkour extends Movement {
 
@@ -54,12 +54,12 @@ public class MovementParkour extends Movement {
     }
 
     public static MovementParkour cost(CalculationContext context, BetterBlockPos src, EnumFacing direction) {
-        ParkourResult res = cost(context, src.x, src.y, src.z, direction);
-        int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
+        MoveResult res = cost(context, src.x, src.y, src.z, direction);
+        int dist = Math.abs(res.destX - src.x) + Math.abs(res.destZ - src.z);
         return new MovementParkour(src, dist, direction);
     }
 
-    public static ParkourResult cost(CalculationContext context, int x, int y, int z, EnumFacing dir) {
+    public static MoveResult cost(CalculationContext context, int x, int y, int z, EnumFacing dir) {
         if (!Baritone.settings().allowParkour.get()) {
             return IMPOSSIBLE;
         }
@@ -97,7 +97,7 @@ public class MovementParkour extends Movement {
                 }
             }
             if (MovementHelper.canWalkOn(x + xDiff * i, y - 1, z + zDiff * i)) {
-                return new ParkourResult(x + xDiff * i, z + zDiff * i, costFromJumpDistance(i));
+                return new MoveResult(x + xDiff * i, y, z + zDiff * i, costFromJumpDistance(i));
             }
         }
         if (!context.canSprint()) {
@@ -122,7 +122,7 @@ public class MovementParkour extends Movement {
                 continue;
             }
             if (MovementHelper.canPlaceAgainst(againstX, y - 1, againstZ)) {
-                return new ParkourResult(destX, destZ, costFromJumpDistance(i) + context.placeBlockCost());
+                return new MoveResult(destX, y, destZ, costFromJumpDistance(i) + context.placeBlockCost());
             }
         }
         return IMPOSSIBLE;
@@ -144,8 +144,8 @@ public class MovementParkour extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        ParkourResult res = cost(context, src.x, src.y, src.z, direction);
-        if (res.x != dest.x || res.z != dest.z) {
+        MoveResult res = cost(context, src.x, src.y, src.z, direction);
+        if (res.destX != dest.x || res.destZ != dest.z) {
             return COST_INF;
         }
         return res.cost;
