@@ -97,11 +97,11 @@ public class Waypoints {
             out.writeLong(WAYPOINT_MAGIC_VALUE);
             out.writeLong(waypoints.get(tag).size());
             for (Waypoint waypoint : waypoints.get(tag)) {
-                out.writeUTF(waypoint.name);
-                out.writeLong(waypoint.creationTimestamp());
-                out.writeInt(waypoint.location.getX());
-                out.writeInt(waypoint.location.getY());
-                out.writeInt(waypoint.location.getZ());
+                out.writeUTF(waypoint.getName());
+                out.writeLong(waypoint.getCreationTimestamp());
+                out.writeInt(waypoint.getLocation().getX());
+                out.writeInt(waypoint.getLocation().getY());
+                out.writeInt(waypoint.getLocation().getZ());
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -114,12 +114,12 @@ public class Waypoints {
 
     public Waypoint getMostRecentByTag(Waypoint.Tag tag) {
         // Find a waypoint of the given tag which has the greatest timestamp value, indicating the most recent
-        return this.waypoints.get(tag).stream().min(Comparator.comparingLong(w -> -w.creationTimestamp())).orElse(null);
+        return this.waypoints.get(tag).stream().min(Comparator.comparingLong(w -> -w.getCreationTimestamp())).orElse(null);
     }
 
     public void addWaypoint(Waypoint waypoint) {
         // no need to check for duplicate, because it's a Set not a List
-        waypoints.get(waypoint.tag).add(waypoint);
-        save(waypoint.tag);
+        waypoints.get(waypoint.getTag()).add(waypoint);
+        save(waypoint.getTag());
     }
 }

@@ -344,7 +344,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             Set<Waypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getByTag(tag);
             // might as well show them from oldest to newest
             List<Waypoint> sorted = new ArrayList<>(waypoints);
-            sorted.sort(Comparator.comparingLong(Waypoint::creationTimestamp));
+            sorted.sort(Comparator.comparingLong(Waypoint::getCreationTimestamp));
             logDirect("Waypoints under tag " + tag + ":");
             for (Waypoint waypoint : sorted) {
                 logDirect(waypoint.toString());
@@ -390,7 +390,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 event.cancel();
                 return;
             }
-            Goal goal = new GoalBlock(waypoint.location);
+            Goal goal = new GoalBlock(waypoint.getLocation());
             PathingBehavior.INSTANCE.setGoal(goal);
             if (!PathingBehavior.INSTANCE.path()) {
                 if (!goal.isInGoal(playerFeet())) {
@@ -409,7 +409,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
                 PathingBehavior.INSTANCE.setGoal(goal);
             } else {
-                Goal goal = new GoalBlock(waypoint.location);
+                Goal goal = new GoalBlock(waypoint.getLocation());
                 PathingBehavior.INSTANCE.setGoal(goal);
                 logDirect("Set goal to most recent bed " + goal);
             }
@@ -427,7 +427,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             if (waypoint == null) {
                 logDirect("home not saved");
             } else {
-                Goal goal = new GoalBlock(waypoint.location);
+                Goal goal = new GoalBlock(waypoint.getLocation());
                 PathingBehavior.INSTANCE.setGoal(goal);
                 PathingBehavior.INSTANCE.path();
                 logDirect("Going to saved home " + goal);
