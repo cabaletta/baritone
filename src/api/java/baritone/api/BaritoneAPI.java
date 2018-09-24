@@ -65,6 +65,10 @@ public class BaritoneAPI {
         return settings;
     }
 
+    public static IWorldProvider getWorldProvider() {
+        return worldProvider;
+    }
+
     /**
      * FOR INTERNAL USE ONLY
      */
