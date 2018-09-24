@@ -300,7 +300,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             String[] blockTypes = msg.substring(4).trim().split(" ");
             try {
                 int quantity = Integer.parseInt(blockTypes[1]);
-                ChunkPacker.stringToBlock(blockTypes[0]).hashCode();
                 MineBehavior.INSTANCE.mine(quantity, blockTypes[0]);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 event.cancel();
