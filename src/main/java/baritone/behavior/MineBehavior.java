@@ -21,11 +21,11 @@ import baritone.Baritone;
 import baritone.api.behavior.IMineBehavior;
 import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.goals.Goal;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
-import baritone.api.pathing.goals.Goal;
 import baritone.pathing.goals.GoalBlock;
 import baritone.pathing.goals.GoalComposite;
 import baritone.pathing.goals.GoalTwoBlocks;
@@ -78,7 +78,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0) {
             if (event.getCount() % mineGoalUpdateInterval == 0) {
-                updateGoal();
+                Baritone.INSTANCE.getExecutor().execute(this::updateGoal);
             }
         }
         PathingBehavior.INSTANCE.revalidateGoal();
