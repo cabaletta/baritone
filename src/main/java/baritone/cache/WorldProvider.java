@@ -18,7 +18,6 @@
 package baritone.cache;
 
 import baritone.Baritone;
-import baritone.api.cache.IWorldData;
 import baritone.api.cache.IWorldProvider;
 import baritone.utils.Helper;
 import baritone.utils.accessor.IAnvilChunkLoader;

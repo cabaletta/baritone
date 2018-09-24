@@ -17,8 +17,8 @@
 
 package baritone.pathing.movement;
 
-import baritone.utils.InputOverrideHandler.Input;
 import baritone.api.utils.Rotation;
+import baritone.utils.InputOverrideHandler.Input;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;

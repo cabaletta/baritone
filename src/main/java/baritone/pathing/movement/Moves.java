@@ -18,8 +18,8 @@
 package baritone.pathing.movement;
 
 import baritone.pathing.movement.movements.*;
-import baritone.utils.pathing.MoveResult;
 import baritone.utils.pathing.BetterBlockPos;
+import baritone.utils.pathing.MoveResult;
 import net.minecraft.util.EnumFacing;
 
 /**

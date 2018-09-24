@@ -17,13 +17,13 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.api.utils.Rotation;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.api.utils.Rotation;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;

@@ -18,7 +18,10 @@
 package baritone.behavior;
 
 import baritone.api.utils.Rotation;
-import baritone.utils.*;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
+import baritone.utils.RayTraceUtils;
+import baritone.utils.Utils;
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.*;

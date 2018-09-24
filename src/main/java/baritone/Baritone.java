@@ -19,7 +19,6 @@ package baritone;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
-import baritone.behavior.Behavior;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;

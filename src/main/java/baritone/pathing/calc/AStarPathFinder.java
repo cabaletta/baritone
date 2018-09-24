@@ -18,15 +18,15 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
-import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.api.pathing.goals.Goal;
+import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
-import baritone.utils.pathing.MoveResult;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
+import baritone.utils.pathing.MoveResult;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashSet;

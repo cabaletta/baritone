@@ -19,7 +19,6 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.cache.ICachedRegion;
-import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.cache.WorldProvider;
 import net.minecraft.block.Block;

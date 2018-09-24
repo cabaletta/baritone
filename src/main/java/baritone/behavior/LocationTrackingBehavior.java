@@ -17,9 +17,9 @@
 
 package baritone.behavior;
 
+import baritone.api.event.events.BlockInteractEvent;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
-import baritone.api.event.events.BlockInteractEvent;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.BlockBed;
