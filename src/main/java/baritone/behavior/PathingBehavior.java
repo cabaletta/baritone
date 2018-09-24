@@ -385,7 +385,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
         if (goal != null && Baritone.settings().renderGoal.value) {
-            PathRenderer.drawLitDankGoalBox(player(), goal, partialTicks, Color.GREEN);
+            PathRenderer.drawLitDankGoalBox(player(), goal, partialTicks, Baritone.settings().colorGoalBox.get());
         }
         if (!Baritone.settings().renderPath.get()) {
             return;

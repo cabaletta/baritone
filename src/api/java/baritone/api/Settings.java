@@ -434,6 +434,11 @@ public class Settings {
      */
     public Setting<Color> colorMostRecentConsidered = new Setting<>(Color.CYAN);
 
+    /**
+     * The color of the goal box
+     */
+    public Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
+
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;
 
