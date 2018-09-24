@@ -31,6 +31,7 @@ import baritone.pathing.goals.GoalXZ;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
+import baritone.utils.BlockBreakHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
@@ -40,7 +41,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -218,6 +218,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         next = null;
         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
+        BlockBreakHelper.stopBreakingBlock();
     }
 
     public void forceCancel() { // NOT exposed on public api
