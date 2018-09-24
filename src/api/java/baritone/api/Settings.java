@@ -323,8 +323,9 @@ public class Settings {
     public Setting<Boolean> prefix = new Setting<>(false);
 
     /**
-     * true: can mine blocks when in inventory, chat, or tabbed away in ESC menu
-     * false: works on cosmic prisons
+     * {@code true}: can mine blocks when in inventory, chat, or tabbed away in ESC menu
+     * <p>
+     * {@code false}: works on cosmic prisons
      * <p>
      * LOL
      */
