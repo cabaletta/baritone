@@ -19,9 +19,9 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.Settings;
+import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.Goal;
 import baritone.behavior.Behavior;
-import baritone.api.event.events.ChatEvent;
 import baritone.behavior.FollowBehavior;
 import baritone.behavior.MineBehavior;
 import baritone.behavior.PathingBehavior;
@@ -30,7 +30,7 @@ import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.goals.*;
-import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.movement.*;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
@@ -39,6 +39,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ExampleBaritoneControl extends Behavior implements Helper {
 
@@ -429,10 +431,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             return;
         }
-        // TODO
-        /*if (msg.equals("costs")) {
-            Movement[] movements = AStarPathFinder.getConnectedPositions(new BetterBlockPos(playerFeet()), new CalculationContext());
-            List<Movement> moves = new ArrayList<>(Arrays.asList(movements));
+        if (msg.equals("costs")) {
+            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(playerFeet())).collect(Collectors.toCollection(ArrayList::new));
             while (moves.contains(null)) {
                 moves.remove(null);
             }
@@ -448,6 +448,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             event.cancel();
             return;
-        }*/
+        }
     }
 }
