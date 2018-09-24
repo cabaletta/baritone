@@ -22,7 +22,7 @@
 #-keep class baritone.pathing.goals.** { *; }
 
 # setting names are reflected from field names, so keep field names
--keepclassmembers class baritone.Settings {
+-keepclassmembers class baritone.api.Settings {
     public <fields>;    
 }
 
