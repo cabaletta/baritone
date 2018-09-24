@@ -428,4 +428,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         //   System.out.println("Frame took " + (split - start) + " " + (end - split));
         //}
     }
+
+    @Override
+    public void onDisable() {
+        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+    }
 }
