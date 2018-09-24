@@ -206,7 +206,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("forcecancel")) {
+            MineBehavior.INSTANCE.cancel();
+            FollowBehavior.INSTANCE.cancel();
+            PathingBehavior.INSTANCE.cancel();
             AbstractNodeCostSearch.forceCancel();
+            PathingBehavior.INSTANCE.forceCancel();
             event.cancel();
             logDirect("ok force canceled");
             return;
