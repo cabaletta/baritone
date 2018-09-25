@@ -20,7 +20,7 @@ package baritone.utils;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.pathing.goals.GoalBlock;
 import baritone.behavior.PathingBehavior;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.util.math.BlockPos;
@@ -32,8 +32,8 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
     public static final boolean ENABLE_AUTO_TEST = true;
     private static final long TEST_SEED = -928872506371745L;
     private static final BlockPos STARTING_POSITION = new BlockPos(50, 65, 50);
-    private static final Goal GOAL = new GoalXZ(100, 100);
-    private static final int MAX_TICKS = 1000;
+    private static final Goal GOAL = new GoalBlock(69, 121, 420);
+    private static final int MAX_TICKS = 3200;
 
     @Override
     public void onTick(TickEvent event) {
