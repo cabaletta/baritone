@@ -22,6 +22,7 @@ import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class BetterBlockPosTest {
 
@@ -62,7 +63,17 @@ public class BetterBlockPosTest {
             for (int i = -10; i < 10; i++) {
                 assertEquals(pos.offset(dir, i), better.offset(dir, i));
             }
+            assertTrue(better.offset(dir, 0) == better);
         }
+        for (int i = -10; i < 10; i++) {
+            assertEquals(pos.up(i), better.up(i));
+            assertEquals(pos.down(i), better.down(i));
+            assertEquals(pos.north(i), better.north(i));
+            assertEquals(pos.south(i), better.south(i));
+            assertEquals(pos.east(i), better.east(i));
+            assertEquals(pos.west(i), better.west(i));
+        }
+        assertTrue(better.offset(null, 0) == better);
     }
 
     public void benchOne() {
