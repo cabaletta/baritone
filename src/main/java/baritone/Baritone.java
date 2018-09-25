@@ -23,6 +23,7 @@ import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
+import baritone.utils.BaritoneAutoTest;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 
@@ -107,6 +108,9 @@ public enum Baritone {
                     MineBehavior.INSTANCE,
                     PathingBehavior.INSTANCE
             );
+        }
+        if (BaritoneAutoTest.ENABLE_AUTO_TEST && "true".equals(System.getenv("BARITONE_AUTO_TEST"))) {
+            registerEventListener(new BaritoneAutoTest());
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {

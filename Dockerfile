@@ -21,4 +21,4 @@ RUN dpkg -i /code/scripts/xvfb_1.16.4-1_amd64.deb
 
 WORKDIR /code
 
-RUN ./gradlew assemble
+RUN ./gradlew build
