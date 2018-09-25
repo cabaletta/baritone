@@ -17,14 +17,14 @@
 
 package baritone.api.pathing.goals;
 
-import baritone.api.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside;
+import baritone.api.pathing.movement.ActionCosts;
 
 /**
  * Useful for mining (getting to diamond / iron level)
  *
  * @author leijurv
  */
-public class GoalYLevel implements Goal, ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
+public class GoalYLevel implements Goal, ActionCosts {
 
     /**
      * The target Y level
@@ -48,11 +48,11 @@ public class GoalYLevel implements Goal, ActionCostsButOnlyTheOnesThatMakeMickey
     public static double calculate(int goalY, int currentY) {
         if (currentY > goalY) {
             // need to descend
-            return ActionCostsButOnlyTheOnesThatMakeMickeyDieInside.FALL_N_BLOCKS_COST[2] / 2 * (currentY - goalY);
+            return FALL_N_BLOCKS_COST[2] / 2 * (currentY - goalY);
         }
         if (currentY < goalY) {
             // need to ascend
-            return (goalY - currentY) * ActionCostsButOnlyTheOnesThatMakeMickeyDieInside.JUMP_ONE_BLOCK_COST;
+            return (goalY - currentY) * JUMP_ONE_BLOCK_COST;
         }
         return 0;
     }
