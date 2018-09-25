@@ -12,8 +12,8 @@ There are some basic steps to getting Baritone setup with Impact.
 There are 3 methods of acquiring a build of Baritone (While it is still in development)
 
 ### Official Build (Not always up to date)
-Download the "official" jar (as of commit <a href="https://github.com/cabaletta/baritone/commit/2e63ac41d9b22e4ee0a62f2bd29974e43e2071a1">2e63ac4</a>,
-built on September 19) from <a href="https://www.dropbox.com/s/imc6xwwpwsh3i0y/baritone-1.0.0.jar?dl=0">here</a>.
+Download the "official" jar (as of commit <a href="https://github.com/cabaletta/baritone/commit/61cf103df451a5aafa6bfbe5ed089043212f0b42">61cf103</a>,
+built on September 24) from <a href="https://www.dropbox.com/s/imc6xwwpwsh3i0y/baritone-1.0.0.jar?dl=0">here</a>.
 
 ### Building Baritone yourself
 There are a few steps to this
