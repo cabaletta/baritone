@@ -22,7 +22,7 @@ import org.junit.Test;
 import static baritone.api.pathing.movement.ActionCosts.*;
 import static org.junit.Assert.assertEquals;
 
-public class ActionCostsButOnlyTheOnesThatMakeMickeyDieInsideTest {
+public class ActionCostsTest {
     @Test
     public void testFallNBlocksCost() {
         assertEquals(FALL_N_BLOCKS_COST.length, 257); // Fall 0 blocks through fall 256 blocks
