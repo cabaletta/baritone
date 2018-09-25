@@ -5,7 +5,7 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 
--optimizationpasses 10
+-optimizationpasses 5
 -verbose
 
 -allowaccessmodification # anything not kept can be changed from public to private and inlined etc

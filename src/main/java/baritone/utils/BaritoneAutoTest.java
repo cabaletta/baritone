@@ -55,7 +55,9 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
                 System.out.println("Waiting for world to generate... " + event.getCount());
                 return;
             }
-            System.out.println(playerFeet() + " " + event.getCount());
+            if (event.getCount() % 100 == 0) { // print only once every 5 seconds
+                System.out.println(playerFeet() + " " + event.getCount());
+            }
             PathingBehavior.INSTANCE.setGoal(GOAL);
             PathingBehavior.INSTANCE.path();
             if (GOAL.isInGoal(playerFeet())) {
