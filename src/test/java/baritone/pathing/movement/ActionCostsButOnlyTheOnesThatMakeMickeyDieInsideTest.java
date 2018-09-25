@@ -19,7 +19,7 @@ package baritone.pathing.movement;
 
 import org.junit.Test;
 
-import static baritone.api.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside.*;
+import static baritone.api.pathing.movement.ActionCosts.*;
 import static org.junit.Assert.assertEquals;
 
 public class ActionCostsButOnlyTheOnesThatMakeMickeyDieInsideTest {
