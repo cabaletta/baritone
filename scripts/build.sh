@@ -21,4 +21,3 @@ mv Obfuscated/baritone-$VERSION.jar ../../dist/baritone-standalone-$VERSION.jar
 mv baritone-$VERSION.jar ../../dist/baritone-unoptimized-$VERSION.jar
 cd ../..
 shasum dist/* | tee dist/checksums.txt
-jshon -s "$(cat dist/checksums.txt)"

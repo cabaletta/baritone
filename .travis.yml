@@ -14,6 +14,7 @@ script:
 - docker run --name baritone cabaletta/baritone /bin/sh -c "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 128x128x24 -ac +extension GLX +render; sh scripts/build.sh; DISPLAY=:99 BARITONE_AUTO_TEST=true ./gradlew runClient"
 - docker cp baritone:/code/dist dist
 - ls dist
+- jshon -s "$(cat dist/checksums.txt)"
 
 deploy:
   provider: releases

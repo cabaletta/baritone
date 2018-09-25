@@ -33,7 +33,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
     private static final long TEST_SEED = -928872506371745L;
     private static final BlockPos STARTING_POSITION = new BlockPos(50, 65, 50);
     private static final Goal GOAL = new GoalXZ(100, 100);
-    private static final int MAX_TICKS = 800;
+    private static final int MAX_TICKS = 1000;
 
     @Override
     public void onTick(TickEvent event) {
