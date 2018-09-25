@@ -1,1 +1,31 @@
 language: java
+
+install:
+- ./gradlew test
+- ./gradlew build
+
+script:
+- wget https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip
+- unzip proguard6.0.3.zip 2>&1 > /dev/null
+- cd build/libs
+- cat ../../proguard.pro | grep -v "this is the rt jar" > proguard.pro
+- echo "-libraryjars '$(java -verbose 2>/dev/null | sed -ne '1 s/\[Opened \(.*\)\]/\1/p')'" >> proguard.pro
+- tail proguard.pro
+- wget https://www.dropbox.com/s/zmc2l3jnwdvzvak/tempLibraries.zip?dl=1
+- mv tempLibraries.zip?dl=1 tempLibraries.zip
+- unzip tempLibraries.zip
+- java -jar ../../proguard6.0.3/lib/proguard.jar @proguard.pro
+- mv Obfuscated/baritone-1.0.0.jar ../../baritone.jar
+- cd ../..
+- shasum baritone.jar
+
+deploy:
+  provider: releases
+  api_key:
+    secure: YOuiXoJNpB4bW89TQoY2IGXg0tqOKls55YMXsSPU6Mx8WzRu8CjjO/A8KA9nGfNrKM+NucjiKr/h53O2Dp2uyy0i0SLvav/G0MaBMeB1NlPRwFopi6tVPNaoZsvr8NW4BIURhspckYLpOTYWnfmOkIv8q7AxrjUZWPKDlq0dte20UxEqUE6msHJ7U9XlKo/4fX40kvWMfwGI2hTyAtL0cRT1QPsd+uW3OQjAPcQj+jKaWld46V8pBK8g9Qde9mo8HC9NBv97zw1bBF1EFkynW569kElHvaS2Opl2QLGaf66guDbpnqDpGHMhQrDdxsZHJ4RksyITn+8A9UArmbkU35BxKqBeQqOWxod2+M0axdLh1pvX43Q1t9n7RiZBf7GvV8vkXL5Sjf8v6Y4LqkJGhvQkTUwpH+0knwrE761DMCtBC34AiWG70D4u7msmhurkflr9kmRHSj/3lyJ1Q2lkt8L+FOAlQBVs64vXTsfgc6Yge7N0O3UD5hCkrDNoz3BzhNBdCkbdxdKCGip71UZgUNkPy9o3ui8jATNj9ypx3+U8ovqP0XWlJqUZmyeXyNGW9NrLeCkRLTlLnZ/dv6OPONa1oAu4TwF1w5A+TGRFZcZjH/PnZKZDQ1OYQOR6drLKRYdr2unvuf5KUKUGqZ7aYtLGhP0rBvGWddRV7DSmX/s=
+  all_branches: true
+  file: baritone.jar
+  skip_cleanup: true
+  on:
+    tags: true
+    repo: cabaletta/baritone
