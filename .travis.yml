@@ -18,7 +18,7 @@ deploy:
   file_glob: true
   file:
   - dist/*
-  body: $(jshon -s "$(cat checksums.txt)"))
+  body: $(jshon -s "$(cat dist/checksums.txt)")
   skip_cleanup: true
   on:
     tags: true
