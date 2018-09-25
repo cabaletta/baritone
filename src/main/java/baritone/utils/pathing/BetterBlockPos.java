@@ -106,7 +106,7 @@ public final class BetterBlockPos extends BlockPos {
     @Override
     public BetterBlockPos down(int amt) {
         // see comment in up()
-        return new BetterBlockPos(x, y - amt, z);
+        return amt == 0 ? this : new BetterBlockPos(x, y - amt, z);
     }
 
     @Override
@@ -117,6 +117,9 @@ public final class BetterBlockPos extends BlockPos {
 
     @Override
     public BetterBlockPos offset(EnumFacing dir, int dist) {
+        if (dist == 0) {
+            return this;
+        }
         Vec3i vec = dir.getDirectionVec();
         return new BetterBlockPos(x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
     }
