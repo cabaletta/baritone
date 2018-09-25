@@ -19,5 +19,6 @@ mv Obfuscated/baritone-$VERSION.jar ../../dist/baritone-api-$VERSION.jar
 java -jar ../../proguard6.0.3/lib/proguard.jar @standalone.pro
 mv Obfuscated/baritone-$VERSION.jar ../../dist/baritone-standalone-$VERSION.jar
 mv baritone-$VERSION.jar ../../dist/baritone-unoptimized-$VERSION.jar
-cd ../..
-shasum dist/* | tee dist/checksums.txt
+cd ../../dist
+shasum * | tee checksums.txt
+cd ..
