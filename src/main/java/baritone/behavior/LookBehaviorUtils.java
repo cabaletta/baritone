@@ -51,10 +51,10 @@ public final class LookBehaviorUtils implements Helper {
      * @return vector of the rotation
      */
     public static Vec3d calcVec3dFromRotation(Rotation rotation) {
-        float f = MathHelper.cos(-rotation.getFirst() * (float) DEG_TO_RAD - (float) Math.PI);
-        float f1 = MathHelper.sin(-rotation.getFirst() * (float) DEG_TO_RAD - (float) Math.PI);
-        float f2 = -MathHelper.cos(-rotation.getSecond() * (float) DEG_TO_RAD);
-        float f3 = MathHelper.sin(-rotation.getSecond() * (float) DEG_TO_RAD);
+        float f = MathHelper.cos(-rotation.getYaw() * (float) DEG_TO_RAD - (float) Math.PI);
+        float f1 = MathHelper.sin(-rotation.getYaw() * (float) DEG_TO_RAD - (float) Math.PI);
+        float f2 = -MathHelper.cos(-rotation.getPitch() * (float) DEG_TO_RAD);
+        float f3 = MathHelper.sin(-rotation.getPitch() * (float) DEG_TO_RAD);
         return new Vec3d((double) (f1 * f2), (double) f3, (double) (f * f2));
     }
 

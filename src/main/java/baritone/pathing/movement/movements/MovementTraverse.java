@@ -165,8 +165,8 @@ public class MovementTraverse extends Movement {
 
             // combine the yaw to the center of the destination, and the pitch to the specific block we're trying to break
             // it's safe to do this since the two blocks we break (in a traverse) are right on top of each other and so will have the same yaw
-            float yawToDest = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world())).getFirst();
-            float pitchToBreak = state.getTarget().getRotation().get().getSecond();
+            float yawToDest = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world())).getYaw();
+            float pitchToBreak = state.getTarget().getRotation().get().getPitch();
 
             state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
             return state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);

@@ -99,10 +99,7 @@ public final class Utils {
     }
 
     public static Rotation wrapAnglesToRelative(Rotation current, Rotation target) {
-        return new Rotation(
-                MathHelper.wrapDegrees(target.getFirst() - current.getFirst()) + current.getFirst(),
-                MathHelper.wrapDegrees(target.getSecond() - current.getSecond()) + current.getSecond()
-        );
+        return target.subtract(current).normalize().add(current);
     }
 
     public static Vec3d vec3dFromBlockPos(BlockPos orig) {

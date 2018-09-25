@@ -463,7 +463,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         state.setTarget(new MovementTarget(
                 new Rotation(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
                         Utils.getBlockPosCenter(pos),
-                        new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getFirst(), mc.player.rotationPitch),
+                        new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getYaw(), mc.player.rotationPitch),
                 false
         )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }

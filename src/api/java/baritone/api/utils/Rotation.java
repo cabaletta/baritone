@@ -17,11 +17,96 @@
 
 package baritone.api.utils;
 
-import net.minecraft.util.Tuple;
+/**
+ * @author Brady
+ * @since 9/25/2018
+ */
+public class Rotation {
 
-public class Rotation extends Tuple<Float, Float> {
+    /**
+     * The yaw angle of this Rotation
+     */
+    private float yaw;
 
-    public Rotation(Float yaw, Float pitch) {
-        super(yaw, pitch);
+    /**
+     * The pitch angle of this Rotation
+     */
+    private float pitch;
+
+    public Rotation(float yaw, float pitch) {
+        this.yaw = yaw;
+        this.pitch = pitch;
+    }
+
+    /**
+     * @return The yaw of this rotation
+     */
+    public float getYaw() {
+        return this.yaw;
+    }
+
+    /**
+     * @return The pitch of this rotation
+     */
+    public float getPitch() {
+        return this.pitch;
+    }
+
+    /**
+     * Adds the yaw/pitch of the specified rotations to this
+     * rotation's yaw/pitch, and returns the result.
+     *
+     * @param other Another rotation
+     * @return The result from adding the other rotation to this rotation
+     */
+    public Rotation add(Rotation other) {
+        return new Rotation(
+                this.yaw + other.yaw,
+                this.pitch + other.pitch
+        );
+    }
+
+    /**
+     * Subtracts the yaw/pitch of the specified rotations from this
+     * rotation's yaw/pitch, and returns the result.
+     *
+     * @param other Another rotation
+     * @return The result from subtracting the other rotation from this rotation
+     */
+    public Rotation subtract(Rotation other) {
+        return new Rotation(
+                this.yaw - other.yaw,
+                this.pitch - other.pitch
+        );
+    }
+
+    /**
+     * @return A copy of this rotation with the pitch clamped
+     */
+    public Rotation clamp() {
+        return new Rotation(
+                this.yaw,
+                RotationUtils.clampPitch(this.pitch)
+        );
+    }
+
+    /**
+     * @return A copy of this rotation with the yaw normalized
+     */
+    public Rotation normalize() {
+        return new Rotation(
+                RotationUtils.normalizeYaw(this.yaw),
+                this.pitch
+        );
+    }
+
+    /**
+     * @return A copy of this rotation with the pitch clamped and the yaw normalized
+     */
+    public Rotation normalizeAndClamp() {
+        return new Rotation(
+                RotationUtils.normalizeYaw(this.yaw),
+                RotationUtils.clampPitch(this.pitch)
+        );
     }
 }

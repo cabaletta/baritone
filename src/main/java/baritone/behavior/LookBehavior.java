@@ -69,9 +69,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
         switch (event.getState()) {
             case PRE: {
                 if (this.force) {
-                    player().rotationYaw = this.target.getFirst();
+                    player().rotationYaw = this.target.getYaw();
                     float oldPitch = player().rotationPitch;
-                    float desiredPitch = this.target.getSecond();
+                    float desiredPitch = this.target.getPitch();
                     player().rotationPitch = desiredPitch;
                     if (desiredPitch == oldPitch) {
                         nudgeToLevel();
@@ -79,7 +79,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
                     this.target = null;
                 } else if (silent) {
                     this.lastYaw = player().rotationYaw;
-                    player().rotationYaw = this.target.getFirst();
+                    player().rotationYaw = this.target.getYaw();
                 }
                 break;
             }
@@ -101,7 +101,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
             switch (event.getState()) {
                 case PRE:
                     this.lastYaw = player().rotationYaw;
-                    player().rotationYaw = this.target.getFirst();
+                    player().rotationYaw = this.target.getYaw();
                     break;
                 case POST:
                     player().rotationYaw = this.lastYaw;
