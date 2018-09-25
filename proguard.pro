@@ -1,4 +1,4 @@
--injars baritone-1.0.0.jar
+-injars baritone-0.0.2.jar # idk if a wildcard would work here
 -outjars Obfuscated
 
 

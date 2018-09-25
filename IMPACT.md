@@ -23,7 +23,7 @@ There are a few steps to this
 command line
   - Windows: ``gradlew build``
   - Mac/Linux: ``./gradlew build``
-- The build should be exported into ``/build/libs/baritone-1.0.0.jar``
+- The build should be exported into ``/build/libs/baritone-X.Y.Z.jar``
 
 ### Cutting Edge Release
 If you want to trust @Plutie#9079, you can download an automatically generated build of the latest commit
@@ -37,9 +37,9 @@ putting baritone.
 - Create 3 new subdirectories starting from ``libraries``
   - ``cabaletta``
     - ``baritone``
-      - ``1.0.0``
- - Copy the build of Baritone that was acquired earlier, and place it into the ``1.0.0`` folder
-   - The full path should look like ``<Minecraft>/libraries/cabaletta/baritone/1.0.0/baritone-1.0.0.jar``
+      - ``X.Y.Z``
+ - Copy the build of Baritone that was acquired earlier, and place it into the ``X.Y.Z`` folder
+   - The full path should look like ``<Minecraft>/libraries/cabaletta/baritone/X.Y.Z/baritone-X.Y.Z.jar``
 
 ## Modifying the Impact Profile JSON to run baritone
 The final step is "registering" the Baritone library with Impact, so that it loads on launch.
@@ -72,7 +72,7 @@ The final step is "registering" the Baritone library with Impact, so that it loa
 - Create a new object in the array, between the ``Impact`` and ``ClientAPI`` dependencies preferably.
     ```
     {
-        "name": "cabaletta:baritone:1.0.0"
+        "name": "cabaletta:baritone:X.Y.Z"
     },
     ```
 - Now find the ``"minecraftArguments": "..."`` text near the top.

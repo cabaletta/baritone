@@ -15,7 +15,7 @@ script:
 - mv tempLibraries.zip?dl=1 tempLibraries.zip
 - unzip tempLibraries.zip
 - java -jar ../../proguard6.0.3/lib/proguard.jar @proguard.pro
-- mv Obfuscated/baritone-1.0.0.jar ../../baritone.jar
+- mv Obfuscated/baritone-0.0.2.jar ../../baritone.jar
 - cd ../..
 - shasum baritone.jar
 
