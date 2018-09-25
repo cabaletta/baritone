@@ -65,9 +65,6 @@ public class MovementPillar extends Movement {
                 }
             }
         }
-        if (!context.hasThrowaway() && !ladder) {
-            return COST_INF;
-        }
         if (fromDown instanceof BlockVine) {
             if (!hasAgainst(x, y, z)) {
                 return COST_INF;
@@ -84,6 +81,9 @@ public class MovementPillar extends Movement {
             if (BlockStateInterface.isWater(srcUp)) {
                 return LADDER_UP_ONE_COST;
             }
+        }
+        if (!context.hasThrowaway() && !ladder) {
+            return COST_INF;
         }
         double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);
         if (hardness >= COST_INF) {
