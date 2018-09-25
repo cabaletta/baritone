@@ -11,9 +11,12 @@ There are some basic steps to getting Baritone setup with Impact.
 ## Acquiring a build of Baritone
 There are 3 methods of acquiring a build of Baritone (While it is still in development)
 
-### Official Build (Not always up to date)
-Download the "official" jar (as of commit <a href="https://github.com/cabaletta/baritone/commit/61cf103df451a5aafa6bfbe5ed089043212f0b42">61cf103</a>,
-built on September 24) from <a href="https://www.dropbox.com/s/imc6xwwpwsh3i0y/baritone-1.0.0.jar?dl=0">here</a>.
+### Official Release (Not always up to date)
+https://github.com/cabaletta/baritone/releases
+
+For Impact 4.3, there is no Baritone integration yet, so you will want `baritone-standalone-X.Y.Z.jar`.
+
+Any official release will be GPG signed by leijurv (44A3EA646EADAC6A) and ZeroMemes (73A788379A197567). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by those two public keys of `checksums.txt`. 
 
 ### Building Baritone yourself
 There are a few steps to this
