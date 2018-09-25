@@ -15,45 +15,47 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.api.pathing.goals.Goal;
-import baritone.utils.interfaces.IGoalRenderPos;
-import baritone.utils.pathing.BetterBlockPos;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
-
 /**
- * Don't get into the block, but get directly adjacent to it. Useful for chests.
+ * Useful if the goal is just to mine a block. This goal will be satisfied if the specified
+ * {@link BlockPos} is at to or above the specified position for this goal.
  *
- * @author avecowa
+ * @author leijurv
  */
-public class GoalGetToBlock implements Goal, IGoalRenderPos {
+public class GoalTwoBlocks implements Goal, IGoalRenderPos {
 
+    /**
+     * The X block position of this goal
+     */
     private final int x;
+
+    /**
+     * The Y block position of this goal
+     */
     private final int y;
+
+    /**
+     * The Z block position of this goal
+     */
     private final int z;
 
-    public GoalGetToBlock(BlockPos pos) {
-        this.x = pos.getX();
-        this.y = pos.getY();
-        this.z = pos.getZ();
+    public GoalTwoBlocks(BlockPos pos) {
+        this(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    @Override
-    public BlockPos getGoalPos() {
-        return new BetterBlockPos(x, y, z);
+    public GoalTwoBlocks(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
     @Override
     public boolean isInGoal(int x, int y, int z) {
-        int xDiff = x - this.x;
-        int yDiff = y - this.y;
-        int zDiff = z - this.z;
-        if (yDiff < 0) {
-            yDiff++;
-        }
-        return Math.abs(xDiff) + Math.abs(yDiff) + Math.abs(zDiff) <= 1;
+        return x == this.x && (y == this.y || y == this.y - 1) && z == this.z;
     }
 
     @Override
@@ -61,11 +63,19 @@ public class GoalGetToBlock implements Goal, IGoalRenderPos {
         int xDiff = x - this.x;
         int yDiff = y - this.y;
         int zDiff = z - this.z;
+        if (yDiff < 0) {
+            yDiff++;
+        }
         return GoalBlock.calculate(xDiff, yDiff, zDiff);
     }
 
     @Override
+    public BlockPos getGoalPos() {
+        return new BlockPos(x, y, z);
+    }
+
+    @Override
     public String toString() {
-        return "GoalGetToBlock{x=" + x + ",y=" + y + ",z=" + z + "}";
+        return "GoalTwoBlocks{x=" + x + ",y=" + y + ",z=" + z + "}";
     }
 }

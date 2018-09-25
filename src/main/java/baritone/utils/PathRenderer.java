@@ -19,11 +19,11 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.goals.GoalComposite;
-import baritone.pathing.goals.GoalTwoBlocks;
-import baritone.pathing.goals.GoalXZ;
+import baritone.api.pathing.goals.GoalComposite;
+import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.GoalXZ;
 import baritone.pathing.path.IPath;
-import baritone.utils.interfaces.IGoalRenderPos;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;

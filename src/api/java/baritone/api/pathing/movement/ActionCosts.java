@@ -15,7 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.movement;
+package baritone.api.pathing.movement;
+
+import baritone.api.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside;
 
 public interface ActionCosts extends ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
 

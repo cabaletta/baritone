@@ -15,23 +15,32 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.api.pathing.goals.Goal;
-import baritone.utils.interfaces.IGoalRenderPos;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
-public class GoalNear implements Goal, IGoalRenderPos {
+
+/**
+ * Don't get into the block, but get directly adjacent to it. Useful for chests.
+ *
+ * @author avecowa
+ */
+public class GoalGetToBlock implements Goal, IGoalRenderPos {
+
     private final int x;
     private final int y;
     private final int z;
-    private final int rangeSq;
 
-    public GoalNear(BlockPos pos, int range) {
+    public GoalGetToBlock(BlockPos pos) {
         this.x = pos.getX();
         this.y = pos.getY();
         this.z = pos.getZ();
-        this.rangeSq = range * range;
+    }
+
+    @Override
+    public BlockPos getGoalPos() {
+        return new BlockPos(x, y, z);
     }
 
     @Override
@@ -39,7 +48,10 @@ public class GoalNear implements Goal, IGoalRenderPos {
         int xDiff = x - this.x;
         int yDiff = y - this.y;
         int zDiff = z - this.z;
-        return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff <= rangeSq;
+        if (yDiff < 0) {
+            yDiff++;
+        }
+        return Math.abs(xDiff) + Math.abs(yDiff) + Math.abs(zDiff) <= 1;
     }
 
     @Override
@@ -51,17 +63,7 @@ public class GoalNear implements Goal, IGoalRenderPos {
     }
 
     @Override
-    public BlockPos getGoalPos() {
-        return new BlockPos(x, y, z);
-    }
-
-    @Override
     public String toString() {
-        return "GoalNear{" +
-                "x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                ", rangeSq=" + rangeSq +
-                '}';
+        return "GoalGetToBlock{x=" + x + ",y=" + y + ",z=" + z + "}";
     }
 }

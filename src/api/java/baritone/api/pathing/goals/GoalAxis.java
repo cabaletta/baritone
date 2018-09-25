@@ -15,10 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.Baritone;
-import baritone.api.pathing.goals.Goal;
+import baritone.api.BaritoneAPI;
 
 public class GoalAxis implements Goal {
 
@@ -26,7 +25,7 @@ public class GoalAxis implements Goal {
 
     @Override
     public boolean isInGoal(int x, int y, int z) {
-        return y == Baritone.settings().axisHeight.get() && (x == 0 || z == 0 || Math.abs(x) == Math.abs(z));
+        return y == BaritoneAPI.getSettings().axisHeight.get() && (x == 0 || z == 0 || Math.abs(x) == Math.abs(z));
     }
 
     @Override
@@ -40,7 +39,7 @@ public class GoalAxis implements Goal {
 
         double flatAxisDistance = Math.min(x, Math.min(z, diff * SQRT_2_OVER_2));
 
-        return flatAxisDistance * Baritone.settings().costHeuristic.get() + GoalYLevel.calculate(Baritone.settings().axisHeight.get(), y);
+        return flatAxisDistance * BaritoneAPI.getSettings().costHeuristic.get() + GoalYLevel.calculate(BaritoneAPI.getSettings().axisHeight.get(), y);
     }
 
     @Override

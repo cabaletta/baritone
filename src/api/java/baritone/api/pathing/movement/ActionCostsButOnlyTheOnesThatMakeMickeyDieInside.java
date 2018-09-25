@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.movement;
+package baritone.api.pathing.movement;
 
 public interface ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
     double[] FALL_N_BLOCKS_COST = generateFallNBlocksCost();

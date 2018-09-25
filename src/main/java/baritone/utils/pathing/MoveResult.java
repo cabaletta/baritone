@@ -17,7 +17,7 @@
 
 package baritone.utils.pathing;
 
-import static baritone.pathing.movement.ActionCosts.COST_INF;
+import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 /**
  * The result of a calculated movement, with destination x, y, z, and the cost of performing the movement

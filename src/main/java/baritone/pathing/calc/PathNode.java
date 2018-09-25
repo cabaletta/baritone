@@ -18,7 +18,7 @@
 package baritone.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.ActionCosts;
+import baritone.api.pathing.movement.ActionCosts;
 
 /**
  * A node in the path, containing the cost and steps to get to it.

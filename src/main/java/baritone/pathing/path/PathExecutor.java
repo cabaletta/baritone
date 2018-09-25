@@ -19,6 +19,7 @@ package baritone.pathing.path;
 
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.pathing.movement.*;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;

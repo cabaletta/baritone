@@ -15,9 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.api.pathing.goals.Goal;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;

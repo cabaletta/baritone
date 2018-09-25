@@ -15,10 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside;
+import baritone.api.pathing.movement.ActionCostsButOnlyTheOnesThatMakeMickeyDieInside;
 
 /**
  * Useful for mining (getting to diamond / iron level)
@@ -49,11 +48,11 @@ public class GoalYLevel implements Goal, ActionCostsButOnlyTheOnesThatMakeMickey
     public static double calculate(int goalY, int currentY) {
         if (currentY > goalY) {
             // need to descend
-            return FALL_N_BLOCKS_COST[2] / 2 * (currentY - goalY);
+            return ActionCostsButOnlyTheOnesThatMakeMickeyDieInside.FALL_N_BLOCKS_COST[2] / 2 * (currentY - goalY);
         }
         if (currentY < goalY) {
             // need to ascend
-            return (goalY - currentY) * JUMP_ONE_BLOCK_COST;
+            return (goalY - currentY) * ActionCostsButOnlyTheOnesThatMakeMickeyDieInside.JUMP_ONE_BLOCK_COST;
         }
         return 0;
     }

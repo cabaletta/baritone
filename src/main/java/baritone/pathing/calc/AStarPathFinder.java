@@ -20,7 +20,7 @@ package baritone.pathing.calc;
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
-import baritone.pathing.movement.ActionCosts;
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.path.IPath;

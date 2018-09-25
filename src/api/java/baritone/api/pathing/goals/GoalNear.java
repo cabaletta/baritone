@@ -15,48 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.api.pathing.goals.Goal;
-import baritone.utils.interfaces.IGoalRenderPos;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
-/**
- * Useful if the goal is just to mine a block. This goal will be satisfied if the specified
- * {@link BlockPos} is at to or above the specified position for this goal.
- *
- * @author leijurv
- */
-public class GoalTwoBlocks implements Goal, IGoalRenderPos {
-
-    /**
-     * The X block position of this goal
-     */
+public class GoalNear implements Goal, IGoalRenderPos {
     private final int x;
-
-    /**
-     * The Y block position of this goal
-     */
     private final int y;
-
-    /**
-     * The Z block position of this goal
-     */
     private final int z;
+    private final int rangeSq;
 
-    public GoalTwoBlocks(BlockPos pos) {
-        this(pos.getX(), pos.getY(), pos.getZ());
-    }
-
-    public GoalTwoBlocks(int x, int y, int z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    public GoalNear(BlockPos pos, int range) {
+        this.x = pos.getX();
+        this.y = pos.getY();
+        this.z = pos.getZ();
+        this.rangeSq = range * range;
     }
 
     @Override
     public boolean isInGoal(int x, int y, int z) {
-        return x == this.x && (y == this.y || y == this.y - 1) && z == this.z;
+        int xDiff = x - this.x;
+        int yDiff = y - this.y;
+        int zDiff = z - this.z;
+        return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff <= rangeSq;
     }
 
     @Override
@@ -64,9 +46,6 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
         int xDiff = x - this.x;
         int yDiff = y - this.y;
         int zDiff = z - this.z;
-        if (yDiff < 0) {
-            yDiff++;
-        }
         return GoalBlock.calculate(xDiff, yDiff, zDiff);
     }
 
@@ -77,6 +56,11 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
 
     @Override
     public String toString() {
-        return "GoalTwoBlocks{x=" + x + ",y=" + y + ",z=" + z + "}";
+        return "GoalNear{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                ", rangeSq=" + rangeSq +
+                '}';
     }
 }
