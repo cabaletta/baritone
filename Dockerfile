@@ -13,6 +13,8 @@ RUN apt install --target-release jessie-backports \
 
 RUN apt install -qq --force-yes mesa-utils libgl1-mesa-glx libxcursor1 libxrandr2 libxxf86vm1 x11-xserver-utils xfonts-base xserver-common
 
+RUN apt install -qq --force-yes unzip wget
+
 ADD . /code
 
 RUN echo "\nrunClient {\nargs \"--width\",\"128\",\"--height\",\"128\"\n}" >> /code/build.gradle
