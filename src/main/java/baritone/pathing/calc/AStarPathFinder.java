@@ -19,8 +19,8 @@ package baritone.pathing.calc;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.path.IPath;
@@ -106,13 +106,14 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     }
                 }
                 MoveResult res = moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z);
-                if (!moves.dynamicXZ && (res.destX != newX || res.destZ != newZ)) {
-                    throw new IllegalStateException(moves + " " + res.destX + " " + newX + " " + res.destZ + " " + newZ);
-                }
                 numMovementsConsidered++;
                 double actionCost = res.cost;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
+                }
+                // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
+                if (!moves.dynamicXZ && (res.destX != newX || res.destZ != newZ)) {
+                    throw new IllegalStateException(moves + " " + res.destX + " " + newX + " " + res.destZ + " " + newZ);
                 }
                 if (actionCost <= 0) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
