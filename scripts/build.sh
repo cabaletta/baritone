@@ -1,6 +1,6 @@
 set -e # this makes the whole script fail immediately if any one of these commands fails
 ./gradlew build
-export VERSION=$(cat ../../build.gradle| grep "version '" | cut -d "'" -f 2-2)
+export VERSION=$(cat build.gradle| grep "version '" | cut -d "'" -f 2-2)
 wget https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip
 unzip proguard6.0.3.zip 2>&1 > /dev/null
 cd build/libs
