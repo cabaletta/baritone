@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -27,13 +27,13 @@ import net.minecraft.util.math.BlockPos;
  */
 public final class BlockBreakHelper implements Helper {
 
-    private BlockBreakHelper() {}
-
     /**
      * The last block that we tried to break, if this value changes
      * between attempts, then we re-initialize the breaking process.
      */
     private static BlockPos lastBlock;
+
+    private BlockBreakHelper() {}
 
     public static void tryBreakBlock(BlockPos pos, EnumFacing side) {
         if (!pos.equals(lastBlock)) {
@@ -46,7 +46,9 @@ public final class BlockBreakHelper implements Helper {
     }
 
     public static void stopBreakingBlock() {
-        mc.playerController.resetBlockRemoving();
+        if (mc.playerController != null) {
+            mc.playerController.resetBlockRemoving();
+        } 
         lastBlock = null;
     }
 }

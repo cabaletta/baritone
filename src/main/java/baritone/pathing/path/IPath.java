@@ -2,23 +2,23 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.pathing.path;
 
 import baritone.Baritone;
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
 import baritone.utils.Helper;
 import baritone.utils.Utils;
@@ -50,6 +50,12 @@ public interface IPath extends Helper {
     List<BetterBlockPos> positions();
 
     /**
+     * This path is actually going to be executed in the world. Do whatever additional processing is required.
+     * (as opposed to Path objects that are just constructed every frame for rendering)
+     */
+    default void postprocess() {}
+
+    /**
      * Number of positions in this path
      *
      * @return Number of positions in this path
@@ -59,37 +65,17 @@ public interface IPath extends Helper {
     }
 
     /**
-     * What's the next step
+     * What goal was this path calculated towards?
      *
-     * @param currentPosition the current position
      * @return
      */
-    default Movement subsequentMovement(BlockPos currentPosition) {
-        List<BetterBlockPos> pos = positions();
-        List<Movement> movements = movements();
-        for (int i = 0; i < pos.size(); i++) {
-            if (currentPosition.equals(pos.get(i))) {
-                return movements.get(i);
-            }
-        }
-        throw new UnsupportedOperationException(currentPosition + " not in path");
-    }
+    Goal getGoal();
 
-    /**
-     * Determines whether or not a position is within this path.
-     *
-     * @param pos The position to check
-     * @return Whether or not the specified position is in this class
-     */
-    default boolean isInPath(BlockPos pos) {
-        return positions().contains(pos);
-    }
-
-    default Tuple<Double, BlockPos> closestPathPos(double x, double y, double z) {
+    default Tuple<Double, BlockPos> closestPathPos() {
         double best = -1;
         BlockPos bestPos = null;
         for (BlockPos pos : positions()) {
-            double dist = Utils.distanceToCenter(pos, x, y, z);
+            double dist = Utils.playerDistanceToCenter(pos);
             if (dist < best || best == -1) {
                 best = dist;
                 bestPos = pos;
@@ -128,12 +114,12 @@ public interface IPath extends Helper {
         for (int i = 0; i < positions().size(); i++) {
             BlockPos pos = positions().get(i);
             if (Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk) {
-                displayChatMessageRaw("Cutting off path at edge of loaded chunks");
-                displayChatMessageRaw("Length decreased by " + (positions().size() - i - 1));
+                logDebug("Cutting off path at edge of loaded chunks");
+                logDebug("Length decreased by " + (positions().size() - i - 1));
                 return new CutoffPath(this, i);
             }
         }
-        displayChatMessageRaw("Path ends within loaded chunks");
+        logDebug("Path ends within loaded chunks");
         return this;
     }
 
@@ -146,7 +132,7 @@ public interface IPath extends Helper {
         }
         double factor = Baritone.settings().pathCutoffFactor.get();
         int newLength = (int) (length() * factor);
-        //displayChatMessageRaw("Static cutoff " + length() + " to " + newLength);
+        logDebug("Static cutoff " + length() + " to " + newLength);
         return new CutoffPath(this, newLength);
     }
 }

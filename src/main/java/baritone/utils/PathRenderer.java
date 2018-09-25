@@ -2,26 +2,28 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.pathing.goals.Goal;
-import baritone.pathing.goals.GoalBlock;
-import baritone.pathing.goals.GoalXZ;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalComposite;
+import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.GoalXZ;
 import baritone.pathing.path.IPath;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -47,14 +49,13 @@ import static org.lwjgl.opengl.GL11.*;
  * @since 8/9/2018 4:39 PM
  */
 public final class PathRenderer implements Helper {
-
-    private PathRenderer() {
-    }
-
+    
     private static final Tessellator TESSELLATOR = Tessellator.getInstance();
     private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
 
-    public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart, int fadeEnd) {
+    private PathRenderer() {}
+
+    public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
@@ -64,8 +65,8 @@ public final class PathRenderer implements Helper {
         List<BetterBlockPos> positions = path.positions();
         int next;
         Tessellator tessellator = Tessellator.getInstance();
-        fadeStart += startIndex;
-        fadeEnd += startIndex;
+        int fadeStart = fadeStart0 + startIndex;
+        int fadeEnd = fadeEnd0 + startIndex;
         for (int i = startIndex; i < positions.size() - 1; i = next) {
             BlockPos start = positions.get(i);
 
@@ -183,17 +184,25 @@ public final class PathRenderer implements Helper {
         double maxY;
         double y1;
         double y2;
-        if (goal instanceof GoalBlock) {
-            BlockPos goalPos = ((GoalBlock) goal).getGoalPos();
+        if (goal instanceof IGoalRenderPos) {
+            BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
             minX = goalPos.getX() + 0.002 - renderPosX;
             maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
             minZ = goalPos.getZ() + 0.002 - renderPosZ;
             maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
-            double y = MathHelper.sin((float) (((float) (System.nanoTime() / 1000000L) % 2000L) / 2000F * Math.PI * 2));
+            double y = MathHelper.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
+            if (goal instanceof GoalTwoBlocks) {
+                y /= 2;
+            }
             y1 = 1 + y + goalPos.getY() - renderPosY;
             y2 = 1 - y + goalPos.getY() - renderPosY;
             minY = goalPos.getY() - renderPosY;
             maxY = minY + 2;
+            if (goal instanceof GoalTwoBlocks) {
+                y1 -= 0.5;
+                y2 -= 0.5;
+                maxY--;
+            }
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
 
@@ -206,8 +215,12 @@ public final class PathRenderer implements Helper {
             y2 = 0;
             minY = 0 - renderPosY;
             maxY = 256 - renderPosY;
+        } else if (goal instanceof GoalComposite) {
+            for (Goal g : ((GoalComposite) goal).goals()) {
+                drawLitDankGoalBox(player, g, partialTicks, color);
+            }
+            return;
         } else {
-            // TODO GoalComposite
             return;
         }
 

@@ -2,22 +2,24 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.pathing.calc;
 
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
+import baritone.pathing.movement.Moves;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
@@ -37,31 +39,40 @@ class Path implements IPath {
     /**
      * The start position of this path
      */
-    final BetterBlockPos start;
+    private final BetterBlockPos start;
 
     /**
      * The end position of this path
      */
-    final BetterBlockPos end;
+    private final BetterBlockPos end;
 
     /**
      * The blocks on the path. Guaranteed that path.get(0) equals start and
      * path.get(path.size()-1) equals end
      */
-    final List<BetterBlockPos> path;
+    private final List<BetterBlockPos> path;
 
-    final List<Movement> movements;
+    private final List<Movement> movements;
+
+    private final Goal goal;
 
     private final int numNodes;
 
-    Path(PathNode start, PathNode end, int numNodes) {
-        this.start = start.pos;
-        this.end = end.pos;
+    private volatile boolean verified;
+
+    Path(PathNode start, PathNode end, int numNodes, Goal goal) {
+        this.start = new BetterBlockPos(start.x, start.y, start.z);
+        this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
         this.path = new ArrayList<>();
         this.movements = new ArrayList<>();
+        this.goal = goal;
         assemblePath(start, end);
-        sanityCheck();
+    }
+
+    @Override
+    public Goal getGoal() {
+        return goal;
     }
 
     /**
@@ -78,16 +89,29 @@ class Path implements IPath {
         LinkedList<BetterBlockPos> tempPath = new LinkedList<>(); // Repeatedly inserting to the beginning of an arraylist is O(n^2)
         LinkedList<Movement> tempMovements = new LinkedList<>(); // Instead, do it into a linked list, then convert at the end
         while (!current.equals(start)) {
-            tempPath.addFirst(current.pos);
-            tempMovements.addFirst(current.previousMovement);
+            tempPath.addFirst(new BetterBlockPos(current.x, current.y, current.z));
+            tempMovements.addFirst(runBackwards(current.previous, current));
             current = current.previous;
         }
-        tempPath.addFirst(start.pos);
+        tempPath.addFirst(this.start);
         // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
         // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         // to performantly do that conversion since it knows the length.
         path.addAll(tempPath);
         movements.addAll(tempMovements);
+    }
+
+    private static Movement runBackwards(PathNode src0, PathNode dest0) { // TODO this is horrifying
+        BetterBlockPos src = new BetterBlockPos(src0.x, src0.y, src0.z);
+        BetterBlockPos dest = new BetterBlockPos(dest0.x, dest0.y, dest0.z);
+        for (Moves moves : Moves.values()) {
+            Movement move = moves.apply0(src);
+            if (move.getDest().equals(dest)) {
+                return move;
+            }
+        }
+        // leave this as IllegalStateException; it's caught in AbstractNodeCostSearch
+        throw new IllegalStateException("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
     }
 
     /**
@@ -117,7 +141,21 @@ class Path implements IPath {
     }
 
     @Override
+    public void postprocess() {
+        if (verified) {
+            throw new IllegalStateException();
+        }
+        verified = true;
+        // more post processing here
+        movements.forEach(Movement::checkLoadedChunk);
+        sanityCheck();
+    }
+
+    @Override
     public List<Movement> movements() {
+        if (!verified) {
+            throw new IllegalStateException();
+        }
         return Collections.unmodifiableList(movements);
     }
 

@@ -2,44 +2,55 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.pathing.calc.openset;
 
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.calc.PathNode;
-import baritone.pathing.goals.Goal;
-import baritone.utils.pathing.BetterBlockPos;
-import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.*;
 
 import static org.junit.Assert.*;
 
+@RunWith(Parameterized.class)
 public class OpenSetsTest {
 
-    @Test
-    public void testOpenSets() {
-        for (int size = 1; size < 100; size++) {
-            testSize(size);
-        }
-        for (int size = 100; size < 10000; size += 100) {
-            testSize(size);
-        }
+    private final int size;
+
+    public OpenSetsTest(int size) {
+        this.size = size;
     }
 
-    public void removeAndTest(int amount, IOpenSet[] test, Optional<Collection<PathNode>> mustContain) {
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        ArrayList<Object[]> testSizes = new ArrayList<>();
+        for (int size = 1; size < 20; size++) {
+            testSizes.add(new Object[]{size});
+        }
+        for (int size = 100; size <= 1000; size += 100) {
+            testSizes.add(new Object[]{size});
+        }
+        testSizes.add(new Object[]{5000});
+        testSizes.add(new Object[]{10000});
+        return testSizes;
+    }
+
+    private static void removeAndTest(int amount, IOpenSet[] test, Optional<Collection<PathNode>> mustContain) {
         double[][] results = new double[test.length][amount];
         for (int i = 0; i < test.length; i++) {
             long before = System.nanoTime() / 1000000L;
@@ -62,7 +73,8 @@ public class OpenSetsTest {
         }
     }
 
-    public void testSize(int size) {
+    @Test
+    public void testSize() {
         System.out.println("Testing size " + size);
         // Include LinkedListOpenSet even though it's not performant because I absolutely trust that it behaves properly
         // I'm really testing the heap implementations against it as the ground truth
@@ -77,14 +89,14 @@ public class OpenSetsTest {
             // can't use an existing goal
             // because they use Baritone.settings()
             // and we can't do that because Minecraft itself isn't initted
-            PathNode pn = new PathNode(new BetterBlockPos(0, 0, 0), new Goal() {
+            PathNode pn = new PathNode(0, 0, 0, new Goal() {
                 @Override
-                public boolean isInGoal(BlockPos pos) {
+                public boolean isInGoal(int x, int y, int z) {
                     return false;
                 }
 
                 @Override
-                public double heuristic(BlockPos pos) {
+                public double heuristic(int x, int y, int z) {
                     return 0;
                 }
             });

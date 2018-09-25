@@ -2,24 +2,27 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone;
 
-import baritone.api.event.GameEventHandler;
-import baritone.behavior.Behavior;
-import baritone.behavior.impl.*;
+import baritone.api.BaritoneAPI;
+import baritone.api.Settings;
+import baritone.api.event.listener.IGameEventListener;
+import baritone.behavior.*;
+import baritone.cache.WorldProvider;
+import baritone.event.GameEventHandler;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 
@@ -28,6 +31,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -51,6 +58,8 @@ public enum Baritone {
     private Settings settings;
     private List<Behavior> behaviors;
     private File dir;
+    private ThreadPoolExecutor threadPool;
+
 
     /**
      * List of consumers to be called after Baritone has initialized
@@ -70,9 +79,16 @@ public enum Baritone {
         if (initialized) {
             return;
         }
+        this.threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
         this.gameEventHandler = new GameEventHandler();
         this.inputOverrideHandler = new InputOverrideHandler();
-        this.settings = new Settings();
+
+        // Acquire the "singleton" instance of the settings directly from the API
+        // We might want to change this...
+        this.settings = BaritoneAPI.getSettings();
+
+        BaritoneAPI.registerProviders(WorldProvider.INSTANCE);
+
         this.behaviors = new ArrayList<>();
         {
             registerBehavior(PathingBehavior.INSTANCE);
@@ -81,6 +97,16 @@ public enum Baritone {
             registerBehavior(LocationTrackingBehavior.INSTANCE);
             registerBehavior(FollowBehavior.INSTANCE);
             registerBehavior(MineBehavior.INSTANCE);
+
+            // TODO: Clean this up
+            // Maybe combine this call in someway with the registerBehavior calls?
+            BaritoneAPI.registerDefaultBehaviors(
+                    FollowBehavior.INSTANCE,
+                    LookBehavior.INSTANCE,
+                    MemoryBehavior.INSTANCE,
+                    MineBehavior.INSTANCE,
+                    PathingBehavior.INSTANCE
+            );
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {
@@ -95,32 +121,40 @@ public enum Baritone {
         this.onInitConsumers.forEach(consumer -> consumer.accept(this));
     }
 
-    public final boolean isInitialized() {
+    public boolean isInitialized() {
         return this.initialized;
     }
 
-    public final GameEventHandler getGameEventHandler() {
+    public IGameEventListener getGameEventHandler() {
         return this.gameEventHandler;
     }
 
-    public final InputOverrideHandler getInputOverrideHandler() {
+    public InputOverrideHandler getInputOverrideHandler() {
         return this.inputOverrideHandler;
     }
 
-    public final List<Behavior> getBehaviors() {
+    public List<Behavior> getBehaviors() {
         return this.behaviors;
+    }
+
+    public Executor getExecutor() {
+        return threadPool;
     }
 
     public void registerBehavior(Behavior behavior) {
         this.behaviors.add(behavior);
-        this.gameEventHandler.registerEventListener(behavior);
+        this.registerEventListener(behavior);
     }
 
-    public final boolean isActive() {
+    public void registerEventListener(IGameEventListener listener) {
+        this.gameEventHandler.registerEventListener(listener);
+    }
+
+    public boolean isActive() {
         return this.active;
     }
 
-    public final Settings getSettings() {
+    public Settings getSettings() {
         return this.settings;
     }
 
@@ -128,11 +162,11 @@ public enum Baritone {
         return Baritone.INSTANCE.settings; // yolo
     }
 
-    public final File getDir() {
+    public File getDir() {
         return this.dir;
     }
 
-    public final void registerInitListener(Consumer<Baritone> runnable) {
+    public void registerInitListener(Consumer<Baritone> runnable) {
         this.onInitConsumers.add(runnable);
     }
 }

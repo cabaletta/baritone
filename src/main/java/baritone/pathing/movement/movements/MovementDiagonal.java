@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -23,8 +23,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockMagma;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
@@ -37,74 +37,59 @@ public class MovementDiagonal extends Movement {
 
     private static final double SQRT_2 = Math.sqrt(2);
 
-    public MovementDiagonal(BlockPos start, EnumFacing dir1, EnumFacing dir2) {
+    public MovementDiagonal(BetterBlockPos start, EnumFacing dir1, EnumFacing dir2) {
         this(start, start.offset(dir1), start.offset(dir2), dir2);
         // super(start, start.offset(dir1).offset(dir2), new BlockPos[]{start.offset(dir1), start.offset(dir1).up(), start.offset(dir2), start.offset(dir2).up(), start.offset(dir1).offset(dir2), start.offset(dir1).offset(dir2).up()}, new BlockPos[]{start.offset(dir1).offset(dir2).down()});
     }
 
-    public MovementDiagonal(BlockPos start, BlockPos dir1, BlockPos dir2, EnumFacing drr2) {
+    private MovementDiagonal(BetterBlockPos start, BetterBlockPos dir1, BetterBlockPos dir2, EnumFacing drr2) {
         this(start, dir1.offset(drr2), dir1, dir2);
     }
 
-    public MovementDiagonal(BlockPos start, BlockPos end, BlockPos dir1, BlockPos dir2) {
-        super(start, end, new BlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
-    }
-
-    @Override
-    public MovementState updateState(MovementState state) {
-        super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementState.MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
-        }
-
-        if (playerFeet().equals(dest)) {
-            state.setStatus(MovementState.MovementStatus.SUCCESS);
-            return state;
-        }
-        if (!BlockStateInterface.isLiquid(playerFeet())) {
-            state.setInput(InputOverrideHandler.Input.SPRINT, true);
-        }
-        MovementHelper.moveTowards(state, dest);
-        return state;
+    private MovementDiagonal(BetterBlockPos start, BetterBlockPos end, BetterBlockPos dir1, BetterBlockPos dir2) {
+        super(start, end, new BetterBlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
     }
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (!MovementHelper.canWalkThrough(positionsToBreak[4]) || !MovementHelper.canWalkThrough(positionsToBreak[5])) {
+        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+    }
+
+    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+        Block fromDown = BlockStateInterface.get(x, y - 1, z).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return COST_INF;
         }
-        BlockPos destDown = dest.down();
-        IBlockState destWalkOn = BlockStateInterface.get(destDown);
-        if (!MovementHelper.canWalkOn(destDown, destWalkOn)) {
+        IBlockState destInto = BlockStateInterface.get(destX, y, destZ);
+        if (!MovementHelper.canWalkThrough(destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(destX, y + 1, destZ)) {
+            return COST_INF;
+        }
+        IBlockState destWalkOn = BlockStateInterface.get(destX, y - 1, destZ);
+        if (!MovementHelper.canWalkOn(destX, y - 1, destZ, destWalkOn)) {
             return COST_INF;
         }
         double multiplier = WALK_ONE_BLOCK_COST;
         // For either possible soul sand, that affects half of our walking
-        if (destWalkOn.getBlock().equals(Blocks.SOUL_SAND)) {
+        if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        if (BlockStateInterface.get(src.down()).getBlock().equals(Blocks.SOUL_SAND)) {
+        if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        Block cuttingOver1 = BlockStateInterface.get(positionsToBreak[2].down()).getBlock();
-        if (cuttingOver1 instanceof BlockMagma || BlockStateInterface.isLava(cuttingOver1)) {
+        Block cuttingOver1 = BlockStateInterface.get(x, y - 1, destZ).getBlock();
+        if (cuttingOver1 == Blocks.MAGMA || BlockStateInterface.isLava(cuttingOver1)) {
             return COST_INF;
         }
-        Block cuttingOver2 = BlockStateInterface.get(positionsToBreak[4].down()).getBlock();
-        if (cuttingOver2 instanceof BlockMagma || BlockStateInterface.isLava(cuttingOver2)) {
+        Block cuttingOver2 = BlockStateInterface.get(destX, y - 1, z).getBlock();
+        if (cuttingOver2 == Blocks.MAGMA || BlockStateInterface.isLava(cuttingOver2)) {
             return COST_INF;
         }
-        IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
-        IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
-        IBlockState pb2 = BlockStateInterface.get(positionsToBreak[2]);
-        IBlockState pb3 = BlockStateInterface.get(positionsToBreak[3]);
-        double optionA = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0], pb0, false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1], pb1, true);
-        double optionB = MovementHelper.getMiningDurationTicks(context, positionsToBreak[2], pb2, false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[3], pb3, true);
+        IBlockState pb0 = BlockStateInterface.get(x, y, destZ);
+        IBlockState pb1 = BlockStateInterface.get(x, y + 1, destZ);
+        IBlockState pb2 = BlockStateInterface.get(destX, y, z);
+        IBlockState pb3 = BlockStateInterface.get(destX, y + 1, z);
+        double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false) + MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true);
+        double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false) + MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true);
         if (optionA != 0 && optionB != 0) {
             return COST_INF;
         }
@@ -118,7 +103,7 @@ public class MovementDiagonal extends Movement {
                 return COST_INF;
             }
         }
-        if (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest)) {
+        if (BlockStateInterface.isWater(BlockStateInterface.getBlock(x, y, z)) || BlockStateInterface.isWater(destInto.getBlock())) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
@@ -133,6 +118,24 @@ public class MovementDiagonal extends Movement {
             multiplier = SPRINT_ONE_BLOCK_COST;
         }
         return multiplier * SQRT_2;
+    }
+
+    @Override
+    public MovementState updateState(MovementState state) {
+        super.updateState(state);
+        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+            return state;
+        }
+
+        if (playerFeet().equals(dest)) {
+            state.setStatus(MovementState.MovementStatus.SUCCESS);
+            return state;
+        }
+        if (!BlockStateInterface.isLiquid(playerFeet())) {
+            state.setInput(InputOverrideHandler.Input.SPRINT, true);
+        }
+        MovementHelper.moveTowards(state, dest);
+        return state;
     }
 
     @Override

@@ -2,48 +2,49 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.Settings;
+import baritone.api.Settings;
+import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
+import baritone.api.pathing.goals.*;
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.behavior.Behavior;
-import baritone.behavior.impl.FollowBehavior;
-import baritone.behavior.impl.MineBehavior;
-import baritone.behavior.impl.PathingBehavior;
-import baritone.chunk.ChunkPacker;
-import baritone.chunk.Waypoint;
-import baritone.chunk.WorldProvider;
-import baritone.pathing.calc.AStarPathFinder;
+import baritone.behavior.FollowBehavior;
+import baritone.behavior.MineBehavior;
+import baritone.behavior.PathingBehavior;
+import baritone.cache.ChunkPacker;
+import baritone.cache.Waypoint;
+import baritone.cache.WorldProvider;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.goals.*;
-import baritone.pathing.movement.ActionCosts;
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
-import baritone.utils.pathing.BetterBlockPos;
+import baritone.pathing.movement.*;
 import net.minecraft.block.Block;
+import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class ExampleBaritoneControl extends Behavior {
+public class ExampleBaritoneControl extends Behavior implements Helper {
+
     public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
 
     private ExampleBaritoneControl() {
@@ -61,16 +62,69 @@ public class ExampleBaritoneControl extends Behavior {
                 return;
             }
         }
-        String msg = event.getMessage();
+        String msg = event.getMessage().toLowerCase(Locale.US);
         if (Baritone.settings().prefix.get()) {
             if (!msg.startsWith("#")) {
                 return;
             }
             msg = msg.substring(1);
         }
-        if (msg.toLowerCase().startsWith("goal")) {
+
+        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
+        for (Settings.Setting<Boolean> setting : toggleable) {
+            if (msg.equalsIgnoreCase(setting.getName())) {
+                setting.value ^= true;
+                event.cancel();
+                logDirect("Toggled " + setting.getName() + " to " + setting.value);
+                return;
+            }
+        }
+        if (msg.equals("baritone") || msg.equals("settings")) {
+            for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
+                logDirect(setting.toString());
+            }
             event.cancel();
-            String[] params = msg.toLowerCase().substring(4).trim().split(" ");
+            return;
+        }
+        if (msg.contains(" ")) {
+            String[] data = msg.split(" ");
+            if (data.length == 2) {
+                Settings.Setting setting = Baritone.settings().byLowerName.get(data[0]);
+                if (setting != null) {
+                    try {
+                        if (setting.value.getClass() == Long.class) {
+                            setting.value = Long.parseLong(data[1]);
+                        }
+                        if (setting.value.getClass() == Integer.class) {
+                            setting.value = Integer.parseInt(data[1]);
+                        }
+                        if (setting.value.getClass() == Double.class) {
+                            setting.value = Double.parseDouble(data[1]);
+                        }
+                        if (setting.value.getClass() == Float.class) {
+                            setting.value = Float.parseFloat(data[1]);
+                        }
+                    } catch (NumberFormatException e) {
+                        logDirect("Unable to parse " + data[1]);
+                        event.cancel();
+                        return;
+                    }
+                    logDirect(setting.toString());
+                    event.cancel();
+                    return;
+                }
+            }
+        }
+        if (Baritone.settings().byLowerName.containsKey(msg)) {
+            Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg);
+            logDirect(setting.toString());
+            event.cancel();
+            return;
+        }
+
+        if (msg.startsWith("goal")) {
+            event.cancel();
+            String[] params = msg.substring(4).trim().split(" ");
             if (params[0].equals("")) {
                 params = new String[]{};
             }
@@ -94,39 +148,81 @@ public class ExampleBaritoneControl extends Behavior {
                         goal = new GoalBlock(new BlockPos(Integer.parseInt(params[0]), Integer.parseInt(params[1]), Integer.parseInt(params[2])));
                         break;
                     default:
-                        displayChatMessageRaw("unable to understand lol");
+                        logDirect("unable to understand lol");
                         return;
                 }
             } catch (NumberFormatException ex) {
-                displayChatMessageRaw("unable to parse integer " + ex);
+                logDirect("unable to parse integer " + ex);
                 return;
             }
             PathingBehavior.INSTANCE.setGoal(goal);
-            displayChatMessageRaw("Goal: " + goal);
+            logDirect("Goal: " + goal);
             return;
         }
         if (msg.equals("path")) {
             if (!PathingBehavior.INSTANCE.path()) {
-                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                if (PathingBehavior.INSTANCE.getGoal() == null) {
+                    logDirect("No goal.");
+                } else {
+                    if (PathingBehavior.INSTANCE.getGoal().isInGoal(playerFeet())) {
+                        logDirect("Already in goal");
+                    } else {
+                        logDirect("Currently executing a path. Please cancel it first.");
+                    }
+                }
             }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("cancel")) {
-            PathingBehavior.INSTANCE.cancel();
-            FollowBehavior.INSTANCE.cancel();
+        if (msg.equals("repack") || msg.equals("rescan")) {
+            ChunkProviderClient cli = world().getChunkProvider();
+            int playerChunkX = playerFeet().getX() >> 4;
+            int playerChunkZ = playerFeet().getZ() >> 4;
+            int count = 0;
+            for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
+                for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
+                    Chunk chunk = cli.getLoadedChunk(x, z);
+                    if (chunk != null) {
+                        count++;
+                        WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().queueForPacking(chunk);
+                    }
+                }
+            }
+            logDirect("Queued " + count + " chunks for repacking");
+            event.cancel();
+            return;
+        }
+        if (msg.equals("axis")) {
+            PathingBehavior.INSTANCE.setGoal(new GoalAxis());
+            PathingBehavior.INSTANCE.path();
+            event.cancel();
+            return;
+        }
+        if (msg.equals("cancel")) {
             MineBehavior.INSTANCE.cancel();
+            FollowBehavior.INSTANCE.cancel();
+            PathingBehavior.INSTANCE.cancel();
             event.cancel();
-            displayChatMessageRaw("ok canceled");
+            logDirect("ok canceled");
             return;
         }
-        if (msg.toLowerCase().equals("forcecancel")) {
+        if (msg.equals("forcecancel")) {
+            MineBehavior.INSTANCE.cancel();
+            FollowBehavior.INSTANCE.cancel();
+            PathingBehavior.INSTANCE.cancel();
             AbstractNodeCostSearch.forceCancel();
+            PathingBehavior.INSTANCE.forceCancel();
             event.cancel();
-            displayChatMessageRaw("ok force canceled");
+            logDirect("ok force canceled");
             return;
         }
-        if (msg.toLowerCase().equals("invert")) {
+        if (msg.equals("gc")) {
+            System.gc();
+            event.cancel();
+            logDirect("Called System.gc();");
+            return;
+        }
+        if (msg.equals("invert")) {
             Goal goal = PathingBehavior.INSTANCE.getGoal();
             BlockPos runAwayFrom;
             if (goal instanceof GoalXZ) {
@@ -134,8 +230,8 @@ public class ExampleBaritoneControl extends Behavior {
             } else if (goal instanceof GoalBlock) {
                 runAwayFrom = ((GoalBlock) goal).getGoalPos();
             } else {
-                displayChatMessageRaw("Goal must be GoalXZ or GoalBlock to invert");
-                displayChatMessageRaw("Inverting goal of player feet");
+                logDirect("Goal must be GoalXZ or GoalBlock to invert");
+                logDirect("Inverting goal of player feet");
                 runAwayFrom = playerFeet();
             }
             PathingBehavior.INSTANCE.setGoal(new GoalRunAway(1, runAwayFrom) {
@@ -145,39 +241,52 @@ public class ExampleBaritoneControl extends Behavior {
                 }
             });
             if (!PathingBehavior.INSTANCE.path()) {
-                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                logDirect("Currently executing a path. Please cancel it first.");
             }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("follow")) {
-            Optional<Entity> entity = MovementHelper.whatEntityAmILookingAt();
-            if (!entity.isPresent()) {
-                displayChatMessageRaw("You aren't looking at an entity bruh");
+        if (msg.startsWith("follow")) {
+            String name = msg.substring(6).trim();
+            Optional<Entity> toFollow = Optional.empty();
+            if (name.length() == 0) {
+                toFollow = MovementHelper.whatEntityAmILookingAt();
+            } else {
+                for (EntityPlayer pl : world().playerEntities) {
+                    String theirName = pl.getName().trim().toLowerCase();
+                    if (!theirName.equals(player().getName().trim().toLowerCase())) { // don't follow ourselves lol
+                        if (theirName.contains(name) || name.contains(theirName)) {
+                            toFollow = Optional.of(pl);
+                        }
+                    }
+                }
+            }
+            if (!toFollow.isPresent()) {
+                logDirect("Not found");
                 event.cancel();
                 return;
             }
-            FollowBehavior.INSTANCE.follow(entity.get());
-            displayChatMessageRaw("Following " + entity.get());
+            FollowBehavior.INSTANCE.follow(toFollow.get());
+            logDirect("Following " + toFollow.get());
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("reloadall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().cache.reloadAllFromDisk();
-            displayChatMessageRaw("ok");
+        if (msg.equals("reloadall")) {
+            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().reloadAllFromDisk();
+            logDirect("ok");
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("saveall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().cache.save();
-            displayChatMessageRaw("ok");
+        if (msg.equals("saveall")) {
+            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().save();
+            logDirect("ok");
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("find")) {
-            String blockType = msg.toLowerCase().substring(4).trim();
-            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(blockType, 1, 4);
-            displayChatMessageRaw("Have " + locs.size() + " locations");
+        if (msg.startsWith("find")) {
+            String blockType = msg.substring(4).trim();
+            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
+            logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(pos).getBlock();
                 if (!ChunkPacker.blockToString(actually).equalsIgnoreCase(blockType)) {
@@ -187,125 +296,174 @@ public class ExampleBaritoneControl extends Behavior {
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("mine")) {
-            String blockType = msg.toLowerCase().substring(4).trim();
-            MineBehavior.INSTANCE.mine(blockType);
-            displayChatMessageRaw("Started mining blocks of type " + blockType);
+        if (msg.startsWith("mine")) {
+            String[] blockTypes = msg.substring(4).trim().split(" ");
+            try {
+                int quantity = Integer.parseInt(blockTypes[1]);
+                Block block = ChunkPacker.stringToBlock(blockTypes[0]);
+                Objects.requireNonNull(block);
+                MineBehavior.INSTANCE.mine(quantity, block);
+                logDirect("Will mine " + quantity + " " + blockTypes[0]);
+                event.cancel();
+                return;
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
+            for (String s : blockTypes) {
+                if (ChunkPacker.stringToBlock(s) == null) {
+                    logDirect(s + " isn't a valid block name");
+                    event.cancel();
+                    return;
+                }
+
+            }
+            MineBehavior.INSTANCE.mine(0, blockTypes);
+            logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("thisway")) {
-            Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-            PathingBehavior.INSTANCE.setGoal(goal);
-            displayChatMessageRaw("Goal: " + goal);
+        if (msg.startsWith("thisway")) {
+            try {
+                Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
+                PathingBehavior.INSTANCE.setGoal(goal);
+                logDirect("Goal: " + goal);
+            } catch (NumberFormatException ex) {
+                logDirect("Error unable to parse '" + msg.substring(7).trim() + "' to a double.");
+            }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("list") || msg.toLowerCase().startsWith("get ") || msg.toLowerCase().startsWith("show")) {
-            String waypointType = msg.toLowerCase().substring(4).trim();
+        if (msg.startsWith("list") || msg.startsWith("get ") || msg.startsWith("show")) {
+            String waypointType = msg.substring(4).trim();
             if (waypointType.endsWith("s")) {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
             Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
             if (tag == null) {
-                displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
+                logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
                 return;
             }
-            Set<Waypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getByTag(tag);
+            Set<IWaypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getByTag(tag);
             // might as well show them from oldest to newest
-            List<Waypoint> sorted = new ArrayList<>(waypoints);
-            sorted.sort(Comparator.comparingLong(Waypoint::creationTimestamp));
-            displayChatMessageRaw("Waypoints under tag " + tag + ":");
-            for (Waypoint waypoint : sorted) {
-                displayChatMessageRaw(waypoint.toString());
+            List<IWaypoint> sorted = new ArrayList<>(waypoints);
+            sorted.sort(Comparator.comparingLong(IWaypoint::getCreationTimestamp));
+            logDirect("Waypoints under tag " + tag + ":");
+            for (IWaypoint waypoint : sorted) {
+                logDirect(waypoint.toString());
             }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().startsWith("goto")) {
-            String waypointType = msg.toLowerCase().substring(4).trim();
+        if (msg.startsWith("save")) {
+            event.cancel();
+            String name = msg.substring(4).trim();
+            BlockPos pos = playerFeet();
+            if (name.contains(" ")) {
+                logDirect("Name contains a space, assuming it's in the format 'save waypointName X Y Z'");
+                String[] parts = name.split(" ");
+                if (parts.length != 4) {
+                    logDirect("Unable to parse, expected four things");
+                    return;
+                }
+                try {
+                    pos = new BlockPos(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
+                } catch (NumberFormatException ex) {
+                    logDirect("Unable to parse coordinate integers");
+                    return;
+                }
+                name = parts[0];
+            }
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
+            logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
+            return;
+        }
+        if (msg.startsWith("goto")) {
+            String waypointType = msg.substring(4).trim();
             if (waypointType.endsWith("s") && Waypoint.Tag.fromString(waypointType.substring(0, waypointType.length() - 1)) != null) {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
             Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
+            IWaypoint waypoint;
             if (tag == null) {
                 String mining = waypointType;
-                //displayChatMessageRaw("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
+                Block block = ChunkPacker.stringToBlock(mining);
+                //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
-                List<BlockPos> locs = new ArrayList<>(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(mining, 1, 1));
-                if (locs.isEmpty()) {
-                    displayChatMessageRaw("No locations for " + mining + " known, cancelling");
+                if (block == null) {
+                    waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
+                    if (waypoint == null) {
+                        logDirect("No locations for " + mining + " known, cancelling");
+                        return;
+                    }
+                } else {
+                    List<BlockPos> locs = MineBehavior.INSTANCE.scanFor(Collections.singletonList(block), 64);
+                    if (locs.isEmpty()) {
+                        logDirect("No locations for " + mining + " known, cancelling");
+                        return;
+                    }
+                    PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
+                    PathingBehavior.INSTANCE.path();
                     return;
                 }
-                BlockPos playerFeet = playerFeet();
-                locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
-
-                // remove any that are within loaded chunks that aren't actually what we want
-                locs.removeAll(locs.stream()
-                        .filter(pos -> !(world().getChunk(pos) instanceof EmptyChunk))
-                        .filter(pos -> !ChunkPacker.blockToString(BlockStateInterface.get(pos).getBlock()).equalsIgnoreCase(mining))
-                        .collect(Collectors.toList()));
-                if (locs.size() > 30) {
-                    locs = locs.subList(0, 30);
+            } else {
+                waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
+                if (waypoint == null) {
+                    logDirect("None saved for tag " + tag);
+                    event.cancel();
+                    return;
                 }
-                PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
-                PathingBehavior.INSTANCE.path();
-                return;
             }
-            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(tag);
-            if (waypoint == null) {
-                displayChatMessageRaw("None saved for tag " + tag);
-                event.cancel();
-                return;
-            }
-            Goal goal = new GoalBlock(waypoint.location);
+            Goal goal = new GoalBlock(waypoint.getLocation());
             PathingBehavior.INSTANCE.setGoal(goal);
             if (!PathingBehavior.INSTANCE.path()) {
-                displayChatMessageRaw("Currently executing a path. Please cancel it first.");
+                if (!goal.isInGoal(playerFeet())) {
+                    logDirect("Currently executing a path. Please cancel it first.");
+                }
             }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("spawn") || msg.toLowerCase().equals("bed")) {
-            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.BED);
+        if (msg.equals("spawn") || msg.equals("bed")) {
+            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
             if (waypoint == null) {
                 BlockPos spawnPoint = player().getBedLocation();
                 // for some reason the default spawnpoint is underground sometimes
                 Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getZ());
-                displayChatMessageRaw("spawn not saved, defaulting to world spawn. set goal to " + goal);
+                logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
                 PathingBehavior.INSTANCE.setGoal(goal);
             } else {
-                Goal goal = new GoalBlock(waypoint.location);
+                Goal goal = new GoalBlock(waypoint.getLocation());
                 PathingBehavior.INSTANCE.setGoal(goal);
-                displayChatMessageRaw("Set goal to most recent bed " + goal);
+                logDirect("Set goal to most recent bed " + goal);
             }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("sethome")) {
-            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
-            displayChatMessageRaw("Saved. Say home to set goal.");
+        if (msg.equals("sethome")) {
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
+            logDirect("Saved. Say home to set goal.");
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("home")) {
-            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.HOME);
+        if (msg.equals("home")) {
+            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
             if (waypoint == null) {
-                displayChatMessageRaw("home not saved");
+                logDirect("home not saved");
             } else {
-                Goal goal = new GoalBlock(waypoint.location);
+                Goal goal = new GoalBlock(waypoint.getLocation());
                 PathingBehavior.INSTANCE.setGoal(goal);
-                displayChatMessageRaw("Set goal to saved home " + goal);
+                PathingBehavior.INSTANCE.path();
+                logDirect("Going to saved home " + goal);
             }
             event.cancel();
             return;
         }
-        if (msg.toLowerCase().equals("costs")) {
-            Movement[] movements = AStarPathFinder.getConnectedPositions(new BetterBlockPos(playerFeet()), new CalculationContext());
-            List<Movement> moves = new ArrayList<>(Arrays.asList(movements));
+        if (msg.equals("costs")) {
+            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(playerFeet())).collect(Collectors.toCollection(ArrayList::new));
+            while (moves.contains(null)) {
+                moves.remove(null);
+            }
             moves.sort(Comparator.comparingDouble(movement -> movement.getCost(new CalculationContext())));
             for (Movement move : moves) {
                 String[] parts = move.getClass().toString().split("\\.");
@@ -314,56 +472,8 @@ public class ExampleBaritoneControl extends Behavior {
                 if (cost >= ActionCosts.COST_INF) {
                     strCost = "IMPOSSIBLE";
                 }
-                displayChatMessageRaw(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
+                logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
             }
-            event.cancel();
-            return;
-        }
-        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
-        for (Settings.Setting<Boolean> setting : toggleable) {
-            if (msg.equalsIgnoreCase(setting.getName())) {
-                setting.value ^= true;
-                event.cancel();
-                displayChatMessageRaw("Toggled " + setting.getName() + " to " + setting.value);
-                return;
-            }
-        }
-        if (msg.toLowerCase().equals("baritone") || msg.toLowerCase().equals("settings")) {
-            for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
-                displayChatMessageRaw(setting.toString());
-            }
-            event.cancel();
-            return;
-        }
-        if (msg.contains(" ")) {
-            String[] data = msg.split(" ");
-            if (data.length == 2) {
-                Settings.Setting setting = Baritone.settings().byLowerName.get(data[0].toLowerCase());
-                if (setting != null) {
-                    try {
-                        if (setting.value.getClass() == Long.class) {
-                            setting.value = Long.parseLong(data[1]);
-                        }
-                        if (setting.value.getClass() == Integer.class) {
-                            setting.value = Integer.parseInt(data[1]);
-                        }
-                        if (setting.value.getClass() == Double.class) {
-                            setting.value = Double.parseDouble(data[1]);
-                        }
-                    } catch (NumberFormatException e) {
-                        displayChatMessageRaw("Unable to parse " + data[1]);
-                        event.cancel();
-                        return;
-                    }
-                    displayChatMessageRaw(setting.toString());
-                    event.cancel();
-                    return;
-                }
-            }
-        }
-        if (Baritone.settings().byLowerName.containsKey(msg.toLowerCase())) {
-            Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg.toLowerCase());
-            displayChatMessageRaw(setting.toString());
             event.cancel();
             return;
         }

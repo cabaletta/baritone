@@ -2,26 +2,32 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.utils.pathing;
 
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class BetterBlockPosTest {
 
-    //@Test
+    // disabled since this is a benchmark, not really a test. also including it makes the tests take 50 seconds for no reason
+    /*@Test
     public void benchMulti() {
         System.out.println("Benching up()");
         for (int i = 0; i < 10; i++) {
@@ -32,7 +38,42 @@ public class BetterBlockPosTest {
         for (int i = 0; i < 10; i++) {
             // eliminate any advantage to going first
             benchN();
+            assertTrue(i<10);
         }
+    }*/
+
+    /**
+     * Make sure BetterBlockPos behaves just like BlockPos
+     */
+    @Test
+    public void testSimple() {
+        BlockPos pos = new BlockPos(1, 2, 3);
+        BetterBlockPos better = new BetterBlockPos(1, 2, 3);
+        assertEquals(pos, better);
+        assertEquals(pos.up(), better.up());
+        assertEquals(pos.down(), better.down());
+        assertEquals(pos.north(), better.north());
+        assertEquals(pos.south(), better.south());
+        assertEquals(pos.east(), better.east());
+        assertEquals(pos.west(), better.west());
+        for (EnumFacing dir : EnumFacing.values()) {
+            assertEquals(pos.offset(dir), better.offset(dir));
+            assertEquals(pos.offset(dir, 0), pos);
+            assertEquals(better.offset(dir, 0), better);
+            for (int i = -10; i < 10; i++) {
+                assertEquals(pos.offset(dir, i), better.offset(dir, i));
+            }
+            assertTrue(better.offset(dir, 0) == better);
+        }
+        for (int i = -10; i < 10; i++) {
+            assertEquals(pos.up(i), better.up(i));
+            assertEquals(pos.down(i), better.down(i));
+            assertEquals(pos.north(i), better.north(i));
+            assertEquals(pos.south(i), better.south(i));
+            assertEquals(pos.east(i), better.east(i));
+            assertEquals(pos.west(i), better.west(i));
+        }
+        assertTrue(better.offset(null, 0) == better);
     }
 
     public void benchOne() {

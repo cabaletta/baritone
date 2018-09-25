@@ -2,40 +2,22 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.utils;
 
 import net.minecraft.client.settings.KeyBinding;
-import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,21 +32,13 @@ import java.util.Map;
  */
 public final class InputOverrideHandler implements Helper {
 
-    public InputOverrideHandler() {}
-
     /**
      * Maps keybinds to whether or not we are forcing their state down.
      */
     private final Map<KeyBinding, Boolean> inputForceStateMap = new HashMap<>();
 
-    /**
-     * Maps keycodes to whether or not we are forcing their state down.
-     */
-    private final Map<Integer, Boolean> keyCodeForceStateMap = new HashMap<>();
-
     public final void clearAllKeys() {
         inputForceStateMap.clear();
-        keyCodeForceStateMap.clear();
     }
 
     /**
@@ -85,25 +59,6 @@ public final class InputOverrideHandler implements Helper {
      */
     public final void setInputForceState(Input input, boolean forced) {
         inputForceStateMap.put(input.getKeyBinding(), forced);
-    }
-
-    /**
-     * A redirection in multiple places of {@link Keyboard#isKeyDown}.
-     *
-     * @return Whether or not the specified key is down or overridden.
-     */
-    public boolean isKeyDown(int keyCode) {
-        return Keyboard.isKeyDown(keyCode) || keyCodeForceStateMap.getOrDefault(keyCode, false);
-    }
-
-    /**
-     * Sets whether or not the specified key code is being forced down.
-     *
-     * @param keyCode The key code
-     * @param forced  Whether or not the state is being forced
-     */
-    public final void setKeyForceState(int keyCode, boolean forced) {
-        keyCodeForceStateMap.put(keyCode, forced);
     }
 
     /**
@@ -159,7 +114,7 @@ public final class InputOverrideHandler implements Helper {
         /**
          * The actual game {@link KeyBinding} being forced.
          */
-        private KeyBinding keyBinding;
+        private final KeyBinding keyBinding;
 
         Input(KeyBinding keyBinding) {
             this.keyBinding = keyBinding;

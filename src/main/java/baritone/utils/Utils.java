@@ -2,28 +2,32 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.utils;
 
+import baritone.api.utils.Rotation;
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+
+import static baritone.utils.Helper.HELPER;
 
 /**
  * @author Brady
@@ -95,10 +99,7 @@ public final class Utils {
     }
 
     public static Rotation wrapAnglesToRelative(Rotation current, Rotation target) {
-        return new Rotation(
-                MathHelper.wrapDegrees(target.getFirst() - current.getFirst()) + current.getFirst(),
-                MathHelper.wrapDegrees(target.getSecond() - current.getSecond()) + current.getSecond()
-        );
+        return target.subtract(current).normalize().add(current);
     }
 
     public static Vec3d vec3dFromBlockPos(BlockPos orig) {
@@ -110,6 +111,16 @@ public final class Utils {
         double ydiff = y - (pos.getY() + 0.5D);
         double zdiff = z - (pos.getZ() + 0.5D);
         return Math.sqrt(xdiff * xdiff + ydiff * ydiff + zdiff * zdiff);
+    }
+
+    public static double playerDistanceToCenter(BlockPos pos) {
+        EntityPlayerSP player = HELPER.player();
+        return distanceToCenter(pos, player.posX, player.posY, player.posZ);
+    }
+
+    public static double playerFlatDistanceToCenter(BlockPos pos) {
+        EntityPlayerSP player = HELPER.player();
+        return distanceToCenter(pos, player.posX, pos.getY() + 0.5, player.posZ);
     }
 
     public static double degToRad(double deg) {

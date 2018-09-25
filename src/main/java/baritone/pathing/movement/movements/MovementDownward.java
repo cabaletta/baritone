@@ -2,16 +2,16 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -22,18 +22,17 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLadder;
-import net.minecraft.block.BlockVine;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.init.Blocks;
 
 public class MovementDownward extends Movement {
 
     private int numTicks = 0;
 
-    public MovementDownward(BlockPos start, BlockPos end) {
-        super(start, end, new BlockPos[]{end});
+    public MovementDownward(BetterBlockPos start, BetterBlockPos end) {
+        super(start, end, new BetterBlockPos[]{end});
     }
 
     @Override
@@ -44,35 +43,33 @@ public class MovementDownward extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (!MovementHelper.canWalkOn(dest.down())) {
+        return cost(context, src.x, src.y, src.z);
+    }
+
+    public static double cost(CalculationContext context, int x, int y, int z) {
+        if (!MovementHelper.canWalkOn(x, y - 2, z)) {
             return COST_INF;
         }
-        IBlockState d = BlockStateInterface.get(dest);
+        IBlockState d = BlockStateInterface.get(x, y - 1, z);
         Block td = d.getBlock();
-        boolean ladder = td instanceof BlockLadder || td instanceof BlockVine;
+        boolean ladder = td == Blocks.LADDER || td == Blocks.VINE;
         if (ladder) {
             return LADDER_DOWN_ONE_COST;
         } else {
             // we're standing on it, while it might be block falling, it'll be air by the time we get here in the movement
-            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, dest, d, false);
+            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, x, y - 1, z, d, false);
         }
     }
 
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        switch (state.getStatus()) {
-            case WAITING:
-                state.setStatus(MovementState.MovementStatus.RUNNING);
-            case RUNNING:
-                break;
-            default:
-                return state;
+        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+            return state;
         }
 
         if (playerFeet().equals(dest)) {
-            state.setStatus(MovementState.MovementStatus.SUCCESS);
-            return state;
+            return state.setStatus(MovementState.MovementStatus.SUCCESS);
         }
         double diffX = player().posX - (dest.getX() + 0.5);
         double diffZ = player().posZ - (dest.getZ() + 0.5);

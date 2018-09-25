@@ -2,25 +2,26 @@
  * This file is part of Baritone.
  *
  * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package baritone.utils;
 
+import baritone.api.utils.Rotation;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
-import static baritone.behavior.impl.LookBehaviorUtils.calcVec3dFromRotation;
+import static baritone.behavior.LookBehaviorUtils.calcVec3dFromRotation;
 
 /**
  * @author Brady
@@ -30,6 +31,18 @@ public final class RayTraceUtils implements Helper {
 
     private RayTraceUtils() {}
 
+    /**
+     * Simulates a "vanilla" raytrace. A RayTraceResult returned by this method
+     * will be that of the next render pass given that the local player's yaw and
+     * pitch match the specified yaw and pitch values. This is particularly useful
+     * when you would like to simulate a "legit" raytrace with certainty that the only
+     * thing to achieve the desired outcome (whether it is hitting and entity or placing
+     * a block) can be done just by modifying user input.
+     *
+     * @param yaw The yaw to raytrace with
+     * @param pitch The pitch to raytrace with
+     * @return The calculated raytrace result
+     */
     public static RayTraceResult simulateRayTrace(float yaw, float pitch) {
         RayTraceResult oldTrace = mc.objectMouseOver;
         float oldYaw = mc.player.rotationYaw;
@@ -48,6 +61,14 @@ public final class RayTraceUtils implements Helper {
         return result;
     }
 
+    /**
+     * Performs a block raytrace with the specified rotations. This should only be used when
+     * any entity collisions can be ignored, because this method will not recognize if an
+     * entity is in the way or not. The local player's block reach distance will be used.
+     *
+     * @param rotation The rotation to raytrace towards
+     * @return The calculated raytrace result
+     */
     public static RayTraceResult rayTraceTowards(Rotation rotation) {
         double blockReachDistance = mc.playerController.getBlockReachDistance();
         Vec3d start = mc.player.getPositionEyes(1.0F);
