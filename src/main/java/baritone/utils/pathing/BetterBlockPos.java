@@ -127,8 +127,18 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
+    public BetterBlockPos north(int amt) {
+        return amt == 0 ? this : new BetterBlockPos(x, y, z - amt);
+    }
+
+    @Override
     public BetterBlockPos south() {
         return new BetterBlockPos(x, y, z + 1);
+    }
+
+    @Override
+    public BetterBlockPos south(int amt) {
+        return amt == 0 ? this : new BetterBlockPos(x, y, z + amt);
     }
 
     @Override
@@ -137,7 +147,17 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
+    public BetterBlockPos east(int amt) {
+        return amt == 0 ? this : new BetterBlockPos(x + amt, y, z);
+    }
+
+    @Override
     public BetterBlockPos west() {
         return new BetterBlockPos(x - 1, y, z);
+    }
+
+    @Override
+    public BetterBlockPos west(int amt) {
+        return amt == 0 ? this : new BetterBlockPos(x - amt, y, z);
     }
 }
