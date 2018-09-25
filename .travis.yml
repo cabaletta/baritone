@@ -1,14 +1,12 @@
 language: java
 
 install:
+- sudo apt-get update
+- sudo apt-get install jshon
 - ./gradlew test
 
 script:
 - sh scripts/build.sh
-
-before_deploy:
-- sudo apt-get update
-- sudo apt-get install jshon
 
 deploy:
   provider: releases
