@@ -15,7 +15,8 @@ script:
 - mv tempLibraries.zip?dl=1 tempLibraries.zip
 - unzip tempLibraries.zip
 - java -jar ../../proguard6.0.3/lib/proguard.jar @proguard.pro
-- mv Obfuscated/baritone-0.0.2.jar ../../baritone.jar
+- mv Obfuscated/baritone-0.0.2.jar ../../baritone-optimized-0.0.2.jar
+- mv baritone-0.0.2.jar ../baritone-0.0.2.jar
 - cd ../..
 - shasum baritone.jar
 
@@ -24,7 +25,9 @@ deploy:
   api_key:
     secure: YOuiXoJNpB4bW89TQoY2IGXg0tqOKls55YMXsSPU6Mx8WzRu8CjjO/A8KA9nGfNrKM+NucjiKr/h53O2Dp2uyy0i0SLvav/G0MaBMeB1NlPRwFopi6tVPNaoZsvr8NW4BIURhspckYLpOTYWnfmOkIv8q7AxrjUZWPKDlq0dte20UxEqUE6msHJ7U9XlKo/4fX40kvWMfwGI2hTyAtL0cRT1QPsd+uW3OQjAPcQj+jKaWld46V8pBK8g9Qde9mo8HC9NBv97zw1bBF1EFkynW569kElHvaS2Opl2QLGaf66guDbpnqDpGHMhQrDdxsZHJ4RksyITn+8A9UArmbkU35BxKqBeQqOWxod2+M0axdLh1pvX43Q1t9n7RiZBf7GvV8vkXL5Sjf8v6Y4LqkJGhvQkTUwpH+0knwrE761DMCtBC34AiWG70D4u7msmhurkflr9kmRHSj/3lyJ1Q2lkt8L+FOAlQBVs64vXTsfgc6Yge7N0O3UD5hCkrDNoz3BzhNBdCkbdxdKCGip71UZgUNkPy9o3ui8jATNj9ypx3+U8ovqP0XWlJqUZmyeXyNGW9NrLeCkRLTlLnZ/dv6OPONa1oAu4TwF1w5A+TGRFZcZjH/PnZKZDQ1OYQOR6drLKRYdr2unvuf5KUKUGqZ7aYtLGhP0rBvGWddRV7DSmX/s=
   all_branches: true
-  file: baritone.jar
+  file:
+    - baritone-0.0.2.jar
+    - baritone-optimized-0.0.2.jar
   skip_cleanup: true
   on:
     tags: true
