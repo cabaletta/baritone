@@ -15,7 +15,6 @@ script:
 - docker cp baritone:/code/dist dist
 - ls dist
 - cat dist/checksums.txt
-- sed -e 's/^"//' -e 's/"$//' <<<$(jshon -s "$(cat dist/checksums.txt)")
 
 deploy:
   provider: releases
@@ -25,7 +24,6 @@ deploy:
   file_glob: true
   file:
   - dist/*
-  body: $(sed -e 's/^"//' -e 's/"$//' <<<$(jshon -s "$(cat dist/checksums.txt)"))
   skip_cleanup: true
   on:
     tags: true
