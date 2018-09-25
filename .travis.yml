@@ -6,6 +6,10 @@ install:
 script:
 - sh scripts/build.sh
 
+before_deploy:
+- sudo apt-get update
+- sudo apt-get install jshon
+
 deploy:
   provider: releases
   api_key:
@@ -14,6 +18,7 @@ deploy:
   file_glob: true
   file:
   - dist/*
+  body: $(jshon -s "$(cat checksums.txt)"))
   skip_cleanup: true
   on:
     tags: true
