@@ -129,8 +129,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @return The associated node
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */
-    protected PathNode getNodeAtPosition(int x, int y, int z) {
-        long hashCode = posHash(x, y, z);
+    protected PathNode getNodeAtPosition(int x, int y, int z, long hashCode) {
         PathNode node = map.get(hashCode);
         if (node == null) {
             node = new PathNode(x, y, z, goal);
