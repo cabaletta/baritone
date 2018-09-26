@@ -68,33 +68,52 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        if (mc.currentScreen != null && mc.currentScreen instanceof GuiMainMenu) {
+
+        // If we're on the main menu then create the test world and launch the integrated server
+        if (mc.currentScreen instanceof GuiMainMenu) {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
             WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.getByName("survival"), true, false, WorldType.DEFAULT);
-            worldsettings.setGeneratorOptions("");
             mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
         }
+
+        // If the integrated server is launched and the world has initialized, set the spawn point
+        // to our defined starting position
         if (mc.getIntegratedServer() != null && mc.getIntegratedServer().worlds[0] != null) {
             mc.getIntegratedServer().worlds[0].setSpawnPoint(STARTING_POSITION);
         }
-        if (event.getType() == TickEvent.Type.IN) {
+
+        if (event.getType() == TickEvent.Type.IN) { // If we're in-game
+
+            // Force the integrated server to share the world to LAN so that
+            // the ingame pause menu gui doesn't actually pause our game
             if (mc.isSingleplayer() && !mc.getIntegratedServer().getPublic()) {
                 mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false);
             }
+
+            // For the first 200 ticks, wait for the world to generate
             if (event.getCount() < 200) {
                 System.out.println("Waiting for world to generate... " + event.getCount());
                 return;
             }
-            if (event.getCount() % 100 == 0) { // print only once every 5 seconds
+
+            // Print out an update of our position every 5 seconds
+            if (event.getCount() % 100 == 0) {
                 System.out.println(playerFeet() + " " + event.getCount());
             }
+
+            // Setup Baritone's pathing goal and (if needed) begin pathing
             PathingBehavior.INSTANCE.setGoal(GOAL);
             PathingBehavior.INSTANCE.path();
+
+            // If we have reached our goal, print a message and safely close the game
             if (GOAL.isInGoal(playerFeet())) {
                 System.out.println("Successfully pathed to " + playerFeet() + " in " + event.getCount() + " ticks");
                 mc.shutdown();
             }
+
+            // If we have exceeded the expected number of ticks to complete the pathing
+            // task, then throw an IllegalStateException to cause the build to fail
             if (event.getCount() > MAX_TICKS) {
                 throw new IllegalStateException("took too long");
             }
