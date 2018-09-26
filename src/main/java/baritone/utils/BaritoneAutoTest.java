@@ -82,7 +82,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             if (mc.isSingleplayer() && !mc.getIntegratedServer().getPublic()) {
                 mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false);
             }
-            if (event.getCount() < 100) {
+            if (event.getCount() < 200) {
                 System.out.println("Waiting for world to generate... " + event.getCount());
                 return;
             }
