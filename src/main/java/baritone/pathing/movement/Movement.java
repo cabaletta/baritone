@@ -18,18 +18,19 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehavior;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.*;
 import baritone.utils.pathing.BetterBlockPos;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -158,8 +159,8 @@ public abstract class Movement implements Helper, MovementHelper {
             return true;
         }
         boolean somethingInTheWay = false;
-        for (BlockPos blockPos : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(blockPos)) {
+        for (BetterBlockPos blockPos : positionsToBreak) {
+            if (!MovementHelper.canWalkThrough(blockPos) && !(BlockStateInterface.getBlock(blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
                 if (reachable.isPresent()) {
@@ -218,60 +219,6 @@ public abstract class Movement implements Helper, MovementHelper {
         currentState = new MovementState().setStatus(MovementStatus.PREPPING);
     }
 
-    public double getTotalHardnessOfBlocksToBreak(CalculationContext ctx) {
-        if (positionsToBreak.length == 0) {
-            return 0;
-        }
-        if (positionsToBreak.length == 1) {
-            return MovementHelper.getMiningDurationTicks(ctx, positionsToBreak[0], true);
-        }
-        int firstColumnX = positionsToBreak[0].getX();
-        int firstColumnZ = positionsToBreak[0].getZ();
-        int firstColumnMaxY = positionsToBreak[0].getY();
-        int firstColumnMaximalIndex = 0;
-        boolean hasSecondColumn = false;
-        int secondColumnX = -1;
-        int secondColumnZ = -1;
-        int secondColumnMaxY = -1;
-        int secondColumnMaximalIndex = -1;
-        for (int i = 0; i < positionsToBreak.length; i++) {
-            BlockPos pos = positionsToBreak[i];
-            if (pos.getX() == firstColumnX && pos.getZ() == firstColumnZ) {
-                if (pos.getY() > firstColumnMaxY) {
-                    firstColumnMaxY = pos.getY();
-                    firstColumnMaximalIndex = i;
-                }
-            } else {
-                if (!hasSecondColumn || (pos.getX() == secondColumnX && pos.getZ() == secondColumnZ)) {
-                    if (hasSecondColumn) {
-                        if (pos.getY() > secondColumnMaxY) {
-                            secondColumnMaxY = pos.getY();
-                            secondColumnMaximalIndex = i;
-                        }
-                    } else {
-                        hasSecondColumn = true;
-                        secondColumnX = pos.getX();
-                        secondColumnZ = pos.getZ();
-                        secondColumnMaxY = pos.getY();
-                        secondColumnMaximalIndex = i;
-                    }
-                } else {
-                    throw new IllegalStateException("I literally have no idea " + Arrays.asList(positionsToBreak));
-                }
-            }
-        }
-
-        double sum = 0;
-        for (int i = 0; i < positionsToBreak.length; i++) {
-            sum += MovementHelper.getMiningDurationTicks(ctx, positionsToBreak[i], firstColumnMaximalIndex == i || secondColumnMaximalIndex == i);
-            if (sum >= COST_INF) {
-                break;
-            }
-        }
-        return sum;
-    }
-
-
     /**
      * Calculate latest movement state.
      * Gets called once a tick.
@@ -309,7 +256,7 @@ public abstract class Movement implements Helper, MovementHelper {
             return toBreakCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        for (BlockPos positionToBreak : positionsToBreak) {
+        for (BetterBlockPos positionToBreak : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(positionToBreak)) {
                 result.add(positionToBreak);
             }

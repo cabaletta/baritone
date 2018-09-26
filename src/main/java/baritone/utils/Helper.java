@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.utils.Rotation;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
@@ -33,6 +34,11 @@ import net.minecraft.util.text.TextFormatting;
  * @since 8/1/2018 12:18 AM
  */
 public interface Helper {
+
+    /**
+     * Instance of {@link Helper}. Used for static-context reference.
+     */
+    Helper HELPER = new Helper() {};
 
     ITextComponent MESSAGE_PREFIX = new TextComponentString(String.format(
             "%s[%sBaritone%s]%s",
@@ -98,9 +104,4 @@ public interface Helper {
         component.appendSibling(new TextComponentString(" " + message));
         Baritone.settings().logger.get().accept(component);
     }
-
-    default void addToChat(ITextComponent msg) {
-        mc.ingameGUI.getChatGUI().printChatMessage(msg);
-    }
-
 }

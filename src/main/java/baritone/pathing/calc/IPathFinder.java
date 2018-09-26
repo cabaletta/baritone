@@ -17,7 +17,7 @@
 
 package baritone.pathing.calc;
 
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
 import net.minecraft.util.math.BlockPos;
 

@@ -23,6 +23,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.behavior.PathingBehavior;
+import baritone.utils.BaritoneAutoTest;
 import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -39,6 +40,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
@@ -59,9 +61,20 @@ public class MixinMinecraft {
             method = "init",
             at = @At("RETURN")
     )
-    private void init(CallbackInfo ci) {
+    private void postInit(CallbackInfo ci) {
         Baritone.INSTANCE.init();
         ExampleBaritoneControl.INSTANCE.initAndRegister();
+    }
+
+    @Inject(
+            method = "init",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/Minecraft.startTimerHackThread()V"
+            )
+    )
+    private void preInit(CallbackInfo ci) {
+        BaritoneAutoTest.INSTANCE.onPreInit();
     }
 
     @Inject(

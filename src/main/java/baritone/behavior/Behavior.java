@@ -15,10 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.behavior;
 
-import baritone.api.event.listener.AbstractGameEventListener;
-import baritone.api.utils.interfaces.Toggleable;
+import baritone.api.behavior.IBehavior;
 
 /**
  * A type of game event listener that can be toggled.
@@ -26,7 +25,7 @@ import baritone.api.utils.interfaces.Toggleable;
  * @author Brady
  * @since 8/1/2018 6:29 PM
  */
-public class Behavior implements AbstractGameEventListener, Toggleable {
+public class Behavior implements IBehavior {
 
     /**
      * Whether or not this behavior is enabled

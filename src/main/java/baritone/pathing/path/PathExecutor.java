@@ -19,6 +19,7 @@ package baritone.pathing.path;
 
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.pathing.movement.*;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
@@ -94,6 +95,7 @@ public class PathExecutor implements Helper {
 
             if (pathPosition == 0 && whereAmI.equals(whereShouldIBe.up()) && Math.abs(player().motionY) < 0.1 && !(path.movements().get(0) instanceof MovementAscend) && !(path.movements().get(0) instanceof MovementPillar)) {
                 // avoid the Wrong Y coordinate bug
+                // TODO add a timer here
                 new MovementDownward(whereAmI, whereShouldIBe).update();
                 return false;
             }

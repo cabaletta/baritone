@@ -18,6 +18,7 @@
 package baritone.cache;
 
 import baritone.Baritone;
+import baritone.api.cache.IWorldProvider;
 import baritone.utils.Helper;
 import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
@@ -38,7 +39,7 @@ import java.util.function.Consumer;
  * @author Brady
  * @since 8/4/2018 11:06 AM
  */
-public enum WorldProvider implements Helper {
+public enum WorldProvider implements IWorldProvider, Helper {
 
     INSTANCE;
 
@@ -46,6 +47,7 @@ public enum WorldProvider implements Helper {
 
     private WorldData currentWorld;
 
+    @Override
     public final WorldData getCurrentWorld() {
         return this.currentWorld;
     }

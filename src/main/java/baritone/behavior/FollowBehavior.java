@@ -18,10 +18,10 @@
 package baritone.behavior;
 
 import baritone.Baritone;
-import baritone.api.behavior.Behavior;
+import baritone.api.behavior.IFollowBehavior;
 import baritone.api.event.events.TickEvent;
-import baritone.pathing.goals.GoalNear;
-import baritone.pathing.goals.GoalXZ;
+import baritone.api.pathing.goals.GoalNear;
+import baritone.api.pathing.goals.GoalXZ;
 import baritone.utils.Helper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -31,7 +31,7 @@ import net.minecraft.util.math.BlockPos;
  *
  * @author leijurv
  */
-public final class FollowBehavior extends Behavior implements Helper {
+public final class FollowBehavior extends Behavior implements IFollowBehavior, Helper {
 
     public static final FollowBehavior INSTANCE = new FollowBehavior();
 
@@ -42,6 +42,7 @@ public final class FollowBehavior extends Behavior implements Helper {
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
+            following = null;
             return;
         }
         if (following == null) {
@@ -60,14 +61,17 @@ public final class FollowBehavior extends Behavior implements Helper {
         PathingBehavior.INSTANCE.path();
     }
 
+    @Override
     public void follow(Entity entity) {
         this.following = entity;
     }
 
+    @Override
     public Entity following() {
         return this.following;
     }
 
+    @Override
     public void cancel() {
         PathingBehavior.INSTANCE.cancel();
         follow(null);

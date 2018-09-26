@@ -18,19 +18,20 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.utils.Rotation;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.pathing.movement.MovementState.MovementTarget;
-import baritone.utils.*;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.InputOverrideHandler;
+import baritone.utils.RayTraceUtils;
+import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockFalling;
-import net.minecraft.block.state.IBlockState;
+import baritone.utils.pathing.MoveResult;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -48,58 +49,11 @@ public class MovementFall extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        Block fromDown = BlockStateInterface.get(src.down()).getBlock();
-        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
-            return COST_INF;
+        MoveResult result = MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        if (result.destY != dest.y) {
+            return COST_INF; // doesn't apply to us, this position is a descend not a fall
         }
-        IBlockState fallOnto = BlockStateInterface.get(dest.down());
-        if (!MovementHelper.canWalkOn(dest.down(), fallOnto)) {
-            return COST_INF;
-        }
-        if (MovementHelper.isBottomSlab(fallOnto)) {
-            return COST_INF; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
-        }
-        double placeBucketCost = 0.0;
-        boolean destIsWater = BlockStateInterface.isWater(dest);
-        if (!destIsWater && src.getY() - dest.getY() > context.maxFallHeightNoWater()) {
-            if (!context.hasWaterBucket()) {
-                return COST_INF;
-            }
-            if (src.getY() - dest.getY() > context.maxFallHeightBucket()) {
-                return COST_INF;
-            }
-            placeBucketCost = context.placeBlockCost();
-        }
-        double frontThree = 0;
-        for (int i = 0; i < 3; i++) {
-            frontThree += MovementHelper.getMiningDurationTicks(context, positionsToBreak[i], false);
-            // don't include falling because we will check falling right after this, and if it's there it's COST_INF
-            if (frontThree >= COST_INF) {
-                return COST_INF;
-            }
-        }
-        if (BlockStateInterface.get(positionsToBreak[0].up()).getBlock() instanceof BlockFalling) {
-            return COST_INF;
-        }
-        for (int i = 3; i < positionsToBreak.length; i++) {
-            // TODO is this the right check here?
-            // MiningDurationTicks is all right, but shouldn't it be canWalkThrough instead?
-            // Lilypads (i think?) are 0 ticks to mine, but they definitely cause fall damage
-            // Same thing for falling through water... we can't actually do that
-            // And falling through signs is possible, but they do have a mining duration, right?
-            if (MovementHelper.getMiningDurationTicks(context, positionsToBreak[i], false) > 0) {
-                //can't break while falling
-
-                if (i != positionsToBreak.length - 1 || !destIsWater) {
-                    // if we're checking the very last block to mine
-                    // and it's water (so this is a water fall)
-                    // don't consider the cost of "mining" it
-                    // (if assumeWalkOnWater is true, water isn't canWalkThrough)
-                    return COST_INF;
-                }
-            }
-        }
-        return WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[positionsToBreak.length - 1] + placeBucketCost + frontThree;
+        return result.cost;
     }
 
     @Override

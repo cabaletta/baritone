@@ -15,9 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.utils.interfaces.IGoalRenderPos;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -54,18 +54,18 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
     }
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
-        return pos.getX() == this.x && (pos.getY() == this.y || pos.getY() == this.y - 1) && pos.getZ() == this.z;
+    public boolean isInGoal(int x, int y, int z) {
+        return x == this.x && (y == this.y || y == this.y - 1) && z == this.z;
     }
 
     @Override
-    public double heuristic(BlockPos pos) {
-        double xDiff = pos.getX() - this.x;
-        int yDiff = pos.getY() - this.y;
+    public double heuristic(int x, int y, int z) {
+        int xDiff = x - this.x;
+        int yDiff = y - this.y;
+        int zDiff = z - this.z;
         if (yDiff < 0) {
             yDiff++;
         }
-        double zDiff = pos.getZ() - this.z;
         return GoalBlock.calculate(xDiff, yDiff, zDiff);
     }
 

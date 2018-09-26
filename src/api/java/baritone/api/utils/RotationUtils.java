@@ -15,32 +15,40 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
-
-import baritone.pathing.movement.ActionCosts;
-import net.minecraft.util.math.BlockPos;
+package baritone.api.utils;
 
 /**
- * An abstract Goal for pathing, can be anything from a specific block to just a Y coordinate.
- *
- * @author leijurv
+ * @author Brady
+ * @since 9/25/2018
  */
-public interface Goal extends ActionCosts {
+public final class RotationUtils {
+
+    private RotationUtils() {}
 
     /**
-     * Returns whether or not the specified position
-     * meets the requirement for this goal based.
+     * Clamps the specified pitch value between -90 and 90.
      *
-     * @param pos The position
-     * @return Whether or not it satisfies this goal
+     * @param pitch The input pitch
+     * @return The clamped pitch
      */
-    boolean isInGoal(BlockPos pos);
+    public static float clampPitch(float pitch) {
+        return Math.max(-90, Math.min(90, pitch));
+    }
 
     /**
-     * Estimate the number of ticks it will take to get to the goal
+     * Normalizes the specified yaw value between -180 and 180.
      *
-     * @param pos The
-     * @return The estimate number of ticks to satisfy the goal
+     * @param yaw The input yaw
+     * @return The normalized yaw
      */
-    double heuristic(BlockPos pos);
+    public static float normalizeYaw(float yaw) {
+        float newYaw = yaw % 360F;
+        if (newYaw < -180F) {
+            newYaw += 360F;
+        }
+        if (newYaw >= 180F) {
+            newYaw -= 360F;
+        }
+        return newYaw;
+    }
 }

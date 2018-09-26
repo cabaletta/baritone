@@ -17,7 +17,8 @@
 
 package baritone.behavior;
 
-import baritone.api.behavior.Behavior;
+import baritone.api.behavior.IMemoryBehavior;
+import baritone.api.behavior.memory.IRememberedInventory;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
@@ -38,7 +39,7 @@ import java.util.*;
  * @author Brady
  * @since 8/6/2018 9:47 PM
  */
-public final class MemoryBehavior extends Behavior implements Helper {
+public final class MemoryBehavior extends Behavior implements IMemoryBehavior, Helper {
 
     public static MemoryBehavior INSTANCE = new MemoryBehavior();
 
@@ -128,6 +129,7 @@ public final class MemoryBehavior extends Behavior implements Helper {
         });
     }
 
+    @Override
     public final RememberedInventory getInventoryByPos(BlockPos pos) {
         return this.rememberedInventories.get(pos);
     }
@@ -170,7 +172,7 @@ public final class MemoryBehavior extends Behavior implements Helper {
      * <p>
      * Associated with a {@link BlockPos} in {@link MemoryBehavior#rememberedInventories}.
      */
-    public static class RememberedInventory {
+    public static class RememberedInventory implements IRememberedInventory {
 
         /**
          * The list of items in the inventory
@@ -191,11 +193,14 @@ public final class MemoryBehavior extends Behavior implements Helper {
             this.items = new ArrayList<>();
         }
 
-        /**
-         * @return The list of items in the inventory
-         */
-        public final List<ItemStack> getItems() {
+        @Override
+        public final List<ItemStack> getContents() {
             return this.items;
+        }
+
+        @Override
+        public final int getSize() {
+            return this.size;
         }
     }
 }

@@ -43,17 +43,21 @@ public class MovementDownward extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        if (!MovementHelper.canWalkOn(dest.down())) {
+        return cost(context, src.x, src.y, src.z);
+    }
+
+    public static double cost(CalculationContext context, int x, int y, int z) {
+        if (!MovementHelper.canWalkOn(x, y - 2, z)) {
             return COST_INF;
         }
-        IBlockState d = BlockStateInterface.get(dest);
+        IBlockState d = BlockStateInterface.get(x, y - 1, z);
         Block td = d.getBlock();
         boolean ladder = td == Blocks.LADDER || td == Blocks.VINE;
         if (ladder) {
             return LADDER_DOWN_ONE_COST;
         } else {
             // we're standing on it, while it might be block falling, it'll be air by the time we get here in the movement
-            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, dest, d, false);
+            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, x, y - 1, z, d, false);
         }
     }
 

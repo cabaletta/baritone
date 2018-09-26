@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
 import net.minecraft.util.math.BlockPos;
 
@@ -41,10 +41,10 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
+    public boolean isInGoal(int x, int y, int z) {
         for (BlockPos p : from) {
-            int diffX = pos.getX() - p.getX();
-            int diffZ = pos.getZ() - p.getZ();
+            int diffX = x - p.getX();
+            int diffZ = z - p.getZ();
             double distSq = diffX * diffX + diffZ * diffZ;
             if (distSq < distanceSq) {
                 return false;
@@ -54,10 +54,10 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
-    public double heuristic(BlockPos pos) {//mostly copied from GoalBlock
+    public double heuristic(int x, int y, int z) {//mostly copied from GoalBlock
         double min = Double.MAX_VALUE;
         for (BlockPos p : from) {
-            double h = GoalXZ.calculate(p.getX() - pos.getX(), p.getZ() - pos.getZ());
+            double h = GoalXZ.calculate(p.getX() - x, p.getZ() - z);
             if (h < min) {
                 min = h;
             }

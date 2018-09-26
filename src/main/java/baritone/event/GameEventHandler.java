@@ -109,7 +109,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         if (isPostPopulate || isPreUnload) {
             WorldProvider.INSTANCE.ifWorldLoaded(world -> {
                 Chunk chunk = mc.world.getChunk(event.getX(), event.getZ());
-                world.cache.queueForPacking(chunk);
+                world.getCachedWorld().queueForPacking(chunk);
             });
         }
 

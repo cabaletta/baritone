@@ -18,6 +18,7 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -25,7 +26,6 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.Rotation;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
@@ -57,11 +57,15 @@ public class MovementTraverse extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
-        IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
-        IBlockState destOn = BlockStateInterface.get(positionToPlace);
-        Block srcDown = BlockStateInterface.getBlock(src.down());
-        if (MovementHelper.canWalkOn(positionToPlace, destOn)) {//this is a walk, not a bridge
+        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+    }
+
+    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+        IBlockState pb0 = BlockStateInterface.get(destX, y + 1, destZ);
+        IBlockState pb1 = BlockStateInterface.get(destX, y, destZ);
+        IBlockState destOn = BlockStateInterface.get(destX, y - 1, destZ);
+        Block srcDown = BlockStateInterface.getBlock(x, y - 1, z);
+        if (MovementHelper.canWalkOn(destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             if (BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock())) {
                 WC = WALK_ONE_IN_WATER_COST;
@@ -73,11 +77,11 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
-            double hardness1 = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0], pb0, true);
+            double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true);
             if (hardness1 >= COST_INF) {
                 return COST_INF;
             }
-            double hardness2 = MovementHelper.getMiningDurationTicks(context, positionsToBreak[1], pb1, false);
+            double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
             if (hardness1 == 0 && hardness2 == 0) {
                 if (WC == WALK_ONE_BLOCK_COST && context.canSprint()) {
                     // If there's nothing in the way, and this isn't water or soul sand, and we aren't sneak placing
@@ -95,7 +99,7 @@ public class MovementTraverse extends Movement {
             if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
                 return COST_INF;
             }
-            if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(positionToPlace, destOn)) {
+            if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(destX, y - 1, destZ, destOn)) {
                 boolean throughWater = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock());
                 if (BlockStateInterface.isWater(destOn.getBlock()) && throughWater) {
                     return COST_INF;
@@ -103,15 +107,21 @@ public class MovementTraverse extends Movement {
                 if (!context.hasThrowaway()) {
                     return COST_INF;
                 }
+                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb0, false);
+                if (hardness1 >= COST_INF) {
+                    return COST_INF;
+                }
+                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb1, true);
+
                 double WC = throughWater ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
                 for (int i = 0; i < 4; i++) {
-                    BlockPos against1 = dest.offset(HORIZONTALS[i]);
-                    if (against1.equals(src)) {
+                    int againstX = destX + HORIZONTALS[i].getXOffset();
+                    int againstZ = destZ + HORIZONTALS[i].getZOffset();
+                    if (againstX == x && againstZ == z) {
                         continue;
                     }
-                    against1 = against1.down();
-                    if (MovementHelper.canPlaceAgainst(against1)) {
-                        return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
+                    if (MovementHelper.canPlaceAgainst(againstX, y - 1, againstZ)) {
+                        return WC + context.placeBlockCost() + hardness1 + hardness2;
                     }
                 }
                 if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && !((BlockSlab) srcDown).isDouble())) {
@@ -121,7 +131,7 @@ public class MovementTraverse extends Movement {
                     return COST_INF; // this is obviously impossible
                 }
                 WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
-                return WC + context.placeBlockCost() + getTotalHardnessOfBlocksToBreak(context);
+                return WC + context.placeBlockCost() + hardness1 + hardness2;
             }
             return COST_INF;
             // Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());
@@ -155,8 +165,8 @@ public class MovementTraverse extends Movement {
 
             // combine the yaw to the center of the destination, and the pitch to the specific block we're trying to break
             // it's safe to do this since the two blocks we break (in a traverse) are right on top of each other and so will have the same yaw
-            float yawToDest = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world())).getFirst();
-            float pitchToBreak = state.getTarget().getRotation().get().getSecond();
+            float yawToDest = Utils.calcRotationFromVec3d(playerHead(), Utils.calcCenterFromCoords(dest, world())).getYaw();
+            float pitchToBreak = state.getTarget().getRotation().get().getPitch();
 
             state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
             return state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);

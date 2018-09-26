@@ -18,22 +18,16 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
-import baritone.cache.CachedWorld;
-import baritone.cache.WorldProvider;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
-import baritone.pathing.goals.Goal;
-import baritone.pathing.movement.ActionCosts;
 import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.movement.movements.*;
+import baritone.pathing.movement.Moves;
 import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterBlockPos;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ChunkProviderClient;
-import net.minecraft.util.EnumFacing;
+import baritone.utils.pathing.MoveResult;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
@@ -43,20 +37,18 @@ import java.util.*;
  *
  * @author leijurv
  */
-public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
+public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
-    private final Optional<HashSet<BetterBlockPos>> favoredPositions;
+    private final Optional<HashSet<Long>> favoredPositions;
 
-    private final Random random = new Random();
-
-    public AStarPathFinder(BlockPos start, Goal goal, Optional<Collection<BetterBlockPos>> favoredPositions) {
+    public AStarPathFinder(BlockPos start, Goal goal, Optional<HashSet<Long>> favoredPositions) {
         super(start, goal);
-        this.favoredPositions = favoredPositions.map(HashSet::new); // <-- okay this is epic
+        this.favoredPositions = favoredPositions;
     }
 
     @Override
     protected Optional<IPath> calculate0(long timeout) {
-        startNode = getNodeAtPosition(start);
+        startNode = getNodeAtPosition(start.x, start.y, start.z);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
@@ -69,9 +61,7 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             bestSoFar[i] = startNode;
         }
         CalculationContext calcContext = new CalculationContext();
-        HashSet<BetterBlockPos> favored = favoredPositions.orElse(null);
-        CachedWorld cachedWorld = Optional.ofNullable(WorldProvider.INSTANCE.getCurrentWorld()).map(w -> w.cache).orElse(null);
-        ChunkProviderClient chunkProvider = Minecraft.getMinecraft().world.getChunkProvider();
+        HashSet<Long> favored = favoredPositions.orElse(null);
         BlockStateInterface.clearCachedChunk();
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
@@ -88,19 +78,16 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
 
-        HashMap<Class<? extends Movement>, Long> timeConsumed = new HashMap<>();
-        HashMap<Class<? extends Movement>, Integer> count = new HashMap<>();
-        HashMap<Class<? extends Movement>, Integer> stateLookup = new HashMap<>();
-        HashMap<Class<? extends Movement>, Long> posCreation = new HashMap<>();
+        long[] timeConsumed = new long[Moves.values().length];
+        int[] count = new int[Moves.values().length];
+        int[] stateLookup = new int[Moves.values().length];
+        long[] posCreation = new long[Moves.values().length];
         long heapRemove = 0;
         int heapRemoveCount = 0;
         long heapAdd = 0;
         int heapAddCount = 0;
         long heapUpdate = 0;
         int heapUpdateCount = 0;
-
-        long construction = 0;
-        int constructionCount = 0;
 
         long chunk = 0;
         int chunkCount = 0;
@@ -129,36 +116,24 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
             heapRemoveCount++;
             currentNode.isOpen = false;
             mostRecentConsidered = currentNode;
-            BetterBlockPos currentNodePos = currentNode.pos;
             numNodes++;
-            if (goal.isInGoal(currentNodePos)) {
+            if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal));
             }
-            long constructStart = System.nanoTime();
-            goalCheck += constructStart - t;
+            goalCheck += System.nanoTime() - t;
             goalCheckCount++;
-            Movement[] possibleMovements = getConnectedPositions(currentNodePos, calcContext);//movement that we could take that start at currentNodePos, in random order
-            shuffle(possibleMovements);
-            long constructEnd = System.nanoTime();
-            construction += constructEnd - constructStart;
-            constructionCount++;
-            for (Movement movementToGetToNeighbor : possibleMovements) {
-                if (movementToGetToNeighbor == null) {
-                    continue;
-                }
-                BetterBlockPos dest = movementToGetToNeighbor.getDest();
+            for (Moves moves : Moves.values()) {
                 long s = System.nanoTime();
-                int chunkX = currentNodePos.x >> 4;
-                int chunkZ = currentNodePos.z >> 4;
-                if (dest.x >> 4 != chunkX || dest.z >> 4 != chunkZ) {
+                int newX = currentNode.x + moves.xOffset;
+                int newZ = currentNode.z + moves.zOffset;
+                if (newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
-                    if (chunkProvider.isChunkGeneratedAt(chunkX, chunkZ)) {
-                        // see issue #106
-                        if (cachedWorld == null || !cachedWorld.isCached(dest)) {
+                    if (!BlockStateInterface.isLoaded(newX, newZ)) {
+                        if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
                             numEmptyChunk++;
-                            continue;
                         }
+                        continue;
                     }
                 }
                 long costStart = System.nanoTime();
@@ -167,31 +142,39 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                 // TODO cache cost
                 int numLookupsBefore = BlockStateInterface.numBlockStateLookups;
                 long numCreatedBefore = BetterBlockPos.numCreated;
-                double actionCost = movementToGetToNeighbor.getCost(calcContext);
+
+                MoveResult res = moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z);
+
                 long costEnd = System.nanoTime();
-                stateLookup.put(movementToGetToNeighbor.getClass(), BlockStateInterface.numBlockStateLookups - numLookupsBefore + stateLookup.getOrDefault(movementToGetToNeighbor.getClass(), 0));
-                posCreation.put(movementToGetToNeighbor.getClass(), BetterBlockPos.numCreated - numCreatedBefore + posCreation.getOrDefault(movementToGetToNeighbor.getClass(), 0L));
-                timeConsumed.put(movementToGetToNeighbor.getClass(), costEnd - costStart + timeConsumed.getOrDefault(movementToGetToNeighbor.getClass(), 0L));
-                count.put(movementToGetToNeighbor.getClass(), 1 + count.getOrDefault(movementToGetToNeighbor.getClass(), 0));
+                stateLookup[moves.ordinal()] += BlockStateInterface.numBlockStateLookups - numLookupsBefore;
+                posCreation[moves.ordinal()] += BetterBlockPos.numCreated - numCreatedBefore;
+                timeConsumed[moves.ordinal()] += costEnd - costStart;
+                count[moves.ordinal()]++;
+
                 numMovementsConsidered++;
+                double actionCost = res.cost;
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
-                if (actionCost <= 0) {
-                    throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " calculated implausible cost " + actionCost);
+                // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
+                if (!moves.dynamicXZ && (res.destX != newX || res.destZ != newZ)) {
+                    throw new IllegalStateException(moves + " " + res.destX + " " + newX + " " + res.destZ + " " + newZ);
                 }
-                if (favoring && favored.contains(dest)) {
+                if (actionCost <= 0) {
+                    throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
+                }
+                if (favoring && favored.contains(posHash(res.destX, res.destY, res.destZ))) {
                     // see issue #18
                     actionCost *= favorCoeff;
                 }
                 long st = System.nanoTime();
-                PathNode neighbor = getNodeAtPosition(dest);
+                PathNode neighbor = getNodeAtPosition(res.destX, res.destY, res.destZ);
                 getNode += System.nanoTime() - st;
                 getNodeCount++;
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
                     if (tentativeCost < 0) {
-                        throw new IllegalStateException(movementToGetToNeighbor.getClass() + " " + movementToGetToNeighbor + " overflowed into negative " + actionCost + " " + neighbor.cost + " " + tentativeCost);
+                        throw new IllegalStateException(moves + " overflowed into negative " + actionCost + " " + neighbor.cost + " " + tentativeCost);
                     }
                     double improvementBy = neighbor.cost - tentativeCost;
                     // there are floating point errors caused by random combinations of traverse and diagonal over a flat area
@@ -202,7 +185,6 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
                         continue;
                     }
                     neighbor.previous = currentNode;
-                    neighbor.previousMovement = movementToGetToNeighbor;
                     neighbor.cost = tentativeCost;
                     neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
                     if (neighbor.isOpen) {
@@ -235,21 +217,20 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         long numSuccc = BetterBlockPos.numCreated - startVal3;
         System.out.println("Out of " + numBlockState + " block state lookups, " + numSucc + " were in the same chunk as the previous and could be cached");
         System.out.println("Instantiated " + numSuccc + " BetterBlockPos objects");
-        System.out.println("Remove " + (heapRemove / heapRemoveCount) + " " + heapRemove / 1000000 + " " + heapRemoveCount);
-        System.out.println("Add " + (heapAdd / heapAddCount) + " " + heapAdd / 1000000 + " " + heapAddCount);
-        System.out.println("Update " + (heapUpdate / heapUpdateCount) + " " + heapUpdate / 1000000 + " " + heapUpdateCount);
-        System.out.println("Construction " + (construction / constructionCount) + " " + construction / 1000000 + " " + constructionCount);
-        System.out.println("Chunk " + (chunk / chunkCount) + " " + chunk / 1000000 + " " + chunkCount);
-        System.out.println("GetNode " + (getNode / getNodeCount) + " " + getNode / 1000000 + " " + getNodeCount);
-        System.out.println("GoalCheck " + (goalCheck / goalCheckCount) + " " + goalCheck / 1000000 + " " + goalCheckCount);
-        ArrayList<Class<? extends Movement>> klasses = new ArrayList<>(count.keySet());
-        klasses.sort(Comparator.comparingLong(k -> timeConsumed.get(k) / count.get(k)));
-        for (Class<? extends Movement> klass : klasses) {
-            int num = count.get(klass);
-            long nanoTime = timeConsumed.get(klass);
-            System.out.println(nanoTime / num + " " + klass + " " + nanoTime / 1000000 + "ms " + num);
-            System.out.println(stateLookup.get(klass) / num + " " + stateLookup.get(klass));
-            System.out.println(posCreation.get(klass) / num + " " + posCreation.get(klass));
+        System.out.println("Remove " + (heapRemove / heapRemoveCount) + " " + heapRemove / 1000000 + "ms " + heapRemoveCount);
+        System.out.println("Add " + (heapAdd / heapAddCount) + " " + heapAdd / 1000000 + "ms " + heapAddCount);
+        System.out.println("Update " + (heapUpdate / heapUpdateCount) + " " + heapUpdate / 1000000 + "ms " + heapUpdateCount);
+        System.out.println("Chunk " + (chunk / chunkCount) + " " + chunk / 1000000 + "ms " + chunkCount);
+        System.out.println("GetNode " + (getNode / getNodeCount) + " " + getNode / 1000000 + "ms " + getNodeCount);
+        System.out.println("GoalCheck " + (goalCheck / goalCheckCount) + " " + goalCheck / 1000000 + "ms " + goalCheckCount);
+        ArrayList<Moves> moves = new ArrayList<>(Arrays.asList(Moves.values()));
+        moves.sort(Comparator.comparingLong(k -> timeConsumed[k.ordinal()] / count[k.ordinal()]));
+        for (Moves move : moves) {
+            int num = count[move.ordinal()];
+            long nanoTime = timeConsumed[move.ordinal()];
+            System.out.println(nanoTime / num + " " + move + " " + nanoTime / 1000000 + "ms " + num);
+            System.out.println(stateLookup[move.ordinal()] / num + " " + stateLookup[move.ordinal()]);
+            System.out.println(posCreation[move.ordinal()] / num + " " + posCreation[move.ordinal()]);
         }
         if (cancelRequested) {
             return Optional.empty();
@@ -281,57 +262,5 @@ public class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
         logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
         logDebug("No path found =(");
         return Optional.empty();
-    }
-
-
-    public static Movement[] getConnectedPositions(BetterBlockPos pos, CalculationContext calcContext) {
-        int x = pos.x;
-        int y = pos.y;
-        int z = pos.z;
-        BetterBlockPos east = new BetterBlockPos(x + 1, y, z);
-        BetterBlockPos west = new BetterBlockPos(x - 1, y, z);
-        BetterBlockPos south = new BetterBlockPos(x, y, z + 1);
-        BetterBlockPos north = new BetterBlockPos(x, y, z - 1);
-        return new Movement[]{
-                new MovementDownward(pos, new BetterBlockPos(x, y - 1, z)),
-
-                new MovementPillar(pos, new BetterBlockPos(x, y + 1, z)),
-
-                new MovementTraverse(pos, east),
-                new MovementTraverse(pos, west),
-                new MovementTraverse(pos, north),
-                new MovementTraverse(pos, south),
-
-                new MovementAscend(pos, new BetterBlockPos(x + 1, y + 1, z)),
-                new MovementAscend(pos, new BetterBlockPos(x - 1, y + 1, z)),
-                new MovementAscend(pos, new BetterBlockPos(x, y + 1, z + 1)),
-                new MovementAscend(pos, new BetterBlockPos(x, y + 1, z - 1)),
-
-                MovementHelper.generateMovementFallOrDescend(pos, east, calcContext),
-                MovementHelper.generateMovementFallOrDescend(pos, west, calcContext),
-                MovementHelper.generateMovementFallOrDescend(pos, north, calcContext),
-                MovementHelper.generateMovementFallOrDescend(pos, south, calcContext),
-
-                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.EAST),
-                new MovementDiagonal(pos, EnumFacing.NORTH, EnumFacing.WEST),
-                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.EAST),
-
-                new MovementDiagonal(pos, EnumFacing.SOUTH, EnumFacing.WEST),
-
-                MovementParkour.generate(pos, EnumFacing.EAST, calcContext),
-                MovementParkour.generate(pos, EnumFacing.WEST, calcContext),
-                MovementParkour.generate(pos, EnumFacing.NORTH, calcContext),
-                MovementParkour.generate(pos, EnumFacing.SOUTH, calcContext),
-        };
-    }
-
-    private <T> void shuffle(T[] list) {
-        int len = list.length;
-        for (int i = 0; i < len; i++) {
-            int j = random.nextInt(len);
-            T t = list[j];
-            list[j] = list[i];
-            list[i] = t;
-        }
     }
 }

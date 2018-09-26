@@ -15,10 +15,25 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.interfaces;
+package baritone.api.cache;
 
-import net.minecraft.util.math.BlockPos;
+/**
+ * @author Brady
+ * @since 9/24/2018
+ */
+public interface IWorldData {
 
-public interface IGoalRenderPos {
-    BlockPos getGoalPos();
+    /**
+     * Returns the cached world for this world. A cached world is a simplified format
+     * of a regular world, intended for use on multiplayer servers where chunks are not
+     * traditionally stored to disk, allowing for long distance pathing with minimal disk usage.
+     */
+    ICachedWorld getCachedWorld();
+
+    /**
+     * Returns the waypoint collection for this world.
+     *
+     * @return The waypoint collection for this world
+     */
+    IWaypointCollection getWaypoints();
 }

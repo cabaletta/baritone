@@ -15,13 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.utils.pathing;
 
-import net.minecraft.util.Tuple;
+import org.junit.Test;
 
-public class Rotation extends Tuple<Float, Float> {
+import static org.junit.Assert.assertTrue;
 
-    public Rotation(Float yaw, Float pitch) {
-        super(yaw, pitch);
+public class PathingBlockTypeTest {
+    @Test
+    public void testBits() {
+        for (PathingBlockType type : PathingBlockType.values()) {
+            boolean[] bits = type.getBits();
+            assertTrue(type == PathingBlockType.fromBits(bits[0], bits[1]));
+        }
     }
 }

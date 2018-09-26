@@ -15,11 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import baritone.Baritone;
-import baritone.utils.Utils;
-import net.minecraft.util.math.BlockPos;
+import baritone.api.BaritoneAPI;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -48,14 +46,14 @@ public class GoalXZ implements Goal {
     }
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
-        return pos.getX() == x && pos.getZ() == z;
+    public boolean isInGoal(int x, int y, int z) {
+        return x == this.x && z == this.z;
     }
 
     @Override
-    public double heuristic(BlockPos pos) {//mostly copied from GoalBlock
-        double xDiff = pos.getX() - this.x;
-        double zDiff = pos.getZ() - this.z;
+    public double heuristic(int x, int y, int z) {//mostly copied from GoalBlock
+        int xDiff = x - this.x;
+        int zDiff = z - this.z;
         return calculate(xDiff, zDiff);
     }
 
@@ -82,11 +80,11 @@ public class GoalXZ implements Goal {
             diagonal = z;
         }
         diagonal *= SQRT_2;
-        return (diagonal + straight) * Baritone.settings().costHeuristic.get(); // big TODO tune
+        return (diagonal + straight) * BaritoneAPI.getSettings().costHeuristic.get(); // big TODO tune
     }
 
     public static GoalXZ fromDirection(Vec3d origin, float yaw, double distance) {
-        float theta = (float) Utils.degToRad(yaw);
+        float theta = (float) Math.toRadians(yaw);
         double x = origin.x - MathHelper.sin(theta) * distance;
         double z = origin.z + MathHelper.cos(theta) * distance;
         return new GoalXZ((int) x, (int) z);

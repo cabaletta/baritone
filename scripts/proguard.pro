@@ -1,28 +1,28 @@
--injars baritone-1.0.0.jar
+-injars baritone-0.0.3.jar
 -outjars Obfuscated
 
 
 -keepattributes Signature
 -keepattributes *Annotation*
 
--optimizationpasses 20
+-optimizationpasses 5
 -verbose
 
 -allowaccessmodification # anything not kept can be changed from public to private and inlined etc
 -overloadaggressively
 -dontusemixedcaseclassnames
 
-# instead of obfing to a, b, c, obf to baritone.a, baritone.b, baritone.c so as to not conflict with minecraft's obfd classes
+# instead of renaming to a, b, c, rename to baritone.a, baritone.b, baritone.c so as to not conflict with minecraft's obfd classes
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
 #-keep class baritone.behavior.** { *; }
-#-keep class baritone.api.** { *; }
+-keep class baritone.api.** { *; }
 #-keep class baritone.* { *; }
 #-keep class baritone.pathing.goals.** { *; }
 
 # setting names are reflected from field names, so keep field names
--keepclassmembers class baritone.Settings {
+-keepclassmembers class baritone.api.Settings {
     public <fields>;    
 }
 
@@ -30,9 +30,9 @@
 -keep class baritone.launch.** { *; }
 
 # copy all necessary libraries into tempLibraries to build
--libraryjars '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/lib/rt.jar'
+-libraryjars '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/lib/rt.jar' # this is the rt jar
 
--libraryjars 'tempLibraries/1.12.2.jar'
+-libraryjars 'tempLibraries/minecraft-1.12.2.jar'
 
 -libraryjars 'tempLibraries/authlib-1.5.25.jar'
 -libraryjars 'tempLibraries/codecjorbis-20101023.jar'
@@ -48,22 +48,18 @@
 -libraryjars 'tempLibraries/httpclient-4.3.3.jar'
 -libraryjars 'tempLibraries/httpcore-4.3.2.jar'
 -libraryjars 'tempLibraries/icu4j-core-mojang-51.2.jar'
--libraryjars 'tempLibraries/java-objc-bridge-1.0.0-natives-osx.jar'
 -libraryjars 'tempLibraries/java-objc-bridge-1.0.0.jar'
 -libraryjars 'tempLibraries/jinput-2.0.5.jar'
--libraryjars 'tempLibraries/jinput-platform-2.0.5-natives-osx.jar'
 -libraryjars 'tempLibraries/jna-4.4.0.jar'
 -libraryjars 'tempLibraries/jopt-simple-5.0.3.jar'
--libraryjars 'tempLibraries/jsr305-3.0.1-sources.jar'
 -libraryjars 'tempLibraries/jsr305-3.0.1.jar'
 -libraryjars 'tempLibraries/jutils-1.0.0.jar'
 -libraryjars 'tempLibraries/libraryjavasound-20101123.jar'
 -libraryjars 'tempLibraries/librarylwjglopenal-20100824.jar'
 -libraryjars 'tempLibraries/log4j-api-2.8.1.jar'
 -libraryjars 'tempLibraries/log4j-core-2.8.1.jar'
--libraryjars 'tempLibraries/lwjgl-2.9.2-nightly-20140822.jar'
--libraryjars 'tempLibraries/lwjgl-platform-2.9.2-nightly-20140822-natives-osx.jar'
--libraryjars 'tempLibraries/lwjgl_util-2.9.2-nightly-20140822.jar'
+-libraryjars 'tempLibraries/lwjgl-2.9.4-nightly-20150209.jar'
+-libraryjars 'tempLibraries/lwjgl_util-2.9.4-nightly-20150209.jar'
 -libraryjars 'tempLibraries/netty-all-4.1.9.Final.jar'
 -libraryjars 'tempLibraries/oshi-core-1.1.jar'
 -libraryjars 'tempLibraries/patchy-1.1.jar'
@@ -72,8 +68,8 @@
 -libraryjars 'tempLibraries/soundsystem-20120107.jar'
 -libraryjars 'tempLibraries/text2speech-1.10.3.jar'
 
--libraryjars 'tempLibraries/mixin-0.7.8-SNAPSHOT.jar'
--libraryjars 'tempLibraries/launchwrapper-1.12.jar'
+-libraryjars 'tempLibraries/mixin-0.7.11-SNAPSHOT.jar'
+-libraryjars 'tempLibraries/launchwrapper-1.11.jar' # TODO why does only 1.11.jar exist?
 
 
 

@@ -18,23 +18,20 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.Settings;
-import baritone.api.behavior.Behavior;
+import baritone.api.Settings;
+import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
+import baritone.api.pathing.goals.*;
+import baritone.api.pathing.movement.ActionCosts;
+import baritone.behavior.Behavior;
 import baritone.behavior.FollowBehavior;
 import baritone.behavior.MineBehavior;
 import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
-import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.goals.*;
-import baritone.pathing.movement.ActionCosts;
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
-import baritone.utils.pathing.BetterBlockPos;
+import baritone.pathing.movement.*;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
@@ -43,6 +40,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ExampleBaritoneControl extends Behavior implements Helper {
 
@@ -185,7 +184,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     Chunk chunk = cli.getLoadedChunk(x, z);
                     if (chunk != null) {
                         count++;
-                        WorldProvider.INSTANCE.getCurrentWorld().cache.queueForPacking(chunk);
+                        WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().queueForPacking(chunk);
                     }
                 }
             }
@@ -208,7 +207,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("forcecancel")) {
+            MineBehavior.INSTANCE.cancel();
+            FollowBehavior.INSTANCE.cancel();
+            PathingBehavior.INSTANCE.cancel();
             AbstractNodeCostSearch.forceCancel();
+            PathingBehavior.INSTANCE.forceCancel();
             event.cancel();
             logDirect("ok force canceled");
             return;
@@ -269,20 +272,20 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("reloadall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().cache.reloadAllFromDisk();
+            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().reloadAllFromDisk();
             logDirect("ok");
             event.cancel();
             return;
         }
         if (msg.equals("saveall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().cache.save();
+            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().save();
             logDirect("ok");
             event.cancel();
             return;
         }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(blockType, 1, 4);
+            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(pos).getBlock();
@@ -297,8 +300,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             String[] blockTypes = msg.substring(4).trim().split(" ");
             try {
                 int quantity = Integer.parseInt(blockTypes[1]);
-                ChunkPacker.stringToBlock(blockTypes[0]).hashCode();
-                MineBehavior.INSTANCE.mine(quantity, blockTypes[0]);
+                Block block = ChunkPacker.stringToBlock(blockTypes[0]);
+                Objects.requireNonNull(block);
+                MineBehavior.INSTANCE.mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 event.cancel();
                 return;
@@ -339,22 +343,38 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 event.cancel();
                 return;
             }
-            Set<Waypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getByTag(tag);
+            Set<IWaypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getByTag(tag);
             // might as well show them from oldest to newest
-            List<Waypoint> sorted = new ArrayList<>(waypoints);
-            sorted.sort(Comparator.comparingLong(Waypoint::creationTimestamp));
+            List<IWaypoint> sorted = new ArrayList<>(waypoints);
+            sorted.sort(Comparator.comparingLong(IWaypoint::getCreationTimestamp));
             logDirect("Waypoints under tag " + tag + ":");
-            for (Waypoint waypoint : sorted) {
+            for (IWaypoint waypoint : sorted) {
                 logDirect(waypoint.toString());
             }
             event.cancel();
             return;
         }
         if (msg.startsWith("save")) {
-            String name = msg.substring(4).trim();
-            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint(name, Waypoint.Tag.USER, playerFeet()));
-            logDirect("Saved user defined tag under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
             event.cancel();
+            String name = msg.substring(4).trim();
+            BlockPos pos = playerFeet();
+            if (name.contains(" ")) {
+                logDirect("Name contains a space, assuming it's in the format 'save waypointName X Y Z'");
+                String[] parts = name.split(" ");
+                if (parts.length != 4) {
+                    logDirect("Unable to parse, expected four things");
+                    return;
+                }
+                try {
+                    pos = new BlockPos(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
+                } catch (NumberFormatException ex) {
+                    logDirect("Unable to parse coordinate integers");
+                    return;
+                }
+                name = parts[0];
+            }
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
+            logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
             return;
         }
         if (msg.startsWith("goto")) {
@@ -364,31 +384,37 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
             Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
+            IWaypoint waypoint;
             if (tag == null) {
                 String mining = waypointType;
                 Block block = ChunkPacker.stringToBlock(mining);
                 //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 event.cancel();
                 if (block == null) {
-                    logDirect("No locations for " + mining + " known, cancelling");
+                    waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
+                    if (waypoint == null) {
+                        logDirect("No locations for " + mining + " known, cancelling");
+                        return;
+                    }
+                } else {
+                    List<BlockPos> locs = MineBehavior.INSTANCE.scanFor(Collections.singletonList(block), 64);
+                    if (locs.isEmpty()) {
+                        logDirect("No locations for " + mining + " known, cancelling");
+                        return;
+                    }
+                    PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
+                    PathingBehavior.INSTANCE.path();
                     return;
                 }
-                List<BlockPos> locs = MineBehavior.scanFor(Collections.singletonList(block), 64);
-                if (locs.isEmpty()) {
-                    logDirect("No locations for " + mining + " known, cancelling");
+            } else {
+                waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
+                if (waypoint == null) {
+                    logDirect("None saved for tag " + tag);
+                    event.cancel();
                     return;
                 }
-                PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
-                PathingBehavior.INSTANCE.path();
-                return;
             }
-            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(tag);
-            if (waypoint == null) {
-                logDirect("None saved for tag " + tag);
-                event.cancel();
-                return;
-            }
-            Goal goal = new GoalBlock(waypoint.location);
+            Goal goal = new GoalBlock(waypoint.getLocation());
             PathingBehavior.INSTANCE.setGoal(goal);
             if (!PathingBehavior.INSTANCE.path()) {
                 if (!goal.isInGoal(playerFeet())) {
@@ -399,7 +425,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("spawn") || msg.equals("bed")) {
-            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.BED);
+            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
             if (waypoint == null) {
                 BlockPos spawnPoint = player().getBedLocation();
                 // for some reason the default spawnpoint is underground sometimes
@@ -407,7 +433,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
                 PathingBehavior.INSTANCE.setGoal(goal);
             } else {
-                Goal goal = new GoalBlock(waypoint.location);
+                Goal goal = new GoalBlock(waypoint.getLocation());
                 PathingBehavior.INSTANCE.setGoal(goal);
                 logDirect("Set goal to most recent bed " + goal);
             }
@@ -415,17 +441,17 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("sethome")) {
-            WorldProvider.INSTANCE.getCurrentWorld().waypoints.addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
             logDirect("Saved. Say home to set goal.");
             event.cancel();
             return;
         }
         if (msg.equals("home")) {
-            Waypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().waypoints.getMostRecentByTag(Waypoint.Tag.HOME);
+            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
             if (waypoint == null) {
                 logDirect("home not saved");
             } else {
-                Goal goal = new GoalBlock(waypoint.location);
+                Goal goal = new GoalBlock(waypoint.getLocation());
                 PathingBehavior.INSTANCE.setGoal(goal);
                 PathingBehavior.INSTANCE.path();
                 logDirect("Going to saved home " + goal);
@@ -434,8 +460,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("costs")) {
-            Movement[] movements = AStarPathFinder.getConnectedPositions(new BetterBlockPos(playerFeet()), new CalculationContext());
-            List<Movement> moves = new ArrayList<>(Arrays.asList(movements));
+            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(playerFeet())).collect(Collectors.toCollection(ArrayList::new));
             while (moves.contains(null)) {
                 moves.remove(null);
             }

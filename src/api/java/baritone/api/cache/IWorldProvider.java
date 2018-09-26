@@ -15,21 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.pathing;
-
-import baritone.utils.Helper;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
+package baritone.api.cache;
 
 /**
  * @author Brady
- * @since 8/4/2018 2:01 AM
+ * @since 9/24/2018
  */
-public interface IBlockTypeAccess extends Helper {
+public interface IWorldProvider {
 
-    IBlockState getBlock(int x, int y, int z);
-
-    default IBlockState getBlock(BlockPos pos) {
-        return getBlock(pos.getX(), pos.getY(), pos.getZ());
-    }
+    /**
+     * Returns the data of the currently loaded world
+     *
+     * @return The current world data
+     */
+    IWorldData getCurrentWorld();
 }

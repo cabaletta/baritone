@@ -17,30 +17,37 @@
 
 package baritone.cache;
 
-import com.google.common.collect.ImmutableList;
+import baritone.api.cache.IWaypoint;
 import net.minecraft.util.math.BlockPos;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Date;
-import java.util.List;
 
 /**
- * A single waypoint
+ * Basic implementation of {@link IWaypoint}
  *
  * @author leijurv
  */
-public class Waypoint {
+public class Waypoint implements IWaypoint {
 
-    public final String name;
-    public final Tag tag;
+    private final String name;
+    private final Tag tag;
     private final long creationTimestamp;
-    public final BlockPos location;
+    private final BlockPos location;
 
     public Waypoint(String name, Tag tag, BlockPos location) {
         this(name, tag, location, System.currentTimeMillis());
     }
 
-    Waypoint(String name, Tag tag, BlockPos location, long creationTimestamp) { // read from disk
+    /**
+     * Constructor called when a Waypoint is read from disk, adds the creationTimestamp
+     * as a parameter so that it is reserved after a waypoint is wrote to the disk.
+     *
+     * @param name The waypoint name
+     * @param tag The waypoint tag
+     * @param location The waypoint location
+     * @param creationTimestamp When the waypoint was created
+     */
+    Waypoint(String name, Tag tag, BlockPos location, long creationTimestamp) {
         this.name = name;
         this.tag = tag;
         this.location = location;
@@ -48,46 +55,44 @@ public class Waypoint {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (!(o instanceof Waypoint)) {
-            return false;
-        }
-        Waypoint w = (Waypoint) o;
-        return name.equals(w.name) && tag == w.tag && location.equals(w.location);
-    }
-
-    @Override
     public int hashCode() {
         return name.hashCode() + tag.hashCode() + location.hashCode(); //lol
     }
 
-    public long creationTimestamp() {
-        return creationTimestamp;
+    @Override
+    public String getName() {
+        return this.name;
     }
 
+    @Override
+    public Tag getTag() {
+        return this.tag;
+    }
+
+    @Override
+    public long getCreationTimestamp() {
+        return this.creationTimestamp;
+    }
+
+    @Override
+    public BlockPos getLocation() {
+        return this.location;
+    }
+
+    @Override
     public String toString() {
         return name + " " + location.toString() + " " + new Date(creationTimestamp).toString();
     }
 
-    public enum Tag {
-        HOME("home", "base"),
-        DEATH("death"),
-        BED("bed", "spawn"),
-        USER("user");
-
-        private static final List<Tag> TAG_LIST = ImmutableList.<Tag>builder().add(Tag.values()).build();
-
-        private final String[] names;
-
-        Tag(String... names) {
-            this.names = names;
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
         }
-
-        public static Tag fromString(String name) {
-            return TAG_LIST.stream().filter(tag -> ArrayUtils.contains(tag.names, name.toLowerCase())).findFirst().orElse(null);
+        if (!(o instanceof IWaypoint)) {
+            return false;
         }
+        IWaypoint w = (IWaypoint) o;
+        return name.equals(w.getName()) && tag == w.getTag() && location.equals(w.getLocation());
     }
 }

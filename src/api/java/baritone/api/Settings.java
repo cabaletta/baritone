@@ -15,15 +15,17 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone;
+package baritone.api;
 
-import baritone.utils.Helper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.util.text.ITextComponent;
 
+import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -32,6 +34,7 @@ import java.util.function.Consumer;
  * @author leijurv
  */
 public class Settings {
+
     /**
      * Allow Baritone to break blocks
      */
@@ -320,8 +323,9 @@ public class Settings {
     public Setting<Boolean> prefix = new Setting<>(false);
 
     /**
-     * true: can mine blocks when in inventory, chat, or tabbed away in ESC menu
-     * false: works on cosmic prisons
+     * {@code true}: can mine blocks when in inventory, chat, or tabbed away in ESC menu
+     * <p>
+     * {@code false}: works on cosmic prisons
      * <p>
      * LOL
      */
@@ -389,9 +393,51 @@ public class Settings {
     public Setting<Integer> followRadius = new Setting<>(3);
 
     /**
-     * Instead of Baritone logging to chat, set a custom consumer.
+     * The function that is called when Baritone will log to chat. This function can be added to
+     * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
+     * {@link Setting#value};
      */
-    public Setting<Consumer<ITextComponent>> logger = new Setting<>(new Helper() {}::addToChat);
+    public Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getMinecraft().ingameGUI.getChatGUI()::printChatMessage);
+
+    /**
+     * The color of the current path
+     */
+    public Setting<Color> colorCurrentPath = new Setting<>(Color.RED);
+
+    /**
+     * The color of the next path
+     */
+    public Setting<Color> colorNextPath = new Setting<>(Color.MAGENTA);
+
+    /**
+     * The color of the blocks to break
+     */
+    public Setting<Color> colorBlocksToBreak = new Setting<>(Color.RED);
+
+    /**
+     * The color of the blocks to place
+     */
+    public Setting<Color> colorBlocksToPlace = new Setting<>(Color.GREEN);
+
+    /**
+     * The color of the blocks to walk into
+     */
+    public Setting<Color> colorBlocksToWalkInto = new Setting<>(Color.MAGENTA);
+
+    /**
+     * The color of the best path so far
+     */
+    public Setting<Color> colorBestPathSoFar = new Setting<>(Color.BLUE);
+
+    /**
+     * The color of the path to the most recent considered node
+     */
+    public Setting<Color> colorMostRecentConsidered = new Setting<>(Color.CYAN);
+
+    /**
+     * The color of the goal box
+     */
+    public Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
 
     public final Map<String, Setting<?>> byLowerName;
     public final List<Setting<?>> allSettings;

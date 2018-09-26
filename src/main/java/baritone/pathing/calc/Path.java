@@ -17,8 +17,9 @@
 
 package baritone.pathing.calc;
 
-import baritone.pathing.goals.Goal;
+import baritone.api.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
+import baritone.pathing.movement.Moves;
 import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
@@ -60,8 +61,8 @@ class Path implements IPath {
     private volatile boolean verified;
 
     Path(PathNode start, PathNode end, int numNodes, Goal goal) {
-        this.start = start.pos;
-        this.end = end.pos;
+        this.start = new BetterBlockPos(start.x, start.y, start.z);
+        this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
         this.path = new ArrayList<>();
         this.movements = new ArrayList<>();
@@ -88,16 +89,29 @@ class Path implements IPath {
         LinkedList<BetterBlockPos> tempPath = new LinkedList<>(); // Repeatedly inserting to the beginning of an arraylist is O(n^2)
         LinkedList<Movement> tempMovements = new LinkedList<>(); // Instead, do it into a linked list, then convert at the end
         while (!current.equals(start)) {
-            tempPath.addFirst(current.pos);
-            tempMovements.addFirst(current.previousMovement);
+            tempPath.addFirst(new BetterBlockPos(current.x, current.y, current.z));
+            tempMovements.addFirst(runBackwards(current.previous, current));
             current = current.previous;
         }
-        tempPath.addFirst(start.pos);
+        tempPath.addFirst(this.start);
         // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
         // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         // to performantly do that conversion since it knows the length.
         path.addAll(tempPath);
         movements.addAll(tempMovements);
+    }
+
+    private static Movement runBackwards(PathNode src0, PathNode dest0) { // TODO this is horrifying
+        BetterBlockPos src = new BetterBlockPos(src0.x, src0.y, src0.z);
+        BetterBlockPos dest = new BetterBlockPos(dest0.x, dest0.y, dest0.z);
+        for (Moves moves : Moves.values()) {
+            Movement move = moves.apply0(src);
+            if (move.getDest().equals(dest)) {
+                return move;
+            }
+        }
+        // leave this as IllegalStateException; it's caught in AbstractNodeCostSearch
+        throw new IllegalStateException("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
     }
 
     /**

@@ -11,9 +11,12 @@ There are some basic steps to getting Baritone setup with Impact.
 ## Acquiring a build of Baritone
 There are 3 methods of acquiring a build of Baritone (While it is still in development)
 
-### Official Build (Not always up to date)
-Download the "official" jar (as of commit <a href="https://github.com/cabaletta/baritone/commit/2e63ac41d9b22e4ee0a62f2bd29974e43e2071a1">2e63ac4</a>,
-built on September 19) from <a href="https://www.dropbox.com/s/imc6xwwpwsh3i0y/baritone-1.0.0.jar?dl=0">here</a>.
+### Official Release (Not always up to date)
+https://github.com/cabaletta/baritone/releases
+
+For Impact 4.3, there is no Baritone integration yet, so you will want `baritone-standalone-X.Y.Z.jar`.
+
+Any official release will be GPG signed by leijurv (44A3EA646EADAC6A) and ZeroMemes (73A788379A197567). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by those two public keys of `checksums.txt`. 
 
 ### Building Baritone yourself
 There are a few steps to this
@@ -23,7 +26,7 @@ There are a few steps to this
 command line
   - Windows: ``gradlew build``
   - Mac/Linux: ``./gradlew build``
-- The build should be exported into ``/build/libs/baritone-1.0.0.jar``
+- The build should be exported into ``/build/libs/baritone-X.Y.Z.jar``
 
 ### Cutting Edge Release
 If you want to trust @Plutie#9079, you can download an automatically generated build of the latest commit
@@ -37,9 +40,9 @@ putting baritone.
 - Create 3 new subdirectories starting from ``libraries``
   - ``cabaletta``
     - ``baritone``
-      - ``1.0.0``
- - Copy the build of Baritone that was acquired earlier, and place it into the ``1.0.0`` folder
-   - The full path should look like ``<Minecraft>/libraries/cabaletta/baritone/1.0.0/baritone-1.0.0.jar``
+      - ``X.Y.Z``
+ - Copy the build of Baritone that was acquired earlier, and place it into the ``X.Y.Z`` folder
+   - The full path should look like ``<Minecraft>/libraries/cabaletta/baritone/X.Y.Z/baritone-X.Y.Z.jar``
 
 ## Modifying the Impact Profile JSON to run baritone
 The final step is "registering" the Baritone library with Impact, so that it loads on launch.
@@ -72,7 +75,7 @@ The final step is "registering" the Baritone library with Impact, so that it loa
 - Create a new object in the array, between the ``Impact`` and ``ClientAPI`` dependencies preferably.
     ```
     {
-        "name": "cabaletta:baritone:1.0.0"
+        "name": "cabaletta:baritone:X.Y.Z"
     },
     ```
 - Now find the ``"minecraftArguments": "..."`` text near the top.

@@ -17,14 +17,17 @@
 
 package baritone.utils.pathing;
 
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class BetterBlockPosTest {
 
-    @Test
+    // disabled since this is a benchmark, not really a test. also including it makes the tests take 50 seconds for no reason
+    /*@Test
     public void benchMulti() {
         System.out.println("Benching up()");
         for (int i = 0; i < 10; i++) {
@@ -37,7 +40,40 @@ public class BetterBlockPosTest {
             benchN();
             assertTrue(i<10);
         }
+    }*/
 
+    /**
+     * Make sure BetterBlockPos behaves just like BlockPos
+     */
+    @Test
+    public void testSimple() {
+        BlockPos pos = new BlockPos(1, 2, 3);
+        BetterBlockPos better = new BetterBlockPos(1, 2, 3);
+        assertEquals(pos, better);
+        assertEquals(pos.up(), better.up());
+        assertEquals(pos.down(), better.down());
+        assertEquals(pos.north(), better.north());
+        assertEquals(pos.south(), better.south());
+        assertEquals(pos.east(), better.east());
+        assertEquals(pos.west(), better.west());
+        for (EnumFacing dir : EnumFacing.values()) {
+            assertEquals(pos.offset(dir), better.offset(dir));
+            assertEquals(pos.offset(dir, 0), pos);
+            assertEquals(better.offset(dir, 0), better);
+            for (int i = -10; i < 10; i++) {
+                assertEquals(pos.offset(dir, i), better.offset(dir, i));
+            }
+            assertTrue(better.offset(dir, 0) == better);
+        }
+        for (int i = -10; i < 10; i++) {
+            assertEquals(pos.up(i), better.up(i));
+            assertEquals(pos.down(i), better.down(i));
+            assertEquals(pos.north(i), better.north(i));
+            assertEquals(pos.south(i), better.south(i));
+            assertEquals(pos.east(i), better.east(i));
+            assertEquals(pos.west(i), better.west(i));
+        }
+        assertTrue(better.offset(null, 0) == better);
     }
 
     public void benchOne() {

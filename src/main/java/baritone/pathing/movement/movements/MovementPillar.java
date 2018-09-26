@@ -17,13 +17,13 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.api.utils.Rotation;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.Rotation;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
@@ -48,9 +48,13 @@ public class MovementPillar extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        Block fromDown = BlockStateInterface.get(src).getBlock();
+        return cost(context, src.x, src.y, src.z);
+    }
+
+    public static double cost(CalculationContext context, int x, int y, int z) {
+        Block fromDown = BlockStateInterface.get(x, y, z).getBlock();
         boolean ladder = fromDown instanceof BlockLadder || fromDown instanceof BlockVine;
-        IBlockState fromDownDown = BlockStateInterface.get(src.down());
+        IBlockState fromDownDown = BlockStateInterface.get(x, y - 1, z);
         if (!ladder) {
             if (fromDownDown.getBlock() instanceof BlockLadder || fromDownDown.getBlock() instanceof BlockVine) {
                 return COST_INF;
@@ -61,28 +65,27 @@ public class MovementPillar extends Movement {
                 }
             }
         }
-        if (!context.hasThrowaway() && !ladder) {
-            return COST_INF;
-        }
         if (fromDown instanceof BlockVine) {
-            if (getAgainst(src) == null) {
+            if (!hasAgainst(x, y, z)) {
                 return COST_INF;
             }
         }
-        BlockPos toBreakPos = src.up(2);
-        IBlockState toBreak = BlockStateInterface.get(toBreakPos);
+        IBlockState toBreak = BlockStateInterface.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
         if (toBreakBlock instanceof BlockFenceGate) {
             return COST_INF;
         }
         Block srcUp = null;
         if (BlockStateInterface.isWater(toBreakBlock) && BlockStateInterface.isWater(fromDown)) {
-            srcUp = BlockStateInterface.get(dest).getBlock();
+            srcUp = BlockStateInterface.get(x, y + 1, z).getBlock();
             if (BlockStateInterface.isWater(srcUp)) {
                 return LADDER_UP_ONE_COST;
             }
         }
-        double hardness = MovementHelper.getMiningDurationTicks(context, toBreakPos, toBreak, true);
+        if (!context.hasThrowaway() && !ladder) {
+            return COST_INF;
+        }
+        double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);
         if (hardness >= COST_INF) {
             return COST_INF;
         }
@@ -90,12 +93,11 @@ public class MovementPillar extends Movement {
             if (toBreakBlock instanceof BlockLadder || toBreakBlock instanceof BlockVine) {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
-                BlockPos chkPos = src.up(3);
-                IBlockState check = BlockStateInterface.get(chkPos);
+                IBlockState check = BlockStateInterface.get(x, y + 3, z);
                 if (check.getBlock() instanceof BlockFalling) {
                     // see MovementAscend's identical check for breaking a falling block above our head
                     if (srcUp == null) {
-                        srcUp = BlockStateInterface.get(dest).getBlock();
+                        srcUp = BlockStateInterface.get(x, y + 1, z).getBlock();
                     }
                     if (!(toBreakBlock instanceof BlockFalling) || !(srcUp instanceof BlockFalling)) {
                         return COST_INF;
@@ -118,6 +120,13 @@ public class MovementPillar extends Movement {
         } else {
             return JUMP_ONE_BLOCK_COST + context.placeBlockCost() + hardness;
         }
+    }
+
+    public static boolean hasAgainst(int x, int y, int z) {
+        return BlockStateInterface.get(x + 1, y, z).isBlockNormalCube() ||
+                BlockStateInterface.get(x - 1, y, z).isBlockNormalCube() ||
+                BlockStateInterface.get(x, y, z + 1).isBlockNormalCube() ||
+                BlockStateInterface.get(x, y, z - 1).isBlockNormalCube();
     }
 
     public static BlockPos getAgainst(BlockPos vine) {

@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
@@ -25,9 +26,14 @@ import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.BetterBlockPos;
+import baritone.utils.pathing.MoveResult;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFalling;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+
+import static baritone.utils.pathing.MoveResult.IMPOSSIBLE;
 
 public class MovementDescend extends Movement {
 
@@ -45,24 +51,111 @@ public class MovementDescend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        Block fromDown = BlockStateInterface.get(src.down()).getBlock();
+        MoveResult result = cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        if (result.destY != dest.y) {
+            return COST_INF; // doesn't apply to us, this position is a fall not a descend
+        }
+        return result.cost;
+    }
+
+    public static MoveResult cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+        Block fromDown = BlockStateInterface.get(x, y - 1, z).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
-            return COST_INF;
+            return IMPOSSIBLE;
         }
-        if (!MovementHelper.canWalkOn(positionToPlace)) {
-            return COST_INF;
+
+        double totalCost = 0;
+        IBlockState destDown = BlockStateInterface.get(destX, y - 1, destZ);
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false);
+        if (totalCost >= COST_INF) {
+            return IMPOSSIBLE;
         }
-        Block tmp1 = BlockStateInterface.get(dest).getBlock();
-        if (tmp1 == Blocks.LADDER || tmp1 == Blocks.VINE) {
-            return COST_INF;
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y, destZ, false);
+        if (totalCost >= COST_INF) {
+            return IMPOSSIBLE;
         }
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true); // only the top block in the 3 we need to mine needs to consider the falling blocks above
+        if (totalCost >= COST_INF) {
+            return IMPOSSIBLE;
+        }
+
+        // A
+        //SA
+        // A
+        // B
+        // C
+        // D
+        //if S is where you start, B needs to be air for a movementfall
+        //A is plausibly breakable by either descend or fall
+        //C, D, etc determine the length of the fall
+
+        IBlockState below = BlockStateInterface.get(destX, y - 2, destZ);
+        if (!MovementHelper.canWalkOn(destX, y - 2, destZ, below)) {
+            return dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below);
+        }
+
+        if (destDown.getBlock() == Blocks.LADDER || destDown.getBlock() == Blocks.VINE) {
+            return IMPOSSIBLE;
+        }
+
         // we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
         double walk = WALK_OFF_BLOCK_COST;
         if (fromDown == Blocks.SOUL_SAND) {
             // use this ratio to apply the soul sand speed penalty to our 0.8 block distance
             walk = WALK_ONE_OVER_SOUL_SAND_COST;
         }
-        return walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST) + getTotalHardnessOfBlocksToBreak(context);
+        totalCost += walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
+        return new MoveResult(destX, y - 1, destZ, totalCost);
+    }
+
+    public static MoveResult dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below) {
+        if (frontBreak != 0 && BlockStateInterface.get(destX, y + 2, destZ).getBlock() instanceof BlockFalling) {
+            // if frontBreak is 0 we can actually get through this without updating the falling block and making it actually fall
+            // but if frontBreak is nonzero, we're breaking blocks in front, so don't let anything fall through this column,
+            // and potentially replace the water we're going to fall into
+            return IMPOSSIBLE;
+        }
+        if (!MovementHelper.canWalkThrough(destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
+            return IMPOSSIBLE;
+        }
+        for (int fallHeight = 3; true; fallHeight++) {
+            int newY = y - fallHeight;
+            if (newY < 0) {
+                // when pathing in the end, where you could plausibly fall into the void
+                // this check prevents it from getting the block at y=-1 and crashing
+                return IMPOSSIBLE;
+            }
+            IBlockState ontoBlock = BlockStateInterface.get(destX, newY, destZ);
+            double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[fallHeight] + frontBreak;
+            if (ontoBlock.getBlock() == Blocks.WATER && !BlockStateInterface.isFlowing(ontoBlock)) { // TODO flowing check required here?
+                if (Baritone.settings().assumeWalkOnWater.get()) {
+                    return IMPOSSIBLE; // TODO fix
+                }
+                // found a fall into water
+                return new MoveResult(destX, newY, destZ, tentativeCost); // TODO incorporate water swim up cost?
+            }
+            if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
+                return IMPOSSIBLE;
+            }
+            if (MovementHelper.canWalkThrough(destX, newY, destZ, ontoBlock)) {
+                continue;
+            }
+            if (!MovementHelper.canWalkOn(destX, newY, destZ, ontoBlock)) {
+                return IMPOSSIBLE;
+            }
+            if (MovementHelper.isBottomSlab(ontoBlock)) {
+                return IMPOSSIBLE; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
+            }
+            if (context.hasWaterBucket() && fallHeight <= context.maxFallHeightBucket() + 1) {
+                return new MoveResult(destX, newY + 1, destZ, tentativeCost + context.placeBlockCost()); // this is the block we're falling onto, so dest is +1
+            }
+            if (fallHeight <= context.maxFallHeightNoWater() + 1) {
+                // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
+                return new MoveResult(destX, newY + 1, destZ, tentativeCost);
+            } else {
+                return IMPOSSIBLE;
+            }
+        }
     }
 
     @Override

@@ -15,9 +15,36 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.movement;
+package baritone.api.pathing.movement;
 
-public interface ActionCostsButOnlyTheOnesThatMakeMickeyDieInside {
+public interface ActionCosts {
+
+    /**
+     * These costs are measured roughly in ticks btw
+     */
+    double WALK_ONE_BLOCK_COST = 20 / 4.317; // 4.633
+    double WALK_ONE_IN_WATER_COST = 20 / 2.2;
+    double WALK_ONE_OVER_SOUL_SAND_COST = WALK_ONE_BLOCK_COST * 2; // 0.4 in BlockSoulSand but effectively about half
+    double SPRINT_ONE_OVER_SOUL_SAND_COST = WALK_ONE_OVER_SOUL_SAND_COST * 0.75;
+    double LADDER_UP_ONE_COST = 20 / 2.35;
+    double LADDER_DOWN_ONE_COST = 20 / 3.0;
+    double SNEAK_ONE_BLOCK_COST = 20 / 1.3;
+    double SPRINT_ONE_BLOCK_COST = 20 / 5.612; // 3.564
+    /**
+     * To walk off an edge you need to walk 0.5 to the edge then 0.3 to start falling off
+     */
+    double WALK_OFF_BLOCK_COST = WALK_ONE_BLOCK_COST * 0.8;
+    /**
+     * To walk the rest of the way to be centered on the new block
+     */
+    double CENTER_AFTER_FALL_COST = WALK_ONE_BLOCK_COST - WALK_OFF_BLOCK_COST;
+
+    /**
+     * don't make this Double.MAX_VALUE because it's added to other things, maybe other COST_INFs,
+     * and that would make it overflow to negative
+     */
+    double COST_INF = 1000000;
+
     double[] FALL_N_BLOCKS_COST = generateFallNBlocksCost();
 
     double FALL_1_25_BLOCKS_COST = distanceToTicks(1.25);

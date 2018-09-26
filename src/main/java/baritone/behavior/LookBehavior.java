@@ -18,14 +18,14 @@
 package baritone.behavior;
 
 import baritone.Baritone;
-import baritone.Settings;
-import baritone.api.behavior.Behavior;
+import baritone.api.Settings;
+import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
+import baritone.api.utils.Rotation;
 import baritone.utils.Helper;
-import baritone.utils.Rotation;
 
-public final class LookBehavior extends Behavior implements Helper {
+public final class LookBehavior extends Behavior implements ILookBehavior, Helper {
 
     public static final LookBehavior INSTANCE = new LookBehavior();
 
@@ -51,6 +51,7 @@ public final class LookBehavior extends Behavior implements Helper {
 
     private LookBehavior() {}
 
+    @Override
     public void updateTarget(Rotation target, boolean force) {
         this.target = target;
         this.force = force || !Baritone.settings().freeLook.get();
@@ -68,9 +69,9 @@ public final class LookBehavior extends Behavior implements Helper {
         switch (event.getState()) {
             case PRE: {
                 if (this.force) {
-                    player().rotationYaw = this.target.getFirst();
+                    player().rotationYaw = this.target.getYaw();
                     float oldPitch = player().rotationPitch;
-                    float desiredPitch = this.target.getSecond();
+                    float desiredPitch = this.target.getPitch();
                     player().rotationPitch = desiredPitch;
                     if (desiredPitch == oldPitch) {
                         nudgeToLevel();
@@ -78,7 +79,7 @@ public final class LookBehavior extends Behavior implements Helper {
                     this.target = null;
                 } else if (silent) {
                     this.lastYaw = player().rotationYaw;
-                    player().rotationYaw = this.target.getFirst();
+                    player().rotationYaw = this.target.getYaw();
                 }
                 break;
             }
@@ -92,7 +93,6 @@ public final class LookBehavior extends Behavior implements Helper {
             default:
                 break;
         }
-        new Thread().start();
     }
 
     @Override
@@ -101,7 +101,7 @@ public final class LookBehavior extends Behavior implements Helper {
             switch (event.getState()) {
                 case PRE:
                     this.lastYaw = player().rotationYaw;
-                    player().rotationYaw = this.target.getFirst();
+                    player().rotationYaw = this.target.getYaw();
                     break;
                 case POST:
                     player().rotationYaw = this.lastYaw;

@@ -60,6 +60,7 @@ public class BlockStateInterface implements Helper {
             // if it's the same chunk as last time
             // we can just skip the mc.world.getChunk lookup
             // which is a Long2ObjectOpenHashMap.get
+            // see issue #113
             if (cached != null && cached.x == x >> 4 && cached.z == z >> 4) {
                 numTimesChunkSucceeded++;
                 return cached.getBlockState(x, y, z);
@@ -92,6 +93,32 @@ public class BlockStateInterface implements Helper {
         return type;
     }
 
+    public static boolean isLoaded(int x, int z) {
+        Chunk prevChunk = prev;
+        if (prevChunk != null && prevChunk.x == x >> 4 && prevChunk.z == z >> 4) {
+            return true;
+        }
+        prevChunk = mc.world.getChunk(x >> 4, z >> 4);
+        if (prevChunk.isLoaded()) {
+            prev = prevChunk;
+            return true;
+        }
+        CachedRegion prevRegion = prevCached;
+        if (prevRegion != null && prevRegion.getX() == x >> 9 && prevRegion.getZ() == z >> 9) {
+            return prevRegion.isCached(x & 511, z & 511);
+        }
+        WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
+        if (world == null) {
+            return false;
+        }
+        prevRegion = world.cache.getRegion(x >> 9, z >> 9);
+        if (prevRegion == null) {
+            return false;
+        }
+        prevCached = prevRegion;
+        return prevRegion.isCached(x & 511, z & 511);
+    }
+
     public static void clearCachedChunk() {
         prev = null;
         prevCached = null;
@@ -101,6 +128,9 @@ public class BlockStateInterface implements Helper {
         return get(pos).getBlock();
     }
 
+    public static Block getBlock(int x, int y, int z) {
+        return get(x, y, z).getBlock();
+    }
 
     /**
      * Returns whether or not the specified block is

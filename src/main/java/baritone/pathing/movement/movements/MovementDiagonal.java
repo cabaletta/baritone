@@ -25,7 +25,6 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockMagma;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
@@ -53,40 +52,44 @@ public class MovementDiagonal extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        Block fromDown = BlockStateInterface.get(src.down()).getBlock();
+        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+    }
+
+    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+        Block fromDown = BlockStateInterface.get(x, y - 1, z).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return COST_INF;
         }
-        if (!MovementHelper.canWalkThrough(positionsToBreak[4]) || !MovementHelper.canWalkThrough(positionsToBreak[5])) {
+        IBlockState destInto = BlockStateInterface.get(destX, y, destZ);
+        if (!MovementHelper.canWalkThrough(destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(destX, y + 1, destZ)) {
             return COST_INF;
         }
-        BetterBlockPos destDown = dest.down();
-        IBlockState destWalkOn = BlockStateInterface.get(destDown);
-        if (!MovementHelper.canWalkOn(destDown, destWalkOn)) {
+        IBlockState destWalkOn = BlockStateInterface.get(destX, y - 1, destZ);
+        if (!MovementHelper.canWalkOn(destX, y - 1, destZ, destWalkOn)) {
             return COST_INF;
         }
         double multiplier = WALK_ONE_BLOCK_COST;
         // For either possible soul sand, that affects half of our walking
-        if (destWalkOn.getBlock().equals(Blocks.SOUL_SAND)) {
+        if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
         if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        Block cuttingOver1 = BlockStateInterface.get(positionsToBreak[2].down()).getBlock();
-        if (cuttingOver1 instanceof BlockMagma || BlockStateInterface.isLava(cuttingOver1)) {
+        Block cuttingOver1 = BlockStateInterface.get(x, y - 1, destZ).getBlock();
+        if (cuttingOver1 == Blocks.MAGMA || BlockStateInterface.isLava(cuttingOver1)) {
             return COST_INF;
         }
-        Block cuttingOver2 = BlockStateInterface.get(positionsToBreak[4].down()).getBlock();
-        if (cuttingOver2 instanceof BlockMagma || BlockStateInterface.isLava(cuttingOver2)) {
+        Block cuttingOver2 = BlockStateInterface.get(destX, y - 1, z).getBlock();
+        if (cuttingOver2 == Blocks.MAGMA || BlockStateInterface.isLava(cuttingOver2)) {
             return COST_INF;
         }
-        IBlockState pb0 = BlockStateInterface.get(positionsToBreak[0]);
-        IBlockState pb1 = BlockStateInterface.get(positionsToBreak[1]);
-        IBlockState pb2 = BlockStateInterface.get(positionsToBreak[2]);
-        IBlockState pb3 = BlockStateInterface.get(positionsToBreak[3]);
-        double optionA = MovementHelper.getMiningDurationTicks(context, positionsToBreak[0], pb0, false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[1], pb1, true);
-        double optionB = MovementHelper.getMiningDurationTicks(context, positionsToBreak[2], pb2, false) + MovementHelper.getMiningDurationTicks(context, positionsToBreak[3], pb3, true);
+        IBlockState pb0 = BlockStateInterface.get(x, y, destZ);
+        IBlockState pb1 = BlockStateInterface.get(x, y + 1, destZ);
+        IBlockState pb2 = BlockStateInterface.get(destX, y, z);
+        IBlockState pb3 = BlockStateInterface.get(destX, y + 1, z);
+        double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false) + MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true);
+        double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false) + MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true);
         if (optionA != 0 && optionB != 0) {
             return COST_INF;
         }
@@ -100,7 +103,7 @@ public class MovementDiagonal extends Movement {
                 return COST_INF;
             }
         }
-        if (BlockStateInterface.isWater(src) || BlockStateInterface.isWater(dest)) {
+        if (BlockStateInterface.isWater(BlockStateInterface.getBlock(x, y, z)) || BlockStateInterface.isWater(destInto.getBlock())) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below

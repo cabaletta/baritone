@@ -46,7 +46,9 @@ public final class BlockBreakHelper implements Helper {
     }
 
     public static void stopBreakingBlock() {
-        mc.playerController.resetBlockRemoving();
+        if (mc.playerController != null) {
+            mc.playerController.resetBlockRemoving();
+        } 
         lastBlock = null;
     }
 }

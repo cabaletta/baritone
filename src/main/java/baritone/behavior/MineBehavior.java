@@ -18,17 +18,17 @@
 package baritone.behavior;
 
 import baritone.Baritone;
-import baritone.api.behavior.Behavior;
+import baritone.api.behavior.IMineBehavior;
 import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.goals.Goal;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
-import baritone.pathing.goals.Goal;
-import baritone.pathing.goals.GoalBlock;
-import baritone.pathing.goals.GoalComposite;
-import baritone.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.pathing.goals.GoalComposite;
+import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  *
  * @author leijurv
  */
-public final class MineBehavior extends Behavior implements Helper {
+public final class MineBehavior extends Behavior implements IMineBehavior, Helper {
 
     public static final MineBehavior INSTANCE = new MineBehavior();
 
@@ -58,6 +58,10 @@ public final class MineBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
+        if (event.getType() == TickEvent.Type.OUT) {
+            cancel();
+            return;
+        }
         if (mining == null) {
             return;
         }
@@ -74,7 +78,7 @@ public final class MineBehavior extends Behavior implements Helper {
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0) {
             if (event.getCount() % mineGoalUpdateInterval == 0) {
-                updateGoal();
+                Baritone.INSTANCE.getExecutor().execute(this::updateGoal);
             }
         }
         PathingBehavior.INSTANCE.revalidateGoal();
@@ -105,7 +109,7 @@ public final class MineBehavior extends Behavior implements Helper {
         PathingBehavior.INSTANCE.path();
     }
 
-    public static GoalComposite coalesce(List<BlockPos> locs) {
+    public GoalComposite coalesce(List<BlockPos> locs) {
         return new GoalComposite(locs.stream().map(loc -> {
             if (!Baritone.settings().forceInternalMining.get()) {
                 return new GoalTwoBlocks(loc);
@@ -129,13 +133,13 @@ public final class MineBehavior extends Behavior implements Helper {
         }).toArray(Goal[]::new));
     }
 
-    public static List<BlockPos> scanFor(List<Block> mining, int max) {
+    public List<BlockPos> scanFor(List<Block> mining, int max) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
-                locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().cache.getLocationsOf(ChunkPacker.blockToString(m), 1, 1));
+                locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, 1));
             } else {
                 uninteresting.add(m);
             }
@@ -152,7 +156,7 @@ public final class MineBehavior extends Behavior implements Helper {
         return prune(locs, mining, max);
     }
 
-    public static List<BlockPos> prune(List<BlockPos> locs, List<Block> mining, int max) {
+    public List<BlockPos> prune(List<BlockPos> locs, List<Block> mining, int max) {
         BlockPos playerFeet = MineBehavior.INSTANCE.playerFeet();
         locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
 
@@ -167,6 +171,7 @@ public final class MineBehavior extends Behavior implements Helper {
         return locs;
     }
 
+    @Override
     public void mine(int quantity, String... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).collect(Collectors.toList());
         this.quantity = quantity;
@@ -174,12 +179,15 @@ public final class MineBehavior extends Behavior implements Helper {
         updateGoal();
     }
 
-    public void mine(Block... blocks) {
+    @Override
+    public void mine(int quantity, Block... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
+        this.quantity = quantity;
         this.locationsCache = new ArrayList<>();
         updateGoal();
     }
 
+    @Override
     public void cancel() {
         mine(0, (String[]) null);
         PathingBehavior.INSTANCE.cancel();

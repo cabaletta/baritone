@@ -15,16 +15,16 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.goals;
+package baritone.api.pathing.goals;
 
-import net.minecraft.util.math.BlockPos;
+import baritone.api.pathing.movement.ActionCosts;
 
 /**
  * Useful for mining (getting to diamond / iron level)
  *
  * @author leijurv
  */
-public class GoalYLevel implements Goal {
+public class GoalYLevel implements Goal, ActionCosts {
 
     /**
      * The target Y level
@@ -36,13 +36,13 @@ public class GoalYLevel implements Goal {
     }
 
     @Override
-    public boolean isInGoal(BlockPos pos) {
-        return pos.getY() == level;
+    public boolean isInGoal(int x, int y, int z) {
+        return y == level;
     }
 
     @Override
-    public double heuristic(BlockPos pos) {
-        return calculate(level, pos.getY());
+    public double heuristic(int x, int y, int z) {
+        return calculate(level, y);
     }
 
     public static double calculate(int goalY, int currentY) {

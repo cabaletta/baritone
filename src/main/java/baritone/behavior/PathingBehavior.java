@@ -18,33 +18,36 @@
 package baritone.behavior;
 
 import baritone.Baritone;
-import baritone.api.behavior.Behavior;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
-import baritone.pathing.goals.Goal;
-import baritone.pathing.goals.GoalXZ;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
+import baritone.utils.BlockBreakHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
-import baritone.utils.interfaces.IGoalRenderPos;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.awt.*;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public final class PathingBehavior extends Behavior implements Helper {
+public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
 
     public static final PathingBehavior INSTANCE = new PathingBehavior();
 
@@ -170,6 +173,7 @@ public final class PathingBehavior extends Behavior implements Helper {
         }
     }
 
+    @Override
     public Optional<Double> ticksRemainingInSegment() {
         if (current == null) {
             return Optional.empty();
@@ -177,10 +181,12 @@ public final class PathingBehavior extends Behavior implements Helper {
         return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
     }
 
+    @Override
     public void setGoal(Goal goal) {
         this.goal = goal;
     }
 
+    @Override
     public Goal getGoal() {
         return goal;
     }
@@ -193,16 +199,30 @@ public final class PathingBehavior extends Behavior implements Helper {
         return next;
     }
 
+    // TODO: Expose this method in the API?
+    // In order to do so, we'd need to move over IPath which has a whole lot of references to other
+    // things that may not need to be exposed necessarily, so we'll need to figure that out.
     public Optional<IPath> getPath() {
         return Optional.ofNullable(current).map(PathExecutor::getPath);
     }
 
+    @Override
+    public boolean isPathing() {
+        return this.current != null;
+    }
+
+    @Override
     public void cancel() {
         dispatchPathEvent(PathEvent.CANCELED);
         current = null;
         next = null;
         Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
+        BlockBreakHelper.stopBreakingBlock();
+    }
+
+    public void forceCancel() { // NOT exposed on public api
+        isPathCalcInProgress = false;
     }
 
     /**
@@ -210,6 +230,7 @@ public final class PathingBehavior extends Behavior implements Helper {
      *
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
+    @Override
     public boolean path() {
         if (goal == null) {
             return false;
@@ -232,7 +253,10 @@ public final class PathingBehavior extends Behavior implements Helper {
         }
     }
 
-    public BlockPos pathStart() {
+    /**
+     * @return The starting {@link BlockPos} for a new path
+     */
+    private BlockPos pathStart() {
         BetterBlockPos feet = playerFeet();
         if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR) && MovementHelper.canWalkOn(feet.down().down())) {
             return feet.down();
@@ -246,7 +270,8 @@ public final class PathingBehavior extends Behavior implements Helper {
      * @param start
      * @param talkAboutIt
      */
-    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt, final Optional<IPath> previous) {
+    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt,
+                                     final Optional<IPath> previous) {
         synchronized (pathCalcLock) {
             if (isPathCalcInProgress) {
                 throw new IllegalStateException("Already doing it");
@@ -329,8 +354,9 @@ public final class PathingBehavior extends Behavior implements Helper {
         } else {
             timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
         }
+        Optional<HashSet<Long>> favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(y -> y.hashCode)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
         try {
-            IPathFinder pf = new AStarPathFinder(start, goal, previous.map(IPath::positions));
+            IPathFinder pf = new AStarPathFinder(start, goal, favoredPositions);
             return pf.calculate(timeout);
         } catch (Exception e) {
             logDebug("Pathing exception: " + e);
@@ -361,7 +387,7 @@ public final class PathingBehavior extends Behavior implements Helper {
         // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
         if (goal != null && Baritone.settings().renderGoal.value) {
-            PathRenderer.drawLitDankGoalBox(player(), goal, partialTicks, Color.GREEN);
+            PathRenderer.drawLitDankGoalBox(player(), goal, partialTicks, Baritone.settings().colorGoalBox.get());
         }
         if (!Baritone.settings().renderPath.get()) {
             return;
@@ -378,27 +404,27 @@ public final class PathingBehavior extends Behavior implements Helper {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Color.RED, Baritone.settings().fadePath.get(), 10, 20);
+            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
         }
         if (next != null && next.getPath() != null) {
-            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Color.MAGENTA, Baritone.settings().fadePath.get(), 10, 20);
+            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
         }
 
         //long split = System.nanoTime();
         if (current != null) {
-            PathRenderer.drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Color.RED);
-            PathRenderer.drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Color.GREEN);
-            PathRenderer.drawManySelectionBoxes(player(), current.toWalkInto(), partialTicks, Color.MAGENTA);
+            PathRenderer.drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
+            PathRenderer.drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
+            PathRenderer.drawManySelectionBoxes(player(), current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
         }
 
         // If there is a path calculation currently running, render the path calculation process
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                PathRenderer.drawPath(p, 0, player(), partialTicks, Color.BLUE, Baritone.settings().fadePath.get(), 10, 20);
+                PathRenderer.drawPath(p, 0, player(), partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
                 currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
 
-                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Color.CYAN, Baritone.settings().fadePath.get(), 10, 20);
-                    PathRenderer.drawManySelectionBoxes(player(), Collections.singletonList(mr.getDest()), partialTicks, Color.CYAN);
+                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
+                    PathRenderer.drawManySelectionBoxes(player(), Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
                 });
             });
         });
@@ -407,5 +433,10 @@ public final class PathingBehavior extends Behavior implements Helper {
         // if (end - start > 0) {
         //   System.out.println("Frame took " + (split - start) + " " + (end - split));
         //}
+    }
+
+    @Override
+    public void onDisable() {
+        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
     }
 }

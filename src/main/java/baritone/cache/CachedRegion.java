@@ -17,7 +17,7 @@
 
 package baritone.cache;
 
-import baritone.utils.pathing.IBlockTypeAccess;
+import baritone.api.cache.ICachedRegion;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
@@ -33,7 +33,8 @@ import java.util.zip.GZIPOutputStream;
  * @author Brady
  * @since 8/3/2018 9:35 PM
  */
-public final class CachedRegion implements IBlockTypeAccess {
+public final class CachedRegion implements ICachedRegion {
+
     private static final byte CHUNK_NOT_PRESENT = 0;
     private static final byte CHUNK_PRESENT = 1;
 
@@ -77,6 +78,7 @@ public final class CachedRegion implements IBlockTypeAccess {
         return null;
     }
 
+    @Override
     public final boolean isCached(int x, int z) {
         return chunks[x >> 4][z >> 4] != null;
     }
@@ -145,7 +147,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                     for (int x = 0; x < 32; x++) {
                         if (chunks[x][z] != null) {
                             for (int i = 0; i < 256; i++) {
-                                out.writeUTF(chunks[x][z].getOverview()[i]);
+                                out.writeUTF(ChunkPacker.blockToString(chunks[x][z].getOverview()[i].getBlock()));
                             }
                         }
                     }
@@ -215,7 +217,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                                 int regionZ = this.z;
                                 int chunkX = x + 32 * regionX;
                                 int chunkZ = z + 32 * regionZ;
-                                tmpCached[x][z] = new CachedChunk(chunkX, chunkZ, BitSet.valueOf(bytes), new String[256], location[x][z]);
+                                tmpCached[x][z] = new CachedChunk(chunkX, chunkZ, BitSet.valueOf(bytes), new IBlockState[256], location[x][z]);
                                 break;
                             case CHUNK_NOT_PRESENT:
                                 tmpCached[x][z] = null;
@@ -229,7 +231,7 @@ public final class CachedRegion implements IBlockTypeAccess {
                     for (int x = 0; x < 32; x++) {
                         if (tmpCached[x][z] != null) {
                             for (int i = 0; i < 256; i++) {
-                                tmpCached[x][z].getOverview()[i] = in.readUTF();
+                                tmpCached[x][z].getOverview()[i] = ChunkPacker.stringToBlock(in.readUTF()).getDefaultState();
                             }
                         }
                     }
@@ -280,6 +282,7 @@ public final class CachedRegion implements IBlockTypeAccess {
     /**
      * @return The region x coordinate
      */
+    @Override
     public final int getX() {
         return this.x;
     }
@@ -287,6 +290,7 @@ public final class CachedRegion implements IBlockTypeAccess {
     /**
      * @return The region z coordinate
      */
+    @Override
     public final int getZ() {
         return this.z;
     }
