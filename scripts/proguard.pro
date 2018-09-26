@@ -52,7 +52,6 @@
 -libraryjars 'tempLibraries/jinput-2.0.5.jar'
 -libraryjars 'tempLibraries/jna-4.4.0.jar'
 -libraryjars 'tempLibraries/jopt-simple-5.0.3.jar'
--libraryjars 'tempLibraries/jsr305-3.0.1-sources.jar'
 -libraryjars 'tempLibraries/jsr305-3.0.1.jar'
 -libraryjars 'tempLibraries/jutils-1.0.0.jar'
 -libraryjars 'tempLibraries/libraryjavasound-20101123.jar'
