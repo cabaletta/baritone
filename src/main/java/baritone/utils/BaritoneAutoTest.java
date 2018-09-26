@@ -22,18 +22,50 @@ import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.behavior.PathingBehavior;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
+import net.minecraft.client.settings.GameSettings;
+import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
 
 public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
+
+    public static final BaritoneAutoTest INSTANCE = new BaritoneAutoTest();
+
+    private BaritoneAutoTest() {}
+
     public static final boolean ENABLE_AUTO_TEST = true;
     private static final long TEST_SEED = -928872506371745L;
     private static final BlockPos STARTING_POSITION = new BlockPos(50, 65, 50);
     private static final Goal GOAL = new GoalBlock(69, 121, 420);
     private static final int MAX_TICKS = 3200;
+
+    /**
+     * Called right after the {@link GameSettings} object is created in the {@link Minecraft} instance.
+     */
+    public void onPreInit() {
+        System.out.println("Optimizing Game Settings");
+
+        GameSettings s = mc.gameSettings;
+        s.limitFramerate   = 10;
+        s.mipmapLevels     = 0;
+        s.particleSetting  = 2;
+        s.overrideWidth    = 128;
+        s.overrideHeight   = 128;
+        s.pauseOnLostFocus = false;
+        s.heldItemTooltips = false;
+        s.entityShadows    = false;
+        s.chatScale        = 0.0F;
+        s.ambientOcclusion = 0;
+        s.clouds           = 0;
+        s.fancyGraphics    = false;
+        s.tutorialStep     = TutorialSteps.NONE;
+        s.hideGUI          = true;
+        s.fovSetting       = 30.0F;
+    }
 
     @Override
     public void onTick(TickEvent event) {

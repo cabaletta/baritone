@@ -110,7 +110,7 @@ public enum Baritone {
             );
         }
         if (BaritoneAutoTest.ENABLE_AUTO_TEST && "true".equals(System.getenv("BARITONE_AUTO_TEST"))) {
-            registerEventListener(new BaritoneAutoTest());
+            registerEventListener(BaritoneAutoTest.INSTANCE);
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
         if (!Files.exists(dir.toPath())) {
