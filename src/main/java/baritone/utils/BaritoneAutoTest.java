@@ -47,6 +47,9 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
      * Called right after the {@link GameSettings} object is created in the {@link Minecraft} instance.
      */
     public void onPreInit() {
+        if (!BaritoneAutoTest.ENABLE_AUTO_TEST || !"true".equals(System.getenv("BARITONE_AUTO_TEST"))) {
+            return;
+        }
         System.out.println("Optimizing Game Settings");
 
         GameSettings s = mc.gameSettings;
