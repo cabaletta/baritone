@@ -109,7 +109,7 @@ public enum Baritone {
                     PathingBehavior.INSTANCE
             );
         }
-        if (BaritoneAutoTest.ENABLE_AUTO_TEST && "true".equals(System.getenv("BARITONE_AUTO_TEST"))) {
+        if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             registerEventListener(BaritoneAutoTest.INSTANCE);
         }
         this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
