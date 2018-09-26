@@ -77,6 +77,13 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
         }
 
+        // If the integrated server is launched and the world has initialized, set the spawn point
+        // to our defined starting position
+        if (mc.getIntegratedServer() != null && mc.getIntegratedServer().worlds[0] != null) {
+            mc.getIntegratedServer().worlds[0].setSpawnPoint(STARTING_POSITION);
+            mc.getIntegratedServer().worlds[0].getGameRules().setOrCreateGameRule("spawnRadius", "0");
+        }
+
         if (event.getType() == TickEvent.Type.IN) { // If we're in-game
 
             // Force the integrated server to share the world to LAN so that
@@ -87,7 +94,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
             // For the first 200 ticks, wait for the world to generate
             if (event.getCount() < 200) {
-                mc.getIntegratedServer().getPlayerList().getPlayers().get(0).connection.setPlayerLocation(STARTING_POSITION.getX(), STARTING_POSITION.getY(), STARTING_POSITION.getZ(), 0, 0);
                 System.out.println("Waiting for world to generate... " + event.getCount());
                 return;
             }
