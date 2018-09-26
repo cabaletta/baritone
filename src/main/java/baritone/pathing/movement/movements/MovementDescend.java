@@ -65,7 +65,8 @@ public class MovementDescend extends Movement {
         }
 
         double totalCost = 0;
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, false);
+        IBlockState destDown = BlockStateInterface.get(destX, y - 1, destZ);
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false);
         if (totalCost >= COST_INF) {
             return IMPOSSIBLE;
         }
@@ -93,8 +94,7 @@ public class MovementDescend extends Movement {
             return dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below);
         }
 
-        Block tmp1 = BlockStateInterface.get(destX, y - 1, destZ).getBlock();
-        if (tmp1 == Blocks.LADDER || tmp1 == Blocks.VINE) {
+        if (destDown.getBlock() == Blocks.LADDER || destDown.getBlock() == Blocks.VINE) {
             return IMPOSSIBLE;
         }
 
