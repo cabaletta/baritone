@@ -39,7 +39,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     public static final boolean ENABLE_AUTO_TEST = true;
     private static final long TEST_SEED = -928872506371745L;
-    private static final BlockPos STARTING_POSITION = new BlockPos(50, 65, 50);
+    private static final BlockPos STARTING_POSITION = new BlockPos(0, 65, 0);
     private static final Goal GOAL = new GoalBlock(69, 121, 420);
     private static final int MAX_TICKS = 3300;
 
@@ -77,12 +77,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
         }
 
-        // If the integrated server is launched and the world has initialized, set the spawn point
-        // to our defined starting position
-        if (mc.getIntegratedServer() != null && mc.getIntegratedServer().worlds[0] != null) {
-            mc.getIntegratedServer().worlds[0].setSpawnPoint(STARTING_POSITION);
-        }
-
         if (event.getType() == TickEvent.Type.IN) { // If we're in-game
 
             // Force the integrated server to share the world to LAN so that
@@ -93,6 +87,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
             // For the first 200 ticks, wait for the world to generate
             if (event.getCount() < 200) {
+                mc.getIntegratedServer().getPlayerList().getPlayers().get(0).connection.setPlayerLocation(STARTING_POSITION.getX(), STARTING_POSITION.getY(), STARTING_POSITION.getZ(), 0, 0);
                 System.out.println("Waiting for world to generate... " + event.getCount());
                 return;
             }
