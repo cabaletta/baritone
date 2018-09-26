@@ -32,7 +32,7 @@
 # copy all necessary libraries into tempLibraries to build
 -libraryjars '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/lib/rt.jar' # this is the rt jar
 
--libraryjars 'tempLibraries/1.12.2.jar'
+-libraryjars 'tempLibraries/minecraft-1.12.2.jar'
 
 -libraryjars 'tempLibraries/authlib-1.5.25.jar'
 -libraryjars 'tempLibraries/codecjorbis-20101023.jar'
