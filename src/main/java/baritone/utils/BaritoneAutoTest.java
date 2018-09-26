@@ -50,21 +50,20 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         System.out.println("Optimizing Game Settings");
 
         GameSettings s = mc.gameSettings;
-        s.limitFramerate   = 20;
-        s.mipmapLevels     = 0;
-        s.particleSetting  = 2;
-        s.overrideWidth    = 128;
-        s.overrideHeight   = 128;
-        s.pauseOnLostFocus = false;
+        s.limitFramerate = 20;
+        s.mipmapLevels = 0;
+        s.particleSetting = 2;
+        s.overrideWidth = 128;
+        s.overrideHeight = 128;
         s.heldItemTooltips = false;
-        s.entityShadows    = false;
-        s.chatScale        = 0.0F;
+        s.entityShadows = false;
+        s.chatScale = 0.0F;
         s.ambientOcclusion = 0;
-        s.clouds           = 0;
-        s.fancyGraphics    = false;
-        s.tutorialStep     = TutorialSteps.NONE;
-        s.hideGUI          = true;
-        s.fovSetting       = 30.0F;
+        s.clouds = 0;
+        s.fancyGraphics = false;
+        s.tutorialStep = TutorialSteps.NONE;
+        s.hideGUI = true;
+        s.fovSetting = 30.0F;
     }
 
     @Override
