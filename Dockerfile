@@ -19,6 +19,7 @@ ADD . /code
 
 RUN echo "\nrunClient {\nargs \"--width\",\"128\",\"--height\",\"128\"\n}" >> /code/build.gradle
 
+# this .deb is specially patched to support lwjgl
 RUN dpkg -i /code/scripts/xvfb_1.16.4-1_amd64.deb
 
 WORKDIR /code

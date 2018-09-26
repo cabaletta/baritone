@@ -6,8 +6,6 @@ services:
 - docker
 
 install:
-- sudo apt-get update
-- sudo apt-get install jshon
 - docker build -t cabaletta/baritone .
 
 script:
