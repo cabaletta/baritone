@@ -55,7 +55,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         s.particleSetting  = 2;
         s.overrideWidth    = 128;
         s.overrideHeight   = 128;
-        s.pauseOnLostFocus = false;
         s.heldItemTooltips = false;
         s.entityShadows    = false;
         s.chatScale        = 0.0F;
