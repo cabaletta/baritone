@@ -50,7 +50,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         System.out.println("Optimizing Game Settings");
 
         GameSettings s = mc.gameSettings;
-        s.limitFramerate   = 10;
+        s.limitFramerate   = 20;
         s.mipmapLevels     = 0;
         s.particleSetting  = 2;
         s.overrideWidth    = 128;
