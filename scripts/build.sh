@@ -17,7 +17,7 @@ cat api.pro | grep -v "\-keep class baritone.api" > standalone.pro # standalone 
 
 #instead of downloading these jars from my dropbox in a zip, just assume gradle's already got them for us
 mkdir -p tempLibraries
-cat proguard.pro | grep tempLibraries | grep .jar |  cut -d "/" -f 2- | cut -d "'" -f -1 | xargs -n1 -I{} bash -c "find ~/.gradle -name {}" | tee /dev/stderr | xargs -n1 -I{} cp {} tempLibraries
+cat ../../scripts/proguard.pro | grep tempLibraries | grep .jar |  cut -d "/" -f 2- | cut -d "'" -f -1 | xargs -n1 -I{} bash -c "find ~/.gradle -name {}" | tee /dev/stderr | xargs -n1 -I{} cp {} tempLibraries
 
 mkdir ../../dist
 java -jar ../../proguard6.0.3/lib/proguard.jar @api.pro
