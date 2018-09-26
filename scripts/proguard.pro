@@ -12,7 +12,7 @@
 -overloadaggressively
 -dontusemixedcaseclassnames
 
-# instead of obfing to a, b, c, obf to baritone.a, baritone.b, baritone.c so as to not conflict with minecraft's obfd classes
+# instead of renaming to a, b, c, rename to baritone.a, baritone.b, baritone.c so as to not conflict with minecraft's obfd classes
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
@@ -68,7 +68,7 @@
 -libraryjars 'tempLibraries/soundsystem-20120107.jar'
 -libraryjars 'tempLibraries/text2speech-1.10.3.jar'
 
--libraryjars 'tempLibraries/mixin-0.7.8-SNAPSHOT.jar'
+-libraryjars 'tempLibraries/mixin-0.7.11-SNAPSHOT.jar'
 -libraryjars 'tempLibraries/launchwrapper-1.11.jar' # TODO why does only 1.11.jar exist?
 
 
