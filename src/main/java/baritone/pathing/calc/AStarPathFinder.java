@@ -133,6 +133,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                         if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
                             numEmptyChunk++;
                         }
+                        long costStart = System.nanoTime();
+                        chunk += costStart - s;
+                        chunkCount++;
                         continue;
                     }
                 }
@@ -215,6 +218,14 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         int numBlockState = BlockStateInterface.numBlockStateLookups - startVal2;
         int numSucc = BlockStateInterface.numTimesChunkSucceeded - startVal;
         long numSuccc = BetterBlockPos.numCreated - startVal3;
+
+        long totalAccountedTimeMS = 0;
+        totalAccountedTimeMS += heapRemove / 1000000;
+        totalAccountedTimeMS += heapAdd / 1000000;
+        totalAccountedTimeMS += heapUpdate / 1000000;
+        totalAccountedTimeMS += chunk / 1000000;
+        totalAccountedTimeMS += getNode / 1000000;
+        totalAccountedTimeMS += goalCheck / 1000000;
         System.out.println("Out of " + numBlockState + " block state lookups, " + numSucc + " were in the same chunk as the previous and could be cached");
         System.out.println("Instantiated " + numSuccc + " BetterBlockPos objects");
         System.out.println("Remove " + (heapRemove / heapRemoveCount) + " " + heapRemove / 1000000 + "ms " + heapRemoveCount);
@@ -228,10 +239,12 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         for (Moves move : moves) {
             int num = count[move.ordinal()];
             long nanoTime = timeConsumed[move.ordinal()];
+            totalAccountedTimeMS += nanoTime / 1000000;
             System.out.println(nanoTime / num + " " + move + " " + nanoTime / 1000000 + "ms " + num);
             System.out.println(stateLookup[move.ordinal()] / num + " " + stateLookup[move.ordinal()]);
             System.out.println(posCreation[move.ordinal()] / num + " " + posCreation[move.ordinal()]);
         }
+        System.out.println("Total accounted time: " + totalAccountedTimeMS);
         if (cancelRequested) {
             return Optional.empty();
         }
