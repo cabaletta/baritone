@@ -48,7 +48,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
 
     @Override
     protected Optional<IPath> calculate0(long timeout) {
-        startNode = getNodeAtPosition(start.x, start.y, start.z);
+        startNode = getNodeAtPosition(start.x, start.y, start.z, posHash(start.x, start.y, start.z));
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
@@ -166,12 +166,13 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (actionCost <= 0) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
-                if (favoring && favored.contains(posHash(res.destX, res.destY, res.destZ))) {
+                long hashCode = posHash(res.destX, res.destY, res.destZ);
+                if (favoring && favored.contains(hashCode)) {
                     // see issue #18
                     actionCost *= favorCoeff;
                 }
                 long st = System.nanoTime();
-                PathNode neighbor = getNodeAtPosition(res.destX, res.destY, res.destZ);
+                PathNode neighbor = getNodeAtPosition(res.destX, res.destY, res.destZ, hashCode);
                 getNode += System.nanoTime() - st;
                 getNodeCount++;
                 double tentativeCost = currentNode.cost + actionCost;

@@ -194,6 +194,18 @@ public class Settings {
     public Setting<Integer> planningTickLookAhead = new Setting<>(100);
 
     /**
+     * Default size of the Long2ObjectOpenHashMap used in pathing
+     */
+    public Setting<Integer> pathingMapDefaultSize = new Setting<>(1024);
+
+    /**
+     * Load factor coefficient for the Long2ObjectOpenHashMap used in pathing
+     * <p>
+     * Decrease for faster map operations, but higher memory usage
+     */
+    public Setting<Float> pathingMapLoadFactor = new Setting<>(0.75f);
+
+    /**
      * How far are you allowed to fall onto solid ground (without a water bucket)?
      * 3 won't deal any damage. But if you just want to get down the mountain quickly and you have
      * Feather Falling IV, you might set it a bit higher, like 4 or 5.

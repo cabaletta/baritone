@@ -37,7 +37,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     private BaritoneAutoTest() {}
 
-    public static final boolean ENABLE_AUTO_TEST = true;
+    public static final boolean ENABLE_AUTO_TEST = "true".equals(System.getenv("BARITONE_AUTO_TEST"));
     private static final long TEST_SEED = -928872506371745L;
     private static final BlockPos STARTING_POSITION = new BlockPos(0, 65, 0);
     private static final Goal GOAL = new GoalBlock(69, 121, 420);
@@ -47,7 +47,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
      * Called right after the {@link GameSettings} object is created in the {@link Minecraft} instance.
      */
     public void onPreInit() {
-        if (!BaritoneAutoTest.ENABLE_AUTO_TEST || !"true".equals(System.getenv("BARITONE_AUTO_TEST"))) {
+        if (!BaritoneAutoTest.ENABLE_AUTO_TEST) {
             return;
         }
         System.out.println("Optimizing Game Settings");

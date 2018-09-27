@@ -88,17 +88,31 @@ public class MovementDiagonal extends Movement {
         IBlockState pb1 = BlockStateInterface.get(x, y + 1, destZ);
         IBlockState pb2 = BlockStateInterface.get(destX, y, z);
         IBlockState pb3 = BlockStateInterface.get(destX, y + 1, z);
-        double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false) + MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true);
-        double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false) + MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true);
+        double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false);
+        double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false);
         if (optionA != 0 && optionB != 0) {
+            // check these one at a time -- if pb0 and pb2 were nonzero, we already know that (optionA != 0 && optionB != 0)
+            // so no need to check pb1 as well, might as well return early here
+            return COST_INF;
+        }
+        optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true);
+        if (optionA != 0 && optionB != 0) {
+            // same deal, if pb1 makes optionA nonzero and option B already was nonzero, pb3 can't affect the result
             return COST_INF;
         }
         if (optionA == 0) {
+            // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
             if (MovementHelper.avoidWalkingInto(pb2.getBlock()) || MovementHelper.avoidWalkingInto(pb3.getBlock())) {
                 return COST_INF;
             }
         }
+        optionB += MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true);
+        if (optionA != 0 && optionB != 0) {
+            // and finally, if the cost is nonzero for both ways to approach this diagonal, it's not possible
+            return COST_INF;
+        }
         if (optionB == 0) {
+            // and now that option B is fully calculated, see if we can edge around that way
             if (MovementHelper.avoidWalkingInto(pb0.getBlock()) || MovementHelper.avoidWalkingInto(pb1.getBlock())) {
                 return COST_INF;
             }
