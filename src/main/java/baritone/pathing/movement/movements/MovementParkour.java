@@ -40,6 +40,7 @@ import java.util.Objects;
 import static baritone.utils.pathing.MoveResult.IMPOSSIBLE;
 
 public class MovementParkour extends Movement {
+
     private static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
 

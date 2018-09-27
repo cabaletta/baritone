@@ -270,8 +270,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @param start
      * @param talkAboutIt
      */
-    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt,
-                                     final Optional<IPath> previous) {
+    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt, final Optional<IPath> previous) {
         synchronized (pathCalcLock) {
             if (isPathCalcInProgress) {
                 throw new IllegalStateException("Already doing it");
