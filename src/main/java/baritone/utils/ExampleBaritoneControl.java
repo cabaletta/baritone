@@ -31,7 +31,10 @@ import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.movement.*;
+import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.Movement;
+import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.movement.Moves;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
@@ -198,7 +201,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             return;
         }
-        if (msg.equals("cancel")) {
+        if (msg.equals("cancel") || msg.equals("stop")) {
             MineBehavior.INSTANCE.cancel();
             FollowBehavior.INSTANCE.cancel();
             PathingBehavior.INSTANCE.cancel();
