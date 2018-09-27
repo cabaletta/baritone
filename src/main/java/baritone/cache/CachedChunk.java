@@ -106,7 +106,9 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
 
     private final Map<String, List<BlockPos>> specialBlockLocations;
 
-    CachedChunk(int x, int z, BitSet data, IBlockState[] overview, Map<String, List<BlockPos>> specialBlockLocations) {
+    public final long cacheTimestamp;
+
+    CachedChunk(int x, int z, BitSet data, IBlockState[] overview, Map<String, List<BlockPos>> specialBlockLocations, long cacheTimestamp) {
         validateSize(data);
 
         this.x = x;
@@ -115,6 +117,7 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
         this.overview = overview;
         this.heightMap = new int[256];
         this.specialBlockLocations = specialBlockLocations;
+        this.cacheTimestamp = cacheTimestamp;
         calculateHeightMap();
     }
 

@@ -106,7 +106,7 @@ public final class ChunkPacker implements Helper {
                 blocks[z << 4 | x] = Blocks.AIR.getDefaultState();
             }
         }
-        return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks);
+        return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
     }
 
     public static String blockToString(Block block) {

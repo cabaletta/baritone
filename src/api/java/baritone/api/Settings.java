@@ -405,6 +405,12 @@ public class Settings {
     public Setting<Integer> followRadius = new Setting<>(3);
 
     /**
+     * Cached chunks (regardless of if they're in RAM or saved to disk) expire and are deleted after this number of seconds
+     * -1 to disable
+     */
+    public Setting<Long> cachedChunksExpirySeconds = new Setting<>(-1L);
+
+    /**
      * The function that is called when Baritone will log to chat. This function can be added to
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};

@@ -142,6 +142,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
     public final void save() {
         if (!Baritone.settings().chunkCaching.get()) {
             System.out.println("Not saving to disk; chunk caching is disabled.");
+            allRegions().forEach(CachedRegion::removeExpired); // even if we aren't saving to disk, still delete expired old chunks from RAM
             return;
         }
         long start = System.nanoTime() / 1000000L;
