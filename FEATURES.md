@@ -19,7 +19,7 @@ Baritone uses a modified version of A*.
 - **Backtrack cost favoring** While calculating the next segment, Baritone favors backtracking its current segment slightly, as a tiebreaker. This allows it to splice and jump onto the next segment as early as possible, if the next segment begins with a backtrack of the current one. <a href="https://www.youtube.com/watch?v=CGiMcb8-99Y">Example</a>
 
 # Configuring Baritone
-All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/Settings.java">here</a>.
+All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>.
 To change a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `pathTimeoutMS 250`). It's case insensitive.
 
 # Goals
