@@ -41,7 +41,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
     private static final long TEST_SEED = -928872506371745L;
     private static final BlockPos STARTING_POSITION = new BlockPos(0, 65, 0);
     private static final Goal GOAL = new GoalBlock(69, 121, 420);
-    private static final int MAX_TICKS = 3500;
+    private static final int MAX_TICKS = 3700;
 
     /**
      * Called right after the {@link GameSettings} object is created in the {@link Minecraft} instance.
