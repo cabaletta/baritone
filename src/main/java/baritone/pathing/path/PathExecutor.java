@@ -20,10 +20,14 @@ package baritone.pathing.path;
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.movement.ActionCosts;
-import baritone.pathing.movement.*;
+import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.Movement;
+import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
+import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.init.Blocks;
@@ -320,10 +324,18 @@ public class PathExecutor implements Helper {
             }
 
             Movement next = path.movements().get(pathPosition + 1);
+            if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
+                // a descend then an ascend in the same direction
+                if (!player().isSprinting()) {
+                    player().setSprinting(true);
+                }
+                pathPosition++;
+                logDebug("Skipping descend to straight ascend");
+                return;
+            }
             if (canSprintInto(current, next)) {
                 if (playerFeet().equals(current.getDest())) {
                     pathPosition++;
-                    clearKeys();
                 }
                 if (!player().isSprinting()) {
                     player().setSprinting(true);
@@ -331,6 +343,19 @@ public class PathExecutor implements Helper {
                 return;
             }
             //logDebug("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
+        }
+        if (current instanceof MovementAscend && pathPosition != 0) {
+            Movement prev = path.movements().get(pathPosition - 1);
+            if (prev instanceof MovementDescend && prev.getDirection().up().equals(current.getDirection().down())) {
+                BlockPos center = current.getSrc().up();
+                if (player().posY >= center.getY()) { // playerFeet adds 0.1251 to account for soul sand
+                    Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(InputOverrideHandler.Input.JUMP, false);
+                    if (!player().isSprinting()) {
+                        player().setSprinting(true);
+                    }
+                    return;
+                }
+            }
         }
         player().setSprinting(false);
     }
