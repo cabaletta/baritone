@@ -31,16 +31,15 @@ import java.util.ServiceLoader;
  * @author Brady
  * @since 9/23/2018
  */
-public class BaritoneAPI {
+public final class BaritoneAPI {
 
-    private static IBaritoneProvider baritone;
-    private static Settings settings;
+    private final static IBaritoneProvider baritone;
+    private final static Settings settings;
 
     static {
         ServiceLoader<IBaritoneProvider> baritoneLoader = ServiceLoader.load(IBaritoneProvider.class);
         Iterator<IBaritoneProvider> instances = baritoneLoader.iterator();
-        if (instances.hasNext())
-            baritone = instances.next();
+        baritone = instances.next();
 
         settings = new Settings();
     }
