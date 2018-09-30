@@ -18,7 +18,6 @@
 package baritone;
 
 import baritone.api.IBaritoneProvider;
-import baritone.api.Settings;
 import baritone.api.behavior.*;
 import baritone.api.cache.IWorldProvider;
 import baritone.behavior.*;
@@ -53,11 +52,6 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public IPathingBehavior getPathingBehavior() {
         return PathingBehavior.INSTANCE;
-    }
-
-    @Override
-    public Settings getSettings() {
-        return Baritone.settings();
     }
 
     @Override

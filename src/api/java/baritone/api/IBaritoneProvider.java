@@ -36,7 +36,5 @@ public interface IBaritoneProvider {
 
     IPathingBehavior getPathingBehavior();
 
-    Settings getSettings();
-
     IWorldProvider getWorldProvider();
 }
