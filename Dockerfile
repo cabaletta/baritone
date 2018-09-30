@@ -15,7 +15,9 @@ RUN apt install -qq --force-yes mesa-utils libgl1-mesa-glx libxcursor1 libxrandr
 
 RUN apt install -qq --force-yes unzip wget
 
-ADD . /code
+COPY . /code
+
+RUN echo "\nrunClient {\nargs \"--width\",\"128\",\"--height\",\"128\"\n}" >> /code/build.gradle
 
 # this .deb is specially patched to support lwjgl
 # source: https://github.com/tectonicus/tectonicus/issues/60#issuecomment-154239173
