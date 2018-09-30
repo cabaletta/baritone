@@ -20,6 +20,9 @@ package baritone.api;
 import baritone.api.behavior.*;
 import baritone.api.cache.IWorldProvider;
 
+import java.util.Iterator;
+import java.util.ServiceLoader;
+
 /**
  * API exposure for various things implemented in Baritone.
  * <p>
@@ -30,35 +33,36 @@ import baritone.api.cache.IWorldProvider;
  */
 public class BaritoneAPI {
 
-    // General
-    private static final Settings settings = new Settings();
-    private static IWorldProvider worldProvider;
+    private static IBaritoneProvider baritone;
+    private static Settings settings;
 
-    // Behaviors
-    private static IFollowBehavior followBehavior;
-    private static ILookBehavior lookBehavior;
-    private static IMemoryBehavior memoryBehavior;
-    private static IMineBehavior mineBehavior;
-    private static IPathingBehavior pathingBehavior;
+    static {
+        ServiceLoader<IBaritoneProvider> baritoneLoader = ServiceLoader.load(IBaritoneProvider.class);
+        Iterator<IBaritoneProvider> instances = baritoneLoader.iterator();
+        if (instances.hasNext())
+            baritone = instances.next();
+
+        settings = new Settings();
+    }
 
     public static IFollowBehavior getFollowBehavior() {
-        return followBehavior;
+        return baritone.getFollowBehavior();
     }
 
     public static ILookBehavior getLookBehavior() {
-        return lookBehavior;
+        return baritone.getLookBehavior();
     }
 
     public static IMemoryBehavior getMemoryBehavior() {
-        return memoryBehavior;
+        return baritone.getMemoryBehavior();
     }
 
     public static IMineBehavior getMineBehavior() {
-        return mineBehavior;
+        return baritone.getMineBehavior();
     }
 
     public static IPathingBehavior getPathingBehavior() {
-        return pathingBehavior;
+        return baritone.getPathingBehavior();
     }
 
     public static Settings getSettings() {
@@ -66,34 +70,6 @@ public class BaritoneAPI {
     }
 
     public static IWorldProvider getWorldProvider() {
-        return worldProvider;
+        return baritone.getWorldProvider();
     }
-
-    /**
-     * FOR INTERNAL USE ONLY
-     */
-    public static void registerProviders(
-            IWorldProvider worldProvider
-    ) {
-        BaritoneAPI.worldProvider = worldProvider;
-    }
-
-    /**
-     * FOR INTERNAL USE ONLY
-     */
-    // @formatter:off
-    public static void registerDefaultBehaviors(
-            IFollowBehavior  followBehavior,
-            ILookBehavior    lookBehavior,
-            IMemoryBehavior  memoryBehavior,
-            IMineBehavior    mineBehavior,
-            IPathingBehavior pathingBehavior
-    ) {
-        BaritoneAPI.followBehavior  = followBehavior;
-        BaritoneAPI.lookBehavior    = lookBehavior;
-        BaritoneAPI.memoryBehavior  = memoryBehavior;
-        BaritoneAPI.mineBehavior    = mineBehavior;
-        BaritoneAPI.pathingBehavior = pathingBehavior;
-    }
-    // @formatter:on
 }
