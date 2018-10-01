@@ -18,8 +18,10 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.utils.Helper;
 import baritone.utils.ToolSet;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -40,6 +42,7 @@ public class CalculationContext implements Helper {
     private final boolean allowBreak;
     private final int maxFallHeightNoWater;
     private final int maxFallHeightBucket;
+    private final double waterWalkSpeed;
 
     public CalculationContext() {
         this(new ToolSet());
@@ -54,13 +57,19 @@ public class CalculationContext implements Helper {
         this.allowBreak = Baritone.settings().allowBreak.get();
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
+        int depth = EnchantmentHelper.getDepthStriderModifier(player());
+        if (depth > 3) {
+            depth = 3;
+        }
+        float mult = depth / 3.0F;
+        this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - mult) + ActionCosts.WALK_ONE_BLOCK_COST * mult;
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
     }
 
     public ToolSet getToolSet() {
-        return this.toolSet;
+        return toolSet;
     }
 
     public boolean hasWaterBucket() {
@@ -89,6 +98,10 @@ public class CalculationContext implements Helper {
 
     public int maxFallHeightBucket() {
         return maxFallHeightBucket;
+    }
+
+    public double waterWalkSpeed() {
+        return waterWalkSpeed;
     }
 
 }

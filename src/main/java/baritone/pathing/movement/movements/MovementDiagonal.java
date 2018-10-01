@@ -122,7 +122,7 @@ public class MovementDiagonal extends Movement {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
-            multiplier = WALK_ONE_IN_WATER_COST;
+            multiplier = context.waterWalkSpeed();
             water = true;
         }
         if (optionA != 0 || optionB != 0) {

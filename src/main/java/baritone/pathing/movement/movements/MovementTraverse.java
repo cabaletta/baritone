@@ -69,7 +69,7 @@ public class MovementTraverse extends Movement {
             double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
             if (BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock())) {
-                WC = WALK_ONE_IN_WATER_COST;
+                WC = context.waterWalkSpeed();
                 water = true;
             } else {
                 if (destOn.getBlock() == Blocks.SOUL_SAND) {
@@ -116,7 +116,7 @@ public class MovementTraverse extends Movement {
                 }
                 double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb1, true);
 
-                double WC = throughWater ? WALK_ONE_IN_WATER_COST : WALK_ONE_BLOCK_COST;
+                double WC = throughWater ? context.waterWalkSpeed() : WALK_ONE_BLOCK_COST;
                 for (int i = 0; i < 4; i++) {
                     int againstX = destX + HORIZONTALS[i].getXOffset();
                     int againstZ = destZ + HORIZONTALS[i].getZOffset();
