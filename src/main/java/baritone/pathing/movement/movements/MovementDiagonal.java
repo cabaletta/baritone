@@ -85,9 +85,7 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         IBlockState pb0 = BlockStateInterface.get(x, y, destZ);
-        IBlockState pb1 = BlockStateInterface.get(x, y + 1, destZ);
         IBlockState pb2 = BlockStateInterface.get(destX, y, z);
-        IBlockState pb3 = BlockStateInterface.get(destX, y + 1, z);
         double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false);
         double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false);
         if (optionA != 0 && optionB != 0) {
@@ -95,11 +93,13 @@ public class MovementDiagonal extends Movement {
             // so no need to check pb1 as well, might as well return early here
             return COST_INF;
         }
+        IBlockState pb1 = BlockStateInterface.get(x, y + 1, destZ);
         optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true);
         if (optionA != 0 && optionB != 0) {
             // same deal, if pb1 makes optionA nonzero and option B already was nonzero, pb3 can't affect the result
             return COST_INF;
         }
+        IBlockState pb3 = BlockStateInterface.get(destX, y + 1, z);
         if (optionA == 0) {
             // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
             if (MovementHelper.avoidWalkingInto(pb2.getBlock()) || MovementHelper.avoidWalkingInto(pb3.getBlock())) {
