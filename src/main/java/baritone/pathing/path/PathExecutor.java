@@ -111,7 +111,7 @@ public class PathExecutor implements Helper {
                         for (int j = pathPosition; j <= previousPos; j++) {
                             path.movements().get(j).reset();
                         }
-                        clearKeys();
+                        onChangeInPathPosition();
                         return false;
                     }
                 }
@@ -122,7 +122,7 @@ public class PathExecutor implements Helper {
                         }
                         System.out.println("Double skip sundae");
                         pathPosition = i - 1;
-                        clearKeys();
+                        onChangeInPathPosition();
                         return false;
                     }
                 }
@@ -251,8 +251,7 @@ public class PathExecutor implements Helper {
         if (movementStatus == SUCCESS) {
             //System.out.println("Movement done, next path");
             pathPosition++;
-            ticksOnCurrent = 0;
-            clearKeys();
+            onChangeInPathPosition();
             onTick(event);
             return true;
         } else {
@@ -328,13 +327,14 @@ public class PathExecutor implements Helper {
                     player().setSprinting(true);
                 }
                 pathPosition++;
+                // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't possible to repeat, since it's asymmetric
                 logDebug("Skipping descend to straight ascend");
                 return;
             }
             if (canSprintInto(current, next)) {
                 if (playerFeet().equals(current.getDest())) {
                     pathPosition++;
-                    clearKeys();
+                    onChangeInPathPosition();
                 }
                 if (!player().isSprinting()) {
                     player().setSprinting(true);
@@ -374,6 +374,11 @@ public class PathExecutor implements Helper {
             return true;
         }
         return false;
+    }
+
+    private void onChangeInPathPosition() {
+        clearKeys();
+        ticksOnCurrent = 0;
     }
 
     private static void clearKeys() {
