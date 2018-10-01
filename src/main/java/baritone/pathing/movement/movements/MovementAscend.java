@@ -101,14 +101,15 @@ public class MovementAscend extends Movement {
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
-            if (!(BlockStateInterface.getBlock(x, y + 1, z) instanceof BlockFalling) || !((srcUp2 = BlockStateInterface.get(x, y + 2, z)).getBlock() instanceof BlockFalling)) {
-                // if both of those are BlockFalling, that means that by standing on src
+            if (MovementHelper.canWalkThrough(x, y + 1, z) || !((srcUp2 = BlockStateInterface.get(x, y + 2, z)).getBlock() instanceof BlockFalling)) {
+                // if the lower one is can't walk through and the upper one is falling, that means that by standing on src
                 // (the presupposition of this Movement)
                 // we have necessarily already cleared the entire BlockFalling stack
                 // on top of our head
 
-                // but if either of them aren't BlockFalling, that means we're still in suffocation danger
-                // so don't do it
+                // as in, if we have a block, then two BlockFallings on top of it
+                // and that block is x, y+1, z, and we'd have to clear it to even start this movement
+                // we don't need to worry about those BlockFallings because we've already cleared them
                 return COST_INF;
             }
             // you may think we only need to check srcUp2, not srcUp
