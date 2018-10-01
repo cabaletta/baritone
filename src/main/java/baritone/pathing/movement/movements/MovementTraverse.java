@@ -67,8 +67,10 @@ public class MovementTraverse extends Movement {
         Block srcDown = BlockStateInterface.getBlock(x, y - 1, z);
         if (MovementHelper.canWalkOn(destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
+            boolean water = false;
             if (BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock())) {
                 WC = WALK_ONE_IN_WATER_COST;
+                water = true;
             } else {
                 if (destOn.getBlock() == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
@@ -83,10 +85,11 @@ public class MovementTraverse extends Movement {
             }
             double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
             if (hardness1 == 0 && hardness2 == 0) {
-                if (WC == WALK_ONE_BLOCK_COST && context.canSprint()) {
-                    // If there's nothing in the way, and this isn't water or soul sand, and we aren't sneak placing
+                if (!water && context.canSprint()) {
+                    // If there's nothing in the way, and this isn't water, and we aren't sneak placing
                     // We can sprint =D
-                    WC = SPRINT_ONE_BLOCK_COST;
+                    // Don't check for soul sand, since we can sprint on that too
+                    WC *= SPRINT_MULTIPLIER;
                 }
                 return WC;
             }

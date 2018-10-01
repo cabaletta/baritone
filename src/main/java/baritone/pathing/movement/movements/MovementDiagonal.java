@@ -117,19 +117,22 @@ public class MovementDiagonal extends Movement {
                 return COST_INF;
             }
         }
+        boolean water = false;
         if (BlockStateInterface.isWater(BlockStateInterface.getBlock(x, y, z)) || BlockStateInterface.isWater(destInto.getBlock())) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
             multiplier = WALK_ONE_IN_WATER_COST;
+            water = true;
         }
         if (optionA != 0 || optionB != 0) {
             multiplier *= SQRT_2 - 0.001; // TODO tune
         }
-        if (multiplier == WALK_ONE_BLOCK_COST && context.canSprint()) {
-            // If we aren't edging around anything, and we aren't in water or soul sand
+        if (context.canSprint() && !water) {
+            // If we aren't edging around anything, and we aren't in water
             // We can sprint =D
-            multiplier = SPRINT_ONE_BLOCK_COST;
+            // Don't check for soul sand, since we can sprint on that too
+            multiplier *= SPRINT_MULTIPLIER;
         }
         return multiplier * SQRT_2;
     }
