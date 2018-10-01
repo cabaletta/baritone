@@ -343,7 +343,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
             // TODO simplify each individual goal in a GoalComposite
             if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
-                logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
+                logDebug("Simplifying " + goal.toString().split("\\{")[0] + " to GoalXZ due to distance");
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
