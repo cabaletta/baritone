@@ -187,6 +187,14 @@ public abstract class Movement implements Helper, MovementHelper {
         return true;
     }
 
+    public boolean safeToCancel() {
+        return safeToCancel(currentState);
+    }
+
+    protected boolean safeToCancel(MovementState currentState) {
+        return false;
+    }
+
     public boolean isFinished() {
         return (currentState.getStatus() != MovementStatus.RUNNING
                 && currentState.getStatus() != MovementStatus.PREPPING

@@ -111,6 +111,11 @@ public class MovementFall extends Movement {
         return state;
     }
 
+    @Override
+    public boolean safeToCancel(MovementState state) {
+        return state.getStatus() != MovementStatus.RUNNING;
+    }
+
     private static BetterBlockPos[] buildPositionsToBreak(BetterBlockPos src, BetterBlockPos dest) {
         BetterBlockPos[] toBreak;
         int diffX = src.getX() - dest.getX();
