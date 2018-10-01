@@ -336,6 +336,7 @@ public class PathExecutor implements Helper {
             if (canSprintInto(current, next)) {
                 if (playerFeet().equals(current.getDest())) {
                     pathPosition++;
+                    clearKeys();
                 }
                 if (!player().isSprinting()) {
                     player().setSprinting(true);
