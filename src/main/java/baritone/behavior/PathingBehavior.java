@@ -24,10 +24,11 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
-import baritone.api.pathing.goals.GoalXZ;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
@@ -35,7 +36,6 @@ import baritone.utils.BlockBreakHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
-import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -420,11 +420,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
                 PathRenderer.drawPath(p, 0, player(), partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
-                currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
+            });
+            currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
 
-                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
-                    PathRenderer.drawManySelectionBoxes(player(), Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
-                });
+                PathRenderer.drawPath(mr, 0, player(), partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
+                PathRenderer.drawManySelectionBoxes(player(), Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
             });
         });
         //long end = System.nanoTime();
