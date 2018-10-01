@@ -25,10 +25,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.movements.*;
-import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
-import baritone.utils.Utils;
+import baritone.utils.*;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
@@ -386,6 +383,7 @@ public class PathExecutor implements Helper {
 
     private void cancel() {
         clearKeys();
+        BlockBreakHelper.stopBreakingBlock();
         pathPosition = path.length() + 3;
         failed = true;
     }
