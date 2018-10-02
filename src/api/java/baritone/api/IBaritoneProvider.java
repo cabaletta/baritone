@@ -26,15 +26,45 @@ import baritone.api.cache.IWorldProvider;
  */
 public interface IBaritoneProvider {
 
+    /**
+     * @see IFollowBehavior
+     *
+     * @return The {@link IFollowBehavior} instance
+     */
     IFollowBehavior getFollowBehavior();
 
+    /**
+     * @see ILookBehavior
+     *
+     * @return The {@link ILookBehavior} instance
+     */
     ILookBehavior getLookBehavior();
 
+    /**
+     * @see IMemoryBehavior
+     *
+     * @return The {@link IMemoryBehavior} instance
+     */
     IMemoryBehavior getMemoryBehavior();
 
+    /**
+     * @see IMineBehavior
+     *
+     * @return The {@link IMineBehavior} instance
+     */
     IMineBehavior getMineBehavior();
 
+    /**
+     * @see IPathingBehavior
+     *
+     * @return The {@link IPathingBehavior} instance
+     */
     IPathingBehavior getPathingBehavior();
 
+    /**
+     * @see IWorldProvider
+     *
+     * @return The {@link IWorldProvider} instance
+     */
     IWorldProvider getWorldProvider();
 }
