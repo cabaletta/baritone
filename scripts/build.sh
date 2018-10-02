@@ -11,10 +11,6 @@ echo "-libraryjars '$(java -verbose 2>/dev/null | sed -ne '1 s/\[Opened \(.*\)\]
 tail api.pro # debug, print out what the previous two commands generated
 cat api.pro | grep -v "\-keep class baritone.api" > standalone.pro # standalone doesn't keep baritone api
 
-#wget -nv https://www.dropbox.com/s/zmc2l3jnwdvzvak/tempLibraries.zip?dl=1 # i'm sorry
-#mv tempLibraries.zip?dl=1 tempLibraries.zip
-#unzip tempLibraries.zip
-
 #instead of downloading these jars from my dropbox in a zip, just assume gradle's already got them for us
 mkdir -p tempLibraries
 cat ../../scripts/proguard.pro | grep tempLibraries | grep .jar | cut -d "/" -f 2- | cut -d "'" -f -1 | xargs -n1 -I{} bash -c "find ~/.gradle -name {}" | tee /dev/stderr | xargs -n1 -I{} cp {} tempLibraries

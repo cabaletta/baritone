@@ -16,10 +16,8 @@
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
-#-keep class baritone.behavior.** { *; }
 -keep class baritone.api.** { *; }
-#-keep class baritone.* { *; }
-#-keep class baritone.pathing.goals.** { *; }
+-keep class baritone.BaritoneProvider
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
@@ -58,8 +56,15 @@
 -libraryjars 'tempLibraries/librarylwjglopenal-20100824.jar'
 -libraryjars 'tempLibraries/log4j-api-2.8.1.jar'
 -libraryjars 'tempLibraries/log4j-core-2.8.1.jar'
+
+# linux / travis
 -libraryjars 'tempLibraries/lwjgl-2.9.4-nightly-20150209.jar'
 -libraryjars 'tempLibraries/lwjgl_util-2.9.4-nightly-20150209.jar'
+
+# mac
+#-libraryjars 'tempLibraries/lwjgl_util-2.9.2-nightly-20140822.jar'
+#-libraryjars 'tempLibraries/lwjgl-2.9.2-nightly-20140822.jar'
+
 -libraryjars 'tempLibraries/netty-all-4.1.9.Final.jar'
 -libraryjars 'tempLibraries/oshi-core-1.1.jar'
 -libraryjars 'tempLibraries/patchy-1.1.jar'
