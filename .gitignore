@@ -2,6 +2,7 @@
 **/*.swp
 
 run/
+autotest/
 
 # Gradle
 build/
