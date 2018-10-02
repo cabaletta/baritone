@@ -191,7 +191,7 @@ public class Settings {
     /**
      * Start planning the next path once the remaining movements tick estimates sum up to less than this value
      */
-    public Setting<Integer> planningTickLookAhead = new Setting<>(100);
+    public Setting<Integer> planningTickLookAhead = new Setting<>(150);
 
     /**
      * Default size of the Long2ObjectOpenHashMap used in pathing
