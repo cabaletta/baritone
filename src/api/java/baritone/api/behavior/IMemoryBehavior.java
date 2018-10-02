@@ -20,6 +20,8 @@ package baritone.api.behavior;
 import baritone.api.behavior.memory.IRememberedInventory;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Map;
+
 /**
  * @author Brady
  * @since 9/23/2018
@@ -33,4 +35,11 @@ public interface IMemoryBehavior extends IBehavior {
      * @return The remembered inventory
      */
     IRememberedInventory getInventoryByPos(BlockPos pos);
+
+    /**
+     * Gets the map of all block positions to their remembered inventories.
+     *
+     * @return Map of block positions to their respective remembered inventories
+     */
+    Map<BlockPos, IRememberedInventory> getRememberedInventories();
 }
