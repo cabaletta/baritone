@@ -162,7 +162,7 @@ public class MovementParkour extends Movement {
         }
         MovementHelper.moveTowards(state, dest);
         if (playerFeet().equals(dest)) {
-            if (player().posY - playerFeet().getY() < 0.01) {
+            if (player().posY - playerFeet().getY() < 0.094) { // lilypads
                 state.setStatus(MovementState.MovementStatus.SUCCESS);
             }
         } else if (!playerFeet().equals(src)) {
