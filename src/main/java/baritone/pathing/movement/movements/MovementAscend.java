@@ -71,7 +71,7 @@ public class MovementAscend extends Movement {
             return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
         }
         boolean hasToPlace = false;
-        if (!MovementHelper.canWalkOn(destX, y, z, toPlace)) {
+        if (!MovementHelper.canWalkOn(destX, y, destZ, toPlace)) {
             if (!context.hasThrowaway()) {
                 return COST_INF;
             }
