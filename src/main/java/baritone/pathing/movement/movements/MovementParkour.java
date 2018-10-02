@@ -28,6 +28,7 @@ import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import baritone.utils.pathing.MoveResult;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -162,6 +163,12 @@ public class MovementParkour extends Movement {
         }
         MovementHelper.moveTowards(state, dest);
         if (playerFeet().equals(dest)) {
+            Block d = BlockStateInterface.getBlock(dest);
+            if (d == Blocks.VINE || d == Blocks.LADDER) {
+                // it physically hurt me to add support for parkour jumping onto a vine
+                // but i did it anyway
+                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+            }
             if (player().posY - playerFeet().getY() < 0.094) { // lilypads
                 state.setStatus(MovementState.MovementStatus.SUCCESS);
             }
