@@ -122,7 +122,7 @@ public class MovementParkour extends Movement {
                 continue;
             }
             if (MovementHelper.canPlaceAgainst(againstX, y - 1, againstZ)) {
-                return new MoveResult(destX, y, destZ, costFromJumpDistance(i) + context.placeBlockCost());
+                return new MoveResult(destX, y, destZ, costFromJumpDistance(4) + context.placeBlockCost());
             }
         }
         return IMPOSSIBLE;
@@ -137,7 +137,7 @@ public class MovementParkour extends Movement {
             case 4:
                 return SPRINT_ONE_BLOCK_COST * 4;
             default:
-                throw new IllegalStateException("LOL");
+                throw new IllegalStateException("LOL " + dist);
         }
     }
 
