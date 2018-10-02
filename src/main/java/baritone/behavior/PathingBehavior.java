@@ -341,7 +341,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 pos = ((IGoalRenderPos) goal).getGoalPos();
             }
 
-            // TODO simplify each individual goal in a GoalComposite
             if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
                 logDebug("Simplifying " + goal.toString().split("\\{")[0] + " to GoalXZ due to distance");
                 goal = new GoalXZ(pos.getX(), pos.getZ());
