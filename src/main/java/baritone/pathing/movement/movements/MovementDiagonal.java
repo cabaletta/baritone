@@ -102,7 +102,7 @@ public class MovementDiagonal extends Movement {
         IBlockState pb3 = BlockStateInterface.get(destX, y + 1, z);
         if (optionA == 0) {
             // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
-            if (MovementHelper.avoidWalkingInto(pb2.getBlock()) || MovementHelper.avoidWalkingInto(pb3.getBlock())) {
+            if ((MovementHelper.avoidWalkingInto(pb2.getBlock()) && pb2.getBlock() != Blocks.WATER) || (MovementHelper.avoidWalkingInto(pb3.getBlock()) && pb3.getBlock() != Blocks.WATER)) {
                 return COST_INF;
             }
         }
@@ -113,7 +113,7 @@ public class MovementDiagonal extends Movement {
         }
         if (optionB == 0) {
             // and now that option B is fully calculated, see if we can edge around that way
-            if (MovementHelper.avoidWalkingInto(pb0.getBlock()) || MovementHelper.avoidWalkingInto(pb1.getBlock())) {
+            if ((MovementHelper.avoidWalkingInto(pb0.getBlock()) && pb0.getBlock() != Blocks.WATER) || (MovementHelper.avoidWalkingInto(pb1.getBlock()) && pb1.getBlock() != Blocks.WATER)) {
                 return COST_INF;
             }
         }
