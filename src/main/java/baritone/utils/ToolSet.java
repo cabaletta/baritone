@@ -67,7 +67,14 @@ public class ToolSet implements Helper {
      * @return how long it would take in ticks
      */
     public double getStrVsBlock(IBlockState state) {
-        return this.breakStrengthCache.computeIfAbsent(state.getBlock(), b -> calculateStrVsBlock(getBestSlot(state), state));
+        Double strength = this.breakStrengthCache.get(state.getBlock());
+        if (strength != null) {
+            // the function will take this path >99% of the time
+            return strength;
+        }
+        double str = calculateStrVsBlock(getBestSlot(state), state);
+        this.breakStrengthCache.put(state.getBlock(), str);
+        return str;
     }
 
     /**
