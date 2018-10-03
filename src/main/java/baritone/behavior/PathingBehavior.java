@@ -352,7 +352,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         } else {
             timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
         }
-        Optional<HashSet<Long>> favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(y -> y.hashCode)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
+        Optional<HashSet<Long>> favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(BetterBlockPos::longHash)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
         try {
             IPathFinder pf = new AStarPathFinder(start, goal, favoredPositions);
             return pf.calculate(timeout);
@@ -367,15 +367,17 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (!Baritone.settings().cancelOnGoalInvalidation.get()) {
             return;
         }
-        if (current == null || goal == null) {
-            return;
-        }
-        Goal intended = current.getPath().getGoal();
-        BlockPos end = current.getPath().getDest();
-        if (intended.isInGoal(end) && !goal.isInGoal(end)) {
-            // this path used to end in the goal
-            // but the goal has changed, so there's no reason to continue...
-            cancel();
+        synchronized (pathPlanLock) {
+            if (current == null || goal == null) {
+                return;
+            }
+            Goal intended = current.getPath().getGoal();
+            BlockPos end = current.getPath().getDest();
+            if (intended.isInGoal(end) && !goal.isInGoal(end)) {
+                // this path used to end in the goal
+                // but the goal has changed, so there's no reason to continue...
+                cancel();
+            }
         }
     }
 

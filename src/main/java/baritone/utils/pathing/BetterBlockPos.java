@@ -36,14 +36,12 @@ public final class BetterBlockPos extends BlockPos {
     public final int x;
     public final int y;
     public final int z;
-    public final long hashCode;
 
     public BetterBlockPos(int x, int y, int z) {
         super(x, y, z);
         this.x = x;
         this.y = y;
         this.z = z;
-        this.hashCode = AbstractNodeCostSearch.posHash(x, y, z);
     }
 
     public BetterBlockPos(double x, double y, double z) {
@@ -56,7 +54,11 @@ public final class BetterBlockPos extends BlockPos {
 
     @Override
     public int hashCode() {
-        return (int) hashCode;
+        return (int) AbstractNodeCostSearch.posHash(x, y, z);
+    }
+
+    public static long longHash(BetterBlockPos pos) {
+        return AbstractNodeCostSearch.posHash(pos.x, pos.y, pos.z);
     }
 
     @Override
@@ -66,9 +68,6 @@ public final class BetterBlockPos extends BlockPos {
         }
         if (o instanceof BetterBlockPos) {
             BetterBlockPos oth = (BetterBlockPos) o;
-            if (oth.hashCode != hashCode) {
-                return false;
-            }
             return oth.x == x && oth.y == y && oth.z == z;
         }
         // during path execution, like "if (whereShouldIBe.equals(whereAmI)) {"
