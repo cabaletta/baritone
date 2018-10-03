@@ -130,8 +130,4 @@ public final class Utils {
     public static double radToDeg(double rad) {
         return rad * RAD_TO_DEG;
     }
-
-    public static BlockPos diff(BlockPos a, BlockPos b) {
-        return new BlockPos(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
-    }
 }

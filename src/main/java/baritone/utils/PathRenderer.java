@@ -22,8 +22,8 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.pathing.goals.GoalXZ;
-import baritone.pathing.path.IPath;
 import baritone.api.utils.interfaces.IGoalRenderPos;
+import baritone.pathing.path.IPath;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -49,7 +49,7 @@ import static org.lwjgl.opengl.GL11.*;
  * @since 8/9/2018 4:39 PM
  */
 public final class PathRenderer implements Helper {
-    
+
     private static final Tessellator TESSELLATOR = Tessellator.getInstance();
     private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
 
@@ -68,13 +68,15 @@ public final class PathRenderer implements Helper {
         int fadeStart = fadeStart0 + startIndex;
         int fadeEnd = fadeEnd0 + startIndex;
         for (int i = startIndex; i < positions.size() - 1; i = next) {
-            BlockPos start = positions.get(i);
+            BetterBlockPos start = positions.get(i);
 
             next = i + 1;
-            BlockPos end = positions.get(next);
+            BetterBlockPos end = positions.get(next);
 
-            BlockPos direction = Utils.diff(start, end);
-            while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) && direction.equals(Utils.diff(end, positions.get(next + 1)))) {
+            int dirX = end.x - start.x;
+            int dirY = end.y - start.y;
+            int dirZ = end.z - start.z;
+            while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) && (dirX == positions.get(next + 1).x - end.x && dirY == positions.get(next + 1).y - end.y && dirZ == positions.get(next + 1).z - end.z)) {
                 next++;
                 end = positions.get(next);
             }
