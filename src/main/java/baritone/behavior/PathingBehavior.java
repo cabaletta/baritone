@@ -352,7 +352,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         } else {
             timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
         }
-        Optional<HashSet<Long>> favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(BetterBlockPos::longHash)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
+        Optional<HashSet<Long>> favoredPositions;
+        if (Baritone.settings().backtrackCostFavoringCoefficient.get() == 1D) {
+            favoredPositions = Optional.empty();
+        } else {
+            favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(BetterBlockPos::longHash)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
+        }
         try {
             IPathFinder pf = new AStarPathFinder(start, goal, favoredPositions);
             return pf.calculate(timeout);
