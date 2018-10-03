@@ -19,7 +19,6 @@ package baritone.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Optional;
 
@@ -29,8 +28,6 @@ import java.util.Optional;
  * @author leijurv
  */
 public interface IPathFinder {
-
-    BlockPos getStart();
 
     Goal getGoal();
 

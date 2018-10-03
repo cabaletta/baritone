@@ -27,7 +27,6 @@ import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.MoveResult;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -41,14 +40,14 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
 
     private final Optional<HashSet<Long>> favoredPositions;
 
-    public AStarPathFinder(BlockPos start, Goal goal, Optional<HashSet<Long>> favoredPositions) {
-        super(start, goal);
+    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions) {
+        super(startX, startY, startZ, goal);
         this.favoredPositions = favoredPositions;
     }
 
     @Override
     protected Optional<IPath> calculate0(long timeout) {
-        startNode = getNodeAtPosition(start.x, start.y, start.z, posHash(start.x, start.y, start.z));
+        startNode = getNodeAtPosition(startX, startY, startZ, posHash(startX, startY, startZ));
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();

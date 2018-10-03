@@ -20,9 +20,7 @@ package baritone.pathing.calc;
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.pathing.path.IPath;
-import baritone.utils.pathing.BetterBlockPos;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Optional;
 
@@ -38,7 +36,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      */
     private static AbstractNodeCostSearch currentlyRunning = null;
 
-    protected final BetterBlockPos start;
+    protected final int startX;
+    protected final int startY;
+    protected final int startZ;
 
     protected final Goal goal;
 
@@ -69,8 +69,10 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      */
     protected final static double MIN_DIST_PATH = 5;
 
-    AbstractNodeCostSearch(BlockPos start, Goal goal) {
-        this.start = new BetterBlockPos(start.getX(), start.getY(), start.getZ());
+    AbstractNodeCostSearch(int startX, int startY, int startZ, Goal goal) {
+        this.startX = startX;
+        this.startY = startY;
+        this.startZ = startZ;
         this.goal = goal;
         this.map = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.get());
     }
@@ -115,14 +117,14 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @return The distance, squared
      */
     protected double getDistFromStartSq(PathNode n) {
-        int xDiff = n.x - start.x;
-        int yDiff = n.y - start.y;
-        int zDiff = n.z - start.z;
+        int xDiff = n.x - startX;
+        int yDiff = n.y - startY;
+        int zDiff = n.z - startZ;
         return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
     }
 
     /**
-     * Attempts to search the {@link BlockPos} to {@link PathNode} map
+     * Attempts to search the block position hashCode long to {@link PathNode} map
      * for the node mapped to the specified pos. If no node is found,
      * a new node is created.
      *
@@ -140,7 +142,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     public static long posHash(int x, int y, int z) {
         /*
-         *   This is the hashcode implementation of Vec3i, the superclass of BlockPos
+         *   This is the hashcode implementation of Vec3i (the superclass of the class which I shall not name)
          *
          *   public int hashCode() {
          *       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
@@ -218,11 +220,6 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public final Goal getGoal() {
         return goal;
-    }
-
-    @Override
-    public final BlockPos getStart() {
-        return start;
     }
 
     public static Optional<AbstractNodeCostSearch> getCurrentlyRunning() {

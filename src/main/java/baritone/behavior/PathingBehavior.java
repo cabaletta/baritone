@@ -359,7 +359,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(BetterBlockPos::longHash)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
         }
         try {
-            IPathFinder pf = new AStarPathFinder(start, goal, favoredPositions);
+            IPathFinder pf = new AStarPathFinder(start.getX(), start.getY(), start.getZ(), goal, favoredPositions);
             return pf.calculate(timeout);
         } catch (Exception e) {
             logDebug("Pathing exception: " + e);
