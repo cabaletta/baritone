@@ -80,12 +80,12 @@ public final class PathRenderer implements Helper {
                 next++;
                 end = positions.get(next);
             }
-            double x1 = start.getX();
-            double y1 = start.getY();
-            double z1 = start.getZ();
-            double x2 = end.getX();
-            double y2 = end.getY();
-            double z2 = end.getZ();
+            double x1 = start.x;
+            double y1 = start.y;
+            double z1 = start.z;
+            double x2 = end.x;
+            double y2 = end.y;
+            double z2 = end.z;
             if (fadeOut) {
 
                 float alpha;
