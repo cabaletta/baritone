@@ -486,5 +486,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             return;
         }
+        if (msg.equals("damn")) {
+            logDirect("daniel");
+            return;
+        }
     }
 }
