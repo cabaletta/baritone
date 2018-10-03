@@ -480,5 +480,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             return;
         }
+        if (msg.equals("pause")) {
+            PathingBehavior.INSTANCE.toggle();
+            return;
+        }
     }
 }
