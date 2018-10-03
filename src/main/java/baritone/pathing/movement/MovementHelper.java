@@ -374,6 +374,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
 
             double result = m / strVsBlock;
+            result += context.breakBlockAdditionalCost();
             if (includeFalling) {
                 IBlockState above = BlockStateInterface.get(x, y + 1, z);
                 if (above.getBlock() instanceof BlockFalling) {

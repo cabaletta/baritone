@@ -43,6 +43,7 @@ public class CalculationContext implements Helper {
     private final int maxFallHeightNoWater;
     private final int maxFallHeightBucket;
     private final double waterWalkSpeed;
+    private final double breakBlockAdditionalCost;
 
     public CalculationContext() {
         this(new ToolSet());
@@ -63,6 +64,7 @@ public class CalculationContext implements Helper {
         }
         float mult = depth / 3.0F;
         this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - mult) + ActionCosts.WALK_ONE_BLOCK_COST * mult;
+        this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.get();
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
@@ -104,4 +106,7 @@ public class CalculationContext implements Helper {
         return waterWalkSpeed;
     }
 
+    public double breakBlockAdditionalCost() {
+        return breakBlockAdditionalCost;
+    }
 }
