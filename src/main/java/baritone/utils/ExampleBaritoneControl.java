@@ -481,7 +481,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         if (msg.equals("pause")) {
-            PathingBehavior.INSTANCE.toggle();
+            boolean enabled = PathingBehavior.INSTANCE.toggle();
+            logDirect("Pathing Behavior has " + (enabled ? "resumed" : "paused") + ".");
+            event.cancel();
             return;
         }
     }
