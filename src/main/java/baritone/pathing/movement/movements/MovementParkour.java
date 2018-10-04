@@ -24,6 +24,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
@@ -105,6 +106,10 @@ public class MovementParkour extends Movement {
             return IMPOSSIBLE;
         }
         if (!Baritone.settings().allowParkourPlace.get()) {
+            return IMPOSSIBLE;
+        }
+        if (!Baritone.settings().allowPlace.get()) {
+            Helper.HELPER.logDirect("allowParkourPlace enabled but allowPlace disabled?");
             return IMPOSSIBLE;
         }
         int destX = x + 4 * xDiff;
