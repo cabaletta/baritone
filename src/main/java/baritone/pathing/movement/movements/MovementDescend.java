@@ -127,7 +127,9 @@ public class MovementDescend extends Movement {
             }
             IBlockState ontoBlock = BlockStateInterface.get(destX, newY, destZ);
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[fallHeight] + frontBreak;
-            if (ontoBlock.getBlock() == Blocks.WATER && !BlockStateInterface.isFlowing(ontoBlock)) { // TODO flowing check required here?
+            if (ontoBlock.getBlock() == Blocks.WATER && !BlockStateInterface.isFlowing(ontoBlock) && BlockStateInterface.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) { // TODO flowing check required here?
+                // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
+                // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
                 if (Baritone.settings().assumeWalkOnWater.get()) {
                     return IMPOSSIBLE; // TODO fix
                 }
