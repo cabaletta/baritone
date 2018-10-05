@@ -294,9 +294,17 @@ public class MovementTraverse extends Movement {
                 double faceZ = (dest.getZ() + src.getZ() + 1.0D) * 0.5D;
                 // faceX, faceY, faceZ is the middle of the face between from and to
                 BlockPos goalLook = src.down(); // this is the block we were just standing on, and the one we want to place against
-                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
 
-                state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                Rotation backToFace = Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations());
+                float pitch = backToFace.getPitch();
+                double dist = Math.max(Math.abs(player().posX - faceX), Math.abs(player().posZ - faceZ));
+                if (dist < 0.29) {
+                    float yaw = Utils.calcRotationFromVec3d(Utils.getBlockPosCenter(dest), playerHead(), playerRotations()).getYaw();
+                    state.setTarget(new MovementState.MovementTarget(new Rotation(yaw, pitch), true));
+                    state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                } else {
+                    state.setTarget(new MovementState.MovementTarget(backToFace, true));
+                }
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);
                 if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), goalLook)) {
                     return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true); // wait to right click until we are able to place
