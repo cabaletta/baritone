@@ -50,7 +50,7 @@ public class MovementParkour extends Movement {
     private final int dist;
 
     private MovementParkour(BetterBlockPos src, int dist, EnumFacing dir) {
-        super(src, src.offset(dir, dist), EMPTY);
+        super(src, src.offset(dir, dist), EMPTY, src.offset(dir, dist).down());
         this.direction = dir;
         this.dist = dist;
     }
