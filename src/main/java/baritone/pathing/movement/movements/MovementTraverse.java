@@ -269,7 +269,7 @@ public class MovementTraverse extends Movement {
                     state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
 
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && Minecraft.getMinecraft().player.isSneaking()) {
+                    if (Objects.equals(LookBehaviorUtils.getSelectedBlock().orElse(null), against1) && (Minecraft.getMinecraft().player.isSneaking() || Baritone.settings().assumeSafeWalk.get())) {
                         if (LookBehaviorUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                             return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                         }
