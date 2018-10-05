@@ -114,6 +114,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (!moves.dynamicXZ && (res.destX != newX || res.destZ != newZ)) {
                     throw new IllegalStateException(moves + " " + res.destX + " " + newX + " " + res.destZ + " " + newZ);
                 }
+                if (!moves.dynamicY && res.destY != currentNode.y + moves.yOffset) {
+                    throw new IllegalStateException(moves + " " + res.destX + " " + newX + " " + res.destZ + " " + newZ);
+                }
                 if (actionCost <= 0) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }

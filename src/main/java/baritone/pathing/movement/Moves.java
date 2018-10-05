@@ -28,7 +28,7 @@ import net.minecraft.util.EnumFacing;
  * @author leijurv
  */
 public enum Moves {
-    DOWNWARD(0, 0) {
+    DOWNWARD(0, -1, 0) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementDownward(src, src.down());
@@ -40,7 +40,7 @@ public enum Moves {
         }
     },
 
-    PILLAR(0, 0) {
+    PILLAR(0, +1, 0) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementPillar(src, src.up());
@@ -52,7 +52,7 @@ public enum Moves {
         }
     },
 
-    TRAVERSE_NORTH(0, -1) {
+    TRAVERSE_NORTH(0, 0, -1) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementTraverse(src, src.north());
@@ -64,7 +64,7 @@ public enum Moves {
         }
     },
 
-    TRAVERSE_SOUTH(0, +1) {
+    TRAVERSE_SOUTH(0, 0, +1) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementTraverse(src, src.south());
@@ -76,7 +76,7 @@ public enum Moves {
         }
     },
 
-    TRAVERSE_EAST(+1, 0) {
+    TRAVERSE_EAST(+1, 0, 0) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementTraverse(src, src.east());
@@ -88,7 +88,7 @@ public enum Moves {
         }
     },
 
-    TRAVERSE_WEST(-1, 0) {
+    TRAVERSE_WEST(-1, 0, 0) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementTraverse(src, src.west());
@@ -100,7 +100,7 @@ public enum Moves {
         }
     },
 
-    ASCEND_NORTH(0, -1) {
+    ASCEND_NORTH(0, +1, -1) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementAscend(src, new BetterBlockPos(src.x, src.y + 1, src.z - 1));
@@ -112,7 +112,7 @@ public enum Moves {
         }
     },
 
-    ASCEND_SOUTH(0, +1) {
+    ASCEND_SOUTH(0, +1, +1) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementAscend(src, new BetterBlockPos(src.x, src.y + 1, src.z + 1));
@@ -124,7 +124,7 @@ public enum Moves {
         }
     },
 
-    ASCEND_EAST(+1, 0) {
+    ASCEND_EAST(+1, +1, 0) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementAscend(src, new BetterBlockPos(src.x + 1, src.y + 1, src.z));
@@ -136,7 +136,7 @@ public enum Moves {
         }
     },
 
-    ASCEND_WEST(-1, 0) {
+    ASCEND_WEST(-1, +1, 0) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementAscend(src, new BetterBlockPos(src.x - 1, src.y + 1, src.z));
@@ -148,7 +148,7 @@ public enum Moves {
         }
     },
 
-    DESCEND_EAST(+1, 0) {
+    DESCEND_EAST(+1, 0, 0, false, true) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             MoveResult res = apply(new CalculationContext(), src.x, src.y, src.z);
@@ -165,7 +165,7 @@ public enum Moves {
         }
     },
 
-    DESCEND_WEST(-1, 0) {
+    DESCEND_WEST(-1, 0, 0, false, true) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             MoveResult res = apply(new CalculationContext(), src.x, src.y, src.z);
@@ -182,7 +182,7 @@ public enum Moves {
         }
     },
 
-    DESCEND_NORTH(0, -1) {
+    DESCEND_NORTH(0, 0, -1, false, true) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             MoveResult res = apply(new CalculationContext(), src.x, src.y, src.z);
@@ -199,7 +199,7 @@ public enum Moves {
         }
     },
 
-    DESCEND_SOUTH(0, +1) {
+    DESCEND_SOUTH(0, 0, +1, false, true) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             MoveResult res = apply(new CalculationContext(), src.x, src.y, src.z);
@@ -216,7 +216,7 @@ public enum Moves {
         }
     },
 
-    DIAGONAL_NORTHEAST(+1, -1) {
+    DIAGONAL_NORTHEAST(+1, 0, -1) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementDiagonal(src, EnumFacing.NORTH, EnumFacing.EAST);
@@ -228,7 +228,7 @@ public enum Moves {
         }
     },
 
-    DIAGONAL_NORTHWEST(-1, -1) {
+    DIAGONAL_NORTHWEST(-1, 0, -1) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementDiagonal(src, EnumFacing.NORTH, EnumFacing.WEST);
@@ -240,7 +240,7 @@ public enum Moves {
         }
     },
 
-    DIAGONAL_SOUTHEAST(+1, +1) {
+    DIAGONAL_SOUTHEAST(+1, 0, +1) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementDiagonal(src, EnumFacing.SOUTH, EnumFacing.EAST);
@@ -252,7 +252,7 @@ public enum Moves {
         }
     },
 
-    DIAGONAL_SOUTHWEST(-1, +1) {
+    DIAGONAL_SOUTHWEST(-1, 0, +1) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return new MovementDiagonal(src, EnumFacing.SOUTH, EnumFacing.WEST);
@@ -264,7 +264,7 @@ public enum Moves {
         }
     },
 
-    PARKOUR_NORTH(0, -4, true) {
+    PARKOUR_NORTH(0, 0, -4, true, false) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return MovementParkour.cost(new CalculationContext(), src, EnumFacing.NORTH);
@@ -276,7 +276,7 @@ public enum Moves {
         }
     },
 
-    PARKOUR_SOUTH(0, +4, true) {
+    PARKOUR_SOUTH(0, 0, +4, true, false) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return MovementParkour.cost(new CalculationContext(), src, EnumFacing.SOUTH);
@@ -288,7 +288,7 @@ public enum Moves {
         }
     },
 
-    PARKOUR_EAST(+4, 0, true) {
+    PARKOUR_EAST(+4, 0, 0, true, false) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return MovementParkour.cost(new CalculationContext(), src, EnumFacing.EAST);
@@ -300,7 +300,7 @@ public enum Moves {
         }
     },
 
-    PARKOUR_WEST(-4, 0, true) {
+    PARKOUR_WEST(-4, 0, 0, true, false) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             return MovementParkour.cost(new CalculationContext(), src, EnumFacing.WEST);
@@ -313,18 +313,22 @@ public enum Moves {
     };
 
     public final boolean dynamicXZ;
+    public final boolean dynamicY;
 
     public final int xOffset;
+    public final int yOffset;
     public final int zOffset;
 
-    Moves(int x, int z, boolean dynamicXZ) {
+    Moves(int x, int y, int z, boolean dynamicXZ, boolean dynamicY) {
         this.xOffset = x;
+        this.yOffset = y;
         this.zOffset = z;
         this.dynamicXZ = dynamicXZ;
+        this.dynamicY = dynamicY;
     }
 
-    Moves(int x, int z) {
-        this(x, z, false);
+    Moves(int x, int y, int z) {
+        this(x, y, z, false, false);
     }
 
     public abstract Movement apply0(BetterBlockPos src);
