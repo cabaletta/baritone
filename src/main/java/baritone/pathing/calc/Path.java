@@ -139,6 +139,7 @@ class Path implements IPath {
         for (Moves moves : Moves.values()) {
             Movement move = moves.apply0(src);
             if (move.getDest().equals(dest)) {
+                move.recalculateCost(); // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
                 return move;
             }
         }

@@ -17,24 +17,27 @@
 
 package baritone.utils.pathing;
 
-import static baritone.api.pathing.movement.ActionCosts.COST_INF;
+import baritone.api.pathing.movement.ActionCosts;
 
 /**
  * The result of a calculated movement, with destination x, y, z, and the cost of performing the movement
  *
  * @author leijurv
  */
-public final class MoveResult {
-    public static final MoveResult IMPOSSIBLE = new MoveResult(0, 0, 0, COST_INF);
-    public final int destX;
-    public final int destY;
-    public final int destZ;
-    public final double cost;
+public final class MutableMoveResult {
+    public int x;
+    public int y;
+    public int z;
+    public double cost;
 
-    public MoveResult(int x, int y, int z, double cost) {
-        this.destX = x;
-        this.destY = y;
-        this.destZ = z;
-        this.cost = cost;
+    public MutableMoveResult() {
+        reset();
+    }
+
+    public final void reset() {
+        x = 0;
+        y = 0;
+        z = 0;
+        cost = ActionCosts.COST_INF;
     }
 }

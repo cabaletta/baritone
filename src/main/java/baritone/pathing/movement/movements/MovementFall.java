@@ -30,7 +30,7 @@ import baritone.utils.InputOverrideHandler;
 import baritone.utils.RayTraceUtils;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
-import baritone.utils.pathing.MoveResult;
+import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -49,8 +49,9 @@ public class MovementFall extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        MoveResult result = MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z);
-        if (result.destY != dest.y) {
+        MutableMoveResult result = new MutableMoveResult();
+        MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
+        if (result.y != dest.y) {
             return COST_INF; // doesn't apply to us, this position is a descend not a fall
         }
         return result.cost;

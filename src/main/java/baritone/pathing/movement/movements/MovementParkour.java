@@ -28,7 +28,7 @@ import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
-import baritone.utils.pathing.MoveResult;
+import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -38,8 +38,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
-
-import static baritone.utils.pathing.MoveResult.IMPOSSIBLE;
 
 public class MovementParkour extends Movement {
 
@@ -56,70 +54,75 @@ public class MovementParkour extends Movement {
     }
 
     public static MovementParkour cost(CalculationContext context, BetterBlockPos src, EnumFacing direction) {
-        MoveResult res = cost(context, src.x, src.y, src.z, direction);
-        int dist = Math.abs(res.destX - src.x) + Math.abs(res.destZ - src.z);
+        MutableMoveResult res = new MutableMoveResult();
+        cost(context, src.x, src.y, src.z, direction, res);
+        int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
         return new MovementParkour(src, dist, direction);
     }
 
-    public static MoveResult cost(CalculationContext context, int x, int y, int z, EnumFacing dir) {
+    public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
         if (!Baritone.settings().allowParkour.get()) {
-            return IMPOSSIBLE;
+            return;
         }
         IBlockState standingOn = BlockStateInterface.get(x, y - 1, z);
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || MovementHelper.isBottomSlab(standingOn)) {
-            return IMPOSSIBLE;
+            return;
         }
         int xDiff = dir.getXOffset();
         int zDiff = dir.getZOffset();
         IBlockState adj = BlockStateInterface.get(x + xDiff, y - 1, z + zDiff);
         if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
-            return IMPOSSIBLE;
+            return;
         }
         if (MovementHelper.canWalkOn(x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
-            return IMPOSSIBLE;
+            return;
         }
 
         if (!MovementHelper.fullyPassable(x + xDiff, y, z + zDiff)) {
-            return IMPOSSIBLE;
+            return;
         }
         if (!MovementHelper.fullyPassable(x + xDiff, y + 1, z + zDiff)) {
-            return IMPOSSIBLE;
+            return;
         }
         if (!MovementHelper.fullyPassable(x + xDiff, y + 2, z + zDiff)) {
-            return IMPOSSIBLE;
+            return;
         }
         if (!MovementHelper.fullyPassable(x, y + 2, z)) {
-            return IMPOSSIBLE;
+            return;
         }
         for (int i = 2; i <= (context.canSprint() ? 4 : 3); i++) {
             // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
             for (int y2 = 0; y2 < 4; y2++) {
                 if (!MovementHelper.fullyPassable(x + xDiff * i, y + y2, z + zDiff * i)) {
-                    return IMPOSSIBLE;
+                    return;
                 }
             }
             if (MovementHelper.canWalkOn(x + xDiff * i, y - 1, z + zDiff * i)) {
-                return new MoveResult(x + xDiff * i, y, z + zDiff * i, costFromJumpDistance(i));
+                res.x = x + xDiff * i;
+                res.y = y;
+                res.z = z + zDiff * i;
+                res.cost = costFromJumpDistance(i);
+                return;
             }
         }
         if (!context.canSprint()) {
-            return IMPOSSIBLE;
+            return;
         }
         if (!Baritone.settings().allowParkourPlace.get()) {
-            return IMPOSSIBLE;
+            return;
         }
         if (!Baritone.settings().allowPlace.get()) {
             Helper.HELPER.logDirect("allowParkourPlace enabled but allowPlace disabled?");
-            return IMPOSSIBLE;
+            return;
         }
         int destX = x + 4 * xDiff;
         int destZ = z + 4 * zDiff;
         IBlockState toPlace = BlockStateInterface.get(destX, y - 1, destZ);
         if (!context.hasThrowaway()) {
-            return IMPOSSIBLE;
+            return;
         }
         if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace)) {
-            return IMPOSSIBLE;
+            return;
         }
         for (int i = 0; i < 5; i++) {
             int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
@@ -128,10 +131,13 @@ public class MovementParkour extends Movement {
                 continue;
             }
             if (MovementHelper.canPlaceAgainst(againstX, y - 1, againstZ)) {
-                return new MoveResult(destX, y, destZ, costFromJumpDistance(4) + context.placeBlockCost());
+                res.x = destX;
+                res.y = y;
+                res.z = destZ;
+                res.cost = costFromJumpDistance(4) + context.placeBlockCost();
+                return;
             }
         }
-        return IMPOSSIBLE;
     }
 
     private static double costFromJumpDistance(int dist) {
@@ -150,8 +156,9 @@ public class MovementParkour extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        MoveResult res = cost(context, src.x, src.y, src.z, direction);
-        if (res.destX != dest.x || res.destZ != dest.z) {
+        MutableMoveResult res = new MutableMoveResult();
+        cost(context, src.x, src.y, src.z, direction, res);
+        if (res.x != dest.x || res.z != dest.z) {
             return COST_INF;
         }
         return res.cost;
