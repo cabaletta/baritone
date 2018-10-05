@@ -177,7 +177,7 @@ public class PathExecutor implements Helper {
                 }
             }
         }*/
-        long start = System.nanoTime() / 1000000L;
+        //long start = System.nanoTime() / 1000000L;
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i < 0 || i >= path.movements().size()) {
                 continue;
@@ -213,10 +213,10 @@ public class PathExecutor implements Helper {
             toWalkInto = newWalkInto;
             recalcBP = false;
         }
-        long end = System.nanoTime() / 1000000L;
+        /*long end = System.nanoTime() / 1000000L;
         if (end - start > 0) {
             System.out.println("Recalculating break and place took " + (end - start) + "ms");
-        }
+        }*/
         Movement movement = path.movements().get(pathPosition);
         boolean canCancel = movement.safeToCancel();
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
