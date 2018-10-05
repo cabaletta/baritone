@@ -35,8 +35,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x, y - 1, z, MovementDownward.cost(context, x, y, z));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementDownward.cost(context, x, y, z);
         }
     },
 
@@ -47,8 +47,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x, y + 1, z, MovementPillar.cost(context, x, y, z));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementPillar.cost(context, x, y, z);
         }
     },
 
@@ -59,8 +59,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x, y, z - 1, MovementTraverse.cost(context, x, y, z, x, z - 1));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementTraverse.cost(context, x, y, z, x, z - 1);
         }
     },
 
@@ -71,8 +71,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x, y, z + 1, MovementTraverse.cost(context, x, y, z, x, z + 1));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementTraverse.cost(context, x, y, z, x, z + 1);
         }
     },
 
@@ -83,8 +83,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x + 1, y, z, MovementTraverse.cost(context, x, y, z, x + 1, z));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementTraverse.cost(context, x, y, z, x + 1, z);
         }
     },
 
@@ -95,8 +95,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x - 1, y, z, MovementTraverse.cost(context, x, y, z, x - 1, z));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementTraverse.cost(context, x, y, z, x - 1, z);
         }
     },
 
@@ -107,8 +107,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x, y + 1, z - 1, MovementAscend.cost(context, x, y, z, x, z - 1));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementAscend.cost(context, x, y, z, x, z - 1);
         }
     },
 
@@ -119,8 +119,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x, y + 1, z + 1, MovementAscend.cost(context, x, y, z, x, z + 1));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementAscend.cost(context, x, y, z, x, z + 1);
         }
     },
 
@@ -131,8 +131,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x + 1, y + 1, z, MovementAscend.cost(context, x, y, z, x + 1, z));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementAscend.cost(context, x, y, z, x + 1, z);
         }
     },
 
@@ -143,8 +143,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x - 1, y + 1, z, MovementAscend.cost(context, x, y, z, x - 1, z));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementAscend.cost(context, x, y, z, x - 1, z);
         }
     },
 
@@ -223,8 +223,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x + 1, y, z - 1, MovementDiagonal.cost(context, x, y, z, x + 1, z - 1));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementDiagonal.cost(context, x, y, z, x + 1, z - 1);
         }
     },
 
@@ -235,8 +235,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x - 1, y, z - 1, MovementDiagonal.cost(context, x, y, z, x - 1, z - 1));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementDiagonal.cost(context, x, y, z, x - 1, z - 1);
         }
     },
 
@@ -247,8 +247,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x + 1, y, z + 1, MovementDiagonal.cost(context, x, y, z, x + 1, z + 1));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementDiagonal.cost(context, x, y, z, x + 1, z + 1);
         }
     },
 
@@ -259,8 +259,8 @@ public enum Moves {
         }
 
         @Override
-        public MoveResult apply(CalculationContext context, int x, int y, int z) {
-            return new MoveResult(x - 1, y, z + 1, MovementDiagonal.cost(context, x, y, z, x - 1, z + 1));
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementDiagonal.cost(context, x, y, z, x - 1, z + 1);
         }
     },
 
@@ -333,5 +333,14 @@ public enum Moves {
 
     public abstract Movement apply0(BetterBlockPos src);
 
-    public abstract MoveResult apply(CalculationContext context, int x, int y, int z);
+    public MoveResult apply(CalculationContext context, int x, int y, int z) {
+        if (dynamicXZ || dynamicY) {
+            throw new UnsupportedOperationException();
+        }
+        return new MoveResult(x + xOffset, y + yOffset, z + zOffset, cost(context, x, y, z));
+    }
+
+    public double cost(CalculationContext context, int x, int y, int z) {
+        throw new UnsupportedOperationException();
+    }
 }
