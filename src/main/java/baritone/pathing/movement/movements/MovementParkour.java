@@ -18,15 +18,13 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
-import baritone.utils.Utils;
+import baritone.utils.*;
 import baritone.utils.pathing.BetterBlockPos;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
@@ -35,6 +33,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
@@ -201,10 +200,13 @@ public class MovementParkour extends Movement {
                             double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
                             double faceY = (dest.getY() + against1.getY()) * 0.5D;
                             double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                            state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
-                            EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-
+                            Rotation place = Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations());
+                            RayTraceResult res = RayTraceUtils.rayTraceTowards(place);
+                            if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
+                                state.setTarget(new MovementState.MovementTarget(place, true));
+                            }
                             LookBehaviorUtils.getSelectedBlock().ifPresent(selectedBlock -> {
+                                EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                                 if (Objects.equals(selectedBlock, against1) && selectedBlock.offset(side).equals(dest.down())) {
                                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                                 }
