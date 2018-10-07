@@ -1,3 +1,7 @@
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
+
 /*
  * This file is part of Baritone.
  *
@@ -46,11 +50,6 @@ compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
 }
 
-tasks.withType(RepackageTask) {
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-}
-
 sourceSets {
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
@@ -95,4 +94,48 @@ jar {
     from sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+build {
+    // while "jar" supports preserveFileTimestamps false
+    // reobfJar doesn't, it just sets all the last modified times to that instant where it runs the reobfuscator
+    // so we have to set all those last modified times back to zero
+    doLast {
+        JarFile jf = new JarFile("build/libs/baritone-" + version + ".jar")
+        JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File("build/libs/baritone-unoptimized-" + version + ".jar")))
+
+
+        jf.entries().unique { it.name }.sort { it.name }.each {
+            cloneAndCopyEntry(jf, it, jos, 0)
+        }
+        jos.finish()
+        jf.close()
+    }
+}
+
+void cloneAndCopyEntry(JarFile originalFile, JarEntry original, JarOutputStream jos, long newTimestamp) {
+    JarEntry clone = new JarEntry(original)
+    clone.time = newTimestamp
+    def entryIs = originalFile.getInputStream(original)
+    jos.putNextEntry(clone)
+    copyBinaryData(entryIs, jos)
+}
+
+void copyBinaryData(InputStream is, JarOutputStream jos) {
+    byte[] buffer = new byte[1024]
+    int len = 0
+    while ((len = is.read(buffer)) != -1) {
+        jos.write(buffer, 0, len)
+    }
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    println "Found task graph: " + taskGraph
+    println "Found " + taskGraph.allTasks.size() + " tasks."
+    taskGraph.allTasks.forEach { task ->
+        println task
+        task.dependsOn.forEach { dep ->
+            println "  - " + dep
+        }
+    }
 }
