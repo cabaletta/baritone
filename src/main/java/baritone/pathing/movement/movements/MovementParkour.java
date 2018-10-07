@@ -164,6 +164,14 @@ public class MovementParkour extends Movement {
     }
 
     @Override
+    public boolean safeToCancel(MovementState state) {
+        // once this movement is instantiated, the state is default to PREPPING
+        // but once it's ticked for the first time it changes to RUNNING
+        // since we don't really know anything about momentum, it suffices to say Parkour can only be canceled on the 0th tick
+        return state.getStatus() != MovementState.MovementStatus.RUNNING;
+    }
+
+    @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         if (state.getStatus() != MovementState.MovementStatus.RUNNING) {

@@ -320,6 +320,14 @@ public class MovementTraverse extends Movement {
     }
 
     @Override
+    public boolean safeToCancel(MovementState state) {
+        // if we're in the process of breaking blocks before walking forwards
+        // or if this isn't a sneak place (the block is already there)
+        // then it's safe to cancel this
+        return state.getStatus() != MovementState.MovementStatus.RUNNING || MovementHelper.canWalkOn(dest.down());
+    }
+
+    @Override
     protected boolean prepared(MovementState state) {
         if (playerFeet().equals(src) || playerFeet().equals(src.down())) {
             Block block = BlockStateInterface.getBlock(src.down());

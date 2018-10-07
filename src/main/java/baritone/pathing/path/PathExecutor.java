@@ -20,6 +20,7 @@ package baritone.pathing.path;
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
@@ -33,6 +34,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static baritone.pathing.movement.MovementState.MovementStatus.*;
@@ -242,6 +244,10 @@ public class PathExecutor implements Helper {
             cancel();
             return true;
         }
+        if (shouldPause()) {
+            logDebug("Pausing since current best path is a backtrack");
+            return true;
+        }
         MovementState.MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
             logDebug("Movement returns status " + movementStatus);
@@ -268,6 +274,32 @@ public class PathExecutor implements Helper {
             }
         }
         return false; // movement is in progress
+    }
+
+    private boolean shouldPause() {
+        Optional<AbstractNodeCostSearch> current = AbstractNodeCostSearch.getCurrentlyRunning();
+        if (!current.isPresent()) {
+            return false;
+        }
+        if (!player().onGround) {
+            return false;
+        }
+        if (!MovementHelper.canWalkOn(playerFeet().down())) {
+            // we're in some kind of sketchy situation, maybe parkouring
+            return false;
+        }
+        if (!MovementHelper.canWalkThrough(playerFeet()) || !MovementHelper.canWalkThrough(playerFeet().up())) {
+            // suffocating?
+            return false;
+        }
+        if (!path.movements().get(pathPosition).safeToCancel()) {
+            return false;
+        }
+        Optional<IPath> currentBest = current.get().bestPathSoFar();
+        if (!currentBest.isPresent()) {
+            return false;
+        }
+        return currentBest.get().positions().contains(playerFeet());
     }
 
     private boolean possiblyOffPath(Tuple<Double, BlockPos> status, double leniency) {

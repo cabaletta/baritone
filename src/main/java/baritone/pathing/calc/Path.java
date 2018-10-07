@@ -139,11 +139,12 @@ class Path implements IPath {
         for (Moves moves : Moves.values()) {
             Movement move = moves.apply0(src);
             if (move.getDest().equals(dest)) {
+                // TODO instead of recalculating here, could we take pathNode.cost - pathNode.prevNode.cost to get the cost as-calculated?
                 move.recalculateCost(); // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
                 return move;
             }
         }
-        // leave this as IllegalStateException; it's caught in AbstractNodeCostSearch
+        // this is no longer called from bestPathSoFar, now it's in postprocessing
         throw new IllegalStateException("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
     }
 

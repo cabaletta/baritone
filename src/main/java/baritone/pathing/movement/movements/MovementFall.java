@@ -114,7 +114,9 @@ public class MovementFall extends Movement {
 
     @Override
     public boolean safeToCancel(MovementState state) {
-        return state.getStatus() != MovementStatus.RUNNING;
+        // if we haven't started walking off the edge yet, or if we're in the process of breaking blocks before doing the fall
+        // then it's safe to cancel this
+        return playerFeet().equals(src) || state.getStatus() != MovementStatus.RUNNING;
     }
 
     private static BetterBlockPos[] buildPositionsToBreak(BetterBlockPos src, BetterBlockPos dest) {
