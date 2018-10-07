@@ -89,3 +89,8 @@ mixin {
 jar {
     from sourceSets.launch.output, sourceSets.api.output
 }
+
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
