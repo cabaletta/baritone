@@ -21,7 +21,6 @@ import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
-import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
 import baritone.utils.BaritoneAutoTest;
 import baritone.utils.InputOverrideHandler;
@@ -36,7 +35,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * @author Brady
@@ -61,19 +59,13 @@ public enum Baritone {
     private File dir;
     private ThreadPoolExecutor threadPool;
 
-
-    /**
-     * List of consumers to be called after Baritone has initialized
-     */
-    private List<Consumer<Baritone>> onInitConsumers;
-
     /**
      * Whether or not Baritone is active
      */
     private boolean active;
 
     Baritone() {
-        this.onInitConsumers = new ArrayList<>();
+        this.gameEventHandler = new GameEventHandler();
     }
 
     public synchronized void init() {
@@ -81,7 +73,6 @@ public enum Baritone {
             return;
         }
         this.threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        this.gameEventHandler = new GameEventHandler();
         this.inputOverrideHandler = new InputOverrideHandler();
 
         // Acquire the "singleton" instance of the settings directly from the API
@@ -109,8 +100,6 @@ public enum Baritone {
 
         this.active = true;
         this.initialized = true;
-
-        this.onInitConsumers.forEach(consumer -> consumer.accept(this));
     }
 
     public boolean isInitialized() {
@@ -156,9 +145,5 @@ public enum Baritone {
 
     public File getDir() {
         return this.dir;
-    }
-
-    public void registerInitListener(Consumer<Baritone> runnable) {
-        this.onInitConsumers.add(runnable);
     }
 }

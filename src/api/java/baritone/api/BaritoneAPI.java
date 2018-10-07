@@ -19,6 +19,7 @@ package baritone.api;
 
 import baritone.api.behavior.*;
 import baritone.api.cache.IWorldProvider;
+import baritone.api.event.listener.IGameEventListener;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -70,5 +71,9 @@ public final class BaritoneAPI {
 
     public static IWorldProvider getWorldProvider() {
         return baritone.getWorldProvider();
+    }
+
+    public static void registerEventListener(IGameEventListener listener) {
+        baritone.registerEventListener(listener);
     }
 }

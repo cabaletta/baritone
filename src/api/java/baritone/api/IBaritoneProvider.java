@@ -19,6 +19,7 @@ package baritone.api;
 
 import baritone.api.behavior.*;
 import baritone.api.cache.IWorldProvider;
+import baritone.api.event.listener.IGameEventListener;
 
 /**
  * @author Brady
@@ -67,4 +68,11 @@ public interface IBaritoneProvider {
      * @return The {@link IWorldProvider} instance
      */
     IWorldProvider getWorldProvider();
+
+    /**
+     * Registers a {@link IGameEventListener} with Baritone's "event bus".
+     *
+     * @param listener The listener
+     */
+    void registerEventListener(IGameEventListener listener);
 }

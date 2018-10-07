@@ -20,6 +20,7 @@ package baritone;
 import baritone.api.IBaritoneProvider;
 import baritone.api.behavior.*;
 import baritone.api.cache.IWorldProvider;
+import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 
@@ -57,5 +58,10 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public IWorldProvider getWorldProvider() {
         return WorldProvider.INSTANCE;
+    }
+
+    @Override
+    public void registerEventListener(IGameEventListener listener) {
+        Baritone.INSTANCE.registerEventListener(listener);
     }
 }
