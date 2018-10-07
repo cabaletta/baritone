@@ -32,10 +32,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static baritone.pathing.movement.MovementState.MovementStatus.*;
 
@@ -299,7 +296,14 @@ public class PathExecutor implements Helper {
         if (!currentBest.isPresent()) {
             return false;
         }
-        return currentBest.get().positions().contains(playerFeet());
+        List<BetterBlockPos> positions = currentBest.get().positions();
+        if (positions.size() < 3) {
+            return false; // not long enough yet to justify pausing, its far from certain we'll actually take this route
+        }
+        // the first block of the next path will always overlap
+        // no need to pause our very last movement when it would have otherwise cleanly exited with MovementStatus SUCCESS
+        positions = positions.subList(1, positions.size());
+        return positions.contains(playerFeet());
     }
 
     private boolean possiblyOffPath(Tuple<Double, BlockPos> status, double leniency) {
