@@ -46,6 +46,11 @@ compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
 }
 
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 sourceSets {
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
@@ -88,9 +93,4 @@ mixin {
 
 jar {
     from sourceSets.launch.output, sourceSets.api.output
-}
-
-tasks.withType(AbstractArchiveTask) {
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
 }
