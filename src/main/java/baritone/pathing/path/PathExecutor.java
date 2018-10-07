@@ -114,7 +114,8 @@ public class PathExecutor implements Helper {
                         return false;
                     }
                 }
-                for (int i = pathPosition + 2; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
+                for (int i = pathPosition + 3; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
+                    // also don't check pathPosition+2 because reasons
                     if (whereAmI.equals(path.positions().get(i))) {
                         if (i - pathPosition > 2) {
                             logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
