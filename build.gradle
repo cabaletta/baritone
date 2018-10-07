@@ -46,7 +46,7 @@ compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
 }
 
-tasks.withType(AbstractArchiveTask) {
+tasks.withType(RepackageTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
@@ -93,4 +93,6 @@ mixin {
 
 jar {
     from sourceSets.launch.output, sourceSets.api.output
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
