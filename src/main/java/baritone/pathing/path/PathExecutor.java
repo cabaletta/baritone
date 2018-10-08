@@ -329,6 +329,7 @@ public class PathExecutor implements Helper {
 
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
         if (!new CalculationContext().canSprint()) {
+            Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(InputOverrideHandler.Input.SPRINT,false);
             player().setSprinting(false);
             return;
         }
@@ -340,6 +341,9 @@ public class PathExecutor implements Helper {
             }
             return;
         }
+
+        // we'll take it from here, no need for minecraft to see we're holding down control and sprint for us
+        Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(InputOverrideHandler.Input.SPRINT,false);
 
         // however, descend doesn't request sprinting, beceause it doesn't know the context of what movement comes after it
         Movement current = path.movements().get(pathPosition);
