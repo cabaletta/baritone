@@ -303,6 +303,11 @@ public class Settings {
     public Setting<Boolean> renderGoal = new Setting<>(true);
 
     /**
+     * Ignore depth when rendering the goal
+     */
+    public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(false);
+
+    /**
      * Line width of the path when rendered, in pixels
      */
     public Setting<Float> pathRenderLineWidthPixels = new Setting<>(5F);

@@ -232,26 +232,12 @@ public final class PathRenderer implements Helper {
         GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
-
-        if (y1 != 0) {
-            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            BUFFER.pos(minX, y1, minZ).endVertex();
-            BUFFER.pos(maxX, y1, minZ).endVertex();
-            BUFFER.pos(maxX, y1, maxZ).endVertex();
-            BUFFER.pos(minX, y1, maxZ).endVertex();
-            BUFFER.pos(minX, y1, minZ).endVertex();
-            TESSELLATOR.draw();
+        if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+            GlStateManager.disableDepth();
         }
 
-        if (y2 != 0) {
-            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            BUFFER.pos(minX, y2, minZ).endVertex();
-            BUFFER.pos(maxX, y2, minZ).endVertex();
-            BUFFER.pos(maxX, y2, maxZ).endVertex();
-            BUFFER.pos(minX, y2, maxZ).endVertex();
-            BUFFER.pos(minX, y2, minZ).endVertex();
-            TESSELLATOR.draw();
-        }
+        renderHorizontalQuad(minX, maxX, minZ, maxZ, y1);
+        renderHorizontalQuad(minX, maxX, minZ, maxZ, y2);
 
         BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
         BUFFER.pos(minX, minY, minZ).endVertex();
@@ -264,9 +250,22 @@ public final class PathRenderer implements Helper {
         BUFFER.pos(minX, maxY, maxZ).endVertex();
         TESSELLATOR.draw();
 
-
+        if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+            GlStateManager.enableDepth();
+        }
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
+    }
+
+    private static void renderHorizontalQuad(double minX, double maxX, double minZ, double maxZ, double y) {
+        if (y != 0) {
+            BUFFER.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
+            BUFFER.pos(minX, y, minZ).endVertex();
+            BUFFER.pos(maxX, y, minZ).endVertex();
+            BUFFER.pos(maxX, y, maxZ).endVertex();
+            BUFFER.pos(minX, y, maxZ).endVertex();
+            TESSELLATOR.draw();
+        }
     }
 }
