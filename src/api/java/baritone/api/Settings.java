@@ -485,7 +485,14 @@ public class Settings {
      */
     public Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
 
+    /**
+     * A map of lowercase setting field names to their respective setting
+     */
     public final Map<String, Setting<?>> byLowerName;
+
+    /**
+     * A list of all settings
+     */
     public final List<Setting<?>> allSettings;
 
     public class Setting<T> {
