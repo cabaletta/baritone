@@ -50,14 +50,14 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
     private MemoryBehavior() {}
 
     @Override
-    public void onPlayerUpdate(PlayerUpdateEvent event) {
+    public synchronized void onPlayerUpdate(PlayerUpdateEvent event) {
         if (event.getState() == EventState.PRE) {
             updateInventory();
         }
     }
 
     @Override
-    public void onSendPacket(PacketEvent event) {
+    public synchronized void onSendPacket(PacketEvent event) {
         Packet p = event.getPacket();
 
         if (event.getState() == EventState.PRE) {
@@ -83,7 +83,7 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
     }
 
     @Override
-    public void onReceivePacket(PacketEvent event) {
+    public synchronized void onReceivePacket(PacketEvent event) {
         Packet p = event.getPacket();
 
         if (event.getState() == EventState.PRE) {
@@ -130,13 +130,14 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
     }
 
     @Override
-    public final RememberedInventory getInventoryByPos(BlockPos pos) {
+    public final synchronized RememberedInventory getInventoryByPos(BlockPos pos) {
         return this.getCurrentContainer().rememberedInventories.get(pos);
     }
 
     @Override
-    public final Map<BlockPos, IRememberedInventory> getRememberedInventories() {
-        return Collections.unmodifiableMap(this.getCurrentContainer().rememberedInventories);
+    public final synchronized Map<BlockPos, IRememberedInventory> getRememberedInventories() {
+        // make a copy since this map is modified from the packet thread
+        return new HashMap<>(this.getCurrentContainer().rememberedInventories);
     }
 
     private static final class WorldDataContainer {
@@ -213,7 +214,7 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
 
         @Override
         public final List<ItemStack> getContents() {
-            return this.items;
+            return Collections.unmodifiableList(this.items);
         }
 
         @Override
