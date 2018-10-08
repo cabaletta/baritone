@@ -42,7 +42,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -388,56 +387,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        // System.out.println("Render passing");
-        // System.out.println(event.getPartialTicks());
-        float partialTicks = event.getPartialTicks();
-        if (goal != null && Baritone.settings().renderGoal.value) {
-            PathRenderer.drawLitDankGoalBox(player(), goal, partialTicks, Baritone.settings().colorGoalBox.get());
-        }
-        if (!Baritone.settings().renderPath.get()) {
-            return;
-        }
-
-        //long start = System.nanoTime();
-
-
-        PathExecutor current = this.current; // this should prevent most race conditions?
-        PathExecutor next = this.next; // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
-        // TODO is this enough, or do we need to acquire a lock here?
-        // TODO benchmark synchronized in render loop
-
-        // Render the current path, if there is one
-        if (current != null && current.getPath() != null) {
-            int renderBegin = Math.max(current.getPosition() - 3, 0);
-            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
-        }
-        if (next != null && next.getPath() != null) {
-            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
-        }
-
-        //long split = System.nanoTime();
-        if (current != null) {
-            PathRenderer.drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
-            PathRenderer.drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
-            PathRenderer.drawManySelectionBoxes(player(), current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
-        }
-
-        // If there is a path calculation currently running, render the path calculation process
-        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
-            currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                PathRenderer.drawPath(p, 0, player(), partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
-            });
-            currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-
-                PathRenderer.drawPath(mr, 0, player(), partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
-                PathRenderer.drawManySelectionBoxes(player(), Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
-            });
-        });
-        //long end = System.nanoTime();
-        //System.out.println((end - split) + " " + (split - start));
-        // if (end - start > 0) {
-        //   System.out.println("Frame took " + (split - start) + " " + (end - split));
-        //}
+        PathRenderer.render(event, this);
     }
 
     @Override

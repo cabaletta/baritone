@@ -18,12 +18,16 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.event.events.RenderEvent;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.interfaces.IGoalRenderPos;
+import baritone.behavior.PathingBehavior;
+import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.path.IPath;
+import baritone.pathing.path.PathExecutor;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -40,6 +44,7 @@ import net.minecraft.util.math.MathHelper;
 
 import java.awt.*;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -54,6 +59,61 @@ public final class PathRenderer implements Helper {
     private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
 
     private PathRenderer() {}
+
+    public static void render(RenderEvent event, PathingBehavior behavior) {
+        // System.out.println("Render passing");
+        // System.out.println(event.getPartialTicks());
+        float partialTicks = event.getPartialTicks();
+        Goal goal = behavior.getGoal();
+        EntityPlayerSP player = mc.player;
+        if (goal != null && Baritone.settings().renderGoal.value) {
+            PathRenderer.drawLitDankGoalBox(player, goal, partialTicks, Baritone.settings().colorGoalBox.get());
+        }
+        if (!Baritone.settings().renderPath.get()) {
+            return;
+        }
+
+        //long start = System.nanoTime();
+
+
+        PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
+        PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
+        // TODO is this enough, or do we need to acquire a lock here?
+        // TODO benchmark synchronized in render loop
+
+        // Render the current path, if there is one
+        if (current != null && current.getPath() != null) {
+            int renderBegin = Math.max(current.getPosition() - 3, 0);
+            PathRenderer.drawPath(current.getPath(), renderBegin, player, partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+        }
+        if (next != null && next.getPath() != null) {
+            PathRenderer.drawPath(next.getPath(), 0, player, partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+        }
+
+        //long split = System.nanoTime();
+        if (current != null) {
+            PathRenderer.drawManySelectionBoxes(player, current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
+            PathRenderer.drawManySelectionBoxes(player, current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
+            PathRenderer.drawManySelectionBoxes(player, current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
+        }
+
+        // If there is a path calculation currently running, render the path calculation process
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
+            currentlyRunning.bestPathSoFar().ifPresent(p -> {
+                PathRenderer.drawPath(p, 0, player, partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
+            });
+            currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
+
+                PathRenderer.drawPath(mr, 0, player, partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
+                PathRenderer.drawManySelectionBoxes(player, Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
+            });
+        });
+        //long end = System.nanoTime();
+        //System.out.println((end - split) + " " + (split - start));
+        // if (end - start > 0) {
+        //   System.out.println("Frame took " + (split - start) + " " + (end - split));
+        //}
+    }
 
     public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         GlStateManager.enableBlend();
