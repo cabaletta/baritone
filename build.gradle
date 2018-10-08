@@ -101,15 +101,15 @@ build {
     // reobfJar doesn't, it just sets all the last modified times to that instant where it runs the reobfuscator
     // so we have to set all those last modified times back to zero
     doLast {
-        JarFile jf = new JarFile("build/libs/baritone-" + version + ".jar")
-        JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File("build/libs/baritone-unoptimized-" + version + ".jar")))
-
-
+        File jarFile = new File("build/libs/baritone-" + version + ".jar")
+        JarFile jf = new JarFile(jarFile)
+        JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File("temp.jar")))
         jf.entries().unique { it.name }.sort { it.name }.each {
             cloneAndCopyEntry(jf, it, jos, 0)
         }
         jos.finish()
         jf.close()
+        file("temp.jar").renameTo(jarFile)
     }
 }
 
@@ -126,16 +126,5 @@ void copyBinaryData(InputStream is, JarOutputStream jos) {
     int len = 0
     while ((len = is.read(buffer)) != -1) {
         jos.write(buffer, 0, len)
-    }
-}
-
-gradle.taskGraph.whenReady { taskGraph ->
-    println "Found task graph: " + taskGraph
-    println "Found " + taskGraph.allTasks.size() + " tasks."
-    taskGraph.allTasks.forEach { task ->
-        println task
-        task.dependsOn.forEach { dep ->
-            println "  - " + dep
-        }
     }
 }
