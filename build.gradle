@@ -105,7 +105,12 @@ build {
         JarFile jf = new JarFile(jarFile)
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File("temp.jar")))
         jf.entries().unique { it.name }.sort { it.name }.each {
-            cloneAndCopyEntry(jf, it, jos, 0)
+            if (it.name != "META-INF/fml_cache_annotation.json" && it.name != "META-INF/fml_cache_class_versions.json") {
+                JarEntry clone = new JarEntry(it)
+                clone.time = 0
+                jos.putNextEntry(clone)
+                copy(jf.getInputStream(it), jos)
+            }
         }
         jos.finish()
         jf.close()
@@ -113,18 +118,10 @@ build {
     }
 }
 
-void cloneAndCopyEntry(JarFile originalFile, JarEntry original, JarOutputStream jos, long newTimestamp) {
-    JarEntry clone = new JarEntry(original)
-    clone.time = newTimestamp
-    def entryIs = originalFile.getInputStream(original)
-    jos.putNextEntry(clone)
-    copyBinaryData(entryIs, jos)
-}
-
-void copyBinaryData(InputStream is, JarOutputStream jos) {
+void copy(InputStream is, OutputStream os) {
     byte[] buffer = new byte[1024]
     int len = 0
     while ((len = is.read(buffer)) != -1) {
-        jos.write(buffer, 0, len)
+        os.write(buffer, 0, len)
     }
 }
