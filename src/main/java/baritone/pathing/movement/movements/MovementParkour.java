@@ -224,7 +224,7 @@ public class MovementParkour extends Movement {
                 }
 
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
-            } else {
+            } else if(!playerFeet().equals(dest.offset(direction, -1))) {
                 state.setInput(InputOverrideHandler.Input.SPRINT, false);
                 if (playerFeet().equals(src.offset(direction, -1))) {
                     MovementHelper.moveTowards(state, src);
