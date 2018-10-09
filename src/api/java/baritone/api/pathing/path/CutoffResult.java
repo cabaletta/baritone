@@ -18,13 +18,21 @@
 package baritone.api.pathing.path;
 
 /**
+ * The result of a path cut-off operation.
+ *
  * @author Brady
  * @since 10/8/2018
  */
 public final class CutoffResult {
 
+    /**
+     * The resulting path
+     */
     private final IPath path;
 
+    /**
+     * The amount of movements that were removed
+     */
     private final int removed;
 
     private CutoffResult(IPath path, int removed) {
@@ -32,22 +40,44 @@ public final class CutoffResult {
         this.removed = removed;
     }
 
+    /**
+     * @return Whether or not the path was cut
+     */
     public final boolean wasCut() {
         return this.removed > 0;
     }
 
+    /**
+     * @return The amount of movements that were removed
+     */
     public final int getRemoved() {
         return this.removed;
     }
 
+    /**
+     * @return The resulting path
+     */
     public final IPath getPath() {
         return this.path;
     }
 
+    /**
+     * Creates a new result from a successful cut-off operation.
+     *
+     * @param path The input path
+     * @param index The index to cut the path at
+     * @return The result of the operation
+     */
     public static CutoffResult cutoffPath(IPath path, int index) {
         return new CutoffResult(new CutoffPath(path, index), path.positions().size() - index - 1);
     }
 
+    /**
+     * Creates a new result in which no cut-off occurred.
+     *
+     * @param path The input path
+     * @return The result of the operation
+     */
     public static CutoffResult preservePath(IPath path) {
         return new CutoffResult(path, 0);
     }
