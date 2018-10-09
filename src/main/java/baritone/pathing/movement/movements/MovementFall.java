@@ -106,7 +106,7 @@ public class MovementFall extends Movement {
             }
         }
         Vec3d destCenter = Utils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
-        if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
+        if (Math.abs(player().posX - destCenter.x) > 0.15 || Math.abs(player().posZ - destCenter.z) > 0.15) {
             state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
         }
         return state;
