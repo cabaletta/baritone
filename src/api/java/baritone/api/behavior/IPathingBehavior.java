@@ -81,7 +81,7 @@ public interface IPathingBehavior extends IBehavior {
     /**
      * @return The current path finder being executed
      */
-    Optional<IPathFinder> getCurrentPathSearch();
+    Optional<IPathFinder> getPathFinder();
 
     /**
      * @return The current path executor
