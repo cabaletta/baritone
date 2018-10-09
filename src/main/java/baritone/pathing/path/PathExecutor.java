@@ -19,10 +19,10 @@ package baritone.pathing.path;
 
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.path.IPathExecutor;
 import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.calc.AbstractNodeCostSearch;
@@ -244,6 +244,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (shouldPause()) {
             logDebug("Pausing since current best path is a backtrack");
+            clearKeys();
             return true;
         }
         MovementStatus movementStatus = movement.update();
@@ -342,7 +343,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
         if (!new CalculationContext().canSprint()) {
-            Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(InputOverrideHandler.Input.SPRINT,false);
+            Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(InputOverrideHandler.Input.SPRINT, false);
             player().setSprinting(false);
             return;
         }
@@ -356,7 +357,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
 
         // we'll take it from here, no need for minecraft to see we're holding down control and sprint for us
-        Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(InputOverrideHandler.Input.SPRINT,false);
+        Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(InputOverrideHandler.Input.SPRINT, false);
 
         // however, descend doesn't request sprinting, beceause it doesn't know the context of what movement comes after it
         IMovement current = path.movements().get(pathPosition);
