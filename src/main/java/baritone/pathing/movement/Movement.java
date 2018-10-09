@@ -63,7 +63,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
     public List<BlockPos> toPlaceCached = null;
     public List<BlockPos> toWalkIntoCached = null;
 
-    private boolean calculatedWhileLoaded;
+    private Boolean calculatedWhileLoaded;
 
     protected Movement(BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak, BetterBlockPos toPlace) {
         this.src = src;
