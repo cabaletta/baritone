@@ -35,8 +35,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     public static final BaritoneAutoTest INSTANCE = new BaritoneAutoTest();
 
-    private BaritoneAutoTest() {}
-
     public static final boolean ENABLE_AUTO_TEST = "true".equals(System.getenv("BARITONE_AUTO_TEST"));
     private static final long TEST_SEED = -928872506371745L;
     private static final BlockPos STARTING_POSITION = new BlockPos(0, 65, 0);
@@ -123,4 +121,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             }
         }
     }
+
+    private BaritoneAutoTest() {}
 }
