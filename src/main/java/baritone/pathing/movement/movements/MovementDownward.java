@@ -17,10 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.movement.MovementState;
+import baritone.pathing.movement.*;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
@@ -64,12 +61,12 @@ public class MovementDownward extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+        if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
 
         if (playerFeet().equals(dest)) {
-            return state.setStatus(MovementState.MovementStatus.SUCCESS);
+            return state.setStatus(MovementStatus.SUCCESS);
         }
         double diffX = player().posX - (dest.getX() + 0.5);
         double diffZ = player().posZ - (dest.getZ() + 0.5);

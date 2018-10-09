@@ -19,7 +19,7 @@ package baritone.pathing.path;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.Movement;
+import baritone.pathing.movement.IMovement;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
@@ -40,7 +40,7 @@ public interface IPath {
      * movements.get(i).getDest() should equal positions.get(i+1)
      * movements.size() should equal positions.size()-1
      */
-    List<Movement> movements();
+    List<IMovement> movements();
 
     /**
      * All positions along the way.
@@ -86,7 +86,7 @@ public interface IPath {
     /**
      * Where does this path start
      */
-    default BlockPos getSrc() {
+    default BetterBlockPos getSrc() {
         return positions().get(0);
     }
 
@@ -102,7 +102,7 @@ public interface IPath {
         double sum = 0;
         //this is fast because we aren't requesting recalculation, it's just cached
         for (int i = pathPosition; i < movements().size(); i++) {
-            sum += movements().get(i).getCost(null);
+            sum += movements().get(i).getCost();
         }
         return sum;
     }

@@ -17,7 +17,7 @@
 
 package baritone.pathing.movement;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.utils.Helper;
 import baritone.utils.ToolSet;
@@ -51,20 +51,20 @@ public class CalculationContext implements Helper {
 
     public CalculationContext(ToolSet toolSet) {
         this.toolSet = toolSet;
-        this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(false);
-        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
-        this.canSprint = Baritone.settings().allowSprint.get() && player().getFoodStats().getFoodLevel() > 6;
-        this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
-        this.allowBreak = Baritone.settings().allowBreak.get();
-        this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
-        this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
+        this.hasThrowaway = BaritoneAPI.getSettings().allowPlace.get() && MovementHelper.throwaway(false);
+        this.hasWaterBucket = BaritoneAPI.getSettings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
+        this.canSprint = BaritoneAPI.getSettings().allowSprint.get() && player().getFoodStats().getFoodLevel() > 6;
+        this.placeBlockCost = BaritoneAPI.getSettings().blockPlacementPenalty.get();
+        this.allowBreak = BaritoneAPI.getSettings().allowBreak.get();
+        this.maxFallHeightNoWater = BaritoneAPI.getSettings().maxFallHeightNoWater.get();
+        this.maxFallHeightBucket = BaritoneAPI.getSettings().maxFallHeightBucket.get();
         int depth = EnchantmentHelper.getDepthStriderModifier(player());
         if (depth > 3) {
             depth = 3;
         }
         float mult = depth / 3.0F;
         this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - mult) + ActionCosts.WALK_ONE_BLOCK_COST * mult;
-        this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.get();
+        this.breakBlockAdditionalCost = BaritoneAPI.getSettings().blockBreakAdditionalPenalty.get();
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.

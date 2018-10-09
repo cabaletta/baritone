@@ -21,7 +21,6 @@ import baritone.Baritone;
 import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehavior;
 import baritone.behavior.LookBehaviorUtils;
-import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.*;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.BlockLiquid;
@@ -36,7 +35,7 @@ import java.util.Optional;
 
 import static baritone.utils.InputOverrideHandler.Input;
 
-public abstract class Movement implements Helper, MovementHelper {
+public abstract class Movement implements IMovement, Helper, MovementHelper {
 
     protected static final EnumFacing[] HORIZONTALS = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST};
 
@@ -64,7 +63,7 @@ public abstract class Movement implements Helper, MovementHelper {
     public List<BlockPos> toPlaceCached = null;
     public List<BlockPos> toWalkIntoCached = null;
 
-    private Boolean calculatedWhileLoaded;
+    private boolean calculatedWhileLoaded;
 
     protected Movement(BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak, BetterBlockPos toPlace) {
         this.src = src;
@@ -77,24 +76,27 @@ public abstract class Movement implements Helper, MovementHelper {
         this(src, dest, toBreak, null);
     }
 
-    public double getCost(CalculationContext context) {
+    @Override
+    public double getCost() {
         if (cost == null) {
-            cost = calculateCost(context != null ? context : new CalculationContext());
+            cost = calculateCost(new CalculationContext());
         }
         return cost;
     }
 
     protected abstract double calculateCost(CalculationContext context);
 
+    @Override
     public double recalculateCost() {
         cost = null;
-        return getCost(null);
+        return getCost();
     }
 
     protected void override(double cost) {
         this.cost = cost;
     }
 
+    @Override
     public double calculateCostWithoutCaching() {
         return calculateCost(new CalculationContext());
     }
@@ -105,6 +107,7 @@ public abstract class Movement implements Helper, MovementHelper {
      *
      * @return Status
      */
+    @Override
     public MovementStatus update() {
         player().capabilities.allowFlying = false;
         MovementState latestState = updateState(currentState);
@@ -187,6 +190,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return true;
     }
 
+    @Override
     public boolean safeToCancel() {
         return safeToCancel(currentState);
     }
@@ -201,10 +205,12 @@ public abstract class Movement implements Helper, MovementHelper {
                 && currentState.getStatus() != MovementStatus.WAITING);
     }
 
+    @Override
     public BetterBlockPos getSrc() {
         return src;
     }
 
+    @Override
     public BetterBlockPos getDest() {
         return dest;
     }
@@ -223,6 +229,7 @@ public abstract class Movement implements Helper, MovementHelper {
         currentState.setStatus(MovementStatus.CANCELED);
     }
 
+    @Override
     public void reset() {
         currentState = new MovementState().setStatus(MovementStatus.PREPPING);
     }
@@ -247,6 +254,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return state;
     }
 
+    @Override
     public BlockPos getDirection() {
         return getDest().subtract(getSrc());
     }
@@ -255,10 +263,19 @@ public abstract class Movement implements Helper, MovementHelper {
         calculatedWhileLoaded = !(world().getChunk(getDest()) instanceof EmptyChunk);
     }
 
+    @Override
     public boolean calculatedWhileLoaded() {
         return calculatedWhileLoaded;
     }
 
+    @Override
+    public void resetBlockCache() {
+        toBreakCached = null;
+        toPlaceCached = null;
+        toWalkIntoCached = null;
+    }
+
+    @Override
     public List<BlockPos> toBreak() {
         if (toBreakCached != null) {
             return toBreakCached;
@@ -273,6 +290,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return result;
     }
 
+    @Override
     public List<BlockPos> toPlace() {
         if (toPlaceCached != null) {
             return toPlaceCached;
@@ -285,6 +303,7 @@ public abstract class Movement implements Helper, MovementHelper {
         return result;
     }
 
+    @Override
     public List<BlockPos> toWalkInto() { // overridden by movementdiagonal
         if (toWalkIntoCached == null) {
             toWalkIntoCached = new ArrayList<>();

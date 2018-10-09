@@ -18,6 +18,7 @@
 package baritone.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
+import baritone.pathing.movement.IMovement;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.path.IPath;
@@ -161,7 +162,7 @@ class Path implements IPath {
     }
 
     @Override
-    public List<Movement> movements() {
+    public List<IMovement> movements() {
         if (!verified) {
             throw new IllegalStateException();
         }

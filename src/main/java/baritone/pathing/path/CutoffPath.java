@@ -18,7 +18,7 @@
 package baritone.pathing.path;
 
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.Movement;
+import baritone.pathing.movement.IMovement;
 import baritone.utils.pathing.BetterBlockPos;
 
 import java.util.Collections;
@@ -28,7 +28,7 @@ public class CutoffPath implements IPath {
 
     private final List<BetterBlockPos> path;
 
-    private final List<Movement> movements;
+    private final List<IMovement> movements;
 
     private final int numNodes;
 
@@ -47,7 +47,7 @@ public class CutoffPath implements IPath {
     }
 
     @Override
-    public List<Movement> movements() {
+    public List<IMovement> movements() {
         return Collections.unmodifiableList(movements);
     }
 

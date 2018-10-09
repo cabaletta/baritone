@@ -18,10 +18,7 @@
 package baritone.pathing.movement.movements;
 
 import baritone.api.utils.Rotation;
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.movement.MovementState;
+import baritone.pathing.movement.*;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
@@ -148,7 +145,7 @@ public class MovementPillar extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+        if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
 
@@ -161,7 +158,7 @@ public class MovementPillar extends Movement {
                 state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
             }
             if (playerFeet().equals(dest)) {
-                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+                return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
         }
@@ -178,11 +175,11 @@ public class MovementPillar extends Movement {
             BlockPos against = vine ? getAgainst(src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
                 logDebug("Unable to climb vines");
-                return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
             if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
-                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+                return state.setStatus(MovementStatus.SUCCESS);
             }
             if (MovementHelper.isBottomSlab(src.down())) {
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
@@ -198,7 +195,7 @@ public class MovementPillar extends Movement {
         } else {
             // Get ready to place a throwaway block
             if (!MovementHelper.throwaway(true)) {
-                return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
             numTicks++;
@@ -233,7 +230,7 @@ public class MovementPillar extends Movement {
 
         // If we are at our goal and the block below us is placed
         if (playerFeet().equals(dest) && blockIsThere) {
-            return state.setStatus(MovementState.MovementStatus.SUCCESS);
+            return state.setStatus(MovementStatus.SUCCESS);
         }
 
         return state;

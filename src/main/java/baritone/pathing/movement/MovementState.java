@@ -72,10 +72,6 @@ public class MovementState {
         return this.inputState;
     }
 
-    public enum MovementStatus {
-        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED, CANCELED
-    }
-
     public static class MovementTarget {
 
         /**
