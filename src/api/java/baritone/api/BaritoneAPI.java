@@ -21,6 +21,7 @@ import baritone.api.behavior.*;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.utils.SettingsUtil;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -44,6 +45,7 @@ public final class BaritoneAPI {
         baritone = instances.next();
 
         settings = new Settings();
+        SettingsUtil.readAndApply(settings);
     }
 
     public static IFollowBehavior getFollowBehavior() {

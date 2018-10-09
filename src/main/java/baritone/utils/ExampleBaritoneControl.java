@@ -23,6 +23,7 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
 import baritone.behavior.FollowBehavior;
 import baritone.behavior.MineBehavior;
@@ -79,6 +80,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 setting.value ^= true;
                 event.cancel();
                 logDirect("Toggled " + setting.getName() + " to " + setting.value);
+                SettingsUtil.save(Baritone.settings());
                 return;
             }
         }
@@ -112,6 +114,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                         event.cancel();
                         return;
                     }
+                    SettingsUtil.save(Baritone.settings());
                     logDirect(setting.toString());
                     event.cancel();
                     return;

@@ -497,6 +497,7 @@ public class Settings {
 
     public class Setting<T> {
         public T value;
+        public final T defaultValue;
         private String name;
         private final Class<T> klass;
 
@@ -506,6 +507,7 @@ public class Settings {
                 throw new IllegalArgumentException("Cannot determine value type class from null");
             }
             this.value = value;
+            this.defaultValue = value;
             this.klass = (Class<T>) value.getClass();
         }
 
