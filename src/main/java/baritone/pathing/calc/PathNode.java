@@ -30,20 +30,20 @@ public final class PathNode {
     /**
      * The position of this node
      */
-    final int x;
-    final int y;
-    final int z;
+    public final int x;
+    public final int y;
+    public final int z;
 
     /**
      * Cached, should always be equal to goal.heuristic(pos)
      */
-    final double estimatedCostToGoal;
+    public final double estimatedCostToGoal;
 
     /**
      * Total cost of getting from start to here
      * Mutable and changed by PathFinder
      */
-    double cost;
+    public double cost;
 
     /**
      * Should always be equal to estimatedCosttoGoal + cost
@@ -55,13 +55,13 @@ public final class PathNode {
      * In the graph search, what previous node contributed to the cost
      * Mutable and changed by PathFinder
      */
-    PathNode previous;
+    public PathNode previous;
 
     /**
      * Is this a member of the open set in A*? (only used during pathfinding)
      * Instead of doing a costly member check in the open set, cache membership in each node individually too.
      */
-    boolean isOpen;
+    public boolean isOpen;
 
     /**
      * Where is this node in the array flattenization of the binary heap? Needed for decrease-key operations.

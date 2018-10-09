@@ -42,7 +42,7 @@ public class WorldData implements IWorldData {
         this.waypoints = new Waypoints(directory.resolve("waypoints"));
     }
 
-    void onClose() {
+    public void onClose() {
         Baritone.INSTANCE.getExecutor().execute(() -> {
             System.out.println("Started saving the world in a new thread");
             cache.save();
