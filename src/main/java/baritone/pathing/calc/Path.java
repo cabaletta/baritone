@@ -18,11 +18,11 @@
 package baritone.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.IMovement;
+import baritone.api.pathing.movement.IMovement;
+import baritone.api.pathing.path.IPath;
+import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
-import baritone.pathing.path.IPath;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;

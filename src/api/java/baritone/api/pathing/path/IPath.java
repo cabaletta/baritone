@@ -15,15 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.path;
+package baritone.api.pathing.path;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.IMovement;
-import baritone.utils.Utils;
-import baritone.utils.pathing.BetterBlockPos;
+import baritone.api.pathing.movement.IMovement;
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -69,19 +67,6 @@ public interface IPath {
      * @return
      */
     Goal getGoal();
-
-    default Tuple<Double, BlockPos> closestPathPos() {
-        double best = -1;
-        BlockPos bestPos = null;
-        for (BlockPos pos : positions()) {
-            double dist = Utils.playerDistanceToCenter(pos);
-            if (dist < best || best == -1) {
-                best = dist;
-                bestPos = pos;
-            }
-        }
-        return new Tuple<>(best, bestPos);
-    }
 
     /**
      * Where does this path start

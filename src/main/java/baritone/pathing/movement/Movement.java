@@ -18,11 +18,13 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.pathing.movement.IMovement;
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehavior;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.utils.*;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;

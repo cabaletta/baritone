@@ -20,10 +20,11 @@ package baritone.pathing.calc;
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.pathing.path.IPath;
+import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
-import baritone.pathing.path.IPath;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.MutableMoveResult;
@@ -47,7 +48,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
 
     @Override
     protected Optional<IPath> calculate0(long timeout) {
-        startNode = getNodeAtPosition(startX, startY, startZ, posHash(startX, startY, startZ));
+        startNode = getNodeAtPosition(startX, startY, startZ, BetterBlockPos.longHash(startX, startY, startZ));
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
@@ -122,7 +123,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (actionCost <= 0) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
-                long hashCode = posHash(res.x, res.y, res.z);
+                long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
                 if (favoring && favored.contains(hashCode)) {
                     // see issue #18
                     actionCost *= favorCoeff;

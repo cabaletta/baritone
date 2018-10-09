@@ -25,19 +25,19 @@ import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.pathing.path.CutoffResult;
+import baritone.api.pathing.path.IPath;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.calc.IPathFinder;
+import baritone.api.pathing.calc.IPathFinder;
 import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.path.CutoffResult;
-import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -191,19 +191,19 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return goal;
     }
 
+    @Override
     public PathExecutor getCurrent() {
         return current;
     }
 
+    @Override
     public PathExecutor getNext() {
         return next;
     }
 
-    // TODO: Expose this method in the API?
-    // In order to do so, we'd need to move over IPath which has a whole lot of references to other
-    // things that may not need to be exposed necessarily, so we'll need to figure that out.
-    public Optional<IPath> getPath() {
-        return Optional.ofNullable(current).map(PathExecutor::getPath);
+    @Override
+    public Optional<IPathFinder> getCurrentPathSearch() {
+        return Optional.ofNullable(AbstractNodeCostSearch.currentlyRunning());
     }
 
     @Override

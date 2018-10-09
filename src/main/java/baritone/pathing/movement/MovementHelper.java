@@ -19,11 +19,11 @@ package baritone.pathing.movement;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.*;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;

@@ -20,18 +20,23 @@ package baritone.pathing.path;
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.pathing.movement.IMovement;
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.pathing.path.IPath;
+import baritone.api.pathing.path.IPathExecutor;
+import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.movement.*;
+import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.*;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
 
-import static baritone.pathing.movement.MovementStatus.*;
+import static baritone.api.pathing.movement.MovementStatus.*;
 
 /**
  * Behavior to execute a precomputed path. Does not (yet) deal with path segmentation or stitching
@@ -39,7 +44,7 @@ import static baritone.pathing.movement.MovementStatus.*;
  *
  * @author leijurv
  */
-public class PathExecutor implements Helper {
+public class PathExecutor implements IPathExecutor, Helper {
     private static final double MAX_MAX_DIST_FROM_PATH = 3;
     private static final double MAX_DIST_FROM_PATH = 2;
 
@@ -125,7 +130,7 @@ public class PathExecutor implements Helper {
                 }
             }
         }
-        Tuple<Double, BlockPos> status = path.closestPathPos();
+        Tuple<Double, BlockPos> status = closestPathPos(path);
         if (possiblyOffPath(status, MAX_DIST_FROM_PATH)) {
             ticksAway++;
             System.out.println("FAR AWAY FROM PATH FOR " + ticksAway + " TICKS. Current distance: " + status.getFirst() + ". Threshold: " + MAX_DIST_FROM_PATH);
@@ -267,6 +272,19 @@ public class PathExecutor implements Helper {
             }
         }
         return false; // movement is in progress
+    }
+
+    private Tuple<Double, BlockPos> closestPathPos(IPath path) {
+        double best = -1;
+        BlockPos bestPos = null;
+        for (BlockPos pos : path.positions()) {
+            double dist = Utils.playerDistanceToCenter(pos);
+            if (dist < best || best == -1) {
+                best = dist;
+                bestPos = pos;
+            }
+        }
+        return new Tuple<>(best, bestPos);
     }
 
     private boolean shouldPause() {

@@ -15,40 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.path;
+package baritone.api.pathing.path;
 
 /**
  * @author Brady
  * @since 10/8/2018
  */
-public final class CutoffResult {
+public interface IPathExecutor {
 
-    private final IPath path;
-
-    private final int removed;
-
-    private CutoffResult(IPath path, int removed) {
-        this.path = path;
-        this.removed = removed;
-    }
-
-    public final boolean wasCut() {
-        return this.removed > 0;
-    }
-
-    public final int getRemoved() {
-        return this.removed;
-    }
-
-    public final IPath getPath() {
-        return this.path;
-    }
-
-    public static CutoffResult cutoffPath(IPath path, int index) {
-        return new CutoffResult(new CutoffPath(path, index), path.positions().size() - index - 1);
-    }
-
-    public static CutoffResult preservePath(IPath path) {
-        return new CutoffResult(path, 0);
-    }
+    IPath getPath();
 }

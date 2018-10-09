@@ -17,7 +17,10 @@
 
 package baritone.api.behavior;
 
+import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.path.IPath;
+import baritone.api.pathing.path.IPathExecutor;
 
 import java.util.Optional;
 
@@ -65,4 +68,30 @@ public interface IPathingBehavior extends IBehavior {
      * Cancels the pathing behavior or the current path calculation.
      */
     void cancel();
+
+    /**
+     * Returns the current path, from the current path executor, if there is one.
+     *
+     * @return The current path
+     */
+    default Optional<IPath> getPath() {
+        return Optional.ofNullable(getCurrent()).map(IPathExecutor::getPath);
+    }
+
+    /**
+     * @return The current path finder being executed
+     */
+    Optional<IPathFinder> getCurrentPathSearch();
+
+    /**
+     * @return The current path executor
+     */
+    IPathExecutor getCurrent();
+
+    /**
+     * Returns the next path executor, created when planning ahead.
+     *
+     * @return The next path executor
+     */
+    IPathExecutor getNext();
 }
