@@ -1,3 +1,4 @@
+#!/bin/sh
 set -e # this makes the whole script fail immediately if any one of these commands fails
 ./gradlew build
 export VERSION=$(cat build.gradle | grep "version '" | cut -d "'" -f 2-2)
