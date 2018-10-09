@@ -17,10 +17,9 @@
 
 package baritone.pathing.path;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
 import baritone.pathing.movement.Movement;
-import baritone.utils.Helper;
 import baritone.utils.Utils;
 import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.client.Minecraft;
@@ -33,7 +32,7 @@ import java.util.List;
 /**
  * @author leijurv
  */
-public interface IPath extends Helper {
+public interface IPath {
 
     /**
      * Ordered list of movements to carry out.
@@ -87,7 +86,7 @@ public interface IPath extends Helper {
     /**
      * Where does this path start
      */
-    default BetterBlockPos getSrc() {
+    default BlockPos getSrc() {
         return positions().get(0);
     }
 
@@ -110,29 +109,25 @@ public interface IPath extends Helper {
 
     int getNumNodesConsidered();
 
-    default IPath cutoffAtLoadedChunks() {
+    default CutoffResult cutoffAtLoadedChunks() {
         for (int i = 0; i < positions().size(); i++) {
             BlockPos pos = positions().get(i);
             if (Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk) {
-                logDebug("Cutting off path at edge of loaded chunks");
-                logDebug("Length decreased by " + (positions().size() - i - 1));
-                return new CutoffPath(this, i);
+                return CutoffResult.cutoffPath(this, i);
             }
         }
-        logDebug("Path ends within loaded chunks");
-        return this;
+        return CutoffResult.preservePath(this);
     }
 
-    default IPath staticCutoff(Goal destination) {
-        if (length() < Baritone.settings().pathCutoffMinimumLength.get()) {
-            return this;
+    default CutoffResult staticCutoff(Goal destination) {
+        if (length() < BaritoneAPI.getSettings().pathCutoffMinimumLength.get()) {
+            return CutoffResult.preservePath(this);
         }
         if (destination == null || destination.isInGoal(getDest())) {
-            return this;
+            return CutoffResult.preservePath(this);
         }
-        double factor = Baritone.settings().pathCutoffFactor.get();
+        double factor = BaritoneAPI.getSettings().pathCutoffFactor.get();
         int newLength = (int) (length() * factor);
-        logDebug("Static cutoff " + length() + " to " + newLength);
-        return new CutoffPath(this, newLength);
+        return CutoffResult.cutoffPath(this, newLength);
     }
 }

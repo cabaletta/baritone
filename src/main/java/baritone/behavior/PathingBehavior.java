@@ -30,6 +30,7 @@ import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.IPathFinder;
 import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.path.CutoffResult;
 import baritone.pathing.path.IPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
@@ -283,9 +284,30 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
             Optional<IPath> path = findPath(start, previous);
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
-                path = path.map(IPath::cutoffAtLoadedChunks);
+                path = path.map(p -> {
+                    CutoffResult result = p.cutoffAtLoadedChunks();
+
+                    if (result.wasCut()) {
+                        logDebug("Cutting off path at edge of loaded chunks");
+                        logDebug("Length decreased by " + result.getRemoved());
+                    } else {
+                        logDebug("Path ends within loaded chunks");
+                    }
+
+                    return result.getPath();
+                });
             }
-            Optional<PathExecutor> executor = path.map(p -> p.staticCutoff(goal)).map(PathExecutor::new);
+
+            Optional<PathExecutor> executor = path.map(p -> {
+                CutoffResult result = p.staticCutoff(goal);
+
+                if (result.wasCut()) {
+                    logDebug("Static cutoff " + p.length() + " to " + result.getPath().length());
+                }
+
+                return result.getPath();
+            }).map(PathExecutor::new);
+
             synchronized (pathPlanLock) {
                 if (current == null) {
                     if (executor.isPresent()) {
