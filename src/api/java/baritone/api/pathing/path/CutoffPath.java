@@ -34,7 +34,7 @@ public class CutoffPath implements IPath {
 
     private final Goal goal;
 
-    public CutoffPath(IPath prev, int lastPositionToInclude) {
+    CutoffPath(IPath prev, int lastPositionToInclude) {
         path = prev.positions().subList(0, lastPositionToInclude + 1);
         movements = prev.movements().subList(0, lastPositionToInclude + 1);
         numNodes = prev.getNumNodesConsidered();

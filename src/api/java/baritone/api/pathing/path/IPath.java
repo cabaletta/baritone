@@ -18,6 +18,7 @@
 package baritone.api.pathing.path;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
@@ -28,7 +29,7 @@ import net.minecraft.world.chunk.EmptyChunk;
 import java.util.List;
 
 /**
- * @author leijurv
+ * @author leijurv, Brady
  */
 public interface IPath {
 
@@ -37,12 +38,16 @@ public interface IPath {
      * movements.get(i).getSrc() should equal positions.get(i)
      * movements.get(i).getDest() should equal positions.get(i+1)
      * movements.size() should equal positions.size()-1
+     *
+     * @return All of the movements to carry out
      */
     List<IMovement> movements();
 
     /**
      * All positions along the way.
      * Should begin with the same as getSrc and end with the same as getDest
+     *
+     * @return All of the positions along this path
      */
     List<BetterBlockPos> positions();
 
@@ -50,10 +55,10 @@ public interface IPath {
      * This path is actually going to be executed in the world. Do whatever additional processing is required.
      * (as opposed to Path objects that are just constructed every frame for rendering)
      */
-    default void postprocess() {}
+    default void postProcess() {}
 
     /**
-     * Number of positions in this path
+     * Returns the number of positions in this path. Equivalent to {@code positions().size()}.
      *
      * @return Number of positions in this path
      */
@@ -62,27 +67,45 @@ public interface IPath {
     }
 
     /**
-     * What goal was this path calculated towards?
-     *
-     * @return
+     * @return The goal that this path was calculated towards
      */
     Goal getGoal();
 
     /**
-     * Where does this path start
+     * Returns the number of nodes that were considered during calculation before
+     * this path was found.
+     *
+     * @return The number of nodes that were considered before finding this path
+     */
+    int getNumNodesConsidered();
+
+    /**
+     * Returns the start position of this path. This is the first element in the
+     * {@link List} that is returned by {@link IPath#positions()}.
+     *
+     * @return The start position of this path
      */
     default BetterBlockPos getSrc() {
         return positions().get(0);
     }
 
     /**
-     * Where does this path end
+     * Returns the end position of this path. This is the last element in the
+     * {@link List} that is returned by {@link IPath#positions()}.
+     *
+     * @return The end position of this path.
      */
     default BetterBlockPos getDest() {
         List<BetterBlockPos> pos = positions();
         return pos.get(pos.size() - 1);
     }
 
+    /**
+     * Returns the estimated number of ticks to complete the path from the given node index.
+     *
+     * @param pathPosition The index of the node we're calculating from
+     * @return The estimated number of ticks remaining frm the given position
+     */
     default double ticksRemainingFrom(int pathPosition) {
         double sum = 0;
         //this is fast because we aren't requesting recalculation, it's just cached
@@ -92,8 +115,11 @@ public interface IPath {
         return sum;
     }
 
-    int getNumNodesConsidered();
-
+    /**
+     * Cuts off this path at the loaded chunk border, and returns the {@link CutoffResult}.
+     *
+     * @return The result of this cut-off operation
+     */
     default CutoffResult cutoffAtLoadedChunks() {
         for (int i = 0; i < positions().size(); i++) {
             BlockPos pos = positions().get(i);
@@ -104,6 +130,14 @@ public interface IPath {
         return CutoffResult.preservePath(this);
     }
 
+    /**
+     * Cuts off this path using the min length and cutoff factor settings, and returns the {@link CutoffResult}.
+     *
+     * @see Settings#pathCutoffMinimumLength
+     * @see Settings#pathCutoffFactor
+     *
+     * @return The result of this cut-off operation
+     */
     default CutoffResult staticCutoff(Goal destination) {
         if (length() < BaritoneAPI.getSettings().pathCutoffMinimumLength.get()) {
             return CutoffResult.preservePath(this);

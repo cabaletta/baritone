@@ -150,7 +150,7 @@ class Path implements IPath {
     }
 
     @Override
-    public void postprocess() {
+    public void postProcess() {
         if (verified) {
             throw new IllegalStateException();
         }

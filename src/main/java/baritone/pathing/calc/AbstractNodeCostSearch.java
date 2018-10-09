@@ -89,7 +89,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         this.cancelRequested = false;
         try {
             Optional<IPath> path = calculate0(timeout);
-            path.ifPresent(IPath::postprocess);
+            path.ifPresent(IPath::postProcess);
             isFinished = true;
             return path;
         } finally {
