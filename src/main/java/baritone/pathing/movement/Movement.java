@@ -152,7 +152,8 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
 
         currentState = latestState;
 
-        if (isFinished()) {
+        // If the current status indicates a completed movement
+        if (currentState.getStatus().isComplete()) {
             onFinish(latestState);
         }
 
@@ -199,12 +200,6 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
 
     protected boolean safeToCancel(MovementState currentState) {
         return true;
-    }
-
-    public boolean isFinished() {
-        return (currentState.getStatus() != MovementStatus.RUNNING
-                && currentState.getStatus() != MovementStatus.PREPPING
-                && currentState.getStatus() != MovementStatus.WAITING);
     }
 
     @Override
