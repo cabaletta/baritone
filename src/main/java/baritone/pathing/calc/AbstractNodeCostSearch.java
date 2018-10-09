@@ -20,7 +20,7 @@ package baritone.pathing.calc;
 import baritone.Baritone;
 import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.path.IPath;
+import baritone.api.pathing.calc.IPath;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.Optional;

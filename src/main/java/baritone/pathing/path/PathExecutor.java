@@ -22,7 +22,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.pathing.path.IPath;
+import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.path.IPathExecutor;
 import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.calc.AbstractNodeCostSearch;

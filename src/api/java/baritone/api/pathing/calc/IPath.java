@@ -15,16 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.pathing.path;
+package baritone.api.pathing.calc;
 
-import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.List;
 
@@ -116,37 +112,25 @@ public interface IPath {
     }
 
     /**
-     * Cuts off this path at the loaded chunk border, and returns the {@link CutoffResult}.
+     * Cuts off this path at the loaded chunk border, and returns the resulting path. Default
+     * implementation just returns this path, without the intended functionality.
      *
      * @return The result of this cut-off operation
      */
-    default CutoffResult cutoffAtLoadedChunks() {
-        for (int i = 0; i < positions().size(); i++) {
-            BlockPos pos = positions().get(i);
-            if (Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk) {
-                return CutoffResult.cutoffPath(this, i);
-            }
-        }
-        return CutoffResult.preservePath(this);
+    default IPath cutoffAtLoadedChunks() {
+        return this;
     }
 
     /**
-     * Cuts off this path using the min length and cutoff factor settings, and returns the {@link CutoffResult}.
+     * Cuts off this path using the min length and cutoff factor settings, and returns the resulting path.
+     * Default implementation just returns this path, without the intended functionality.
      *
      * @see Settings#pathCutoffMinimumLength
      * @see Settings#pathCutoffFactor
      *
      * @return The result of this cut-off operation
      */
-    default CutoffResult staticCutoff(Goal destination) {
-        if (length() < BaritoneAPI.getSettings().pathCutoffMinimumLength.get()) {
-            return CutoffResult.preservePath(this);
-        }
-        if (destination == null || destination.isInGoal(getDest())) {
-            return CutoffResult.preservePath(this);
-        }
-        double factor = BaritoneAPI.getSettings().pathCutoffFactor.get();
-        int newLength = (int) (length() * factor);
-        return CutoffResult.cutoffPath(this, newLength);
+    default IPath staticCutoff(Goal destination) {
+        return this;
     }
 }

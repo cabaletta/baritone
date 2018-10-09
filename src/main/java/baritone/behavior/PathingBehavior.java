@@ -25,8 +25,8 @@ import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
-import baritone.api.pathing.path.CutoffResult;
-import baritone.api.pathing.path.IPath;
+import baritone.pathing.calc.CutoffPath;
+import baritone.api.pathing.calc.IPath;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
@@ -285,27 +285,27 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             Optional<IPath> path = findPath(start, previous);
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
-                    CutoffResult result = p.cutoffAtLoadedChunks();
+                    IPath result = p.cutoffAtLoadedChunks();
 
-                    if (result.wasCut()) {
+                    if (result instanceof CutoffPath) {
                         logDebug("Cutting off path at edge of loaded chunks");
-                        logDebug("Length decreased by " + result.getRemoved());
+                        logDebug("Length decreased by " + (p.length() - result.length()));
                     } else {
                         logDebug("Path ends within loaded chunks");
                     }
 
-                    return result.getPath();
+                    return result;
                 });
             }
 
             Optional<PathExecutor> executor = path.map(p -> {
-                CutoffResult result = p.staticCutoff(goal);
+                IPath result = p.staticCutoff(goal);
 
-                if (result.wasCut()) {
-                    logDebug("Static cutoff " + p.length() + " to " + result.getPath().length());
+                if (result instanceof CutoffPath) {
+                    logDebug("Static cutoff " + p.length() + " to " + result.length());
                 }
 
-                return result.getPath();
+                return result;
             }).map(PathExecutor::new);
 
             synchronized (pathPlanLock) {

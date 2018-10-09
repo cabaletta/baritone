@@ -23,7 +23,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.pathing.goals.GoalXZ;
-import baritone.api.pathing.path.IPath;
+import baritone.api.pathing.calc.IPath;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;

@@ -18,7 +18,6 @@
 package baritone.api.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.path.IPath;
 
 import java.util.Optional;
 

@@ -17,13 +17,16 @@
 
 package baritone.pathing.calc;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
-import baritone.api.pathing.path.IPath;
+import baritone.api.pathing.calc.IPath;
 import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -187,5 +190,29 @@ class Path implements IPath {
     @Override
     public BetterBlockPos getDest() {
         return end;
+    }
+
+    @Override
+    public IPath cutoffAtLoadedChunks() {
+        for (int i = 0; i < positions().size(); i++) {
+            BlockPos pos = positions().get(i);
+            if (Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk) {
+                return new CutoffPath(this, i);
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public IPath staticCutoff(Goal destination) {
+        if (length() < BaritoneAPI.getSettings().pathCutoffMinimumLength.get()) {
+            return this;
+        }
+        if (destination == null || destination.isInGoal(getDest())) {
+            return this;
+        }
+        double factor = BaritoneAPI.getSettings().pathCutoffFactor.get();
+        int newLength = (int) (length() * factor);
+        return new CutoffPath(this, newLength);
     }
 }
