@@ -23,15 +23,15 @@ import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.calc.IPath;
+import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
-import baritone.pathing.calc.CutoffPath;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.api.pathing.calc.IPathFinder;
+import baritone.pathing.calc.CutoffPath;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
@@ -123,12 +123,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             if (safe) {
                 // a movement just ended
                 if (next != null) {
-                    if (next.getPath().positions().contains(playerFeet())) {
+                    if (next.snipsnapifpossible()) {
                         // jump directly onto the next path
                         logDebug("Splicing into planned next path early...");
                         dispatchPathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
                         current = next;
                         next = null;
+                        current.onTick(event);
                         return;
                     }
                 }

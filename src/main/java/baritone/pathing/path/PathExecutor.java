@@ -339,6 +339,19 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
     }
 
+    /**
+     * Regardless of current path position, snap to the current player feet if possible
+     */
+    public boolean snipsnapifpossible() {
+        int index = path.positions().indexOf(playerFeet());
+        if (index == -1) {
+            return false;
+        }
+        pathPosition = index;
+        clearKeys();
+        return true;
+    }
+
     private void sprintIfRequested() {
 
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
