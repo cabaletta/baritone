@@ -75,6 +75,9 @@ public class SettingsUtil {
                 if (setting.getName().equals("logger")) {
                     continue; // NO
                 }
+                if (setting.value == setting.defaultValue) {
+                    continue;
+                }
                 SettingsIO io = map.get(setting.getValueClass());
                 if (io == null) {
                     throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting + " " + setting.getName());
