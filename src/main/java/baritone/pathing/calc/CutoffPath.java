@@ -15,11 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.path;
+package baritone.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.Movement;
-import baritone.utils.pathing.BetterBlockPos;
+import baritone.api.pathing.movement.IMovement;
+import baritone.api.pathing.calc.IPath;
+import baritone.api.utils.BetterBlockPos;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,13 +29,13 @@ public class CutoffPath implements IPath {
 
     private final List<BetterBlockPos> path;
 
-    private final List<Movement> movements;
+    private final List<IMovement> movements;
 
     private final int numNodes;
 
     private final Goal goal;
 
-    public CutoffPath(IPath prev, int lastPositionToInclude) {
+    CutoffPath(IPath prev, int lastPositionToInclude) {
         path = prev.positions().subList(0, lastPositionToInclude + 1);
         movements = prev.movements().subList(0, lastPositionToInclude + 1);
         numNodes = prev.getNumNodesConsidered();
@@ -47,7 +48,7 @@ public class CutoffPath implements IPath {
     }
 
     @Override
-    public List<Movement> movements() {
+    public List<IMovement> movements() {
         return Collections.unmodifiableList(movements);
     }
 

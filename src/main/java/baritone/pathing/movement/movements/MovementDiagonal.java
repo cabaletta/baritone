@@ -17,13 +17,14 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -140,12 +141,12 @@ public class MovementDiagonal extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+        if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
 
         if (playerFeet().equals(dest)) {
-            state.setStatus(MovementState.MovementStatus.SUCCESS);
+            state.setStatus(MovementStatus.SUCCESS);
             return state;
         }
         if (!BlockStateInterface.isLiquid(playerFeet())) {

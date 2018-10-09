@@ -18,8 +18,8 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;

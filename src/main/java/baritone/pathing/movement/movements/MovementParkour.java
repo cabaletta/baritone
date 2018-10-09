@@ -18,6 +18,8 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
@@ -25,7 +27,6 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.*;
-import baritone.utils.pathing.BetterBlockPos;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -168,13 +169,13 @@ public class MovementParkour extends Movement {
         // once this movement is instantiated, the state is default to PREPPING
         // but once it's ticked for the first time it changes to RUNNING
         // since we don't really know anything about momentum, it suffices to say Parkour can only be canceled on the 0th tick
-        return state.getStatus() != MovementState.MovementStatus.RUNNING;
+        return state.getStatus() != MovementStatus.RUNNING;
     }
 
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+        if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
         if (dist >= 4) {
@@ -186,10 +187,10 @@ public class MovementParkour extends Movement {
             if (d == Blocks.VINE || d == Blocks.LADDER) {
                 // it physically hurt me to add support for parkour jumping onto a vine
                 // but i did it anyway
-                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+                return state.setStatus(MovementStatus.SUCCESS);
             }
             if (player().posY - playerFeet().getY() < 0.094) { // lilypads
-                state.setStatus(MovementState.MovementStatus.SUCCESS);
+                state.setStatus(MovementStatus.SUCCESS);
             }
         } else if (!playerFeet().equals(src)) {
             if (playerFeet().equals(src.offset(direction)) || player().posY - playerFeet().getY() > 0.0001) {
@@ -203,7 +204,7 @@ public class MovementParkour extends Movement {
                         }
                         if (MovementHelper.canPlaceAgainst(against1)) {
                             if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
-                                return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                                return state.setStatus(MovementStatus.UNREACHABLE);
                             }
                             double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
                             double faceY = (dest.getY() + against1.getY()) * 0.5D;

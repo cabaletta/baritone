@@ -15,37 +15,35 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.path;
+package baritone.api.pathing.calc;
 
-import baritone.Baritone;
+import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.Movement;
-import baritone.utils.Helper;
-import baritone.utils.Utils;
-import baritone.utils.pathing.BetterBlockPos;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.Tuple;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
+import baritone.api.pathing.movement.IMovement;
+import baritone.api.utils.BetterBlockPos;
 
 import java.util.List;
 
 /**
- * @author leijurv
+ * @author leijurv, Brady
  */
-public interface IPath extends Helper {
+public interface IPath {
 
     /**
      * Ordered list of movements to carry out.
      * movements.get(i).getSrc() should equal positions.get(i)
      * movements.get(i).getDest() should equal positions.get(i+1)
      * movements.size() should equal positions.size()-1
+     *
+     * @return All of the movements to carry out
      */
-    List<Movement> movements();
+    List<IMovement> movements();
 
     /**
      * All positions along the way.
      * Should begin with the same as getSrc and end with the same as getDest
+     *
+     * @return All of the positions along this path
      */
     List<BetterBlockPos> positions();
 
@@ -53,10 +51,10 @@ public interface IPath extends Helper {
      * This path is actually going to be executed in the world. Do whatever additional processing is required.
      * (as opposed to Path objects that are just constructed every frame for rendering)
      */
-    default void postprocess() {}
+    default void postProcess() {}
 
     /**
-     * Number of positions in this path
+     * Returns the number of positions in this path. Equivalent to {@code positions().size()}.
      *
      * @return Number of positions in this path
      */
@@ -65,74 +63,74 @@ public interface IPath extends Helper {
     }
 
     /**
-     * What goal was this path calculated towards?
-     *
-     * @return
+     * @return The goal that this path was calculated towards
      */
     Goal getGoal();
 
-    default Tuple<Double, BlockPos> closestPathPos() {
-        double best = -1;
-        BlockPos bestPos = null;
-        for (BlockPos pos : positions()) {
-            double dist = Utils.playerDistanceToCenter(pos);
-            if (dist < best || best == -1) {
-                best = dist;
-                bestPos = pos;
-            }
-        }
-        return new Tuple<>(best, bestPos);
-    }
+    /**
+     * Returns the number of nodes that were considered during calculation before
+     * this path was found.
+     *
+     * @return The number of nodes that were considered before finding this path
+     */
+    int getNumNodesConsidered();
 
     /**
-     * Where does this path start
+     * Returns the start position of this path. This is the first element in the
+     * {@link List} that is returned by {@link IPath#positions()}.
+     *
+     * @return The start position of this path
      */
     default BetterBlockPos getSrc() {
         return positions().get(0);
     }
 
     /**
-     * Where does this path end
+     * Returns the end position of this path. This is the last element in the
+     * {@link List} that is returned by {@link IPath#positions()}.
+     *
+     * @return The end position of this path.
      */
     default BetterBlockPos getDest() {
         List<BetterBlockPos> pos = positions();
         return pos.get(pos.size() - 1);
     }
 
+    /**
+     * Returns the estimated number of ticks to complete the path from the given node index.
+     *
+     * @param pathPosition The index of the node we're calculating from
+     * @return The estimated number of ticks remaining frm the given position
+     */
     default double ticksRemainingFrom(int pathPosition) {
         double sum = 0;
         //this is fast because we aren't requesting recalculation, it's just cached
         for (int i = pathPosition; i < movements().size(); i++) {
-            sum += movements().get(i).getCost(null);
+            sum += movements().get(i).getCost();
         }
         return sum;
     }
 
-    int getNumNodesConsidered();
-
+    /**
+     * Cuts off this path at the loaded chunk border, and returns the resulting path. Default
+     * implementation just returns this path, without the intended functionality.
+     *
+     * @return The result of this cut-off operation
+     */
     default IPath cutoffAtLoadedChunks() {
-        for (int i = 0; i < positions().size(); i++) {
-            BlockPos pos = positions().get(i);
-            if (Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk) {
-                logDebug("Cutting off path at edge of loaded chunks");
-                logDebug("Length decreased by " + (positions().size() - i - 1));
-                return new CutoffPath(this, i);
-            }
-        }
-        logDebug("Path ends within loaded chunks");
         return this;
     }
 
+    /**
+     * Cuts off this path using the min length and cutoff factor settings, and returns the resulting path.
+     * Default implementation just returns this path, without the intended functionality.
+     *
+     * @see Settings#pathCutoffMinimumLength
+     * @see Settings#pathCutoffFactor
+     *
+     * @return The result of this cut-off operation
+     */
     default IPath staticCutoff(Goal destination) {
-        if (length() < Baritone.settings().pathCutoffMinimumLength.get()) {
-            return this;
-        }
-        if (destination == null || destination.isInGoal(getDest())) {
-            return this;
-        }
-        double factor = Baritone.settings().pathCutoffFactor.get();
-        int newLength = (int) (length() * factor);
-        logDebug("Static cutoff " + length() + " to " + newLength);
-        return new CutoffPath(this, newLength);
+        return this;
     }
 }

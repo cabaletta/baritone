@@ -15,10 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.calc;
+package baritone.api.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.path.IPath;
 
 import java.util.Optional;
 

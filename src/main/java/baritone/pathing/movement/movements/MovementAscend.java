@@ -18,16 +18,16 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.utils.BetterBlockPos;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;

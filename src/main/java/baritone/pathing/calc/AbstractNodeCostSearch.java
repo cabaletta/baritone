@@ -18,8 +18,9 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
+import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.path.IPath;
+import baritone.api.pathing.calc.IPath;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.Optional;
@@ -88,7 +89,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         this.cancelRequested = false;
         try {
             Optional<IPath> path = calculate0(timeout);
-            path.ifPresent(IPath::postprocess);
+            path.ifPresent(IPath::postProcess);
             isFinished = true;
             return path;
         } finally {
@@ -138,25 +139,6 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             map.put(hashCode, node);
         }
         return node;
-    }
-
-    public static long posHash(int x, int y, int z) {
-        /*
-         *   This is the hashcode implementation of Vec3i (the superclass of the class which I shall not name)
-         *
-         *   public int hashCode() {
-         *       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
-         *   }
-         *
-         *   That is terrible and has tons of collisions and makes the HashMap terribly inefficient.
-         *
-         *   That's why we grab out the X, Y, Z and calculate our own hashcode
-         */
-        long hash = 3241;
-        hash = 3457689L * hash + x;
-        hash = 8734625L * hash + y;
-        hash = 2873465L * hash + z;
-        return hash;
     }
 
     public static void forceCancel() {
@@ -224,5 +206,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     public static Optional<AbstractNodeCostSearch> getCurrentlyRunning() {
         return Optional.ofNullable(currentlyRunning);
+    }
+
+    public static AbstractNodeCostSearch currentlyRunning() {
+        return currentlyRunning;
     }
 }

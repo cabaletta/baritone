@@ -18,6 +18,8 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
 import baritone.behavior.LookBehaviorUtils;
 import baritone.pathing.movement.CalculationContext;
@@ -27,7 +29,6 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.Utils;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -144,13 +145,13 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+        if (state.getStatus() != MovementStatus.RUNNING) {
             // if the setting is enabled
             if (!Baritone.settings().walkWhileBreaking.get()) {
                 return state;
             }
             // and if we're prepping (aka mining the block in front)
-            if (state.getStatus() != MovementState.MovementStatus.PREPPING) {
+            if (state.getStatus() != MovementStatus.PREPPING) {
                 return state;
             }
             // and if it's fine to walk into the blocks in front
@@ -225,7 +226,7 @@ public class MovementTraverse extends Movement {
 
         if (isTheBridgeBlockThere) {
             if (playerFeet().equals(dest)) {
-                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+                return state.setStatus(MovementStatus.SUCCESS);
             }
             if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
                 state.setInput(InputOverrideHandler.Input.SPRINT, true);
@@ -248,7 +249,7 @@ public class MovementTraverse extends Movement {
                 if (MovementHelper.canPlaceAgainst(against1)) {
                     if (!MovementHelper.throwaway(true)) { // get ready to place a throwaway block
                         logDebug("bb pls get me some blocks. dirt or cobble");
-                        return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                        return state.setStatus(MovementStatus.UNREACHABLE);
                     }
                     if (!Baritone.settings().assumeSafeWalk.get()) {
                         state.setInput(InputOverrideHandler.Input.SNEAK, true);
@@ -287,7 +288,7 @@ public class MovementTraverse extends Movement {
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
                 if (!MovementHelper.throwaway(true)) {// get ready to place a throwaway block
                     logDebug("bb pls get me some blocks. dirt or cobble");
-                    return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                    return state.setStatus(MovementStatus.UNREACHABLE);
                 }
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;
                 double faceY = (dest.getY() + src.getY() - 1.0D) * 0.5D;
@@ -324,7 +325,7 @@ public class MovementTraverse extends Movement {
         // if we're in the process of breaking blocks before walking forwards
         // or if this isn't a sneak place (the block is already there)
         // then it's safe to cancel this
-        return state.getStatus() != MovementState.MovementStatus.RUNNING || MovementHelper.canWalkOn(dest.down());
+        return state.getStatus() != MovementStatus.RUNNING || MovementHelper.canWalkOn(dest.down());
     }
 
     @Override

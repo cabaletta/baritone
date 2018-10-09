@@ -19,6 +19,7 @@ package baritone.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.utils.BetterBlockPos;
 
 /**
  * A node in the path, containing the cost and steps to get to it.
@@ -85,7 +86,7 @@ public final class PathNode {
      */
     @Override
     public int hashCode() {
-        return (int) AbstractNodeCostSearch.posHash(x, y, z);
+        return (int) BetterBlockPos.longHash(x, y, z);
     }
 
     @Override

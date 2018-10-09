@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement;
 
+import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.Rotation;
 import baritone.utils.InputOverrideHandler.Input;
 import net.minecraft.util.math.Vec3d;
@@ -70,10 +71,6 @@ public class MovementState {
 
     public Map<Input, Boolean> getInputStates() {
         return this.inputState;
-    }
-
-    public enum MovementStatus {
-        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED, CANCELED
     }
 
     public static class MovementTarget {
