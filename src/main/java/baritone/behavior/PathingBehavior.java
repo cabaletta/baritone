@@ -202,7 +202,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     @Override
-    public Optional<IPathFinder> getCurrentPathSearch() {
+    public Optional<IPathFinder> getPathFinder() {
         return Optional.ofNullable(AbstractNodeCostSearch.currentlyRunning());
     }
 
