@@ -61,7 +61,9 @@ minecraft {
     mappings = 'snapshot_20180731'
     tweakClass = 'baritone.launch.BaritoneTweaker'
     runDir = 'run'
-    makeObfSourceJar = false
+
+    // The sources jar should use SRG names not MCP to ensure compatibility with all mappings
+    makeObfSourceJar = true
 }
 
 repositories {
