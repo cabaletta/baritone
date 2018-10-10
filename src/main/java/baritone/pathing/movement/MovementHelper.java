@@ -31,6 +31,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
@@ -455,6 +456,22 @@ public interface MovementHelper extends ActionCosts, Helper {
                     p.inventory.currentItem = i;
                 }
                 return true;
+            }
+        }
+        if (Baritone.settings().acceptableThrowawayItems.get().contains(p.inventory.offHandInventory.get(0).getItem())) {
+            // main hand takes precedence over off hand
+            // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
+            // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
+            // so we need to select in the main hand something that doesn't right click
+            // so not a shovel, not a hoe, not a block, etc
+            for (byte i = 0; i < 9; i++) {
+                ItemStack item = inv.get(i);
+                if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
+                    if (select) {
+                        p.inventory.currentItem = i;
+                    }
+                    return true;
+                }
             }
         }
         return false;
