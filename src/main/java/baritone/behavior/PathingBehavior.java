@@ -35,10 +35,8 @@ import baritone.pathing.calc.CutoffPath;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -259,7 +257,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      */
     private BlockPos pathStart() {
         BetterBlockPos feet = playerFeet();
-        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR) && MovementHelper.canWalkOn(feet.down().down())) {
+        if (!MovementHelper.canWalkOn(feet.down()) && MovementHelper.canWalkOn(feet.down().down())) {
             return feet.down();
         }
         return feet;
