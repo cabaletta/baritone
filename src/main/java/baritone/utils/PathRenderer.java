@@ -19,11 +19,11 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.event.events.RenderEvent;
+import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.pathing.goals.GoalXZ;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
@@ -187,6 +187,11 @@ public final class PathRenderer implements Helper {
         GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
+
+        if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
+            GlStateManager.disableDepth();
+        }
+
         float expand = 0.002F;
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
 
@@ -227,6 +232,10 @@ public final class PathRenderer implements Helper {
             BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
             TESSELLATOR.draw();
         });
+
+        if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
+            GlStateManager.enableDepth();
+        }
 
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();

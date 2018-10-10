@@ -308,6 +308,11 @@ public class Settings {
     public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(false);
 
     /**
+     * Ignore depth when rendering the selection boxes (to break, to place, to walk into)
+     */
+    public Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(false);
+
+    /**
      * Line width of the path when rendered, in pixels
      */
     public Setting<Float> pathRenderLineWidthPixels = new Setting<>(5F);
