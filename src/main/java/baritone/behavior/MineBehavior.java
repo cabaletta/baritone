@@ -19,7 +19,6 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.behavior.IMineBehavior;
-import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
@@ -78,35 +77,37 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0) {
             if (event.getCount() % mineGoalUpdateInterval == 0) {
-                Baritone.INSTANCE.getExecutor().execute(this::updateGoal);
+                Baritone.INSTANCE.getExecutor().execute(this::rescan);
             }
         }
-        PathingBehavior.INSTANCE.revalidateGoal();
-    }
-
-    @Override
-    public void onPathEvent(PathEvent event) {
         updateGoal();
+        PathingBehavior.INSTANCE.revalidateGoal();
     }
 
     private void updateGoal() {
         if (mining == null) {
             return;
         }
-        if (!locationsCache.isEmpty()) {
-            locationsCache = prune(new ArrayList<>(locationsCache), mining, 64);
-            PathingBehavior.INSTANCE.setGoal(coalesce(locationsCache));
+        List<BlockPos> locs = locationsCache;
+        if (!locs.isEmpty()) {
+            locs = prune(new ArrayList<>(locs), mining, 64);
+            PathingBehavior.INSTANCE.setGoal(coalesce(locs));
             PathingBehavior.INSTANCE.path();
+            locationsCache = locs;
+        }
+    }
+
+    private void rescan() {
+        if (mining == null) {
+            return;
         }
         List<BlockPos> locs = scanFor(mining, 64);
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
-            cancel();
+            mine(0, (String[]) null);
             return;
         }
         locationsCache = locs;
-        PathingBehavior.INSTANCE.setGoal(coalesce(locs));
-        PathingBehavior.INSTANCE.path();
     }
 
     public GoalComposite coalesce(List<BlockPos> locs) {
@@ -176,6 +177,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).collect(Collectors.toList());
         this.quantity = quantity;
         this.locationsCache = new ArrayList<>();
+        rescan();
         updateGoal();
     }
 
@@ -184,6 +186,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
         this.quantity = quantity;
         this.locationsCache = new ArrayList<>();
+        rescan();
         updateGoal();
     }
 
