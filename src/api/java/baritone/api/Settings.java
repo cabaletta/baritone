@@ -531,7 +531,7 @@ public class Settings {
 
     // here be dragons
 
-    {
+    Settings() {
         Field[] temp = getClass().getFields();
         HashMap<String, Setting<?>> tmpByName = new HashMap<>();
         List<Setting<?>> tmpAll = new ArrayList<>();
@@ -566,6 +566,4 @@ public class Settings {
         }
         return result;
     }
-
-    Settings() { }
 }
