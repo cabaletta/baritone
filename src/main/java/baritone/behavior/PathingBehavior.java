@@ -101,6 +101,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     dispatchPathEvent(PathEvent.CONTINUING_ONTO_PLANNED_NEXT);
                     current = next;
                     next = null;
+                    current.onTick(event);
                     return;
                 }
                 // at this point, current just ended, but we aren't in the goal and have no plan for the future
