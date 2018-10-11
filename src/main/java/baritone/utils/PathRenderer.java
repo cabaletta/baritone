@@ -123,6 +123,9 @@ public final class PathRenderer implements Helper {
         GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
+        if (Baritone.settings().renderPathIgnoreDepth.get()) {
+            GlStateManager.disableDepth();
+        }
         List<BetterBlockPos> positions = path.positions();
         int next;
         Tessellator tessellator = Tessellator.getInstance();
@@ -162,6 +165,9 @@ public final class PathRenderer implements Helper {
             }
             drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks);
             tessellator.draw();
+        }
+        if (Baritone.settings().renderPathIgnoreDepth.get()) {
+            GlStateManager.enableDepth();
         }
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
         GlStateManager.depthMask(true);
