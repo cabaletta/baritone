@@ -35,16 +35,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 public class MovementPillar extends Movement {
-    private int numTicks = 0;
 
     public MovementPillar(BetterBlockPos start, BetterBlockPos end) {
         super(start, end, new BetterBlockPos[]{start.up(2)}, start);
-    }
-
-    @Override
-    public void reset() {
-        super.reset();
-        numTicks = 0;
     }
 
     @Override
@@ -202,24 +195,21 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            numTicks++;
             // If our Y coordinate is above our goal, stop jumping
             state.setInput(InputOverrideHandler.Input.JUMP, player().posY < dest.getY());
             state.setInput(InputOverrideHandler.Input.SNEAK, true);
 
-            // Otherwise jump
-            if (numTicks > 20) {
-                double diffX = player().posX - (dest.getX() + 0.5);
-                double diffZ = player().posZ - (dest.getZ() + 0.5);
-                double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
-                if (dist > 0.17) {//why 0.17? because it seemed like a good number, that's why
-                    //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
-                    //and 0.17 is reasonably less than 0.2
+            double diffX = player().posX - (dest.getX() + 0.5);
+            double diffZ = player().posZ - (dest.getZ() + 0.5);
+            double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
+            if (dist > 0.17) {//why 0.17? because it seemed like a good number, that's why
+                //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
+                //and 0.17 is reasonably less than 0.2
 
-                    // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
-                    state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-                }
+                // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
+                state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
             }
+            
 
             if (!blockIsThere) {
                 Block fr = BlockStateInterface.get(src).getBlock();
