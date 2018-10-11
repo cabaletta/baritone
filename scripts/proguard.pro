@@ -16,8 +16,9 @@
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
--keep class baritone.api.** { *; }
+-keep class baritone.api.** { *; } # this is the keep api
 -keep class baritone.BaritoneProvider
+-keep class baritone.api.IBaritoneProvider
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
