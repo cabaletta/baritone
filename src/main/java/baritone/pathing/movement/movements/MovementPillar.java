@@ -209,7 +209,7 @@ public class MovementPillar extends Movement {
                 // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
                 state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
             }
-            
+
 
             if (!blockIsThere) {
                 Block fr = BlockStateInterface.get(src).getBlock();

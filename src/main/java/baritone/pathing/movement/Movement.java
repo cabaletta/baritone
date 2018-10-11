@@ -116,6 +116,9 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
         }
+        if (player().isEntityInsideOpaqueBlock()) {
+            latestState.setInput(Input.CLICK_LEFT, true);
+        }
 
         // If the movement target has to force the new rotations, or we aren't using silent move, then force the rotations
         latestState.getTarget().getRotation().ifPresent(rotation ->
