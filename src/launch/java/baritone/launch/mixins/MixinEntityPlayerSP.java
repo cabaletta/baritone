@@ -40,7 +40,7 @@ public class MixinEntityPlayerSP {
             cancellable = true
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
-        ChatEvent event = new ChatEvent(msg);
+        ChatEvent event = new ChatEvent((EntityPlayerSP) (Object) this, msg);
         Baritone.INSTANCE.getGameEventHandler().onSendChatMessage(event);
         if (event.isCancelled()) {
             ci.cancel();
@@ -57,7 +57,7 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPreUpdate(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
+        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.PRE));
     }
 
     @Inject(
@@ -70,6 +70,6 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPostUpdate(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
+        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.POST));
     }
 }

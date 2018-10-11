@@ -20,7 +20,7 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.event.events.RotationMoveEvent;
 import baritone.api.event.events.type.EventState;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -40,8 +40,8 @@ public class MixinEntity {
     )
     private void preMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
         Entity _this = (Entity) (Object) this;
-        if (_this == Minecraft.getMinecraft().player)
-            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.PRE, RotationMoveEvent.Type.MOTION_UPDATE));
+        if (_this instanceof EntityPlayerSP)
+            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent((EntityPlayerSP) _this, EventState.PRE, RotationMoveEvent.Type.MOTION_UPDATE));
     }
 
     @Inject(
@@ -50,7 +50,7 @@ public class MixinEntity {
     )
     private void postMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
         Entity _this = (Entity) (Object) this;
-        if (_this == Minecraft.getMinecraft().player)
-            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.POST, RotationMoveEvent.Type.MOTION_UPDATE));
+        if (_this instanceof EntityPlayerSP)
+            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent((EntityPlayerSP) _this, EventState.POST, RotationMoveEvent.Type.MOTION_UPDATE));
     }
 }

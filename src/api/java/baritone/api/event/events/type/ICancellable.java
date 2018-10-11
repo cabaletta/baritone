@@ -19,22 +19,17 @@ package baritone.api.event.events.type;
 
 /**
  * @author Brady
- * @since 8/1/2018 6:41 PM
+ * @since 10/11/2018
  */
-public class Cancellable implements ICancellable {
+public interface ICancellable {
 
     /**
-     * Whether or not this event has been cancelled
+     * Cancels this event
      */
-    private boolean cancelled;
+    void cancel();
 
-    @Override
-    public final void cancel() {
-        this.cancelled = true;
-    }
-
-    @Override
-    public final boolean isCancelled() {
-        return this.cancelled;
-    }
+    /**
+     * @return Whether or not this event has been cancelled
+     */
+    boolean isCancelled();
 }

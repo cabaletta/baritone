@@ -18,6 +18,7 @@
 package baritone.api.event.events;
 
 import baritone.api.event.events.type.EventState;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 
 /**
@@ -26,13 +27,20 @@ import net.minecraft.network.Packet;
  */
 public final class PacketEvent {
 
+    private NetworkManager networkManager;
+
     private final EventState state;
 
     private final Packet<?> packet;
 
-    public PacketEvent(EventState state, Packet<?> packet) {
+    public PacketEvent(NetworkManager networkManager, EventState state, Packet<?> packet) {
+        this.networkManager = networkManager;
         this.state = state;
         this.packet = packet;
+    }
+
+    public final NetworkManager getNetworkManager() {
+        return this.networkManager;
     }
 
     public final EventState getState() {

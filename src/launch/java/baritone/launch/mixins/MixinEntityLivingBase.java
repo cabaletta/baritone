@@ -20,8 +20,7 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.event.events.RotationMoveEvent;
 import baritone.api.event.events.type.EventState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.EntityLivingBase;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -40,9 +39,9 @@ public class MixinEntityLivingBase {
             at = @At("HEAD")
     )
     private void preJump(CallbackInfo ci) {
-        Entity _this = (Entity) (Object) this;
-        if (_this == Minecraft.getMinecraft().player)
-            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.PRE, RotationMoveEvent.Type.JUMP));
+        EntityLivingBase _this = (EntityLivingBase) (Object) this;
+        if (_this instanceof EntityPlayerSP)
+            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent((EntityPlayerSP) _this, EventState.PRE, RotationMoveEvent.Type.JUMP));
     }
 
     @Inject(
@@ -50,8 +49,8 @@ public class MixinEntityLivingBase {
             at = @At("RETURN")
     )
     private void postJump(CallbackInfo ci) {
-        Entity _this = (Entity) (Object) this;
-        if (_this == Minecraft.getMinecraft().player)
-            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.POST, RotationMoveEvent.Type.JUMP));
+        EntityLivingBase _this = (EntityLivingBase) (Object) this;
+        if (_this instanceof EntityPlayerSP)
+            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent((EntityPlayerSP) _this, EventState.POST, RotationMoveEvent.Type.JUMP));
     }
 }

@@ -54,7 +54,7 @@ public class MixinNetworkManager {
     )
     private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
         if (this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.PRE, inPacket));
+            Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, inPacket));
         }
     }
 
@@ -64,7 +64,7 @@ public class MixinNetworkManager {
     )
     private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
         if (this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent(EventState.POST, inPacket));
+            Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent((NetworkManager) (Object) this, EventState.POST, inPacket));
         }
     }
 
@@ -77,7 +77,7 @@ public class MixinNetworkManager {
     )
     private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if (this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.PRE, packet));}
+            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, packet));}
     }
 
     @Inject(
@@ -86,7 +86,7 @@ public class MixinNetworkManager {
     )
     private void postProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if (this.channel.isOpen() && this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent(EventState.POST, packet));
+            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.POST, packet));
         }
     }
 }

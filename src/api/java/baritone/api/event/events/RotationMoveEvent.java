@@ -18,6 +18,8 @@
 package baritone.api.event.events;
 
 import baritone.api.event.events.type.EventState;
+import baritone.api.event.events.type.ManagedPlayerEvent;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 
@@ -25,7 +27,7 @@ import net.minecraft.entity.EntityLivingBase;
  * @author Brady
  * @since 8/21/2018
  */
-public final class RotationMoveEvent {
+public final class RotationMoveEvent extends ManagedPlayerEvent {
 
     /**
      * The type of event
@@ -37,7 +39,8 @@ public final class RotationMoveEvent {
      */
     private final EventState state;
 
-    public RotationMoveEvent(EventState state, Type type) {
+    public RotationMoveEvent(EntityPlayerSP player, EventState state, Type type) {
+        super(player);
         this.state = state;
         this.type = type;
     }
