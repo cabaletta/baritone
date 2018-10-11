@@ -67,12 +67,13 @@ public final class PathRenderer implements Helper {
         Goal goal = behavior.getGoal();
         EntityPlayerSP player = mc.player;
         if (goal != null && Baritone.settings().renderGoal.value) {
-            PathRenderer.drawLitDankGoalBox(player, goal, partialTicks, Baritone.settings().colorGoalBox.get());
+            drawLitDankGoalBox(player, goal, partialTicks, Baritone.settings().colorGoalBox.get());
         }
         if (!Baritone.settings().renderPath.get()) {
             return;
         }
 
+        //drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()), partialTicks, Color.WHITE);
         //long start = System.nanoTime();
 
 
@@ -84,28 +85,28 @@ public final class PathRenderer implements Helper {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            PathRenderer.drawPath(current.getPath(), renderBegin, player, partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+            drawPath(current.getPath(), renderBegin, player, partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
         }
         if (next != null && next.getPath() != null) {
-            PathRenderer.drawPath(next.getPath(), 0, player, partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+            drawPath(next.getPath(), 0, player, partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
         }
 
         //long split = System.nanoTime();
         if (current != null) {
-            PathRenderer.drawManySelectionBoxes(player, current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
-            PathRenderer.drawManySelectionBoxes(player, current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
-            PathRenderer.drawManySelectionBoxes(player, current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
+            drawManySelectionBoxes(player, current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
+            drawManySelectionBoxes(player, current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
+            drawManySelectionBoxes(player, current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
         }
 
         // If there is a path calculation currently running, render the path calculation process
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                PathRenderer.drawPath(p, 0, player, partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
+                drawPath(p, 0, player, partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
             });
             currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
 
-                PathRenderer.drawPath(mr, 0, player, partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
-                PathRenderer.drawManySelectionBoxes(player, Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
+                drawPath(mr, 0, player, partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
+                drawManySelectionBoxes(player, Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
             });
         });
         //long end = System.nanoTime();

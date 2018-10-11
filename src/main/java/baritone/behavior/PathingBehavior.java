@@ -40,9 +40,7 @@ import baritone.utils.PathRenderer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
@@ -253,12 +251,46 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     /**
+     * See issue #209
+     *
      * @return The starting {@link BlockPos} for a new path
      */
-    private BlockPos pathStart() {
+    public BlockPos pathStart() {
         BetterBlockPos feet = playerFeet();
-        if (!MovementHelper.canWalkOn(feet.down()) && MovementHelper.canWalkOn(feet.down().down())) {
-            return feet.down();
+        if (!MovementHelper.canWalkOn(feet.down())) {
+            if (player().onGround) {
+                double playerX = player().posX;
+                double playerZ = player().posZ;
+                ArrayList<BetterBlockPos> closest = new ArrayList<>();
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        closest.add(new BetterBlockPos(feet.x + dx, feet.y, feet.z + dz));
+                    }
+                }
+                closest.sort(Comparator.comparingDouble(pos -> ((pos.x + 0.5D) - playerX) * ((pos.x + 0.5D) - playerX) + ((pos.z + 0.5D) - playerZ) * ((pos.z + 0.5D) - playerZ)));
+                for (int i = 0; i < 4; i++) {
+                    BetterBlockPos possibleSupport = closest.get(i);
+                    double xDist = Math.abs((possibleSupport.x + 0.5D) - playerX);
+                    double zDist = Math.abs((possibleSupport.z + 0.5D) - playerZ);
+                    if (xDist > 0.8 && zDist > 0.8) {
+                        // can't possibly be sneaking off of this one, we're too far away
+                        continue;
+                    }
+                    if (MovementHelper.canWalkOn(possibleSupport.down()) && MovementHelper.canWalkThrough(possibleSupport) && MovementHelper.canWalkThrough(possibleSupport.up())) {
+                        // this is plausible
+                        logDebug("Faking path start assuming player is standing off the edge of a block");
+                        return possibleSupport;
+                    }
+                }
+
+            } else {
+                // !onGround
+                // we're in the middle of a jump
+                if (MovementHelper.canWalkOn(feet.down().down())) {
+                    logDebug("Faking path start assuming player is midair and falling");
+                    return feet.down();
+                }
+            }
         }
         return feet;
     }
