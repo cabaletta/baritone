@@ -73,9 +73,15 @@ repositories {
         name = 'spongepowered-repo'
         url = 'http://repo.spongepowered.org/maven/'
     }
+
+    maven {
+        name = 'impactdevelopment-repo'
+        url = 'https://impactdevelopment.github.io/maven/'
+    }
 }
 
 dependencies {
+    runtime launchCompile('com.github.ImpactDevelopment:SimpleTweaker:1.1')
     runtime launchCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
         // Mixin includes a lot of dependencies that are too up-to-date
         exclude module: 'launchwrapper'
