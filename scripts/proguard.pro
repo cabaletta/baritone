@@ -1,4 +1,4 @@
--injars baritone-0.0.7.jar
+-injars baritone-0.0.8.jar
 -outjars Obfuscated
 
 

@@ -20,7 +20,7 @@ import java.util.jar.JarOutputStream
  */
 
 group 'baritone'
-version '0.0.7'
+version '0.0.8'
 
 buildscript {
     repositories {

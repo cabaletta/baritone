@@ -40,7 +40,7 @@ public class MixinEntity {
     )
     private void preMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
         Entity _this = (Entity) (Object) this;
-        if (_this instanceof EntityPlayerSP)
+        if (EntityPlayerSP.class.isInstance(_this))
             Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent((EntityPlayerSP) _this, EventState.PRE, RotationMoveEvent.Type.MOTION_UPDATE));
     }
 
@@ -50,7 +50,7 @@ public class MixinEntity {
     )
     private void postMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
         Entity _this = (Entity) (Object) this;
-        if (_this instanceof EntityPlayerSP)
+        if (EntityPlayerSP.class.isInstance(_this))
             Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent((EntityPlayerSP) _this, EventState.POST, RotationMoveEvent.Type.MOTION_UPDATE));
     }
 }
