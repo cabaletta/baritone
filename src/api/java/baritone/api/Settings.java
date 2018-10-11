@@ -156,7 +156,7 @@ public class Settings {
      *
      * @see <a href="https://github.com/cabaletta/baritone/issues/18">Issue #18</a>
      */
-    public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.1);
+    public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.5);
 
     /**
      * Don't repropagate cost improvements below 0.01 ticks. They're all just floating point inaccuracies,
