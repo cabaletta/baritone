@@ -389,7 +389,7 @@ public class Settings {
      * <p>
      * Also on cosmic prisons this should be set to true since you don't actually mine the ore it just gets replaced with stone.
      */
-    public Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(true);
+    public Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(false);
 
     /**
      * The "axis" command (aka GoalAxis) will go to a axis, or diagonal axis, at this Y level.
