@@ -147,7 +147,7 @@ public class MixinMinecraft {
             )
     )
     private boolean isAllowUserInput(GuiScreen screen) {
-        return (PathingBehavior.INSTANCE.getCurrent() != null && player != null) || screen.allowUserInput;
+        return (PathingBehavior.INSTANCE.getCurrent() != null && PathingBehavior.INSTANCE.isEnabled() && player != null) || screen.allowUserInput;
     }
 
     @Inject(
