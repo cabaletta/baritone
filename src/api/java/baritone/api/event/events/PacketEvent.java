@@ -27,7 +27,7 @@ import net.minecraft.network.Packet;
  */
 public final class PacketEvent {
 
-    private NetworkManager networkManager;
+    private final NetworkManager networkManager;
 
     private final EventState state;
 
