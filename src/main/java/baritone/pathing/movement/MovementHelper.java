@@ -48,10 +48,6 @@ import java.util.Optional;
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
-    static boolean avoidBreaking(BetterBlockPos pos, IBlockState state) {
-        return avoidBreaking(pos.x, pos.y, pos.z, state);
-    }
-
     static boolean avoidBreaking(int x, int y, int z, IBlockState state) {
         Block b = state.getBlock();
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
@@ -72,10 +68,6 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkThrough(BetterBlockPos pos) {
         return canWalkThrough(pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
-    }
-
-    static boolean canWalkThrough(BetterBlockPos pos, IBlockState state) {
-        return canWalkThrough(pos.x, pos.y, pos.z, state);
     }
 
     static boolean canWalkThrough(int x, int y, int z) {
@@ -139,10 +131,6 @@ public interface MovementHelper extends ActionCosts, Helper {
      *
      * @return
      */
-    static boolean fullyPassable(BlockPos pos) {
-        return fullyPassable(BlockStateInterface.get(pos));
-    }
-
     static boolean fullyPassable(int x, int y, int z) {
         return fullyPassable(BlockStateInterface.get(x, y, z));
     }
@@ -168,10 +156,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
         return block.isPassable(null, null);
-    }
-
-    static boolean isReplacable(BlockPos pos, IBlockState state) {
-        return isReplacable(pos.getX(), pos.getY(), pos.getZ(), state);
     }
 
     static boolean isReplacable(int x, int y, int z, IBlockState state) {
