@@ -3,6 +3,10 @@ set -e # this makes the whole script fail immediately if any one of these comman
 ./gradlew build
 export VERSION=$(cat build.gradle | grep "version '" | cut -d "'" -f 2-2)
 
+unzip -p build/libs/baritone-$VERSION.jar "mixins.baritone.refmap.json" | jq -S -c -M '.' > mixins.baritone.refmap.json
+zip -u build/libs/baritone-$VERSION.jar mixins.baritone.refmap.json
+rm mixins.baritone.refmap.json
+
 cd scripts
 javac Determinizer.java
 java Determinizer ../build/libs/baritone-$VERSION.jar temp.jar
