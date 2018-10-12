@@ -148,7 +148,7 @@ public enum Moves {
         }
     },
 
-    DESCEND_EAST(+1, 0, 0, false, true) {
+    DESCEND_EAST(+1, -1, 0, false, true) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
@@ -166,7 +166,7 @@ public enum Moves {
         }
     },
 
-    DESCEND_WEST(-1, 0, 0, false, true) {
+    DESCEND_WEST(-1, -1, 0, false, true) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
@@ -184,7 +184,7 @@ public enum Moves {
         }
     },
 
-    DESCEND_NORTH(0, 0, -1, false, true) {
+    DESCEND_NORTH(0, -1, -1, false, true) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
@@ -202,7 +202,7 @@ public enum Moves {
         }
     },
 
-    DESCEND_SOUTH(0, 0, +1, false, true) {
+    DESCEND_SOUTH(0, -1, +1, false, true) {
         @Override
         public Movement apply0(BetterBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();

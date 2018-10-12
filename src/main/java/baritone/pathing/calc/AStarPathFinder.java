@@ -111,6 +111,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (!moves.dynamicXZ && !worldBorder.entirelyContains(newX, newZ)) {
                     continue;
                 }
+                if ((currentNode.y == 256 && moves.yOffset > 0) || (currentNode.y == 0 && moves.yOffset < 0)) {
+                    continue;
+                }
                 res.reset();
                 moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z, res);
                 numMovementsConsidered++;
