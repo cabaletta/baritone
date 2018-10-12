@@ -18,7 +18,7 @@ For Impact 4.3, there is no Baritone integration yet, so you will want `baritone
 
 Any official release will be GPG signed by leijurv (44A3EA646EADAC6A) and ZeroMemes (73A788379A197567). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by those two public keys of `checksums.txt`. 
 
-The build is deterministic, and you can verify Travis did it properly by running `docker build -t cabaletta/baritone. && docker run --rm -it cabaletta/baritone sh scripts/build.sh` yourself and comparing the shasum. Note that for some godawful reason this doesn't work on Mac, the shasums are different even though docker is supposed to work the same everywhere. I get the same shasums as Travis when the host is Linux though.
+The build is deterministic, and you can verify Travis did it properly by running `docker build --no-cache -t cabaletta/baritone . && docker run --rm -it cabaletta/baritone sh scripts/build.sh` yourself and comparing the shasum. Note that for some godawful reason this doesn't work on Mac, the shasums are different even though docker is supposed to work the same everywhere. I get the same shasums as Travis when the host is Linux though.
 
 ### Building Baritone yourself
 There are a few steps to this
