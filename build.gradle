@@ -37,6 +37,8 @@ buildscript {
     }
 }
 
+import baritone.gradle.ProguardTask
+
 apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle.tweaker-client'
 apply plugin: 'org.spongepowered.mixin'
@@ -99,3 +101,11 @@ jar {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
+
+task proguard(type: ProguardTask) {
+    url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
+    extract 'proguard6.0.3/lib/proguard.jar'
+    versionManifest 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
+}
+
+build.finalizedBy(proguard)
