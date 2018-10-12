@@ -145,7 +145,6 @@ public class ProguardTask extends DefaultTask {
 
         // Setup the template that will be used to derive the API and Standalone configs
         List<String> template = Files.readAllLines(getTemporaryFile(PROGUARD_CONFIG_DEST));
-        template.removeIf(s -> s.endsWith("# this is the rt jar") || s.startsWith("-injars") || s.startsWith("-outjars"));
         template.add(0, "-injars " + this.artifactPath.toString());
         template.add(1, "-outjars " + this.getTemporaryFile(PROGUARD_EXPORT_PATH));
 

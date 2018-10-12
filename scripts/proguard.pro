@@ -1,7 +1,3 @@
--injars baritone-0.0.8.jar
--outjars Obfuscated
-
-
 -keepattributes Signature
 -keepattributes *Annotation*
 
@@ -29,7 +25,6 @@
 -keep class baritone.launch.** { *; }
 
 # copy all necessary libraries into tempLibraries to build
--libraryjars '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/lib/rt.jar' # this is the rt jar
 
 -libraryjars 'tempLibraries/minecraft-1.12.2.jar'
 
