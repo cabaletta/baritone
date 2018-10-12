@@ -19,13 +19,13 @@ package baritone.gradle;
 
 import baritone.gradle.util.Determinizer;
 import com.google.gson.*;
-import javafx.util.Pair;
 import org.apache.commons.io.IOUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.internal.Pair;
 
 import java.io.*;
 import java.net.URL;
@@ -195,7 +195,7 @@ public class ProguardTask extends DefaultTask {
         Map<String, Pair<Configuration, Dependency>> dependencyLookupMap = new HashMap<>();
         getProject().getConfigurations().stream().filter(Configuration::isCanBeResolved).forEach(config ->
                 config.getAllDependencies().forEach(dependency ->
-                        dependencyLookupMap.putIfAbsent(dependency.getName() + "-" + dependency.getVersion(), new Pair<>(config, dependency))));
+                        dependencyLookupMap.putIfAbsent(dependency.getName() + "-" + dependency.getVersion(), Pair.of(config, dependency))));
 
         // Create the directory if it doesn't already exist
         Path tempLibraries = getTemporaryFile(TEMP_LIBRARY_DIR);
@@ -227,7 +227,7 @@ public class ProguardTask extends DefaultTask {
             Objects.requireNonNull(pair);
 
             // Find the library jar file, and copy it to tempLibraries
-            for (File file : pair.getKey().files(pair.getValue())) {
+            for (File file : pair.getLeft().files(pair.getRight())) {
                 if (file.getName().startsWith(lib)) {
                     Files.copy(file.toPath(), getTemporaryFile("tempLibraries/" + lib + ".jar"), REPLACE_EXISTING);
                 }
