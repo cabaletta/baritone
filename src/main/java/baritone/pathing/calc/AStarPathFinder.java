@@ -18,15 +18,16 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
+import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.ActionCosts;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
+import baritone.utils.pathing.BetterWorldBorder;
 import baritone.utils.pathing.MutableMoveResult;
 
 import java.util.HashSet;
@@ -63,6 +64,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         CalculationContext calcContext = new CalculationContext();
         MutableMoveResult res = new MutableMoveResult();
         HashSet<Long> favored = favoredPositions.orElse(null);
+        BetterWorldBorder worldBorder = new BetterWorldBorder(world().getWorldBorder());
         BlockStateInterface.clearCachedChunk();
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
@@ -106,11 +108,20 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                         continue;
                     }
                 }
+                if (!moves.dynamicXZ && !worldBorder.entirelyContains(newX, newZ)) {
+                    continue;
+                }
                 res.reset();
                 moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z, res);
                 numMovementsConsidered++;
                 double actionCost = res.cost;
                 if (actionCost >= ActionCosts.COST_INF) {
+                    continue;
+                }
+                if (actionCost <= 0) {
+                    throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
+                }
+                if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
                     continue;
                 }
                 // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
@@ -119,9 +130,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 }
                 if (!moves.dynamicY && res.y != currentNode.y + moves.yOffset) {
                     throw new IllegalStateException(moves + " " + res.x + " " + newX + " " + res.z + " " + newZ);
-                }
-                if (actionCost <= 0) {
-                    throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
                 long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
                 if (favoring && favored.contains(hashCode)) {
