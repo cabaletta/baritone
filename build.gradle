@@ -1,7 +1,3 @@
-import java.util.jar.JarEntry
-import java.util.jar.JarFile
-import java.util.jar.JarOutputStream
-
 /*
  * This file is part of Baritone.
  *
@@ -102,34 +98,4 @@ jar {
     from sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-}
-
-build {
-    // while "jar" supports preserveFileTimestamps false
-    // reobfJar doesn't, it just sets all the last modified times to that instant where it runs the reobfuscator
-    // so we have to set all those last modified times back to zero
-    doLast {
-        File jarFile = new File("build/libs/baritone-" + version + ".jar")
-        JarFile jf = new JarFile(jarFile)
-        JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File("temp.jar")))
-        jf.entries().unique { it.name }.sort { it.name }.each {
-            if (it.name != "META-INF/fml_cache_annotation.json" && it.name != "META-INF/fml_cache_class_versions.json") {
-                JarEntry clone = new JarEntry(it)
-                clone.time = 0
-                jos.putNextEntry(clone)
-                copy(jf.getInputStream(it), jos)
-            }
-        }
-        jos.finish()
-        jf.close()
-        file("temp.jar").renameTo(jarFile)
-    }
-}
-
-void copy(InputStream is, OutputStream os) {
-    byte[] buffer = new byte[1024]
-    int len = 0
-    while ((len = is.read(buffer)) != -1) {
-        os.write(buffer, 0, len)
-    }
 }
