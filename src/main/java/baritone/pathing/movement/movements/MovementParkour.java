@@ -118,7 +118,7 @@ public class MovementParkour extends Movement {
         int destX = x + 4 * xDiff;
         int destZ = z + 4 * zDiff;
         IBlockState toPlace = BlockStateInterface.get(destX, y - 1, destZ);
-        if (!context.hasThrowaway()) {
+        if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
             return;
         }
         if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace)) {
@@ -225,7 +225,7 @@ public class MovementParkour extends Movement {
                 }
 
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
-            } else if(!playerFeet().equals(dest.offset(direction, -1))) {
+            } else if (!playerFeet().equals(dest.offset(direction, -1))) {
                 state.setInput(InputOverrideHandler.Input.SPRINT, false);
                 if (playerFeet().equals(src.offset(direction, -1))) {
                     MovementHelper.moveTowards(state, src);

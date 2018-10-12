@@ -343,15 +343,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.isBlockNormalCube();
     }
 
-    static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, boolean includeFalling) {
-        IBlockState state = BlockStateInterface.get(position);
-        return getMiningDurationTicks(context, position.x, position.y, position.z, state, includeFalling);
-    }
-
-    static double getMiningDurationTicks(CalculationContext context, BetterBlockPos position, IBlockState state, boolean includeFalling) {
-        return getMiningDurationTicks(context, position.x, position.y, position.z, state, includeFalling);
-    }
-
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling) {
         return getMiningDurationTicks(context, x, y, z, BlockStateInterface.get(x, y, z), includeFalling);
     }
@@ -359,7 +350,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(x, y, z, state)) {
-            if (!context.allowBreak()) {
+            if (!context.canBreakAt(x, y, z)) {
                 return COST_INF;
             }
             if (avoidBreaking(x, y, z, state)) {

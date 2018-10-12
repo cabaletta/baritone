@@ -72,7 +72,7 @@ public class MovementAscend extends Movement {
         }
         boolean hasToPlace = false;
         if (!MovementHelper.canWalkOn(destX, y, destZ, toPlace)) {
-            if (!context.hasThrowaway()) {
+            if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
                 return COST_INF;
             }
             if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace)) {

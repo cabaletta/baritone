@@ -108,7 +108,7 @@ public class MovementTraverse extends Movement {
                 if (BlockStateInterface.isWater(destOn.getBlock()) && throughWater) {
                     return COST_INF;
                 }
-                if (!context.hasThrowaway()) {
+                if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
                     return COST_INF;
                 }
                 double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb0, false);

@@ -36,4 +36,11 @@ public class BetterWorldBorder implements Helper {
     public boolean entirelyContains(int x, int z) {
         return x + 1 > minX && x < maxX && z + 1 > minZ && z < maxZ;
     }
+
+    public boolean canPlaceAt(int x, int z) {
+        // move it in 1 block on all sides
+        // because we can't place a block at the very edge against a block outside the border
+        // it won't let us right click it
+        return x > minX && x + 1 < maxX && z > minZ && z + 1 < maxZ;
+    }
 }
