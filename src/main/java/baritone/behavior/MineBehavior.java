@@ -110,28 +110,30 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         locationsCache = locs;
     }
 
-    public GoalComposite coalesce(List<BlockPos> locs) {
-        return new GoalComposite(locs.stream().map(loc -> {
-            if (!Baritone.settings().forceInternalMining.get()) {
+    public Goal coalesce(BlockPos loc, List<BlockPos> locs) {
+        if (!Baritone.settings().forceInternalMining.get()) {
+            return new GoalTwoBlocks(loc);
+        }
+
+        boolean upwardGoal = locs.contains(loc.up()) || (Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
+        boolean downwardGoal = locs.contains(loc.down()) || (Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
+        if (upwardGoal) {
+            if (downwardGoal) {
+                return new GoalTwoBlocks(loc);
+            } else {
+                return new GoalBlock(loc);
+            }
+        } else {
+            if (downwardGoal) {
+                return new GoalBlock(loc.down());
+            } else {
                 return new GoalTwoBlocks(loc);
             }
+        }
+    }
 
-            boolean upwardGoal = locs.contains(loc.up()) || (Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
-            boolean downwardGoal = locs.contains(loc.down()) || (Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(loc.up()) == Blocks.AIR);
-            if (upwardGoal) {
-                if (downwardGoal) {
-                    return new GoalTwoBlocks(loc);
-                } else {
-                    return new GoalBlock(loc);
-                }
-            } else {
-                if (downwardGoal) {
-                    return new GoalBlock(loc.down());
-                } else {
-                    return new GoalTwoBlocks(loc);
-                }
-            }
-        }).toArray(Goal[]::new));
+    public GoalComposite coalesce(List<BlockPos> locs) {
+        return new GoalComposite(locs.stream().map(loc -> coalesce(loc, locs)).toArray(Goal[]::new));
     }
 
     public List<BlockPos> scanFor(List<Block> mining, int max) {
