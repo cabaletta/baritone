@@ -43,9 +43,9 @@ public class CreateDistTask extends BaritoneGradleTask {
         super.verifyArtifacts();
 
         // Define the distribution file paths
-        Path unoptimized = getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED));
         Path api         = getRelativeFile("dist/" + formatVersion(ARTIFACT_API));
         Path standalone  = getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE));
+        Path unoptimized = getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED));
 
         // NIO will not automatically create directories
         Path dir = getRelativeFile("dist/");
@@ -54,17 +54,14 @@ public class CreateDistTask extends BaritoneGradleTask {
         }
 
         // Copy build jars to dist/
-        Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
         Files.copy(this.artifactApiPath,         api,         REPLACE_EXISTING);
         Files.copy(this.artifactStandalonePath,  standalone,  REPLACE_EXISTING);
+        Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
-        List<String> shasum = Stream.of(unoptimized, api, standalone)
+        List<String> shasum = Stream.of(api, standalone, unoptimized)
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
-
-        System.out.println("$ > shasum im cool haha look at me");
-        shasum.forEach(System.out::println);
 
         // Write the checksums to a file
         Files.write(getRelativeFile("dist/checksums.txt"), shasum);
