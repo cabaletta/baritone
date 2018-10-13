@@ -1,7 +1,7 @@
 # Baritone
 [![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone)
 [![License](https://img.shields.io/github/license/cabaletta/baritone.svg)](LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7150d8ccf6094057b1782aa7a8f92d7d)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
 
 <!-- Unofficial Jenkins: [![Build Status](https://plutiejenkins.leijurv.com/job/baritone/badge/icon)](https://plutiejenkins.leijurv.com/job/baritone/lastSuccessfulBuild/) -->
 
