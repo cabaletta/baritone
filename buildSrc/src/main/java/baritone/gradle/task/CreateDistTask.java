@@ -63,6 +63,9 @@ public class CreateDistTask extends BaritoneGradleTask {
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 
+        System.out.println("$ > shasum im cool haha look at me");
+        shasum.forEach(System.out::println);
+
         // Write the checksums to a file
         Files.write(getRelativeFile("dist/checksums.txt"), shasum);
     }
