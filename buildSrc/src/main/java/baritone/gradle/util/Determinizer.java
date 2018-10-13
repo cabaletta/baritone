@@ -59,7 +59,7 @@ public class Determinizer {
                 continue;
             }
             JarEntry clone = new JarEntry(entry.getName());
-            clone.setTime(0);
+            clone.setTime(42069);
             jos.putNextEntry(clone);
             if (entry.getName().endsWith(".refmap.json")) {
                 JsonObject object = new JsonParser().parse(new InputStreamReader(jarFile.getInputStream(entry))).getAsJsonObject();
