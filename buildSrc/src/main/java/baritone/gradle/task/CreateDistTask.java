@@ -60,7 +60,7 @@ public class CreateDistTask extends BaritoneGradleTask {
 
         // Calculate all checksums and format them like "shasum"
         List<String> shasum = Stream.of(unoptimized, api, standalone)
-                .map(path -> sha1(path) + " " + path.getFileName().toString())
+                .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 
         // Write the checksums to a file
