@@ -23,7 +23,6 @@ import javax.xml.bind.DatatypeConverter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +38,7 @@ public class CreateDistTask extends BaritoneGradleTask {
     private static MessageDigest SHA1_DIGEST;
 
     @TaskAction
-    private void exec() throws Exception {
+    protected void exec() throws Exception {
         super.verifyArtifacts();
 
         // Define the distribution file paths

@@ -59,7 +59,7 @@ public class ProguardTask extends BaritoneGradleTask {
     private List<String> requiredLibraries;
 
     @TaskAction
-    private void exec() throws Exception {
+    protected void exec() throws Exception {
         super.verifyArtifacts();
 
         // "Haha brady why don't you make separate tasks"
