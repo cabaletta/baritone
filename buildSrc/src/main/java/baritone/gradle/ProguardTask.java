@@ -209,7 +209,9 @@ public class ProguardTask extends DefaultTask {
                 String version = lib.split("-")[1];
                 Path versionJar = getTemporaryFile("tempLibraries/" + lib + ".jar");
                 if (!Files.exists(versionJar)) {
-                    write(new URL(this.versionDownloadMap.get(version)).openStream(), versionJar);
+                    JsonObject versionJson = PARSER.parse(new InputStreamReader(new URL(this.versionDownloadMap.get(version)).openStream())).getAsJsonObject();
+                    String url = versionJson.getAsJsonObject("downloads").getAsJsonObject("client").getAsJsonPrimitive("url").getAsString();
+                    write(new URL(url).openStream(), versionJar);
                 }
                 continue;
             }
