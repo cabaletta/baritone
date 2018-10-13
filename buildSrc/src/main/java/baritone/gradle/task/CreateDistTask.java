@@ -67,7 +67,7 @@ public class CreateDistTask extends BaritoneGradleTask {
         Files.write(getRelativeFile("dist/checksums.txt"), shasum);
     }
 
-    private static String sha1(Path path) {
+    private static synchronized String sha1(Path path) {
         try {
             if (SHA1_DIGEST == null) {
                 SHA1_DIGEST = MessageDigest.getInstance("SHA-1");

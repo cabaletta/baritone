@@ -79,7 +79,7 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.artifactUnoptimizedPath);
         }
 
-        Determinizer.main(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString());
+        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString());
     }
 
     private void downloadProguard() throws Exception {
@@ -197,12 +197,12 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private void proguardApi() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
-        Determinizer.main(this.proguardOut.toString(), this.artifactApiPath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
     }
 
     private void proguardStandalone() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
-        Determinizer.main(this.proguardOut.toString(), this.artifactStandalonePath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
     }
 
     private void cleanup() {
@@ -239,8 +239,8 @@ public class ProguardTask extends BaritoneGradleTask {
         this.printOutputLog(p.getErrorStream());
 
         // Halt the current thread until the process is complete, if the exit code isn't 0, throw an exception
-        int exitCode;
-        if ((exitCode = p.waitFor()) != 0) {
+        int exitCode = p.waitFor();
+        if (exitCode != 0) {
             throw new Exception("Proguard exited with code " + exitCode);
         }
     }

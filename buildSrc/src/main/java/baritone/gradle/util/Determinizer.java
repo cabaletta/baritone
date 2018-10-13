@@ -39,39 +39,39 @@ import java.util.stream.Collectors;
  */
 public class Determinizer {
 
-    public static void main(String... args) throws IOException {
+    public static void determinize(String inputPath, String outputPath) throws IOException {
         System.out.println("Running Determinizer");
-        System.out.println(" Input path: " + args[0]);
-        System.out.println(" Output path: " + args[1]);
+        System.out.println(" Input path: " + inputPath);
+        System.out.println(" Output path: " + outputPath);
 
-        JarFile jarFile = new JarFile(new File(args[0]));
-        JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File(args[1])));
+        try (
+                JarFile jarFile = new JarFile(new File(inputPath));
+                JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File(outputPath)))
+        ) {
 
-        List<JarEntry> entries = jarFile.stream()
-                .sorted(Comparator.comparing(JarEntry::getName))
-                .collect(Collectors.toList());
+            List<JarEntry> entries = jarFile.stream()
+                    .sorted(Comparator.comparing(JarEntry::getName))
+                    .collect(Collectors.toList());
 
-        for (JarEntry entry : entries) {
-            if (entry.getName().equals("META-INF/fml_cache_annotation.json")) {
-                continue;
+            for (JarEntry entry : entries) {
+                if (entry.getName().equals("META-INF/fml_cache_annotation.json")) {
+                    continue;
+                }
+                if (entry.getName().equals("META-INF/fml_cache_class_versions.json")) {
+                    continue;
+                }
+                JarEntry clone = new JarEntry(entry.getName());
+                clone.setTime(42069);
+                jos.putNextEntry(clone);
+                if (entry.getName().endsWith(".refmap.json")) {
+                    JsonObject object = new JsonParser().parse(new InputStreamReader(jarFile.getInputStream(entry))).getAsJsonObject();
+                    jos.write(writeSorted(object).getBytes());
+                } else {
+                    copy(jarFile.getInputStream(entry), jos);
+                }
             }
-            if (entry.getName().equals("META-INF/fml_cache_class_versions.json")) {
-                continue;
-            }
-            JarEntry clone = new JarEntry(entry.getName());
-            clone.setTime(42069);
-            jos.putNextEntry(clone);
-            if (entry.getName().endsWith(".refmap.json")) {
-                JsonObject object = new JsonParser().parse(new InputStreamReader(jarFile.getInputStream(entry))).getAsJsonObject();
-                copy(writeSorted(object), jos);
-            } else {
-                copy(jarFile.getInputStream(entry), jos);
-            }
+            jos.finish();
         }
-
-        jos.finish();
-        jos.close();
-        jarFile.close();
     }
 
     private static void copy(InputStream is, OutputStream os) throws IOException {
@@ -80,10 +80,6 @@ public class Determinizer {
         while ((len = is.read(buffer)) != -1) {
             os.write(buffer, 0, len);
         }
-    }
-
-    private static void copy(String s, OutputStream os) throws IOException {
-        os.write(s.getBytes());
     }
 
     private static String writeSorted(JsonObject in) throws IOException {
