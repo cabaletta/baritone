@@ -99,7 +99,9 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return true;
             }
             if (snow) {
-                return state.getValue(BlockSnow.LAYERS) < 5; // see BlockSnow.isPassable
+                // the check in BlockSnow.isPassable is layers < 5
+                // while actually, we want < 3 because 3 or greater makes it impassable in a 2 high ceiling
+                return state.getValue(BlockSnow.LAYERS) < 3;
             }
             if (trapdoor) {
                 return !state.getValue(BlockTrapDoor.OPEN); // see BlockTrapDoor.isPassable
