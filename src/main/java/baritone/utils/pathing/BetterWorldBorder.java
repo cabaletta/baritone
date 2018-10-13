@@ -21,10 +21,10 @@ import baritone.utils.Helper;
 import net.minecraft.world.border.WorldBorder;
 
 public class BetterWorldBorder implements Helper {
-    double minX;
-    double maxX;
-    double minZ;
-    double maxZ;
+    private final double minX;
+    private final double maxX;
+    private final double minZ;
+    private final double maxZ;
 
     public BetterWorldBorder(WorldBorder border) {
         this.minX = border.minX();
