@@ -18,7 +18,6 @@
 package baritone.gradle.util;
 
 import com.google.gson.*;
-import com.google.gson.internal.LazilyParsedNumber;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
@@ -90,7 +89,7 @@ public class Determinizer {
     private static String writeSorted(JsonObject in) throws IOException {
         StringWriter writer = new StringWriter();
         JsonWriter jw = new JsonWriter(writer);
-        JSON_ELEMENT.write(jw, in);
+        ORDERED_JSON_WRITER.write(jw, in);
         return writer.toString() + "\n";
     }
 
@@ -101,44 +100,11 @@ public class Determinizer {
      * @see <a href="https://github.com/google/gson/blob/master/LICENSE">GSON License</a>
      * @see <a href="https://github.com/google/gson/blob/master/gson/src/main/java/com/google/gson/internal/bind/TypeAdapters.java#L698">Original Source</a>
      */
-    private static final TypeAdapter<JsonElement> JSON_ELEMENT = new TypeAdapter<JsonElement>() {
+    private static final TypeAdapter<JsonElement> ORDERED_JSON_WRITER = new TypeAdapter<JsonElement>() {
 
         @Override
-        public JsonElement read(JsonReader in) throws IOException {
-            switch (in.peek()) {
-                case STRING:
-                    return new JsonPrimitive(in.nextString());
-                case NUMBER:
-                    String number = in.nextString();
-                    return new JsonPrimitive(new LazilyParsedNumber(number));
-                case BOOLEAN:
-                    return new JsonPrimitive(in.nextBoolean());
-                case NULL:
-                    in.nextNull();
-                    return JsonNull.INSTANCE;
-                case BEGIN_ARRAY:
-                    JsonArray array = new JsonArray();
-                    in.beginArray();
-                    while (in.hasNext()) {
-                        array.add(read(in));
-                    }
-                    in.endArray();
-                    return array;
-                case BEGIN_OBJECT:
-                    JsonObject object = new JsonObject();
-                    in.beginObject();
-                    while (in.hasNext()) {
-                        object.add(in.nextName(), read(in));
-                    }
-                    in.endObject();
-                    return object;
-                case END_DOCUMENT:
-                case NAME:
-                case END_OBJECT:
-                case END_ARRAY:
-                default:
-                    throw new IllegalArgumentException();
-            }
+        public JsonElement read(JsonReader in) {
+            return null;
         }
 
         @Override
