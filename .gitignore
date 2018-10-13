@@ -3,6 +3,7 @@
 
 run/
 autotest/
+dist/
 
 # Gradle
 build/

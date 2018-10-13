@@ -1,7 +1,3 @@
--injars baritone-0.0.8.jar
--outjars Obfuscated
-
-
 -keepattributes Signature
 -keepattributes *Annotation*
 
@@ -29,7 +25,6 @@
 -keep class baritone.launch.** { *; }
 
 # copy all necessary libraries into tempLibraries to build
--libraryjars '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/lib/rt.jar' # this is the rt jar
 
 -libraryjars 'tempLibraries/minecraft-1.12.2.jar'
 
@@ -49,7 +44,6 @@
 -libraryjars 'tempLibraries/httpclient-4.3.3.jar'
 -libraryjars 'tempLibraries/httpcore-4.3.2.jar'
 -libraryjars 'tempLibraries/icu4j-core-mojang-51.2.jar'
--libraryjars 'tempLibraries/java-objc-bridge-1.0.0.jar'
 -libraryjars 'tempLibraries/jinput-2.0.5.jar'
 -libraryjars 'tempLibraries/jna-4.4.0.jar'
 -libraryjars 'tempLibraries/jopt-simple-5.0.3.jar'
@@ -60,13 +54,10 @@
 -libraryjars 'tempLibraries/log4j-api-2.8.1.jar'
 -libraryjars 'tempLibraries/log4j-core-2.8.1.jar'
 
-# linux / travis
--libraryjars 'tempLibraries/lwjgl-2.9.4-nightly-20150209.jar'
--libraryjars 'tempLibraries/lwjgl_util-2.9.4-nightly-20150209.jar'
-
-# mac
-#-libraryjars 'tempLibraries/lwjgl_util-2.9.2-nightly-20140822.jar'
-#-libraryjars 'tempLibraries/lwjgl-2.9.2-nightly-20140822.jar'
+# startsWith is used to check the library, and mac/linux differ in which version they use
+# this is FINE
+-libraryjars 'tempLibraries/lwjgl-.jar'
+-libraryjars 'tempLibraries/lwjgl_util-.jar'
 
 -libraryjars 'tempLibraries/netty-all-4.1.9.Final.jar'
 -libraryjars 'tempLibraries/oshi-core-1.1.jar'
