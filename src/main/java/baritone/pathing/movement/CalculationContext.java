@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.utils.Helper;
 import baritone.utils.ToolSet;
+import baritone.utils.pathing.BetterWorldBorder;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
@@ -44,6 +45,7 @@ public class CalculationContext implements Helper {
     private final int maxFallHeightBucket;
     private final double waterWalkSpeed;
     private final double breakBlockAdditionalCost;
+    private final BetterWorldBorder worldBorder;
 
     public CalculationContext() {
         this(new ToolSet());
@@ -68,6 +70,32 @@ public class CalculationContext implements Helper {
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
+        this.worldBorder = new BetterWorldBorder(world().getWorldBorder());
+    }
+
+    public boolean canPlaceThrowawayAt(int x, int y, int z) {
+        if (!hasThrowaway()) { // only true if allowPlace is true, see constructor
+            return false;
+        }
+        if (isPossiblyProtected(x, y, z)) {
+            return false;
+        }
+        return worldBorder.canPlaceAt(x, z); // TODO perhaps MovementHelper.canPlaceAgainst could also use this?
+    }
+
+    public boolean canBreakAt(int x, int y, int z) {
+        if (!allowBreak()) {
+            return false;
+        }
+        if (isPossiblyProtected(x, y, z)) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isPossiblyProtected(int x, int y, int z) {
+        // TODO more protection logic here; see #220
+        return false;
     }
 
     public ToolSet getToolSet() {

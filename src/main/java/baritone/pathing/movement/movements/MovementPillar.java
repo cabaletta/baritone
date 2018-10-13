@@ -76,7 +76,7 @@ public class MovementPillar extends Movement {
                 return LADDER_UP_ONE_COST;
             }
         }
-        if (!context.hasThrowaway() && !ladder) {
+        if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) {
             return COST_INF;
         }
         double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);
