@@ -37,7 +37,9 @@ buildscript {
     }
 }
 
-import baritone.gradle.ProguardTask
+
+import baritone.gradle.task.CreateDistTask
+import baritone.gradle.task.ProguardTask
 
 apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle.tweaker-client'
@@ -108,4 +110,6 @@ task proguard(type: ProguardTask) {
     versionManifest 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
 }
 
-build.finalizedBy(proguard)
+task createDist(type: CreateDistTask, dependsOn: proguard)
+
+build.finalizedBy(createDist)

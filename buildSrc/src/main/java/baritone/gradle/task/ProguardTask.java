@@ -15,12 +15,11 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.gradle;
+package baritone.gradle.task;
 
 import baritone.gradle.util.Determinizer;
 import com.google.gson.*;
 import org.apache.commons.io.IOUtils;
-import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.tasks.Input;
@@ -31,7 +30,6 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,28 +42,9 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * @author Brady
  * @since 10/11/2018
  */
-public class ProguardTask extends DefaultTask {
-
-    private static final JsonParser PARSER = new JsonParser();
+public class ProguardTask extends BaritoneGradleTask {
 
     private static final Pattern TEMP_LIBRARY_PATTERN = Pattern.compile("-libraryjars 'tempLibraries\\/([a-zA-Z0-9/_\\-\\.]+)\\.jar'");
-
-    private static final String
-            PROGUARD_ZIP                    = "proguard.zip",
-            PROGUARD_JAR                    = "proguard.jar",
-            PROGUARD_CONFIG_TEMPLATE        = "scripts/proguard.pro",
-            PROGUARD_CONFIG_DEST            = "template.pro",
-            PROGUARD_API_CONFIG             = "api.pro",
-            PROGUARD_STANDALONE_CONFIG      = "standalone.pro",
-            PROGUARD_EXPORT_PATH            = "proguard_out.jar",
-
-            VERSION_MANIFEST = "version_manifest.json",
-
-            TEMP_LIBRARY_DIR = "tempLibraries/",
-
-            ARTIFACT_UNOPTIMIZED = "%s-unoptimized-%s.jar",
-            ARTIFACT_API         = "%s-api-%s.jar",
-            ARTIFACT_STANDALONE  = "%s-standalone-%s.jar";
 
     @Input
     private String url;
@@ -76,15 +55,14 @@ public class ProguardTask extends DefaultTask {
     @Input
     private String versionManifest;
 
-    private String artifactName, artifactVersion;
-    private Path artifactPath, artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, proguardOut;
     private Map<String, String> versionDownloadMap;
     private List<String> requiredLibraries;
 
     @TaskAction
     private void exec() throws Exception {
+        super.verifyArtifacts();
+
         // "Haha brady why don't you make separate tasks"
-        verifyArtifacts();
         processArtifact();
         downloadProguard();
         extractProguard();
@@ -94,25 +72,6 @@ public class ProguardTask extends DefaultTask {
         proguardApi();
         proguardStandalone();
         cleanup();
-    }
-
-    private void verifyArtifacts() throws Exception {
-        this.artifactName = getProject().getName();
-        this.artifactVersion = getProject().getVersion().toString();
-
-        // The compiled baritone artifact that is exported when the build task is ran
-        String artifactName = String.format("%s-%s.jar", this.artifactName, this.artifactVersion);
-
-        this.artifactPath            = this.getBuildFile(artifactName);
-        this.artifactUnoptimizedPath = this.getBuildFile(String.format(ARTIFACT_UNOPTIMIZED, this.artifactName, this.artifactVersion));
-        this.artifactApiPath         = this.getBuildFile(String.format(ARTIFACT_API,         this.artifactName, this.artifactVersion));
-        this.artifactStandalonePath  = this.getBuildFile(String.format(ARTIFACT_STANDALONE,  this.artifactName, this.artifactVersion));
-
-        this.proguardOut = this.getTemporaryFile(PROGUARD_EXPORT_PATH);
-
-        if (!Files.exists(this.artifactPath)) {
-            throw new Exception("Artifact not found! Run build first!");
-        }
     }
 
     private void processArtifact() throws Exception {
@@ -264,12 +223,6 @@ public class ProguardTask extends DefaultTask {
         this.versionManifest = versionManifest;
     }
 
-    /*
-     * A LOT OF SHITTY UTIL METHODS ARE BELOW.
-     *
-     * PROCEED WITH CAUTION
-     */
-
     private void runProguard(Path config) throws Exception {
         // Delete the existing proguard output file. Proguard probably handles this already, but why not do it ourselves
         if (Files.exists(this.proguardOut)) {
@@ -278,10 +231,12 @@ public class ProguardTask extends DefaultTask {
 
         Path proguardJar = getTemporaryFile(PROGUARD_JAR);
         Process p = new ProcessBuilder("java", "-jar", proguardJar.toString(), "@" + config.toString())
-                .directory(getTemporaryFile("").toFile()) // Set the working directory to the temporary folder
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                .redirectError(ProcessBuilder.Redirect.INHERIT)
+                .directory(getTemporaryFile("").toFile()) // Set the working directory to the temporary folder]
                 .start();
+
+        // We can't do output inherit process I/O with gradle for some reason and have it work, so we have to do this
+        this.printOutputLog(p.getInputStream());
+        this.printOutputLog(p.getErrorStream());
 
         // Halt the current thread until the process is complete, if the exit code isn't 0, throw an exception
         int exitCode;
@@ -290,26 +245,16 @@ public class ProguardTask extends DefaultTask {
         }
     }
 
-    private void write(InputStream stream, Path file) throws Exception {
-        if (Files.exists(file)) {
-            Files.delete(file);
-        }
-        Files.copy(stream, file);
-    }
-
-    private Path getRelativeFile(String file) {
-        return Paths.get(new File(file).getAbsolutePath());
-    }
-
-    private Path getTemporaryFile(String file) {
-        return Paths.get(new File(getTemporaryDir(), file).getAbsolutePath());
-    }
-
-    private Path getBuildFile(String file) {
-        return getRelativeFile("build/libs/" + file);
-    }
-
-    private JsonElement readJson(List<String> lines) {
-        return PARSER.parse(String.join("\n", lines));
+    private void printOutputLog(InputStream stream) {
+        new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } catch (final Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }
