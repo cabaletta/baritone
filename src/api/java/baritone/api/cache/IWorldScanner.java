@@ -38,5 +38,5 @@ public interface IWorldScanner {
      * @param maxSearchRadius The maximum chunk search radius
      * @return The matching block positions
      */
-    List<BlockPos> scanLoadedChunks(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius);
+    List<BlockPos> scanChunkRadius(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius);
 }

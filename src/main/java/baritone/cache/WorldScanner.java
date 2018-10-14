@@ -35,7 +35,7 @@ public enum WorldScanner implements IWorldScanner, Helper {
     INSTANCE;
 
     @Override
-    public List<BlockPos> scanLoadedChunks(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
+    public List<BlockPos> scanChunkRadius(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
         if (blocks.contains(null)) {
             throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }
