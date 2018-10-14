@@ -223,6 +223,14 @@ public class MovementParkour extends Movement {
                         }
                     }
                 }
+                if (dist == 3) { // this is a 2 block gap, dest = src + direction * 3
+                    double xDiff = (src.x + 0.5) - player().posX;
+                    double zDiff = (src.z + 0.5) - player().posZ;
+                    double distFromStart = Math.max(Math.abs(xDiff), Math.abs(zDiff));
+                    if (distFromStart < 0.7) {
+                        return state;
+                    }
+                }
 
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
             } else if (!playerFeet().equals(dest.offset(direction, -1))) {
