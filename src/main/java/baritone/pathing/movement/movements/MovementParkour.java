@@ -27,7 +27,9 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.utils.*;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
+import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -177,6 +179,10 @@ public class MovementParkour extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
         if (state.getStatus() != MovementStatus.RUNNING) {
+            return state;
+        }
+        if (player().isHandActive()) {
+            logDebug("Pausing parkour since hand is active");
             return state;
         }
         if (dist >= 4) {
