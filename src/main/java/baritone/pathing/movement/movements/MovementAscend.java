@@ -20,14 +20,14 @@ package baritone.pathing.movement.movements;
 import baritone.Baritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
-import baritone.behavior.LookBehaviorUtils;
+import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.RotationUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.Utils;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -181,10 +181,10 @@ public class MovementAscend extends Movement {
                     double faceX = (dest.getX() + anAgainst.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + anAgainst.getY()) * 0.5D;
                     double faceZ = (dest.getZ() + anAgainst.getZ() + 1.0D) * 0.5D;
-                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
+                    state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
 
-                    LookBehaviorUtils.getSelectedBlock().ifPresent(selectedBlock -> {
+                    RayTraceUtils.getSelectedBlock().ifPresent(selectedBlock -> {
                         if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionToPlace)) {
                             ticksWithoutPlacement++;
                             state.setInput(InputOverrideHandler.Input.SNEAK, true);

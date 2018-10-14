@@ -19,9 +19,7 @@ package baritone.pathing.movement;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Rotation;
-import baritone.behavior.LookBehaviorUtils;
+import baritone.api.utils.*;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.*;
 import net.minecraft.block.*;
@@ -29,14 +27,12 @@ import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.Optional;
@@ -375,22 +371,10 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
-     * The entity the player is currently looking at
-     *
-     * @return the entity object
-     */
-    static Optional<Entity> whatEntityAmILookingAt() {
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
-            return Optional.of(mc.objectMouseOver.entityHit);
-        }
-        return Optional.empty();
-    }
-
-    /**
      * AutoTool
      */
     static void switchToBestTool() {
-        LookBehaviorUtils.getSelectedBlock().ifPresent(pos -> {
+        RayTraceUtils.getSelectedBlock().ifPresent(pos -> {
             IBlockState state = BlockStateInterface.get(pos);
             if (state.getBlock().equals(Blocks.AIR)) {
                 return;
@@ -456,8 +440,8 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static void moveTowards(MovementState state, BlockPos pos) {
         state.setTarget(new MovementTarget(
-                new Rotation(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                        Utils.getBlockPosCenter(pos),
+                new Rotation(RotationUtils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+                        VecUtils.getBlockPosCenter(pos),
                         new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getYaw(), mc.player.rotationPitch),
                 false
         )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);

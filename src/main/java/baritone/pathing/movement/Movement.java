@@ -22,8 +22,9 @@ import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.behavior.LookBehavior;
-import baritone.behavior.LookBehaviorUtils;
 import baritone.utils.*;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
@@ -171,7 +172,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         for (BetterBlockPos blockPos : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(blockPos) && !(BlockStateInterface.getBlock(blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
-                Optional<Rotation> reachable = LookBehaviorUtils.reachable(blockPos);
+                Optional<Rotation> reachable = RotationUtils.reachable(player(), blockPos);
                 if (reachable.isPresent()) {
                     MovementHelper.switchToBestToolFor(BlockStateInterface.get(blockPos));
                     state.setTarget(new MovementState.MovementTarget(reachable.get(), true)).setInput(Input.CLICK_LEFT, true);
@@ -181,8 +182,8 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
                 //i'm doing it anyway
                 //i dont care if theres snow in the way!!!!!!!
                 //you dont own me!!!!
-                state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                        Utils.getBlockPosCenter(blockPos)), true)
+                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
+                        VecUtils.getBlockPosCenter(blockPos)), true)
                 ).setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 return false;
             }

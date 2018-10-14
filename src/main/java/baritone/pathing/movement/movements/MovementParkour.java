@@ -20,8 +20,9 @@ package baritone.pathing.movement.movements;
 import baritone.Baritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
-import baritone.behavior.LookBehaviorUtils;
+import baritone.api.utils.RotationUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
@@ -209,12 +210,12 @@ public class MovementParkour extends Movement {
                             double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
                             double faceY = (dest.getY() + against1.getY()) * 0.5D;
                             double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                            Rotation place = Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations());
+                            Rotation place = RotationUtils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations());
                             RayTraceResult res = RayTraceUtils.rayTraceTowards(place);
                             if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
                                 state.setTarget(new MovementState.MovementTarget(place, true));
                             }
-                            LookBehaviorUtils.getSelectedBlock().ifPresent(selectedBlock -> {
+                            RayTraceUtils.getSelectedBlock().ifPresent(selectedBlock -> {
                                 EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
                                 if (Objects.equals(selectedBlock, against1) && selectedBlock.offset(side).equals(dest.down())) {
                                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);

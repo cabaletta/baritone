@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SettingsUtil {
+
     private static final File settingsFile = new File(new File(Minecraft.getMinecraft().gameDir, "baritone"), "settings.txt");
 
     private static final Map<Class<?>, SettingsIO> map;

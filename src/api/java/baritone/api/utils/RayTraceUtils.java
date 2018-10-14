@@ -15,21 +15,28 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.api.utils;
 
-import baritone.api.utils.Rotation;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
-import static baritone.behavior.LookBehaviorUtils.calcVec3dFromRotation;
+import java.util.Optional;
 
 /**
  * @author Brady
  * @since 8/25/2018
  */
-public final class RayTraceUtils implements Helper {
+public final class RayTraceUtils {
 
     private RayTraceUtils() {}
+
+    /**
+     * The {@link Minecraft} instance
+     */
+    private static final Minecraft mc = Minecraft.getMinecraft();
 
     /**
      * Simulates a "vanilla" raytrace. A RayTraceResult returned by this method
@@ -72,12 +79,36 @@ public final class RayTraceUtils implements Helper {
     public static RayTraceResult rayTraceTowards(Rotation rotation) {
         double blockReachDistance = mc.playerController.getBlockReachDistance();
         Vec3d start = mc.player.getPositionEyes(1.0F);
-        Vec3d direction = calcVec3dFromRotation(rotation);
+        Vec3d direction = RotationUtils.calcVec3dFromRotation(rotation);
         Vec3d end = start.add(
                 direction.x * blockReachDistance,
                 direction.y * blockReachDistance,
                 direction.z * blockReachDistance
         );
         return mc.world.rayTraceBlocks(start, end, false, false, true);
+    }
+
+    /**
+     * Returns the block that the crosshair is currently placed over. Updated once per render tick.
+     *
+     * @return The position of the highlighted block
+     */
+    public static Optional<BlockPos> getSelectedBlock() {
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
+            return Optional.of(mc.objectMouseOver.getBlockPos());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the entity that the crosshair is currently placed over. Updated once per render tick.
+     *
+     * @return The entity
+     */
+    public static Optional<Entity> getSelectedEntity() {
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
+            return Optional.of(mc.objectMouseOver.entityHit);
+        }
+        return Optional.empty();
     }
 }

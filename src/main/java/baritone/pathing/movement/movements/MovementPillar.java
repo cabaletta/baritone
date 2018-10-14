@@ -20,13 +20,14 @@ package baritone.pathing.movement.movements;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.Utils;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -149,8 +150,8 @@ public class MovementPillar extends Movement {
         IBlockState fromDown = BlockStateInterface.get(src);
         if (BlockStateInterface.isWater(fromDown.getBlock()) && BlockStateInterface.isWater(dest)) {
             // stay centered while swimming up a water column
-            state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), false));
-            Vec3d destCenter = Utils.getBlockPosCenter(dest);
+            state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), VecUtils.getBlockPosCenter(dest)), false));
+            Vec3d destCenter = VecUtils.getBlockPosCenter(dest);
             if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
                 state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
             }
@@ -162,8 +163,8 @@ public class MovementPillar extends Movement {
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                    Utils.getBlockPosCenter(positionToPlace),
+            state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+                    VecUtils.getBlockPosCenter(positionToPlace),
                     new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)), true));
         }
 

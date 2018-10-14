@@ -84,9 +84,6 @@ public class MovementState {
 
         /**
          * Yaw and pitch angles that must be matched
-         * <p>
-         * getFirst()  -> YAW
-         * getSecond() -> PITCH
          */
         public Rotation rotation;
 

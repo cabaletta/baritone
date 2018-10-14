@@ -25,6 +25,7 @@ import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.pathing.path.IPathExecutor;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.VecUtils;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
@@ -279,7 +280,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         double best = -1;
         BlockPos bestPos = null;
         for (BlockPos pos : path.positions()) {
-            double dist = Utils.playerDistanceToCenter(pos);
+            double dist = VecUtils.entityDistanceToCenter(player(), pos);
             if (dist < best || best == -1) {
                 best = dist;
                 bestPos = pos;
@@ -327,7 +328,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             // when we're midair in the middle of a fall, we're very far from both the beginning and the end, but we aren't actually off path
             if (path.movements().get(pathPosition) instanceof MovementFall) {
                 BlockPos fallDest = path.positions().get(pathPosition + 1); // .get(pathPosition) is the block we fell off of
-                if (Utils.playerFlatDistanceToCenter(fallDest) < leniency) { // ignore Y by using flat distance
+                if (VecUtils.entityFlatDistanceToCenter(player(), fallDest) < leniency) { // ignore Y by using flat distance
                     return false;
                 }
                 return true;
