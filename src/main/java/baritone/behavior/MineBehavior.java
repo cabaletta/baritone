@@ -153,7 +153,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         }
         if (!uninteresting.isEmpty()) {
             //long before = System.currentTimeMillis();
-            locs.addAll(WorldScanner.INSTANCE.scanLoadedChunks(uninteresting, max, 10, 26));
+            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(uninteresting, max, 10, 26));
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
         return prune(locs, mining, max);
