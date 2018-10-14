@@ -36,8 +36,8 @@ import java.util.ServiceLoader;
  */
 public final class BaritoneAPI {
 
-    private final static IBaritoneProvider baritone;
-    private final static Settings settings;
+    private static final IBaritoneProvider baritone;
+    private static final Settings settings;
 
     static {
         ServiceLoader<IBaritoneProvider> baritoneLoader = ServiceLoader.load(IBaritoneProvider.class);
