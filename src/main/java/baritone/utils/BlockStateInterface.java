@@ -38,7 +38,7 @@ public class BlockStateInterface implements Helper {
     private static Chunk prev = null;
     private static CachedRegion prevCached = null;
 
-    private static IBlockState AIR = Blocks.AIR.getDefaultState();
+    private static final IBlockState AIR = Blocks.AIR.getDefaultState();
 
     public static IBlockState get(BlockPos pos) {
         return get(pos.getX(), pos.getY(), pos.getZ());
