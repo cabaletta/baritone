@@ -12,7 +12,7 @@ Here are some links to help to get started:
 
 - [Features](FEATURES.md)
 
-- [Baritone + Impact](IMPACT.md)
+- [Installation](INSTALL.md)
 
 There's also some useful information down below
 
