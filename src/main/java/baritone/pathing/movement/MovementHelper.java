@@ -179,7 +179,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             BlockDoublePlant.EnumPlantType kek = state.getValue(BlockDoublePlant.VARIANT);
             return kek == BlockDoublePlant.EnumPlantType.FERN || kek == BlockDoublePlant.EnumPlantType.GRASS;
         }
-        return state.getBlock().isReplaceable(null, null);
+        return state.getMaterial().isReplaceable();
     }
 
     static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
