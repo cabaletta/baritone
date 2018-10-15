@@ -319,6 +319,21 @@ public final class CachedRegion implements ICachedRegion {
         }
     }
 
+    public synchronized final CachedChunk mostRecentlyModified() {
+        CachedChunk recent = null;
+        for (int x = 0; x < 32; x++) {
+            for (int z = 0; z < 32; z++) {
+                if (this.chunks[x][z] == null) {
+                    continue;
+                }
+                if (recent == null || this.chunks[x][z].cacheTimestamp > recent.cacheTimestamp) {
+                    recent = this.chunks[x][z];
+                }
+            }
+        }
+        return recent;
+    }
+
     /**
      * @return The region x coordinate
      */

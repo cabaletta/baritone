@@ -21,7 +21,10 @@ import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.*;
 import baritone.pathing.movement.MovementState.MovementTarget;
-import baritone.utils.*;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
+import baritone.utils.InputOverrideHandler;
+import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
@@ -34,8 +37,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
-
-import java.util.Optional;
 
 /**
  * Static helpers for cost calculation

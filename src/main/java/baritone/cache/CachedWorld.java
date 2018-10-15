@@ -147,6 +147,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     region.removeExpired();
                 }
             }); // even if we aren't saving to disk, still delete expired old chunks from RAM
+            prune();
             return;
         }
         long start = System.nanoTime() / 1000000L;
@@ -157,6 +158,47 @@ public final class CachedWorld implements ICachedWorld, Helper {
         });
         long now = System.nanoTime() / 1000000L;
         System.out.println("World save took " + (now - start) + "ms");
+        prune();
+    }
+
+    /**
+     * Delete regions that are too far from the player
+     */
+    private synchronized void prune() {
+        BlockPos pruneCenter = guessPosition();
+        for (CachedRegion region : allRegions()) {
+            int distX = (region.getX() * 512 + 256) - pruneCenter.getX();
+            int distZ = (region.getZ() * 512 + 256) - pruneCenter.getZ();
+            double dist = Math.sqrt(distX * distX + distZ * distZ);
+            if (dist > 1024) {
+                logDebug("Deleting cached region " + region.getX() + "," + region.getZ() + " from ram");
+                cachedRegions.remove(getRegionID(region.getX(), region.getZ()));
+            }
+        }
+    }
+
+    /**
+     * If we are still in this world and dimension, return player feet, otherwise return most recently modified chunk
+     */
+    private BlockPos guessPosition() {
+        WorldData data = WorldProvider.INSTANCE.getCurrentWorld();
+        if (data != null && data.getCachedWorld() == this) {
+            return playerFeet();
+        }
+        CachedChunk mostRecentlyModified = null;
+        for (CachedRegion region : allRegions()) {
+            CachedChunk ch = region.mostRecentlyModified();
+            if (ch == null) {
+                continue;
+            }
+            if (mostRecentlyModified == null || mostRecentlyModified.cacheTimestamp < ch.cacheTimestamp) {
+                mostRecentlyModified = ch;
+            }
+        }
+        if (mostRecentlyModified == null) {
+            return new BlockPos(0, 0, 0);
+        }
+        return new BlockPos(mostRecentlyModified.x * 16 + 8, 0, mostRecentlyModified.z * 16 + 8);
     }
 
     private synchronized List<CachedRegion> allRegions() {
