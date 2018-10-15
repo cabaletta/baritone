@@ -30,7 +30,10 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
-import baritone.utils.*;
+import baritone.utils.BlockBreakHelper;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
+import baritone.utils.InputOverrideHandler;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
@@ -123,7 +126,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                         if (i - pathPosition > 2) {
                             logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                         }
-                        System.out.println("Double skip sundae");
+                        //System.out.println("Double skip sundae");
                         pathPosition = i - 1;
                         onChangeInPathPosition();
                         return false;

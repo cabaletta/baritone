@@ -198,7 +198,7 @@ public class MovementAscend extends Movement {
                         } else {
                             state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true); // break whatever replaceable block is in the way
                         }
-                        System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
+                        //System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
                     });
                     return state;
                 }

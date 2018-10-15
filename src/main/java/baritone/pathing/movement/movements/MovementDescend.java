@@ -187,9 +187,9 @@ public class MovementDescend extends Movement {
             if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094) { // lilypads
                 // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
                 return state.setStatus(MovementStatus.SUCCESS);
-            } else {
-                System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
-            }
+            }/* else {
+                // System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
+            }*/
         }
         double diffX = player().posX - (dest.getX() + 0.5);
         double diffZ = player().posZ - (dest.getZ() + 0.5);

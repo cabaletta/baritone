@@ -86,8 +86,8 @@ public interface Helper {
      */
     default void logDebug(String message) {
         if (!Baritone.settings().chatDebug.get()) {
-            System.out.println("Suppressed debug message:");
-            System.out.println(message);
+            //System.out.println("Suppressed debug message:");
+            //System.out.println(message);
             return;
         }
         logDirect(message);

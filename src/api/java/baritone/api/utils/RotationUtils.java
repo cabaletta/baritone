@@ -104,7 +104,7 @@ public final class RotationUtils {
      * angles back to it.
      *
      * @param current The current angles
-     * @param target The target angles
+     * @param target  The target angles
      * @return The wrapped angles
      */
     public static Rotation wrapAnglesToRelative(Rotation current, Rotation target) {
@@ -115,12 +115,11 @@ public final class RotationUtils {
      * Calculates the rotation from Vec<sub>dest</sub> to Vec<sub>orig</sub> and makes the
      * return value relative to the specified current rotations.
      *
-     * @see #wrapAnglesToRelative(Rotation, Rotation)
-     *
-     * @param orig The origin position
-     * @param dest The destination position
+     * @param orig    The origin position
+     * @param dest    The destination position
      * @param current The current rotations
      * @return The rotation from the origin to the destination
+     * @see #wrapAnglesToRelative(Rotation, Rotation)
      */
     public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest, Rotation current) {
         return wrapAnglesToRelative(current, calcRotationFromVec3d(orig, dest));
@@ -134,7 +133,7 @@ public final class RotationUtils {
      * @return The rotation from the origin to the destination
      */
     public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
-        double[] delta = { orig.x - dest.x, orig.y - dest.y, orig.z - dest.z };
+        double[] delta = {orig.x - dest.x, orig.y - dest.y, orig.z - dest.z};
         double yaw = MathHelper.atan2(delta[0], -delta[2]);
         double dist = Math.sqrt(delta[0] * delta[0] + delta[2] * delta[2]);
         double pitch = MathHelper.atan2(delta[1], dist);
@@ -166,7 +165,7 @@ public final class RotationUtils {
      * unable to reach any of the sides of the block.
      *
      * @param entity The viewing entity
-     * @param pos The target block position
+     * @param pos    The target block position
      * @return The optional rotation
      */
     public static Optional<Rotation> reachable(Entity entity, BlockPos pos) {
@@ -206,15 +205,15 @@ public final class RotationUtils {
      * the given offsetted position. The return type will be {@link Optional#empty()} if
      * the entity is unable to reach the block with the offset applied.
      *
-     * @param entity The viewing entity
-     * @param pos The target block position
+     * @param entity    The viewing entity
+     * @param pos       The target block position
      * @param offsetPos The position of the block with the offset applied.
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos) {
         Rotation rotation = calcRotationFromVec3d(entity.getPositionEyes(1.0F), offsetPos);
         RayTraceResult result = RayTraceUtils.rayTraceTowards(rotation);
-        System.out.println(result);
+        //System.out.println(result);
         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
             if (result.getBlockPos().equals(pos)) {
                 return Optional.of(rotation);
@@ -233,7 +232,7 @@ public final class RotationUtils {
      * looking at the direct center of it's hitbox.
      *
      * @param entity The viewing entity
-     * @param pos The target block position
+     * @param pos    The target block position
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos) {

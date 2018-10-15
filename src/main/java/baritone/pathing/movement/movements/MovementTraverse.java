@@ -273,7 +273,7 @@ public class MovementTraverse extends Movement {
                         }
                         // wrong side?
                     }
-                    System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
+                    //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
                     return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 }
             }
