@@ -17,9 +17,9 @@
 
 package baritone.api.behavior;
 
+import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.path.IPathExecutor;
 
 import java.util.Optional;

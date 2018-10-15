@@ -34,7 +34,6 @@ import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.Moves;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
