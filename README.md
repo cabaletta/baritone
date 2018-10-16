@@ -8,6 +8,8 @@
 A Minecraft pathfinder bot. This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2. Baritone focuses on reliability and particularly performance (it's over [29x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
 
+Baritone is the pathfinding system used in [Impact](https://impactdevelopment.github.io/) since 4.4.
+
 Here are some links to help to get started:
 
 - [Features](FEATURES.md)
