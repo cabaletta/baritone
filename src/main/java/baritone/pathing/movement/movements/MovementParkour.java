@@ -202,7 +202,7 @@ public class MovementParkour extends Movement {
         } else if (!playerFeet().equals(src)) {
             if (playerFeet().equals(src.offset(direction)) || player().posY - playerFeet().getY() > 0.0001) {
 
-                if (!MovementHelper.canWalkOn(dest.down())) {
+                if (!MovementHelper.canWalkOn(dest.down()) && !player().onGround) {
                     BlockPos positionToPlace = dest.down();
                     for (int i = 0; i < 5; i++) {
                         BlockPos against1 = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
