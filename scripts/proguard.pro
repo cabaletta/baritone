@@ -28,7 +28,7 @@
 
 -libraryjars 'tempLibraries/minecraft-1.12.2.jar'
 
--libraryjars 'tempLibraries/SimpleTweaker-1.1.jar'
+-libraryjars 'tempLibraries/SimpleTweaker-1.2.jar'
 
 -libraryjars 'tempLibraries/authlib-1.5.25.jar'
 -libraryjars 'tempLibraries/codecjorbis-20101023.jar'
