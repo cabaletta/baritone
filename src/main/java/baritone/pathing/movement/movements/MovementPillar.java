@@ -162,10 +162,11 @@ public class MovementPillar extends Movement {
         }
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
+        Rotation rotation = RotationUtils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+                VecUtils.getBlockPosCenter(positionToPlace),
+                new Rotation(mc.player.rotationYaw, mc.player.rotationPitch));
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                    VecUtils.getBlockPosCenter(positionToPlace),
-                    new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)), true));
+            state.setTarget(new MovementState.MovementTarget(new Rotation(mc.player.rotationYaw, rotation.getPitch()), true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;
@@ -198,7 +199,8 @@ public class MovementPillar extends Movement {
 
             // If our Y coordinate is above our goal, stop jumping
             state.setInput(InputOverrideHandler.Input.JUMP, player().posY < dest.getY());
-            state.setInput(InputOverrideHandler.Input.SNEAK, true);
+            state.setInput(InputOverrideHandler.Input.SNEAK, player().posY > dest.getY()); // delay placement by 1 tick for ncp compatibility
+            // since (lower down) we only right click once player.isSneaking, and that happens the tick after we request to sneak
 
             double diffX = player().posX - (dest.getX() + 0.5);
             double diffZ = player().posZ - (dest.getZ() + 0.5);
@@ -209,6 +211,9 @@ public class MovementPillar extends Movement {
 
                 // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
                 state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+
+                // revise our target to both yaw and pitch if we're going to be moving forward
+                state.setTarget(new MovementState.MovementTarget(rotation, true));
             }
 
 
@@ -217,7 +222,7 @@ public class MovementPillar extends Movement {
                 if (!(fr instanceof BlockAir || fr.isReplaceable(Minecraft.getMinecraft().world, src))) {
                     state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (Minecraft.getMinecraft().player.isSneaking()) {
+                } else if (Minecraft.getMinecraft().player.isSneaking()) { // 1 tick after we're able to place
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }
