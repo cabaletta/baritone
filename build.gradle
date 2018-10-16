@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.0.0-hotfix-1'
+version '1.0.0-hotfix-2'
 
 buildscript {
     repositories {
