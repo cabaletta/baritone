@@ -463,7 +463,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.equals("damn")) {
             logDirect("daniel");
-            return true;
         }
         return false;
     }
