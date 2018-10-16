@@ -167,6 +167,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
     private synchronized void prune() {
         BlockPos pruneCenter = guessPosition();
         for (CachedRegion region : allRegions()) {
+            if (region == null) {
+                continue;
+            }
             int distX = (region.getX() * 512 + 256) - pruneCenter.getX();
             int distZ = (region.getZ() * 512 + 256) - pruneCenter.getZ();
             double dist = Math.sqrt(distX * distX + distZ * distZ);
@@ -187,6 +190,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
         }
         CachedChunk mostRecentlyModified = null;
         for (CachedRegion region : allRegions()) {
+            if (region == null) {
+                continue;
+            }
             CachedChunk ch = region.mostRecentlyModified();
             if (ch == null) {
                 continue;
