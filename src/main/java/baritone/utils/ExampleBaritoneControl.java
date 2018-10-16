@@ -72,7 +72,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             msg = msg.substring(1);
         }
-        runCommand(msg);
+        if (runCommand(msg)) {
+            event.cancel();
+        }
     }
 
     public boolean runCommand(String msg) {
