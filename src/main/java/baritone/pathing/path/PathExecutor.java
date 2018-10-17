@@ -276,7 +276,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return true;
             }
         }
-        return false; // movement is in progress
+        return canCancel; // movement is in progress, but if it reports cancellable, PathingBehavior is good to cut onto the next path
     }
 
     private Tuple<Double, BlockPos> closestPathPos(IPath path) {
