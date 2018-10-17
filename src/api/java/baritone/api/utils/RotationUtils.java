@@ -31,8 +31,6 @@ import java.util.Optional;
  */
 public final class RotationUtils {
 
-    private RotationUtils() {}
-
     /**
      * The {@link Minecraft} instance
      */
@@ -59,6 +57,8 @@ public final class RotationUtils {
             new Vec3d(0, 0.5, 0.5), // West
             new Vec3d(1, 0.5, 0.5)  // East
     };
+
+    private RotationUtils() {}
 
     /**
      * Clamps the specified pitch value between -90 and 90.

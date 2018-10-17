@@ -30,13 +30,12 @@ import java.util.Optional;
  * @since 8/25/2018
  */
 public final class RayTraceUtils {
-
-    private RayTraceUtils() {}
-
     /**
      * The {@link Minecraft} instance
      */
     private static final Minecraft mc = Minecraft.getMinecraft();
+
+    private RayTraceUtils() {}
 
     /**
      * Simulates a "vanilla" raytrace. A RayTraceResult returned by this method
@@ -46,7 +45,7 @@ public final class RayTraceUtils {
      * thing to achieve the desired outcome (whether it is hitting and entity or placing
      * a block) can be done just by modifying user input.
      *
-     * @param yaw The yaw to raytrace with
+     * @param yaw   The yaw to raytrace with
      * @param pitch The pitch to raytrace with
      * @return The calculated raytrace result
      */

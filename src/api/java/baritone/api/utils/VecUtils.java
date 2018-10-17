@@ -30,21 +30,19 @@ import net.minecraft.util.math.Vec3d;
  * @since 10/13/2018
  */
 public final class VecUtils {
-
-    private VecUtils() {}
-
     /**
      * The {@link Minecraft} instance
      */
     private static final Minecraft mc = Minecraft.getMinecraft();
 
+    private VecUtils() {}
+
     /**
      * Calculates the center of the block at the specified position's bounding box
      *
-     * @see #getBlockPosCenter(BlockPos)
-     *
      * @param pos The block position
      * @return The center of the block's bounding box
+     * @see #getBlockPosCenter(BlockPos)
      */
     public static Vec3d calculateBlockCenter(BlockPos pos) {
         IBlockState b = mc.world.getBlockState(pos);
@@ -68,10 +66,9 @@ public final class VecUtils {
      * <p>
      * TODO: We may want to consider replacing many usages of this method with #calculateBlockCenter(BlockPos)
      *
-     * @see #calculateBlockCenter(BlockPos)
-     *
      * @param pos The block position
      * @return The assumed center of the position
+     * @see #calculateBlockCenter(BlockPos)
      */
     public static Vec3d getBlockPosCenter(BlockPos pos) {
         return new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
@@ -80,13 +77,12 @@ public final class VecUtils {
     /**
      * Gets the distance from the specified position to the assumed center of the specified block position.
      *
-     * @see #getBlockPosCenter(BlockPos)
-     *
      * @param pos The block position
-     * @param x The x pos
-     * @param y The y pos
-     * @param z The z pos
+     * @param x   The x pos
+     * @param y   The y pos
+     * @param z   The z pos
      * @return The distance from the assumed block center to the position
+     * @see #getBlockPosCenter(BlockPos)
      */
     public static double distanceToCenter(BlockPos pos, double x, double y, double z) {
         Vec3d center = getBlockPosCenter(pos);
@@ -100,11 +96,10 @@ public final class VecUtils {
      * Gets the distance from the specified entity's position to the assumed
      * center of the specified block position.
      *
-     * @see #getBlockPosCenter(BlockPos)
-     *
      * @param entity The entity
-     * @param pos The block position
+     * @param pos    The block position
      * @return The distance from the entity to the block's assumed center
+     * @see #getBlockPosCenter(BlockPos)
      */
     public static double entityDistanceToCenter(Entity entity, BlockPos pos) {
         return distanceToCenter(pos, entity.posX, entity.posY, entity.posZ);
@@ -114,11 +109,10 @@ public final class VecUtils {
      * Gets the distance from the specified entity's position to the assumed
      * center of the specified block position, ignoring the Y axis.
      *
-     * @see #getBlockPosCenter(BlockPos)
-     *
      * @param entity The entity
-     * @param pos The block position
+     * @param pos    The block position
      * @return The horizontal distance from the entity to the block's assumed center
+     * @see #getBlockPosCenter(BlockPos)
      */
     public static double entityFlatDistanceToCenter(Entity entity, BlockPos pos) {
         return distanceToCenter(pos, entity.posX, pos.getY() + 0.5, entity.posZ);
