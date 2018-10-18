@@ -18,7 +18,6 @@
 package baritone.pathing.path;
 
 import baritone.Baritone;
-import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.IMovement;
@@ -81,14 +80,10 @@ public class PathExecutor implements IPathExecutor, Helper {
     /**
      * Tick this executor
      *
-     * @param event
      * @return True if a movement just finished (and the player is therefore in a "stable" state, like,
      * not sneaking out over lava), false otherwise
      */
-    public boolean onTick(TickEvent event) {
-        if (event.getType() == TickEvent.Type.OUT) {
-            throw new IllegalStateException();
-        }
+    public boolean onTick() {
         if (pathPosition == path.length() - 1) {
             pathPosition++;
         }
@@ -261,7 +256,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             //System.out.println("Movement done, next path");
             pathPosition++;
             onChangeInPathPosition();
-            onTick(event);
+            onTick();
             return true;
         } else {
             sprintIfRequested();
