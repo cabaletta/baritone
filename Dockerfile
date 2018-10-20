@@ -15,10 +15,10 @@ RUN apt install -qq --force-yes mesa-utils libgl1-mesa-glx libxcursor1 libxrandr
 
 COPY . /code
 
+WORKDIR /code
+
 # this .deb is specially patched to support lwjgl
 # source: https://github.com/tectonicus/tectonicus/issues/60#issuecomment-154239173
-RUN dpkg -i /code/scripts/xvfb_1.16.4-1_amd64.deb
-
-WORKDIR /code
+RUN dpkg -i scripts/xvfb_1.16.4-1_amd64.deb
 
 RUN ./gradlew build
