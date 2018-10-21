@@ -18,7 +18,6 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import com.google.common.cache.Cache;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -45,6 +44,20 @@ public class ToolSet implements Helper {
      */
     private Map<Block, Double> breakStrengthCache = new HashMap<>();
 
+    /**
+     * My buddy leijurv owned me so we have this to not create a new lambda instance.
+     */
+    private final Function<Block, Double> backendCalculation = this::getBestDestructionTime;
+
+    /**
+     * Using the best tool on the hotbar, how long would it take to mine this block
+     *
+     * @param state the blockstate to be mined
+     * @return how long it would take in ticks
+     */
+    public double getStrVsBlock(IBlockState state) {
+        return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation) * potionAmplifier();
+    }
 
     /**
      * Evaluate the material cost of a possible tool. The priority matches the
@@ -101,21 +114,6 @@ public class ToolSet implements Helper {
     public Double getBestDestructionTime(Block b) {
         ItemStack stack = player().inventory.getStackInSlot(getBestSlot(b));
         return calculateStrVsBlock(stack, b.getDefaultState());
-    }
-
-    /**
-     * My buddy leijurv owned me so we have this to not create a new lambda instance.
-     */
-    private final Function<Block, Double> backendCalculation = this::getBestDestructionTime;
-
-    /**
-     * Using the best tool on the hotbar, how long would it take to mine this block
-     *
-     * @param state the blockstate to be mined
-     * @return how long it would take in ticks
-     */
-    public double getStrVsBlock(IBlockState state) {
-        return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation) * potionAmplifier();
     }
 
     /**
