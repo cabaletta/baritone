@@ -81,7 +81,7 @@ The final step is "registering" the Baritone library with Impact, so that it loa
         "name": "cabaletta:baritone:X.Y.Z"
     },
     {
-        "name": "com.github.ImpactDevelopment:SimpleTweaker:1.1",
+        "name": "com.github.ImpactDevelopment:SimpleTweaker:1.2",
         "url": "https://impactdevelopment.github.io/maven/"
     },
     ```
