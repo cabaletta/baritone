@@ -18,19 +18,19 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import com.google.common.cache.Cache;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
-import net.minecraft.item.Item;
+import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A cached list of the best tools on the hotbar for any block
@@ -51,11 +51,12 @@ public class ToolSet implements Helper {
      * listed order in the Item.ToolMaterial enum.
      *
      * @param itemStack a possibly null ItemStack
-     * @return values range from {@value -1} to {@value 4}
+     * @return values range from -1 to 4
      */
-    private int getMaterialCost(ItemStack itemStack){
-        if(itemStack != null && itemStack.getItem() instanceof ItemTool){
-            return Item.ToolMaterial.valueOf(((ItemTool)itemStack.getItem()).getToolMaterialName()).ordinal();
+    private int getMaterialCost(ItemStack itemStack) {
+        if (itemStack != null && itemStack.getItem() instanceof ItemTool) {
+            ItemTool tool = (ItemTool) itemStack.getItem();
+            return ToolMaterial.valueOf(tool.getToolMaterialName()).ordinal();
         } else {
             return -1;
         }
@@ -67,8 +68,28 @@ public class ToolSet implements Helper {
      * @param b the blockstate to be mined
      * @return A byte containing the index in the tools array that worked best
      */
-    public byte getBestSlot(IBlockState b) {
-        return calculateBestSlotAndDestructionTime(b).getLeft();
+    public byte getBestSlot(Block b) {
+        byte best = 0;
+        double value = -1;
+        int materialCost = -2;
+        IBlockState blockState = b.getDefaultState();
+        for (byte i = 0; i < 9; i++) {
+            ItemStack itemStack = player().inventory.getStackInSlot(i);
+            double v = calculateStrVsBlock(itemStack, blockState);
+            if (v > value || value == -1) {
+                value = v;
+                best = i;
+                materialCost = getMaterialCost(itemStack);
+            } else if (Math.abs(v - value) < 0.00001) {
+                int c = getMaterialCost(itemStack);
+                if (c < materialCost) {
+                    value = v;
+                    best = i;
+                    materialCost = c;
+                }
+            }
+        }
+        return best;
     }
 
     /**
@@ -77,38 +98,15 @@ public class ToolSet implements Helper {
      * @param b the blockstate to be mined
      * @return A double containing the destruction ticks with the best tool
      */
-    public Double getBestDestructionTime(IBlockState b) {
-        return calculateBestSlotAndDestructionTime(b).getRight();
+    public Double getBestDestructionTime(Block b) {
+        ItemStack stack = player().inventory.getStackInSlot(getBestSlot(b));
+        return calculateStrVsBlock(stack, b.getDefaultState());
     }
 
     /**
-     * Calculate which tool on the hotbar is best for mining and how effective it is
-     *
-     * @param b the blockstate to be mined
-     * @return A pair of the index in the tools array that worked best and its cost
+     * My buddy leijurv owned me so we have this to not create a new lambda instance.
      */
-    private Pair<Byte,Double> calculateBestSlotAndDestructionTime(IBlockState b){
-        byte best = 0;
-        double value = -1;
-        int materialCost = -2;
-        for (byte i = 0; i < 9; i++) {
-            ItemStack itemStack = player().inventory.getStackInSlot(i);
-            double v = calculateStrVsBlock(itemStack, b);
-            if (v > value || value == -1) {
-                value = v;
-                best = i;
-                materialCost = getMaterialCost(itemStack);
-            } else if (Math.abs(v-value) < 0.01){
-                int c = getMaterialCost(itemStack);
-                if(c < materialCost){
-                    value = v;
-                    best = i;
-                    materialCost = c;
-                }
-            }
-        }
-        return new ImmutablePair<>(best, value);
-    }
+    private final Function<Block, Double> backendCalculation = this::getBestDestructionTime;
 
     /**
      * Using the best tool on the hotbar, how long would it take to mine this block
@@ -117,35 +115,50 @@ public class ToolSet implements Helper {
      * @return how long it would take in ticks
      */
     public double getStrVsBlock(IBlockState state) {
-        return this.breakStrengthCache.computeIfAbsent(state.getBlock(), x->getBestDestructionTime(state));
+        return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation) * potionAmplifier();
     }
 
     /**
      * Calculates how long would it take to mine the specified block given the best tool
      * in this toolset is used. A negative value is returned if the specified block is unbreakable.
      *
-     * @param state the blockstate to be mined
+     * @param item the blockstate to be mined
      * @return how long it would take in ticks
      */
-    private double calculateStrVsBlock(ItemStack contents, IBlockState state) {
-        // Calculate the slot with the best item
-
-        float blockHard = state.getBlockHardness(null, null);
-        if (blockHard < 0) {
+    private double calculateStrVsBlock(ItemStack item, IBlockState state) {
+        float hardness = state.getBlockHardness(null, null);
+        if (hardness < 0) {
             return -1;
         }
 
-        float speed = contents.getDestroySpeed(state);
+        float speed = item.getDestroySpeed(state);
         if (speed > 1) {
-            int effLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, contents);
-            if (effLevel > 0 && !contents.isEmpty()) {
+            int effLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, item);
+            if (effLevel > 0 && !item.isEmpty()) {
                 speed += effLevel * effLevel + 1;
             }
         }
 
+        speed /= hardness;
+        if (state.getMaterial().isToolNotRequired() || (!item.isEmpty() && item.canHarvestBlock(state))) {
+            speed /= 30;
+        } else {
+            speed /= 100;
+        }
+        return speed;
+    }
+
+    /**
+     * Calculates any modifier to breaking time based on status effects. When the considerPotionEffects
+     * flag in the Baritone settings is disabled, 1 will always be returned.
+     *
+     * @return a double to scale block breaking time.
+     */
+    private double potionAmplifier() {
+        double speed = 1;
         if (Baritone.settings().considerPotionEffects.get()) {
             if (player().isPotionActive(MobEffects.HASTE)) {
-                speed *= 1 + (player().getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
+                speed *= 1.2 + player().getActivePotionEffect(MobEffects.HASTE).getAmplifier() * 0.2;
             }
             if (player().isPotionActive(MobEffects.MINING_FATIGUE)) {
                 switch (player().getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
@@ -164,11 +177,6 @@ public class ToolSet implements Helper {
                 }
             }
         }
-        speed /= blockHard;
-        if (state.getMaterial().isToolNotRequired() || (!contents.isEmpty() && contents.canHarvestBlock(state))) {
-            return speed / 30;
-        } else {
-            return speed / 100;
-        }
+        return speed;
     }
 }
