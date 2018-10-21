@@ -50,8 +50,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class MixinMinecraft {
 
     @Shadow
-    private int leftClickCounter;
-    @Shadow
     public EntityPlayerSP player;
     @Shadow
     public WorldClient world;
