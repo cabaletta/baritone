@@ -40,6 +40,8 @@ public class MixinEntityLivingBase {
     )
     private void preJump(CallbackInfo ci) {
         EntityLivingBase _this = (EntityLivingBase) (Object) this;
+        // This uses Class.isInstance instead of instanceof since proguard optimizes out the instanceof (since MixinEntityLivingBase could never be instanceof EntityLivingBase in normal java)
+        // but proguard isn't smart enough to optimize out this Class.isInstance =)
         if (EntityPlayerSP.class.isInstance(_this))
             Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent((EntityPlayerSP) _this, EventState.PRE, RotationMoveEvent.Type.JUMP));
     }
@@ -50,6 +52,7 @@ public class MixinEntityLivingBase {
     )
     private void postJump(CallbackInfo ci) {
         EntityLivingBase _this = (EntityLivingBase) (Object) this;
+        // See above
         if (EntityPlayerSP.class.isInstance(_this))
             Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent((EntityPlayerSP) _this, EventState.POST, RotationMoveEvent.Type.JUMP));
     }
