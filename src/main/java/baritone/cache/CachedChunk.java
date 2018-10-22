@@ -48,6 +48,7 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
         add(Blocks.ENDER_CHEST);
         add(Blocks.FURNACE);
         add(Blocks.CHEST);
+        add(Blocks.TRAPPED_CHEST);
         add(Blocks.END_PORTAL);
         add(Blocks.END_PORTAL_FRAME);
         add(Blocks.MOB_SPAWNER);
