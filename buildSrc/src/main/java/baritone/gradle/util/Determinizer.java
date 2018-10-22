@@ -32,7 +32,7 @@ import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
 
 /**
- * Make a .jar file deterministic by sorting all entries by name, and setting all the last modified times to 0.
+ * Make a .jar file deterministic by sorting all entries by name, and setting all the last modified times to 42069.
  * This makes the build 100% reproducible since the timestamp when you built it no longer affects the final file.
  *
  * @author leijurv
