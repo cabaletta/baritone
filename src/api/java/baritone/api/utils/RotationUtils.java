@@ -177,6 +177,8 @@ public final class RotationUtils {
              * is by setting the desired pitch to the current pitch
              * setting the desired pitch to the current pitch + 0.0001 means that we do have a desired pitch, it's
              * just what it currently is
+             *
+             * or if you're a normal person literally all this does it ensure that we don't nudge the pitch to a normal level
              */
             return Optional.of(new Rotation(entity.rotationYaw, entity.rotationPitch + 0.0001F));
         }
