@@ -17,8 +17,8 @@
 
 package baritone.bot;
 
-import baritone.bot.net.BotNetHandlerPlayClient;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -30,9 +30,9 @@ import javax.annotation.Nullable;
 public interface IBaritoneUser {
 
     /**
-     * @return The current connection handler.
+     * @return The network manager that is responsible for the current connection.
      */
-    @Nullable BotNetHandlerPlayClient getConnection();
+    @Nullable NetworkManager getNetworkManager();
 
     /**
      * @return The locally managed entity for this bot.
