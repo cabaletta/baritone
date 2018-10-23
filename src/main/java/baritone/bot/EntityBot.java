@@ -46,6 +46,8 @@ import net.minecraft.world.World;
 //  - currentScreen
 //  - gameSettings
 //  - tutorial
+// What needs to be considered
+//  - The server tells us what our entity id should be, the bot entity should respect this.
 
 /**
  * @author Brady
