@@ -17,6 +17,7 @@
 
 package baritone.bot;
 
+import baritone.bot.entity.EntityBot;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.world.World;
