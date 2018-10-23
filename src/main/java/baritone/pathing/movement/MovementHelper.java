@@ -400,7 +400,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ts previously calculated ToolSet
      */
     static void switchToBestToolFor(IBlockState b, ToolSet ts) {
-        mc.player.inventory.currentItem = ts.getBestSlot(b);
+        mc.player.inventory.currentItem = ts.getBestSlot(b.getBlock());
     }
 
     static boolean throwaway(boolean select) {
