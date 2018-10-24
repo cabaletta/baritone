@@ -354,8 +354,7 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
 
         // We only care if we died
         if (packetIn.eventType == SPacketCombatEvent.Event.ENTITY_DIED) {
-            Entity died = this.user.getLocalEntity().world.getEntityByID(packetIn.playerId);
-            if (died == this.user.getLocalEntity()) {
+            if (packetIn.playerId == this.user.getLocalEntity().getEntityId()) {
                 // Perform an instantaneous respawn
                 this.networkManager.sendPacket(new CPacketClientStatus(CPacketClientStatus.State.PERFORM_RESPAWN));
             }
