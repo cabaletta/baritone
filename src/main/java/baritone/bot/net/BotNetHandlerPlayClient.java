@@ -19,8 +19,10 @@ package baritone.bot.net;
 
 import baritone.bot.IBaritoneUser;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.INetHandlerPlayClient;
+import net.minecraft.network.play.client.CPacketResourcePackStatus;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.util.text.ITextComponent;
@@ -36,6 +38,8 @@ import javax.annotation.Nonnull;
  */
 public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
 
+    private final NetworkManager networkManager;
+
     /**
      * This is the {@link Minecraft} game instance, however, to prevent unwanted references
      * to the game instance fields, we refer to it as a {@link IThreadListener}
@@ -47,7 +51,8 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
      */
     private final IBaritoneUser user;
 
-    public BotNetHandlerPlayClient(IThreadListener client, IBaritoneUser user) {
+    public BotNetHandlerPlayClient(NetworkManager networkManager, IThreadListener client, IBaritoneUser user) {
+        this.networkManager = networkManager;
         this.client = client;
         this.user = user;
     }
@@ -162,7 +167,7 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
 
     @Override
     public void handleDisconnect(@Nonnull SPacketDisconnect packetIn) {
-        this.user.getNetworkManager().closeChannel(packetIn.getReason());
+        this.networkManager.closeChannel(packetIn.getReason());
     }
 
     @Override
@@ -349,10 +354,7 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     public void handleServerDifficulty(@Nonnull SPacketServerDifficulty packetIn) {}
 
     @Override
-    public void handleCamera(@Nonnull SPacketCamera packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-        /* Just tell the server to not do that lol */
-    }
+    public void handleCamera(SPacketCamera packetIn) {}
 
     @Override
     public void handleWorldBorder(@Nonnull SPacketWorldBorder packetIn) {
@@ -369,6 +371,8 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     public void handleResourcePack(@Nonnull SPacketResourcePackSend packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
         /* Lie to the server and tell them we did it in response */
+        this.networkManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.ACCEPTED));
+        this.networkManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
     }
 
     @Override
