@@ -28,6 +28,7 @@ import net.minecraft.util.IThreadListener;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
+import java.util.function.Consumer;
 
 // Notes:
 // - All methods have been given a checkThreadAndEnqueue call, before implementing the handler, verify that it is in the actual NetHandlerPlayClient method
@@ -381,6 +382,12 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleCooldown(@Nonnull SPacketCooldown packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        if (packetIn.getTicks() == 0) { // There is no cooldown
+            this.user.getLocalEntity().getCooldownTracker().removeCooldown(packetIn.getItem());
+        } else {
+            this.user.getLocalEntity().getCooldownTracker().setCooldown(packetIn.getItem(), packetIn.getTicks());
+        }
     }
 
     @Override

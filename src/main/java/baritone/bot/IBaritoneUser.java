@@ -33,12 +33,12 @@ public interface IBaritoneUser {
     /**
      * @return The network manager that is responsible for the current connection.
      */
-    @Nullable NetworkManager getNetworkManager();
+    NetworkManager getNetworkManager();
 
     /**
      * @return The locally managed entity for this bot.
      */
-    @Nullable EntityBot getLocalEntity();
+    EntityBot getLocalEntity();
 
     /**
      * Returns the remote entity reported by the server that represents this bot connection. This is only
@@ -46,12 +46,5 @@ public interface IBaritoneUser {
      *
      * @return The remote entity for this bot
      */
-    @Nullable EntityOtherPlayerMP getRemoteEntity();
-
-    /**
-     * Returns the world that this entity is in. Equivalent to calling {@link #getLocalEntity().world}
-     *
-     * @return The world that this entity is in.
-     */
-    @Nullable World getWorld();
+    EntityOtherPlayerMP getRemoteEntity();
 }
