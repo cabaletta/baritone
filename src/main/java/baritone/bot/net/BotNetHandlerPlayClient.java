@@ -19,9 +19,11 @@ package baritone.bot.net;
 
 import baritone.bot.IBaritoneUser;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.INetHandlerPlayClient;
+import net.minecraft.network.play.client.CPacketClientStatus;
 import net.minecraft.network.play.client.CPacketResourcePackStatus;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.IThreadListener;
@@ -349,6 +351,15 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleCombatEvent(@Nonnull SPacketCombatEvent packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        // We only care if we died
+        if (packetIn.eventType == SPacketCombatEvent.Event.ENTITY_DIED) {
+            Entity died = this.user.getLocalEntity().world.getEntityByID(packetIn.playerId);
+            if (died == this.user.getLocalEntity()) {
+                // Perform an instantaneous respawn
+                this.networkManager.sendPacket(new CPacketClientStatus(CPacketClientStatus.State.PERFORM_RESPAWN));
+            }
+        }
     }
 
     @Override
@@ -393,6 +404,7 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleMoveVehicle(@Nonnull SPacketMoveVehicle packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+        /* Atm Baritone doesn't even work on vehicles that well at all, so this is a major TODO */
     }
 
     @Override
