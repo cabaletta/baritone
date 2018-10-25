@@ -19,7 +19,6 @@ package baritone.bot.net;
 
 import baritone.bot.IBaritoneUser;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -28,9 +27,9 @@ import net.minecraft.network.play.client.CPacketResourcePackStatus;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
-import java.util.function.Consumer;
 
 // Notes:
 // - All methods have been given a checkThreadAndEnqueue call, before implementing the handler, verify that it is in the actual NetHandlerPlayClient method
@@ -320,6 +319,12 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleTimeUpdate(@Nonnull SPacketTimeUpdate packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        World world = this.user.getLocalEntity().world;
+        world.setTotalWorldTime(packetIn.getTotalWorldTime());
+        world.setWorldTime(packetIn.getWorldTime());
+
+        // TODO: Calculate World TPS
     }
 
     @Override
