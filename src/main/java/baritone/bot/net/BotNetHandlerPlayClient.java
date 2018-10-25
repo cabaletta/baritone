@@ -18,7 +18,10 @@
 package baritone.bot.net;
 
 import baritone.bot.IBaritoneUser;
+import baritone.bot.entity.EntityBot;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -30,9 +33,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
-
-// Notes:
-// - All methods have been given a checkThreadAndEnqueue call, before implementing the handler, verify that it is in the actual NetHandlerPlayClient method
 
 /**
  * @author Brady
@@ -52,6 +52,16 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
      * The bot of this connection
      */
     private final IBaritoneUser user;
+
+    /**
+     * The bot entity
+     */
+    private EntityBot player;
+
+    /**
+     * The current world.
+     */
+    private World world;
 
     public BotNetHandlerPlayClient(NetworkManager networkManager, IThreadListener client, IBaritoneUser user) {
         this.networkManager = networkManager;
@@ -225,6 +235,8 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleJoinGame(@Nonnull SPacketJoinGame packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        // TODO: Set world and player
     }
 
     @Override
@@ -263,6 +275,8 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleRespawn(@Nonnull SPacketRespawn packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        // TODO: Set world and player
     }
 
     @Override
@@ -271,6 +285,10 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleHeldItemChange(@Nonnull SPacketHeldItemChange packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        if (InventoryPlayer.isHotbar(packetIn.getHeldItemHotbarIndex())) {
+            this.player.inventory.currentItem = packetIn.getHeldItemHotbarIndex();
+        }
     }
 
     @Override
@@ -281,26 +299,47 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleEntityMetadata(@Nonnull SPacketEntityMetadata packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Entity entity = this.world.getEntityByID(packetIn.getEntityId());
+        if (entity != null && packetIn.getDataManagerEntries() != null) {
+            entity.getDataManager().setEntryValues(packetIn.getDataManagerEntries());
+        }
     }
 
     @Override
     public void handleEntityVelocity(@Nonnull SPacketEntityVelocity packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Entity entity = this.world.getEntityByID(packetIn.getEntityID());
+        if (entity != null) {
+            entity.setVelocity((double)packetIn.getMotionX() / 8000.0D, (double)packetIn.getMotionY() / 8000.0D, (double)packetIn.getMotionZ() / 8000.0D);
+        }
     }
 
     @Override
     public void handleEntityEquipment(@Nonnull SPacketEntityEquipment packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Entity entity = this.world.getEntityByID(packetIn.getEntityID());
+        if (entity != null) {
+            entity.setItemStackToSlot(packetIn.getEquipmentSlot(), packetIn.getItemStack());
+        }
     }
 
     @Override
     public void handleSetExperience(@Nonnull SPacketSetExperience packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        this.player.setXPStats(packetIn.getExperienceBar(), packetIn.getTotalExperience(), packetIn.getLevel());
     }
 
     @Override
     public void handleUpdateHealth(@Nonnull SPacketUpdateHealth packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        this.player.setPlayerSPHealth(packetIn.getHealth());
+        this.player.getFoodStats().setFoodLevel(packetIn.getFoodLevel());
+        this.player.getFoodStats().setFoodSaturationLevel(packetIn.getSaturationLevel());
     }
 
     @Override
@@ -320,9 +359,8 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     public void handleTimeUpdate(@Nonnull SPacketTimeUpdate packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
-        World world = this.user.getLocalEntity().world;
-        world.setTotalWorldTime(packetIn.getTotalWorldTime());
-        world.setWorldTime(packetIn.getWorldTime());
+        this.world.setTotalWorldTime(packetIn.getTotalWorldTime());
+        this.world.setWorldTime(packetIn.getWorldTime());
 
         // TODO: Calculate World TPS
     }
@@ -359,7 +397,7 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
 
         // We only care if we died
         if (packetIn.eventType == SPacketCombatEvent.Event.ENTITY_DIED) {
-            if (packetIn.playerId == this.user.getLocalEntity().getEntityId()) {
+            if (packetIn.playerId == this.player.getEntityId()) {
                 // Perform an instantaneous respawn
                 this.networkManager.sendPacket(new CPacketClientStatus(CPacketClientStatus.State.PERFORM_RESPAWN));
             }
@@ -399,9 +437,9 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
         if (packetIn.getTicks() == 0) { // There is no cooldown
-            this.user.getLocalEntity().getCooldownTracker().removeCooldown(packetIn.getItem());
+            this.player.getCooldownTracker().removeCooldown(packetIn.getItem());
         } else {
-            this.user.getLocalEntity().getCooldownTracker().setCooldown(packetIn.getItem(), packetIn.getTicks());
+            this.player.getCooldownTracker().setCooldown(packetIn.getItem(), packetIn.getTicks());
         }
     }
 
