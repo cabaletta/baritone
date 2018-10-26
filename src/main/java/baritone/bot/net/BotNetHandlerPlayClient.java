@@ -20,8 +20,11 @@ package baritone.bot.net;
 import baritone.bot.IBaritoneUser;
 import baritone.bot.entity.EntityBot;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.entity.player.PlayerCapabilities;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -33,6 +36,11 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
+
+// Notes
+// - Make some sort of system that prevents repetition of entity info updating
+//   - For some packets, such as ones that modify position, we can check if the existing server state matches the packet proposed state
+//   - For other things, we'll actually need the system
 
 /**
  * @author Brady
@@ -61,7 +69,7 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     /**
      * The current world.
      */
-    private World world;
+    private WorldClient world;
 
     public BotNetHandlerPlayClient(NetworkManager networkManager, IThreadListener client, IBaritoneUser user) {
         this.networkManager = networkManager;
@@ -255,6 +263,14 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handlePlayerAbilities(@Nonnull SPacketPlayerAbilities packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        PlayerCapabilities c = this.player.capabilities;
+        c.disableDamage  = packetIn.isInvulnerable();
+        c.isFlying       = packetIn.isFlying();
+        c.allowFlying    = packetIn.isAllowFlying();
+        c.isCreativeMode = packetIn.isCreativeMode();
+        c.setFlySpeed(packetIn.getFlySpeed());
+        c.setPlayerWalkSpeed(packetIn.getWalkSpeed());
     }
 
     @Override
@@ -265,11 +281,20 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
     @Override
     public void handleDestroyEntities(@Nonnull SPacketDestroyEntities packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        for (int i = 0; i < packetIn.getEntityIDs().length; ++i) {
+            this.world.removeEntityFromWorld(packetIn.getEntityIDs()[i]);
+        }
     }
 
     @Override
     public void handleRemoveEntityEffect(@Nonnull SPacketRemoveEntityEffect packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Entity entity = packetIn.getEntity(this.world);
+        if (entity instanceof EntityLivingBase) {
+            ((EntityLivingBase)entity).removeActivePotionEffect(packetIn.getPotion());
+        }
     }
 
     @Override
