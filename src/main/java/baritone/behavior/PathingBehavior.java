@@ -201,6 +201,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         this.goal = goal;
     }
 
+    public boolean setGoalAndPath(Goal goal) {
+        setGoal(goal);
+        return path();
+    }
+
     @Override
     public Goal getGoal() {
         return goal;
