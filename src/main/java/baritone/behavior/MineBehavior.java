@@ -129,7 +129,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         if (Baritone.settings().legitMine.get()) {
             return;
         }
-        List<BlockPos> locs = xrayFor(mining, 64);
+        List<BlockPos> locs = searchWorld(mining, 64);
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
             mine(0, (String[]) null);
@@ -160,7 +160,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         }
     }
 
-    public List<BlockPos> xrayFor(List<Block> mining, int max) {
+    public List<BlockPos> searchWorld(List<Block> mining, int max) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
