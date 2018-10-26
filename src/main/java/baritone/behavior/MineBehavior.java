@@ -50,8 +50,8 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     public static final MineBehavior INSTANCE = new MineBehavior();
 
     private List<Block> mining;
-    private List<BlockPos> locationsCache;
-    private int quantity;
+    private List<BlockPos> knownOreLocations;
+    private int desiredQuantity;
 
     private MineBehavior() {}
 
@@ -64,11 +64,11 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         if (mining == null) {
             return;
         }
-        if (quantity > 0) {
+        if (desiredQuantity > 0) {
             Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
             int curr = player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
             System.out.println("Currently have " + curr + " " + item);
-            if (curr >= quantity) {
+            if (curr >= desiredQuantity) {
                 logDirect("Have " + curr + " " + item.getItemStackDisplayName(new ItemStack(item, 1)));
                 cancel();
                 return;
@@ -88,12 +88,12 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         if (mining == null) {
             return;
         }
-        List<BlockPos> locs = locationsCache;
+        List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
             locs = prune(new ArrayList<>(locs), mining, 64);
             PathingBehavior.INSTANCE.setGoal(coalesce(locs));
             PathingBehavior.INSTANCE.path();
-            locationsCache = locs;
+            knownOreLocations = locs;
         }
     }
 
@@ -101,16 +101,16 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         if (mining == null) {
             return;
         }
-        List<BlockPos> locs = scanFor(mining, 64);
+        List<BlockPos> locs = xrayFor(mining, 64);
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
             mine(0, (String[]) null);
             return;
         }
-        locationsCache = locs;
+        knownOreLocations = locs;
     }
 
-    public Goal coalesce(BlockPos loc, List<BlockPos> locs) {
+    private static Goal coalesce(BlockPos loc, List<BlockPos> locs) {
         if (!Baritone.settings().forceInternalMining.get()) {
             return new GoalTwoBlocks(loc);
         }
@@ -136,7 +136,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         return new GoalComposite(locs.stream().map(loc -> coalesce(loc, locs)).toArray(Goal[]::new));
     }
 
-    public List<BlockPos> scanFor(List<Block> mining, int max) {
+    public List<BlockPos> xrayFor(List<Block> mining, int max) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
@@ -177,8 +177,8 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     @Override
     public void mine(int quantity, String... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).collect(Collectors.toList());
-        this.quantity = quantity;
-        this.locationsCache = new ArrayList<>();
+        this.desiredQuantity = quantity;
+        this.knownOreLocations = new ArrayList<>();
         rescan();
         updateGoal();
     }
@@ -186,8 +186,8 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     @Override
     public void mine(int quantity, Block... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
-        this.quantity = quantity;
-        this.locationsCache = new ArrayList<>();
+        this.desiredQuantity = quantity;
+        this.knownOreLocations = new ArrayList<>();
         rescan();
         updateGoal();
     }

@@ -382,7 +382,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                         return true;
                     }
                 } else {
-                    List<BlockPos> locs = MineBehavior.INSTANCE.scanFor(Collections.singletonList(block), 64);
+                    List<BlockPos> locs = MineBehavior.INSTANCE.xrayFor(Collections.singletonList(block), 64);
                     if (locs.isEmpty()) {
                         logDirect("No locations for " + mining + " known, cancelling");
                         return true;
