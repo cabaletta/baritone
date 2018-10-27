@@ -34,9 +34,9 @@ import java.util.List;
  */
 class BaritoneGradleTask extends DefaultTask {
 
-    static final JsonParser PARSER = new JsonParser();
+    protected static final JsonParser PARSER = new JsonParser();
 
-    static final String
+    protected static final String
             PROGUARD_ZIP                    = "proguard.zip",
             PROGUARD_JAR                    = "proguard.jar",
             PROGUARD_CONFIG_TEMPLATE        = "scripts/proguard.pro",
@@ -54,10 +54,10 @@ class BaritoneGradleTask extends DefaultTask {
             ARTIFACT_API         = "%s-api-%s.jar",
             ARTIFACT_STANDALONE  = "%s-standalone-%s.jar";
 
-    String artifactName, artifactVersion;
-    Path artifactPath, artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, proguardOut;
+    protected String artifactName, artifactVersion;
+    protected Path artifactPath, artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, proguardOut;
 
-    void verifyArtifacts() throws IllegalStateException {
+    protected void verifyArtifacts() throws IllegalStateException {
         this.artifactName = getProject().getName();
         this.artifactVersion = getProject().getVersion().toString();
 
@@ -73,30 +73,30 @@ class BaritoneGradleTask extends DefaultTask {
         }
     }
 
-    void write(InputStream stream, Path file) throws Exception {
+    protected void write(InputStream stream, Path file) throws Exception {
         if (Files.exists(file)) {
             Files.delete(file);
         }
         Files.copy(stream, file);
     }
 
-    String formatVersion(String string) {
+    protected String formatVersion(String string) {
         return String.format(string, this.artifactName, this.artifactVersion);
     }
 
-    Path getRelativeFile(String file) {
+    protected Path getRelativeFile(String file) {
         return Paths.get(new File(file).getAbsolutePath());
     }
 
-    Path getTemporaryFile(String file) {
+    protected Path getTemporaryFile(String file) {
         return Paths.get(new File(getTemporaryDir(), file).getAbsolutePath());
     }
 
-    Path getBuildFile(String file) {
+    protected Path getBuildFile(String file) {
         return getRelativeFile("build/libs/" + file);
     }
 
-    JsonElement readJson(List<String> lines) {
+    protected JsonElement readJson(List<String> lines) {
         return PARSER.parse(String.join("\n", lines));
     }
 }
