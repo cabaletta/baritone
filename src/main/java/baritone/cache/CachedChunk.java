@@ -33,41 +33,45 @@ import java.util.*;
  */
 public final class CachedChunk implements IBlockTypeAccess, Helper {
 
-    public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(new HashSet<Block>() {{
-        add(Blocks.DIAMOND_ORE);
-        add(Blocks.DIAMOND_BLOCK);
-        //add(Blocks.COAL_ORE);
-        add(Blocks.COAL_BLOCK);
-        //add(Blocks.IRON_ORE);
-        add(Blocks.IRON_BLOCK);
-        //add(Blocks.GOLD_ORE);
-        add(Blocks.GOLD_BLOCK);
-        add(Blocks.EMERALD_ORE);
-        add(Blocks.EMERALD_BLOCK);
+    public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF;
 
-        add(Blocks.ENDER_CHEST);
-        add(Blocks.FURNACE);
-        add(Blocks.CHEST);
-        add(Blocks.TRAPPED_CHEST);
-        add(Blocks.END_PORTAL);
-        add(Blocks.END_PORTAL_FRAME);
-        add(Blocks.MOB_SPAWNER);
+    static {
+        HashSet<Block> temp = new HashSet<>();
+        temp.add(Blocks.DIAMOND_ORE);
+        temp.add(Blocks.DIAMOND_BLOCK);
+        //temp.add(Blocks.COAL_ORE);
+        temp.add(Blocks.COAL_BLOCK);
+        //temp.add(Blocks.IRON_ORE);
+        temp.add(Blocks.IRON_BLOCK);
+        //temp.add(Blocks.GOLD_ORE);
+        temp.add(Blocks.GOLD_BLOCK);
+        temp.add(Blocks.EMERALD_ORE);
+        temp.add(Blocks.EMERALD_BLOCK);
+
+        temp.add(Blocks.ENDER_CHEST);
+        temp.add(Blocks.FURNACE);
+        temp.add(Blocks.CHEST);
+        temp.add(Blocks.TRAPPED_CHEST);
+        temp.add(Blocks.END_PORTAL);
+        temp.add(Blocks.END_PORTAL_FRAME);
+        temp.add(Blocks.MOB_SPAWNER);
         // TODO add all shulker colors
-        add(Blocks.PORTAL);
-        add(Blocks.HOPPER);
-        add(Blocks.BEACON);
-        add(Blocks.BREWING_STAND);
-        add(Blocks.SKULL);
-        add(Blocks.ENCHANTING_TABLE);
-        add(Blocks.ANVIL);
-        add(Blocks.LIT_FURNACE);
-        add(Blocks.BED);
-        add(Blocks.DRAGON_EGG);
-        add(Blocks.JUKEBOX);
-        add(Blocks.END_GATEWAY);
-        add(Blocks.WEB);
-        add(Blocks.NETHER_WART);
-    }});
+        temp.add(Blocks.PORTAL);
+        temp.add(Blocks.HOPPER);
+        temp.add(Blocks.BEACON);
+        temp.add(Blocks.BREWING_STAND);
+        temp.add(Blocks.SKULL);
+        temp.add(Blocks.ENCHANTING_TABLE);
+        temp.add(Blocks.ANVIL);
+        temp.add(Blocks.LIT_FURNACE);
+        temp.add(Blocks.BED);
+        temp.add(Blocks.DRAGON_EGG);
+        temp.add(Blocks.JUKEBOX);
+        temp.add(Blocks.END_GATEWAY);
+        temp.add(Blocks.WEB);
+        temp.add(Blocks.NETHER_WART);
+        BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(temp);
+    }
 
     /**
      * The size of the chunk data in bits. Equal to 16 KiB.

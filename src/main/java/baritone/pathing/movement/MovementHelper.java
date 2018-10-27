@@ -226,7 +226,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
 
-        return facing == playerFacing == open;
+        return (facing == playerFacing) == open;
     }
 
     static boolean avoidWalkingInto(Block block) {
@@ -295,10 +295,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return true;
         }
-        if (block instanceof BlockStairs) {
-            return true;
-        }
-        return false;
+        return block instanceof BlockStairs;
     }
 
     static boolean canWalkOn(BetterBlockPos pos, IBlockState state) {

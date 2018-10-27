@@ -326,10 +326,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             // when we're midair in the middle of a fall, we're very far from both the beginning and the end, but we aren't actually off path
             if (path.movements().get(pathPosition) instanceof MovementFall) {
                 BlockPos fallDest = path.positions().get(pathPosition + 1); // .get(pathPosition) is the block we fell off of
-                if (VecUtils.entityFlatDistanceToCenter(player(), fallDest) < leniency) { // ignore Y by using flat distance
-                    return false;
-                }
-                return true;
+                return VecUtils.entityFlatDistanceToCenter(player(), fallDest) >= leniency; // ignore Y by using flat distance
             } else {
                 return true;
             }
@@ -433,10 +430,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (next instanceof MovementTraverse && next.getDirection().down().equals(current.getDirection()) && MovementHelper.canWalkOn(next.getDest().down())) {
             return true;
         }
-        if (next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.get()) {
-            return true;
-        }
-        return false;
+        return next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.get();
     }
 
     private void onChangeInPathPosition() {

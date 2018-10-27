@@ -87,10 +87,7 @@ public class CalculationContext implements Helper {
         if (!allowBreak()) {
             return false;
         }
-        if (isPossiblyProtected(x, y, z)) {
-            return false;
-        }
-        return true;
+        return !isPossiblyProtected(x, y, z);
     }
 
     public boolean isPossiblyProtected(int x, int y, int z) {
