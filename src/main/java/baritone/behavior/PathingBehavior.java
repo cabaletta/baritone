@@ -134,19 +134,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 return;
             }
             // at this point, we know current is in progress
-            if (safe) {
-                // a movement just ended
-                if (next != null) {
-                    if (next.snipsnapifpossible()) {
-                        // jump directly onto the next path
-                        logDebug("Splicing into planned next path early...");
-                        queuePathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
-                        current = next;
-                        next = null;
-                        current.onTick();
-                        return;
-                    }
-                }
+            if (safe && next != null && next.snipsnapifpossible()) {
+                // a movement just ended; jump directly onto the next path
+                logDebug("Splicing into planned next path early...");
+                queuePathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
+                current = next;
+                next = null;
+                current.onTick();
+                return;
             }
             synchronized (pathCalcLock) {
                 if (isPathCalcInProgress) {

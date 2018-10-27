@@ -76,7 +76,7 @@ public class CreateDistTask extends BaritoneGradleTask {
             return DatatypeConverter.printHexBinary(SHA1_DIGEST.digest(Files.readAllBytes(path))).toLowerCase();
         } catch (Exception e) {
             // haha no thanks
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 }

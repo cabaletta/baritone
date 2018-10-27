@@ -75,10 +75,8 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             }
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
-        if (mineGoalUpdateInterval != 0) {
-            if (event.getCount() % mineGoalUpdateInterval == 0) {
-                Baritone.INSTANCE.getExecutor().execute(this::rescan);
-            }
+        if (mineGoalUpdateInterval != 0 && event.getCount() % mineGoalUpdateInterval == 0) {
+            Baritone.INSTANCE.getExecutor().execute(this::rescan);
         }
         if (Baritone.settings().legitMine.get()) {
             addNearby();
@@ -190,10 +188,8 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             for (int y = playerFeet.getY() - searchDist; y <= playerFeet.getY() + searchDist; y++) {
                 for (int z = playerFeet.getZ() - searchDist; z <= playerFeet.getZ() + searchDist; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (mining.contains(BlockStateInterface.getBlock(pos))) {
-                        if (RotationUtils.reachable(player(), pos).isPresent()) {//crucial to only add blocks we can see because otherwise this is an x-ray and it'll get caught
-                            knownOreLocations.add(pos);
-                        }
+                    if (mining.contains(BlockStateInterface.getBlock(pos)) && RotationUtils.reachable(player(), pos).isPresent()) {//crucial to only add blocks we can see because otherwise this is an x-ray and it'll get caught
+                        knownOreLocations.add(pos);
                     }
                 }
             }

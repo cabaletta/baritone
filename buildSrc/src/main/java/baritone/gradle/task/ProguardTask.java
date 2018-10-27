@@ -241,7 +241,7 @@ public class ProguardTask extends BaritoneGradleTask {
         // Halt the current thread until the process is complete, if the exit code isn't 0, throw an exception
         int exitCode = p.waitFor();
         if (exitCode != 0) {
-            throw new Exception("Proguard exited with code " + exitCode);
+            throw new IllegalStateException("Proguard exited with code " + exitCode);
         }
     }
 

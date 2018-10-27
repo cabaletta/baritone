@@ -427,15 +427,11 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private static boolean canSprintInto(IMovement current, IMovement next) {
-        if (next instanceof MovementDescend) {
-            if (next.getDirection().equals(current.getDirection())) {
-                return true;
-            }
+        if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
+            return true;
         }
-        if (next instanceof MovementTraverse) {
-            if (next.getDirection().down().equals(current.getDirection()) && MovementHelper.canWalkOn(next.getDest().down())) {
-                return true;
-            }
+        if (next instanceof MovementTraverse && next.getDirection().down().equals(current.getDirection()) && MovementHelper.canWalkOn(next.getDest().down())) {
+            return true;
         }
         if (next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.get()) {
             return true;

@@ -60,10 +60,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
-        if (!Baritone.settings().chatControl.get()) {
-            if (!Baritone.settings().removePrefix.get()) {
-                return;
-            }
+        if (!Baritone.settings().chatControl.get() && !Baritone.settings().removePrefix.get()) {
+            return;
         }
         String msg = event.getMessage();
         if (Baritone.settings().prefix.get()) {
@@ -77,8 +75,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
     }
 
-    public boolean runCommand(String msg) {
-        msg = msg.toLowerCase(Locale.US).trim();
+    public boolean runCommand(String msg0) {
+        String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
@@ -252,10 +250,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             } else {
                 for (EntityPlayer pl : world().playerEntities) {
                     String theirName = pl.getName().trim().toLowerCase();
-                    if (!theirName.equals(player().getName().trim().toLowerCase())) { // don't follow ourselves lol
-                        if (theirName.contains(name) || name.contains(theirName)) {
-                            toFollow = Optional.of(pl);
-                        }
+                    if (!theirName.equals(player().getName().trim().toLowerCase()) && (theirName.contains(name) || name.contains(theirName))) { // don't follow ourselves lol
+                        toFollow = Optional.of(pl);
                     }
                 }
             }
@@ -400,10 +396,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             Goal goal = new GoalBlock(waypoint.getLocation());
             PathingBehavior.INSTANCE.setGoal(goal);
-            if (!PathingBehavior.INSTANCE.path()) {
-                if (!goal.isInGoal(playerFeet())) {
-                    logDirect("Currently executing a path. Please cancel it first.");
-                }
+            if (!PathingBehavior.INSTANCE.path() && !goal.isInGoal(playerFeet())) {
+                logDirect("Currently executing a path. Please cancel it first.");
             }
             return true;
         }

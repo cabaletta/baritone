@@ -189,11 +189,9 @@ public class MovementTraverse extends Movement {
             } else if (pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(dest, src)) {
                 isDoorActuallyBlockingUs = true;
             }
-            if (isDoorActuallyBlockingUs) {
-                if (!(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
-                    return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), VecUtils.calculateBlockCenter(positionsToBreak[0])), true))
-                            .setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                }
+            if (isDoorActuallyBlockingUs && !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
+                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), VecUtils.calculateBlockCenter(positionsToBreak[0])), true))
+                        .setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
             }
         }
 
@@ -267,11 +265,8 @@ public class MovementTraverse extends Movement {
                     state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
 
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), against1) && (Minecraft.getMinecraft().player.isSneaking() || Baritone.settings().assumeSafeWalk.get())) {
-                        if (RayTraceUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
-                            return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
-                        }
-                        // wrong side?
+                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), against1) && (Minecraft.getMinecraft().player.isSneaking() || Baritone.settings().assumeSafeWalk.get()) && RayTraceUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
+                        return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                     }
                     //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
                     return state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
