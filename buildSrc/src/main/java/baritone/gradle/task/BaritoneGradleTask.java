@@ -57,7 +57,7 @@ class BaritoneGradleTask extends DefaultTask {
     String artifactName, artifactVersion;
     Path artifactPath, artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, proguardOut;
 
-    void verifyArtifacts() throws Exception {
+    void verifyArtifacts() throws IllegalStateException {
         this.artifactName = getProject().getName();
         this.artifactVersion = getProject().getVersion().toString();
 
@@ -69,7 +69,7 @@ class BaritoneGradleTask extends DefaultTask {
         this.proguardOut = this.getTemporaryFile(PROGUARD_EXPORT_PATH);
 
         if (!Files.exists(this.artifactPath)) {
-            throw new Exception("Artifact not found! Run build first!");
+            throw new IllegalStateException("Artifact not found! Run build first!");
         }
     }
 
