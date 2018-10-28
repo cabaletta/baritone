@@ -144,37 +144,37 @@ public enum Baritone implements IBaritoneProvider {
     }
 
     @Override
-    public IFollowBehavior getFollowBehavior() {
+    public FollowBehavior getFollowBehavior() {
         return followBehavior;
     }
 
     @Override
-    public ILookBehavior getLookBehavior() {
+    public LookBehavior getLookBehavior() {
         return lookBehavior;
     }
 
     @Override
-    public IMemoryBehavior getMemoryBehavior() {
+    public MemoryBehavior getMemoryBehavior() {
         return memoryBehavior;
     }
 
     @Override
-    public IMineBehavior getMineBehavior() {
+    public MineBehavior getMineBehavior() {
         return mineBehavior;
     }
 
     @Override
-    public IPathingBehavior getPathingBehavior() {
+    public PathingBehavior getPathingBehavior() {
         return pathingBehavior;
     }
 
     @Override
-    public IWorldProvider getWorldProvider() {
+    public WorldProvider getWorldProvider() {
         return WorldProvider.INSTANCE;
     }
 
     @Override
-    public IWorldScanner getWorldScanner() {
+    public WorldScanner getWorldScanner() {
         return WorldScanner.INSTANCE;
     }
 

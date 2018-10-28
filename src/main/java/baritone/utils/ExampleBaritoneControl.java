@@ -70,7 +70,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
 
     public boolean runCommand(String msg0) {
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
-        PathingBehavior pathingBehavior = (PathingBehavior) baritone.getPathingBehavior();
+        PathingBehavior pathingBehavior = baritone.getPathingBehavior();
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
@@ -372,7 +372,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                         return true;
                     }
                 } else {
-                    List<BlockPos> locs = ((MineBehavior) baritone.getMineBehavior()).searchWorld(Collections.singletonList(block), 64);
+                    List<BlockPos> locs = baritone.getMineBehavior().searchWorld(Collections.singletonList(block), 64);
                     if (locs.isEmpty()) {
                         logDirect("No locations for " + mining + " known, cancelling");
                         return true;

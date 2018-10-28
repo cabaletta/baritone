@@ -82,7 +82,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             addNearby();
         }
         updateGoal();
-        ((PathingBehavior) baritone.getPathingBehavior()).revalidateGoal();
+        baritone.getPathingBehavior().revalidateGoal();
     }
 
     private void updateGoal() {
@@ -93,7 +93,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         if (!locs.isEmpty()) {
             List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, 64);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
-            ((PathingBehavior) baritone.getPathingBehavior()).setGoalAndPath(new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new)));
+            baritone.getPathingBehavior().setGoalAndPath(new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new)));
             knownOreLocations = locs;
             return;
         }
@@ -108,7 +108,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
                 // cool, path is over and we are at desired y
                 branchPoint = playerFeet();
             } else {
-                ((PathingBehavior) baritone.getPathingBehavior()).setGoalAndPath(new GoalYLevel(y));
+                baritone.getPathingBehavior().setGoalAndPath(new GoalYLevel(y));
                 return;
             }
         }
@@ -117,7 +117,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             // TODO mine 1x1 shafts to either side
             branchPoint = branchPoint.north(10);
         }
-        ((PathingBehavior) baritone.getPathingBehavior()).setGoalAndPath(new GoalBlock(branchPoint));
+        baritone.getPathingBehavior().setGoalAndPath(new GoalBlock(branchPoint));
     }
 
     private void rescan() {
