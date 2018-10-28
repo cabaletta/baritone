@@ -26,7 +26,6 @@ import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
-import baritone.behavior.MineBehavior;
 import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
