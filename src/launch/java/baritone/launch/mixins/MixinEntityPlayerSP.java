@@ -21,10 +21,13 @@ import baritone.Baritone;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.behavior.PathingBehavior;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.player.PlayerCapabilities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
@@ -71,5 +74,17 @@ public class MixinEntityPlayerSP {
     )
     private void onPostUpdate(CallbackInfo ci) {
         Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.POST));
+    }
+
+    @Redirect(
+            method = "onLivingUpdate",
+            at = @At(
+                    value = "FIELD",
+                    target = "net/minecraft/entity/player/PlayerCapabilities.allowFlying:Z"
+            )
+    )
+    private boolean isAllowFlying(PlayerCapabilities capabilities) {
+        PathingBehavior pathingBehavior = Baritone.INSTANCE.getPathingBehavior();
+        return (!pathingBehavior.isEnabled() || !pathingBehavior.isPathing()) && capabilities.allowFlying;
     }
 }

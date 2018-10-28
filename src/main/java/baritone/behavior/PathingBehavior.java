@@ -83,7 +83,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             cancel();
             return;
         }
-        mc.playerController.setPlayerCapabilities(mc.player);
         tickPath();
         dispatchEvents();
     }

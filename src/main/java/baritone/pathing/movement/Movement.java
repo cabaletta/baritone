@@ -114,7 +114,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
      */
     @Override
     public MovementStatus update() {
-        player().capabilities.allowFlying = false;
+        player().capabilities.isFlying = false;
         MovementState latestState = updateState(currentState);
         if (BlockStateInterface.isLiquid(playerFeet())) {
             latestState.setInput(Input.JUMP, true);
