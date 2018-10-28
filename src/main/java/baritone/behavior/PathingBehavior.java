@@ -46,8 +46,6 @@ import java.util.stream.Collectors;
 
 public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
 
-    public static final PathingBehavior INSTANCE = new PathingBehavior();
-
     private PathExecutor current;
     private PathExecutor next;
 
@@ -62,7 +60,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private final LinkedBlockingQueue<PathEvent> toDispatch = new LinkedBlockingQueue<>();
 
-    private PathingBehavior() {}
+    public PathingBehavior(Baritone baritone) {
+        super(baritone);
+    }
 
     private void queuePathEvent(PathEvent event) {
         toDispatch.add(event);

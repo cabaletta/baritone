@@ -17,6 +17,7 @@
 
 package baritone.behavior;
 
+import baritone.Baritone;
 import baritone.api.behavior.IBehavior;
 
 /**
@@ -26,6 +27,13 @@ import baritone.api.behavior.IBehavior;
  * @since 8/1/2018 6:29 PM
  */
 public class Behavior implements IBehavior {
+
+    public final Baritone baritone;
+
+    protected Behavior(Baritone baritone) {
+        this.baritone = baritone;
+        baritone.registerBehavior(this);
+    }
 
     /**
      * Whether or not this behavior is enabled

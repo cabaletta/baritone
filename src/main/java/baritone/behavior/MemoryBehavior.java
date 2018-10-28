@@ -17,6 +17,7 @@
 
 package baritone.behavior;
 
+import baritone.Baritone;
 import baritone.api.behavior.IMemoryBehavior;
 import baritone.api.behavior.memory.IRememberedInventory;
 import baritone.api.cache.IWorldData;
@@ -43,11 +44,11 @@ import java.util.*;
  */
 public final class MemoryBehavior extends Behavior implements IMemoryBehavior, Helper {
 
-    public static MemoryBehavior INSTANCE = new MemoryBehavior();
-
     private final Map<IWorldData, WorldDataContainer> worldDataContainers = new HashMap<>();
 
-    private MemoryBehavior() {}
+    public MemoryBehavior(Baritone baritone) {
+        super(baritone);
+    }
 
     @Override
     public synchronized void onPlayerUpdate(PlayerUpdateEvent event) {

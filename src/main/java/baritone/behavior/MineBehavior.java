@@ -46,14 +46,14 @@ import java.util.stream.Collectors;
  */
 public final class MineBehavior extends Behavior implements IMineBehavior, Helper {
 
-    public static final MineBehavior INSTANCE = new MineBehavior();
-
     private List<Block> mining;
     private List<BlockPos> knownOreLocations;
     private BlockPos branchPoint;
     private int desiredQuantity;
 
-    private MineBehavior() {}
+    public MineBehavior(Baritone baritone) {
+        super(baritone);
+    }
 
     @Override
     public void onTick(TickEvent event) {
@@ -82,7 +82,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             addNearby();
         }
         updateGoal();
-        PathingBehavior.INSTANCE.revalidateGoal();
+        ((PathingBehavior) baritone.getPathingBehavior()).revalidateGoal();
     }
 
     private void updateGoal() {
@@ -93,7 +93,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         if (!locs.isEmpty()) {
             List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, 64);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
-            PathingBehavior.INSTANCE.setGoalAndPath(new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new)));
+            ((PathingBehavior) baritone.getPathingBehavior()).setGoalAndPath(new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new)));
             knownOreLocations = locs;
             return;
         }
@@ -104,11 +104,11 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         // only in non-Xray mode (aka legit mode) do we do this
         if (branchPoint == null) {
             int y = Baritone.settings().legitMineYLevel.get();
-            if (!PathingBehavior.INSTANCE.isPathing() && playerFeet().y == y) {
+            if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
                 // cool, path is over and we are at desired y
                 branchPoint = playerFeet();
             } else {
-                PathingBehavior.INSTANCE.setGoalAndPath(new GoalYLevel(y));
+                ((PathingBehavior) baritone.getPathingBehavior()).setGoalAndPath(new GoalYLevel(y));
                 return;
             }
         }
@@ -117,7 +117,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             // TODO mine 1x1 shafts to either side
             branchPoint = branchPoint.north(10);
         }
-        PathingBehavior.INSTANCE.setGoalAndPath(new GoalBlock(branchPoint));
+        ((PathingBehavior) baritone.getPathingBehavior()).setGoalAndPath(new GoalBlock(branchPoint));
     }
 
     private void rescan() {
@@ -197,12 +197,12 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         knownOreLocations = prune(knownOreLocations, mining, 64);
     }
 
-    public static List<BlockPos> prune(List<BlockPos> locs2, List<Block> mining, int max) {
+    public List<BlockPos> prune(List<BlockPos> locs2, List<Block> mining, int max) {
         List<BlockPos> locs = locs2
                 .stream()
 
                 // remove any that are within loaded chunks that aren't actually what we want
-                .filter(pos -> MineBehavior.INSTANCE.world().getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()))
+                .filter(pos -> world().getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()))
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(MineBehavior::plausibleToBreak)
@@ -247,6 +247,6 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     @Override
     public void cancel() {
         mine(0, (String[]) null);
-        PathingBehavior.INSTANCE.cancel();
+        baritone.getPathingBehavior().cancel();
     }
 }

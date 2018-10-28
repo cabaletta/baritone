@@ -24,7 +24,6 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.VecUtils;
-import baritone.behavior.LookBehavior;
 import baritone.utils.BlockBreakHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
@@ -126,7 +125,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
 
         // If the movement target has to force the new rotations, or we aren't using silent move, then force the rotations
         latestState.getTarget().getRotation().ifPresent(rotation ->
-                LookBehavior.INSTANCE.updateTarget(
+                Baritone.INSTANCE.getLookBehavior().updateTarget(
                         rotation,
                         latestState.getTarget().hasToForceRotations()));
 

@@ -26,9 +26,6 @@ import baritone.api.utils.Rotation;
 import baritone.utils.Helper;
 
 public final class LookBehavior extends Behavior implements ILookBehavior, Helper {
-
-    public static final LookBehavior INSTANCE = new LookBehavior();
-
     /**
      * Target's values are as follows:
      * <p>
@@ -49,7 +46,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
      */
     private float lastYaw;
 
-    private LookBehavior() {}
+    public LookBehavior(Baritone baritone) {
+        super(baritone);
+    }
 
     @Override
     public void updateTarget(Rotation target, boolean force) {

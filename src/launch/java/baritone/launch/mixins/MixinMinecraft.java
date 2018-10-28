@@ -22,9 +22,7 @@ import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.behavior.PathingBehavior;
 import baritone.utils.BaritoneAutoTest;
-import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
@@ -60,7 +58,6 @@ public class MixinMinecraft {
     )
     private void postInit(CallbackInfo ci) {
         Baritone.INSTANCE.init();
-        ExampleBaritoneControl.INSTANCE.initAndRegister();
     }
 
     @Inject(
@@ -145,7 +142,7 @@ public class MixinMinecraft {
             )
     )
     private boolean isAllowUserInput(GuiScreen screen) {
-        return (PathingBehavior.INSTANCE.getCurrent() != null && PathingBehavior.INSTANCE.isEnabled() && player != null) || screen.allowUserInput;
+        return (Baritone.INSTANCE.getPathingBehavior().getCurrent() != null && Baritone.INSTANCE.getPathingBehavior().isEnabled() && player != null) || screen.allowUserInput;
     }
 
     @Inject(

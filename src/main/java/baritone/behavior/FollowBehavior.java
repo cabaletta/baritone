@@ -33,11 +33,11 @@ import net.minecraft.util.math.BlockPos;
  */
 public final class FollowBehavior extends Behavior implements IFollowBehavior, Helper {
 
-    public static final FollowBehavior INSTANCE = new FollowBehavior();
-
     private Entity following;
 
-    private FollowBehavior() {}
+    public FollowBehavior(Baritone baritone) {
+        super(baritone);
+    }
 
     @Override
     public void onTick(TickEvent event) {
@@ -56,9 +56,9 @@ public final class FollowBehavior extends Behavior implements IFollowBehavior, H
             GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.get(), Baritone.settings().followOffsetDistance.get());
             pos = new BlockPos(g.getX(), following.posY, g.getZ());
         }
-        PathingBehavior.INSTANCE.setGoal(new GoalNear(pos, Baritone.settings().followRadius.get()));
-        PathingBehavior.INSTANCE.revalidateGoal();
-        PathingBehavior.INSTANCE.path();
+        baritone.getPathingBehavior().setGoal(new GoalNear(pos, Baritone.settings().followRadius.get()));
+        ((PathingBehavior) baritone.getPathingBehavior()).revalidateGoal();
+        baritone.getPathingBehavior().path();
     }
 
     @Override
@@ -73,7 +73,7 @@ public final class FollowBehavior extends Behavior implements IFollowBehavior, H
 
     @Override
     public void cancel() {
-        PathingBehavior.INSTANCE.cancel();
+        baritone.getPathingBehavior().cancel();
         follow(null);
     }
 }

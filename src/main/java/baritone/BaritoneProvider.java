@@ -22,11 +22,12 @@ import baritone.api.behavior.*;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.event.listener.IGameEventListener;
-import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
 
 /**
+ * todo fix this cancer
+ *
  * @author Brady
  * @since 9/29/2018
  */
@@ -34,27 +35,27 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public IFollowBehavior getFollowBehavior() {
-        return FollowBehavior.INSTANCE;
+        return Baritone.INSTANCE.getFollowBehavior();
     }
 
     @Override
     public ILookBehavior getLookBehavior() {
-        return LookBehavior.INSTANCE;
+        return Baritone.INSTANCE.getLookBehavior();
     }
 
     @Override
     public IMemoryBehavior getMemoryBehavior() {
-        return MemoryBehavior.INSTANCE;
+        return Baritone.INSTANCE.getMemoryBehavior();
     }
 
     @Override
     public IMineBehavior getMineBehavior() {
-        return MineBehavior.INSTANCE;
+        return Baritone.INSTANCE.getMineBehavior();
     }
 
     @Override
     public IPathingBehavior getPathingBehavior() {
-        return PathingBehavior.INSTANCE;
+        return Baritone.INSTANCE.getPathingBehavior();
     }
 
     @Override

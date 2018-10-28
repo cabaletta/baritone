@@ -17,6 +17,7 @@
 
 package baritone.behavior;
 
+import baritone.Baritone;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
@@ -28,16 +29,15 @@ import net.minecraft.block.BlockBed;
  * A collection of event methods that are used to interact with Baritone's
  * waypoint system. This class probably needs a better name.
  *
- * @see Waypoint
- *
  * @author Brady
+ * @see Waypoint
  * @since 8/22/2018
  */
 public final class LocationTrackingBehavior extends Behavior implements Helper {
 
-    public static final LocationTrackingBehavior INSTANCE = new LocationTrackingBehavior();
-
-    private LocationTrackingBehavior() {}
+    public LocationTrackingBehavior(Baritone baritone) {
+        super(baritone);
+    }
 
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
