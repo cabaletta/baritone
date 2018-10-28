@@ -29,16 +29,16 @@ import baritone.api.behavior.IBehavior;
 public class Behavior implements IBehavior {
 
     public final Baritone baritone;
+    
+    /**
+     * Whether or not this behavior is enabled
+     */
+    private boolean enabled = true;
 
     protected Behavior(Baritone baritone) {
         this.baritone = baritone;
         baritone.registerBehavior(this);
     }
-
-    /**
-     * Whether or not this behavior is enabled
-     */
-    private boolean enabled = true;
 
     /**
      * Toggles the enabled state of this {@link Behavior}.
