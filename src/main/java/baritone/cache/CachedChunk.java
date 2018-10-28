@@ -55,7 +55,24 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
         temp.add(Blocks.END_PORTAL);
         temp.add(Blocks.END_PORTAL_FRAME);
         temp.add(Blocks.MOB_SPAWNER);
-        // TODO add all shulker colors
+        temp.add(Blocks.BARRIER);
+        temp.add(Blocks.OBSERVER);
+        temp.add(Blocks.WHITE_SHULKER_BOX);
+        temp.add(Blocks.ORANGE_SHULKER_BOX);
+        temp.add(Blocks.MAGENTA_SHULKER_BOX);
+        temp.add(Blocks.LIGHT_BLUE_SHULKER_BOX);
+        temp.add(Blocks.YELLOW_SHULKER_BOX);
+        temp.add(Blocks.LIME_SHULKER_BOX);
+        temp.add(Blocks.PINK_SHULKER_BOX);
+        temp.add(Blocks.GRAY_SHULKER_BOX);
+        temp.add(Blocks.SILVER_SHULKER_BOX);
+        temp.add(Blocks.CYAN_SHULKER_BOX);
+        temp.add(Blocks.PURPLE_SHULKER_BOX);
+        temp.add(Blocks.BLUE_SHULKER_BOX);
+        temp.add(Blocks.BROWN_SHULKER_BOX);
+        temp.add(Blocks.GREEN_SHULKER_BOX);
+        temp.add(Blocks.RED_SHULKER_BOX);
+        temp.add(Blocks.BLACK_SHULKER_BOX);
         temp.add(Blocks.PORTAL);
         temp.add(Blocks.HOPPER);
         temp.add(Blocks.BEACON);
