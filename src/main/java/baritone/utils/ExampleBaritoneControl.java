@@ -349,7 +349,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 name = parts[0];
             }
             WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
-            logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
+            logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto " + name + "' to set goal, say 'list user' to list custom waypoints.");
             return true;
         }
         if (msg.startsWith("goto")) {
