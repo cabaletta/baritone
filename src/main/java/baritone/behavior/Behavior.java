@@ -29,7 +29,7 @@ import baritone.api.behavior.IBehavior;
 public class Behavior implements IBehavior {
 
     public final Baritone baritone;
-    
+
     /**
      * Whether or not this behavior is enabled
      */
