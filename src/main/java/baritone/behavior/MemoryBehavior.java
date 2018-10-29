@@ -21,11 +21,15 @@ import baritone.Baritone;
 import baritone.api.behavior.IMemoryBehavior;
 import baritone.api.behavior.memory.IRememberedInventory;
 import baritone.api.cache.IWorldData;
+import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
+import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
+import net.minecraft.block.BlockBed;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;
@@ -113,6 +117,18 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
                 updateInventory();
             }
         }
+    }
+
+    @Override
+    public void onBlockInteract(BlockInteractEvent event) {
+        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(event.getPos()) instanceof BlockBed) {
+            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
+        }
+    }
+
+    @Override
+    public void onPlayerDeath() {
+        WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, playerFeet()));
     }
 
     private Optional<RememberedInventory> getInventoryFromWindow(int windowId) {

@@ -95,7 +95,6 @@ public enum Baritone implements IBaritoneProvider {
             pathingBehavior = new PathingBehavior(this);
             lookBehavior = new LookBehavior(this);
             memoryBehavior = new MemoryBehavior(this);
-            new LocationTrackingBehavior(this);
             followBehavior = new FollowBehavior(this);
             mineBehavior = new MineBehavior(this);
             new ExampleBaritoneControl(this);
