@@ -18,28 +18,21 @@
 package tenor;
 
 public interface IQuantizedDependentCostCalculator extends IQuantizedTaskNode {
+
+    @Override
     default IQuantityRelationship cost() {
         switch (type()) {
             case SERIAL:
             case PARALLEL_ALL:
-                return q -> {
-                    double sum = 0;
-                    for (IQuantizedParentTaskRelationship relationship : childTasks()) {
-                        sum += relationship.cost().value(q);
-                    }
-                    return sum;
-                };
+                return q -> childTasks().stream()
+                        .map(IQuantizedParentTaskRelationship::cost)
+                        .mapToDouble(relationship -> relationship.value(q))
+                        .sum();
             case ANY_ONE_OF: // TODO this could be smarter about allocating
-                return q -> {
-                    double min = -1;
-                    for (IQuantizedParentTaskRelationship relationship : childTasks()) {
-                        double cost = relationship.cost().value(q);
-                        if (min == -1 || cost < min) {
-                            min = cost;
-                        }
-                    }
-                    return min;
-                };
+                return q -> childTasks().stream()
+                        .map(IQuantizedParentTaskRelationship::cost)
+                        .mapToDouble(relationship -> relationship.value(q))
+                        .min().orElse(-1);
             default:
                 throw new UnsupportedOperationException();
 
