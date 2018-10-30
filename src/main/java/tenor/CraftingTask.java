@@ -25,10 +25,25 @@ public class CraftingTask extends QuantizedTaskNode {
 
     int outputQuantity;
     List<Tuple<AquireItemTask, Integer>> recipe;
-    AquireCraftingItems inputs;
 
-    public CraftingTask() {
+    final AquireCraftingItems inputs;
+    final GetToCraftingTableTask step2;
+    final ActuallyCraftTask step3;
+
+    final AquireItemTask parent;
+    final QuantizedToQuantizedTaskRelationship parentRelationship;
+
+    public CraftingTask(AquireItemTask parent) {
         super(DependencyType.SERIAL);
+        this.inputs = new AquireCraftingItems(this); // this adds the relationship
+        this.step2 = GetToCraftingTableTask.INSTANCE;
+        step2.addParent(this);
+        this.step3 = new ActuallyCraftTask(this);
+
+        this.parent = parent;
+        this.parentRelationship = createRelationshipToParent(parent);
+        addParent(parentRelationship);
+
     }
 
     @Override
@@ -40,11 +55,7 @@ public class CraftingTask extends QuantizedTaskNode {
     }
 
     public IQuantityRelationship priority() {
-        if (parentTasks().size() != 1) {
-            throw new IllegalStateException();
-        }
-        // TODO this is a short circuit
-        return ((IQuantizedTask) (parentTasks().get(0).parentTask())).priority();
+        return parentRelationship::allocatedPriority;
     }
 
     @Override

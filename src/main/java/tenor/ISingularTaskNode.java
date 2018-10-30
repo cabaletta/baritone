@@ -22,5 +22,5 @@ package tenor;
  * @since 10/30/2018
  */
 public interface ISingularTaskNode extends ITaskNodeBase, ISingularTask {
-
+    double priorityAllocatedToChild(ISingularParentTaskRelationship relationship);
 }

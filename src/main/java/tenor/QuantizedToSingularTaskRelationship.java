@@ -21,6 +21,10 @@ public class QuantizedToSingularTaskRelationship
         extends TaskRelationship<QuantizedTaskNode, ISingularTask>
         implements ISingularChildTaskRelationship<QuantizedTaskNode>, IQuantizedParentTaskRelationship<ISingularTask> {
 
+    public QuantizedToSingularTaskRelationship(QuantizedTaskNode parent, ISingularTask child, DependencyType type) {
+        super(parent, child, type);
+    }
+
     @Override
     public IQuantityRelationship cost() {
         return x -> childTask().cost();
@@ -28,6 +32,6 @@ public class QuantizedToSingularTaskRelationship
 
     @Override
     public double allocatedPriority() {
-        throw new UnsupportedOperationException("Cannot allocate priority from quantized parent to singular child");
+        return parentTask().priorityAllocatedTo(this, parentTask().quantityExecutingInto(this));
     }
 }

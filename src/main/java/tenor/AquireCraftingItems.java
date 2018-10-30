@@ -21,16 +21,22 @@ import java.util.List;
 
 public class AquireCraftingItems extends QuantizedTaskNode implements ClaimProvider {
 
-    CraftingTask output;
+    final CraftingTask parent;
+    final QuantizedToQuantizedTaskRelationship parentRelationship;
 
-    public AquireCraftingItems() {
+    public AquireCraftingItems(CraftingTask parent) {
         super(DependencyType.PARALLEL_ALL);
+        this.parent = parent;
+        this.parentRelationship = createRelationshipToParent(parent);
+        addParent(parentRelationship);
+
+
     }
 
     @Override
     public double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity) {
         AquireItemTask resource = (AquireItemTask) child.childTask(); // all our dependents are aquire item tasks
-        int amount = output.inputSizeFor(resource);
+        int amount = parent.inputSizeFor(resource);
 
         // they could provide us with quantity
         int actualQuantity = (int) Math.ceil(quantity * 1.0D / amount);
@@ -41,22 +47,42 @@ public class AquireCraftingItems extends QuantizedTaskNode implements ClaimProvi
 
     @Override
     public IQuantityRelationship priority() {
-        return ((List<IQuantizedChildTaskRelationship>) (Object) parentTasks()).get(0)::allocatedPriority; // gamer style
+        return parentRelationship::allocatedPriority; // gamer style
     }
 
     @Override
     public IQuantityRelationship cost() {
-        return null;
+        return x -> {
+            // cost to get x copies of these items
+            double sum = 0;
+            for (QuantizedToQuantizedTaskRelationship resource : (List<QuantizedToQuantizedTaskRelationship>) (Object) childTasks()) {
+                int amountPerCraft = parent.inputSizeFor((AquireItemTask) resource.childTask());
+                int totalAmountNeeded = x * amountPerCraft;
+
+                int amountForUs = resource.quantityCompleted();
+                totalAmountNeeded -= amountForUs;
+
+                if (totalAmountNeeded <= 0) {
+                    continue;
+                }
+
+                sum += resource.cost().value(totalAmountNeeded);
+            }
+            return sum;
+        };
     }
 
     @Override
     public int quantityCompletedForParent(IQuantizedChildTaskRelationship relationship) {
+        if (relationship != parentRelationship) {
+            throw new IllegalStateException();
+        }
         // our only parent is the crafting task
         int minCompletion = Integer.MAX_VALUE;
         for (IQuantizedChildTaskRelationship resource : (List<IQuantizedChildTaskRelationship>) (Object) childTasks()) {
             int amountForUs = resource.quantityCompleted();
 
-            int amountPerCraft = output.inputSizeFor((AquireItemTask) resource.childTask());
+            int amountPerCraft = parent.inputSizeFor((AquireItemTask) resource.childTask());
 
             int actualQuantity = (int) Math.ceil(amountForUs * 1.0D / amountPerCraft);
 

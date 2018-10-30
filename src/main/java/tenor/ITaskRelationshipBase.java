@@ -22,4 +22,6 @@ public interface ITaskRelationshipBase<P extends ITaskNodeBase, C extends ITask>
     P parentTask();
 
     C childTask();
+
+    DependencyType type();
 }

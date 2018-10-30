@@ -23,7 +23,17 @@ public abstract class Task implements ITask {
 
     List<ITaskRelationshipBase> parentRelationships;
 
+    @Override
     public List<ITaskRelationshipBase> parentTasks() {
         return parentRelationships;
+    }
+
+    @Override
+    public void addParent(ITaskRelationshipBase relationship) {
+        if (relationship.childTask() != this) {
+            throw new IllegalArgumentException();
+        }
+        relationship.parentTask().addChild(relationship);
+        parentRelationships.add(relationship);
     }
 }

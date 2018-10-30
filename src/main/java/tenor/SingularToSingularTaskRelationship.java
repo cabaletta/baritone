@@ -21,6 +21,10 @@ public class SingularToSingularTaskRelationship
         extends TaskRelationship<SingularTaskNode, ISingularTask>
         implements ISingularChildTaskRelationship<SingularTaskNode>, ISingularParentTaskRelationship<ISingularTask> {
 
+    public SingularToSingularTaskRelationship(SingularTaskNode parent, ISingularTask child, DependencyType type) {
+        super(parent, child, type);
+    }
+
     @Override
     public double allocatedPriority() {
         return parentTask().priorityAllocatedToChild(this);

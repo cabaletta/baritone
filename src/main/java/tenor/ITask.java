@@ -22,4 +22,12 @@ import java.util.List;
 public interface ITask {
 
     List<ITaskRelationshipBase> parentTasks();
+
+    ITaskRelationshipBase createRelationshipToParent(ITaskNodeBase parent);
+
+    void addParent(ITaskRelationshipBase relationship);
+
+    default void addParent(ITaskNodeBase parent) {
+        addParent(createRelationshipToParent(parent));
+    }
 }

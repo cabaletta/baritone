@@ -24,4 +24,6 @@ public interface ITaskNodeBase extends ITask {
     List<ITaskRelationshipBase> childTasks();
 
     DependencyType type();
+
+    void addChild(ITaskRelationshipBase relationship);
 }

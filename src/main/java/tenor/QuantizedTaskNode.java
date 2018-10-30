@@ -23,5 +23,27 @@ public abstract class QuantizedTaskNode extends TaskNode implements IQuantizedTa
         super(type);
     }
 
+    // if the child task were able to provide this amount, how much priority would that be?
     public abstract double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity);
+
+    public int quantityExecutingInto(QuantizedToSingularTaskRelationship child) {
+        if (type() != DependencyType.SERIAL) {
+            throw new UnsupportedOperationException(this + " " + child);
+        }
+        // need to calculate from scratch
+        int ind = childTasks().indexOf(child);
+        if (ind <= 0) {
+            throw new IllegalStateException(childTasks() + "");
+        }
+        int minQuantity = -1;
+        for (int i = 0; i < childTasks().indexOf(child); i++) {
+            QuantizedToQuantizedTaskRelationship relationship = (QuantizedToQuantizedTaskRelationship) childTasks().get(i);
+            ClaimProvider claim = (ClaimProvider) relationship.childTask();
+            int amt = claim.quantityCompletedForParent(relationship);
+            if (minQuantity == -1 || amt < minQuantity) {
+                minQuantity = amt;
+            }
+        }
+        return minQuantity;
+    }
 }

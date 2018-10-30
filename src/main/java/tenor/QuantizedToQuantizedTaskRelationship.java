@@ -21,6 +21,10 @@ public class QuantizedToQuantizedTaskRelationship
         extends TaskRelationship<QuantizedTaskNode, IQuantizedTask>
         implements IQuantizedChildTaskRelationship<QuantizedTaskNode>, IQuantizedParentTaskRelationship<IQuantizedTask> {
 
+    public QuantizedToQuantizedTaskRelationship(QuantizedTaskNode parent, IQuantizedTask child, DependencyType type) {
+        super(parent, child, type);
+    }
+
     @Override
     public double allocatedPriority(int quantity) {
         return parentTask().priorityAllocatedTo(this, quantity);

@@ -22,7 +22,7 @@ import java.util.List;
 public abstract class TaskNode extends Task implements ITaskNodeBase {
 
     List<ITaskRelationshipBase> childRelationships;
-    DependencyType type;
+    public final DependencyType type;
 
     public TaskNode(DependencyType type) {
         this.type = type;
@@ -34,5 +34,15 @@ public abstract class TaskNode extends Task implements ITaskNodeBase {
 
     public DependencyType type() {
         return type;
+    }
+
+    public void addChild(ITaskRelationshipBase relationship) {
+        if (relationship.parentTask() != this) {
+            throw new IllegalArgumentException();
+        }
+        if (relationship.type() != type) {
+            throw new IllegalArgumentException();
+        }
+        childRelationships.add(relationship);
     }
 }

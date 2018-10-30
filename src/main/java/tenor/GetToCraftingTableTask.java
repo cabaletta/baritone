@@ -17,16 +17,19 @@
 
 package tenor;
 
-public interface ISingularTask extends ITask {
-    double cost();
+import java.util.List;
 
-    double priority();
+public class GetToCraftingTableTask extends TaskLeaf implements ISingularTask {
+    public static final GetToCraftingTableTask INSTANCE = new GetToCraftingTableTask(); // ? idk
 
-    default ISingularChildTaskRelationship<? extends ITaskNodeBase> createRelationshipToParent(ITaskNodeBase parent) {
-        if (parent instanceof IQuantizedTask) {
-            return new QuantizedToSingularTaskRelationship((QuantizedTaskNode) parent, this, parent.type());
-        } else {
-            return new SingularToSingularTaskRelationship((SingularTaskNode) parent, this, parent.type());
-        }
+    @Override
+    public double cost() {
+        return 69;
+    }
+
+    @Override
+    public double priority() {
+        List<ISingularChildTaskRelationship> parentTasks = (List) parentTasks(); // pog
+        return parentTasks.stream().mapToDouble(ISingularChildTaskRelationship::allocatedPriority).sum();
     }
 }

@@ -21,7 +21,12 @@ public class SingularToQuantizedTaskRelationship
         extends TaskRelationship<SingularTaskNode, IQuantizedTask>
         implements IQuantizedChildTaskRelationship<SingularTaskNode>, ISingularParentTaskRelationship<IQuantizedTask> {
 
-    int quantityRequired;
+    public int quantityRequired;
+
+    public SingularToQuantizedTaskRelationship(SingularTaskNode parent, IQuantizedTask child, DependencyType type, int quantityRequired) {
+        super(parent, child, type);
+        this.quantityRequired = quantityRequired;
+    }
 
     @Override
     public double allocatedPriority(int quantity) {

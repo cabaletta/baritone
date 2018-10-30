@@ -19,9 +19,18 @@ package tenor;
 
 public class TaskRelationship<P extends ITaskNodeBase, C extends ITask> implements ITaskRelationshipBase<P, C> {
 
-    P parent;
-    C child;
-    DependencyType type;
+    public final P parent;
+    public final C child;
+    public final DependencyType type;
+
+    public TaskRelationship(P parent, C child, DependencyType type) {
+        this.parent = parent;
+        this.child = child;
+        this.type = type;
+        if (parent.type() != type) {
+            throw new IllegalArgumentException();
+        }
+    }
 
     @Override
     public P parentTask() {
@@ -31,5 +40,10 @@ public class TaskRelationship<P extends ITaskNodeBase, C extends ITask> implemen
     @Override
     public C childTask() {
         return child;
+    }
+
+    @Override
+    public DependencyType type() {
+        return type;
     }
 }

@@ -17,5 +17,5 @@
 
 package tenor;
 
-public class TaskLeaf extends Task {
+public abstract class TaskLeaf extends Task {
 }

@@ -32,4 +32,16 @@ public interface IQuantizedTask extends ITask {
     IQuantityRelationship priority();
 
     IQuantityRelationship cost();
+
+    default IQuantizedChildTaskRelationship<? extends ITaskNodeBase> createRelationshipToParent(ITaskNodeBase parent) {
+        if (parent instanceof IQuantizedTask) {
+            return new QuantizedToQuantizedTaskRelationship((QuantizedTaskNode) parent, this, parent.type());
+        } else {
+            throw new UnsupportedOperationException("SingularToQuantized must be constructed manually since it needs a quantity");
+        }
+    }
+
+    default QuantizedToQuantizedTaskRelationship createRelationshipToParent(QuantizedTaskNode parent) {
+        return new QuantizedToQuantizedTaskRelationship(parent, this, parent.type());
+    }
 }

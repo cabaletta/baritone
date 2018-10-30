@@ -17,5 +17,22 @@
 
 package tenor;
 
-public class ActuallyCraftTask {
+public class ActuallyCraftTask extends TaskLeaf implements ISingularTask {
+
+    public final CraftingTask parent;
+
+    public ActuallyCraftTask(CraftingTask parent) {
+        this.parent = parent;
+        addParent(parent);
+    }
+
+    @Override
+    public double cost() {
+        return 420;
+    }
+
+    @Override
+    public double priority() {
+        return 0;
+    }
 }
