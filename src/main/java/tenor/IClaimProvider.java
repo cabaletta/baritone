@@ -17,7 +17,7 @@
 
 package tenor;
 
-public interface ClaimProvider {
+public interface IClaimProvider {
 
     int quantityCompletedForParent(IQuantizedChildTaskRelationship relationship);
 }

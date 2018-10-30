@@ -19,7 +19,7 @@ package tenor;
 
 import java.util.List;
 
-public class AquireCraftingItems extends QuantizedTaskNode implements ClaimProvider {
+public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProvider {
 
     final CraftingTask parent;
     final QuantizedToQuantizedTaskRelationship parentRelationship;

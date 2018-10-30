@@ -38,7 +38,7 @@ public abstract class QuantizedTaskNode extends TaskNode<IQuantizedChildTaskRela
         int minQuantity = -1;
         for (int i = 0; i < childTasks().indexOf(child); i++) {
             QuantizedToQuantizedTaskRelationship relationship = (QuantizedToQuantizedTaskRelationship) childTasks().get(i);
-            ClaimProvider claim = (ClaimProvider) relationship.childTask();
+            IClaimProvider claim = (IClaimProvider) relationship.childTask();
             int amt = claim.quantityCompletedForParent(relationship);
             if (minQuantity == -1 || amt < minQuantity) {
                 minQuantity = amt;

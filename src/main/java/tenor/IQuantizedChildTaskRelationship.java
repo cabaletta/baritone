@@ -27,6 +27,6 @@ public interface IQuantizedChildTaskRelationship<T extends ITaskNodeBase> extend
 
     default int quantityCompleted() {
         // TODO: Resolve this cast, should QuantizedTask implement ClaimProvider?
-        return ((ClaimProvider) childTask()).quantityCompletedForParent(this);
+        return ((IClaimProvider) childTask()).quantityCompletedForParent(this);
     }
 }
