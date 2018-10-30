@@ -41,19 +41,19 @@ public class BotMovementInput extends MovementInput {
         forward = back = left = right = jump = sneak = false;
 
         if (this.forwardKeyDown = forward) {
-            ++this.moveForward;
+            this.moveForward++;
         }
 
         if (this.backKeyDown = back) {
-            --this.moveForward;
+            this.moveForward--;
         }
 
         if (this.leftKeyDown = left) {
-            ++this.moveStrafe;
+            this.moveStrafe++;
         }
 
         if (this.rightKeyDown = right) {
-            --this.moveStrafe;
+            this.moveStrafe--;
         }
 
         this.jump = jump;
