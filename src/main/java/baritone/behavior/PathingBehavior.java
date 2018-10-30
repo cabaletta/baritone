@@ -32,6 +32,7 @@ import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.calc.CutoffPath;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
@@ -325,12 +326,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             }
             isPathCalcInProgress = true;
         }
+        CalculationContext context = new CalculationContext(); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         Baritone.INSTANCE.getExecutor().execute(() -> {
             if (talkAboutIt) {
                 logDebug("Starting to search for path from " + start + " to " + goal);
             }
 
-            Optional<IPath> path = findPath(start, previous);
+            Optional<IPath> path = findPath(start, previous, context);
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
                     IPath result = p.cutoffAtLoadedChunks();
@@ -398,7 +400,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @param start
      * @return
      */
-    private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous) {
+    private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous, CalculationContext context) {
         Goal goal = this.goal;
         if (goal == null) {
             logDebug("no goal");
@@ -428,7 +430,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(BetterBlockPos::longHash)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
         }
         try {
-            IPathFinder pf = new AStarPathFinder(start.getX(), start.getY(), start.getZ(), goal, favoredPositions);
+            IPathFinder pf = new AStarPathFinder(start.getX(), start.getY(), start.getZ(), goal, favoredPositions, context);
             return pf.calculate(timeout);
         } catch (Exception e) {
             logDebug("Pathing exception: " + e);

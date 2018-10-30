@@ -41,10 +41,12 @@ import java.util.Optional;
 public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
     private final Optional<HashSet<Long>> favoredPositions;
+    private final CalculationContext calcContext;
 
-    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions) {
+    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions, CalculationContext context) {
         super(startX, startY, startZ, goal);
         this.favoredPositions = favoredPositions;
+        this.calcContext = context;
     }
 
     @Override
@@ -61,7 +63,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             bestHeuristicSoFar[i] = startNode.estimatedCostToGoal;
             bestSoFar[i] = startNode;
         }
-        CalculationContext calcContext = new CalculationContext();
         MutableMoveResult res = new MutableMoveResult();
         HashSet<Long> favored = favoredPositions.orElse(null);
         BetterWorldBorder worldBorder = new BetterWorldBorder(world().getWorldBorder());
