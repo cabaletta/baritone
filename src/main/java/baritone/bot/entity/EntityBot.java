@@ -38,7 +38,6 @@ import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
 
 // Some Notes:
-// TODO: Make custom movement input
 // startRiding references the sound manager
 // onUpdateWalkingPlayer references the gameSettings autoJump flag
 // notifyDataManagerChange references the sound manager
@@ -67,7 +66,9 @@ public class EntityBot extends EntityPlayerSP {
     @Override
     public void closeScreenAndDropStack() {
         this.inventory.setItemStack(ItemStack.EMPTY);
-        super.closeScreen();
+
+        // EntityPlayer#closeScreen
+        this.openContainer = this.inventoryContainer;
     }
 
     @Override
