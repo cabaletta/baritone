@@ -20,6 +20,7 @@ package baritone.bot;
 import baritone.bot.entity.EntityBot;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.util.Session;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -47,4 +48,12 @@ public interface IBaritoneUser {
      * @return The remote entity for this bot
      */
     EntityOtherPlayerMP getRemoteEntity();
+
+    /**
+     * Returns the user login session. Should never be {@code null}, as this should be set when the
+     * user is constructed.
+     *
+     * @return The bot's login session
+     */
+    Session getSession();
 }

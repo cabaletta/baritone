@@ -15,12 +15,15 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.net;
+package baritone.bot.handler;
 
 import baritone.bot.IBaritoneUser;
 import baritone.bot.entity.EntityBot;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -33,7 +36,6 @@ import net.minecraft.network.play.client.CPacketResourcePackStatus;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
@@ -43,16 +45,23 @@ import javax.annotation.Nonnull;
 //   - For other things, we'll actually need the system
 
 /**
+ * This class would effectively operate the same if we directly implemented {@link INetHandlerPlayClient},
+ * however, the {@link EntityPlayerSP} constructor requires an actual implementation of
+ * {@link NetHandlerPlayClient} in order to access the {@link GameProfile}.
+ *
  * @author Brady
  * @since 10/22/2018
  */
-public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
+public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
+    /**
+     * The {@link NetworkManager} that is managing the connection with the server.
+     */
     private final NetworkManager networkManager;
 
     /**
      * This is the {@link Minecraft} game instance, however, to prevent unwanted references
-     * to the game instance fields, we refer to it as a {@link IThreadListener}
+     * to the game instance fields, we refer to it as a {@link IThreadListener}.
      */
     private final IThreadListener client;
 
@@ -71,7 +80,9 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
      */
     private WorldClient world;
 
-    public BotNetHandlerPlayClient(NetworkManager networkManager, IThreadListener client, IBaritoneUser user) {
+    public BotNetHandlerPlayClient(NetworkManager networkManager, IBaritoneUser user, Minecraft client, GameProfile profile) {
+        // noinspection ConstantConditions
+        super(client, null, networkManager, profile);
         this.networkManager = networkManager;
         this.client = client;
         this.user = user;
@@ -485,6 +496,6 @@ public class BotNetHandlerPlayClient implements INetHandlerPlayClient {
 
     @Override
     public void onDisconnect(@Nonnull ITextComponent reason) {
-        /* Unload the world and notify the bot manager that we are no longer connected */
+        // TODO Unload the world and notify the bot manager that we are no longer connected
     }
 }
