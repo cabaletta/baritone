@@ -17,7 +17,7 @@
 
 package tenor;
 
-public class MineTask extends TaskLeaf implements IQuantizedTask {
+public class MineTask extends QuantizedTaskLeaf {
     @Override
     public IQuantityRelationship priority() {
         return null;

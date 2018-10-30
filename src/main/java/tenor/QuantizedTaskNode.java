@@ -17,7 +17,7 @@
 
 package tenor;
 
-public abstract class QuantizedTaskNode extends TaskNode implements IQuantizedTask {
+public abstract class QuantizedTaskNode extends TaskNode<IQuantizedChildTaskRelationship> implements IQuantizedTask {
 
     public QuantizedTaskNode(DependencyType type) {
         super(type);

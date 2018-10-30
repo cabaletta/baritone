@@ -17,7 +17,7 @@
 
 package tenor;
 
-public interface ISingularTask extends ITask {
+public interface ISingularTask extends ITask<ISingularChildTaskRelationship> {
     double cost();
 
     double priority();

@@ -19,13 +19,13 @@ package tenor;
 
 import java.util.List;
 
-public interface ITask {
+public interface ITask<T extends ITaskRelationshipBase> {
 
-    List<ITaskRelationshipBase> parentTasks();
+    List<T> parentTasks();
 
-    ITaskRelationshipBase createRelationshipToParent(ITaskNodeBase parent);
+    T createRelationshipToParent(ITaskNodeBase parent);
 
-    void addParent(ITaskRelationshipBase relationship);
+    void addParent(T relationship);
 
     default void addParent(ITaskNodeBase parent) {
         addParent(createRelationshipToParent(parent));

@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AquireItemTask extends QuantizedTaskNode implements ClaimProvider, IQuantizedDependentCostCalculator {
+public class AquireItemTask extends QuantizedTaskNode implements ClaimProvider, IQuantizedDependentCostCalculator<IQuantizedChildTaskRelationship> {
 
     HashMap<IQuantizedChildTaskRelationship, Integer> allocation; // allocation of what tasks have claim over what items in our inventory i guess
 

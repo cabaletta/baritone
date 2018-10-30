@@ -19,7 +19,7 @@ package tenor;
 
 import java.util.List;
 
-public abstract class TaskNode extends Task implements ITaskNodeBase {
+public abstract class TaskNode<T extends ITaskRelationshipBase> extends Task<T> implements ITaskNodeBase<T> {
 
     List<ITaskRelationshipBase> childRelationships;
     public final DependencyType type;

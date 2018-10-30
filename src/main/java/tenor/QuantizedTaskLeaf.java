@@ -17,13 +17,5 @@
 
 package tenor;
 
-import java.util.List;
-
-public interface ITaskNodeBase<T extends ITaskRelationshipBase> extends ITask<T> {
-
-    List<ITaskRelationshipBase> childTasks();
-
-    DependencyType type();
-
-    void addChild(ITaskRelationshipBase relationship);
+public abstract class QuantizedTaskLeaf extends TaskLeaf<IQuantizedChildTaskRelationship> implements IQuantizedTask {
 }

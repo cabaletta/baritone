@@ -17,7 +17,7 @@
 
 package tenor;
 
-public interface IQuantizedDependentCostCalculator extends ITaskNodeBase {
+public interface IQuantizedDependentCostCalculator<T extends ITaskRelationshipBase> extends ITaskNodeBase<T> {
     default IQuantityRelationship cost() {
         switch (type()) {
             case SERIAL:

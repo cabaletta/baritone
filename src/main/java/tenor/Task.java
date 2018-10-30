@@ -19,17 +19,17 @@ package tenor;
 
 import java.util.List;
 
-public abstract class Task implements ITask {
+public abstract class Task<T extends ITaskRelationshipBase> implements ITask<T> {
 
-    List<ITaskRelationshipBase> parentRelationships;
+    List<T> parentRelationships;
 
     @Override
-    public List<ITaskRelationshipBase> parentTasks() {
+    public List<T> parentTasks() {
         return parentRelationships;
     }
 
     @Override
-    public void addParent(ITaskRelationshipBase relationship) {
+    public void addParent(T relationship) {
         if (relationship.childTask() != this) {
             throw new IllegalArgumentException();
         }

@@ -17,5 +17,5 @@
 
 package tenor;
 
-public abstract class TaskLeaf extends Task {
+public abstract class TaskLeaf<T extends ITaskRelationshipBase> extends Task<T> {
 }

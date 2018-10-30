@@ -17,7 +17,7 @@
 
 package tenor;
 
-public interface IQuantizedTask extends ITask {
+public interface IQuantizedTask extends ITask<IQuantizedChildTaskRelationship> {
 
     /*default QuantityRelationship priority() {
         return q -> {
@@ -33,7 +33,7 @@ public interface IQuantizedTask extends ITask {
 
     IQuantityRelationship cost();
 
-    default IQuantizedChildTaskRelationship<? extends ITaskNodeBase> createRelationshipToParent(ITaskNodeBase parent) {
+    default IQuantizedChildTaskRelationship createRelationshipToParent(ITaskNodeBase parent) {
         if (parent instanceof IQuantizedTask) {
             return new QuantizedToQuantizedTaskRelationship((QuantizedTaskNode) parent, this, parent.type());
         } else {

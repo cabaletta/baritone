@@ -17,9 +17,7 @@
 
 package tenor;
 
-import java.util.List;
-
-public class ActuallyCraftTask extends TaskLeaf implements ISingularTask {
+public class ActuallyCraftTask extends SingularTaskLeaf {
 
     public final CraftingTask parent;
 
@@ -35,7 +33,6 @@ public class ActuallyCraftTask extends TaskLeaf implements ISingularTask {
 
     @Override
     public double priority() {
-        List<ISingularChildTaskRelationship> parentTasks = (List) parentTasks(); // pog
-        return parentTasks.stream().mapToDouble(ISingularChildTaskRelationship::allocatedPriority).sum();
+        return parentTasks().stream().mapToDouble(ISingularChildTaskRelationship::allocatedPriority).sum();
     }
 }

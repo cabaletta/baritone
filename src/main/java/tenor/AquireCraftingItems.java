@@ -29,8 +29,6 @@ public class AquireCraftingItems extends QuantizedTaskNode implements ClaimProvi
         this.parent = parent;
         this.parentRelationship = createRelationshipToParent(parent);
         addParent(parentRelationship);
-
-
     }
 
     @Override
