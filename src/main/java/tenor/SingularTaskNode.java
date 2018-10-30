@@ -17,15 +17,5 @@
 
 package tenor;
 
-public class QuantizedToSingularTaskRelationship extends TaskRelationship implements ISingularChildTaskRelationship, IQuantizedParentTaskRelationship {
-
-    @Override
-    public QuantityRelationship cost() {
-        return x -> child().cost();
-    }
-
-    @Override
-    public double allocatedPriority() {
-        throw new UnsupportedOperationException("Cannot allocate priority from quantized parent to singular child");
-    }
+public class SingularTaskNode {
 }

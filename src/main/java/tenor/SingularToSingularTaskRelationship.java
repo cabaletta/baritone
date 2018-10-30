@@ -18,4 +18,13 @@
 package tenor;
 
 public class SingularToSingularTaskRelationship extends TaskRelationship implements ISingularChildTaskRelationship, ISingularParentTaskRelationship {
+    @Override
+    public double allocatedPriority() {
+        return parent().priorityAllocatedToChild(this);
+    }
+
+    @Override
+    public double cost() {
+        return child().cost();
+    }
 }

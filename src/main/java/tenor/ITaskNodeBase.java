@@ -17,6 +17,10 @@
 
 package tenor;
 
-public class TaskSerial extends TaskNode {
+import java.util.List;
 
+public interface ITaskNodeBase extends ITask {
+    List<TaskRelationship> childTasks();
+
+    DependencyType type();
 }

@@ -18,5 +18,5 @@
 package tenor;
 
 public interface ClaimProvider {
-    boolean provided(TaskRelationship parent, int quantity);
+    int quantityCompletedForParent(IQuantizedChildTaskRelationship relationship);
 }

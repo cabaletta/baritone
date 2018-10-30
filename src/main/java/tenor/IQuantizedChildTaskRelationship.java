@@ -23,4 +23,12 @@ public interface IQuantizedChildTaskRelationship extends ITaskRelationshipBase {
     }
 
     double allocatedPriority(int quantity);
+
+    default boolean childProvidesClaimTo(int quantity) {
+        return quantityCompleted() >= quantity;
+    }
+
+    default int quantityCompleted() {
+        return ((ClaimProvider) child()).quantityCompletedForParent(this);
+    }
 }

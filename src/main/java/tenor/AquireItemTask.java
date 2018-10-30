@@ -18,12 +18,57 @@
 package tenor;
 
 import java.util.HashMap;
+import java.util.Map;
 
-public class AquireItemTask extends Task implements ClaimProvider {
-    HashMap<TaskRelationship, Integer> allocation;
+public class AquireItemTask extends QuantizedTaskNode implements ClaimProvider, QuantizedDependentCostCalculator {
+
+    HashMap<IQuantizedChildTaskRelationship, Integer> allocation; // allocation of what tasks have claim over what items in our inventory i guess
+
+    public AquireItemTask() {
+        super(DependencyType.ANY_ONE_OF);
+    }
 
     @Override
-    public boolean provided(TaskRelationship parent, int quantity) {
-        return allocation.get(parent) >= quantity;
+    public int quantityCompletedForParent(IQuantizedChildTaskRelationship relationship) {
+        return allocation.get(relationship);
+    }
+
+    public void reallocate() {
+        allocation.clear();
+        int amountToAllocate = getCurrentQuantityInInventory();
+        int[] newAmounts = ScarceParentPriorityAllocator.priorityAllocation(amountToAllocate, parents());
+        for (int i = 0; i < parents().size(); i++) {
+            allocation.put(parents().get(i), newAmounts[i]);
+        }
+    }
+
+    public int getCurrentQuantityInInventory() {
+        throw new UnsupportedOperationException("oppa");
+    }
+
+    @Override
+    public QuantityRelationship priority() {
+        return x -> {
+            double sum = 0;
+            for (Map.Entry<IQuantizedChildTaskRelationship, Integer> entry : allocation.entrySet()) {
+
+                IQuantizedChildTaskRelationship parentRelationship = entry.getKey();
+                int quantityAssigned = entry.getValue();
+
+                sum += parentRelationship.allocatedPriority(quantityAssigned);
+            }
+            return sum;
+        };
+    }
+
+    @Override
+    public QuantityRelationship cost() {
+        return QuantizedDependentCostCalculator.super.cost(); // oppa
+    }
+
+    @Override
+    public double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity) {
+        // how much of our priority would go to this child if it could provide us with quantity of the item we need
+        return priority().value(quantity);
     }
 }

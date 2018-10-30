@@ -17,9 +17,21 @@
 
 package tenor;
 
-import java.util.ArrayList;
+import java.util.List;
 
-public abstract class TaskNode extends Task {
-    ArrayList<TaskRelationship> childRelationships;
+public abstract class TaskNode extends Task implements ITaskNodeBase {
+    List<TaskRelationship> childRelationships;
     DependencyType type;
+
+    public TaskNode(DependencyType type) {
+        this.type = type;
+    }
+
+    public List<TaskRelationship> childTasks() {
+        return childRelationships;
+    }
+
+    public DependencyType type() {
+        return type;
+    }
 }

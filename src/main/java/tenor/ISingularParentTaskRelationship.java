@@ -21,4 +21,6 @@ public interface ISingularParentTaskRelationship extends ITaskRelationshipBase {
     default SingularTask parent() {
         return (SingularTask) parentTask();
     }
+
+    double cost();
 }

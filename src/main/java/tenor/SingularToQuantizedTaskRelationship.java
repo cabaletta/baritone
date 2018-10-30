@@ -22,6 +22,11 @@ public class SingularToQuantizedTaskRelationship extends TaskRelationship implem
 
     @Override
     public double allocatedPriority(int quantity) {
-        return quantity >= quantityRequired ? parent().priority() : 0;
+        return quantity >= quantityRequired ? parent().priorityAllocatedToChild(this) : 0;
+    }
+
+    @Override
+    public double cost() {
+        return child().cost().value(quantityRequired);
     }
 }

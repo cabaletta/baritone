@@ -17,11 +17,10 @@
 
 package tenor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Task implements ITask {
-    ArrayList<TaskRelationship> parentRelationships;
+    List<TaskRelationship> parentRelationships;
 
     public List<TaskRelationship> parentTasks() {
         return parentRelationships;

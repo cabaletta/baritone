@@ -17,7 +17,50 @@
 
 package tenor;
 
-public class CraftingTask {
-    int outputQuantity;
+import net.minecraft.util.Tuple;
 
+import java.util.List;
+
+public class CraftingTask extends QuantizedTaskNode {
+    int outputQuantity;
+    List<Tuple<AquireItemTask, Integer>> recipe;
+    AquireCraftingItems inputs;
+
+
+    public CraftingTask() {
+        super(DependencyType.SERIAL);
+    }
+
+    @Override
+    public QuantityRelationship cost() {
+        return x -> {
+            int actualQuantity = (int) Math.ceil(x * 1.0D / outputQuantity);
+            return inputs.cost().value(actualQuantity);
+        };
+    }
+
+    public QuantityRelationship priority() {
+        if (parents().size() != 1) {
+            throw new IllegalStateException();
+        }
+        // TODO this is a short circuit
+        return ((QuantizedTask) (parents().get(0).parentTask())).priority();
+    }
+
+    @Override
+    public double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity) {
+        // how much priority would we give this child if they could provide us this quantity?
+        int amountWeWouldProvide = quantity * outputQuantity;
+        double desirability = priority().value(amountWeWouldProvide);
+        return desirability;
+    }
+
+    public int inputSizeFor(AquireItemTask task) {
+        for (Tuple<AquireItemTask, Integer> tup : recipe) {
+            if (tup.getFirst().equals(task)) {
+                return tup.getSecond();
+            }
+        }
+        throw new IllegalStateException();
+    }
 }

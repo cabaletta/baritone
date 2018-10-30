@@ -25,7 +25,7 @@ public interface QuantizedTask extends ITask {
         return (List<IQuantizedChildTaskRelationship>) (Object) parentTasks();
     }
 
-    default QuantityRelationship priority() {
+    /*default QuantityRelationship priority() {
         return q -> {
             double sum = 0;
             for (IQuantizedChildTaskRelationship parent : parents()) {
@@ -33,7 +33,8 @@ public interface QuantizedTask extends ITask {
             }
             return sum;
         };
-    }
+    }*/
+    QuantityRelationship priority();
 
     QuantityRelationship cost();
 }

@@ -21,4 +21,6 @@ public interface ISingularChildTaskRelationship extends ITaskRelationshipBase {
     default SingularTask child() {
         return (SingularTask) childTask();
     }
+
+    double allocatedPriority();
 }

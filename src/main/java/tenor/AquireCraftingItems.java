@@ -17,6 +17,52 @@
 
 package tenor;
 
-public class AquireCraftingItems extends Task{
+import java.util.List;
 
+public class AquireCraftingItems extends QuantizedTaskNode implements ClaimProvider {
+    CraftingTask output;
+
+    public AquireCraftingItems() {
+        super(DependencyType.PARALLEL_ALL);
+    }
+
+    @Override
+    public double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity) {
+        AquireItemTask resource = (AquireItemTask) child.childTask(); // all our dependents are aquire item tasks
+        int amount = output.inputSizeFor(resource);
+
+        // they could provide us with quantity
+        int actualQuantity = (int) Math.ceil(quantity * 1.0D / amount);
+        // so we could do the crafting recipe this many times
+        // how good would that be?
+        return priority().value(actualQuantity);
+    }
+
+    @Override
+    public QuantityRelationship priority() {
+        return parents().get(0)::allocatedPriority; // gamer style
+    }
+
+    @Override
+    public QuantityRelationship cost() {
+        return null;
+    }
+
+    @Override
+    public int quantityCompletedForParent(IQuantizedChildTaskRelationship relationship) {
+        // our only parent is the crafting task
+        int minCompletion = Integer.MAX_VALUE;
+        for (IQuantizedChildTaskRelationship resource : (List<IQuantizedChildTaskRelationship>) (Object) children()) {
+            int amountForUs = resource.quantityCompleted();
+
+            int amountPerCraft = output.inputSizeFor((AquireItemTask) resource.child());
+
+            int actualQuantity = (int) Math.ceil(amountForUs * 1.0D / amountPerCraft);
+
+            if (actualQuantity < minCompletion || minCompletion == Integer.MAX_VALUE) {
+                minCompletion = actualQuantity; // any missing ingredient and we aren't really done
+            }
+        }
+        return minCompletion;
+    }
 }

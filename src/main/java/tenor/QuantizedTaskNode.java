@@ -17,6 +17,16 @@
 
 package tenor;
 
+import java.util.List;
+
 public abstract class QuantizedTaskNode extends TaskNode implements QuantizedTask {
-    public abstract double allocatedPriority(int quantity, TaskRelationship child);
+    public QuantizedTaskNode(DependencyType type) {
+        super(type);
+    }
+
+    public List<IQuantizedParentTaskRelationship> children() {
+        return (List<IQuantizedParentTaskRelationship>) (Object) childTasks();
+    }
+
+    public abstract double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity);
 }

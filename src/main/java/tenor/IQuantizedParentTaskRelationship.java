@@ -21,4 +21,6 @@ public interface IQuantizedParentTaskRelationship extends ITaskRelationshipBase 
     default QuantizedTaskNode parent() {
         return (QuantizedTaskNode) parentTask();
     }
+
+    QuantityRelationship cost();
 }

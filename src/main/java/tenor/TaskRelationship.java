@@ -22,10 +22,6 @@ public class TaskRelationship implements ITaskRelationshipBase {
     Task child;
     DependencyType type;
 
-    public boolean childProvidesClaimTo(int quantity) {
-        return ((ClaimProvider) child).provided(this, quantity);
-    }
-
     @Override
     public TaskNode parentTask() {
         return parent;
