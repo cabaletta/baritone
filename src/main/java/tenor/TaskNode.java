@@ -20,14 +20,15 @@ package tenor;
 import java.util.List;
 
 public abstract class TaskNode extends Task implements ITaskNodeBase {
-    List<TaskRelationship> childRelationships;
+
+    List<ITaskRelationshipBase> childRelationships;
     DependencyType type;
 
     public TaskNode(DependencyType type) {
         this.type = type;
     }
 
-    public List<TaskRelationship> childTasks() {
+    public List<ITaskRelationshipBase> childTasks() {
         return childRelationships;
     }
 

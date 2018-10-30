@@ -17,5 +17,9 @@
 
 package tenor;
 
-public class SingularTaskNode {
+public abstract class SingularTaskNode extends TaskNode implements ISingularTaskNode {
+
+    public SingularTaskNode(DependencyType type) {
+        super(type);
+    }
 }

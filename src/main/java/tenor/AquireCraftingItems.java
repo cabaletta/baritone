@@ -20,6 +20,7 @@ package tenor;
 import java.util.List;
 
 public class AquireCraftingItems extends QuantizedTaskNode implements ClaimProvider {
+
     CraftingTask output;
 
     public AquireCraftingItems() {
@@ -34,17 +35,17 @@ public class AquireCraftingItems extends QuantizedTaskNode implements ClaimProvi
         // they could provide us with quantity
         int actualQuantity = (int) Math.ceil(quantity * 1.0D / amount);
         // so we could do the crafting recipe this many times
-        // how good would that be?
+        // how good would that be?allocatedPriority
         return priority().value(actualQuantity);
     }
 
     @Override
-    public QuantityRelationship priority() {
-        return parents().get(0)::allocatedPriority; // gamer style
+    public IQuantityRelationship priority() {
+        return ((List<IQuantizedChildTaskRelationship>) (Object) parentTasks()).get(0)::allocatedPriority; // gamer style
     }
 
     @Override
-    public QuantityRelationship cost() {
+    public IQuantityRelationship cost() {
         return null;
     }
 
@@ -52,10 +53,10 @@ public class AquireCraftingItems extends QuantizedTaskNode implements ClaimProvi
     public int quantityCompletedForParent(IQuantizedChildTaskRelationship relationship) {
         // our only parent is the crafting task
         int minCompletion = Integer.MAX_VALUE;
-        for (IQuantizedChildTaskRelationship resource : (List<IQuantizedChildTaskRelationship>) (Object) children()) {
+        for (IQuantizedChildTaskRelationship resource : (List<IQuantizedChildTaskRelationship>) (Object) childTasks()) {
             int amountForUs = resource.quantityCompleted();
 
-            int amountPerCraft = output.inputSizeFor((AquireItemTask) resource.child());
+            int amountPerCraft = output.inputSizeFor((AquireItemTask) resource.childTask());
 
             int actualQuantity = (int) Math.ceil(amountForUs * 1.0D / amountPerCraft);
 

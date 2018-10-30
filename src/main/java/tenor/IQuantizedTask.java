@@ -17,6 +17,19 @@
 
 package tenor;
 
-public interface QuantityRelationship {
-    double value(int quantity);
+public interface IQuantizedTask extends ITask {
+
+    /*default QuantityRelationship priority() {
+        return q -> {
+            double sum = 0;
+            for (IQuantizedChildTaskRelationship parent : parents()) {
+                sum += parent.allocatedPriority(q);
+            }
+            return sum;
+        };
+    }*/
+
+    IQuantityRelationship priority();
+
+    IQuantityRelationship cost();
 }

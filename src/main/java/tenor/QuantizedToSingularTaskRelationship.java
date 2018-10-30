@@ -17,11 +17,13 @@
 
 package tenor;
 
-public class QuantizedToSingularTaskRelationship extends TaskRelationship implements ISingularChildTaskRelationship, IQuantizedParentTaskRelationship {
+public class QuantizedToSingularTaskRelationship
+        extends TaskRelationship<QuantizedTaskNode, ISingularTask>
+        implements ISingularChildTaskRelationship<QuantizedTaskNode>, IQuantizedParentTaskRelationship<ISingularTask> {
 
     @Override
-    public QuantityRelationship cost() {
-        return x -> child().cost();
+    public IQuantityRelationship cost() {
+        return x -> childTask().cost();
     }
 
     @Override

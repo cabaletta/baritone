@@ -17,17 +17,10 @@
 
 package tenor;
 
-public class SingularToSingularTaskRelationship
-        extends TaskRelationship<SingularTaskNode, ISingularTask>
-        implements ISingularChildTaskRelationship<SingularTaskNode>, ISingularParentTaskRelationship<ISingularTask> {
+/**
+ * @author Brady
+ * @since 10/30/2018
+ */
+public interface IQuantizedTaskNode extends ITaskNodeBase, IQuantizedTask {
 
-    @Override
-    public double allocatedPriority() {
-        return parentTask().priorityAllocatedToChild(this);
-    }
-
-    @Override
-    public double cost() {
-        return childTask().cost();
-    }
 }

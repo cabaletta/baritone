@@ -20,7 +20,8 @@ package tenor;
 import java.util.List;
 
 public interface ITaskNodeBase extends ITask {
-    List<TaskRelationship> childTasks();
+
+    List<ITaskRelationshipBase> childTasks();
 
     DependencyType type();
 }

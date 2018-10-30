@@ -17,14 +17,10 @@
 
 package tenor;
 
-import java.util.List;
+/**
+ * @author Brady
+ * @since 10/30/2018
+ */
+public interface ISingularTaskNode extends ITaskNodeBase, ISingularTask {
 
-public interface SingularTask extends ITask {
-    default List<ISingularChildTaskRelationship> parents() {
-        return (List<ISingularChildTaskRelationship>) (Object) parentTasks();
-    }
-
-    double priorityAllocatedToChild(ISingularParentTaskRelationship relationship);
-
-    double cost();
 }

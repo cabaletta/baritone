@@ -17,14 +17,14 @@
 
 package tenor;
 
-public interface QuantizedDependentCostCalculator extends ITaskNodeBase {
-    default QuantityRelationship cost() {
+public interface IQuantizedDependentCostCalculator extends ITaskNodeBase {
+    default IQuantityRelationship cost() {
         switch (type()) {
             case SERIAL:
             case PARALLEL_ALL:
                 return q -> {
                     double sum = 0;
-                    for (TaskRelationship relationship : childTasks()) {
+                    for (ITaskRelationshipBase relationship : childTasks()) {
                         sum += ((IQuantizedParentTaskRelationship) relationship).cost().value(q);
                     }
                     return sum;
@@ -32,7 +32,7 @@ public interface QuantizedDependentCostCalculator extends ITaskNodeBase {
             case ANY_ONE_OF: // TODO this could be smarter about allocating
                 return q -> {
                     double min = -1;
-                    for (TaskRelationship relationship : childTasks()) {
+                    for (ITaskRelationshipBase relationship : childTasks()) {
                         double cost = ((IQuantizedParentTaskRelationship) relationship).cost().value(q);
                         if (min == -1 || cost < min) {
                             min = cost;

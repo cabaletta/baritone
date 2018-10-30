@@ -17,10 +17,7 @@
 
 package tenor;
 
-public interface ISingularChildTaskRelationship extends ITaskRelationshipBase {
-    default SingularTask child() {
-        return (SingularTask) childTask();
-    }
+public interface ISingularChildTaskRelationship<T extends ITaskNodeBase> extends ITaskRelationshipBase<T, ISingularTask> {
 
     double allocatedPriority();
 }

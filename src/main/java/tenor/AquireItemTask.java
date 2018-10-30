@@ -18,9 +18,10 @@
 package tenor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class AquireItemTask extends QuantizedTaskNode implements ClaimProvider, QuantizedDependentCostCalculator {
+public class AquireItemTask extends QuantizedTaskNode implements ClaimProvider, IQuantizedDependentCostCalculator {
 
     HashMap<IQuantizedChildTaskRelationship, Integer> allocation; // allocation of what tasks have claim over what items in our inventory i guess
 
@@ -34,11 +35,13 @@ public class AquireItemTask extends QuantizedTaskNode implements ClaimProvider, 
     }
 
     public void reallocate() {
+        List<IQuantizedChildTaskRelationship> parents = (List<IQuantizedChildTaskRelationship>) (Object) parentTasks();
+
         allocation.clear();
         int amountToAllocate = getCurrentQuantityInInventory();
-        int[] newAmounts = ScarceParentPriorityAllocator.priorityAllocation(amountToAllocate, parents());
-        for (int i = 0; i < parents().size(); i++) {
-            allocation.put(parents().get(i), newAmounts[i]);
+        int[] newAmounts = ScarceParentPriorityAllocator.priorityAllocation(amountToAllocate, parents);
+        for (int i = 0; i < parents.size(); i++) {
+            allocation.put(parents.get(i), newAmounts[i]);
         }
     }
 
@@ -47,7 +50,7 @@ public class AquireItemTask extends QuantizedTaskNode implements ClaimProvider, 
     }
 
     @Override
-    public QuantityRelationship priority() {
+    public IQuantityRelationship priority() {
         return x -> {
             double sum = 0;
             for (Map.Entry<IQuantizedChildTaskRelationship, Integer> entry : allocation.entrySet()) {
@@ -62,8 +65,8 @@ public class AquireItemTask extends QuantizedTaskNode implements ClaimProvider, 
     }
 
     @Override
-    public QuantityRelationship cost() {
-        return QuantizedDependentCostCalculator.super.cost(); // oppa
+    public IQuantityRelationship cost() {
+        return IQuantizedDependentCostCalculator.super.cost(); // oppa
     }
 
     @Override

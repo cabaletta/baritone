@@ -17,14 +17,17 @@
 
 package tenor;
 
-public class QuantizedToQuantizedTaskRelationship extends TaskRelationship implements IQuantizedChildTaskRelationship, IQuantizedParentTaskRelationship {
+public class QuantizedToQuantizedTaskRelationship
+        extends TaskRelationship<QuantizedTaskNode, IQuantizedTask>
+        implements IQuantizedChildTaskRelationship<QuantizedTaskNode>, IQuantizedParentTaskRelationship<IQuantizedTask> {
+
     @Override
     public double allocatedPriority(int quantity) {
-        return parent().priorityAllocatedTo(this, quantity);
+        return parentTask().priorityAllocatedTo(this, quantity);
     }
 
     @Override
-    public QuantityRelationship cost() {
-        return child().cost();
+    public IQuantityRelationship cost() {
+        return childTask().cost();
     }
 }

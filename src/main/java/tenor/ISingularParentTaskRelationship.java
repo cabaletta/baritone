@@ -17,10 +17,7 @@
 
 package tenor;
 
-public interface ISingularParentTaskRelationship extends ITaskRelationshipBase {
-    default SingularTask parent() {
-        return (SingularTask) parentTask();
-    }
+public interface ISingularParentTaskRelationship<T extends ITask> extends ITaskRelationshipBase<SingularTaskNode, T> {
 
     double cost();
 }

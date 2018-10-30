@@ -17,14 +17,14 @@
 
 package tenor;
 
-public class MineTask extends TaskLeaf implements QuantizedTask {
+public class MineTask extends TaskLeaf implements IQuantizedTask {
     @Override
-    public QuantityRelationship priority() {
+    public IQuantityRelationship priority() {
         return null;
     }
 
     @Override
-    public QuantityRelationship cost() {
+    public IQuantityRelationship cost() {
         return null;
     }
 }

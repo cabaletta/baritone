@@ -20,9 +20,10 @@ package tenor;
 import java.util.List;
 
 public abstract class Task implements ITask {
-    List<TaskRelationship> parentRelationships;
 
-    public List<TaskRelationship> parentTasks() {
+    List<ITaskRelationshipBase> parentRelationships;
+
+    public List<ITaskRelationshipBase> parentTasks() {
         return parentRelationships;
     }
 }

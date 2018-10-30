@@ -17,8 +17,9 @@
 
 package tenor;
 
-public interface ITaskRelationshipBase {
-    TaskNode parentTask();
+public interface ITaskRelationshipBase<P extends ITaskNodeBase, C extends ITask> {
 
-    Task childTask();
+    P parentTask();
+
+    C childTask();
 }

@@ -17,18 +17,19 @@
 
 package tenor;
 
-public class TaskRelationship implements ITaskRelationshipBase {
-    TaskNode parent;
-    Task child;
+public class TaskRelationship<P extends ITaskNodeBase, C extends ITask> implements ITaskRelationshipBase<P, C> {
+
+    P parent;
+    C child;
     DependencyType type;
 
     @Override
-    public TaskNode parentTask() {
+    public P parentTask() {
         return parent;
     }
 
     @Override
-    public Task childTask() {
+    public C childTask() {
         return child;
     }
 }

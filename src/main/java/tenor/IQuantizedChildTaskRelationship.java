@@ -17,10 +17,7 @@
 
 package tenor;
 
-public interface IQuantizedChildTaskRelationship extends ITaskRelationshipBase {
-    default QuantizedTask child() {
-        return (QuantizedTask) childTask();
-    }
+public interface IQuantizedChildTaskRelationship<T extends ITaskNodeBase> extends ITaskRelationshipBase<T, IQuantizedTask> {
 
     double allocatedPriority(int quantity);
 
@@ -29,6 +26,7 @@ public interface IQuantizedChildTaskRelationship extends ITaskRelationshipBase {
     }
 
     default int quantityCompleted() {
-        return ((ClaimProvider) child()).quantityCompletedForParent(this);
+        // TODO: Resolve this cast, should QuantizedTask implement ClaimProvider?
+        return ((ClaimProvider) childTask()).quantityCompletedForParent(this);
     }
 }
