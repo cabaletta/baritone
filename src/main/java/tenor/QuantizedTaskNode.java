@@ -17,7 +17,7 @@
 
 package tenor;
 
-public abstract class QuantizedTaskNode extends TaskNode<IQuantizedChildTaskRelationship> implements IQuantizedTask {
+public abstract class QuantizedTaskNode extends TaskNode<IQuantizedChildTaskRelationship, IQuantizedParentTaskRelationship> implements IQuantizedTask {
 
     public QuantizedTaskNode(DependencyType type) {
         super(type);
@@ -37,7 +37,7 @@ public abstract class QuantizedTaskNode extends TaskNode<IQuantizedChildTaskRela
         }
         int minQuantity = -1;
         for (int i = 0; i < childTasks().indexOf(child); i++) {
-            QuantizedToQuantizedTaskRelationship relationship = (QuantizedToQuantizedTaskRelationship) childTasks().get(i);
+            IQuantizedChildTaskRelationship relationship = (IQuantizedChildTaskRelationship) childTasks().get(i);
             IClaimProvider claim = (IClaimProvider) relationship.childTask();
             int amt = claim.quantityCompletedForParent(relationship);
             if (minQuantity == -1 || amt < minQuantity) {

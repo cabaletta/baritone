@@ -17,10 +17,5 @@
 
 package tenor;
 
-/**
- * @author Brady
- * @since 10/30/2018
- */
-public interface IQuantizedTaskNode extends ITaskNodeBase<IQuantizedChildTaskRelationship, IQuantizedParentTaskRelationship>, IQuantizedTask {
-
+public interface IParentTaskRelationship {
 }

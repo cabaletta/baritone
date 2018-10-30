@@ -19,24 +19,27 @@ package tenor;
 
 import java.util.List;
 
-public abstract class TaskNode<T extends ITaskRelationshipBase> extends Task<T> implements ITaskNodeBase<T> {
+public abstract class TaskNode<T extends IChildTaskRelationship & ITaskRelationshipBase, S extends IParentTaskRelationship & ITaskRelationshipBase> extends Task<T> implements ITaskNodeBase<T, S> {
 
-    List<ITaskRelationshipBase> childRelationships;
+    List<S> childRelationships;
     public final DependencyType type;
 
     public TaskNode(DependencyType type) {
         this.type = type;
     }
 
-    public List<ITaskRelationshipBase> childTasks() {
+    @Override
+    public List<S> childTasks() {
         return childRelationships;
     }
 
+    @Override
     public DependencyType type() {
         return type;
     }
 
-    public void addChild(ITaskRelationshipBase relationship) {
+    @Override
+    public void addChild(S relationship) {
         if (relationship.parentTask() != this) {
             throw new IllegalArgumentException();
         }

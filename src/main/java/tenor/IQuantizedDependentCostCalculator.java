@@ -17,23 +17,23 @@
 
 package tenor;
 
-public interface IQuantizedDependentCostCalculator<T extends ITaskRelationshipBase> extends ITaskNodeBase<T> {
+public interface IQuantizedDependentCostCalculator extends IQuantizedTaskNode {
     default IQuantityRelationship cost() {
         switch (type()) {
             case SERIAL:
             case PARALLEL_ALL:
                 return q -> {
                     double sum = 0;
-                    for (ITaskRelationshipBase relationship : childTasks()) {
-                        sum += ((IQuantizedParentTaskRelationship) relationship).cost().value(q);
+                    for (IQuantizedParentTaskRelationship relationship : childTasks()) {
+                        sum += relationship.cost().value(q);
                     }
                     return sum;
                 };
             case ANY_ONE_OF: // TODO this could be smarter about allocating
                 return q -> {
                     double min = -1;
-                    for (ITaskRelationshipBase relationship : childTasks()) {
-                        double cost = ((IQuantizedParentTaskRelationship) relationship).cost().value(q);
+                    for (IQuantizedParentTaskRelationship relationship : childTasks()) {
+                        double cost = relationship.cost().value(q);
                         if (min == -1 || cost < min) {
                             min = cost;
                         }

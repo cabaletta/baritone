@@ -19,7 +19,7 @@ package tenor;
 
 import java.util.List;
 
-public abstract class Task<T extends ITaskRelationshipBase> implements ITask<T> {
+public abstract class Task<T extends IChildTaskRelationship & ITaskRelationshipBase> implements ITask<T> {
 
     List<T> parentRelationships;
 
@@ -33,7 +33,7 @@ public abstract class Task<T extends ITaskRelationshipBase> implements ITask<T> 
         if (relationship.childTask() != this) {
             throw new IllegalArgumentException();
         }
-        relationship.parentTask().addChild(relationship);
+        relationship.parentTask().addChild((IParentTaskRelationship) relationship);
         parentRelationships.add(relationship);
     }
 }

@@ -17,7 +17,7 @@
 
 package tenor;
 
-public interface IQuantizedChildTaskRelationship<T extends ITaskNodeBase> extends ITaskRelationshipBase<T, IQuantizedTask> {
+public interface IQuantizedChildTaskRelationship<T extends ITaskNodeBase> extends ITaskRelationshipBase<T, IQuantizedTask>, IChildTaskRelationship {
 
     double allocatedPriority(int quantity);
 

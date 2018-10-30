@@ -17,8 +17,6 @@
 
 package tenor;
 
-import java.util.List;
-
 public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProvider {
 
     final CraftingTask parent;
@@ -51,11 +49,11 @@ public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProv
         return x -> {
             // cost to get x copies of these items
             double sum = 0;
-            for (QuantizedToQuantizedTaskRelationship resource : (List<QuantizedToQuantizedTaskRelationship>) (Object) childTasks()) {
+            for (IQuantizedParentTaskRelationship resource : childTasks()) {
                 int amountPerCraft = parent.inputSizeFor((AquireItemTask) resource.childTask());
                 int totalAmountNeeded = x * amountPerCraft;
 
-                int amountForUs = resource.quantityCompleted();
+                int amountForUs = ((IQuantizedChildTaskRelationship) resource).quantityCompleted();
                 totalAmountNeeded -= amountForUs;
 
                 if (totalAmountNeeded <= 0) {
@@ -75,8 +73,8 @@ public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProv
         }
         // our only parent is the crafting task
         int minCompletion = Integer.MAX_VALUE;
-        for (IQuantizedChildTaskRelationship resource : (List<IQuantizedChildTaskRelationship>) (Object) childTasks()) {
-            int amountForUs = resource.quantityCompleted();
+        for (IQuantizedParentTaskRelationship resource : childTasks()) {
+            int amountForUs = ((IQuantizedChildTaskRelationship) resource).quantityCompleted();
 
             int amountPerCraft = parent.inputSizeFor((AquireItemTask) resource.childTask());
 
