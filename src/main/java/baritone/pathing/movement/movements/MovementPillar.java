@@ -54,16 +54,12 @@ public class MovementPillar extends Movement {
             if (fromDownDown.getBlock() instanceof BlockLadder || fromDownDown.getBlock() instanceof BlockVine) {
                 return COST_INF;
             }
-            if (fromDownDown.getBlock() instanceof BlockSlab) {
-                if (!((BlockSlab) fromDownDown.getBlock()).isDouble() && fromDownDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
-                    return COST_INF; // can't pillar up from a bottom slab onto a non ladder
-                }
+            if (fromDownDown.getBlock() instanceof BlockSlab && !((BlockSlab) fromDownDown.getBlock()).isDouble() && fromDownDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+                return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
-        if (fromDown instanceof BlockVine) {
-            if (!hasAgainst(x, y, z)) {
-                return COST_INF;
-            }
+        if (fromDown instanceof BlockVine && !hasAgainst(x, y, z)) {
+            return COST_INF;
         }
         IBlockState toBreak = BlockStateInterface.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();

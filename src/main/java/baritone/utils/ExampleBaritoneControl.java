@@ -26,8 +26,6 @@ import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
-import baritone.behavior.FollowBehavior;
-import baritone.behavior.MineBehavior;
 import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
@@ -48,22 +46,14 @@ import java.util.stream.Stream;
 
 public class ExampleBaritoneControl extends Behavior implements Helper {
 
-    public static ExampleBaritoneControl INSTANCE = new ExampleBaritoneControl();
-
-    private ExampleBaritoneControl() {
-
-    }
-
-    public void initAndRegister() {
-        Baritone.INSTANCE.registerBehavior(this);
+    public ExampleBaritoneControl(Baritone baritone) {
+        super(baritone);
     }
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
-        if (!Baritone.settings().chatControl.get()) {
-            if (!Baritone.settings().removePrefix.get()) {
-                return;
-            }
+        if (!Baritone.settings().chatControl.get() && !Baritone.settings().removePrefix.get()) {
+            return;
         }
         String msg = event.getMessage();
         if (Baritone.settings().prefix.get()) {
@@ -77,8 +67,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
     }
 
-    public boolean runCommand(String msg) {
-        msg = msg.toLowerCase(Locale.US).trim();
+    public boolean runCommand(String msg0) {
+        String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
+        PathingBehavior pathingBehavior = baritone.getPathingBehavior();
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
@@ -160,16 +151,16 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("unable to parse integer " + ex);
                 return true;
             }
-            PathingBehavior.INSTANCE.setGoal(goal);
+            pathingBehavior.setGoal(goal);
             logDirect("Goal: " + goal);
             return true;
         }
         if (msg.equals("path")) {
-            if (!PathingBehavior.INSTANCE.path()) {
-                if (PathingBehavior.INSTANCE.getGoal() == null) {
+            if (!pathingBehavior.path()) {
+                if (pathingBehavior.getGoal() == null) {
                     logDirect("No goal.");
                 } else {
-                    if (PathingBehavior.INSTANCE.getGoal().isInGoal(playerFeet())) {
+                    if (pathingBehavior.getGoal().isInGoal(playerFeet())) {
                         logDirect("Already in goal");
                     } else {
                         logDirect("Currently executing a path. Please cancel it first.");
@@ -196,23 +187,23 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("axis")) {
-            PathingBehavior.INSTANCE.setGoal(new GoalAxis());
-            PathingBehavior.INSTANCE.path();
+            pathingBehavior.setGoal(new GoalAxis());
+            pathingBehavior.path();
             return true;
         }
         if (msg.equals("cancel") || msg.equals("stop")) {
-            MineBehavior.INSTANCE.cancel();
-            FollowBehavior.INSTANCE.cancel();
-            PathingBehavior.INSTANCE.cancel();
+            baritone.getMineBehavior().cancel();
+            baritone.getFollowBehavior().cancel();
+            pathingBehavior.cancel();
             logDirect("ok canceled");
             return true;
         }
         if (msg.equals("forcecancel")) {
-            MineBehavior.INSTANCE.cancel();
-            FollowBehavior.INSTANCE.cancel();
-            PathingBehavior.INSTANCE.cancel();
+            baritone.getMineBehavior().cancel();
+            baritone.getFollowBehavior().cancel();
+            pathingBehavior.cancel();
             AbstractNodeCostSearch.forceCancel();
-            PathingBehavior.INSTANCE.forceCancel();
+            pathingBehavior.forceCancel();
             logDirect("ok force canceled");
             return true;
         }
@@ -222,7 +213,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("invert")) {
-            Goal goal = PathingBehavior.INSTANCE.getGoal();
+            Goal goal = pathingBehavior.getGoal();
             BlockPos runAwayFrom;
             if (goal instanceof GoalXZ) {
                 runAwayFrom = new BlockPos(((GoalXZ) goal).getX(), 0, ((GoalXZ) goal).getZ());
@@ -233,13 +224,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Inverting goal of player feet");
                 runAwayFrom = playerFeet();
             }
-            PathingBehavior.INSTANCE.setGoal(new GoalRunAway(1, runAwayFrom) {
+            pathingBehavior.setGoal(new GoalRunAway(1, runAwayFrom) {
                 @Override
                 public boolean isInGoal(BlockPos pos) {
                     return false;
                 }
             });
-            if (!PathingBehavior.INSTANCE.path()) {
+            if (!pathingBehavior.path()) {
                 logDirect("Currently executing a path. Please cancel it first.");
             }
             return true;
@@ -252,10 +243,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             } else {
                 for (EntityPlayer pl : world().playerEntities) {
                     String theirName = pl.getName().trim().toLowerCase();
-                    if (!theirName.equals(player().getName().trim().toLowerCase())) { // don't follow ourselves lol
-                        if (theirName.contains(name) || name.contains(theirName)) {
-                            toFollow = Optional.of(pl);
-                        }
+                    if (!theirName.equals(player().getName().trim().toLowerCase()) && (theirName.contains(name) || name.contains(theirName))) { // don't follow ourselves lol
+                        toFollow = Optional.of(pl);
                     }
                 }
             }
@@ -263,7 +252,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Not found");
                 return true;
             }
-            FollowBehavior.INSTANCE.follow(toFollow.get());
+            baritone.getFollowBehavior().follow(toFollow.get());
             logDirect("Following " + toFollow.get());
             return true;
         }
@@ -295,7 +284,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 int quantity = Integer.parseInt(blockTypes[1]);
                 Block block = ChunkPacker.stringToBlock(blockTypes[0]);
                 Objects.requireNonNull(block);
-                MineBehavior.INSTANCE.mine(quantity, block);
+                baritone.getMineBehavior().mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
@@ -306,14 +295,14 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
 
             }
-            MineBehavior.INSTANCE.mine(0, blockTypes);
+            baritone.getMineBehavior().mine(0, blockTypes);
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
             return true;
         }
         if (msg.startsWith("thisway")) {
             try {
                 Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-                PathingBehavior.INSTANCE.setGoal(goal);
+                pathingBehavior.setGoal(goal);
                 logDirect("Goal: " + goal);
             } catch (NumberFormatException ex) {
                 logDirect("Error unable to parse '" + msg.substring(7).trim() + "' to a double.");
@@ -360,7 +349,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 name = parts[0];
             }
             WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
-            logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto user' to set goal, say 'list user' to list.");
+            logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto " + name + "' to set goal, say 'list user' to list custom waypoints.");
             return true;
         }
         if (msg.startsWith("goto")) {
@@ -382,13 +371,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                         return true;
                     }
                 } else {
-                    List<BlockPos> locs = MineBehavior.INSTANCE.scanFor(Collections.singletonList(block), 64);
+                    List<BlockPos> locs = baritone.getMineBehavior().searchWorld(Collections.singletonList(block), 64);
                     if (locs.isEmpty()) {
                         logDirect("No locations for " + mining + " known, cancelling");
                         return true;
                     }
-                    PathingBehavior.INSTANCE.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
-                    PathingBehavior.INSTANCE.path();
+                    pathingBehavior.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
+                    pathingBehavior.path();
                     return true;
                 }
             } else {
@@ -399,11 +388,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
             }
             Goal goal = new GoalBlock(waypoint.getLocation());
-            PathingBehavior.INSTANCE.setGoal(goal);
-            if (!PathingBehavior.INSTANCE.path()) {
-                if (!goal.isInGoal(playerFeet())) {
-                    logDirect("Currently executing a path. Please cancel it first.");
-                }
+            pathingBehavior.setGoal(goal);
+            if (!pathingBehavior.path() && !goal.isInGoal(playerFeet())) {
+                logDirect("Currently executing a path. Please cancel it first.");
             }
             return true;
         }
@@ -414,10 +401,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 // for some reason the default spawnpoint is underground sometimes
                 Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getZ());
                 logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
-                PathingBehavior.INSTANCE.setGoal(goal);
+                pathingBehavior.setGoal(goal);
             } else {
                 Goal goal = new GoalBlock(waypoint.getLocation());
-                PathingBehavior.INSTANCE.setGoal(goal);
+                pathingBehavior.setGoal(goal);
                 logDirect("Set goal to most recent bed " + goal);
             }
             return true;
@@ -433,8 +420,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("home not saved");
             } else {
                 Goal goal = new GoalBlock(waypoint.getLocation());
-                PathingBehavior.INSTANCE.setGoal(goal);
-                PathingBehavior.INSTANCE.path();
+                pathingBehavior.setGoal(goal);
+                pathingBehavior.path();
                 logDirect("Going to saved home " + goal);
             }
             return true;
@@ -457,7 +444,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("pause")) {
-            boolean enabled = PathingBehavior.INSTANCE.toggle();
+            boolean enabled = pathingBehavior.toggle();
             logDirect("Pathing Behavior has " + (enabled ? "resumed" : "paused") + ".");
             return true;
         }

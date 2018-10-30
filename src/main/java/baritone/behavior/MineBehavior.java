@@ -20,14 +20,13 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.api.behavior.IMineBehavior;
 import baritone.api.event.events.TickEvent;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalComposite;
-import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.*;
+import baritone.api.utils.RotationUtils;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
+import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
@@ -47,13 +46,14 @@ import java.util.stream.Collectors;
  */
 public final class MineBehavior extends Behavior implements IMineBehavior, Helper {
 
-    public static final MineBehavior INSTANCE = new MineBehavior();
-
     private List<Block> mining;
-    private List<BlockPos> locationsCache;
-    private int quantity;
+    private List<BlockPos> knownOreLocations;
+    private BlockPos branchPoint;
+    private int desiredQuantity;
 
-    private MineBehavior() {}
+    public MineBehavior(Baritone baritone) {
+        super(baritone);
+    }
 
     @Override
     public void onTick(TickEvent event) {
@@ -64,53 +64,79 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         if (mining == null) {
             return;
         }
-        if (quantity > 0) {
+        if (desiredQuantity > 0) {
             Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
             int curr = player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
             System.out.println("Currently have " + curr + " " + item);
-            if (curr >= quantity) {
+            if (curr >= desiredQuantity) {
                 logDirect("Have " + curr + " " + item.getItemStackDisplayName(new ItemStack(item, 1)));
                 cancel();
                 return;
             }
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
-        if (mineGoalUpdateInterval != 0) {
-            if (event.getCount() % mineGoalUpdateInterval == 0) {
-                Baritone.INSTANCE.getExecutor().execute(this::rescan);
-            }
+        if (mineGoalUpdateInterval != 0 && event.getCount() % mineGoalUpdateInterval == 0) {
+            Baritone.INSTANCE.getExecutor().execute(this::rescan);
+        }
+        if (Baritone.settings().legitMine.get()) {
+            addNearby();
         }
         updateGoal();
-        PathingBehavior.INSTANCE.revalidateGoal();
+        baritone.getPathingBehavior().revalidateGoal();
     }
 
     private void updateGoal() {
         if (mining == null) {
             return;
         }
-        List<BlockPos> locs = locationsCache;
+        List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
-            locs = prune(new ArrayList<>(locs), mining, 64);
-            PathingBehavior.INSTANCE.setGoal(coalesce(locs));
-            PathingBehavior.INSTANCE.path();
-            locationsCache = locs;
+            List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, 64);
+            // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
+            baritone.getPathingBehavior().setGoalAndPath(new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new)));
+            knownOreLocations = locs;
+            return;
         }
+        // we don't know any ore locations at the moment
+        if (!Baritone.settings().legitMine.get()) {
+            return;
+        }
+        // only in non-Xray mode (aka legit mode) do we do this
+        if (branchPoint == null) {
+            int y = Baritone.settings().legitMineYLevel.get();
+            if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
+                // cool, path is over and we are at desired y
+                branchPoint = playerFeet();
+            } else {
+                baritone.getPathingBehavior().setGoalAndPath(new GoalYLevel(y));
+                return;
+            }
+        }
+
+        if (playerFeet().equals(branchPoint)) {
+            // TODO mine 1x1 shafts to either side
+            branchPoint = branchPoint.north(10);
+        }
+        baritone.getPathingBehavior().setGoalAndPath(new GoalBlock(branchPoint));
     }
 
     private void rescan() {
         if (mining == null) {
             return;
         }
-        List<BlockPos> locs = scanFor(mining, 64);
+        if (Baritone.settings().legitMine.get()) {
+            return;
+        }
+        List<BlockPos> locs = searchWorld(mining, 64);
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
             mine(0, (String[]) null);
             return;
         }
-        locationsCache = locs;
+        knownOreLocations = locs;
     }
 
-    public Goal coalesce(BlockPos loc, List<BlockPos> locs) {
+    private static Goal coalesce(BlockPos loc, List<BlockPos> locs) {
         if (!Baritone.settings().forceInternalMining.get()) {
             return new GoalTwoBlocks(loc);
         }
@@ -132,11 +158,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         }
     }
 
-    public GoalComposite coalesce(List<BlockPos> locs) {
-        return new GoalComposite(locs.stream().map(loc -> coalesce(loc, locs)).toArray(Goal[]::new));
-    }
-
-    public List<BlockPos> scanFor(List<Block> mining, int max) {
+    public List<BlockPos> searchWorld(List<Block> mining, int max) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
@@ -159,26 +181,55 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         return prune(locs, mining, max);
     }
 
-    public List<BlockPos> prune(List<BlockPos> locs, List<Block> mining, int max) {
-        BlockPos playerFeet = MineBehavior.INSTANCE.playerFeet();
-        locs.sort(Comparator.comparingDouble(playerFeet::distanceSq));
+    public void addNearby() {
+        BlockPos playerFeet = playerFeet();
+        int searchDist = 4;//why four? idk
+        for (int x = playerFeet.getX() - searchDist; x <= playerFeet.getX() + searchDist; x++) {
+            for (int y = playerFeet.getY() - searchDist; y <= playerFeet.getY() + searchDist; y++) {
+                for (int z = playerFeet.getZ() - searchDist; z <= playerFeet.getZ() + searchDist; z++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    if (mining.contains(BlockStateInterface.getBlock(pos)) && RotationUtils.reachable(player(), pos).isPresent()) {//crucial to only add blocks we can see because otherwise this is an x-ray and it'll get caught
+                        knownOreLocations.add(pos);
+                    }
+                }
+            }
+        }
+        knownOreLocations = prune(knownOreLocations, mining, 64);
+    }
 
-        // remove any that are within loaded chunks that aren't actually what we want
-        locs.removeAll(locs.stream()
-                .filter(pos -> !(MineBehavior.INSTANCE.world().getChunk(pos) instanceof EmptyChunk))
-                .filter(pos -> !mining.contains(BlockStateInterface.get(pos).getBlock()))
-                .collect(Collectors.toList()));
+    public List<BlockPos> prune(List<BlockPos> locs2, List<Block> mining, int max) {
+        List<BlockPos> locs = locs2
+                .stream()
+
+                // remove any that are within loaded chunks that aren't actually what we want
+                .filter(pos -> world().getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()))
+
+                // remove any that are implausible to mine (encased in bedrock, or touching lava)
+                .filter(MineBehavior::plausibleToBreak)
+
+                .sorted(Comparator.comparingDouble(Helper.HELPER.playerFeet()::distanceSq))
+                .collect(Collectors.toList());
+
         if (locs.size() > max) {
             return locs.subList(0, max);
         }
         return locs;
     }
 
+    public static boolean plausibleToBreak(BlockPos pos) {
+        if (MovementHelper.avoidBreaking(pos.getX(), pos.getY(), pos.getZ(), BlockStateInterface.get(pos))) {
+            return false;
+        }
+        // bedrock above and below makes it implausible, otherwise we're good
+        return !(BlockStateInterface.getBlock(pos.up()) == Blocks.BEDROCK && BlockStateInterface.getBlock(pos.down()) == Blocks.BEDROCK);
+    }
+
     @Override
     public void mine(int quantity, String... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).collect(Collectors.toList());
-        this.quantity = quantity;
-        this.locationsCache = new ArrayList<>();
+        this.desiredQuantity = quantity;
+        this.knownOreLocations = new ArrayList<>();
+        this.branchPoint = null;
         rescan();
         updateGoal();
     }
@@ -186,8 +237,9 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     @Override
     public void mine(int quantity, Block... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
-        this.quantity = quantity;
-        this.locationsCache = new ArrayList<>();
+        this.desiredQuantity = quantity;
+        this.knownOreLocations = new ArrayList<>();
+        this.branchPoint = null;
         rescan();
         updateGoal();
     }
@@ -195,6 +247,6 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     @Override
     public void cancel() {
         mine(0, (String[]) null);
-        PathingBehavior.INSTANCE.cancel();
+        baritone.getPathingBehavior().cancel();
     }
 }

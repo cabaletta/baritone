@@ -220,10 +220,8 @@ public final class RotationUtils {
             if (result.getBlockPos().equals(pos)) {
                 return Optional.of(rotation);
             }
-            if (entity.world.getBlockState(pos).getBlock() instanceof BlockFire) {
-                if (result.getBlockPos().equals(pos.down())) {
-                    return Optional.of(rotation);
-                }
+            if (entity.world.getBlockState(pos).getBlock() instanceof BlockFire && result.getBlockPos().equals(pos.down())) {
+                return Optional.of(rotation);
             }
         }
         return Optional.empty();

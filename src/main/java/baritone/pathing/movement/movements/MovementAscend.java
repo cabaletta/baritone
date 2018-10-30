@@ -97,21 +97,19 @@ public class MovementAscend extends Movement {
             }
         }
         IBlockState srcUp2 = null;
-        if (BlockStateInterface.get(x, y + 3, z).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
+        if (BlockStateInterface.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(x, y + 1, z) || !((srcUp2 = BlockStateInterface.get(x, y + 2, z)).getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
-            if (MovementHelper.canWalkThrough(x, y + 1, z) || !((srcUp2 = BlockStateInterface.get(x, y + 2, z)).getBlock() instanceof BlockFalling)) {
-                // if the lower one is can't walk through and the upper one is falling, that means that by standing on src
-                // (the presupposition of this Movement)
-                // we have necessarily already cleared the entire BlockFalling stack
-                // on top of our head
+            // if the lower one is can't walk through and the upper one is falling, that means that by standing on src
+            // (the presupposition of this Movement)
+            // we have necessarily already cleared the entire BlockFalling stack
+            // on top of our head
 
-                // as in, if we have a block, then two BlockFallings on top of it
-                // and that block is x, y+1, z, and we'd have to clear it to even start this movement
-                // we don't need to worry about those BlockFallings because we've already cleared them
-                return COST_INF;
-            }
+            // as in, if we have a block, then two BlockFallings on top of it
+            // and that block is x, y+1, z, and we'd have to clear it to even start this movement
+            // we don't need to worry about those BlockFallings because we've already cleared them
+            return COST_INF;
             // you may think we only need to check srcUp2, not srcUp
             // however, in the scenario where glitchy world gen where unsupported sand / gravel generates
             // it's possible srcUp is AIR from the start, and srcUp2 is falling
@@ -206,10 +204,8 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
-        if (MovementHelper.isBottomSlab(jumpingOnto)) {
-            if (!MovementHelper.isBottomSlab(src.down())) {
-                return state; // don't jump while walking from a non double slab into a bottom slab
-            }
+        if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(src.down())) {
+            return state; // don't jump while walking from a non double slab into a bottom slab
         }
 
         if (Baritone.settings().assumeStep.get()) {

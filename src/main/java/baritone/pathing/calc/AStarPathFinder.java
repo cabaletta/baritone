@@ -41,10 +41,12 @@ import java.util.Optional;
 public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
     private final Optional<HashSet<Long>> favoredPositions;
+    private final CalculationContext calcContext;
 
-    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions) {
+    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions, CalculationContext context) {
         super(startX, startY, startZ, goal);
         this.favoredPositions = favoredPositions;
+        this.calcContext = context;
     }
 
     @Override
@@ -61,7 +63,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             bestHeuristicSoFar[i] = startNode.estimatedCostToGoal;
             bestSoFar[i] = startNode;
         }
-        CalculationContext calcContext = new CalculationContext();
         MutableMoveResult res = new MutableMoveResult();
         HashSet<Long> favored = favoredPositions.orElse(null);
         BetterWorldBorder worldBorder = new BetterWorldBorder(world().getWorldBorder());
@@ -99,14 +100,12 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             for (Moves moves : Moves.values()) {
                 int newX = currentNode.x + moves.xOffset;
                 int newZ = currentNode.z + moves.zOffset;
-                if (newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) {
+                if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !BlockStateInterface.isLoaded(newX, newZ)) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
-                    if (!BlockStateInterface.isLoaded(newX, newZ)) {
-                        if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
-                            numEmptyChunk++;
-                        }
-                        continue;
+                    if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
+                        numEmptyChunk++;
                     }
+                    continue;
                 }
                 if (!moves.dynamicXZ && !worldBorder.entirelyContains(newX, newZ)) {
                     continue;

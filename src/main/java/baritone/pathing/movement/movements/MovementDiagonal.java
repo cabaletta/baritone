@@ -101,22 +101,18 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         IBlockState pb3 = BlockStateInterface.get(destX, y + 1, z);
-        if (optionA == 0) {
+        if (optionA == 0 && ((MovementHelper.avoidWalkingInto(pb2.getBlock()) && pb2.getBlock() != Blocks.WATER) || (MovementHelper.avoidWalkingInto(pb3.getBlock()) && pb3.getBlock() != Blocks.WATER))) {
             // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
-            if ((MovementHelper.avoidWalkingInto(pb2.getBlock()) && pb2.getBlock() != Blocks.WATER) || (MovementHelper.avoidWalkingInto(pb3.getBlock()) && pb3.getBlock() != Blocks.WATER)) {
-                return COST_INF;
-            }
+            return COST_INF;
         }
         optionB += MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true);
         if (optionA != 0 && optionB != 0) {
             // and finally, if the cost is nonzero for both ways to approach this diagonal, it's not possible
             return COST_INF;
         }
-        if (optionB == 0) {
+        if (optionB == 0 && ((MovementHelper.avoidWalkingInto(pb0.getBlock()) && pb0.getBlock() != Blocks.WATER) || (MovementHelper.avoidWalkingInto(pb1.getBlock()) && pb1.getBlock() != Blocks.WATER))) {
             // and now that option B is fully calculated, see if we can edge around that way
-            if ((MovementHelper.avoidWalkingInto(pb0.getBlock()) && pb0.getBlock() != Blocks.WATER) || (MovementHelper.avoidWalkingInto(pb1.getBlock()) && pb1.getBlock() != Blocks.WATER)) {
-                return COST_INF;
-            }
+            return COST_INF;
         }
         boolean water = false;
         if (BlockStateInterface.isWater(BlockStateInterface.getBlock(x, y, z)) || BlockStateInterface.isWater(destInto.getBlock())) {

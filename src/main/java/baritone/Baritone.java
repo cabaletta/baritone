@@ -18,11 +18,15 @@
 package baritone;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.IBaritoneProvider;
 import baritone.api.Settings;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.behavior.*;
+import baritone.cache.WorldProvider;
+import baritone.cache.WorldScanner;
 import baritone.event.GameEventHandler;
 import baritone.utils.BaritoneAutoTest;
+import baritone.utils.ExampleBaritoneControl;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 
@@ -40,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  * @author Brady
  * @since 7/31/2018 10:50 PM
  */
-public enum Baritone {
+public enum Baritone implements IBaritoneProvider {
 
     /**
      * Singleton instance of this class
@@ -55,9 +59,15 @@ public enum Baritone {
     private GameEventHandler gameEventHandler;
     private InputOverrideHandler inputOverrideHandler;
     private Settings settings;
-    private List<Behavior> behaviors;
     private File dir;
     private ThreadPoolExecutor threadPool;
+
+    private List<Behavior> behaviors;
+    private PathingBehavior pathingBehavior;
+    private LookBehavior lookBehavior;
+    private MemoryBehavior memoryBehavior;
+    private FollowBehavior followBehavior;
+    private MineBehavior mineBehavior;
 
     /**
      * Whether or not Baritone is active
@@ -81,12 +91,13 @@ public enum Baritone {
 
         this.behaviors = new ArrayList<>();
         {
-            registerBehavior(PathingBehavior.INSTANCE);
-            registerBehavior(LookBehavior.INSTANCE);
-            registerBehavior(MemoryBehavior.INSTANCE);
-            registerBehavior(LocationTrackingBehavior.INSTANCE);
-            registerBehavior(FollowBehavior.INSTANCE);
-            registerBehavior(MineBehavior.INSTANCE);
+            // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
+            pathingBehavior = new PathingBehavior(this);
+            lookBehavior = new LookBehavior(this);
+            memoryBehavior = new MemoryBehavior(this);
+            followBehavior = new FollowBehavior(this);
+            mineBehavior = new MineBehavior(this);
+            new ExampleBaritoneControl(this);
         }
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             registerEventListener(BaritoneAutoTest.INSTANCE);
@@ -127,6 +138,42 @@ public enum Baritone {
         this.registerEventListener(behavior);
     }
 
+    @Override
+    public FollowBehavior getFollowBehavior() {
+        return followBehavior;
+    }
+
+    @Override
+    public LookBehavior getLookBehavior() {
+        return lookBehavior;
+    }
+
+    @Override
+    public MemoryBehavior getMemoryBehavior() {
+        return memoryBehavior;
+    }
+
+    @Override
+    public MineBehavior getMineBehavior() {
+        return mineBehavior;
+    }
+
+    @Override
+    public PathingBehavior getPathingBehavior() {
+        return pathingBehavior;
+    }
+
+    @Override
+    public WorldProvider getWorldProvider() {
+        return WorldProvider.INSTANCE;
+    }
+
+    @Override
+    public WorldScanner getWorldScanner() {
+        return WorldScanner.INSTANCE;
+    }
+
+    @Override
     public void registerEventListener(IGameEventListener listener) {
         this.gameEventHandler.registerEventListener(listener);
     }

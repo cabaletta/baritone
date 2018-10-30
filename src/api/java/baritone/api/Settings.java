@@ -24,8 +24,8 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -395,6 +395,18 @@ public class Settings {
      * The "axis" command (aka GoalAxis) will go to a axis, or diagonal axis, at this Y level.
      */
     public Setting<Integer> axisHeight = new Setting<>(120);
+
+    /**
+     * Allow MineBehavior to use X-Ray to see where the ores are. Turn this option off to force it to mine "legit"
+     * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
+     * couldn't. If you don't want it to look like you're X-Raying, turn this off
+     */
+    public Setting<Boolean> legitMine = new Setting<>(false);
+
+    /**
+     * What Y level to go to for legit strip mining
+     */
+    public Setting<Integer> legitMineYLevel = new Setting<>(11);
 
     /**
      * When mining block of a certain type, try to mine two at once instead of one.
