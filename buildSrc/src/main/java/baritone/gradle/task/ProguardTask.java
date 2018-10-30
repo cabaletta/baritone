@@ -110,6 +110,7 @@ public class ProguardTask extends BaritoneGradleTask {
         // Acquire the RT jar using "java -verbose". This doesn't work on Java 9+
         Process p = new ProcessBuilder("java", "-verbose").start();
         String out = IOUtils.toString(p.getInputStream(), "UTF-8").split("\n")[0].split("Opened ")[1].replace("]", "");
+        // TODO Add jce.jar too
         template.add(2, "-libraryjars '" + out + "'");
 
         // API config doesn't require any changes from the changes that we made to the template
