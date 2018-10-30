@@ -31,7 +31,6 @@ public class CraftingTask extends QuantizedTaskNode {
     final ActuallyCraftTask step3;
 
     final AquireItemTask parent;
-    final QuantizedToQuantizedTaskRelationship parentRelationship;
 
     public CraftingTask(AquireItemTask parent) {
         super(DependencyType.SERIAL);
@@ -41,8 +40,7 @@ public class CraftingTask extends QuantizedTaskNode {
         this.step3 = new ActuallyCraftTask(this);
 
         this.parent = parent;
-        this.parentRelationship = createRelationshipToParent(parent);
-        addParent(parentRelationship);
+        addParent(parent);
 
     }
 
@@ -55,7 +53,7 @@ public class CraftingTask extends QuantizedTaskNode {
     }
 
     public IQuantityRelationship priority() {
-        return parentRelationship::allocatedPriority;
+        return parentTasks().get(0)::allocatedPriority;
     }
 
     @Override
