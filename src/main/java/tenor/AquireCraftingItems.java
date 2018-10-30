@@ -22,13 +22,11 @@ import java.util.List;
 public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProvider {
 
     final CraftingTask parent;
-    final QuantizedToQuantizedTaskRelationship parentRelationship;
 
     public AquireCraftingItems(CraftingTask parent) {
         super(DependencyType.PARALLEL_ALL);
         this.parent = parent;
-        this.parentRelationship = createRelationshipToParent(parent);
-        addParent(parentRelationship);
+        addParent(parent);
     }
 
     @Override
@@ -45,7 +43,7 @@ public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProv
 
     @Override
     public IQuantityRelationship priority() {
-        return parentRelationship::allocatedPriority; // gamer style
+        return parentTasks().get(0)::allocatedPriority;
     }
 
     @Override
@@ -72,7 +70,7 @@ public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProv
 
     @Override
     public int quantityCompletedForParent(IQuantizedChildTaskRelationship relationship) {
-        if (relationship != parentRelationship) {
+        if (relationship != parentTasks().get(0)) {
             throw new IllegalStateException();
         }
         // our only parent is the crafting task

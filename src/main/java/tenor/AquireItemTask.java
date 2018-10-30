@@ -35,7 +35,7 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
     }
 
     public void reallocate() {
-        List<IQuantizedChildTaskRelationship> parents = (List<IQuantizedChildTaskRelationship>) (Object) parentTasks();
+        List<IQuantizedChildTaskRelationship> parents = parentTasks();
 
         allocation.clear();
         int amountToAllocate = getCurrentQuantityInInventory();
