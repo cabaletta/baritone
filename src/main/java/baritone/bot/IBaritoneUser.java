@@ -21,9 +21,6 @@ import baritone.bot.entity.EntityBot;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.util.Session;
-import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 /**
  * @author Brady
