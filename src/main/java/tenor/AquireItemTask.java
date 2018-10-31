@@ -40,7 +40,7 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
         allocation = null;
         HashMap<IQuantizedChildTaskRelationship, Integer> tmp = new HashMap<>();
         int amountToAllocate = getCurrentQuantityInInventory();
-        int[] newAmounts = ScarceParentPriorityAllocator.priorityAllocation(amountToAllocate, parents).getSecond();
+        int[] newAmounts = ScarceParentPriorityAllocator.priorityAllocation(amountToAllocate, parents).parentAllocationQuantity;
         for (int i = 0; i < parents.size(); i++) {
             tmp.put(parents.get(i), newAmounts[i]);
         }
@@ -53,7 +53,7 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
 
     @Override
     public IQuantityRelationship priority() { // TODO cache
-        return x -> ScarceParentPriorityAllocator.priorityAllocation(x, parentTasks()).getFirst();
+        return x -> ScarceParentPriorityAllocator.priorityAllocation(x, parentTasks()).totalPriority;
     }
 
     @Override

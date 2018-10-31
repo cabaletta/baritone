@@ -17,14 +17,13 @@
 
 package tenor;
 
-import net.minecraft.util.Tuple;
-
 import java.util.List;
 
 public class ScarceParentPriorityAllocator {
-    public static Tuple<Double, int[]> priorityAllocation(int quantity, List<IQuantizedChildTaskRelationship> parents) {
+
+    public static PriorityAllocation priorityAllocation(int quantity, List<IQuantizedChildTaskRelationship> parents) {
         if (quantity == 0) {
-            return new Tuple<>(0D, new int[parents.size()]);
+            return new PriorityAllocation(new int[parents.size()], 0D);
         }
         double[][] priorities = new double[parents.size()][quantity];
         for (int i = 0; i < parents.size(); i++) {
@@ -53,7 +52,7 @@ public class ScarceParentPriorityAllocator {
             }
 
             if (bestParent == -1 || bestRatio == 0) {
-                return new Tuple<>(totalPriority, taken);
+                return new PriorityAllocation(taken, totalPriority);
             }
             taken[bestParent] += bestQuantity;
             filled += bestQuantity;
@@ -65,6 +64,17 @@ public class ScarceParentPriorityAllocator {
                 repl[i] = priorities[bestParent][i + bestQuantity] - priorityTaken;
             }
             priorities[bestParent] = repl;
+        }
+    }
+
+    public static class PriorityAllocation {
+
+        public final int[] parentAllocationQuantity;
+        public final double totalPriority;
+
+        public PriorityAllocation(int[] parentAllocationQuantity, double totalPriority) {
+            this.parentAllocationQuantity = parentAllocationQuantity;
+            this.totalPriority = totalPriority;
         }
     }
 }
