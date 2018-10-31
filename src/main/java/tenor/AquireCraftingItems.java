@@ -35,7 +35,7 @@ public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProv
         // they could provide us with quantity
         int actualQuantity = (int) Math.ceil(quantity * 1.0D / amount);
         // so we could do the crafting recipe this many times
-        // how good would that be?allocatedPriority
+        // how good would that be?
         return priority().value(actualQuantity);
     }
 

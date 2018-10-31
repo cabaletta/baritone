@@ -38,13 +38,13 @@ public class ScarceParentPriorityAllocator {
         int[] taken = new int[parents.size()];
         while (true) {
 
-            double bestRatio = Double.MIN_VALUE;
+            double bestRatio = 0;
             int bestParent = -1;
             int bestQuantity = -1;
             for (int i = 0; i < priorities.length; i++) {
                 for (int j = 1; j < quantity - filled; j++) {
                     double ratio = priorities[i][j] / j;
-                    if (ratio > bestRatio || bestRatio == Double.MIN_VALUE) {
+                    if (ratio > bestRatio) {
                         bestRatio = ratio;
                         bestParent = i;
                         bestQuantity = j;
@@ -52,7 +52,7 @@ public class ScarceParentPriorityAllocator {
                 }
             }
 
-            if (bestParent == -1) {
+            if (bestParent == -1 || bestRatio == 0) {
                 return new Tuple<>(totalPriority, taken);
             }
             taken[bestParent] += bestQuantity;
