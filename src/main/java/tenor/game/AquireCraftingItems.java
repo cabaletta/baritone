@@ -19,7 +19,7 @@ package tenor.game;
 
 import tenor.*;
 
-public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProvider {
+public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProvider, ISingleParentPriorityAllocator {
 
     final CraftingTask parent;
 
@@ -39,11 +39,6 @@ public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProv
         // so we could do the crafting recipe this many times
         // how good would that be?
         return priority().value(actualQuantity);
-    }
-
-    @Override
-    public IQuantityRelationship priority() {
-        return parentTasks().get(0)::allocatedPriority;
     }
 
     @Override

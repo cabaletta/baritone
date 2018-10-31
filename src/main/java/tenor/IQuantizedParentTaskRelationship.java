@@ -17,7 +17,7 @@
 
 package tenor;
 
-public interface IQuantizedParentTaskRelationship<T extends ITask> extends ITaskRelationshipBase<QuantizedTaskNode, T>, IParentTaskRelationship {
+public interface IQuantizedParentTaskRelationship<T extends ITask> extends ITaskRelationshipBase<IQuantizedTaskNode, T>, IParentTaskRelationship {
 
     IQuantityRelationship cost();
 }

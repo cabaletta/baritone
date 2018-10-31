@@ -18,16 +18,20 @@
 package tenor.game;
 
 import tenor.IQuantityRelationship;
+import tenor.ISingleParentPriorityAllocator;
 import tenor.QuantizedTaskLeaf;
 
-public class MineTask extends QuantizedTaskLeaf {
-    @Override
-    public IQuantityRelationship priority() {
-        return null;
+public class MineTask extends QuantizedTaskLeaf implements ISingleParentPriorityAllocator {
+
+    final AquireItemTask parent;
+
+    public MineTask(AquireItemTask parent) {
+        this.parent = parent;
+        addParent(parent);
     }
 
     @Override
     public IQuantityRelationship cost() {
-        return null;
+        return x -> x * 324232;
     }
 }

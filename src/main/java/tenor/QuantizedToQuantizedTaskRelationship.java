@@ -18,10 +18,10 @@
 package tenor;
 
 public class QuantizedToQuantizedTaskRelationship
-        extends TaskRelationship<QuantizedTaskNode, IQuantizedTask>
-        implements IQuantizedChildTaskRelationship<QuantizedTaskNode>, IQuantizedParentTaskRelationship<IQuantizedTask> {
+        extends TaskRelationship<IQuantizedTaskNode, IQuantizedTask>
+        implements IQuantizedChildTaskRelationship<IQuantizedTaskNode>, IQuantizedParentTaskRelationship<IQuantizedTask> {
 
-    public QuantizedToQuantizedTaskRelationship(QuantizedTaskNode parent, IQuantizedTask child, DependencyType type) {
+    public QuantizedToQuantizedTaskRelationship(IQuantizedTaskNode parent, IQuantizedTask child, DependencyType type) {
         super(parent, child, type);
     }
 

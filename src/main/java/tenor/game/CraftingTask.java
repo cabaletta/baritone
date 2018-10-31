@@ -18,14 +18,11 @@
 package tenor.game;
 
 import net.minecraft.util.Tuple;
-import tenor.DependencyType;
-import tenor.IQuantityRelationship;
-import tenor.IQuantizedParentTaskRelationship;
-import tenor.QuantizedTaskNode;
+import tenor.*;
 
 import java.util.List;
 
-public class CraftingTask extends QuantizedTaskNode {
+public class CraftingTask extends QuantizedTaskNode implements ISingleParentPriorityAllocator {
 
     int outputQuantity;
     List<Tuple<AquireItemTask, Integer>> recipe;
@@ -52,12 +49,8 @@ public class CraftingTask extends QuantizedTaskNode {
     public IQuantityRelationship cost() {
         return x -> {
             int actualQuantity = (int) Math.ceil(x * 1.0D / outputQuantity);
-            return inputs.cost().value(actualQuantity);
+            return inputs.cost().value(actualQuantity) + step2.cost() + step3.cost();
         };
-    }
-
-    public IQuantityRelationship priority() {
-        return parentTasks().get(0)::allocatedPriority;
     }
 
     @Override

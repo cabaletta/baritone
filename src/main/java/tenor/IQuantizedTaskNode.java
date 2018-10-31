@@ -22,5 +22,27 @@ package tenor;
  * @since 10/30/2018
  */
 public interface IQuantizedTaskNode extends ITaskNodeBase<IQuantizedChildTaskRelationship, IQuantizedParentTaskRelationship>, IQuantizedTask {
+    // if the child task were able to provide this amount, how much priority would that be?
+    double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity);
 
+    default int quantityExecutingInto(QuantizedToSingularTaskRelationship child) {
+        if (type() != DependencyType.SERIAL) {
+            throw new UnsupportedOperationException(this + " " + child);
+        }
+        // need to calculate from scratch
+        int ind = childTasks().indexOf(child);
+        if (ind <= 0) {
+            throw new IllegalStateException(childTasks() + "");
+        }
+        int minQuantity = -1;
+        for (int i = 0; i < childTasks().indexOf(child); i++) {
+            IQuantizedChildTaskRelationship relationship = (IQuantizedChildTaskRelationship) childTasks().get(i);
+            IClaimProvider claim = (IClaimProvider) relationship.childTask();
+            int amt = claim.quantityCompletedForParent(relationship);
+            if (minQuantity == -1 || amt < minQuantity) {
+                minQuantity = amt;
+            }
+        }
+        return minQuantity;
+    }
 }

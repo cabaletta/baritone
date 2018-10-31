@@ -17,21 +17,12 @@
 
 package tenor;
 
-public class QuantizedToSingularTaskRelationship
-        extends TaskRelationship<IQuantizedTaskNode, ISingularTask>
-        implements ISingularChildTaskRelationship<IQuantizedTaskNode>, IQuantizedParentTaskRelationship<ISingularTask> {
-
-    public QuantizedToSingularTaskRelationship(IQuantizedTaskNode parent, ISingularTask child, DependencyType type) {
-        super(parent, child, type);
-    }
-
+public interface ISingleParentPriorityAllocator extends IQuantizedTask {
     @Override
-    public IQuantityRelationship cost() {
-        return x -> childTask().cost();
-    }
-
-    @Override
-    public double allocatedPriority() {
-        return parentTask().priorityAllocatedTo(this, parentTask().quantityExecutingInto(this));
+    default IQuantityRelationship priority() {
+        if (parentTasks().size() != 1) {
+            throw new IllegalStateException();
+        }
+        return parentTasks().get(0)::allocatedPriority;
     }
 }
