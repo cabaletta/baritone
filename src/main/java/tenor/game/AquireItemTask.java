@@ -15,7 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package tenor;
+package tenor.game;
+
+import tenor.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -54,11 +56,6 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
     @Override
     public IQuantityRelationship priority() { // TODO cache
         return x -> ScarceParentPriorityAllocator.priorityAllocation(x, parentTasks()).totalPriority;
-    }
-
-    @Override
-    public IQuantityRelationship cost() {
-        return IQuantizedDependentCostCalculator.super.cost(); // oppa
     }
 
     @Override

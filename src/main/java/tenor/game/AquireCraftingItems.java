@@ -15,7 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package tenor;
+package tenor.game;
+
+import tenor.*;
 
 public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProvider {
 

@@ -15,16 +15,27 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package tenor;
+package tenor.game;
 
-public class MineTask extends QuantizedTaskLeaf {
-    @Override
-    public IQuantityRelationship priority() {
-        return null;
+import tenor.ISingularChildTaskRelationship;
+import tenor.SingularTaskLeaf;
+
+public class ActuallyCraftTask extends SingularTaskLeaf {
+
+    public final CraftingTask parent;
+
+    public ActuallyCraftTask(CraftingTask parent) {
+        this.parent = parent;
+        addParent(parent);
     }
 
     @Override
-    public IQuantityRelationship cost() {
-        return null;
+    public double cost() {
+        return 420;
+    }
+
+    @Override
+    public double priority() {
+        return parentTasks().stream().mapToDouble(ISingularChildTaskRelationship::allocatedPriority).sum();
     }
 }

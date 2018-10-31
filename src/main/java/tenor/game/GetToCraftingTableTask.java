@@ -15,20 +15,17 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package tenor;
+package tenor.game;
 
-public class ActuallyCraftTask extends SingularTaskLeaf {
+import tenor.ISingularChildTaskRelationship;
+import tenor.SingularTaskLeaf;
 
-    public final CraftingTask parent;
-
-    public ActuallyCraftTask(CraftingTask parent) {
-        this.parent = parent;
-        addParent(parent);
-    }
+public class GetToCraftingTableTask extends SingularTaskLeaf {
+    public static final GetToCraftingTableTask INSTANCE = new GetToCraftingTableTask(); // ? idk
 
     @Override
     public double cost() {
-        return 420;
+        return 69;
     }
 
     @Override

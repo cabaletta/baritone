@@ -15,9 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package tenor;
+package tenor.game;
 
 import net.minecraft.util.Tuple;
+import tenor.DependencyType;
+import tenor.IQuantityRelationship;
+import tenor.IQuantizedParentTaskRelationship;
+import tenor.QuantizedTaskNode;
 
 import java.util.List;
 
