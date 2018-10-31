@@ -22,7 +22,7 @@ import tenor.*;
 
 import java.util.List;
 
-public class CraftingTask extends QuantizedTaskNode implements ISingleParentPriorityAllocator {
+public class CraftingTask extends QuantizedTaskNode implements ISingleParentQuantizedPriorityAllocator {
 
     int outputQuantity;
     List<Tuple<AquireItemTask, Integer>> recipe;

@@ -19,7 +19,7 @@ package tenor.game;
 
 import tenor.*;
 
-public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProvider, ISingleParentPriorityAllocator {
+public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProvider, ISingleParentQuantizedPriorityAllocator {
 
     final CraftingTask parent;
 

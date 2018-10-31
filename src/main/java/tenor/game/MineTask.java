@@ -18,10 +18,10 @@
 package tenor.game;
 
 import tenor.IQuantityRelationship;
-import tenor.ISingleParentPriorityAllocator;
+import tenor.ISingleParentQuantizedPriorityAllocator;
 import tenor.QuantizedTaskLeaf;
 
-public class MineTask extends QuantizedTaskLeaf implements ISingleParentPriorityAllocator {
+public class MineTask extends QuantizedTaskLeaf implements ISingleParentQuantizedPriorityAllocator {
 
     final AquireItemTask parent;
 

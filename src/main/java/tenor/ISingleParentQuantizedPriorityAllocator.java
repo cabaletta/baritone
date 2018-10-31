@@ -17,7 +17,7 @@
 
 package tenor;
 
-public interface ISingleParentPriorityAllocator extends IQuantizedTask {
+public interface ISingleParentQuantizedPriorityAllocator extends IQuantizedTask {
     @Override
     default IQuantityRelationship priority() {
         if (parentTasks().size() != 1) {
