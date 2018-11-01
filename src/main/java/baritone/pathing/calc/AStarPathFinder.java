@@ -131,7 +131,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     throw new IllegalStateException(moves + " " + res.x + " " + newX + " " + res.z + " " + newZ);
                 }
                 if (!moves.dynamicY && res.y != currentNode.y + moves.yOffset) {
-                    throw new IllegalStateException(moves + " " + res.x + " " + newX + " " + res.z + " " + newZ);
+                    throw new IllegalStateException(moves + " " + res.y + " " + (currentNode.y + moves.yOffset));
                 }
                 long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
                 if (favoring && favored.contains(hashCode)) {
