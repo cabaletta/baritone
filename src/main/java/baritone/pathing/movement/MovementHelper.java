@@ -254,9 +254,6 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         if (state.isBlockNormalCube()) {
-            if (isLava(block) || isWater(block)) {
-                throw new IllegalStateException();
-            }
             return true;
         }
         if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.get())) { // TODO reconsider this
