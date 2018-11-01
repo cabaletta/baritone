@@ -67,9 +67,9 @@ public class MovementPillar extends Movement {
             return COST_INF;
         }
         Block srcUp = null;
-        if (BlockStateInterface.isWater(toBreakBlock) && BlockStateInterface.isWater(fromDown)) {
+        if (MovementHelper.isWater(toBreakBlock) && MovementHelper.isWater(fromDown)) {
             srcUp = BlockStateInterface.get(x, y + 1, z).getBlock();
-            if (BlockStateInterface.isWater(srcUp)) {
+            if (MovementHelper.isWater(srcUp)) {
                 return LADDER_UP_ONE_COST;
             }
         }
@@ -144,7 +144,7 @@ public class MovementPillar extends Movement {
         }
 
         IBlockState fromDown = BlockStateInterface.get(src);
-        if (BlockStateInterface.isWater(fromDown.getBlock()) && BlockStateInterface.isWater(dest)) {
+        if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(dest)) {
             // stay centered while swimming up a water column
             state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), VecUtils.getBlockPosCenter(dest)), false));
             Vec3d destCenter = VecUtils.getBlockPosCenter(dest);
@@ -240,7 +240,7 @@ public class MovementPillar extends Movement {
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);
             }
         }
-        if (BlockStateInterface.isWater(dest.up())) {
+        if (MovementHelper.isWater(dest.up())) {
             return true;
         }
         return super.prepared(state);

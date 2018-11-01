@@ -105,7 +105,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             throw new IllegalStateException();
         }
-        if (BlockStateInterface.isFlowing(state)) {
+        if (isFlowing(state)) {
             return false; // Don't walk through flowing liquids
         }
         if (block instanceof BlockLiquid) {
@@ -254,7 +254,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         if (state.isBlockNormalCube()) {
-            if (BlockStateInterface.isLava(block) || BlockStateInterface.isWater(block)) {
+            if (isLava(block) || isWater(block)) {
                 throw new IllegalStateException();
             }
             return true;
@@ -268,20 +268,20 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST) {
             return true;
         }
-        if (BlockStateInterface.isWater(block)) {
+        if (isWater(block)) {
             // since this is called literally millions of times per second, the benefit of not allocating millions of useless "pos.up()"
             // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
             Block up = BlockStateInterface.get(x, y + 1, z).getBlock();
             if (up == Blocks.WATERLILY) {
                 return true;
             }
-            if (BlockStateInterface.isFlowing(state) || block == Blocks.FLOWING_WATER) {
+            if (isFlowing(state) || block == Blocks.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
-                return BlockStateInterface.isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
+                return isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
             }
             // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
-            return BlockStateInterface.isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
+            return isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
         }
         if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
             return true;
@@ -443,5 +443,48 @@ public interface MovementHelper extends ActionCosts, Helper {
                         new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getYaw(), mc.player.rotationPitch),
                 false
         )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+    }
+
+    /**
+     * Returns whether or not the specified block is
+     * water, regardless of whether or not it is flowing.
+     *
+     * @param b The block
+     * @return Whether or not the block is water
+     */
+    static boolean isWater(Block b) {
+        return b == Blocks.FLOWING_WATER || b == Blocks.WATER;
+    }
+
+    /**
+     * Returns whether or not the block at the specified pos is
+     * water, regardless of whether or not it is flowing.
+     *
+     * @param bp The block pos
+     * @return Whether or not the block is water
+     */
+    static boolean isWater(BlockPos bp) {
+        return isWater(BlockStateInterface.getBlock(bp));
+    }
+
+    static boolean isLava(Block b) {
+        return b == Blocks.FLOWING_LAVA || b == Blocks.LAVA;
+    }
+
+    /**
+     * Returns whether or not the specified pos has a liquid
+     *
+     * @param p The pos
+     * @return Whether or not the block is a liquid
+     */
+    static boolean isLiquid(BlockPos p) {
+        return BlockStateInterface.getBlock(p) instanceof BlockLiquid;
+    }
+
+    static boolean isFlowing(IBlockState state) {
+        // Will be IFluidState in 1.13
+        return state.getBlock() instanceof BlockLiquid
+                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
+                && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 }

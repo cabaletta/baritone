@@ -130,7 +130,7 @@ public class MovementDescend extends Movement {
             }
             IBlockState ontoBlock = BlockStateInterface.get(destX, newY, destZ);
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[fallHeight] + frontBreak;
-            if (ontoBlock.getBlock() == Blocks.WATER && !BlockStateInterface.isFlowing(ontoBlock) && BlockStateInterface.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) { // TODO flowing check required here?
+            if (ontoBlock.getBlock() == Blocks.WATER && !MovementHelper.isFlowing(ontoBlock) && BlockStateInterface.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) { // TODO flowing check required here?
                 // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
                 // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
                 if (Baritone.settings().assumeWalkOnWater.get()) {
@@ -183,7 +183,7 @@ public class MovementDescend extends Movement {
         }
 
         BlockPos playerFeet = playerFeet();
-        if (playerFeet.equals(dest) && (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094)) { // lilypads
+        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094)) { // lilypads
             // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
             return state.setStatus(MovementStatus.SUCCESS);
             /* else {

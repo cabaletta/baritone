@@ -66,7 +66,7 @@ public class MovementTraverse extends Movement {
         if (MovementHelper.canWalkOn(destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
-            if (BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock())) {
+            if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {
                 WC = context.waterWalkSpeed();
                 water = true;
             } else {
@@ -101,8 +101,8 @@ public class MovementTraverse extends Movement {
                 return COST_INF;
             }
             if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(destX, y - 1, destZ, destOn)) {
-                boolean throughWater = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock());
-                if (BlockStateInterface.isWater(destOn.getBlock()) && throughWater) {
+                boolean throughWater = MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock());
+                if (MovementHelper.isWater(destOn.getBlock()) && throughWater) {
                     return COST_INF;
                 }
                 if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
@@ -223,7 +223,7 @@ public class MovementTraverse extends Movement {
             if (playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
+            if (wasTheBridgeBlockAlwaysThere && !MovementHelper.isLiquid(playerFeet())) {
                 state.setInput(InputOverrideHandler.Input.SPRINT, true);
             }
             Block destDown = BlockStateInterface.get(dest.down()).getBlock();

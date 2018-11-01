@@ -78,11 +78,11 @@ public class MovementDiagonal extends Movement {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
         Block cuttingOver1 = BlockStateInterface.get(x, y - 1, destZ).getBlock();
-        if (cuttingOver1 == Blocks.MAGMA || BlockStateInterface.isLava(cuttingOver1)) {
+        if (cuttingOver1 == Blocks.MAGMA || MovementHelper.isLava(cuttingOver1)) {
             return COST_INF;
         }
         Block cuttingOver2 = BlockStateInterface.get(destX, y - 1, z).getBlock();
-        if (cuttingOver2 == Blocks.MAGMA || BlockStateInterface.isLava(cuttingOver2)) {
+        if (cuttingOver2 == Blocks.MAGMA || MovementHelper.isLava(cuttingOver2)) {
             return COST_INF;
         }
         IBlockState pb0 = BlockStateInterface.get(x, y, destZ);
@@ -115,7 +115,7 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         boolean water = false;
-        if (BlockStateInterface.isWater(BlockStateInterface.getBlock(x, y, z)) || BlockStateInterface.isWater(destInto.getBlock())) {
+        if (MovementHelper.isWater(BlockStateInterface.getBlock(x, y, z)) || MovementHelper.isWater(destInto.getBlock())) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
@@ -145,7 +145,7 @@ public class MovementDiagonal extends Movement {
             state.setStatus(MovementStatus.SUCCESS);
             return state;
         }
-        if (!BlockStateInterface.isLiquid(playerFeet())) {
+        if (!MovementHelper.isLiquid(playerFeet())) {
             state.setInput(InputOverrideHandler.Input.SPRINT, true);
         }
         MovementHelper.moveTowards(state, dest);
