@@ -46,8 +46,41 @@ import java.util.stream.Stream;
 
 public class ExampleBaritoneControl extends Behavior implements Helper {
 
+    public static ExampleBaritoneControl INSTANCE; // compatibility with impact 4.4
+
+    private static final String HELP_MSG =
+            "baritone - Output settings into chat\n" +
+                    "settings - Same as baritone\n" +
+                    "goal - Create a goal (one number is '<Y>', two is '<X> <Z>', three is '<X> <Y> <Z>, 'clear' to clear)\n" +
+                    "path - Go towards goal\n" +
+                    "repack - (debug) Repacks chunk cache\n" +
+                    "rescan - (debug) Same as repack\n" +
+                    "axis - Paths towards the closest axis or diagonal axis, at y=120\n" +
+                    "cancel - Cancels current path\n" +
+                    "forcecancel - sudo cancel (only use if very glitched, try toggling 'pause' first)\n" +
+                    "gc - Calls System.gc();\n" +
+                    "invert - Runs away from goal (broken, dont use)\n" +
+                    "follow - Follows a player 'follow username'\n" +
+                    "reloadall - (debug) Reloads chunk cache\n" +
+                    "saveall - (debug) Saves chunk cache\n" +
+                    "find - (debug) outputs how many blocks of a certain type are within the cache\n" +
+                    "mine - Paths to and mines specified blocks 'mine x_ore y_ore ...'\n" +
+                    "thisway - Creates a goal X blocks where you're facing\n" +
+                    "list - Lists waypoints under a category\n" +
+                    "get - Same as list\n" +
+                    "show - Same as list\n" +
+                    "save - Saves a waypoint (works but don't try to make sense of it)\n" +
+                    "goto - Paths towards specified block or waypoint\n" +
+                    "spawn - Paths towards world spawn or your most recent bed right-click\n" +
+                    "sethome - Sets \"home\"\n" +
+                    "home - Paths towards \"home\" \n" +
+                    "costs - (debug) all movement costs from current location\n" +
+                    "pause - Toggle pause\n" +
+                    "damn - Daniel ";
+
     public ExampleBaritoneControl(Baritone baritone) {
         super(baritone);
+        INSTANCE = this;
     }
 
     @Override
@@ -84,6 +117,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect(setting.toString());
             }
             return true;
+        }
+        if (msg.equals("") || msg.equals("help") || msg.equals("?")) {
+            for (String line : HELP_MSG.split("\n")) {
+                logDirect(line);
+            }
+            return false;
         }
         if (msg.contains(" ")) {
             String[] data = msg.split(" ");
