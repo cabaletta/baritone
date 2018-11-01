@@ -18,4 +18,7 @@
 package tenor;
 
 public abstract class QuantizedTaskLeaf extends TaskLeaf<IQuantizedChildTaskRelationship> implements IQuantizedTask {
+    public QuantizedTaskLeaf(Bot bot) {
+        super(bot);
+    }
 }

@@ -30,4 +30,10 @@ public interface ITask<T extends IChildTaskRelationship & ITaskRelationshipBase>
     default void addParent(ITaskNodeBase parent) {
         addParent(createRelationshipToParent(parent));
     }
+
+    Bot bot();
+
+    default BotTaskRegistry registry() {
+        return bot().taskRegistry;
+    }
 }

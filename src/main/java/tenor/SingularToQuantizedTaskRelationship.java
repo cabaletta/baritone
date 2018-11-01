@@ -23,8 +23,8 @@ public class SingularToQuantizedTaskRelationship
 
     public int quantityRequired;
 
-    public SingularToQuantizedTaskRelationship(ISingularTaskNode parent, IQuantizedTask child, DependencyType type, int quantityRequired) {
-        super(parent, child, type);
+    public SingularToQuantizedTaskRelationship(ISingularTaskNode parent, IQuantizedTask child, int quantityRequired) {
+        super(parent, child);
         this.quantityRequired = quantityRequired;
     }
 

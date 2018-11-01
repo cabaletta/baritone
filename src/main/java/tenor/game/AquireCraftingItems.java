@@ -24,7 +24,7 @@ public class AquireCraftingItems extends QuantizedTaskNode implements IClaimProv
     final CraftingTask parent;
 
     public AquireCraftingItems(CraftingTask parent) {
-        super(DependencyType.PARALLEL_ALL);
+        super(parent.bot, DependencyType.PARALLEL_ALL);
         this.parent = parent;
         addParent(parent);
     }

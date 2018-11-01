@@ -26,9 +26,12 @@ import java.util.Map;
 public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider, IQuantizedDependentCostCalculator {
 
     HashMap<IQuantizedChildTaskRelationship, Integer> allocation; // allocation of what tasks have claim over what items in our inventory i guess
+    String item;
 
-    public AquireItemTask() {
-        super(DependencyType.ANY_ONE_OF);
+    public AquireItemTask(Bot bot, String item) {
+        super(bot, DependencyType.ANY_ONE_OF);
+        this.item = item;
+        registry().registerItemBased(this, item);
     }
 
     @Override
@@ -37,11 +40,16 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
     }
 
     public void reallocate() {
+        int amountToAllocate = getCurrentQuantityInInventory();
+        if (amountToAllocate == cachedCurrentQuantity()) {
+            // no change
+            return;
+        }
         List<IQuantizedChildTaskRelationship> parents = parentTasks();
 
         allocation = null;
         HashMap<IQuantizedChildTaskRelationship, Integer> tmp = new HashMap<>();
-        int amountToAllocate = getCurrentQuantityInInventory();
+
         int[] newAmounts = ScarceParentPriorityAllocator.priorityAllocation(amountToAllocate, parents).parentAllocationQuantity;
         for (int i = 0; i < parents.size(); i++) {
             tmp.put(parents.get(i), newAmounts[i]);
@@ -50,7 +58,11 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
     }
 
     public int getCurrentQuantityInInventory() {
-        throw new UnsupportedOperationException("oppa");
+        return bot.getCurrentQuantityInInventory(item);
+    }
+
+    public int cachedCurrentQuantity() {
+        return allocation.entrySet().stream().mapToInt(Map.Entry::getValue).sum();
     }
 
     @Override
@@ -63,7 +75,7 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
         // how much of our priority would go to this child if it could provide us with quantity of the item we need
 
         // here's the thing honey, we *already have* some, so you're really asking what's the priority of getting quantity MORE
-        int curr = allocation.entrySet().stream().mapToInt(Map.Entry::getValue).sum();
+        int curr = cachedCurrentQuantity();
 
         return priority().value(quantity + curr) - priority().value(curr);
     }

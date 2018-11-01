@@ -34,9 +34,9 @@ public class CraftingTask extends QuantizedTaskNode implements ISingleParentQuan
     final AquireItemTask parent;
 
     public CraftingTask(AquireItemTask parent) {
-        super(DependencyType.SERIAL);
+        super(parent.bot, DependencyType.SERIAL);
         this.inputs = new AquireCraftingItems(this); // this adds the relationship
-        this.step2 = GetToCraftingTableTask.INSTANCE;
+        this.step2 = registry().getSingleton(GetToCraftingTableTask.class);
         step2.addParent(this);
         this.step3 = new ActuallyCraftTask(this);
 

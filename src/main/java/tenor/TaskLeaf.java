@@ -18,4 +18,7 @@
 package tenor;
 
 public abstract class TaskLeaf<T extends IChildTaskRelationship & ITaskRelationshipBase> extends Task<T> {
+    public TaskLeaf(Bot bot) {
+        super(bot);
+    }
 }

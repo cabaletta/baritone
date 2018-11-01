@@ -23,9 +23,12 @@ import tenor.QuantizedTaskLeaf;
 
 public class MineTask extends QuantizedTaskLeaf implements ISingleParentQuantizedPriorityAllocator {
 
+    // TODO shared claims of block locations in the world across all mine tasks across all bots
+
     final AquireItemTask parent;
 
     public MineTask(AquireItemTask parent) {
+        super(parent.bot);
         this.parent = parent;
         addParent(parent);
     }

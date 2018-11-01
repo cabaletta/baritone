@@ -15,23 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package tenor.game;
+package tenor;
 
-import tenor.ISingleParentSingularPriorityAllocator;
-import tenor.SingularTaskLeaf;
+public class Bot {
+    public final BotTaskRegistry taskRegistry = new BotTaskRegistry(this);
 
-public class ActuallyCraftTask extends SingularTaskLeaf implements ISingleParentSingularPriorityAllocator {
-
-    public final CraftingTask parent;
-
-    public ActuallyCraftTask(CraftingTask parent) {
-        super(parent.bot);
-        this.parent = parent;
-        addParent(parent);
-    }
-
-    @Override
-    public double cost() {
-        return 420;
+    public int getCurrentQuantityInInventory(String item) {
+        throw new UnsupportedOperationException("oppa");
     }
 }

@@ -21,8 +21,8 @@ public class QuantizedToSingularTaskRelationship
         extends TaskRelationship<IQuantizedTaskNode, ISingularTask>
         implements ISingularChildTaskRelationship<IQuantizedTaskNode>, IQuantizedParentTaskRelationship<ISingularTask> {
 
-    public QuantizedToSingularTaskRelationship(IQuantizedTaskNode parent, ISingularTask child, DependencyType type) {
-        super(parent, child, type);
+    public QuantizedToSingularTaskRelationship(IQuantizedTaskNode parent, ISingularTask child) {
+        super(parent, child);
     }
 
     @Override

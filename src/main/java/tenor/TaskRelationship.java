@@ -23,11 +23,11 @@ public class TaskRelationship<P extends ITaskNodeBase, C extends ITask> implemen
     public final C child;
     public final DependencyType type;
 
-    public TaskRelationship(P parent, C child, DependencyType type) {
+    public TaskRelationship(P parent, C child) {
         this.parent = parent;
         this.child = child;
-        this.type = type;
-        if (parent.type() != type) {
+        this.type = parent.type();
+        if (parent.bot() != child.bot()) {
             throw new IllegalArgumentException();
         }
     }

@@ -17,11 +17,24 @@
 
 package tenor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Task<T extends IChildTaskRelationship & ITaskRelationshipBase> implements ITask<T> {
 
-    List<T> parentRelationships;
+    public final Bot bot;
+
+    private final List<T> parentRelationships = new ArrayList<>();
+
+    public Task(Bot bot) {
+        this.bot = bot;
+        registry().register(this);
+    }
+
+    @Override
+    public Bot bot() {
+        return bot;
+    }
 
     @Override
     public List<T> parentTasks() {

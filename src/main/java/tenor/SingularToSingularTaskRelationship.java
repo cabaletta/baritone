@@ -21,8 +21,8 @@ public class SingularToSingularTaskRelationship
         extends TaskRelationship<ISingularTaskNode, ISingularTask>
         implements ISingularChildTaskRelationship<ISingularTaskNode>, ISingularParentTaskRelationship<ISingularTask> {
 
-    public SingularToSingularTaskRelationship(ISingularTaskNode parent, ISingularTask child, DependencyType type) {
-        super(parent, child, type);
+    public SingularToSingularTaskRelationship(ISingularTaskNode parent, ISingularTask child) {
+        super(parent, child);
     }
 
     @Override

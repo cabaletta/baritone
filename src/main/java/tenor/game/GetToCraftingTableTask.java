@@ -17,11 +17,16 @@
 
 package tenor.game;
 
+import tenor.Bot;
 import tenor.ISingularChildTaskRelationship;
 import tenor.SingularTaskLeaf;
 
 public class GetToCraftingTableTask extends SingularTaskLeaf {
-    public static final GetToCraftingTableTask INSTANCE = new GetToCraftingTableTask(); // ? idk
+
+    public GetToCraftingTableTask(Bot bot) {
+        super(bot);
+        registry().registerSingleton(this);
+    }
 
     @Override
     public double cost() {

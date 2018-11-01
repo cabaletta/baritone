@@ -19,7 +19,7 @@ package tenor;
 
 public abstract class SingularTaskNode extends TaskNode<ISingularChildTaskRelationship, ISingularParentTaskRelationship> implements ISingularTaskNode {
 
-    public SingularTaskNode(DependencyType type) {
-        super(type);
+    public SingularTaskNode(Bot bot, DependencyType type) {
+        super(bot, type);
     }
 }

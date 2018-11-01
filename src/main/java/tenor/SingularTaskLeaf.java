@@ -18,4 +18,7 @@
 package tenor;
 
 public abstract class SingularTaskLeaf extends TaskLeaf<ISingularChildTaskRelationship> implements ISingularTask {
+    public SingularTaskLeaf(Bot bot) {
+        super(bot);
+    }
 }

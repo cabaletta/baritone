@@ -24,9 +24,9 @@ public interface ISingularTask extends ITask<ISingularChildTaskRelationship> {
 
     default ISingularChildTaskRelationship<? extends ITaskNodeBase> createRelationshipToParent(ITaskNodeBase parent) {
         if (parent instanceof IQuantizedTask) {
-            return new QuantizedToSingularTaskRelationship((QuantizedTaskNode) parent, this, parent.type());
+            return new QuantizedToSingularTaskRelationship((IQuantizedTaskNode) parent, this);
         } else {
-            return new SingularToSingularTaskRelationship((SingularTaskNode) parent, this, parent.type());
+            return new SingularToSingularTaskRelationship((ISingularTaskNode) parent, this);
         }
     }
 }

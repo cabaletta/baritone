@@ -35,13 +35,9 @@ public interface IQuantizedTask extends ITask<IQuantizedChildTaskRelationship> {
 
     default IQuantizedChildTaskRelationship createRelationshipToParent(ITaskNodeBase parent) {
         if (parent instanceof IQuantizedTask) {
-            return new QuantizedToQuantizedTaskRelationship((QuantizedTaskNode) parent, this, parent.type());
+            return new QuantizedToQuantizedTaskRelationship((IQuantizedTaskNode) parent, this);
         } else {
             throw new UnsupportedOperationException("SingularToQuantized must be constructed manually since it needs a quantity");
         }
-    }
-
-    default QuantizedToQuantizedTaskRelationship createRelationshipToParent(QuantizedTaskNode parent) {
-        return new QuantizedToQuantizedTaskRelationship(parent, this, parent.type());
     }
 }

@@ -17,14 +17,16 @@
 
 package tenor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class TaskNode<T extends IChildTaskRelationship & ITaskRelationshipBase, S extends IParentTaskRelationship & ITaskRelationshipBase> extends Task<T> implements ITaskNodeBase<T, S> {
 
-    List<S> childRelationships;
+    private final List<S> childRelationships = new ArrayList<>();
     public final DependencyType type;
 
-    public TaskNode(DependencyType type) {
+    public TaskNode(Bot bot, DependencyType type) {
+        super(bot);
         this.type = type;
     }
 

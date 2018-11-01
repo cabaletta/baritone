@@ -21,8 +21,8 @@ public class QuantizedToQuantizedTaskRelationship
         extends TaskRelationship<IQuantizedTaskNode, IQuantizedTask>
         implements IQuantizedChildTaskRelationship<IQuantizedTaskNode>, IQuantizedParentTaskRelationship<IQuantizedTask> {
 
-    public QuantizedToQuantizedTaskRelationship(IQuantizedTaskNode parent, IQuantizedTask child, DependencyType type) {
-        super(parent, child, type);
+    public QuantizedToQuantizedTaskRelationship(IQuantizedTaskNode parent, IQuantizedTask child) {
+        super(parent, child);
     }
 
     @Override
