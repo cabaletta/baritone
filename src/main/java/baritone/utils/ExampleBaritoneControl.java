@@ -59,7 +59,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     "cancel - Cancels current path\n" +
                     "forcecancel - sudo cancel (only use if very glitched, try toggling 'pause' first)\n" +
                     "gc - Calls System.gc();\n" +
-                    "invert - Runs away from goal (broken, dont use)\n" +
+                    "invert - Runs away from the goal instead of towards it\n" +
                     "follow - Follows a player 'follow username'\n" +
                     "reloadall - (debug) Reloads chunk cache\n" +
                     "saveall - (debug) Saves chunk cache\n" +
@@ -265,7 +265,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             pathingBehavior.setGoal(new GoalRunAway(1, runAwayFrom) {
                 @Override
-                public boolean isInGoal(BlockPos pos) {
+                public boolean isInGoal(int x, int y, int z) {
                     return false;
                 }
             });
