@@ -406,13 +406,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             logDebug("no goal");
             return Optional.empty();
         }
-        if (Baritone.settings().simplifyUnloadedYCoord.get()) {
-            BlockPos pos = null;
-            if (goal instanceof IGoalRenderPos) {
-                pos = ((IGoalRenderPos) goal).getGoalPos();
-            }
-
-            if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
+        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
+            BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
+            if (world().getChunk(pos) instanceof EmptyChunk) {
                 logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
