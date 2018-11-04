@@ -52,6 +52,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private Goal goal;
 
+    private boolean safeToCancel;
+    private boolean pauseRequestedLastTick;
+
     private volatile boolean isPathCalcInProgress;
     private final Object pathCalcLock = new Object();
 
@@ -81,7 +84,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public void onTick(TickEvent event) {
         dispatchEvents();
         if (event.getType() == TickEvent.Type.OUT) {
-            cancel();
+            secretInternalSegmentCancel();
             return;
         }
         tickPath();
@@ -89,10 +92,17 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     private void tickPath() {
+        baritone.getPathingControlManager().doTheThingWithTheStuff();
+        if (pauseRequestedLastTick && safeToCancel) {
+            pauseRequestedLastTick = false;
+            baritone.getInputOverrideHandler().clearAllKeys();
+            BlockBreakHelper.stopBreakingBlock();
+            return;
+        }
         if (current == null) {
             return;
         }
-        boolean safe = current.onTick();
+        safeToCancel = current.onTick();
         synchronized (pathPlanLock) {
             if (current.failed() || current.finished()) {
                 current = null;
@@ -134,7 +144,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 return;
             }
             // at this point, we know current is in progress
-            if (safe && next != null && next.snipsnapifpossible()) {
+            if (safeToCancel && next != null && next.snipsnapifpossible()) {
                 // a movement just ended; jump directly onto the next path
                 logDebug("Splicing into planned next path early...");
                 queuePathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
@@ -191,13 +201,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
     }
 
-    public void setGoal(Goal goal) {
+    public void secretInternalSetGoal(Goal goal) {
         this.goal = goal;
     }
 
-    public boolean setGoalAndPath(Goal goal) {
-        setGoal(goal);
-        return path();
+    public boolean secretInternalSetGoalAndPath(Goal goal) {
+        secretInternalSetGoal(goal);
+        return secretInternalPath();
     }
 
     @Override
@@ -225,22 +235,40 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return this.current != null;
     }
 
+    public boolean isSafeToCancel() {
+        return current == null || safeToCancel;
+    }
+
+    public void requestPause() {
+        pauseRequestedLastTick = true;
+    }
+
+    public boolean cancelSegmentIfSafe() {
+        if (isSafeToCancel()) {
+            secretInternalSegmentCancel();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void cancelEverything() {
-
+        secretInternalSegmentCancel();
+        baritone.getPathingControlManager().cancelEverything();
     }
 
     // just cancel the current path
-    public void cancel() {
+    public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
         current = null;
         next = null;
-        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+        baritone.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
         BlockBreakHelper.stopBreakingBlock();
     }
 
     public void forceCancel() { // NOT exposed on public api
+        cancelEverything();
         isPathCalcInProgress = false;
     }
 
@@ -249,7 +277,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      *
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
-    public boolean path() {
+    public boolean secretInternalPath() {
         if (goal == null) {
             return false;
         }

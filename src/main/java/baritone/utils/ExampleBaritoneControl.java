@@ -33,6 +33,7 @@ import baritone.cache.WorldProvider;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
+import baritone.process.CustomGoalProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
@@ -99,6 +100,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     public boolean runCommand(String msg0) {
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
         PathingBehavior pathingBehavior = baritone.getPathingBehavior();
+        PathingControlManager pathControl = baritone.getPathingControlManager();
+        CustomGoalProcess CGPgrey = baritone.getCustomGoalProcess();
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
@@ -186,21 +189,19 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("unable to parse integer " + ex);
                 return true;
             }
-            pathingBehavior.setGoal(goal);
+            CGPgrey.setGoal(goal);
             logDirect("Goal: " + goal);
             return true;
         }
         if (msg.equals("path")) {
-            if (!pathingBehavior.path()) {
-                if (pathingBehavior.getGoal() == null) {
-                    logDirect("No goal.");
-                } else {
-                    if (pathingBehavior.getGoal().isInGoal(playerFeet())) {
-                        logDirect("Already in goal");
-                    } else {
-                        logDirect("Currently executing a path. Please cancel it first.");
-                    }
-                }
+            if (pathingBehavior.getGoal() == null) {
+                logDirect("No goal.");
+            } else if (pathingBehavior.getGoal().isInGoal(playerFeet())) {
+                logDirect("Already in goal");
+            } else if (pathingBehavior.isPathing()) {
+                logDirect("Currently executing a path. Please cancel it first.");
+            } else {
+                CGPgrey.path();
             }
             return true;
         }
@@ -222,21 +223,20 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("axis")) {
-            pathingBehavior.setGoal(new GoalAxis());
-            pathingBehavior.path();
+            CGPgrey.setGoalAndPath(new GoalAxis());
             return true;
         }
         if (msg.equals("cancel") || msg.equals("stop")) {
             baritone.getMineProcess().cancel();
             baritone.getFollowProcess().cancel();
-            pathingBehavior.cancel();
+            pathingBehavior.cancelEverything();
             logDirect("ok canceled");
             return true;
         }
         if (msg.equals("forcecancel")) {
             baritone.getMineProcess().cancel();
             baritone.getFollowProcess().cancel();
-            pathingBehavior.cancel();
+            pathingBehavior.cancelEverything();
             AbstractNodeCostSearch.forceCancel();
             pathingBehavior.forceCancel();
             logDirect("ok force canceled");
@@ -259,15 +259,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Inverting goal of player feet");
                 runAwayFrom = playerFeet();
             }
-            pathingBehavior.setGoal(new GoalRunAway(1, runAwayFrom) {
+            CGPgrey.setGoalAndPath(new GoalRunAway(1, runAwayFrom) {
                 @Override
                 public boolean isInGoal(int x, int y, int z) {
                     return false;
                 }
             });
-            if (!pathingBehavior.path()) {
-                logDirect("Currently executing a path. Please cancel it first.");
-            }
             return true;
         }
         if (msg.startsWith("follow")) {
@@ -337,7 +334,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         if (msg.startsWith("thisway")) {
             try {
                 Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-                pathingBehavior.setGoal(goal);
+                CGPgrey.setGoal(goal);
                 logDirect("Goal: " + goal);
             } catch (NumberFormatException ex) {
                 logDirect("Error unable to parse '" + msg.substring(7).trim() + "' to a double.");
@@ -406,13 +403,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                         return true;
                     }
                 } else {
-                    List<BlockPos> locs = baritone.getMineProcess().searchWorld(Collections.singletonList(block), 64);
-                    if (locs.isEmpty()) {
-                        logDirect("No locations for " + mining + " known, cancelling");
-                        return true;
-                    }
-                    pathingBehavior.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
-                    pathingBehavior.path();
+                    baritone.getGetToBlockProcess().getToBlock(block);
                     return true;
                 }
             } else {
@@ -423,10 +414,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
             }
             Goal goal = new GoalBlock(waypoint.getLocation());
-            pathingBehavior.setGoal(goal);
-            if (!pathingBehavior.path() && !goal.isInGoal(playerFeet())) {
-                logDirect("Currently executing a path. Please cancel it first.");
-            }
+            CGPgrey.setGoalAndPath(goal);
             return true;
         }
         if (msg.equals("spawn") || msg.equals("bed")) {
@@ -436,10 +424,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 // for some reason the default spawnpoint is underground sometimes
                 Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getZ());
                 logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
-                pathingBehavior.setGoal(goal);
+                CGPgrey.setGoalAndPath(goal);
             } else {
-                Goal goal = new GoalBlock(waypoint.getLocation());
-                pathingBehavior.setGoal(goal);
+                Goal goal = new GoalGetToBlock(waypoint.getLocation());
+                CGPgrey.setGoalAndPath(goal);
                 logDirect("Set goal to most recent bed " + goal);
             }
             return true;
@@ -455,8 +443,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("home not saved");
             } else {
                 Goal goal = new GoalBlock(waypoint.getLocation());
-                pathingBehavior.setGoal(goal);
-                pathingBehavior.path();
+                CGPgrey.setGoalAndPath(goal);
                 logDirect("Going to saved home " + goal);
             }
             return true;

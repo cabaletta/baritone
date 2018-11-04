@@ -23,7 +23,7 @@ import baritone.api.process.IBaritoneProcess;
 public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
     public static final double DEFAULT_PRIORITY = 0;
 
-    private final Baritone baritone;
+    protected final Baritone baritone;
     private final double priority;
 
     public BaritoneProcessHelper(Baritone baritone) {

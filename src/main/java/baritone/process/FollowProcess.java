@@ -18,9 +18,9 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.process.IFollowProcess;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.process.IFollowProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
@@ -37,7 +37,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     private Entity following;
 
     public FollowProcess(Baritone baritone) {
-        super(baritone);
+        super(baritone, 1);
     }
 
     @Override
@@ -61,6 +61,11 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     @Override
     public void onLostControl() {
         following = null;
+    }
+
+    @Override
+    public String displayName() {
+        return "Follow " + following;
     }
 
     @Override

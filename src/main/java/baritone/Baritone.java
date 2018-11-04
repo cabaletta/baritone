@@ -21,7 +21,6 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IGameEventListener;
-import baritone.api.process.IBaritoneProcess;
 import baritone.behavior.Behavior;
 import baritone.behavior.LookBehavior;
 import baritone.behavior.MemoryBehavior;
@@ -114,8 +113,8 @@ public enum Baritone implements IBaritone {
             followProcess = new FollowProcess(this);
             mineProcess = new MineProcess(this);
             new ExampleBaritoneControl(this);
-            new CustomGoalProcess(this); // very high iq
-            new GetToBlockProcess(this);
+            customGoalProcess = new CustomGoalProcess(this); // very high iq
+            getToBlockProcess = new GetToBlockProcess(this);
         }
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             registerEventListener(BaritoneAutoTest.INSTANCE);
@@ -160,8 +159,12 @@ public enum Baritone implements IBaritone {
         this.registerEventListener(behavior);
     }
 
-    public void registerProcess(IBaritoneProcess process) {
+    public CustomGoalProcess getCustomGoalProcess() {
+        return customGoalProcess;
+    }
 
+    public GetToBlockProcess getGetToBlockProcess() { // very very high iq
+        return getToBlockProcess;
     }
 
     @Override

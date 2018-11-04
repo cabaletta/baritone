@@ -38,7 +38,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     int tickCount = 0;
 
     public GetToBlockProcess(Baritone baritone) {
-        super(baritone);
+        super(baritone, 2);
     }
 
     @Override
@@ -67,6 +67,9 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             Baritone.INSTANCE.getExecutor().execute(this::rescan);
         }
         Goal goal = new GoalComposite(knownLocations.stream().map(GoalGetToBlock::new).toArray(Goal[]::new));
+        if (goal.isInGoal(playerFeet())) {
+            onLostControl();
+        }
         return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
     }
 
@@ -74,6 +77,11 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     public void onLostControl() {
         gettingTo = null;
         knownLocations = null;
+    }
+
+    @Override
+    public String displayName() {
+        return "Get To Block " + gettingTo;
     }
 
     private void rescan() {

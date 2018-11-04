@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
+import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.util.math.BlockPos;
 
@@ -39,43 +40,51 @@ public class PathingControlManager {
     }
 
     public void registerProcess(IBaritoneProcess process) {
+        process.onLostControl(); // make sure it's reset
         processes.add(process);
+    }
+
+    public void cancelEverything() {
+        for (IBaritoneProcess proc : processes) {
+            proc.onLostControl();
+            if (proc.isActive() && !proc.isTemporary()) { // it's okay for a temporary thing (like combat pause) to maintain control even if you say to cancel
+                // but not for a non temporary thing
+                throw new IllegalStateException(proc.displayName());
+            }
+        }
     }
 
     public void doTheThingWithTheStuff() {
         PathingCommand cmd = doTheStuff();
         if (cmd == null) {
-            baritone.getPathingBehavior().cancel();
             return;
         }
-
+        PathingBehavior p = baritone.getPathingBehavior();
         switch (cmd.commandType) {
             case REQUEST_PAUSE:
-                // idk
-                // ask pathingbehavior if its safe
+                p.requestPause();
+                break;
+            case CANCEL_AND_SET_GOAL:
+                p.secretInternalSetGoal(cmd.goal);
+                p.cancelSegmentIfSafe();
+                break;
             case FORCE_REVALIDATE_GOAL_AND_PATH:
-                if (cmd.goal == null) {
-                    baritone.getPathingBehavior().cancel(); // todo only if its safe
-                    return;
+                p.secretInternalSetGoalAndPath(cmd.goal);
+                if (cmd.goal == null || revalidateGoal(cmd.goal)) {
+                    // pwnage
+                    p.cancelSegmentIfSafe();
                 }
-                // pwnage
-                baritone.getPathingBehavior().setGoal(cmd.goal);
-                if (revalidateGoal(cmd.goal)) {
-                    baritone.getPathingBehavior().cancel(); // todo only if its safe
-                }
+                break;
             case REVALIDATE_GOAL_AND_PATH:
-                if (cmd.goal == null) {
-                    baritone.getPathingBehavior().cancel(); // todo only if its safe
-                    return;
+                p.secretInternalSetGoalAndPath(cmd.goal);
+                if (Baritone.settings().cancelOnGoalInvalidation.get() && (cmd.goal == null || revalidateGoal(cmd.goal))) {
+                    p.cancelSegmentIfSafe();
                 }
-                baritone.getPathingBehavior().setGoal(cmd.goal);
-                if (Baritone.settings().cancelOnGoalInvalidation.get() && revalidateGoal(cmd.goal)) {
-                    baritone.getPathingBehavior().cancel(); // todo only if its safe
-                }
+                break;
             case SET_GOAL_AND_PATH:
                 // now this i can do
                 if (cmd.goal != null) {
-                    baritone.getPathingBehavior().setGoalAndPath(cmd.goal);
+                    baritone.getPathingBehavior().secretInternalSetGoalAndPath(cmd.goal);
                 }
                 // breaks are for wusses!!!!
         }
@@ -111,11 +120,12 @@ public class PathingControlManager {
                 exec = proc.onTick();
                 if (exec == null) {
                     if (proc.isActive()) {
-                        throw new IllegalStateException(proc + "");
+                        throw new IllegalStateException(proc.displayName());
                     }
                     proc.onLostControl();
                     continue;
                 }
+                System.out.println("Executing command " + exec.commandType + " " + exec.goal + " from " + proc.displayName());
                 found = true;
                 cancelOthers = !proc.isTemporary();
             }

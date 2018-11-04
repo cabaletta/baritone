@@ -57,7 +57,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private int tickCount;
 
     public MineProcess(Baritone baritone) {
-        super(baritone);
+        super(baritone, 0);
     }
 
     @Override
@@ -79,7 +79,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
-            Baritone.INSTANCE.getExecutor().execute(this::rescan);
+            baritone.getExecutor().execute(this::rescan);
         }
         if (Baritone.settings().legitMine.get()) {
             addNearby();
@@ -99,6 +99,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         mine(0, (Block[]) null);
     }
 
+    @Override
+    public String displayName() {
+        return "Mine " + mining;
+    }
+
     private Goal updateGoal() {
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
@@ -115,7 +120,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         // only in non-Xray mode (aka legit mode) do we do this
         if (branchPoint == null) {
             int y = Baritone.settings().legitMineYLevel.get();
-            if (!associatedWith().getPathingBehavior().isPathing() && playerFeet().y == y) {
+            if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
                 // cool, path is over and we are at desired y
                 branchPoint = playerFeet();
             } else {

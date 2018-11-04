@@ -44,4 +44,6 @@ public interface IBaritoneProcess {
     double priority(); // tenor be like
 
     IBaritone associatedWith(); // which bot is this associated with (5000000iq forward thinking)
+
+    String displayName();
 }

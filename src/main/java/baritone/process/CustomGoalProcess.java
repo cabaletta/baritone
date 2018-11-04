@@ -22,7 +22,10 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.utils.BaritoneProcessHelper;
+
+import java.util.Objects;
 
 /**
  * As set by ExampleBaritoneControl or something idk
@@ -31,35 +34,72 @@ import baritone.utils.BaritoneProcessHelper;
  */
 public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomGoalProcess {
     private Goal goal;
-    private boolean active;
+    private State state;
+    private int ticksExecuting;
 
     public CustomGoalProcess(Baritone baritone) {
-        super(baritone);
+        super(baritone, 3);
     }
 
     @Override
     public void setGoal(Goal goal) {
         this.goal = goal;
+        state = State.GOAL_SET;
     }
 
     @Override
     public void path() {
-        active = true;
+        if (goal == null) {
+            goal = baritone.getPathingBehavior().getGoal();
+        }
+        state = State.PATH_REQUESTED;
+    }
+
+    private enum State {
+        NONE,
+        GOAL_SET,
+        PATH_REQUESTED,
+        EXECUTING,
+
     }
 
     @Override
     public boolean isActive() {
-        return active;
+        return state != State.NONE;
     }
 
     @Override
     public PathingCommand onTick() {
-        active = false; // only do this once
-        return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+        switch (state) {
+            case GOAL_SET:
+                if (!baritone.getPathingBehavior().isPathing() && Objects.equals(baritone.getPathingBehavior().getGoal(), goal)) {
+                    state = State.NONE;
+                }
+                return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
+            case PATH_REQUESTED:
+                PathingCommand ret = new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+                state = State.EXECUTING;
+                ticksExecuting = 0;
+                return ret;
+            case EXECUTING:
+                if (ticksExecuting++ > 2 && !baritone.getPathingBehavior().isPathing() && !AbstractNodeCostSearch.getCurrentlyRunning().isPresent()) {
+                    onLostControl();
+                }
+                return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     @Override
     public void onLostControl() {
-        active = false;
+        state = State.NONE;
+        goal = null;
+        ticksExecuting = 0;
+    }
+
+    @Override
+    public String displayName() {
+        return "Custom Goal " + goal;
     }
 }
