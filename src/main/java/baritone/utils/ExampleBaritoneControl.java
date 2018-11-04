@@ -227,15 +227,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("cancel") || msg.equals("stop")) {
-            baritone.getMineProcess().cancel();
-            baritone.getFollowProcess().cancel();
             pathingBehavior.cancelEverything();
             logDirect("ok canceled");
             return true;
         }
         if (msg.equals("forcecancel")) {
-            baritone.getMineProcess().cancel();
-            baritone.getFollowProcess().cancel();
             pathingBehavior.cancelEverything();
             AbstractNodeCostSearch.forceCancel();
             pathingBehavior.forceCancel();
