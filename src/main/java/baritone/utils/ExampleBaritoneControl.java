@@ -46,8 +46,6 @@ import java.util.stream.Stream;
 
 public class ExampleBaritoneControl extends Behavior implements Helper {
 
-    public static ExampleBaritoneControl INSTANCE; // compatibility with impact 4.4
-
     private static final String HELP_MSG =
             "baritone - Output settings into chat\n" +
                     "settings - Same as baritone\n" +
@@ -80,7 +78,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
 
     public ExampleBaritoneControl(Baritone baritone) {
         super(baritone);
-        INSTANCE = this;
     }
 
     @Override
