@@ -94,7 +94,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, 64);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
             baritone.getPathingBehavior().setGoalAndPath(new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new)));
-            knownOreLocations = locs;
+            knownOreLocations = locs2;
             return;
         }
         // we don't know any ore locations at the moment
