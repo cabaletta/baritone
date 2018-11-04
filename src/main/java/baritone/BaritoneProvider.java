@@ -17,59 +17,17 @@
 
 package baritone;
 
+import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
-import baritone.api.behavior.*;
-import baritone.api.cache.IWorldProvider;
-import baritone.api.cache.IWorldScanner;
-import baritone.api.event.listener.IGameEventListener;
-import baritone.cache.WorldProvider;
-import baritone.cache.WorldScanner;
+import net.minecraft.client.entity.EntityPlayerSP;
 
 /**
- * todo fix this cancer
- *
  * @author Brady
  * @since 9/29/2018
  */
 public final class BaritoneProvider implements IBaritoneProvider {
-
     @Override
-    public IFollowBehavior getFollowBehavior() {
-        return Baritone.INSTANCE.getFollowBehavior();
-    }
-
-    @Override
-    public ILookBehavior getLookBehavior() {
-        return Baritone.INSTANCE.getLookBehavior();
-    }
-
-    @Override
-    public IMemoryBehavior getMemoryBehavior() {
-        return Baritone.INSTANCE.getMemoryBehavior();
-    }
-
-    @Override
-    public IMineBehavior getMineBehavior() {
-        return Baritone.INSTANCE.getMineBehavior();
-    }
-
-    @Override
-    public IPathingBehavior getPathingBehavior() {
-        return Baritone.INSTANCE.getPathingBehavior();
-    }
-
-    @Override
-    public IWorldProvider getWorldProvider() {
-        return WorldProvider.INSTANCE;
-    }
-
-    @Override
-    public IWorldScanner getWorldScanner() {
-        return WorldScanner.INSTANCE;
-    }
-
-    @Override
-    public void registerEventListener(IGameEventListener listener) {
-        Baritone.INSTANCE.registerEventListener(listener);
+    public IBaritone getBaritoneForPlayer(EntityPlayerSP player) {
+        return Baritone.INSTANCE; // pwnage
     }
 }

@@ -15,40 +15,33 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils.interfaces;
+package baritone.api.process;
+
+import baritone.api.process.IBaritoneProcess;
+import net.minecraft.entity.Entity;
 
 /**
  * @author Brady
- * @since 8/20/2018
+ * @since 9/23/2018
  */
-public interface Toggleable {
+public interface IFollowProcess extends IBaritoneProcess {
 
     /**
-     * Toggles the enabled state of this {@link Toggleable}.
+     * Set the follow target to the specified entity;
      *
-     * @return The new state.
+     * @param entity The entity to follow
      */
-    boolean toggle();
+    void follow(Entity entity);
 
     /**
-     * Sets the enabled state of this {@link Toggleable}.
-     *
-     * @return The new state.
+     * @return The entity that is currently being followed
      */
-    boolean setEnabled(boolean enabled);
+    Entity following();
 
     /**
-     * @return Whether or not this {@link Toggleable} object is enabled
+     * Cancels the follow behavior, this will clear the current follow target.
      */
-    boolean isEnabled();
-
-    /**
-     * Called when the state changes from disabled to enabled
-     */
-    default void onEnable() {}
-
-    /**
-     * Called when the state changes from enabled to disabled
-     */
-    default void onDisable() {}
+    default void cancel() {
+        onLostControl();
+    }
 }

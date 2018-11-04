@@ -17,70 +17,8 @@
 
 package baritone.api;
 
-import baritone.api.behavior.*;
-import baritone.api.cache.IWorldProvider;
-import baritone.api.cache.IWorldScanner;
-import baritone.api.event.listener.IGameEventListener;
+import net.minecraft.client.entity.EntityPlayerSP;
 
-/**
- * @author Brady
- * @since 9/29/2018
- */
 public interface IBaritoneProvider {
-
-    /**
-     * @see IFollowBehavior
-     *
-     * @return The {@link IFollowBehavior} instance
-     */
-    IFollowBehavior getFollowBehavior();
-
-    /**
-     * @see ILookBehavior
-     *
-     * @return The {@link ILookBehavior} instance
-     */
-    ILookBehavior getLookBehavior();
-
-    /**
-     * @see IMemoryBehavior
-     *
-     * @return The {@link IMemoryBehavior} instance
-     */
-    IMemoryBehavior getMemoryBehavior();
-
-    /**
-     * @see IMineBehavior
-     *
-     * @return The {@link IMineBehavior} instance
-     */
-    IMineBehavior getMineBehavior();
-
-    /**
-     * @see IPathingBehavior
-     *
-     * @return The {@link IPathingBehavior} instance
-     */
-    IPathingBehavior getPathingBehavior();
-
-    /**
-     * @see IWorldProvider
-     *
-     * @return The {@link IWorldProvider} instance
-     */
-    IWorldProvider getWorldProvider();
-
-    /**
-     * @see IWorldScanner
-     *
-     * @return The {@link IWorldScanner} instance
-     */
-    IWorldScanner getWorldScanner();
-
-    /**
-     * Registers a {@link IGameEventListener} with Baritone's "event bus".
-     *
-     * @param listener The listener
-     */
-    void registerEventListener(IGameEventListener listener);
+    IBaritone getBaritoneForPlayer(EntityPlayerSP player); // tenor be like
 }

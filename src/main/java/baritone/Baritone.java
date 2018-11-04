@@ -18,16 +18,25 @@
 package baritone;
 
 import baritone.api.BaritoneAPI;
-import baritone.api.IBaritoneProvider;
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IGameEventListener;
-import baritone.behavior.*;
+import baritone.api.process.IBaritoneProcess;
+import baritone.behavior.Behavior;
+import baritone.behavior.LookBehavior;
+import baritone.behavior.MemoryBehavior;
+import baritone.behavior.PathingBehavior;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
 import baritone.event.GameEventHandler;
+import baritone.process.CustomGoalProcess;
+import baritone.process.FollowProcess;
+import baritone.process.GetToBlockProcess;
+import baritone.process.MineProcess;
 import baritone.utils.BaritoneAutoTest;
 import baritone.utils.ExampleBaritoneControl;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.PathingControlManager;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -44,7 +53,7 @@ import java.util.concurrent.TimeUnit;
  * @author Brady
  * @since 7/31/2018 10:50 PM
  */
-public enum Baritone implements IBaritoneProvider {
+public enum Baritone implements IBaritone {
 
     /**
      * Singleton instance of this class
@@ -66,8 +75,13 @@ public enum Baritone implements IBaritoneProvider {
     private PathingBehavior pathingBehavior;
     private LookBehavior lookBehavior;
     private MemoryBehavior memoryBehavior;
-    private FollowBehavior followBehavior;
-    private MineBehavior mineBehavior;
+
+    private FollowProcess followProcess;
+    private MineProcess mineProcess;
+    private GetToBlockProcess getToBlockProcess;
+    private CustomGoalProcess customGoalProcess;
+
+    private PathingControlManager pathingControlManager;
 
     /**
      * Whether or not Baritone is active
@@ -89,15 +103,19 @@ public enum Baritone implements IBaritoneProvider {
         // We might want to change this...
         this.settings = BaritoneAPI.getSettings();
 
+        this.pathingControlManager = new PathingControlManager(this);
+
         this.behaviors = new ArrayList<>();
         {
             // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
             pathingBehavior = new PathingBehavior(this);
             lookBehavior = new LookBehavior(this);
             memoryBehavior = new MemoryBehavior(this);
-            followBehavior = new FollowBehavior(this);
-            mineBehavior = new MineBehavior(this);
+            followProcess = new FollowProcess(this);
+            mineProcess = new MineProcess(this);
             new ExampleBaritoneControl(this);
+            new CustomGoalProcess(this); // very high iq
+            new GetToBlockProcess(this);
         }
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             registerEventListener(BaritoneAutoTest.INSTANCE);
@@ -111,6 +129,10 @@ public enum Baritone implements IBaritoneProvider {
 
         this.active = true;
         this.initialized = true;
+    }
+
+    public PathingControlManager getPathingControlManager() {
+        return pathingControlManager;
     }
 
     public boolean isInitialized() {
@@ -138,9 +160,13 @@ public enum Baritone implements IBaritoneProvider {
         this.registerEventListener(behavior);
     }
 
+    public void registerProcess(IBaritoneProcess process) {
+
+    }
+
     @Override
-    public FollowBehavior getFollowBehavior() {
-        return followBehavior;
+    public FollowProcess getFollowProcess() {
+        return followProcess;
     }
 
     @Override
@@ -154,8 +180,8 @@ public enum Baritone implements IBaritoneProvider {
     }
 
     @Override
-    public MineBehavior getMineBehavior() {
-        return mineBehavior;
+    public MineProcess getMineProcess() {
+        return mineProcess;
     }
 
     @Override

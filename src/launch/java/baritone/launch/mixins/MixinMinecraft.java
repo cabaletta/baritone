@@ -142,7 +142,7 @@ public class MixinMinecraft {
             )
     )
     private boolean isAllowUserInput(GuiScreen screen) {
-        return (Baritone.INSTANCE.getPathingBehavior().getCurrent() != null && Baritone.INSTANCE.getPathingBehavior().isEnabled() && player != null) || screen.allowUserInput;
+        return (Baritone.INSTANCE.getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
     }
 
     @Inject(

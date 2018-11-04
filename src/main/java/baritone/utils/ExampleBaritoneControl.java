@@ -73,7 +73,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     "sethome - Sets \"home\"\n" +
                     "home - Paths towards \"home\" \n" +
                     "costs - (debug) all movement costs from current location\n" +
-                    "pause - Toggle pause\n" +
                     "damn - Daniel ";
 
     public ExampleBaritoneControl(Baritone baritone) {
@@ -228,15 +227,15 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("cancel") || msg.equals("stop")) {
-            baritone.getMineBehavior().cancel();
-            baritone.getFollowBehavior().cancel();
+            baritone.getMineProcess().cancel();
+            baritone.getFollowProcess().cancel();
             pathingBehavior.cancel();
             logDirect("ok canceled");
             return true;
         }
         if (msg.equals("forcecancel")) {
-            baritone.getMineBehavior().cancel();
-            baritone.getFollowBehavior().cancel();
+            baritone.getMineProcess().cancel();
+            baritone.getFollowProcess().cancel();
             pathingBehavior.cancel();
             AbstractNodeCostSearch.forceCancel();
             pathingBehavior.forceCancel();
@@ -288,7 +287,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Not found");
                 return true;
             }
-            baritone.getFollowBehavior().follow(toFollow.get());
+            baritone.getFollowProcess().follow(toFollow.get());
             logDirect("Following " + toFollow.get());
             return true;
         }
@@ -320,7 +319,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 int quantity = Integer.parseInt(blockTypes[1]);
                 Block block = ChunkPacker.stringToBlock(blockTypes[0]);
                 Objects.requireNonNull(block);
-                baritone.getMineBehavior().mine(quantity, block);
+                baritone.getMineProcess().mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
@@ -331,7 +330,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
 
             }
-            baritone.getMineBehavior().mine(0, blockTypes);
+            baritone.getMineProcess().mineByName(0, blockTypes);
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
             return true;
         }
@@ -407,7 +406,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                         return true;
                     }
                 } else {
-                    List<BlockPos> locs = baritone.getMineBehavior().searchWorld(Collections.singletonList(block), 64);
+                    List<BlockPos> locs = baritone.getMineProcess().searchWorld(Collections.singletonList(block), 64);
                     if (locs.isEmpty()) {
                         logDirect("No locations for " + mining + " known, cancelling");
                         return true;
@@ -477,11 +476,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
                 logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
             }
-            return true;
-        }
-        if (msg.equals("pause")) {
-            boolean enabled = pathingBehavior.toggle();
-            logDirect("Pathing Behavior has " + (enabled ? "resumed" : "paused") + ".");
             return true;
         }
         if (msg.equals("damn")) {

@@ -15,18 +15,20 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior;
+package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.behavior.IMineBehavior;
-import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.goals.*;
+import baritone.api.process.IMineProcess;
+import baritone.api.process.PathingCommand;
+import baritone.api.process.PathingCommandType;
 import baritone.api.utils.RotationUtils;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.MovementHelper;
+import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
@@ -44,26 +46,27 @@ import java.util.stream.Collectors;
  *
  * @author leijurv
  */
-public final class MineBehavior extends Behavior implements IMineBehavior, Helper {
+public final class MineProcess extends BaritoneProcessHelper implements IMineProcess {
+
+    private static final int ORE_LOCATIONS_COUNT = 64;
 
     private List<Block> mining;
     private List<BlockPos> knownOreLocations;
     private BlockPos branchPoint;
     private int desiredQuantity;
+    private int tickCount;
 
-    public MineBehavior(Baritone baritone) {
+    public MineProcess(Baritone baritone) {
         super(baritone);
     }
 
     @Override
-    public void onTick(TickEvent event) {
-        if (event.getType() == TickEvent.Type.OUT) {
-            cancel();
-            return;
-        }
-        if (mining == null) {
-            return;
-        }
+    public boolean isActive() {
+        return mining != null;
+    }
+
+    @Override
+    public PathingCommand onTick() {
         if (desiredQuantity > 0) {
             Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
             int curr = player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
@@ -71,45 +74,52 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             if (curr >= desiredQuantity) {
                 logDirect("Have " + curr + " " + item.getItemStackDisplayName(new ItemStack(item, 1)));
                 cancel();
-                return;
+                return null;
             }
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
-        if (mineGoalUpdateInterval != 0 && event.getCount() % mineGoalUpdateInterval == 0) {
+        if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             Baritone.INSTANCE.getExecutor().execute(this::rescan);
         }
         if (Baritone.settings().legitMine.get()) {
             addNearby();
         }
-        updateGoal();
-        baritone.getPathingBehavior().revalidateGoal();
+        Goal goal = updateGoal();
+        if (goal == null) {
+            // none in range
+            // maybe say something in chat? (ahem impact)
+            cancel();
+            return null;
+        }
+        return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
 
-    private void updateGoal() {
-        if (mining == null) {
-            return;
-        }
+    @Override
+    public void onLostControl() {
+        mine(0, (Block[]) null);
+    }
+
+    private Goal updateGoal() {
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
-            List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, 64);
+            List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
-            baritone.getPathingBehavior().setGoalAndPath(new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new)));
+            Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new));
             knownOreLocations = locs2;
-            return;
+            return goal;
         }
         // we don't know any ore locations at the moment
         if (!Baritone.settings().legitMine.get()) {
-            return;
+            return null;
         }
         // only in non-Xray mode (aka legit mode) do we do this
         if (branchPoint == null) {
             int y = Baritone.settings().legitMineYLevel.get();
-            if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
+            if (!associatedWith().getPathingBehavior().isPathing() && playerFeet().y == y) {
                 // cool, path is over and we are at desired y
                 branchPoint = playerFeet();
             } else {
-                baritone.getPathingBehavior().setGoalAndPath(new GoalYLevel(y));
-                return;
+                return new GoalYLevel(y);
             }
         }
 
@@ -117,7 +127,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
             // TODO mine 1x1 shafts to either side
             branchPoint = branchPoint.north(10);
         }
-        baritone.getPathingBehavior().setGoalAndPath(new GoalBlock(branchPoint));
+        return new GoalBlock(branchPoint);
     }
 
     private void rescan() {
@@ -127,10 +137,10 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         if (Baritone.settings().legitMine.get()) {
             return;
         }
-        List<BlockPos> locs = searchWorld(mining, 64);
+        List<BlockPos> locs = searchWorld(mining, ORE_LOCATIONS_COUNT);
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
-            mine(0, (String[]) null);
+            cancel();
             return;
         }
         knownOreLocations = locs;
@@ -158,7 +168,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         }
     }
 
-    public List<BlockPos> searchWorld(List<Block> mining, int max) {
+    public static List<BlockPos> searchWorld(List<Block> mining, int max) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
@@ -194,18 +204,18 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
                 }
             }
         }
-        knownOreLocations = prune(knownOreLocations, mining, 64);
+        knownOreLocations = prune(knownOreLocations, mining, ORE_LOCATIONS_COUNT);
     }
 
-    public List<BlockPos> prune(List<BlockPos> locs2, List<Block> mining, int max) {
+    public static List<BlockPos> prune(List<BlockPos> locs2, List<Block> mining, int max) {
         List<BlockPos> locs = locs2
                 .stream()
 
                 // remove any that are within loaded chunks that aren't actually what we want
-                .filter(pos -> world().getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()))
+                .filter(pos -> Helper.HELPER.world().getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()))
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
-                .filter(MineBehavior::plausibleToBreak)
+                .filter(MineProcess::plausibleToBreak)
 
                 .sorted(Comparator.comparingDouble(Helper.HELPER.playerFeet()::distanceSq))
                 .collect(Collectors.toList());
@@ -225,13 +235,8 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     }
 
     @Override
-    public void mine(int quantity, String... blocks) {
-        this.mining = blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).collect(Collectors.toList());
-        this.desiredQuantity = quantity;
-        this.knownOreLocations = new ArrayList<>();
-        this.branchPoint = null;
-        rescan();
-        updateGoal();
+    public void mineByName(int quantity, String... blocks) {
+        mine(quantity, blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).toArray(Block[]::new));
     }
 
     @Override
@@ -241,12 +246,5 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
         this.knownOreLocations = new ArrayList<>();
         this.branchPoint = null;
         rescan();
-        updateGoal();
-    }
-
-    @Override
-    public void cancel() {
-        mine(0, (String[]) null);
-        baritone.getPathingBehavior().cancel();
     }
 }

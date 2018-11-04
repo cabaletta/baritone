@@ -191,7 +191,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
     }
 
-    @Override
     public void setGoal(Goal goal) {
         this.goal = goal;
     }
@@ -227,6 +226,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     @Override
+    public void cancelEverything() {
+
+    }
+
+    // just cancel the current path
     public void cancel() {
         queuePathEvent(PathEvent.CANCELED);
         current = null;
@@ -245,7 +249,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      *
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
-    @Override
     public boolean path() {
         if (goal == null) {
             return false;
@@ -435,31 +438,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
     }
 
-    public void revalidateGoal() {
-        if (!Baritone.settings().cancelOnGoalInvalidation.get()) {
-            return;
-        }
-        synchronized (pathPlanLock) {
-            if (current == null || goal == null) {
-                return;
-            }
-            Goal intended = current.getPath().getGoal();
-            BlockPos end = current.getPath().getDest();
-            if (intended.isInGoal(end) && !goal.isInGoal(end)) {
-                // this path used to end in the goal
-                // but the goal has changed, so there's no reason to continue...
-                cancel();
-            }
-        }
-    }
-
     @Override
     public void onRenderPass(RenderEvent event) {
         PathRenderer.render(event, this);
-    }
-
-    @Override
-    public void onDisable() {
-        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
     }
 }

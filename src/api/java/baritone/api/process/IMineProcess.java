@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.api.process;
 
 import net.minecraft.block.Block;
 
@@ -23,7 +23,7 @@ import net.minecraft.block.Block;
  * @author Brady
  * @since 9/23/2018
  */
-public interface IMineBehavior extends IBehavior {
+public interface IMineProcess extends IBaritoneProcess {
 
     /**
      * Begin to search for and mine the specified blocks until
@@ -31,9 +31,9 @@ public interface IMineBehavior extends IBehavior {
      * are mined. This is based on the first target block to mine.
      *
      * @param quantity The number of items to get from blocks mined
-     * @param blocks The blocks to mine
+     * @param blocks   The blocks to mine
      */
-    void mine(int quantity, String... blocks);
+    void mineByName(int quantity, String... blocks);
 
     /**
      * Begin to search for and mine the specified blocks until
@@ -41,7 +41,7 @@ public interface IMineBehavior extends IBehavior {
      * are mined. This is based on the first target block to mine.
      *
      * @param quantity The number of items to get from blocks mined
-     * @param blocks The blocks to mine
+     * @param blocks   The blocks to mine
      */
     void mine(int quantity, Block... blocks);
 
@@ -50,8 +50,8 @@ public interface IMineBehavior extends IBehavior {
      *
      * @param blocks The blocks to mine
      */
-    default void mine(String... blocks) {
-        this.mine(0, blocks);
+    default void mineByName(String... blocks) {
+        mineByName(0, blocks);
     }
 
     /**
@@ -60,11 +60,13 @@ public interface IMineBehavior extends IBehavior {
      * @param blocks The blocks to mine
      */
     default void mine(Block... blocks) {
-        this.mine(0, blocks);
+        mine(0, blocks);
     }
 
     /**
      * Cancels the current mining task
      */
-    void cancel();
+    default void cancel() {
+        onLostControl();
+    }
 }

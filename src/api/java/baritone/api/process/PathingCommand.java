@@ -15,23 +15,16 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior;
+package baritone.api.process;
 
-import baritone.Baritone;
-import baritone.api.behavior.IBehavior;
+import baritone.api.pathing.goals.Goal;
 
-/**
- * A type of game event listener that can be toggled.
- *
- * @author Brady
- * @since 8/1/2018 6:29 PM
- */
-public class Behavior implements IBehavior {
+public class PathingCommand {
+    public final Goal goal;
+    public final PathingCommandType commandType;
 
-    public final Baritone baritone;
-
-    protected Behavior(Baritone baritone) {
-        this.baritone = baritone;
-        baritone.registerBehavior(this);
+    public PathingCommand(Goal goal, PathingCommandType commandType) {
+        this.goal = goal;
+        this.commandType = commandType;
     }
 }

@@ -15,30 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.api.process;
 
-import net.minecraft.entity.Entity;
+public enum PathingCommandType {
+    SET_GOAL_AND_PATH, // if you do this one with a null goal it should continue
+    REQUEST_PAUSE,
 
-/**
- * @author Brady
- * @since 9/23/2018
- */
-public interface IFollowBehavior extends IBehavior {
-
-    /**
-     * Set the follow target to the specified entity;
-     *
-     * @param entity The entity to follow
-     */
-    void follow(Entity entity);
-
-    /**
-     * @return The entity that is currently being followed
-     */
-    Entity following();
-
-    /**
-     * Cancels the follow behavior, this will clear the current follow target.
-     */
-    void cancel();
+    // if you do this one with a null goal it should cancel
+    REVALIDATE_GOAL_AND_PATH, // idkkkkkkk
+    FORCE_REVALIDATE_GOAL_AND_PATH // idkkkkkkkkkkkkkkkkkkkkkkkk
 }
