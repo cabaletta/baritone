@@ -86,7 +86,9 @@ public class PathingControlManager {
                 if (cmd.goal != null) {
                     baritone.getPathingBehavior().secretInternalSetGoalAndPath(cmd.goal);
                 }
-                // breaks are for wusses!!!!
+                break;
+            default:
+                throw new IllegalStateException();
         }
     }
 
