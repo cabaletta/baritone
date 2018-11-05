@@ -97,22 +97,13 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null && !this.force) {
-            switch (event.getState()) {
-                case PRE:
-                    this.lastYaw = player().rotationYaw;
-                    player().rotationYaw = this.target.getYaw();
-                    break;
-                case POST:
-                    player().rotationYaw = this.lastYaw;
 
-                    // If we have antiCheatCompatibility on, we're going to use the target value later in onPlayerUpdate()
-                    // Also the type has to be MOTION_UPDATE because that is called after JUMP
-                    if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE) {
-                        this.target = null;
-                    }
-                    break;
-                default:
-                    break;
+            event.setYaw(this.target.getYaw());
+
+            // If we have antiCheatCompatibility on, we're going to use the target value later in onPlayerUpdate()
+            // Also the type has to be MOTION_UPDATE because that is called after JUMP
+            if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE) {
+                this.target = null;
             }
         }
     }

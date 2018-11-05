@@ -45,6 +45,15 @@ public final class RotationMoveEvent extends ManagedPlayerEvent {
     }
 
     /**
+     * Set the yaw movement rotation
+     *
+     * @param yaw Yaw rotation
+     */
+    public final void setYaw(float yaw) {
+        this.yaw = yaw;
+    }
+
+    /**
      * @return The yaw rotation
      */
     public final float getYaw() {
