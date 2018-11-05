@@ -28,6 +28,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class PathingControlManager {
@@ -126,7 +127,7 @@ public class PathingControlManager {
                     proc.onLostControl();
                 }
             } else {
-                exec = proc.onTick(proc == inControlLastTick && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
+                exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
                 if (exec == null) {
                     if (proc.isActive()) {
                         throw new IllegalStateException(proc.displayName());
