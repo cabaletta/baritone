@@ -54,6 +54,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
+    private boolean calcFailedLastTick;
 
     private volatile boolean isPathCalcInProgress;
     private final Object pathCalcLock = new Object();
@@ -75,6 +76,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private void dispatchEvents() {
         ArrayList<PathEvent> curr = new ArrayList<>();
         toDispatch.drainTo(curr);
+        calcFailedLastTick = curr.contains(PathEvent.CALC_FAILED);
         for (PathEvent event : curr) {
             Baritone.INSTANCE.getGameEventHandler().onPathEvent(event);
         }
@@ -255,6 +257,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public void cancelEverything() {
         secretInternalSegmentCancel();
         baritone.getPathingControlManager().cancelEverything();
+    }
+
+    public boolean calcFailedLastTick() { // NOT exposed on public api
+        return calcFailedLastTick;
     }
 
     // just cancel the current path

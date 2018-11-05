@@ -100,7 +100,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     public boolean runCommand(String msg0) {
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
         PathingBehavior pathingBehavior = baritone.getPathingBehavior();
-        PathingControlManager pathControl = baritone.getPathingControlManager();
         CustomGoalProcess CGPgrey = baritone.getCustomGoalProcess();
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {

@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 public class PathingControlManager {
     private final Baritone baritone;
     private final HashSet<IBaritoneProcess> processes; // unGh
+    private IBaritoneProcess inControlLastTick;
+    private IBaritoneProcess inControlThisTick;
 
     public PathingControlManager(Baritone baritone) {
         this.baritone = baritone;
@@ -54,7 +56,12 @@ public class PathingControlManager {
         }
     }
 
+    public IBaritoneProcess inControlThisTick() {
+        return inControlThisTick;
+    }
+
     public void doTheThingWithTheStuff() {
+        inControlLastTick = inControlThisTick;
         PathingCommand cmd = doTheStuff();
         if (cmd == null) {
             return;
@@ -119,7 +126,7 @@ public class PathingControlManager {
                     proc.onLostControl();
                 }
             } else {
-                exec = proc.onTick();
+                exec = proc.onTick(proc == inControlLastTick && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
                 if (exec == null) {
                     if (proc.isActive()) {
                         throw new IllegalStateException(proc.displayName());
@@ -128,6 +135,7 @@ public class PathingControlManager {
                     continue;
                 }
                 System.out.println("Executing command " + exec.commandType + " " + exec.goal + " from " + proc.displayName());
+                inControlThisTick = proc;
                 found = true;
                 cancelOthers = !proc.isTemporary();
             }

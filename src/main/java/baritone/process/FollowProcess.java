@@ -41,7 +41,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     }
 
     @Override
-    public PathingCommand onTick() {
+    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         // lol this is trashy but it works
         BlockPos pos;
         if (Baritone.settings().followOffsetDistance.get() == 0) {

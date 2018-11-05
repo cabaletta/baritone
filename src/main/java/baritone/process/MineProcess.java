@@ -66,7 +66,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     @Override
-    public PathingCommand onTick() {
+    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (desiredQuantity > 0) {
             Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
             int curr = player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
@@ -76,6 +76,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 cancel();
                 return null;
             }
+        }
+        if (calcFailed) {
+            logDirect("Unable to find any path to " + mining + ", canceling Mine");
+            cancel();
+            return null;
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain

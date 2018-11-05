@@ -32,10 +32,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
-    Block gettingTo;
-    List<BlockPos> knownLocations;
+    private Block gettingTo;
+    private List<BlockPos> knownLocations;
 
-    int tickCount = 0;
+    private int tickCount = 0;
 
     public GetToBlockProcess(Baritone baritone) {
         super(baritone, 2);
@@ -53,14 +53,23 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     @Override
-    public PathingCommand onTick() {
+    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (knownLocations == null) {
             rescan();
         }
         if (knownLocations.isEmpty()) {
-            logDirect("No known locations of " + gettingTo);
-            onLostControl();
-            return null;
+            logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
+            if (isSafeToCancel) {
+                onLostControl();
+            }
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+        }
+        if (calcFailed) {
+            logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
+            if (isSafeToCancel) {
+                onLostControl();
+            }
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain

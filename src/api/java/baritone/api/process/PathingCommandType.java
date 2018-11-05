@@ -18,12 +18,34 @@
 package baritone.api.process;
 
 public enum PathingCommandType {
-    SET_GOAL_AND_PATH, // self explanatory, if you do this one with a null goal it should continue
+    /**
+     * Set the goal and path.
+     * <p>
+     * If you use this alongside a null goal, it will continue along its current path and current goal.
+     */
+    SET_GOAL_AND_PATH,
 
-    REQUEST_PAUSE, // this one just pauses. it doesn't change the goal.
+    /**
+     * Has no effect on the current goal or path, just requests a pause
+     */
+    REQUEST_PAUSE,
 
-    CANCEL_AND_SET_GOAL, // cancel the current path, and set the goal (regardless of if it's null)
+    /**
+     * Set the goal (regardless of null), and request a cancel of the current path (when safe)
+     */
+    CANCEL_AND_SET_GOAL,
 
-    REVALIDATE_GOAL_AND_PATH, // set the goal, revalidate if cancelOnGoalInvalidation is true, then path. if the goal is null, it will cancel (but only if that setting is true)
-    FORCE_REVALIDATE_GOAL_AND_PATH // set the goal, revalidate current goal (cancel if no longer valid), cancel if the provided goal is null
+    /**
+     * Set the goal and path.
+     * <p>
+     * If cancelOnGoalInvalidation is true, revalidate the current goal, and cancel if it's no longer valid, or if the new goal is null.
+     */
+    REVALIDATE_GOAL_AND_PATH,
+
+    /**
+     * Set the goal and path.
+     * <p>
+     * Revalidate the current goal, and cancel if it's no longer valid, or if the new goal is null.
+     */
+    FORCE_REVALIDATE_GOAL_AND_PATH,
 }
