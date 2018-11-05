@@ -82,11 +82,6 @@ public enum Baritone implements IBaritone {
 
     private PathingControlManager pathingControlManager;
 
-    /**
-     * Whether or not Baritone is active
-     */
-    private boolean active;
-
     Baritone() {
         this.gameEventHandler = new GameEventHandler();
     }
@@ -126,7 +121,6 @@ public enum Baritone implements IBaritone {
             } catch (IOException ignored) {}
         }
 
-        this.active = true;
         this.initialized = true;
     }
 
@@ -207,10 +201,6 @@ public enum Baritone implements IBaritone {
     @Override
     public void registerEventListener(IGameEventListener listener) {
         this.gameEventHandler.registerEventListener(listener);
-    }
-
-    public boolean isActive() {
-        return this.active;
     }
 
     public Settings getSettings() {
