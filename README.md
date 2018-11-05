@@ -36,7 +36,7 @@ Building Baritone:
 $ gradlew build
 ```
 
-For example, to replace out Impact 4.4's Baritone build with a customized one, build Baritone as above then copy `dist/baritone-api-$VERSION.jar` into `minecraft/libraries/cabaletta/baritone-api/1.0.0/baritone-api-1.0.0.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:1.0.0"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
+For example, to replace out Impact 4.4's Baritone build with a customized one, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/$VERSION$/baritone-api-$VERSION$.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:$VERSION$"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
 
 ## IntelliJ's Gradle UI
 - Open the project in IntelliJ as a Gradle project
