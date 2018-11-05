@@ -26,5 +26,8 @@ public class PathingCommand {
     public PathingCommand(Goal goal, PathingCommandType commandType) {
         this.goal = goal;
         this.commandType = commandType;
+        if (commandType == null) {
+            throw new IllegalArgumentException();
+        }
     }
 }
