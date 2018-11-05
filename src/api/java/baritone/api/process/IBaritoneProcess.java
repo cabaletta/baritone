@@ -34,7 +34,7 @@ public interface IBaritoneProcess {
     /**
      * Would this process like to be in control?
      *
-     * @return
+     * @return true if yes
      */
     boolean isActive();
 
@@ -56,7 +56,7 @@ public interface IBaritoneProcess {
      * and should return isActive true only if there's something in range this tick, or if the player would like to start eating this tick.
      * PauseForAutoEatProcess should only actually right click once onTick is called with isSafeToCancel true though.
      *
-     * @return
+     * @return true if temporary
      */
     boolean isTemporary();
 
@@ -69,21 +69,21 @@ public interface IBaritoneProcess {
     /**
      * How to decide which Process gets control if they all report isActive? It's the one with the highest priority.
      *
-     * @return
+     * @return a double representing the priority
      */
     double priority();
 
     /**
      * which bot is this associated with (5000000iq forward thinking)
      *
-     * @return
+     * @return the IBaritone object
      */
     IBaritone associatedWith();
 
     /**
      * What this process should be displayed to the user as (maybe in a HUD? hint hint)
      *
-     * @return
+     * @return a display name that's suitable for a HUD (hint hint)
      */
     String displayName();
 }
