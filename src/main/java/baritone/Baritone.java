@@ -65,7 +65,6 @@ public enum Baritone implements IBaritone {
     private boolean initialized;
 
     private GameEventHandler gameEventHandler;
-    private InputOverrideHandler inputOverrideHandler;
     private Settings settings;
     private File dir;
     private ThreadPoolExecutor threadPool;
@@ -74,6 +73,7 @@ public enum Baritone implements IBaritone {
     private PathingBehavior pathingBehavior;
     private LookBehavior lookBehavior;
     private MemoryBehavior memoryBehavior;
+    private InputOverrideHandler inputOverrideHandler;
 
     private FollowProcess followProcess;
     private MineProcess mineProcess;
@@ -91,13 +91,11 @@ public enum Baritone implements IBaritone {
             return;
         }
         this.threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        this.inputOverrideHandler = new InputOverrideHandler();
+
 
         // Acquire the "singleton" instance of the settings directly from the API
         // We might want to change this...
         this.settings = BaritoneAPI.getSettings();
-
-        this.pathingControlManager = new PathingControlManager(this);
 
         this.behaviors = new ArrayList<>();
         {
@@ -105,12 +103,18 @@ public enum Baritone implements IBaritone {
             pathingBehavior = new PathingBehavior(this);
             lookBehavior = new LookBehavior(this);
             memoryBehavior = new MemoryBehavior(this);
+            inputOverrideHandler = new InputOverrideHandler(this);
+            new ExampleBaritoneControl(this);
+        }
+
+        this.pathingControlManager = new PathingControlManager(this);
+        {
             followProcess = new FollowProcess(this);
             mineProcess = new MineProcess(this);
-            new ExampleBaritoneControl(this);
             customGoalProcess = new CustomGoalProcess(this); // very high iq
             getToBlockProcess = new GetToBlockProcess(this);
         }
+
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             registerEventListener(BaritoneAutoTest.INSTANCE);
         }

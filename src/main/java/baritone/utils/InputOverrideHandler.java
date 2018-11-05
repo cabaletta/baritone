@@ -17,6 +17,8 @@
 
 package baritone.utils;
 
+import baritone.Baritone;
+import baritone.behavior.Behavior;
 import net.minecraft.client.settings.KeyBinding;
 
 import java.util.HashMap;
@@ -30,7 +32,11 @@ import java.util.Map;
  * @author Brady
  * @since 7/31/2018 11:20 PM
  */
-public final class InputOverrideHandler implements Helper {
+public final class InputOverrideHandler extends Behavior implements Helper {
+
+    public InputOverrideHandler(Baritone baritone) {
+        super(baritone);
+    }
 
     /**
      * Maps keybinds to whether or not we are forcing their state down.
