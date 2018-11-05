@@ -68,10 +68,10 @@ public abstract class MixinEntityLivingBase extends Entity {
                     target = "net/minecraft/entity/EntityLivingBase.rotationYaw:F"
             )
     )
-    private float overrideYaw(EntityLivingBase entity) {
-        if (entity instanceof EntityPlayerSP) {
+    private float overrideYaw(EntityLivingBase self) {
+        if (self instanceof EntityPlayerSP) {
             return this.jumpRotationEvent.getYaw();
         }
-        return entity.rotationYaw;
+        return self.rotationYaw;
     }
 }

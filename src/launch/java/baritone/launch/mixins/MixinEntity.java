@@ -64,10 +64,10 @@ public class MixinEntity {
                     target = "net/minecraft/entity/Entity.rotationYaw:F"
             )
     )
-    private float overrideYaw(Entity entity) {
-        if (entity instanceof EntityPlayerSP) {
+    private float overrideYaw(Entity self) {
+        if (self instanceof EntityPlayerSP) {
             return this.motionUpdateRotationEvent.getYaw();
         }
-        return entity.rotationYaw;
+        return self.rotationYaw;
     }
 }

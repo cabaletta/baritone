@@ -26,6 +26,7 @@ import baritone.api.utils.Rotation;
 import baritone.utils.Helper;
 
 public final class LookBehavior extends Behavior implements ILookBehavior, Helper {
+
     /**
      * Target's values are as follows:
      * <p>
@@ -63,7 +64,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
         }
 
         // Whether or not we're going to silently set our angles
-        boolean silent = Baritone.settings().antiCheatCompatibility.get();
+        boolean silent = Baritone.settings().antiCheatCompatibility.get() && !this.force;
 
         switch (event.getState()) {
             case PRE: {
@@ -76,14 +77,15 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
                         nudgeToLevel();
                     }
                     this.target = null;
-                } else if (silent) {
+                }
+                if (silent) {
                     this.lastYaw = player().rotationYaw;
                     player().rotationYaw = this.target.getYaw();
                 }
                 break;
             }
             case POST: {
-                if (!this.force && silent) {
+                if (silent) {
                     player().rotationYaw = this.lastYaw;
                     this.target = null;
                 }
@@ -108,6 +110,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
         }
     }
 
+    /**
+     * Nudges the player's pitch to a regular level. (Between {@code -20} and {@code 10}, increments are by {@code 1})
+     */
     private void nudgeToLevel() {
         if (player().rotationPitch < -20) {
             player().rotationPitch++;
