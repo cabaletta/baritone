@@ -299,7 +299,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
             return true;
         }
-        if (msg.startsWith("thisway") || msg.equals("forward")) {
+        if (msg.matches("^(thisway|forward).*")) {
             try {
                 Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
                 pathingBehavior.setGoal(goal);
