@@ -17,7 +17,6 @@
 
 package baritone.api.event.events;
 
-import baritone.api.event.events.type.EventState;
 import baritone.api.event.events.type.ManagedPlayerEvent;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
@@ -35,21 +34,30 @@ public final class RotationMoveEvent extends ManagedPlayerEvent {
     private final Type type;
 
     /**
-     * The state of the event
+     * The yaw rotation
      */
-    private final EventState state;
+    private float yaw;
 
-    public RotationMoveEvent(EntityPlayerSP player, EventState state, Type type) {
+    public RotationMoveEvent(EntityPlayerSP player, Type type, float yaw) {
         super(player);
-        this.state = state;
         this.type = type;
+        this.yaw = yaw;
     }
 
     /**
-     * @return The state of the event
+     * Set the yaw movement rotation
+     *
+     * @param yaw Yaw rotation
      */
-    public final EventState getState() {
-        return this.state;
+    public final void setYaw(float yaw) {
+        this.yaw = yaw;
+    }
+
+    /**
+     * @return The yaw rotation
+     */
+    public final float getYaw() {
+        return this.yaw;
     }
 
     /**

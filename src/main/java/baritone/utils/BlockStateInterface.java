@@ -22,7 +22,6 @@ import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.cache.WorldProvider;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -127,48 +126,5 @@ public class BlockStateInterface implements Helper {
 
     public static Block getBlock(int x, int y, int z) {
         return get(x, y, z).getBlock();
-    }
-
-    /**
-     * Returns whether or not the specified block is
-     * water, regardless of whether or not it is flowing.
-     *
-     * @param b The block
-     * @return Whether or not the block is water
-     */
-    public static boolean isWater(Block b) {
-        return b == Blocks.FLOWING_WATER || b == Blocks.WATER;
-    }
-
-    /**
-     * Returns whether or not the block at the specified pos is
-     * water, regardless of whether or not it is flowing.
-     *
-     * @param bp The block pos
-     * @return Whether or not the block is water
-     */
-    public static boolean isWater(BlockPos bp) {
-        return isWater(BlockStateInterface.getBlock(bp));
-    }
-
-    public static boolean isLava(Block b) {
-        return b == Blocks.FLOWING_LAVA || b == Blocks.LAVA;
-    }
-
-    /**
-     * Returns whether or not the specified pos has a liquid
-     *
-     * @param p The pos
-     * @return Whether or not the block is a liquid
-     */
-    public static boolean isLiquid(BlockPos p) {
-        return BlockStateInterface.getBlock(p) instanceof BlockLiquid;
-    }
-
-    public static boolean isFlowing(IBlockState state) {
-        // Will be IFluidState in 1.13
-        return state.getBlock() instanceof BlockLiquid
-                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
-                && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 }

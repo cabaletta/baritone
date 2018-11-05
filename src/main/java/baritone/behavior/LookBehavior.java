@@ -26,6 +26,7 @@ import baritone.api.utils.Rotation;
 import baritone.utils.Helper;
 
 public final class LookBehavior extends Behavior implements ILookBehavior, Helper {
+
     /**
      * Target's values are as follows:
      * <p>
@@ -63,7 +64,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
         }
 
         // Whether or not we're going to silently set our angles
-        boolean silent = Baritone.settings().antiCheatCompatibility.get();
+        boolean silent = Baritone.settings().antiCheatCompatibility.get() && !this.force;
 
         switch (event.getState()) {
             case PRE: {
@@ -76,14 +77,15 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
                         nudgeToLevel();
                     }
                     this.target = null;
-                } else if (silent) {
+                }
+                if (silent) {
                     this.lastYaw = player().rotationYaw;
                     player().rotationYaw = this.target.getYaw();
                 }
                 break;
             }
             case POST: {
-                if (!this.force && silent) {
+                if (silent) {
                     player().rotationYaw = this.lastYaw;
                     this.target = null;
                 }
@@ -97,26 +99,20 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null && !this.force) {
-            switch (event.getState()) {
-                case PRE:
-                    this.lastYaw = player().rotationYaw;
-                    player().rotationYaw = this.target.getYaw();
-                    break;
-                case POST:
-                    player().rotationYaw = this.lastYaw;
 
-                    // If we have antiCheatCompatibility on, we're going to use the target value later in onPlayerUpdate()
-                    // Also the type has to be MOTION_UPDATE because that is called after JUMP
-                    if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE) {
-                        this.target = null;
-                    }
-                    break;
-                default:
-                    break;
+            event.setYaw(this.target.getYaw());
+
+            // If we have antiCheatCompatibility on, we're going to use the target value later in onPlayerUpdate()
+            // Also the type has to be MOTION_UPDATE because that is called after JUMP
+            if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE) {
+                this.target = null;
             }
         }
     }
 
+    /**
+     * Nudges the player's pitch to a regular level. (Between {@code -20} and {@code 10}, increments are by {@code 1})
+     */
     private void nudgeToLevel() {
         if (player().rotationPitch < -20) {
             player().rotationPitch++;

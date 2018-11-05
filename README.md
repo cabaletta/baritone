@@ -5,6 +5,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
 [![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/cabaletta/baritone/issues)
+[![Minecraft](https://img.shields.io/badge/MC-1.12.2-green.svg)](https://minecraft.gamepedia.com/1.12.2)
 
 A Minecraft pathfinder bot. This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2. Baritone focuses on reliability and particularly performance (it's over [29x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
@@ -21,28 +22,28 @@ There's also some useful information down below
 
 # Setup
 
-## IntelliJ's Gradle UI
-- Open the project in IntelliJ as a Gradle project
-- Run the Gradle task `setupDecompWorkspace`
-- Run the Gradle task `genIntellijRuns`
-- Refresh the Gradle project (or just restart IntelliJ)
-- Select the "Minecraft Client" launch config and run
-
 ## Command Line
 On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 
 Running Baritone:
 
 ```
-$ gradlew run
+$ gradlew runClient
 ```
 
-Setting up for IntelliJ:
+Building Baritone:
 ```
-$ gradlew setupDecompWorkspace
-$ gradlew --refresh-dependencies
-$ gradlew genIntellijRuns
+$ gradlew build
 ```
+
+For example, to replace out Impact 4.4's Baritone build with a customized one, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.0.0/baritone-api-1.0.0.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:1.0.0"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
+
+## IntelliJ's Gradle UI
+- Open the project in IntelliJ as a Gradle project
+- Run the Gradle tasks `setupDecompWorkspace` then `genIntellijRuns`
+- Refresh the Gradle project (or, to be safe, just restart IntelliJ)
+- Select the "Minecraft Client" launch config
+- In `Edit Configurations...` you may need to select `baritone_launch` for `Use classpath of module:`.
 
 # Chat control
 [Defined Here](src/main/java/baritone/utils/ExampleBaritoneControl.java)

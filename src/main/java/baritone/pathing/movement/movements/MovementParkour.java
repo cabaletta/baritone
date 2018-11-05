@@ -93,7 +93,17 @@ public class MovementParkour extends Movement {
         if (!MovementHelper.fullyPassable(x, y + 2, z)) {
             return;
         }
-        for (int i = 2; i <= (context.canSprint() ? 4 : 3); i++) {
+        int maxJump;
+        if (standingOn.getBlock() == Blocks.SOUL_SAND) {
+            maxJump = 2; // 1 block gap
+        } else {
+            if (context.canSprint()) {
+                maxJump = 4;
+            } else {
+                maxJump = 3;
+            }
+        }
+        for (int i = 2; i <= maxJump; i++) {
             // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
             for (int y2 = 0; y2 < 4; y2++) {
                 if (!MovementHelper.fullyPassable(x + xDiff * i, y + y2, z + zDiff * i)) {
@@ -108,7 +118,7 @@ public class MovementParkour extends Movement {
                 return;
             }
         }
-        if (!context.canSprint()) {
+        if (maxJump != 4) {
             return;
         }
         if (!Baritone.settings().allowParkourPlace.get()) {
@@ -124,7 +134,7 @@ public class MovementParkour extends Movement {
         if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
             return;
         }
-        if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace)) {
+        if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace)) {
             return;
         }
         for (int i = 0; i < 5; i++) {

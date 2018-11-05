@@ -24,14 +24,12 @@ package baritone.api.event.events.type;
 public enum EventState {
 
     /**
-     * Indicates that whatever movement the event is being
-     * dispatched as a result of is about to occur.
+     * Before the dispatching of what the event is targetting
      */
     PRE,
 
     /**
-     * Indicates that whatever movement the event is being
-     * dispatched as a result of has already occurred.
+     * After the dispatching of what the event is targetting
      */
     POST
 }
