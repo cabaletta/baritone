@@ -254,9 +254,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     @Override
-    public void cancelEverything() {
-        secretInternalSegmentCancel();
+    public boolean cancelEverything() {
+        boolean doIt = isSafeToCancel();
+        if (doIt) {
+            secretInternalSegmentCancel();
+        }
         baritone.getPathingControlManager().cancelEverything();
+        return doIt;
     }
 
     public boolean calcFailedLastTick() { // NOT exposed on public api
@@ -275,6 +279,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     public void forceCancel() { // NOT exposed on public api
         cancelEverything();
+        secretInternalSegmentCancel();
         isPathCalcInProgress = false;
     }
 

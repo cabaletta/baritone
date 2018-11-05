@@ -79,7 +79,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         if (goal.isInGoal(playerFeet())) {
             onLostControl();
         }
-        return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+        return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
 
     @Override
