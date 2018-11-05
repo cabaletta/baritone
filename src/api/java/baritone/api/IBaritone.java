@@ -17,11 +17,15 @@
 
 package baritone.api;
 
-import baritone.api.behavior.*;
+import baritone.api.behavior.ILookBehavior;
+import baritone.api.behavior.IMemoryBehavior;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IFollowProcess;
+import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.IMineProcess;
 
 /**
@@ -71,6 +75,10 @@ public interface IBaritone {
      * @see IWorldScanner
      */
     IWorldScanner getWorldScanner();
+
+    ICustomGoalProcess getCustomGoalProcess();
+
+    IGetToBlockProcess getGetToBlockProcess();
 
     /**
      * Registers a {@link IGameEventListener} with Baritone's "event bus".

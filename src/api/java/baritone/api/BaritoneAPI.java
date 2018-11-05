@@ -23,7 +23,9 @@ import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IFollowProcess;
+import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.IMineProcess;
 import baritone.api.utils.SettingsUtil;
 
@@ -82,6 +84,14 @@ public final class BaritoneAPI {
 
     public static IWorldScanner getWorldScanner() {
         return baritone.getWorldScanner();
+    }
+
+    public static ICustomGoalProcess getCustomGoalProcess() {
+        return baritone.getCustomGoalProcess();
+    }
+
+    public static IGetToBlockProcess getGetToBlockProcess() {
+        return baritone.getGetToBlockProcess();
     }
 
     public static void registerEventListener(IGameEventListener listener) {

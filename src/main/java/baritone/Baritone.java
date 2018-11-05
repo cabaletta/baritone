@@ -159,10 +159,12 @@ public enum Baritone implements IBaritone {
         this.registerEventListener(behavior);
     }
 
+    @Override
     public CustomGoalProcess getCustomGoalProcess() {
         return customGoalProcess;
     }
 
+    @Override
     public GetToBlockProcess getGetToBlockProcess() { // very very high iq
         return getToBlockProcess;
     }
