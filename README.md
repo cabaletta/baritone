@@ -40,8 +40,7 @@ For example, to replace out Impact 4.4's Baritone build with a customized one, b
 
 ## IntelliJ's Gradle UI
 - Open the project in IntelliJ as a Gradle project
-- Run the Gradle task `setupDecompWorkspace`
-- Run the Gradle task `genIntellijRuns`
+- Run the Gradle tasks `setupDecompWorkspace` then `genIntellijRuns`
 - Refresh the Gradle project (or, to be safe, just restart IntelliJ)
 - Select the "Minecraft Client" launch config
 - In `Edit Configurations...` you may need to select `baritone_launch` for `Use classpath of module:`.
