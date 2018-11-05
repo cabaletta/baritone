@@ -87,6 +87,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         dispatchEvents();
         if (event.getType() == TickEvent.Type.OUT) {
             secretInternalSegmentCancel();
+            baritone.getPathingControlManager().cancelEverything();
             return;
         }
         tickPath();

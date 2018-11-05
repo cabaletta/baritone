@@ -82,7 +82,7 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
                 if (calcFailed) {
                     onLostControl();
                 }
-                if (goal.isInGoal(playerFeet())) {
+                if (goal == null || goal.isInGoal(playerFeet())) {
                     onLostControl(); // we're there xd
                 }
                 return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
