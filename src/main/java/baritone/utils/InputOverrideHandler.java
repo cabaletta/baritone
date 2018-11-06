@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.event.events.TickEvent;
 import baritone.behavior.Behavior;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
@@ -81,6 +82,17 @@ public final class InputOverrideHandler extends Behavior implements Helper {
                     KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
                 }
             }
+        }
+    }
+
+    @Override
+    public final void onTick(TickEvent event) {
+        if (event.getType() == TickEvent.Type.OUT) {
+            return;
+        }
+        if (Baritone.settings().leftClickWorkaround.get()) {
+            boolean stillClick = BlockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT.keyBinding));
+            setInputForceState(Input.CLICK_LEFT, stillClick);
         }
     }
 

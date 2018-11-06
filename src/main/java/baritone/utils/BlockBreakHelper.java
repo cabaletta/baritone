@@ -20,6 +20,7 @@ package baritone.utils;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 
 /**
  * @author Brady
@@ -32,6 +33,7 @@ public final class BlockBreakHelper implements Helper {
      * between attempts, then we re-initialize the breaking process.
      */
     private static BlockPos lastBlock;
+    private static boolean didBreakLastTick;
 
     private BlockBreakHelper() {}
 
@@ -48,7 +50,23 @@ public final class BlockBreakHelper implements Helper {
     public static void stopBreakingBlock() {
         if (mc.playerController != null) {
             mc.playerController.resetBlockRemoving();
-        } 
+        }
         lastBlock = null;
+    }
+
+    public static boolean tick(boolean isLeftClick) {
+        RayTraceResult trace = mc.objectMouseOver;
+        boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
+
+        // If we're forcing left click, we're in a gui screen, and we're looking
+        // at a block, break the block without a direct game input manipulation.
+        if (mc.currentScreen != null && isLeftClick && isBlockTrace) {
+            tryBreakBlock(trace.getBlockPos(), trace.sideHit);
+            didBreakLastTick = true;
+        } else if (didBreakLastTick) {
+            stopBreakingBlock();
+            didBreakLastTick = false;
+        }
+        return !didBreakLastTick && isLeftClick;
     }
 }
