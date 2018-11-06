@@ -32,10 +32,13 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.*;
@@ -112,7 +115,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private Goal updateGoal() {
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
-            List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
+            List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT, world());
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new));
             knownOreLocations = locs2;
@@ -147,7 +150,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (Baritone.settings().legitMine.get()) {
             return;
         }
-        List<BlockPos> locs = searchWorld(mining, ORE_LOCATIONS_COUNT);
+        List<BlockPos> locs = searchWorld(mining, ORE_LOCATIONS_COUNT, world());
+        locs.addAll(droppedItemsScan(mining, world()));
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
             cancel();
@@ -178,7 +182,30 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
     }
 
-    public static List<BlockPos> searchWorld(List<Block> mining, int max) {
+    public static List<BlockPos> droppedItemsScan(List<Block> mining, World world) {
+        if (!Baritone.settings().mineScanDroppedItems.get()) {
+            return new ArrayList<>();
+        }
+        Set<Item> searchingFor = new HashSet<>();
+        for (Block block : mining) {
+            Item drop = block.getItemDropped(block.getDefaultState(), new Random(), 0);
+            Item ore = Item.getItemFromBlock(block);
+            searchingFor.add(drop);
+            searchingFor.add(ore);
+        }
+        List<BlockPos> ret = new ArrayList<>();
+        for (Entity entity : world.loadedEntityList) {
+            if (entity instanceof EntityItem) {
+                EntityItem ei = (EntityItem) entity;
+                if (searchingFor.contains(ei.getItem().getItem())) {
+                    ret.add(entity.getPosition());
+                }
+            }
+        }
+        return ret;
+    }
+
+    public static List<BlockPos> searchWorld(List<Block> mining, int max, World world) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
@@ -198,7 +225,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(uninteresting, max, 10, 26));
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
-        return prune(locs, mining, max);
+        return prune(locs, mining, max, world);
     }
 
     public void addNearby() {
@@ -214,15 +241,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 }
             }
         }
-        knownOreLocations = prune(knownOreLocations, mining, ORE_LOCATIONS_COUNT);
+        knownOreLocations = prune(knownOreLocations, mining, ORE_LOCATIONS_COUNT, world());
     }
 
-    public static List<BlockPos> prune(List<BlockPos> locs2, List<Block> mining, int max) {
+    public static List<BlockPos> prune(List<BlockPos> locs2, List<Block> mining, int max, World world) {
+        List<BlockPos> dropped = droppedItemsScan(mining, world);
         List<BlockPos> locs = locs2
                 .stream()
 
                 // remove any that are within loaded chunks that aren't actually what we want
-                .filter(pos -> Helper.HELPER.world().getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()))
+                .filter(pos -> world.getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()) || dropped.contains(pos))
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(MineProcess::plausibleToBreak)
