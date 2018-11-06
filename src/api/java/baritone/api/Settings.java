@@ -24,8 +24,8 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -375,6 +375,11 @@ public class Settings {
      * Set to 0 to disable.
      */
     public Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
+
+    /**
+     * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
+     */
+    public Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
 
     /**
      * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.
