@@ -17,7 +17,6 @@
 
 package baritone.api.process;
 
-import baritone.api.process.IBaritoneProcess;
 import net.minecraft.entity.Entity;
 
 /**

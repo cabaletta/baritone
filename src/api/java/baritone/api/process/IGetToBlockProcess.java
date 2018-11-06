@@ -23,5 +23,6 @@ import net.minecraft.block.Block;
  * but it rescans the world every once in a while so it doesn't get fooled by its cache
  */
 public interface IGetToBlockProcess extends IBaritoneProcess {
+
     void getToBlock(Block block);
 }
