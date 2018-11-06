@@ -135,7 +135,7 @@ public class PathingControlManager {
                     proc.onLostControl();
                     continue;
                 }
-                System.out.println("Executing command " + exec.commandType + " " + exec.goal + " from " + proc.displayName());
+                //System.out.println("Executing command " + exec.commandType + " " + exec.goal + " from " + proc.displayName());
                 inControlThisTick = proc;
                 found = true;
                 cancelOthers = !proc.isTemporary();
