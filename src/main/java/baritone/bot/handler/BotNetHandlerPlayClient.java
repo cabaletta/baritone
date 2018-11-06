@@ -86,6 +86,9 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.networkManager = networkManager;
         this.client = client;
         this.user = user;
+
+        // Notify the user that we're ingame
+        this.user.onLoginSuccess(profile);
     }
 
     @Override

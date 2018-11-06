@@ -23,38 +23,46 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.util.Session;
 
 /**
+ * Implementation of {@link IBaritoneUser}
+ *
  * @author Brady
- * @since 10/23/2018
+ * @since 11/6/2018
  */
-public interface IBaritoneUser {
+class BaritoneUser implements IBaritoneUser {
 
-    /**
-     * Called when the user successfully logs into a server.
-     */
-    void onLoginSuccess(GameProfile profile);
+    private final NetworkManager networkManager;
+    private final Session session;
 
-    /**
-     * @return The network manager that is responsible for the current connection.
-     */
-    NetworkManager getNetworkManager();
+    private GameProfile profile;
 
-    /**
-     * @return The locally managed entity for this user.
-     */
-    EntityBot getEntity();
+    BaritoneUser(NetworkManager networkManager, Session session) {
+        this.networkManager = networkManager;
+        this.session = session;
+    }
 
-    /**
-     * Returns the user login session. Should never be {@code null}, as this should be set when the
-     * user is constructed.
-     *
-     * @return This users's login session
-     */
-    Session getSession();
+    @Override
+    public void onLoginSuccess(GameProfile profile) {
+        this.profile = profile;
+    }
 
-    /**
-     * Returns the game profile for the account represented by this user.
-     *
-     * @return This users's profile.
-     */
-    GameProfile getProfile();
+    @Override
+    public NetworkManager getNetworkManager() {
+        return this.networkManager;
+    }
+
+    @Override
+    public EntityBot getEntity() {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public Session getSession() {
+        return this.session;
+    }
+
+    @Override
+    public GameProfile getProfile() {
+        return this.profile;
+    }
 }
