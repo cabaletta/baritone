@@ -198,7 +198,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             if (entity instanceof EntityItem) {
                 EntityItem ei = (EntityItem) entity;
                 if (searchingFor.contains(ei.getItem().getItem())) {
-                    ret.add(entity.getPosition());
+                    ret.add(new BlockPos(entity));
                 }
             }
         }
