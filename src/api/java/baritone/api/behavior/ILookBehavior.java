@@ -33,7 +33,7 @@ public interface ILookBehavior extends IBehavior {
      * otherwise, it should be {@code false};
      *
      * @param rotation The target rotations
-     * @param force Whether or not to "force" the rotations
+     * @param force    Whether or not to "force" the rotations
      */
     void updateTarget(Rotation rotation, boolean force);
 }

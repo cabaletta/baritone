@@ -125,10 +125,9 @@ public interface IPath {
      * Cuts off this path using the min length and cutoff factor settings, and returns the resulting path.
      * Default implementation just returns this path, without the intended functionality.
      *
+     * @return The result of this cut-off operation
      * @see Settings#pathCutoffMinimumLength
      * @see Settings#pathCutoffFactor
-     *
-     * @return The result of this cut-off operation
      */
     default IPath staticCutoff(Goal destination) {
         return this;

@@ -42,9 +42,9 @@ public class Waypoint implements IWaypoint {
      * Constructor called when a Waypoint is read from disk, adds the creationTimestamp
      * as a parameter so that it is reserved after a waypoint is wrote to the disk.
      *
-     * @param name The waypoint name
-     * @param tag The waypoint tag
-     * @param location The waypoint location
+     * @param name              The waypoint name
+     * @param tag               The waypoint tag
+     * @param location          The waypoint location
      * @param creationTimestamp When the waypoint was created
      */
     Waypoint(String name, Tag tag, BlockPos location, long creationTimestamp) {

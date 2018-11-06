@@ -50,19 +50,17 @@ public interface IWaypointCollection {
     /**
      * Gets all of the waypoints that have the specified tag
      *
-     * @see IWaypointCollection#getAllWaypoints()
-     *
      * @param tag The tag
      * @return All of the waypoints with the specified tag
+     * @see IWaypointCollection#getAllWaypoints()
      */
     Set<IWaypoint> getByTag(IWaypoint.Tag tag);
 
     /**
      * Gets all of the waypoints in this collection, regardless of the tag.
      *
-     * @see IWaypointCollection#getByTag(IWaypoint.Tag)
-     *
      * @return All of the waypoints in this collection
+     * @see IWaypointCollection#getByTag(IWaypoint.Tag)
      */
     Set<IWaypoint> getAllWaypoints();
 }

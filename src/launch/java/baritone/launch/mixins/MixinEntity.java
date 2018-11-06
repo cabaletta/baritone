@@ -37,7 +37,8 @@ import static org.spongepowered.asm.lib.Opcodes.GETFIELD;
 @Mixin(Entity.class)
 public class MixinEntity {
 
-    @Shadow public float rotationYaw;
+    @Shadow
+    public float rotationYaw;
 
     /**
      * Event called to override the movement direction when walking
