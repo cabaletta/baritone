@@ -24,8 +24,8 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -275,6 +275,13 @@ public class Settings {
      * The big one. Download all chunks in simplified 2-bit format and save them for better very-long-distance pathing.
      */
     public Setting<Boolean> chunkCaching = new Setting<>(true);
+
+    /**
+     * On save, delete from RAM any cached regions that are more than 1024 blocks away from the player
+     * <p>
+     * Temporarily disabled, see issue #248
+     */
+    public Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
 
     /**
      * Print all the debug messages to chat

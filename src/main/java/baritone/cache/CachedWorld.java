@@ -165,6 +165,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * Delete regions that are too far from the player
      */
     private synchronized void prune() {
+        if (!Baritone.settings().pruneRegionsFromRAM.get()) {
+            return;
+        }
         BlockPos pruneCenter = guessPosition();
         for (CachedRegion region : allRegions()) {
             if (region == null) {
