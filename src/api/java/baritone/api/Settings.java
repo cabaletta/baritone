@@ -378,6 +378,16 @@ public class Settings {
     public Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
     /**
+     * If we are more than 500 movements into the current path, discard the oldest segments, as they are no longer useful
+     */
+    public Setting<Integer> maxPathHistoryLength = new Setting<>(500);
+
+    /**
+     * If the current path is too long, cut off this many movements from the beginning.
+     */
+    public Setting<Integer> pathHistoryCutoffAmount = new Setting<>(100);
+
+    /**
      * Rescan for the goal once every 5 ticks.
      * Set to 0 to disable.
      */

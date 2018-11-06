@@ -24,6 +24,7 @@ import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
+import baritone.pathing.path.CutoffPath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -102,32 +103,6 @@ class Path implements IPath {
         // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         // to performantly do that conversion since it knows the length.
         path.addAll(tempPath);
-    }
-
-    /**
-     * Performs a series of checks to ensure that the assembly of the path went as expected.
-     */
-    private void sanityCheck() {
-        if (!start.equals(path.get(0))) {
-            throw new IllegalStateException("Start node does not equal first path element");
-        }
-        if (!end.equals(path.get(path.size() - 1))) {
-            throw new IllegalStateException("End node does not equal last path element");
-        }
-        if (path.size() != movements.size() + 1) {
-            throw new IllegalStateException("Size of path array is unexpected");
-        }
-        for (int i = 0; i < path.size() - 1; i++) {
-            BlockPos src = path.get(i);
-            BlockPos dest = path.get(i + 1);
-            Movement movement = movements.get(i);
-            if (!src.equals(movement.getSrc())) {
-                throw new IllegalStateException("Path source is not equal to the movement source");
-            }
-            if (!dest.equals(movement.getDest())) {
-                throw new IllegalStateException("Path destination is not equal to the movement destination");
-            }
-        }
     }
 
     private void assembleMovements() {

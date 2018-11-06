@@ -31,9 +31,9 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.calc.CutoffPath;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
 import baritone.utils.Helper;
@@ -155,6 +155,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 next = null;
                 current.onTick();
                 return;
+            }
+            current = current.trySplice(next);
+            if (next != null && current.getPath().getDest().equals(next.getPath().getDest())) {
+                next = null;
             }
             synchronized (pathCalcLock) {
                 if (isPathCalcInProgress) {

@@ -21,6 +21,7 @@ import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
@@ -131,5 +132,34 @@ public interface IPath {
      */
     default IPath staticCutoff(Goal destination) {
         return this;
+    }
+
+
+    /**
+     * Performs a series of checks to ensure that the assembly of the path went as expected.
+     */
+    default void sanityCheck() {
+        List<BetterBlockPos> path = positions();
+        List<IMovement> movements = movements();
+        if (!getSrc().equals(path.get(0))) {
+            throw new IllegalStateException("Start node does not equal first path element");
+        }
+        if (!getDest().equals(path.get(path.size() - 1))) {
+            throw new IllegalStateException("End node does not equal last path element");
+        }
+        if (path.size() != movements.size() + 1) {
+            throw new IllegalStateException("Size of path array is unexpected");
+        }
+        for (int i = 0; i < path.size() - 1; i++) {
+            BlockPos src = path.get(i);
+            BlockPos dest = path.get(i + 1);
+            IMovement movement = movements.get(i);
+            if (!src.equals(movement.getSrc())) {
+                throw new IllegalStateException("Path source is not equal to the movement source");
+            }
+            if (!dest.equals(movement.getDest())) {
+                throw new IllegalStateException("Path destination is not equal to the movement destination");
+            }
+        }
     }
 }
