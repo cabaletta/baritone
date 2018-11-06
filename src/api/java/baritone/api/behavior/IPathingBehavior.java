@@ -50,11 +50,12 @@ public interface IPathingBehavior extends IBehavior {
     boolean isPathing();
 
     /**
-     * Cancels the pathing behavior or the current path calculation. Also cancels all processes that could be controlling path.
+     * Cancels the pathing behavior or the current path calculation, and all processes that could be controlling path.
      * <p>
      * Basically, "MAKE IT STOP".
      *
-     * @return whether or not the pathing behavior was canceled. All processes are guaranteed to be canceled, but the PathingBehavior might be in the middle of an uncancelable action like a parkour jump
+     * @return Whether or not the pathing behavior was canceled. All processes are guaranteed to be canceled, but the
+     *         PathingBehavior might be in the middle of an uncancelable action like a parkour jump
      */
     boolean cancelEverything();
 
