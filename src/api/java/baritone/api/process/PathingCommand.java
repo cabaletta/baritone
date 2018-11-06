@@ -19,17 +19,39 @@ package baritone.api.process;
 
 import baritone.api.pathing.goals.Goal;
 
+import java.util.Objects;
+
+/**
+ * @author Leijurv
+ */
 public class PathingCommand {
 
+    /**
+     * The target goal, may be {@code null}.
+     */
     public final Goal goal;
 
+    /**
+     * The command type.
+     *
+     * @see PathingCommandType
+     */
     public final PathingCommandType commandType;
 
+    /**
+     * Create a new {@link PathingCommand}.
+     *
+     * @see Goal
+     * @see PathingCommandType
+     *
+     * @param goal The target goal, may be {@code null}.
+     * @param commandType The command type, cannot be {@code null}.
+     * @throws NullPointerException if {@code commandType} is {@code null}.
+     */
     public PathingCommand(Goal goal, PathingCommandType commandType) {
+        Objects.requireNonNull(commandType);
+
         this.goal = goal;
         this.commandType = commandType;
-        if (commandType == null) {
-            throw new IllegalArgumentException();
-        }
     }
 }

@@ -19,6 +19,17 @@ package baritone.api;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 
+/**
+ * @author Leijurv
+ */
 public interface IBaritoneProvider {
-    IBaritone getBaritoneForPlayer(EntityPlayerSP player); // tenor be like
+
+    /**
+     * Provides the {@link IBaritone} instance for a given {@link EntityPlayerSP}. This will likely be
+     * replaced with {@code #getBaritoneForUser(IBaritoneUser)} when {@code bot-system} is merged.
+     *
+     * @param player The player
+     * @return The {@link IBaritone} instance.
+     */
+    IBaritone getBaritoneForPlayer(EntityPlayerSP player);
 }

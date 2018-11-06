@@ -27,6 +27,7 @@ import baritone.utils.Helper;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Brady
@@ -36,7 +37,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     private final Baritone baritone;
 
-    private final ArrayList<IGameEventListener> listeners = new ArrayList<>();
+    private final List<IGameEventListener> listeners = new ArrayList<>();
 
     public GameEventHandler(Baritone baritone) {
         this.baritone = baritone;
@@ -54,7 +55,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onProcessKeyBinds() {
-        listeners.forEach(l -> l.onProcessKeyBinds());
+        listeners.forEach(IGameEventListener::onProcessKeyBinds);
     }
 
     @Override
@@ -131,7 +132,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public void onPlayerDeath() {
-        listeners.forEach(l -> l.onPlayerDeath());
+        listeners.forEach(IGameEventListener::onPlayerDeath);
     }
 
     @Override
