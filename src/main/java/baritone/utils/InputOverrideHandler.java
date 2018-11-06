@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.behavior.Behavior;
 import net.minecraft.client.settings.KeyBinding;
+import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,6 +66,22 @@ public final class InputOverrideHandler extends Behavior implements Helper {
      */
     public final void setInputForceState(Input input, boolean forced) {
         inputForceStateMap.put(input.getKeyBinding(), forced);
+    }
+
+    @Override
+    public final void onProcessKeyBinds() {
+        // Simulate the key being held down this tick
+        for (InputOverrideHandler.Input input : Input.values()) {
+            KeyBinding keyBinding = input.getKeyBinding();
+
+            if (isInputForcedDown(keyBinding) && !keyBinding.isKeyDown()) {
+                int keyCode = keyBinding.getKeyCode();
+
+                if (keyCode < Keyboard.KEYBOARD_SIZE) {
+                    KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
+                }
+            }
+        }
     }
 
     /**

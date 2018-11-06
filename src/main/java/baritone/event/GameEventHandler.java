@@ -24,10 +24,7 @@ import baritone.api.event.listener.IGameEventListener;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.world.chunk.Chunk;
-import org.lwjgl.input.Keyboard;
 
 import java.util.ArrayList;
 
@@ -57,21 +54,6 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onProcessKeyBinds() {
-        InputOverrideHandler inputHandler = baritone.getInputOverrideHandler();
-
-        // Simulate the key being held down this tick
-        for (InputOverrideHandler.Input input : InputOverrideHandler.Input.values()) {
-            KeyBinding keyBinding = input.getKeyBinding();
-
-            if (inputHandler.isInputForcedDown(keyBinding) && !keyBinding.isKeyDown()) {
-                int keyCode = keyBinding.getKeyCode();
-
-                if (keyCode < Keyboard.KEYBOARD_SIZE) {
-                    KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
-                }
-            }
-        }
-
         listeners.forEach(l -> l.onProcessKeyBinds());
     }
 
