@@ -96,7 +96,7 @@ public class UserManager implements Helper {
             networkManager.sendPacket(new C00Handshake(address.getIP(), address.getPort(), EnumConnectionState.LOGIN));
             networkManager.sendPacket(new CPacketLoginStart(session.getProfile()));
 
-            return ConnectionResult.failed(SUCCESS);
+            return ConnectionResult.success(user);
         } catch (Exception e) {
             return ConnectionResult.failed(CONNECTION_FAILED);
         }
