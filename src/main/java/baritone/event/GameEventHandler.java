@@ -37,7 +37,13 @@ import java.util.ArrayList;
  */
 public final class GameEventHandler implements IGameEventListener, Helper {
 
+    private final Baritone baritone;
+
     private final ArrayList<IGameEventListener> listeners = new ArrayList<>();
+
+    public GameEventHandler(Baritone baritone) {
+        this.baritone = baritone;
+    }
 
     @Override
     public final void onTick(TickEvent event) {
@@ -51,7 +57,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onProcessKeyBinds() {
-        InputOverrideHandler inputHandler = Baritone.INSTANCE.getInputOverrideHandler();
+        InputOverrideHandler inputHandler = baritone.getInputOverrideHandler();
 
         // Simulate the key being held down this tick
         for (InputOverrideHandler.Input input : InputOverrideHandler.Input.values()) {

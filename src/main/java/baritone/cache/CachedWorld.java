@@ -67,8 +67,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
         System.out.println("Cached world directory: " + directory);
         // Insert an invalid region element
         cachedRegions.put(0, null);
-        Baritone.INSTANCE.getExecutor().execute(new PackerThread());
-        Baritone.INSTANCE.getExecutor().execute(() -> {
+        Baritone.getExecutor().execute(new PackerThread());
+        Baritone.getExecutor().execute(() -> {
             try {
                 Thread.sleep(30000);
                 while (true) {

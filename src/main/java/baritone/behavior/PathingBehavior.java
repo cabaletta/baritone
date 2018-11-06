@@ -78,7 +78,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         toDispatch.drainTo(curr);
         calcFailedLastTick = curr.contains(PathEvent.CALC_FAILED);
         for (PathEvent event : curr) {
-            Baritone.INSTANCE.getGameEventHandler().onPathEvent(event);
+            baritone.getGameEventHandler().onPathEvent(event);
         }
     }
 
@@ -370,7 +370,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             isPathCalcInProgress = true;
         }
         CalculationContext context = new CalculationContext(); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
-        Baritone.INSTANCE.getExecutor().execute(() -> {
+        Baritone.getExecutor().execute(() -> {
             if (talkAboutIt) {
                 logDebug("Starting to search for path from " + start + " to " + goal);
             }

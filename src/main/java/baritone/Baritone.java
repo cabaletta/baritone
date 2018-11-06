@@ -67,7 +67,7 @@ public enum Baritone implements IBaritone {
     private GameEventHandler gameEventHandler;
     private Settings settings;
     private File dir;
-    private ThreadPoolExecutor threadPool;
+
 
     private List<Behavior> behaviors;
     private PathingBehavior pathingBehavior;
@@ -82,16 +82,16 @@ public enum Baritone implements IBaritone {
 
     private PathingControlManager pathingControlManager;
 
+    private static ThreadPoolExecutor threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+
     Baritone() {
-        this.gameEventHandler = new GameEventHandler();
+        this.gameEventHandler = new GameEventHandler(this);
     }
 
     public synchronized void init() {
         if (initialized) {
             return;
         }
-        this.threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-
 
         // Acquire the "singleton" instance of the settings directly from the API
         // We might want to change this...
@@ -148,7 +148,7 @@ public enum Baritone implements IBaritone {
         return this.behaviors;
     }
 
-    public Executor getExecutor() {
+    public static Executor getExecutor() {
         return threadPool;
     }
 
@@ -215,7 +215,7 @@ public enum Baritone implements IBaritone {
         return Baritone.INSTANCE.settings; // yolo
     }
 
-    public File getDir() {
-        return this.dir;
+    public static File getDir() {
+        return Baritone.INSTANCE.dir; // should be static I guess
     }
 }

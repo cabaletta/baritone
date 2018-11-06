@@ -73,7 +73,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
-            Baritone.INSTANCE.getExecutor().execute(this::rescan);
+            Baritone.getExecutor().execute(this::rescan);
         }
         Goal goal = new GoalComposite(knownLocations.stream().map(GoalGetToBlock::new).toArray(Goal[]::new));
         if (goal.isInGoal(playerFeet())) {

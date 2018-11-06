@@ -226,12 +226,6 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         state.getInputStates().forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
     }
 
-    public void cancel() {
-        currentState.getInputStates().replaceAll((input, forced) -> false);
-        currentState.getInputStates().forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
-        currentState.setStatus(MovementStatus.CANCELED);
-    }
-
     @Override
     public void reset() {
         currentState = new MovementState().setStatus(MovementStatus.PREPPING);
