@@ -77,7 +77,8 @@ public class MixinNetworkManager {
     )
     private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if (this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, packet));}
+            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, packet));
+        }
     }
 
     @Inject(

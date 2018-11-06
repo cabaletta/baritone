@@ -32,7 +32,9 @@ import java.io.File;
 @Mixin(AnvilChunkLoader.class)
 public class MixinAnvilChunkLoader implements IAnvilChunkLoader {
 
-    @Shadow @Final private File chunkSaveLocation;
+    @Shadow
+    @Final
+    private File chunkSaveLocation;
 
     @Override
     public File getChunkSaveLocation() {

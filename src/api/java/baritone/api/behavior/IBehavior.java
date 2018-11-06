@@ -18,10 +18,9 @@
 package baritone.api.behavior;
 
 import baritone.api.event.listener.AbstractGameEventListener;
-import baritone.api.utils.interfaces.Toggleable;
 
 /**
  * @author Brady
  * @since 9/23/2018
  */
-public interface IBehavior extends AbstractGameEventListener, Toggleable {}
+public interface IBehavior extends AbstractGameEventListener {}

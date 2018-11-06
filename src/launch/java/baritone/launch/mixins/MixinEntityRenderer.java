@@ -33,7 +33,7 @@ public class MixinEntityRenderer {
             at = @At(
                     value = "INVOKE_STRING",
                     target = "Lnet/minecraft/profiler/Profiler;endStartSection(Ljava/lang/String;)V",
-                    args = { "ldc=hand" }
+                    args = {"ldc=hand"}
             )
     )
     private void renderWorldPass(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {

@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.calc;
+package baritone.pathing.path;
 
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
@@ -35,11 +35,16 @@ public class CutoffPath implements IPath {
 
     private final Goal goal;
 
-    CutoffPath(IPath prev, int lastPositionToInclude) {
-        path = prev.positions().subList(0, lastPositionToInclude + 1);
-        movements = prev.movements().subList(0, lastPositionToInclude + 1);
+    public CutoffPath(IPath prev, int firstPositionToInclude, int lastPositionToInclude) {
+        path = prev.positions().subList(firstPositionToInclude, lastPositionToInclude + 1);
+        movements = prev.movements().subList(firstPositionToInclude, lastPositionToInclude);
         numNodes = prev.getNumNodesConsidered();
         goal = prev.getGoal();
+        sanityCheck();
+    }
+
+    public CutoffPath(IPath prev, int lastPositionToInclude) {
+        this(prev, 0, lastPositionToInclude);
     }
 
     @Override

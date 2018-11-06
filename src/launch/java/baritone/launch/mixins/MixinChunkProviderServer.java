@@ -31,7 +31,9 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(ChunkProviderServer.class)
 public class MixinChunkProviderServer implements IChunkProviderServer {
 
-    @Shadow @Final private IChunkLoader chunkLoader;
+    @Shadow
+    @Final
+    private IChunkLoader chunkLoader;
 
     @Override
     public IChunkLoader getChunkLoader() {

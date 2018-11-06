@@ -61,8 +61,8 @@ public interface ICachedWorld {
      * information that is returned by this method may not be up to date, because
      * older cached chunks can contain data that is much more likely to have changed.
      *
-     * @param block The special block to search for
-     * @param maximum The maximum number of position results to receive
+     * @param block               The special block to search for
+     * @param maximum             The maximum number of position results to receive
      * @param maxRegionDistanceSq The maximum region distance, squared
      * @return The locations found that match the special block
      */

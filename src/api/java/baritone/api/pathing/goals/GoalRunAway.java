@@ -20,6 +20,7 @@ package baritone.api.pathing.goals;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Useful for automated combat (retreating specifically)
@@ -32,16 +33,26 @@ public class GoalRunAway implements Goal {
 
     private final double distanceSq;
 
+    private final Optional<Integer> maintainY;
+
     public GoalRunAway(double distance, BlockPos... from) {
+        this(distance, Optional.empty(), from);
+    }
+
+    public GoalRunAway(double distance, Optional<Integer> maintainY, BlockPos... from) {
         if (from.length == 0) {
             throw new IllegalArgumentException();
         }
         this.from = from;
         this.distanceSq = distance * distance;
+        this.maintainY = maintainY;
     }
 
     @Override
     public boolean isInGoal(int x, int y, int z) {
+        if (maintainY.isPresent() && maintainY.get() != y) {
+            return false;
+        }
         for (BlockPos p : from) {
             int diffX = x - p.getX();
             int diffZ = z - p.getZ();
@@ -62,11 +73,19 @@ public class GoalRunAway implements Goal {
                 min = h;
             }
         }
-        return -min;
+        min = -min;
+        if (maintainY.isPresent()) {
+            min += GoalYLevel.calculate(maintainY.get(), y);
+        }
+        return min;
     }
 
     @Override
     public String toString() {
-        return "GoalRunAwayFrom" + Arrays.asList(from);
+        if (maintainY.isPresent()) {
+            return "GoalRunAwayFromMaintainY y=" + maintainY.get() + ", " + Arrays.asList(from);
+        } else {
+            return "GoalRunAwayFrom" + Arrays.asList(from);
+        }
     }
 }

@@ -24,8 +24,8 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -277,6 +277,13 @@ public class Settings {
     public Setting<Boolean> chunkCaching = new Setting<>(true);
 
     /**
+     * On save, delete from RAM any cached regions that are more than 1024 blocks away from the player
+     * <p>
+     * Temporarily disabled, see issue #248
+     */
+    public Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
+
+    /**
      * Print all the debug messages to chat
      */
     public Setting<Boolean> chatDebug = new Setting<>(true);
@@ -371,10 +378,25 @@ public class Settings {
     public Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
     /**
+     * If we are more than 500 movements into the current path, discard the oldest segments, as they are no longer useful
+     */
+    public Setting<Integer> maxPathHistoryLength = new Setting<>(300);
+
+    /**
+     * If the current path is too long, cut off this many movements from the beginning.
+     */
+    public Setting<Integer> pathHistoryCutoffAmount = new Setting<>(50);
+
+    /**
      * Rescan for the goal once every 5 ticks.
      * Set to 0 to disable.
      */
     public Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
+
+    /**
+     * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
+     */
+    public Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
 
     /**
      * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.

@@ -15,14 +15,15 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior;
+package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.behavior.IFollowBehavior;
-import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalXZ;
-import baritone.utils.Helper;
+import baritone.api.process.IFollowProcess;
+import baritone.api.process.PathingCommand;
+import baritone.api.process.PathingCommandType;
+import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
@@ -31,23 +32,16 @@ import net.minecraft.util.math.BlockPos;
  *
  * @author leijurv
  */
-public final class FollowBehavior extends Behavior implements IFollowBehavior, Helper {
+public final class FollowProcess extends BaritoneProcessHelper implements IFollowProcess {
 
     private Entity following;
 
-    public FollowBehavior(Baritone baritone) {
-        super(baritone);
+    public FollowProcess(Baritone baritone) {
+        super(baritone, 1);
     }
 
     @Override
-    public void onTick(TickEvent event) {
-        if (event.getType() == TickEvent.Type.OUT) {
-            following = null;
-            return;
-        }
-        if (following == null) {
-            return;
-        }
+    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         // lol this is trashy but it works
         BlockPos pos;
         if (Baritone.settings().followOffsetDistance.get() == 0) {
@@ -56,9 +50,22 @@ public final class FollowBehavior extends Behavior implements IFollowBehavior, H
             GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.get(), Baritone.settings().followOffsetDistance.get());
             pos = new BlockPos(g.getX(), following.posY, g.getZ());
         }
-        baritone.getPathingBehavior().setGoal(new GoalNear(pos, Baritone.settings().followRadius.get()));
-        ((PathingBehavior) baritone.getPathingBehavior()).revalidateGoal();
-        baritone.getPathingBehavior().path();
+        return new PathingCommand(new GoalNear(pos, Baritone.settings().followRadius.get()), PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+    }
+
+    @Override
+    public boolean isActive() {
+        return following != null;
+    }
+
+    @Override
+    public void onLostControl() {
+        following = null;
+    }
+
+    @Override
+    public String displayName() {
+        return "Follow " + following;
     }
 
     @Override
@@ -69,11 +76,5 @@ public final class FollowBehavior extends Behavior implements IFollowBehavior, H
     @Override
     public Entity following() {
         return this.following;
-    }
-
-    @Override
-    public void cancel() {
-        baritone.getPathingBehavior().cancel();
-        follow(null);
     }
 }

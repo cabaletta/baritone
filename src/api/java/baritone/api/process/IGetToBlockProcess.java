@@ -15,25 +15,14 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.api.process;
 
-import baritone.api.utils.Rotation;
+import net.minecraft.block.Block;
 
 /**
- * @author Brady
- * @since 9/23/2018
+ * but it rescans the world every once in a while so it doesn't get fooled by its cache
  */
-public interface ILookBehavior extends IBehavior {
+public interface IGetToBlockProcess extends IBaritoneProcess {
 
-    /**
-     * Updates the current {@link ILookBehavior} target to target
-     * the specified rotations on the next tick. If force is {@code true},
-     * then freeLook will be overriden and angles will be set regardless.
-     * If any sort of block interaction is required, force should be {@code true},
-     * otherwise, it should be {@code false};
-     *
-     * @param rotation The target rotations
-     * @param force    Whether or not to "force" the rotations
-     */
-    void updateTarget(Rotation rotation, boolean force);
+    void getToBlock(Block block);
 }
