@@ -83,10 +83,9 @@ public class MixinMinecraft {
             )
     )
     private void runTick(CallbackInfo ci) {
-        Minecraft mc = (Minecraft) (Object) this;
         Baritone.INSTANCE.getGameEventHandler().onTick(new TickEvent(
                 EventState.PRE,
-                (mc.player != null && mc.world != null)
+                (player != null && world != null)
                         ? TickEvent.Type.IN
                         : TickEvent.Type.OUT
         ));
