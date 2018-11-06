@@ -40,24 +40,9 @@ public interface IPathingBehavior extends IBehavior {
     Optional<Double> ticksRemainingInSegment();
 
     /**
-     * Sets the pathing goal.
-     *
-     * @param goal The pathing goal
-     */
-    void setGoal(Goal goal);
-
-    /**
      * @return The current pathing goal
      */
     Goal getGoal();
-
-    /**
-     * Begins pathing. Calculation will start in a new thread, and once completed,
-     * movement will commence. Returns whether or not the operation was successful.
-     *
-     * @return Whether or not the operation was successful
-     */
-    boolean path();
 
     /**
      * @return Whether or not a path is currently being executed.
@@ -65,9 +50,14 @@ public interface IPathingBehavior extends IBehavior {
     boolean isPathing();
 
     /**
-     * Cancels the pathing behavior or the current path calculation.
+     * Cancels the pathing behavior or the current path calculation, and all processes that could be controlling path.
+     * <p>
+     * Basically, "MAKE IT STOP".
+     *
+     * @return Whether or not the pathing behavior was canceled. All processes are guaranteed to be canceled, but the
+     * PathingBehavior might be in the middle of an uncancelable action like a parkour jump
      */
-    void cancel();
+    boolean cancelEverything();
 
     /**
      * Returns the current path, from the current path executor, if there is one.

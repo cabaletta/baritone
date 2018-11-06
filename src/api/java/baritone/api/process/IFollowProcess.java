@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.api.process;
 
 import net.minecraft.entity.Entity;
 
@@ -23,7 +23,7 @@ import net.minecraft.entity.Entity;
  * @author Brady
  * @since 9/23/2018
  */
-public interface IFollowBehavior extends IBehavior {
+public interface IFollowProcess extends IBaritoneProcess {
 
     /**
      * Set the follow target to the specified entity;
@@ -40,5 +40,7 @@ public interface IFollowBehavior extends IBehavior {
     /**
      * Cancels the follow behavior, this will clear the current follow target.
      */
-    void cancel();
+    default void cancel() {
+        onLostControl();
+    }
 }

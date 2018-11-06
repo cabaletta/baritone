@@ -17,7 +17,11 @@
 
 package baritone.utils;
 
+import baritone.Baritone;
+import baritone.api.event.events.TickEvent;
+import baritone.behavior.Behavior;
 import net.minecraft.client.settings.KeyBinding;
+import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +34,11 @@ import java.util.Map;
  * @author Brady
  * @since 7/31/2018 11:20 PM
  */
-public final class InputOverrideHandler implements Helper {
+public final class InputOverrideHandler extends Behavior implements Helper {
+
+    public InputOverrideHandler(Baritone baritone) {
+        super(baritone);
+    }
 
     /**
      * Maps keybinds to whether or not we are forcing their state down.
@@ -59,6 +67,33 @@ public final class InputOverrideHandler implements Helper {
      */
     public final void setInputForceState(Input input, boolean forced) {
         inputForceStateMap.put(input.getKeyBinding(), forced);
+    }
+
+    @Override
+    public final void onProcessKeyBinds() {
+        // Simulate the key being held down this tick
+        for (InputOverrideHandler.Input input : Input.values()) {
+            KeyBinding keyBinding = input.getKeyBinding();
+
+            if (isInputForcedDown(keyBinding) && !keyBinding.isKeyDown()) {
+                int keyCode = keyBinding.getKeyCode();
+
+                if (keyCode < Keyboard.KEYBOARD_SIZE) {
+                    KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
+                }
+            }
+        }
+    }
+
+    @Override
+    public final void onTick(TickEvent event) {
+        if (event.getType() == TickEvent.Type.OUT) {
+            return;
+        }
+        if (Baritone.settings().leftClickWorkaround.get()) {
+            boolean stillClick = BlockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT.keyBinding));
+            setInputForceState(Input.CLICK_LEFT, stillClick);
+        }
     }
 
     /**

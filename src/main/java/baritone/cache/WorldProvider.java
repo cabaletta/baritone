@@ -74,8 +74,8 @@ public enum WorldProvider implements IWorldProvider, Helper {
 
         } else {
             //remote
-            directory = new File(Baritone.INSTANCE.getDir(), mc.getCurrentServerData().serverIP);
-            readme = Baritone.INSTANCE.getDir();
+            directory = new File(Baritone.getDir(), mc.getCurrentServerData().serverIP);
+            readme = Baritone.getDir();
         }
         // lol wtf is this baritone folder in my minecraft save?
         try (FileOutputStream out = new FileOutputStream(new File(readme, "readme.txt"))) {

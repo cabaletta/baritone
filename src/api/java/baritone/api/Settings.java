@@ -384,6 +384,11 @@ public class Settings {
     public Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
 
     /**
+     * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
+     */
+    public Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
+
+    /**
      * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.
      * <p>
      * Currently only runs when either MineBehavior or FollowBehavior is active.

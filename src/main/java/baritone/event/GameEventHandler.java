@@ -21,16 +21,13 @@ import baritone.Baritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IGameEventListener;
-import baritone.api.utils.interfaces.Toggleable;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.world.chunk.Chunk;
-import org.lwjgl.input.Keyboard;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Brady
@@ -38,57 +35,32 @@ import java.util.ArrayList;
  */
 public final class GameEventHandler implements IGameEventListener, Helper {
 
-    private final ArrayList<IGameEventListener> listeners = new ArrayList<>();
+    private final Baritone baritone;
+
+    private final List<IGameEventListener> listeners = new ArrayList<>();
+
+    public GameEventHandler(Baritone baritone) {
+        this.baritone = baritone;
+    }
 
     @Override
     public final void onTick(TickEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onTick(event);
-            }
-        });
+        listeners.forEach(l -> l.onTick(event));
     }
 
     @Override
     public final void onPlayerUpdate(PlayerUpdateEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onPlayerUpdate(event);
-            }
-        });
+        listeners.forEach(l -> l.onPlayerUpdate(event));
     }
 
     @Override
     public final void onProcessKeyBinds() {
-        InputOverrideHandler inputHandler = Baritone.INSTANCE.getInputOverrideHandler();
-
-        // Simulate the key being held down this tick
-        for (InputOverrideHandler.Input input : InputOverrideHandler.Input.values()) {
-            KeyBinding keyBinding = input.getKeyBinding();
-
-            if (inputHandler.isInputForcedDown(keyBinding) && !keyBinding.isKeyDown()) {
-                int keyCode = keyBinding.getKeyCode();
-
-                if (keyCode < Keyboard.KEYBOARD_SIZE) {
-                    KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
-                }
-            }
-        }
-
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onProcessKeyBinds();
-            }
-        });
+        listeners.forEach(IGameEventListener::onProcessKeyBinds);
     }
 
     @Override
     public final void onSendChatMessage(ChatEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onSendChatMessage(event);
-            }
-        });
+        listeners.forEach(l -> l.onSendChatMessage(event));
     }
 
     @Override
@@ -114,20 +86,12 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         }
 
 
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onChunkEvent(event);
-            }
-        });
+        listeners.forEach(l -> l.onChunkEvent(event));
     }
 
     @Override
     public final void onRenderPass(RenderEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onRenderPass(event);
-            }
-        });
+        listeners.forEach(l -> l.onRenderPass(event));
     }
 
     @Override
@@ -143,72 +107,41 @@ public final class GameEventHandler implements IGameEventListener, Helper {
             }
         }
 
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onWorldEvent(event);
-            }
-        });
+        listeners.forEach(l -> l.onWorldEvent(event));
     }
 
     @Override
     public final void onSendPacket(PacketEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onSendPacket(event);
-            }
-        });
+        listeners.forEach(l -> l.onSendPacket(event));
     }
 
     @Override
     public final void onReceivePacket(PacketEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onReceivePacket(event);
-            }
-        });
+        listeners.forEach(l -> l.onReceivePacket(event));
     }
 
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onPlayerRotationMove(event);
-            }
-        });
+        listeners.forEach(l -> l.onPlayerRotationMove(event));
     }
 
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onBlockInteract(event);
-            }
-        });
+        listeners.forEach(l -> l.onBlockInteract(event));
     }
 
     @Override
     public void onPlayerDeath() {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onPlayerDeath();
-            }
-        });
+        listeners.forEach(IGameEventListener::onPlayerDeath);
     }
 
     @Override
     public void onPathEvent(PathEvent event) {
-        listeners.forEach(l -> {
-            if (canDispatch(l)) {
-                l.onPathEvent(event);
-            }
-        });
+        listeners.forEach(l -> l.onPathEvent(event));
     }
 
     public final void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
     }
 
-    private boolean canDispatch(IGameEventListener listener) {
-        return !(listener instanceof Toggleable) || ((Toggleable) listener).isEnabled();
-    }
 }
