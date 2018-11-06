@@ -57,9 +57,6 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
 
     @Override
     public void path() {
-        if (this.goal == null) {
-            this.goal = baritone.getPathingBehavior().getGoal();
-        }
         this.state = State.PATH_REQUESTED;
     }
 

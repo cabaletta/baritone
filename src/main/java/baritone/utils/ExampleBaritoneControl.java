@@ -100,7 +100,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     public boolean runCommand(String msg0) {
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
         PathingBehavior pathingBehavior = baritone.getPathingBehavior();
-        CustomGoalProcess CGPgrey = baritone.getCustomGoalProcess();
+        CustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
@@ -188,7 +188,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("unable to parse integer " + ex);
                 return true;
             }
-            CGPgrey.setGoal(goal);
+            customGoalProcess.setGoal(goal);
             logDirect("Goal: " + goal);
             return true;
         }
@@ -200,7 +200,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             } else if (pathingBehavior.isPathing()) {
                 logDirect("Currently executing a path. Please cancel it first.");
             } else {
-                CGPgrey.path();
+                customGoalProcess.setGoalAndPath(pathingBehavior.getGoal());
             }
             return true;
         }
@@ -222,7 +222,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("axis")) {
-            CGPgrey.setGoalAndPath(new GoalAxis());
+            customGoalProcess.setGoalAndPath(new GoalAxis());
             return true;
         }
         if (msg.equals("cancel") || msg.equals("stop")) {
@@ -254,7 +254,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Inverting goal of player feet");
                 runAwayFrom = playerFeet();
             }
-            CGPgrey.setGoalAndPath(new GoalRunAway(1, runAwayFrom) {
+            customGoalProcess.setGoalAndPath(new GoalRunAway(1, runAwayFrom) {
                 @Override
                 public boolean isInGoal(int x, int y, int z) {
                     return false;
@@ -329,7 +329,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         if (msg.startsWith("thisway")) {
             try {
                 Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-                CGPgrey.setGoal(goal);
+                customGoalProcess.setGoal(goal);
                 logDirect("Goal: " + goal);
             } catch (NumberFormatException ex) {
                 logDirect("Error unable to parse '" + msg.substring(7).trim() + "' to a double.");
@@ -409,7 +409,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
             }
             Goal goal = new GoalBlock(waypoint.getLocation());
-            CGPgrey.setGoalAndPath(goal);
+            customGoalProcess.setGoalAndPath(goal);
             return true;
         }
         if (msg.equals("spawn") || msg.equals("bed")) {
@@ -419,10 +419,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 // for some reason the default spawnpoint is underground sometimes
                 Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getZ());
                 logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
-                CGPgrey.setGoalAndPath(goal);
+                customGoalProcess.setGoalAndPath(goal);
             } else {
                 Goal goal = new GoalGetToBlock(waypoint.getLocation());
-                CGPgrey.setGoalAndPath(goal);
+                customGoalProcess.setGoalAndPath(goal);
                 logDirect("Set goal to most recent bed " + goal);
             }
             return true;
@@ -438,7 +438,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("home not saved");
             } else {
                 Goal goal = new GoalBlock(waypoint.getLocation());
-                CGPgrey.setGoalAndPath(goal);
+                customGoalProcess.setGoalAndPath(goal);
                 logDirect("Going to saved home " + goal);
             }
             return true;
