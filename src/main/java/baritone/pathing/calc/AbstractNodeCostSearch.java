@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.utils.PathCalculationResult;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.Optional;
@@ -82,7 +83,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         cancelRequested = true;
     }
 
-    public synchronized Optional<IPath> calculate(long timeout) {
+    public synchronized PathCalculationResult calculate(long timeout) {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
@@ -91,7 +92,17 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             Optional<IPath> path = calculate0(timeout);
             path.ifPresent(IPath::postProcess);
             isFinished = true;
-            return path;
+            if (cancelRequested) {
+                return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, path);
+            }
+            if (!path.isPresent()) {
+                return new PathCalculationResult(PathCalculationResult.Type.FAILURE, path);
+            }
+            if (goal.isInGoal(path.get().getDest())) {
+                return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_TO_GOAL, path);
+            } else {
+                return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
+            }
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
             currentlyRunning = null;

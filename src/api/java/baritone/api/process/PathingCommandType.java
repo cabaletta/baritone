@@ -49,7 +49,7 @@ public enum PathingCommandType {
     /**
      * Set the goal and path.
      * <p>
-     * Revalidate the current goal, and cancel if it's no longer valid, or if the new goal is {@code null}.
+     * Cancel the current path if the goals are not equal
      */
     FORCE_REVALIDATE_GOAL_AND_PATH
 }

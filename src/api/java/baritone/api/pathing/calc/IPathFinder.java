@@ -18,6 +18,7 @@
 package baritone.api.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
+import baritone.api.utils.PathCalculationResult;
 
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ public interface IPathFinder {
      *
      * @return The final path
      */
-    Optional<IPath> calculate(long timeout);
+    PathCalculationResult calculate(long timeout);
 
     /**
      * Intended to be called concurrently with calculatePath from a different thread to tell if it's finished yet

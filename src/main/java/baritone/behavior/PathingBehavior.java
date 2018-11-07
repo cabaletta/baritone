@@ -28,6 +28,7 @@ import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.PathCalculationResult;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
@@ -379,7 +380,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 logDebug("Starting to search for path from " + start + " to " + goal);
             }
 
-            Optional<IPath> path = findPath(start, previous, context);
+            PathCalculationResult calcResult = findPath(start, previous, context);
+            Optional<IPath> path = calcResult.path;
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
                     IPath result = p.cutoffAtLoadedChunks();
@@ -411,7 +413,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                         current = executor.get();
                     } else {
-                        queuePathEvent(PathEvent.CALC_FAILED);
+                        if (calcResult.type != PathCalculationResult.Type.CANCELLATION && calcResult.type != PathCalculationResult.Type.EXCEPTION) {
+                            // don't dispatch CALC_FAILED on cancellation
+                            queuePathEvent(PathEvent.CALC_FAILED);
+                        }
                     }
                 } else {
                     if (next == null) {
@@ -447,11 +452,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @param start
      * @return
      */
-    private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous, CalculationContext context) {
+    private PathCalculationResult findPath(BlockPos start, Optional<IPath> previous, CalculationContext context) {
         Goal goal = this.goal;
         if (goal == null) {
             logDebug("no goal");
-            return Optional.empty();
+            return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, Optional.empty());
         }
         if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
@@ -478,7 +483,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         } catch (Exception e) {
             logDebug("Pathing exception: " + e);
             e.printStackTrace();
-            return Optional.empty();
+            return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION, Optional.empty());
         }
     }
 
