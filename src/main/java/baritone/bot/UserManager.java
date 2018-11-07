@@ -17,6 +17,9 @@
 
 package baritone.bot;
 
+import baritone.Baritone;
+import baritone.api.event.events.TickEvent;
+import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
 import baritone.utils.Helper;
@@ -35,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static baritone.bot.connect.ConnectionStatus.*;
 
@@ -46,9 +50,20 @@ public final class UserManager implements Helper {
 
     public static final UserManager INSTANCE = new UserManager();
 
-    private UserManager() {}
+    private final List<IBaritoneUser> users = new CopyOnWriteArrayList<>();
 
-    private final List<IBaritoneUser> users = new ArrayList<>();
+    private UserManager() {
+        // Setup an event listener that automatically disconnects bots when we're not in-game
+        Baritone.INSTANCE.registerEventListener(new AbstractGameEventListener() {
+
+            @Override
+            public final void onTick(TickEvent event) {
+                if (event.getType() == TickEvent.Type.OUT) {
+                    UserManager.this.users.forEach(UserManager.this::disconnect);
+                }
+            }
+        });
+    }
 
     /**
      * Connects a new user with the specified {@link Session} to the current server.
@@ -106,7 +121,8 @@ public final class UserManager implements Helper {
     }
 
     /**
-     * Notifies the manager of an {@link IBaritoneUser} disconnect
+     * Notifies the manager of an {@link IBaritoneUser} disconnect, and
+     * removes the {@link IBaritoneUser} from the list of users.
      *
      * @param user The user that disconnected
      * @param state The connection state at the time of disconnect
@@ -115,11 +131,35 @@ public final class UserManager implements Helper {
         this.users.remove(user);
     }
 
-    public final Optional<IBaritoneUser> getUserByProfile(GameProfile profile) {
-        return this.users.stream().filter(user -> user.getSession().getProfile().equals(profile)).findFirst();
+    /**
+     * Disconnects the specified {@link IBaritoneUser} from its current server.
+     *
+     * @param user The user to disconnect
+     */
+    public final void disconnect(IBaritoneUser user) {
+        // It's probably fine to pass null to this, because the handlers aren't doing anything with it
+        // noinspection ConstantConditions
+        user.getNetworkManager().closeChannel(null);
+        this.users.remove(user);
     }
 
+    /**
+     * Finds the {@link IBaritoneUser} associated with the specified {@link GameProfile}
+     *
+     * @param profile The game profile of the user
+     * @return The user, {@link Optional#empty()} if no match or {@code profile} is {@code null}
+     */
+    public final Optional<IBaritoneUser> getUserByProfile(GameProfile profile) {
+        return profile == null ? Optional.empty() : this.users.stream().filter(user -> user.getProfile().equals(profile)).findFirst();
+    }
+
+    /**
+     * Finds the {@link IBaritoneUser} associated with the specified {@link UUID}
+     *
+     * @param uuid The uuid of the user
+     * @return The user, {@link Optional#empty()} if no match or {@code uuid} is {@code null}
+     */
     public final Optional<IBaritoneUser> getUserByUUID(UUID uuid) {
-        return this.users.stream().filter(user -> user.getSession().getProfile().getId().equals(uuid)).findFirst();
+        return uuid == null ? Optional.empty() : this.users.stream().filter(user -> user.getProfile().getId().equals(uuid)).findFirst();
     }
 }

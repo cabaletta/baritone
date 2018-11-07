@@ -467,7 +467,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         // TODO: Temporary command to test bots offline
         if (msg.equals("bot")) {
-            UserManager.INSTANCE.connect(new Session("Lol" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
+            UserManager.INSTANCE.connect(new Session("Bot" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
             return true;
         }
         return false;

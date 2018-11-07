@@ -26,8 +26,8 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.world.chunk.Chunk;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Brady
@@ -37,7 +37,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     private final Baritone baritone;
 
-    private final List<IGameEventListener> listeners = new ArrayList<>();
+    private final List<IGameEventListener> listeners = new CopyOnWriteArrayList<>();
 
     public GameEventHandler(Baritone baritone) {
         this.baritone = baritone;

@@ -39,10 +39,13 @@ import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.scoreboard.*;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.IThreadListener;
+import net.minecraft.util.StringUtils;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nonnull;
 
@@ -117,6 +120,31 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleScoreboardObjective(@Nonnull SPacketScoreboardObjective packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Scoreboard scoreboard = this.world.getScoreboard();
+        switch (packetIn.getAction()) {
+            case 0: {
+                ScoreObjective objective = scoreboard.addScoreObjective(packetIn.getObjectiveName(), IScoreCriteria.DUMMY);
+                objective.setDisplayName(packetIn.getObjectiveValue());
+                objective.setRenderType(packetIn.getRenderType());
+                break;
+            }
+            case 1: {
+                ScoreObjective objective = scoreboard.getObjective(packetIn.getObjectiveName());
+                if (objective != null) {
+                    scoreboard.removeObjective(objective);
+                }
+                break;
+            }
+            case 2: {
+                ScoreObjective objective = scoreboard.getObjective(packetIn.getObjectiveName());
+                if (objective != null) {
+                    objective.setDisplayName(packetIn.getObjectiveName());
+                    objective.setRenderType(packetIn.getRenderType());
+                }
+                break;
+            }
+        }
     }
 
     @Override
@@ -439,11 +467,73 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleTeams(@Nonnull SPacketTeams packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Scoreboard scoreboard = this.world.getScoreboard();
+
+        boolean newTeam = packetIn.getAction() == 0;
+
+        ScorePlayerTeam team = newTeam
+                ? scoreboard.createTeam(packetIn.getName())
+                : scoreboard.getTeam(packetIn.getName());
+
+        if (packetIn.getAction() == 2 || newTeam) {
+            team.setDisplayName(packetIn.getDisplayName());
+            team.setPrefix(packetIn.getPrefix());
+            team.setSuffix(packetIn.getSuffix());
+            team.setColor(TextFormatting.fromColorIndex(packetIn.getColor()));
+            team.setFriendlyFlags(packetIn.getFriendlyFlags());
+
+            Team.EnumVisible visibility = Team.EnumVisible.getByName(packetIn.getNameTagVisibility());
+            if (visibility != null) {
+                team.setNameTagVisibility(visibility);
+            }
+
+            Team.CollisionRule collisionRule = Team.CollisionRule.getByName(packetIn.getCollisionRule());
+            if (collisionRule != null) {
+                team.setCollisionRule(collisionRule);
+            }
+        }
+
+        if (packetIn.getAction() == 3 || newTeam) {
+            for (String name : packetIn.getPlayers()) {
+                scoreboard.addPlayerToTeam(name, packetIn.getName());
+            }
+        }
+
+        if (packetIn.getAction() == 4) {
+            for (String name : packetIn.getPlayers()) {
+                scoreboard.removePlayerFromTeam(name, team);
+            }
+        }
+
+        if (packetIn.getAction() == 1) {
+            scoreboard.removeTeam(team);
+        }
     }
 
     @Override
     public void handleUpdateScore(@Nonnull SPacketUpdateScore packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Scoreboard scoreboard = this.world.getScoreboard();
+        ScoreObjective objective = scoreboard.getObjective(packetIn.getObjectiveName());
+
+        switch (packetIn.getScoreAction()) {
+            case CHANGE: {
+                if (objective != null) {
+                    scoreboard.getOrCreateScore(packetIn.getPlayerName(), objective).setScorePoints(packetIn.getScoreValue());
+                }
+                break;
+            }
+            case REMOVE: {
+                if (StringUtils.isNullOrEmpty(packetIn.getObjectiveName())) {
+                    scoreboard.removeObjectiveFromEntity(packetIn.getPlayerName(), null);
+                } else if (objective != null) {
+                    scoreboard.removeObjectiveFromEntity(packetIn.getPlayerName(), objective);
+                }
+                break;
+            }
+        }
     }
 
     @Override
@@ -490,9 +580,9 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
             Potion potion = Potion.getPotionById(packetIn.getEffectId());
 
             if (potion != null) {
-                PotionEffect potioneffect = new PotionEffect(potion, packetIn.getDuration(), packetIn.getAmplifier(), packetIn.getIsAmbient(), packetIn.doesShowParticles());
-                potioneffect.setPotionDurationMax(packetIn.isMaxDuration());
-                ((EntityLivingBase) entity).addPotionEffect(potioneffect);
+                PotionEffect effect = new PotionEffect(potion, packetIn.getDuration(), packetIn.getAmplifier(), packetIn.getIsAmbient(), packetIn.doesShowParticles());
+                effect.setPotionDurationMax(packetIn.isMaxDuration());
+                ((EntityLivingBase) entity).addPotionEffect(effect);
             }
         }
     }
