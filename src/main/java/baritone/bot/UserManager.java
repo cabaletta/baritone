@@ -18,7 +18,6 @@
 package baritone.bot;
 
 import baritone.bot.connect.ConnectionResult;
-import baritone.bot.connect.ConnectionStatus;
 import baritone.bot.handler.BotNetHandlerLoginClient;
 import baritone.utils.Helper;
 import com.mojang.authlib.GameProfile;
@@ -43,7 +42,11 @@ import static baritone.bot.connect.ConnectionStatus.*;
  * @author Brady
  * @since 11/6/2018
  */
-public class UserManager implements Helper {
+public final class UserManager implements Helper {
+
+    public static final UserManager INSTANCE = new UserManager();
+
+    private UserManager() {}
 
     private final List<IBaritoneUser> users = new ArrayList<>();
 
@@ -88,7 +91,7 @@ public class UserManager implements Helper {
             );
 
             // Create User
-            IBaritoneUser user = new BaritoneUser(networkManager, session);
+            IBaritoneUser user = new BaritoneUser(this, networkManager, session);
             this.users.add(user);
 
             // Setup login handler and send connection packets
@@ -100,6 +103,10 @@ public class UserManager implements Helper {
         } catch (Exception e) {
             return ConnectionResult.failed(CONNECTION_FAILED);
         }
+    }
+
+    public final void notifyDisconnect(IBaritoneUser user, EnumConnectionState state) {
+
     }
 
     public final Optional<IBaritoneUser> getUserByProfile(GameProfile profile) {

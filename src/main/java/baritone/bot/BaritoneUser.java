@@ -20,6 +20,7 @@ package baritone.bot;
 import baritone.bot.entity.EntityBot;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.Session;
 
 /**
@@ -30,18 +31,20 @@ import net.minecraft.util.Session;
  */
 class BaritoneUser implements IBaritoneUser {
 
+    private final UserManager manager;
     private final NetworkManager networkManager;
     private final Session session;
 
     private GameProfile profile;
 
-    BaritoneUser(NetworkManager networkManager, Session session) {
+    BaritoneUser(UserManager manager, NetworkManager networkManager, Session session) {
+        this.manager = manager;
         this.networkManager = networkManager;
         this.session = session;
     }
 
     @Override
-    public void onLoginSuccess(GameProfile profile) {
+    public void onLoginSuccess(GameProfile profile, INetHandlerPlayClient networkHandler) {
         this.profile = profile;
     }
 
@@ -64,5 +67,10 @@ class BaritoneUser implements IBaritoneUser {
     @Override
     public GameProfile getProfile() {
         return this.profile;
+    }
+
+    @Override
+    public UserManager getManager() {
+        return this.manager;
     }
 }

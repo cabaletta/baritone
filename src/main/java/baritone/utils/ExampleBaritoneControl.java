@@ -27,6 +27,7 @@ import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
+import baritone.bot.UserManager;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
@@ -38,6 +39,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.Session;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
@@ -462,6 +464,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.equals("damn")) {
             logDirect("daniel");
+        }
+        // TODO: Temporary command to test bots offline
+        if (msg.equals("bot")) {
+            UserManager.INSTANCE.connect(new Session("Lol" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
+            return true;
         }
         return false;
     }

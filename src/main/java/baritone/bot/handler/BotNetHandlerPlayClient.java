@@ -20,20 +20,24 @@ package baritone.bot.handler;
 import baritone.bot.IBaritoneUser;
 import baritone.bot.entity.EntityBot;
 import com.mojang.authlib.GameProfile;
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
+import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.INetHandlerPlayClient;
-import net.minecraft.network.play.client.CPacketClientStatus;
-import net.minecraft.network.play.client.CPacketResourcePackStatus;
+import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.*;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.util.text.ITextComponent;
 
@@ -88,7 +92,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.user = user;
 
         // Notify the user that we're ingame
-        this.user.onLoginSuccess(profile);
+        this.user.onLoginSuccess(profile, this);
     }
 
     @Override
@@ -236,7 +240,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleKeepAlive(@Nonnull SPacketKeepAlive packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+        this.networkManager.sendPacket(new CPacketKeepAlive(packetIn.getId()));
     }
 
     @Override
@@ -258,7 +262,23 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void handleJoinGame(@Nonnull SPacketJoinGame packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
-        // TODO: Set world and player
+        // TODO: Set world and player (See Below)
+        /*
+        - Create player controller
+        - Set game difficulty
+        - Create world
+        - Load world
+          - Create player
+            - Set entity ID
+            - Set player dimension
+            - Set player
+          - Spawn player into world
+        - Set player game mode
+        - Define max players? (Might be useful when determining if Bots are in the same world)
+        */
+
+        this.networkManager.sendPacket(new CPacketClientSettings("en_us", 8, EntityPlayer.EnumChatVisibility.FULL, true, 0, EnumHandSide.RIGHT));
+        this.networkManager.sendPacket(new CPacketCustomPayload("MC|Brand", new PacketBuffer(Unpooled.buffer()).writeString("vanilla")));
     }
 
     @Override
@@ -351,7 +371,11 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
         Entity entity = this.world.getEntityByID(packetIn.getEntityID());
         if (entity != null) {
-            entity.setVelocity((double)packetIn.getMotionX() / 8000.0D, (double)packetIn.getMotionY() / 8000.0D, (double)packetIn.getMotionZ() / 8000.0D);
+            entity.setVelocity(
+                    (double) packetIn.getMotionX() / 8000.0D,
+                    (double) packetIn.getMotionY() / 8000.0D,
+                    (double) packetIn.getMotionZ() / 8000.0D
+            );
         }
     }
 
@@ -499,6 +523,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void onDisconnect(@Nonnull ITextComponent reason) {
-        // TODO Unload the world and notify the bot manager that we are no longer connected
+        // TODO: Unload the world
+        this.user.getManager().notifyDisconnect(this.user, EnumConnectionState.PLAY);
     }
 }
