@@ -52,7 +52,9 @@ public interface IPath {
      * This path is actually going to be executed in the world. Do whatever additional processing is required.
      * (as opposed to Path objects that are just constructed every frame for rendering)
      */
-    default void postProcess() {}
+    default IPath postProcess() {
+        return this;
+    }
 
     /**
      * Returns the number of positions in this path. Equivalent to {@code positions().size()}.

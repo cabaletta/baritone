@@ -95,7 +95,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         return getCost();
     }
 
-    protected void override(double cost) {
+    public void override(double cost) {
         this.cost = cost;
     }
 
