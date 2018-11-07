@@ -410,7 +410,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                         return true;
                     }
                 } else {
-                    List<BlockPos> locs = baritone.getMineBehavior().searchWorld(Collections.singletonList(block), 64);
+                    List<BlockPos> locs = baritone.getMineBehavior().searchWorld(Collections.singletonList(block), 64, world());
                     if (locs.isEmpty()) {
                         logDirect("No locations for " + mining + " known, cancelling");
                         return true;
