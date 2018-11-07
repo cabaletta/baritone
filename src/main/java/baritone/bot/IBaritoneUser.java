@@ -19,6 +19,7 @@ package baritone.bot;
 
 import baritone.bot.entity.EntityBot;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.Session;
@@ -33,14 +34,23 @@ public interface IBaritoneUser {
      * Called when the user successfully logs into a server.
      *
      * @param profile The game profile returned by the server on login
-     * @param networkHandler The client play network handler
+     * @param netHandlerPlayClient The client play network handler
      */
-    void onLoginSuccess(GameProfile profile, INetHandlerPlayClient networkHandler);
+    void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient);
 
     /**
      * @return The network manager that is responsible for the current connection.
      */
     NetworkManager getNetworkManager();
+
+    /**
+     * Returns the current play network handler. Can also be acquired via
+     * {@link NetworkManager#getNetHandler()} from {@link #getNetworkManager()},
+     * and checking if the {@link INetHandler} is an instance of {@link INetHandlerPlayClient}.
+     *
+     * @return The current play network handler
+     */
+    INetHandlerPlayClient getConnection();
 
     /**
      * @return The locally managed entity for this user.

@@ -105,8 +105,14 @@ public final class UserManager implements Helper {
         }
     }
 
+    /**
+     * Notifies the manager of an {@link IBaritoneUser} disconnect
+     *
+     * @param user The user that disconnected
+     * @param state The connection state at the time of disconnect
+     */
     public final void notifyDisconnect(IBaritoneUser user, EnumConnectionState state) {
-
+        this.users.remove(user);
     }
 
     public final Optional<IBaritoneUser> getUserByProfile(GameProfile profile) {

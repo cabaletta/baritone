@@ -37,6 +37,9 @@ import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.*;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.util.text.ITextComponent;
@@ -127,6 +130,28 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleAnimation(@Nonnull SPacketAnimation packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Entity entity = this.world.getEntityByID(packetIn.getEntityID());
+        if (entity != null) {
+            switch (packetIn.getAnimationType()) {
+                case 0: {
+                    ((EntityLivingBase) entity).swingArm(EnumHand.MAIN_HAND);
+                    break;
+                }
+                case 1: {
+                    entity.performHurtAnimation();
+                    break;
+                }
+                case 2: {
+                    ((EntityPlayer) entity).wakeUpPlayer(false, false, false);
+                    break;
+                }
+                case 3: {
+                    ((EntityLivingBase) entity).swingArm(EnumHand.OFF_HAND);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -152,6 +177,8 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleBlockChange(@Nonnull SPacketBlockChange packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        this.world.invalidateRegionAndSetBlock(packetIn.getBlockPosition(), packetIn.getBlockState());
     }
 
     @Override
@@ -165,6 +192,10 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleMultiBlockChange(@Nonnull SPacketMultiBlockChange packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        for (SPacketMultiBlockChange.BlockUpdateData data : packetIn.getChangedBlocks()) {
+            this.world.invalidateRegionAndSetBlock(data.getPos(), data.getBlockState());
+        }
     }
 
     @Override
@@ -452,6 +483,18 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleEntityEffect(@Nonnull SPacketEntityEffect packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Entity entity = this.world.getEntityByID(packetIn.getEntityId());
+
+        if (entity instanceof EntityLivingBase) {
+            Potion potion = Potion.getPotionById(packetIn.getEffectId());
+
+            if (potion != null) {
+                PotionEffect potioneffect = new PotionEffect(potion, packetIn.getDuration(), packetIn.getAmplifier(), packetIn.getIsAmbient(), packetIn.doesShowParticles());
+                potioneffect.setPotionDurationMax(packetIn.isMaxDuration());
+                ((EntityLivingBase) entity).addPotionEffect(potioneffect);
+            }
+        }
     }
 
     @Override
@@ -476,6 +519,8 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleWorldBorder(@Nonnull SPacketWorldBorder packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        packetIn.apply(this.world.getWorldBorder());
     }
 
     @Override
@@ -487,7 +532,8 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleResourcePack(@Nonnull SPacketResourcePackSend packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-        /* Lie to the server and tell them we did it in response */
+
+        // Lie to the server and tell them we accepted it in response
         this.networkManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.ACCEPTED));
         this.networkManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
     }

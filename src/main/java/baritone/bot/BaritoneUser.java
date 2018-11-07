@@ -36,6 +36,7 @@ class BaritoneUser implements IBaritoneUser {
     private final Session session;
 
     private GameProfile profile;
+    private INetHandlerPlayClient netHandlerPlayClient;
 
     BaritoneUser(UserManager manager, NetworkManager networkManager, Session session) {
         this.manager = manager;
@@ -44,13 +45,19 @@ class BaritoneUser implements IBaritoneUser {
     }
 
     @Override
-    public void onLoginSuccess(GameProfile profile, INetHandlerPlayClient networkHandler) {
+    public void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient) {
         this.profile = profile;
+        this.netHandlerPlayClient = netHandlerPlayClient;
     }
 
     @Override
     public NetworkManager getNetworkManager() {
         return this.networkManager;
+    }
+
+    @Override
+    public INetHandlerPlayClient getConnection() {
+        return this.netHandlerPlayClient;
     }
 
     @Override
