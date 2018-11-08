@@ -21,10 +21,11 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
+import baritone.utils.pathing.PathBase;
 
 import java.util.*;
 
-public class SplicedPath implements IPath {
+public class SplicedPath extends PathBase {
     private final List<BetterBlockPos> path;
 
     private final List<IMovement> movements;

@@ -21,11 +21,12 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
+import baritone.utils.pathing.PathBase;
 
 import java.util.Collections;
 import java.util.List;
 
-public class CutoffPath implements IPath {
+public class CutoffPath extends PathBase {
 
     private final List<BetterBlockPos> path;
 
