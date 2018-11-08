@@ -138,11 +138,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return new GoalYLevel(y);
             }
         }
-
-        /*if (playerFeet().equals(branchPoint)) {
-            // TODO mine 1x1 shafts to either side
-            branchPoint = branchPoint.north(10);
-        }*/
+        // TODO shaft mode, mine 1x1 shafts to either side
+        // TODO also, see if the GoalRunAway with maintain Y at 11 works even from the surface
         if (branchPointRunaway == null) {
             branchPointRunaway = new GoalRunAway(1, Optional.of(y), branchPoint) {
                 @Override
