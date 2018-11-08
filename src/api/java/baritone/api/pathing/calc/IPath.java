@@ -53,7 +53,7 @@ public interface IPath {
      * (as opposed to Path objects that are just constructed every frame for rendering)
      */
     default IPath postProcess() {
-        return this;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -121,7 +121,7 @@ public interface IPath {
      * @return The result of this cut-off operation
      */
     default IPath cutoffAtLoadedChunks() {
-        return this;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -133,7 +133,7 @@ public interface IPath {
      * @see Settings#pathCutoffFactor
      */
     default IPath staticCutoff(Goal destination) {
-        return this;
+        throw new UnsupportedOperationException();
     }
 
 
