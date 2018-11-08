@@ -56,6 +56,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private List<Block> mining;
     private List<BlockPos> knownOreLocations;
     private BlockPos branchPoint;
+    private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
 
@@ -132,6 +133,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
                 // cool, path is over and we are at desired y
                 branchPoint = playerFeet();
+                branchPointRunaway = null;
             } else {
                 return new GoalYLevel(y);
             }
@@ -141,12 +143,15 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             // TODO mine 1x1 shafts to either side
             branchPoint = branchPoint.north(10);
         }*/
-        return new GoalRunAway(1, Optional.of(y), branchPoint) {
-            @Override
-            public boolean isInGoal(int x, int y, int z) {
-                return false;
-            }
-        };
+        if (branchPointRunaway == null) {
+            branchPointRunaway = new GoalRunAway(1, Optional.of(y), branchPoint) {
+                @Override
+                public boolean isInGoal(int x, int y, int z) {
+                    return false;
+                }
+            };
+        }
+        return branchPointRunaway;
     }
 
     private void rescan(List<BlockPos> already) {
@@ -293,6 +298,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
         this.branchPoint = null;
+        this.branchPointRunaway = null;
         rescan(new ArrayList<>());
     }
 }
