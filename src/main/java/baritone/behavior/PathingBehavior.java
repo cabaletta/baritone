@@ -430,18 +430,16 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         throw new IllegalStateException("I have no idea what to do with this path");
                     }
                 }
-            }
-
-            if (talkAboutIt && current != null && current.getPath() != null) {
-                if (goal == null || goal.isInGoal(current.getPath().getDest())) {
-                    logDebug("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
-                } else {
-                    logDebug("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
-
+                if (talkAboutIt && current != null && current.getPath() != null) {
+                    if (goal == null || goal.isInGoal(current.getPath().getDest())) {
+                        logDebug("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                    } else {
+                        logDebug("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                    }
                 }
-            }
-            synchronized (pathCalcLock) {
-                isPathCalcInProgress = false;
+                synchronized (pathCalcLock) {
+                    isPathCalcInProgress = false;
+                }
             }
         });
     }
