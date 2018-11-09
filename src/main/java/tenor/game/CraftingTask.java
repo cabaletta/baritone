@@ -29,7 +29,7 @@ public class CraftingTask extends QuantizedTaskNode implements ISingleParentQuan
 
     final AquireCraftingItems inputs;
     final GetToCraftingTableTask step2;
-    final ActuallyCraftTask step3;
+    final DoCraft step3;
 
     final AquireItemTask parent;
 
@@ -38,7 +38,7 @@ public class CraftingTask extends QuantizedTaskNode implements ISingleParentQuan
         this.inputs = new AquireCraftingItems(this); // this adds the relationship
         this.step2 = registry().getSingleton(GetToCraftingTableTask.class);
         step2.addParent(this);
-        this.step3 = new ActuallyCraftTask(this);
+        this.step3 = new DoCraft(this);
 
         this.parent = parent;
         addParent(parent);

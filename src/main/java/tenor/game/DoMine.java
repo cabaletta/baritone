@@ -17,21 +17,21 @@
 
 package tenor.game;
 
-import tenor.ISingleParentSingularPriorityAllocator;
-import tenor.SingularTaskLeaf;
+import tenor.IQuantityRelationship;
+import tenor.ISingleParentQuantizedPriorityAllocator;
+import tenor.QuantizedTaskLeaf;
 
-public class ActuallyCraftTask extends SingularTaskLeaf implements ISingleParentSingularPriorityAllocator {
+public class DoMine extends QuantizedTaskLeaf implements ISingleParentQuantizedPriorityAllocator {
+    final MineTask parent;
 
-    public final CraftingTask parent;
-
-    public ActuallyCraftTask(CraftingTask parent) {
+    public DoMine(MineTask parent) {
         super(parent.bot);
         this.parent = parent;
         addParent(parent);
     }
 
     @Override
-    public double cost() {
-        return 420;
+    public IQuantityRelationship cost() {
+        return null;
     }
 }

@@ -17,31 +17,5 @@
 
 package tenor.game;
 
-import tenor.*;
-
-public class MineTask extends QuantizedTaskNode implements ISingleParentQuantizedPriorityAllocator {
-
-    // TODO shared claims of block locations in the world across all mine tasks across all bots
-
-    final AquireItemTask parent;
-
-    final DoMine doMine;
-
-
-    public MineTask(AquireItemTask parent) {
-        super(parent.bot, DependencyType.ANY_ONE_OF);
-        this.parent = parent;
-        addParent(parent);
-        this.doMine = new DoMine(this);
-    }
-
-    @Override
-    public IQuantityRelationship cost() {
-        return x -> x * 324232;
-    }
-
-    @Override
-    public double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity) {
-        return 0;
-    }
+public class MineWithToolTask {
 }
