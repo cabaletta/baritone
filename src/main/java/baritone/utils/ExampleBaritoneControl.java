@@ -262,6 +262,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             });
             return true;
         }
+        if (msg.startsWith("followplayers")) {
+            baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
+            logDirect("Following any players");
+            return true;
+        }
         if (msg.startsWith("follow")) {
             String name = msg.substring(6).trim();
             Optional<Entity> toFollow = Optional.empty();
@@ -279,7 +284,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Not found");
                 return true;
             }
-            baritone.getFollowProcess().follow(toFollow.get());
+            Entity effectivelyFinal = toFollow.get();
+            baritone.getFollowProcess().follow(x -> effectivelyFinal.equals(x));
             logDirect("Following " + toFollow.get());
             return true;
         }

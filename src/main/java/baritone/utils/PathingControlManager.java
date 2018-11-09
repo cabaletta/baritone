@@ -18,10 +18,13 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.event.events.TickEvent;
+import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.behavior.PathingBehavior;
+import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.util.math.BlockPos;
 
@@ -36,10 +39,20 @@ public class PathingControlManager {
     private final HashSet<IBaritoneProcess> processes; // unGh
     private IBaritoneProcess inControlLastTick;
     private IBaritoneProcess inControlThisTick;
+    private PathingCommand command;
 
     public PathingControlManager(Baritone baritone) {
         this.baritone = baritone;
         this.processes = new HashSet<>();
+        baritone.registerEventListener(new AbstractGameEventListener() { // needs to be after all behavior ticks
+            @Override
+            public void onTick(TickEvent event) {
+                if (event.getType() == TickEvent.Type.OUT) {
+                    return;
+                }
+                postTick();
+            }
+        });
     }
 
     public void registerProcess(IBaritoneProcess process) {
@@ -61,42 +74,66 @@ public class PathingControlManager {
         return inControlThisTick;
     }
 
-    public void doTheThingWithTheStuff() {
+    public void preTick() {
         inControlLastTick = inControlThisTick;
-        PathingCommand cmd = doTheStuff();
-        if (cmd == null) {
+        command = doTheStuff();
+        if (command == null) {
             return;
         }
         PathingBehavior p = baritone.getPathingBehavior();
-        switch (cmd.commandType) {
+        switch (command.commandType) {
             case REQUEST_PAUSE:
                 p.requestPause();
                 break;
             case CANCEL_AND_SET_GOAL:
-                p.secretInternalSetGoal(cmd.goal);
+                p.secretInternalSetGoal(command.goal);
                 p.cancelSegmentIfSafe();
                 break;
             case FORCE_REVALIDATE_GOAL_AND_PATH:
-                p.secretInternalSetGoalAndPath(cmd.goal);
-                if (cmd.goal == null || forceRevalidate(cmd.goal) || revalidateGoal(cmd.goal)) {
-                    // pwnage
-                    p.cancelSegmentIfSafe();
+                if (!p.isPathing() && !AbstractNodeCostSearch.getCurrentlyRunning().isPresent()) {
+                    p.secretInternalSetGoalAndPath(command.goal);
                 }
                 break;
             case REVALIDATE_GOAL_AND_PATH:
-                p.secretInternalSetGoalAndPath(cmd.goal);
-                if (Baritone.settings().cancelOnGoalInvalidation.get() && (cmd.goal == null || revalidateGoal(cmd.goal))) {
-                    p.cancelSegmentIfSafe();
+                if (!p.isPathing() && !AbstractNodeCostSearch.getCurrentlyRunning().isPresent()) {
+                    p.secretInternalSetGoalAndPath(command.goal);
                 }
                 break;
             case SET_GOAL_AND_PATH:
                 // now this i can do
-                if (cmd.goal != null) {
-                    baritone.getPathingBehavior().secretInternalSetGoalAndPath(cmd.goal);
+                if (command.goal != null) {
+                    baritone.getPathingBehavior().secretInternalSetGoalAndPath(command.goal);
                 }
                 break;
             default:
                 throw new IllegalStateException();
+        }
+    }
+
+    public void postTick() {
+        // if we did this in pretick, it would suck
+        // we use the time between ticks as calculation time
+        // therefore, we only cancel and recalculate after the tick for the current path has executed
+        // "it would suck" means it would actually execute a path every other tick
+        if (command == null) {
+            return;
+        }
+        PathingBehavior p = baritone.getPathingBehavior();
+        switch (command.commandType) {
+            case FORCE_REVALIDATE_GOAL_AND_PATH:
+                if (command.goal == null || forceRevalidate(command.goal) || revalidateGoal(command.goal)) {
+                    // pwnage
+                    p.softCancelIfSafe();
+                }
+                p.secretInternalSetGoalAndPath(command.goal);
+                break;
+            case REVALIDATE_GOAL_AND_PATH:
+                if (Baritone.settings().cancelOnGoalInvalidation.get() && (command.goal == null || revalidateGoal(command.goal))) {
+                    p.softCancelIfSafe();
+                }
+                p.secretInternalSetGoalAndPath(command.goal);
+                break;
+            default:
         }
     }
 

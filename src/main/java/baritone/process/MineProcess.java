@@ -241,6 +241,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     public void addNearby() {
+        knownOreLocations.addAll(droppedItemsScan(mining, world()));
         BlockPos playerFeet = playerFeet();
         int searchDist = 4;//why four? idk
         for (int x = playerFeet.getX() - searchDist; x <= playerFeet.getX() + searchDist; x++) {
@@ -260,6 +261,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         List<BlockPos> dropped = droppedItemsScan(mining, world);
         List<BlockPos> locs = locs2
                 .stream()
+                .distinct()
 
                 // remove any that are within loaded chunks that aren't actually what we want
                 .filter(pos -> world.getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()) || dropped.contains(pos))

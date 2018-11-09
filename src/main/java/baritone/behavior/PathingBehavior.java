@@ -55,6 +55,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
+    private boolean cancelRequested;
     private boolean calcFailedLastTick;
 
     private volatile boolean isPathCalcInProgress;
@@ -91,17 +92,21 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             baritone.getPathingControlManager().cancelEverything();
             return;
         }
+        baritone.getPathingControlManager().preTick();
         tickPath();
         dispatchEvents();
     }
 
     private void tickPath() {
-        baritone.getPathingControlManager().doTheThingWithTheStuff();
         if (pauseRequestedLastTick && safeToCancel) {
             pauseRequestedLastTick = false;
             baritone.getInputOverrideHandler().clearAllKeys();
             BlockBreakHelper.stopBreakingBlock();
             return;
+        }
+        if (cancelRequested) {
+            cancelRequested = false;
+            baritone.getInputOverrideHandler().clearAllKeys();
         }
         if (current == null) {
             return;
@@ -271,6 +276,17 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     public boolean calcFailedLastTick() { // NOT exposed on public api
         return calcFailedLastTick;
+    }
+
+    public void softCancelIfSafe() {
+        if (!isSafeToCancel()) {
+            return;
+        }
+        current = null;
+        next = null;
+        cancelRequested = true;
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
+        // do everything BUT clear keys
     }
 
     // just cancel the current path
