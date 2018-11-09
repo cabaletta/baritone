@@ -78,7 +78,7 @@ public class PathingControlManager {
                 break;
             case FORCE_REVALIDATE_GOAL_AND_PATH:
                 p.secretInternalSetGoalAndPath(cmd.goal);
-                if (cmd.goal == null || revalidateGoal(cmd.goal)) {
+                if (cmd.goal == null || forceRevalidate(cmd.goal) || revalidateGoal(cmd.goal)) {
                     // pwnage
                     p.cancelSegmentIfSafe();
                 }
@@ -98,6 +98,17 @@ public class PathingControlManager {
             default:
                 throw new IllegalStateException();
         }
+    }
+
+    public boolean forceRevalidate(Goal newGoal) {
+        PathExecutor current = baritone.getPathingBehavior().getCurrent();
+        if (current != null) {
+            if (newGoal.isInGoal(current.getPath().getDest())) {
+                return false;
+            }
+            return !newGoal.toString().equals(current.getPath().getGoal().toString());
+        }
+        return false;
     }
 
     public boolean revalidateGoal(Goal newGoal) {

@@ -17,7 +17,6 @@
 
 package baritone.pathing.calc;
 
-import baritone.api.BaritoneAPI;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
@@ -25,9 +24,8 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.path.CutoffPath;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
+import baritone.utils.Helper;
+import baritone.utils.pathing.PathBase;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +37,7 @@ import java.util.List;
  *
  * @author leijurv
  */
-class Path implements IPath {
+class Path extends PathBase {
 
     /**
      * The start position of this path
@@ -59,6 +57,8 @@ class Path implements IPath {
 
     private final List<Movement> movements;
 
+    private final List<PathNode> nodes;
+
     private final Goal goal;
 
     private final int numNodes;
@@ -71,8 +71,9 @@ class Path implements IPath {
         this.numNodes = numNodes;
         this.path = new ArrayList<>();
         this.movements = new ArrayList<>();
+        this.nodes = new ArrayList<>();
         this.goal = goal;
-        assemblePath(start, end);
+        assemblePath(end);
     }
 
     @Override
@@ -81,62 +82,80 @@ class Path implements IPath {
     }
 
     /**
-     * Assembles this path given the start and end nodes.
+     * Assembles this path given the end node.
      *
-     * @param start The start node
-     * @param end   The end node
+     * @param end The end node
      */
-    private void assemblePath(PathNode start, PathNode end) {
+    private void assemblePath(PathNode end) {
         if (!path.isEmpty() || !movements.isEmpty()) {
             throw new IllegalStateException();
         }
         PathNode current = end;
         LinkedList<BetterBlockPos> tempPath = new LinkedList<>();
+        LinkedList<PathNode> tempNodes = new LinkedList();
         // Repeatedly inserting to the beginning of an arraylist is O(n^2)
         // Instead, do it into a linked list, then convert at the end
-        while (!current.equals(start)) {
+        while (current != null) {
+            tempNodes.addFirst(current);
             tempPath.addFirst(new BetterBlockPos(current.x, current.y, current.z));
             current = current.previous;
         }
-        tempPath.addFirst(this.start);
         // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
         // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         // to performantly do that conversion since it knows the length.
         path.addAll(tempPath);
+        nodes.addAll(tempNodes);
     }
 
-    private void assembleMovements() {
+    private boolean assembleMovements() {
         if (path.isEmpty() || !movements.isEmpty()) {
             throw new IllegalStateException();
         }
         for (int i = 0; i < path.size() - 1; i++) {
-            movements.add(runBackwards(path.get(i), path.get(i + 1)));
+            double cost = nodes.get(i + 1).cost - nodes.get(i).cost;
+            Movement move = runBackwards(path.get(i), path.get(i + 1), cost);
+            if (move == null) {
+                return true;
+            } else {
+                movements.add(move);
+            }
         }
+        return false;
     }
 
-    private static Movement runBackwards(BetterBlockPos src, BetterBlockPos dest) { // TODO this is horrifying
+    private static Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double cost) {
         for (Moves moves : Moves.values()) {
             Movement move = moves.apply0(src);
             if (move.getDest().equals(dest)) {
-                // TODO instead of recalculating here, could we take pathNode.cost - pathNode.prevNode.cost to get the cost as-calculated?
-                move.recalculateCost(); // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
+                // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
+                move.override(cost);
                 return move;
             }
         }
         // this is no longer called from bestPathSoFar, now it's in postprocessing
-        throw new IllegalStateException("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
+        Helper.HELPER.logDebug("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
+        return null;
     }
 
     @Override
-    public void postProcess() {
+    public IPath postProcess() {
         if (verified) {
             throw new IllegalStateException();
         }
         verified = true;
-        assembleMovements();
-        // more post processing here
+        boolean failed = assembleMovements();
         movements.forEach(Movement::checkLoadedChunk);
+
+        if (failed) { // at least one movement became impossible during calculation
+            CutoffPath res = new CutoffPath(this, movements().size());
+            if (res.movements().size() != movements.size()) {
+                throw new IllegalStateException();
+            }
+            return res;
+        }
+        // more post processing here
         sanityCheck();
+        return this;
     }
 
     @Override
@@ -165,29 +184,5 @@ class Path implements IPath {
     @Override
     public BetterBlockPos getDest() {
         return end;
-    }
-
-    @Override
-    public IPath cutoffAtLoadedChunks() {
-        for (int i = 0; i < positions().size(); i++) {
-            BlockPos pos = positions().get(i);
-            if (Minecraft.getMinecraft().world.getChunk(pos) instanceof EmptyChunk) {
-                return new CutoffPath(this, i);
-            }
-        }
-        return this;
-    }
-
-    @Override
-    public IPath staticCutoff(Goal destination) {
-        if (length() < BaritoneAPI.getSettings().pathCutoffMinimumLength.get()) {
-            return this;
-        }
-        if (destination == null || destination.isInGoal(getDest())) {
-            return this;
-        }
-        double factor = BaritoneAPI.getSettings().pathCutoffFactor.get();
-        int newLength = (int) (length() * factor);
-        return new CutoffPath(this, newLength);
     }
 }

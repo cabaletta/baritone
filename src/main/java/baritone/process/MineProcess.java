@@ -56,6 +56,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private List<Block> mining;
     private List<BlockPos> knownOreLocations;
     private BlockPos branchPoint;
+    private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
 
@@ -87,7 +88,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
-            baritone.getExecutor().execute(this::rescan);
+            List<BlockPos> curr = new ArrayList<>(knownOreLocations);
+            baritone.getExecutor().execute(() -> rescan(curr));
         }
         if (Baritone.settings().legitMine.get()) {
             addNearby();
@@ -99,7 +101,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             cancel();
             return null;
         }
-        return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+        return new PathingCommand(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
     }
 
     @Override
@@ -126,31 +128,37 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             return null;
         }
         // only in non-Xray mode (aka legit mode) do we do this
+        int y = Baritone.settings().legitMineYLevel.get();
         if (branchPoint == null) {
-            int y = Baritone.settings().legitMineYLevel.get();
             if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
                 // cool, path is over and we are at desired y
                 branchPoint = playerFeet();
+                branchPointRunaway = null;
             } else {
                 return new GoalYLevel(y);
             }
         }
-
-        if (playerFeet().equals(branchPoint)) {
-            // TODO mine 1x1 shafts to either side
-            branchPoint = branchPoint.north(10);
+        // TODO shaft mode, mine 1x1 shafts to either side
+        // TODO also, see if the GoalRunAway with maintain Y at 11 works even from the surface
+        if (branchPointRunaway == null) {
+            branchPointRunaway = new GoalRunAway(1, Optional.of(y), branchPoint) {
+                @Override
+                public boolean isInGoal(int x, int y, int z) {
+                    return false;
+                }
+            };
         }
-        return new GoalBlock(branchPoint);
+        return branchPointRunaway;
     }
 
-    private void rescan() {
+    private void rescan(List<BlockPos> already) {
         if (mining == null) {
             return;
         }
         if (Baritone.settings().legitMine.get()) {
             return;
         }
-        List<BlockPos> locs = searchWorld(mining, ORE_LOCATIONS_COUNT, world());
+        List<BlockPos> locs = searchWorld(mining, ORE_LOCATIONS_COUNT, world(), already);
         locs.addAll(droppedItemsScan(mining, world()));
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
@@ -205,7 +213,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return ret;
     }
 
-    public static List<BlockPos> searchWorld(List<Block> mining, int max, World world) {
+    /*public static List<BlockPos> searchWorld(List<Block> mining, int max, World world) {
+
+    }*/
+    public static List<BlockPos> searchWorld(List<Block> mining, int max, World world, List<BlockPos> alreadyKnown) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
@@ -225,6 +236,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(uninteresting, max, 10, 26));
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
+        locs.addAll(alreadyKnown);
         return prune(locs, mining, max, world);
     }
 
@@ -283,6 +295,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
         this.branchPoint = null;
-        rescan();
+        this.branchPointRunaway = null;
+        rescan(new ArrayList<>());
     }
 }

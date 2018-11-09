@@ -28,6 +28,7 @@ import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,7 +45,8 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     @Override
     public void getToBlock(Block block) {
         gettingTo = block;
-        rescan();
+        knownLocations = null;
+        rescan(new ArrayList<>());
     }
 
     @Override
@@ -55,7 +57,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (knownLocations == null) {
-            rescan();
+            rescan(new ArrayList<>());
         }
         if (knownLocations.isEmpty()) {
             logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
@@ -73,7 +75,8 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
-            Baritone.getExecutor().execute(this::rescan);
+            List<BlockPos> current = new ArrayList<>(knownLocations);
+            Baritone.getExecutor().execute(() -> rescan(current));
         }
         Goal goal = new GoalComposite(knownLocations.stream().map(GoalGetToBlock::new).toArray(Goal[]::new));
         if (goal.isInGoal(playerFeet())) {
@@ -93,7 +96,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         return "Get To Block " + gettingTo;
     }
 
-    private void rescan() {
-        knownLocations = MineProcess.searchWorld(Collections.singletonList(gettingTo), 64, world());
+    private void rescan(List<BlockPos> known) {
+        knownLocations = MineProcess.searchWorld(Collections.singletonList(gettingTo), 64, world(), known);
     }
 }
