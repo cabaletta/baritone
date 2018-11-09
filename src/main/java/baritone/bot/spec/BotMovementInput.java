@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.entity;
+package baritone.bot.spec;
 
 import baritone.bot.IBaritoneUser;
 import net.minecraft.util.MovementInput;
@@ -56,7 +56,7 @@ public class BotMovementInput extends MovementInput {
             this.moveStrafe--;
         }
 
-        this.jump = jump;
+        this.jump = true;
 
         if (this.sneak = sneak) {
             this.moveStrafe *= 0.3D;

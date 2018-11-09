@@ -15,17 +15,20 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.entity;
+package baritone.bot.spec;
 
 import baritone.bot.IBaritoneUser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.client.util.RecipeBookClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.passive.AbstractHorse;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.stats.RecipeBook;
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.tileentity.CommandBlockBaseLogic;
@@ -33,9 +36,12 @@ import net.minecraft.tileentity.TileEntityCommandBlock;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.tileentity.TileEntityStructure;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
+
+import javax.annotation.Nullable;
 
 // Some Notes:
 // startRiding references the sound manager
@@ -58,9 +64,10 @@ public class EntityBot extends EntityPlayerSP {
 
     private final IBaritoneUser user;
 
-    public EntityBot(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
-        super(mc, world, netHandlerPlayClient, statisticsManager, recipeBook);
+    public EntityBot(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient) {
+        super(mc, world, netHandlerPlayClient, new StatisticsManager(), new RecipeBookClient());
         this.user = user;
+        this.movementInput = new BotMovementInput(this.user);
     }
 
     @Override
@@ -138,7 +145,25 @@ public class EntityBot extends EntityPlayerSP {
 
     @Override
     protected boolean isCurrentViewEntity() {
-        // Don't you even try @leijurv
-        return false;
+        return true;
+    }
+
+    @Override
+    public boolean isSpectator() {
+        // TODO
+        return super.isSpectator();
+    }
+
+    @Override
+    public boolean isCreative() {
+        // TODO
+        return super.isCreative();
+    }
+
+    @Nullable
+    @Override
+    protected NetworkPlayerInfo getPlayerInfo() {
+        // TODO
+        return super.getPlayerInfo();
     }
 }

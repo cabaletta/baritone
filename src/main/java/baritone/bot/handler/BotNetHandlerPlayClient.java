@@ -18,18 +18,21 @@
 package baritone.bot.handler;
 
 import baritone.bot.IBaritoneUser;
-import baritone.bot.entity.EntityBot;
+import baritone.bot.spec.BotWorld;
+import baritone.bot.spec.EntityBot;
+import baritone.utils.Helper;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
@@ -40,12 +43,16 @@ import net.minecraft.network.play.server.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.*;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.util.StringUtils;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.WorldProviderSurface;
+import net.minecraft.world.chunk.Chunk;
 
 import javax.annotation.Nonnull;
 
@@ -88,7 +95,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     /**
      * The current world.
      */
-    private WorldClient world;
+    private BotWorld world;
 
     public BotNetHandlerPlayClient(NetworkManager networkManager, IBaritoneUser user, Minecraft client, GameProfile profile) {
         // noinspection ConstantConditions
@@ -206,7 +213,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void handleBlockChange(@Nonnull SPacketBlockChange packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
-        this.world.invalidateRegionAndSetBlock(packetIn.getBlockPosition(), packetIn.getBlockState());
+        this.world.setBlockState(packetIn.getBlockPosition(), packetIn.getBlockState());
     }
 
     @Override
@@ -222,7 +229,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
         for (SPacketMultiBlockChange.BlockUpdateData data : packetIn.getChangedBlocks()) {
-            this.world.invalidateRegionAndSetBlock(data.getPos(), data.getBlockState());
+            this.world.setBlockState(data.getPos(), data.getBlockState());
         }
     }
 
@@ -305,11 +312,28 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleChunkData(@Nonnull SPacketChunkData packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        if (packetIn.isFullChunk()) {
+            this.world.doPreChunk(packetIn.getChunkX(), packetIn.getChunkZ(), true);
+        }
+
+        Chunk chunk = this.world.getChunk(packetIn.getChunkX(), packetIn.getChunkZ());
+        chunk.read(packetIn.getReadBuffer(), packetIn.getExtractedSize(), packetIn.isFullChunk());
+
+        for (NBTTagCompound tag : packetIn.getTileEntityTags()) {
+            BlockPos pos = new BlockPos(tag.getInteger("x"), tag.getInteger("y"), tag.getInteger("z"));
+            TileEntity tileEntity = this.world.getTileEntity(pos);
+
+            if (tileEntity != null) {
+                tileEntity.readFromNBT(tag);
+            }
+        }
     }
 
     @Override
     public void processChunkUnload(@Nonnull SPacketUnloadChunk packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+        // TODO Unload chunks
     }
 
     @Override
@@ -321,23 +345,21 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void handleJoinGame(@Nonnull SPacketJoinGame packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
-        // TODO: Set world and player (See Below)
-        /*
-        - Create player controller
-        - Set game difficulty
-        - Create world
-        - Load world
-          - Create player
-            - Set entity ID
-            - Set player dimension
-            - Set player
-          - Spawn player into world
-        - Set player game mode
-        - Define max players? (Might be useful when determining if Bots are in the same world)
-        */
+        this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
+        this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this);
+        this.player.preparePlayerToSpawn();
+        this.world.spawnEntity(this.player);
+        this.player.setEntityId(packetIn.getPlayerId());
+        this.player.dimension = packetIn.getDimension();
+        this.player.setGameType(packetIn.getGameType());
+        packetIn.getGameType().configurePlayerCapabilities(this.player.capabilities);
 
         this.networkManager.sendPacket(new CPacketClientSettings("en_us", 8, EntityPlayer.EnumChatVisibility.FULL, true, 0, EnumHandSide.RIGHT));
         this.networkManager.sendPacket(new CPacketCustomPayload("MC|Brand", new PacketBuffer(Unpooled.buffer()).writeString("vanilla")));
+
+        this.world.registerBot(packetIn.getPlayerId(), this.player);
+
+        Helper.HELPER.logDirect("Initialized Player and World");
     }
 
     @Override
@@ -348,6 +370,47 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handlePlayerPosLook(@Nonnull SPacketPlayerPosLook packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        EntityPlayer player = this.player;
+        double d0 = packetIn.getX();
+        double d1 = packetIn.getY();
+        double d2 = packetIn.getZ();
+        float f = packetIn.getYaw();
+        float f1 = packetIn.getPitch();
+
+        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.X)) {
+            d0 += player.posX;
+        } else {
+            player.motionX = 0.0D;
+        }
+
+        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.Y)) {
+            d1 += player.posY;
+        } else {
+            player.motionY = 0.0D;
+        }
+
+        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.Z)) {
+            d2 += player.posZ;
+        } else {
+            player.motionZ = 0.0D;
+        }
+
+        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.X_ROT)) {
+            f1 += player.rotationPitch;
+        }
+
+        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.Y_ROT)) {
+            f += player.rotationYaw;
+        }
+
+        player.setPositionAndRotation(d0, d1, d2, f, f1);
+        this.networkManager.sendPacket(new CPacketConfirmTeleport(packetIn.getTeleportId()));
+        this.networkManager.sendPacket(new CPacketPlayer.PositionRotation(player.posX, player.getEntityBoundingBox().minY, player.posZ, player.rotationYaw, player.rotationPitch, false));
+
+        this.player.prevPosX = this.player.posX;
+        this.player.prevPosY = this.player.posY;
+        this.player.prevPosZ = this.player.posZ;
     }
 
     @Override

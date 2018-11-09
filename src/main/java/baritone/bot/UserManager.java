@@ -19,9 +19,11 @@ package baritone.bot;
 
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
+import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
+import baritone.bot.spec.BotWorld;
 import baritone.utils.Helper;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.ServerAddress;
@@ -34,7 +36,6 @@ import net.minecraft.util.Session;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,17 +53,24 @@ public final class UserManager implements Helper {
 
     private final List<IBaritoneUser> users = new CopyOnWriteArrayList<>();
 
+    private final BotWorldProvider worldProvider;
+
     private UserManager() {
         // Setup an event listener that automatically disconnects bots when we're not in-game
         Baritone.INSTANCE.registerEventListener(new AbstractGameEventListener() {
 
             @Override
             public final void onTick(TickEvent event) {
-                if (event.getType() == TickEvent.Type.OUT) {
-                    UserManager.this.users.forEach(UserManager.this::disconnect);
+                if (event.getState() == EventState.PRE) {
+                    if (event.getType() == TickEvent.Type.OUT)
+                        UserManager.this.users.forEach(UserManager.this::disconnect);
+
+                    UserManager.this.worldProvider.tick();
                 }
             }
         });
+
+        this.worldProvider = new BotWorldProvider();
     }
 
     /**
@@ -161,5 +169,12 @@ public final class UserManager implements Helper {
      */
     public final Optional<IBaritoneUser> getUserByUUID(UUID uuid) {
         return uuid == null ? Optional.empty() : this.users.stream().filter(user -> user.getProfile().getId().equals(uuid)).findFirst();
+    }
+
+    /**
+     * @return The bot world provider
+     */
+    public final BotWorldProvider getWorldProvider() {
+        return this.worldProvider;
     }
 }

@@ -17,7 +17,7 @@
 
 package baritone.bot;
 
-import baritone.bot.entity.EntityBot;
+import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
