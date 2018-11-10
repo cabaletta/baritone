@@ -22,6 +22,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.List;
 
@@ -120,7 +121,7 @@ public interface IPath {
      *
      * @return The result of this cut-off operation
      */
-    default IPath cutoffAtLoadedChunks() {
+    default IPath cutoffAtLoadedChunks(World world) {
         throw new UnsupportedOperationException();
     }
 
