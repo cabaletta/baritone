@@ -22,7 +22,6 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.utils.RotationUtils;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
@@ -31,6 +30,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
+import baritone.api.utils.RotationUtils;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -248,7 +248,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             for (int y = playerFeet.getY() - searchDist; y <= playerFeet.getY() + searchDist; y++) {
                 for (int z = playerFeet.getZ() - searchDist; z <= playerFeet.getZ() + searchDist; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (mining.contains(BlockStateInterface.getBlock(pos)) && RotationUtils.reachable(player(), pos).isPresent()) {//crucial to only add blocks we can see because otherwise this is an x-ray and it'll get caught
+                    if (mining.contains(BlockStateInterface.getBlock(pos)) && RotationUtils.reachable(player(), pos, playerController().getBlockReachDistance()).isPresent()) {//crucial to only add blocks we can see because otherwise this is an x-ray and it'll get caught
                         knownOreLocations.add(pos);
                     }
                 }

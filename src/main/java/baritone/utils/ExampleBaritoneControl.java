@@ -23,6 +23,7 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;

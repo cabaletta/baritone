@@ -15,10 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.api.utils;
 
-import baritone.api.utils.Rotation;
-import baritone.api.utils.VecUtils;
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -30,7 +28,7 @@ import java.util.Optional;
  * @author Brady
  * @since 9/25/2018
  */
-public final class RotationUtils implements Helper {
+public final class RotationUtils {
 
     /**
      * Constant that a degree value is multiplied by to get the equivalent radian value
@@ -137,7 +135,7 @@ public final class RotationUtils implements Helper {
      * @param pos    The target block position
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachable(Entity entity, BlockPos pos) {
+    public static Optional<Rotation> reachable(Entity entity, BlockPos pos, double blockReachDistance) {
         if (pos.equals(RayTraceUtils.getSelectedBlock().orElse(null))) {
             /*
              * why add 0.0001?
@@ -151,19 +149,19 @@ public final class RotationUtils implements Helper {
              */
             return Optional.of(new Rotation(entity.rotationYaw, entity.rotationPitch + 0.0001F));
         }
-        Optional<Rotation> possibleRotation = reachableCenter(entity, pos);
+        Optional<Rotation> possibleRotation = reachableCenter(entity, pos, blockReachDistance);
         //System.out.println("center: " + possibleRotation);
         if (possibleRotation.isPresent()) {
             return possibleRotation;
         }
 
-        IBlockState state = mc.world.getBlockState(pos);
+        IBlockState state = entity.world.getBlockState(pos);
         AxisAlignedBB aabb = state.getBoundingBox(entity.world, pos);
         for (Vec3d sideOffset : BLOCK_SIDE_MULTIPLIERS) {
             double xDiff = aabb.minX * sideOffset.x + aabb.maxX * (1 - sideOffset.x);
             double yDiff = aabb.minY * sideOffset.y + aabb.maxY * (1 - sideOffset.y);
             double zDiff = aabb.minZ * sideOffset.z + aabb.maxZ * (1 - sideOffset.z);
-            possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff));
+            possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff), blockReachDistance);
             if (possibleRotation.isPresent()) {
                 return possibleRotation;
             }
@@ -181,9 +179,9 @@ public final class RotationUtils implements Helper {
      * @param offsetPos The position of the block with the offset applied.
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos) {
+    public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance) {
         Rotation rotation = calcRotationFromVec3d(entity.getPositionEyes(1.0F), offsetPos);
-        RayTraceResult result = RayTraceUtils.rayTraceTowards(rotation);
+        RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance);
         //System.out.println(result);
         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
             if (result.getBlockPos().equals(pos)) {
@@ -204,7 +202,7 @@ public final class RotationUtils implements Helper {
      * @param pos    The target block position
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos) {
-        return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(pos));
+    public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos, double blockReachDistance) {
+        return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(pos), blockReachDistance);
     }
 }

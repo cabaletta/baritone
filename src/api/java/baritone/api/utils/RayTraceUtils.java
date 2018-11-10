@@ -15,10 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.api.utils;
 
-import baritone.api.utils.Rotation;
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -30,40 +29,11 @@ import java.util.Optional;
  * @author Brady
  * @since 8/25/2018
  */
-public final class RayTraceUtils implements Helper {
+public final class RayTraceUtils {
+
+    private static final Minecraft mc = Minecraft.getMinecraft();
 
     private RayTraceUtils() {}
-
-    /**
-     * Simulates a "vanilla" raytrace. A RayTraceResult returned by this method
-     * will be that of the next render pass given that the local player's yaw and
-     * pitch match the specified yaw and pitch values. This is particularly useful
-     * when you would like to simulate a "legit" raytrace with certainty that the only
-     * thing to achieve the desired outcome (whether it is hitting and entity or placing
-     * a block) can be done just by modifying user input.
-     *
-     * @param yaw   The yaw to raytrace with
-     * @param pitch The pitch to raytrace with
-     * @return The calculated raytrace result
-     */
-    public static RayTraceResult simulateRayTrace(float yaw, float pitch) {
-        EntityPlayerSP player = Helper.HELPER.player();
-        RayTraceResult oldTrace = mc.objectMouseOver;
-        float oldYaw = player.rotationYaw;
-        float oldPitch = player.rotationPitch;
-
-        player.rotationYaw = yaw;
-        player.rotationPitch = pitch;
-
-        mc.entityRenderer.getMouseOver(1.0F);
-        RayTraceResult result = mc.objectMouseOver;
-        mc.objectMouseOver = oldTrace;
-
-        player.rotationYaw = oldYaw;
-        player.rotationPitch = oldPitch;
-
-        return result;
-    }
 
     /**
      * Performs a block raytrace with the specified rotations. This should only be used when
@@ -73,9 +43,8 @@ public final class RayTraceUtils implements Helper {
      * @param rotation The rotation to raytrace towards
      * @return The calculated raytrace result
      */
-    public static RayTraceResult rayTraceTowards(Rotation rotation) {
-        double blockReachDistance = Helper.HELPER.playerController().getBlockReachDistance();
-        Vec3d start = Helper.HELPER.player().getPositionEyes(1.0F);
+    public static RayTraceResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance) {
+        Vec3d start = entity.getPositionEyes(1.0F);
         Vec3d direction = RotationUtils.calcVec3dFromRotation(rotation);
         Vec3d end = start.add(
                 direction.x * blockReachDistance,
