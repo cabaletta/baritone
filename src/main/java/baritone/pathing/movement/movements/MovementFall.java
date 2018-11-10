@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -28,7 +29,6 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.InputOverrideHandler;
-import baritone.api.utils.RotationUtils;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
@@ -76,7 +76,7 @@ public class MovementFall extends Movement {
                 targetRotation = new Rotation(player().rotationYaw, 90.0F);
 
                 RayTraceResult trace = mc.objectMouseOver;
-                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK) {
+                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && player().rotationPitch > 89.0F) {
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }
