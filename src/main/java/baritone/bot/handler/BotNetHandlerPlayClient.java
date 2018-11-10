@@ -683,12 +683,6 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Nonnull
     @Override
-    public GameProfile getGameProfile() {
-        throw new UnsupportedOperationException("This method shouldn't have been called; That is unepic!");
-    }
-
-    @Nonnull
-    @Override
     public ClientAdvancementManager getAdvancementManager() {
         throw new UnsupportedOperationException("This method shouldn't have been called; That is unepic!");
     }
