@@ -383,7 +383,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param b the blockstate to mine
      */
     static void switchToBestToolFor(IBlockState b) {
-        switchToBestToolFor(b, new ToolSet());
+        switchToBestToolFor(b, new ToolSet(Helper.HELPER.player()));
     }
 
     /**

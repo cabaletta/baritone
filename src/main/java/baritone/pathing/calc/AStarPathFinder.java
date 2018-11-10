@@ -44,7 +44,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
     private final CalculationContext calcContext;
 
     public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions, CalculationContext context) {
-        super(startX, startY, startZ, goal);
+        super(startX, startY, startZ, goal, context);
         this.favoredPositions = favoredPositions;
         this.calcContext = context;
     }
@@ -95,7 +95,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
-                return Optional.of(new Path(startNode, currentNode, numNodes, goal));
+                return Optional.of(new Path(startNode, currentNode, numNodes, goal, calcContext));
             }
             for (Moves moves : Moves.values()) {
                 int newX = currentNode.x + moves.xOffset;
@@ -198,7 +198,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     System.out.println("But I'm going to do it anyway, because yolo");
                 }
                 System.out.println("Path goes for " + Math.sqrt(dist) + " blocks");
-                return Optional.of(new Path(startNode, bestSoFar[i], numNodes, goal));
+                return Optional.of(new Path(startNode, bestSoFar[i], numNodes, goal, calcContext));
             }
         }
         logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");

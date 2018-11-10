@@ -51,6 +51,9 @@ public interface Helper {
     Minecraft mc = Minecraft.getMinecraft();
 
     default EntityPlayerSP player() {
+        if (!mc.isCallingFromMinecraftThread()) {
+            throw new IllegalStateException("h00000000");
+        }
         return mc.player;
     }
 
