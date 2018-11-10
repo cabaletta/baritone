@@ -30,7 +30,6 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -215,10 +214,10 @@ public class MovementPillar extends Movement {
 
             if (!blockIsThere) {
                 Block fr = BlockStateInterface.get(src).getBlock();
-                if (!(fr instanceof BlockAir || fr.isReplaceable(Minecraft.getMinecraft().world, src))) {
+                if (!(fr instanceof BlockAir || fr.isReplaceable(world(), src))) {
                     state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (Minecraft.getMinecraft().player.isSneaking()) { // 1 tick after we're able to place
+                } else if (player().isSneaking()) { // 1 tick after we're able to place
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }

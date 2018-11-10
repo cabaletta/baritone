@@ -28,7 +28,6 @@ import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemPickaxe;
@@ -398,7 +397,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean throwaway(boolean select) {
-        EntityPlayerSP p = Minecraft.getMinecraft().player;
+        EntityPlayerSP p = Helper.HELPER.player();
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);

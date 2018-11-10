@@ -265,7 +265,7 @@ public class MovementTraverse extends Movement {
                     state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
 
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), against1) && (Minecraft.getMinecraft().player.isSneaking() || Baritone.settings().assumeSafeWalk.get()) && RayTraceUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
+                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), against1) && (player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && RayTraceUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                         return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                     }
                     //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
