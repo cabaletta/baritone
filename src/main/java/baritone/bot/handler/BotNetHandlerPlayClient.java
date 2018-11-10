@@ -25,13 +25,15 @@ import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.util.RecipeBookClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
@@ -42,16 +44,14 @@ import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.scoreboard.*;
+import net.minecraft.stats.StatisticsManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.IThreadListener;
-import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.WorldProviderSurface;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.chunk.Chunk;
 
 import javax.annotation.Nonnull;
@@ -125,34 +125,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     }
 
     @Override
-    public void handleScoreboardObjective(@Nonnull SPacketScoreboardObjective packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Scoreboard scoreboard = this.world.getScoreboard();
-        switch (packetIn.getAction()) {
-            case 0: {
-                ScoreObjective objective = scoreboard.addScoreObjective(packetIn.getObjectiveName(), IScoreCriteria.DUMMY);
-                objective.setDisplayName(packetIn.getObjectiveValue());
-                objective.setRenderType(packetIn.getRenderType());
-                break;
-            }
-            case 1: {
-                ScoreObjective objective = scoreboard.getObjective(packetIn.getObjectiveName());
-                if (objective != null) {
-                    scoreboard.removeObjective(objective);
-                }
-                break;
-            }
-            case 2: {
-                ScoreObjective objective = scoreboard.getObjective(packetIn.getObjectiveName());
-                if (objective != null) {
-                    objective.setDisplayName(packetIn.getObjectiveName());
-                    objective.setRenderType(packetIn.getRenderType());
-                }
-                break;
-            }
-        }
-    }
+    public void handleScoreboardObjective(@Nonnull SPacketScoreboardObjective packetIn) {}
 
     @Override
     public void handleSpawnPainting(@Nonnull SPacketSpawnPainting packetIn) {}
@@ -244,11 +217,15 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleCloseWindow(@Nonnull SPacketCloseWindow packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        this.player.closeScreenAndDropStack();
     }
 
     @Override
     public void handleWindowItems(@Nonnull SPacketWindowItems packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        (packetIn.getWindowId() == 0 ? this.player.inventoryContainer : this.player.openContainer).setAll(packetIn.getItemStacks());
     }
 
     @Override
@@ -262,6 +239,27 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleSetSlot(@Nonnull SPacketSetSlot packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        ItemStack stack = packetIn.getStack();
+        int slot = packetIn.getSlot();
+
+        switch (packetIn.getWindowId()) {
+            case -1: {
+                this.player.inventory.setItemStack(stack);
+                break;
+            }
+            case -2: {
+                this.player.inventory.setInventorySlotContents(slot, stack);
+                break;
+            }
+            default: {
+                if (packetIn.getWindowId() == 0 && packetIn.getSlot() >= 36 && slot < 45) {
+                    this.player.inventoryContainer.putStackInSlot(slot, stack);
+                } else if (packetIn.getWindowId() == this.player.openContainer.windowId && packetIn.getWindowId() != 0) {
+                    this.player.openContainer.putStackInSlot(slot, stack);
+                }
+            }
+        }
     }
 
     @Override
@@ -297,6 +295,12 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleExplosion(@Nonnull SPacketExplosion packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        // noinspection ConstantConditions
+        new Explosion(this.world, null, packetIn.getX(), packetIn.getY(), packetIn.getZ(), packetIn.getStrength(), packetIn.getAffectedBlockPositions()).doExplosionB(true);
+        this.player.motionX += (double) packetIn.getMotionX();
+        this.player.motionY += (double) packetIn.getMotionY();
+        this.player.motionZ += (double) packetIn.getMotionZ();
     }
 
     @Override
@@ -346,7 +350,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
-        this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this);
+        this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
         this.player.preparePlayerToSpawn();
         this.world.spawnEntity(this.player);
         this.player.setEntityId(packetIn.getPlayerId());
@@ -431,7 +435,8 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handlePlayerListItem(@Nonnull SPacketPlayerListItem packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+        // okay now this is awesome
+        super.handlePlayerListItem(packetIn);
     }
 
     @Override
@@ -457,7 +462,22 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void handleRespawn(@Nonnull SPacketRespawn packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
-        // TODO: Set world and player
+        if (packetIn.getDimensionID() != this.player.dimension) {
+            this.world.removeEntity(this.player);
+            this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimensionID());
+        }
+
+        EntityBot prev = this.player;
+
+        this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this, prev.getStatFileWriter(), prev.getRecipeBook());
+        // noinspection ConstantConditions
+        this.player.getDataManager().setEntryValues(prev.getDataManager().getAll());
+        this.player.preparePlayerToSpawn();
+        this.world.spawnEntity(this.player);
+        this.player.setEntityId(prev.getEntityId());
+        this.player.dimension = packetIn.getDimensionID();
+        this.player.setServerBrand(prev.getServerBrand());
+        this.player.setGameType(packetIn.getGameType());
     }
 
     @Override
@@ -528,76 +548,10 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     }
 
     @Override
-    public void handleTeams(@Nonnull SPacketTeams packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Scoreboard scoreboard = this.world.getScoreboard();
-
-        boolean newTeam = packetIn.getAction() == 0;
-
-        ScorePlayerTeam team = newTeam
-                ? scoreboard.createTeam(packetIn.getName())
-                : scoreboard.getTeam(packetIn.getName());
-
-        if (packetIn.getAction() == 2 || newTeam) {
-            team.setDisplayName(packetIn.getDisplayName());
-            team.setPrefix(packetIn.getPrefix());
-            team.setSuffix(packetIn.getSuffix());
-            team.setColor(TextFormatting.fromColorIndex(packetIn.getColor()));
-            team.setFriendlyFlags(packetIn.getFriendlyFlags());
-
-            Team.EnumVisible visibility = Team.EnumVisible.getByName(packetIn.getNameTagVisibility());
-            if (visibility != null) {
-                team.setNameTagVisibility(visibility);
-            }
-
-            Team.CollisionRule collisionRule = Team.CollisionRule.getByName(packetIn.getCollisionRule());
-            if (collisionRule != null) {
-                team.setCollisionRule(collisionRule);
-            }
-        }
-
-        if (packetIn.getAction() == 3 || newTeam) {
-            for (String name : packetIn.getPlayers()) {
-                scoreboard.addPlayerToTeam(name, packetIn.getName());
-            }
-        }
-
-        if (packetIn.getAction() == 4) {
-            for (String name : packetIn.getPlayers()) {
-                scoreboard.removePlayerFromTeam(name, team);
-            }
-        }
-
-        if (packetIn.getAction() == 1) {
-            scoreboard.removeTeam(team);
-        }
-    }
+    public void handleTeams(@Nonnull SPacketTeams packetIn) {}
 
     @Override
-    public void handleUpdateScore(@Nonnull SPacketUpdateScore packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Scoreboard scoreboard = this.world.getScoreboard();
-        ScoreObjective objective = scoreboard.getObjective(packetIn.getObjectiveName());
-
-        switch (packetIn.getScoreAction()) {
-            case CHANGE: {
-                if (objective != null) {
-                    scoreboard.getOrCreateScore(packetIn.getPlayerName(), objective).setScorePoints(packetIn.getScoreValue());
-                }
-                break;
-            }
-            case REMOVE: {
-                if (StringUtils.isNullOrEmpty(packetIn.getObjectiveName())) {
-                    scoreboard.removeObjectiveFromEntity(packetIn.getPlayerName(), null);
-                } else if (objective != null) {
-                    scoreboard.removeObjectiveFromEntity(packetIn.getPlayerName(), objective);
-                }
-                break;
-            }
-        }
-    }
+    public void handleUpdateScore(@Nonnull SPacketUpdateScore packetIn) {}
 
     @Override
     public void handleSpawnPosition(@Nonnull SPacketSpawnPosition packetIn) { /* We probably don't need to know this, the server handles everything related to spawn psoition? */ }
@@ -722,7 +676,20 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void onDisconnect(@Nonnull ITextComponent reason) {
-        // TODO: Unload the world
+        // TODO Maybe more world unloadinde
+        this.world.removeEntity(this.player);
         this.user.getManager().notifyDisconnect(this.user, EnumConnectionState.PLAY);
+    }
+
+    @Nonnull
+    @Override
+    public GameProfile getGameProfile() {
+        throw new UnsupportedOperationException("This method shouldn't have been called; That is unepic!");
+    }
+
+    @Nonnull
+    @Override
+    public ClientAdvancementManager getAdvancementManager() {
+        throw new UnsupportedOperationException("This method shouldn't have been called; That is unepic!");
     }
 }

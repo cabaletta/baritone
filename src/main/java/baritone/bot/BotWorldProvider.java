@@ -20,9 +20,7 @@ package baritone.bot;
 import baritone.bot.spec.BotWorld;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.entity.Entity;
 import net.minecraft.world.GameType;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
 

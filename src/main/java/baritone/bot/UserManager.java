@@ -23,7 +23,6 @@ import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
-import baritone.bot.spec.BotWorld;
 import baritone.utils.Helper;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.ServerAddress;

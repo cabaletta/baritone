@@ -22,13 +22,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
-import net.minecraft.client.util.RecipeBookClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.passive.AbstractHorse;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.stats.RecipeBook;
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.tileentity.CommandBlockBaseLogic;
@@ -36,8 +34,8 @@ import net.minecraft.tileentity.TileEntityCommandBlock;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.tileentity.TileEntityStructure;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.GameType;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
 
@@ -63,9 +61,11 @@ import javax.annotation.Nullable;
 public class EntityBot extends EntityPlayerSP {
 
     private final IBaritoneUser user;
+    private NetworkPlayerInfo playerInfo;
+    private GameType gameType;
 
-    public EntityBot(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient) {
-        super(mc, world, netHandlerPlayClient, new StatisticsManager(), new RecipeBookClient());
+    public EntityBot(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
+        super(mc, world, netHandlerPlayClient, statisticsManager, recipeBook);
         this.user = user;
         this.movementInput = new BotMovementInput(this.user);
     }
@@ -150,20 +150,30 @@ public class EntityBot extends EntityPlayerSP {
 
     @Override
     public boolean isSpectator() {
-        // TODO
-        return super.isSpectator();
+        NetworkPlayerInfo networkplayerinfo = this.connection.getPlayerInfo(this.getGameProfile().getId());
+        // noinspection ConstantConditions
+        return networkplayerinfo != null && networkplayerinfo.getGameType() == GameType.SPECTATOR;
     }
 
     @Override
     public boolean isCreative() {
-        // TODO
-        return super.isCreative();
+        NetworkPlayerInfo networkplayerinfo = this.connection.getPlayerInfo(this.getGameProfile().getId());
+        // noinspection ConstantConditions
+        return networkplayerinfo != null && networkplayerinfo.getGameType() == GameType.CREATIVE;
     }
 
     @Nullable
     @Override
     protected NetworkPlayerInfo getPlayerInfo() {
-        // TODO
-        return super.getPlayerInfo();
+        return this.playerInfo == null ? (this.playerInfo = this.connection.getPlayerInfo(this.getUniqueID())) : null;
+    }
+
+    @Override
+    public void setGameType(GameType gameType) {
+        this.gameType = gameType;
+    }
+
+    public GameType getGameType() {
+        return this.gameType;
     }
 }
