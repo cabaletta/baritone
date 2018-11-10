@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.bot.UserManager;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
@@ -28,6 +29,7 @@ import net.minecraft.world.chunk.Chunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Brady
@@ -60,6 +62,9 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onSendChatMessage(ChatEvent event) {
+        // Ensure UserManager is created to prevent a ConcurrentModificationException
+        Objects.requireNonNull(UserManager.INSTANCE);
+
         listeners.forEach(l -> l.onSendChatMessage(event));
     }
 
