@@ -59,22 +59,25 @@ public final class CachedRegion implements ICachedRegion {
      */
     private final int z;
 
+    private final int dimension;
+
     /**
      * Has this region been modified since its most recent load or save
      */
     private boolean hasUnsavedChanges;
 
-    CachedRegion(int x, int z) {
+    CachedRegion(int x, int z, int dimension) {
         this.x = x;
         this.z = z;
         this.hasUnsavedChanges = false;
+        this.dimension = dimension;
     }
 
     @Override
     public final IBlockState getBlock(int x, int y, int z) {
         CachedChunk chunk = chunks[x >> 4][z >> 4];
         if (chunk != null) {
-            return chunk.getBlock(x & 15, y, z & 15);
+            return chunk.getBlock(x & 15, y, z & 15, dimension);
         }
         return null;
     }

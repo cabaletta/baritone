@@ -56,7 +56,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     private final LinkedBlockingQueue<Chunk> toPack = new LinkedBlockingQueue<>();
 
-    CachedWorld(Path directory) {
+    private final int dimension;
+
+    CachedWorld(Path directory, int dimension) {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);
@@ -64,6 +66,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
             }
         }
         this.directory = directory.toString();
+        this.dimension = dimension;
         System.out.println("Cached world directory: " + directory);
         // Insert an invalid region element
         cachedRegions.put(0, null);
@@ -241,7 +244,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      */
     private synchronized CachedRegion getOrCreateRegion(int regionX, int regionZ) {
         return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
-            CachedRegion newRegion = new CachedRegion(regionX, regionZ);
+            CachedRegion newRegion = new CachedRegion(regionX, regionZ, dimension);
             newRegion.load(this.directory);
             return newRegion;
         });

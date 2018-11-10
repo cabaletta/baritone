@@ -91,7 +91,7 @@ public enum WorldProvider implements IWorldProvider, Helper {
             } catch (IOException ignored) {}
         }
         System.out.println("Baritone world data dir: " + dir);
-        this.currentWorld = this.worldCache.computeIfAbsent(dir, WorldData::new);
+        this.currentWorld = this.worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimensionID));
     }
 
     public final void closeWorld() {
