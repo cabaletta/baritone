@@ -15,9 +15,10 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package baritone.utils;
 
-import net.minecraft.client.Minecraft;
+import baritone.api.utils.Rotation;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -29,11 +30,7 @@ import java.util.Optional;
  * @author Brady
  * @since 8/25/2018
  */
-public final class RayTraceUtils {
-    /**
-     * The {@link Minecraft} instance
-     */
-    private static final Minecraft mc = Minecraft.getMinecraft();
+public final class RayTraceUtils implements Helper {
 
     private RayTraceUtils() {}
 
@@ -50,19 +47,20 @@ public final class RayTraceUtils {
      * @return The calculated raytrace result
      */
     public static RayTraceResult simulateRayTrace(float yaw, float pitch) {
+        EntityPlayerSP player = Helper.HELPER.player();
         RayTraceResult oldTrace = mc.objectMouseOver;
-        float oldYaw = mc.player.rotationYaw;
-        float oldPitch = mc.player.rotationPitch;
+        float oldYaw = player.rotationYaw;
+        float oldPitch = player.rotationPitch;
 
-        mc.player.rotationYaw = yaw;
-        mc.player.rotationPitch = pitch;
+        player.rotationYaw = yaw;
+        player.rotationPitch = pitch;
 
         mc.entityRenderer.getMouseOver(1.0F);
         RayTraceResult result = mc.objectMouseOver;
         mc.objectMouseOver = oldTrace;
 
-        mc.player.rotationYaw = oldYaw;
-        mc.player.rotationPitch = oldPitch;
+        player.rotationYaw = oldYaw;
+        player.rotationPitch = oldPitch;
 
         return result;
     }
@@ -76,8 +74,8 @@ public final class RayTraceUtils {
      * @return The calculated raytrace result
      */
     public static RayTraceResult rayTraceTowards(Rotation rotation) {
-        double blockReachDistance = mc.playerController.getBlockReachDistance();
-        Vec3d start = mc.player.getPositionEyes(1.0F);
+        double blockReachDistance = Helper.HELPER.playerController().getBlockReachDistance();
+        Vec3d start = Helper.HELPER.player().getPositionEyes(1.0F);
         Vec3d direction = RotationUtils.calcVec3dFromRotation(rotation);
         Vec3d end = start.add(
                 direction.x * blockReachDistance,

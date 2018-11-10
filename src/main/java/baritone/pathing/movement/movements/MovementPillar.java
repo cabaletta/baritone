@@ -20,7 +20,6 @@ package baritone.pathing.movement.movements;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
 import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -28,6 +27,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.RotationUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -157,11 +157,11 @@ public class MovementPillar extends Movement {
         }
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
-        Rotation rotation = RotationUtils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+        Rotation rotation = RotationUtils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
                 VecUtils.getBlockPosCenter(positionToPlace),
-                new Rotation(mc.player.rotationYaw, mc.player.rotationPitch));
+                new Rotation(player().rotationYaw, player().rotationPitch));
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(new Rotation(mc.player.rotationYaw, rotation.getPitch()), true));
+            state.setTarget(new MovementState.MovementTarget(new Rotation(player().rotationYaw, rotation.getPitch()), true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;

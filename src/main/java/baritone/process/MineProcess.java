@@ -22,7 +22,7 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.RotationUtils;
+import baritone.utils.RotationUtils;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;

@@ -19,13 +19,17 @@ package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.utils.*;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.RayTraceUtils;
+import baritone.utils.RotationUtils;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
@@ -67,7 +71,7 @@ public class MovementFall extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
+            if (player().posY - dest.getY() < playerController().getBlockReachDistance()) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
 
                 targetRotation = new Rotation(player().rotationYaw, 90.0F);

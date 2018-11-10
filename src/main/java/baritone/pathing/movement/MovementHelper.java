@@ -19,12 +19,11 @@ package baritone.pathing.movement;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
-import baritone.api.utils.*;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.MovementState.MovementTarget;
-import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
-import baritone.utils.ToolSet;
+import baritone.utils.*;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
@@ -393,7 +392,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ts previously calculated ToolSet
      */
     static void switchToBestToolFor(IBlockState b, ToolSet ts) {
-        mc.player.inventory.currentItem = ts.getBestSlot(b.getBlock());
+        Helper.HELPER.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
     }
 
     static boolean throwaway(boolean select) {
@@ -433,10 +432,11 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static void moveTowards(MovementState state, BlockPos pos) {
+        EntityPlayerSP player = Helper.HELPER.player();
         state.setTarget(new MovementTarget(
-                new Rotation(RotationUtils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+                new Rotation(RotationUtils.calcRotationFromVec3d(player.getPositionEyes(1.0F),
                         VecUtils.getBlockPosCenter(pos),
-                        new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)).getYaw(), mc.player.rotationPitch),
+                        new Rotation(player.rotationYaw, player.rotationPitch)).getYaw(), player.rotationPitch),
                 false
         )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
     }

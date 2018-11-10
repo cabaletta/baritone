@@ -15,11 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package baritone.utils;
 
+import baritone.api.utils.Rotation;
+import baritone.api.utils.VecUtils;
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
 
@@ -29,12 +30,7 @@ import java.util.Optional;
  * @author Brady
  * @since 9/25/2018
  */
-public final class RotationUtils {
-
-    /**
-     * The {@link Minecraft} instance
-     */
-    private static final Minecraft mc = Minecraft.getMinecraft();
+public final class RotationUtils implements Helper {
 
     /**
      * Constant that a degree value is multiplied by to get the equivalent radian value
@@ -59,33 +55,6 @@ public final class RotationUtils {
     };
 
     private RotationUtils() {}
-
-    /**
-     * Clamps the specified pitch value between -90 and 90.
-     *
-     * @param pitch The input pitch
-     * @return The clamped pitch
-     */
-    public static float clampPitch(float pitch) {
-        return Math.max(-90, Math.min(90, pitch));
-    }
-
-    /**
-     * Normalizes the specified yaw value between -180 and 180.
-     *
-     * @param yaw The input yaw
-     * @return The normalized yaw
-     */
-    public static float normalizeYaw(float yaw) {
-        float newYaw = yaw % 360F;
-        if (newYaw < -180F) {
-            newYaw += 360F;
-        }
-        if (newYaw >= 180F) {
-            newYaw -= 360F;
-        }
-        return newYaw;
-    }
 
     /**
      * Calculates the rotation from BlockPos<sub>dest</sub> to BlockPos<sub>orig</sub>
