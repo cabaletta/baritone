@@ -19,14 +19,18 @@ package baritone.pathing.movement;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 /**
@@ -73,6 +77,18 @@ public class CalculationContext {
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
+    }
+
+    public IBlockState get(int x, int y, int z) {
+        return BlockStateInterface.get(world, x, y, z);
+    }
+
+    public IBlockState get(BlockPos pos) {
+        return get(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public Block getBlock(int x, int y, int z) {
+        return get(x, y, z).getBlock();
     }
 
     public boolean canPlaceThrowawayAt(int x, int y, int z) {

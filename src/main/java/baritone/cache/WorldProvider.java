@@ -39,11 +39,9 @@ import java.util.function.Consumer;
  * @author Brady
  * @since 8/4/2018 11:06 AM
  */
-public enum WorldProvider implements IWorldProvider, Helper {
+public class WorldProvider implements IWorldProvider, Helper {
 
-    INSTANCE;
-
-    private final Map<Path, WorldData> worldCache = new HashMap<>();
+    private static final Map<Path, WorldData> worldCache = new HashMap<>(); // this is how the bots have the same cached world
 
     private WorldData currentWorld;
 

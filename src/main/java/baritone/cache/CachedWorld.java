@@ -190,7 +190,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * If we are still in this world and dimension, return player feet, otherwise return most recently modified chunk
      */
     private BlockPos guessPosition() {
-        WorldData data = WorldProvider.INSTANCE.getCurrentWorld();
+        WorldData data = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
         if (data != null && data.getCachedWorld() == this) {
             return playerFeet();
         }

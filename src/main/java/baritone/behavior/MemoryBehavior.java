@@ -26,7 +26,6 @@ import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.cache.Waypoint;
-import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.block.BlockBed;
@@ -122,13 +121,13 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
         if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(event.getPos()) instanceof BlockBed) {
-            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
         }
     }
 
     @Override
     public void onPlayerDeath() {
-        WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, playerFeet()));
+        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, playerFeet()));
     }
 
     private Optional<RememberedInventory> getInventoryFromWindow(int windowId) {
@@ -143,7 +142,7 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
     }
 
     private WorldDataContainer getCurrentContainer() {
-        return this.worldDataContainers.computeIfAbsent(WorldProvider.INSTANCE.getCurrentWorld(), data -> new WorldDataContainer());
+        return this.worldDataContainers.computeIfAbsent(baritone.getWorldProvider().getCurrentWorld(), data -> new WorldDataContainer());
     }
 
     @Override

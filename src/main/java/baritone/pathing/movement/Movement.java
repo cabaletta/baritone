@@ -21,7 +21,9 @@ import baritone.Baritone;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
-import baritone.utils.*;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.Helper;
+import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -226,8 +228,8 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         return getDest().subtract(getSrc());
     }
 
-    public void checkLoadedChunk() {
-        calculatedWhileLoaded = !(world().getChunk(getDest()) instanceof EmptyChunk);
+    public void checkLoadedChunk(CalculationContext context) {
+        calculatedWhileLoaded = !(context.world().getChunk(getDest()) instanceof EmptyChunk);
     }
 
     @Override

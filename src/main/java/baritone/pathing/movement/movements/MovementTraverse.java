@@ -26,8 +26,6 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.api.utils.RayTraceUtils;
-import baritone.api.utils.RotationUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -61,11 +59,11 @@ public class MovementTraverse extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        IBlockState pb0 = BlockStateInterface.get(destX, y + 1, destZ);
-        IBlockState pb1 = BlockStateInterface.get(destX, y, destZ);
-        IBlockState destOn = BlockStateInterface.get(destX, y - 1, destZ);
-        Block srcDown = BlockStateInterface.getBlock(x, y - 1, z);
-        if (MovementHelper.canWalkOn(destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
+        IBlockState pb0 = context.get(destX, y + 1, destZ);
+        IBlockState pb1 = context.get(destX, y, destZ);
+        IBlockState destOn = context.get(destX, y - 1, destZ);
+        Block srcDown = context.getBlock(x, y - 1, z);
+        if (MovementHelper.canWalkOn(context, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
             if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {
@@ -123,7 +121,7 @@ public class MovementTraverse extends Movement {
                     if (againstX == x && againstZ == z) {
                         continue;
                     }
-                    if (MovementHelper.canPlaceAgainst(againstX, y - 1, againstZ)) {
+                    if (MovementHelper.canPlaceAgainst(context, againstX, y - 1, againstZ)) {
                         return WC + context.placeBlockCost() + hardness1 + hardness2;
                     }
                 }
