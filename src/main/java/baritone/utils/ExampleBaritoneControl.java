@@ -30,7 +30,6 @@ import baritone.behavior.PathingBehavior;
 import baritone.bot.UserManager;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
-import baritone.cache.WorldProvider;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -217,7 +216,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     Chunk chunk = cli.getLoadedChunk(x, z);
                     if (chunk != null) {
                         count++;
-                        WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().queueForPacking(chunk);
+                        baritone.getWorldProvider().getCurrentWorld().getCachedWorld().queueForPacking(chunk);
                     }
                 }
             }
@@ -293,18 +292,18 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("reloadall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().reloadAllFromDisk();
+            baritone.getWorldProvider().getCurrentWorld().getCachedWorld().reloadAllFromDisk();
             logDirect("ok");
             return true;
         }
         if (msg.equals("saveall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().save();
+            baritone.getWorldProvider().getCurrentWorld().getCachedWorld().save();
             logDirect("ok");
             return true;
         }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
+            LinkedList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(pos).getBlock();
@@ -356,7 +355,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 return true;
             }
-            Set<IWaypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getByTag(tag);
+            Set<IWaypoint> waypoints = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getByTag(tag);
             // might as well show them from oldest to newest
             List<IWaypoint> sorted = new ArrayList<>(waypoints);
             sorted.sort(Comparator.comparingLong(IWaypoint::getCreationTimestamp));
@@ -384,7 +383,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
                 name = parts[0];
             }
-            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
             logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto " + name + "' to set goal, say 'list user' to list custom waypoints.");
             return true;
         }
@@ -401,7 +400,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 Block block = ChunkPacker.stringToBlock(mining);
                 //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 if (block == null) {
-                    waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
+                    waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
                     if (waypoint == null) {
                         logDirect("No locations for " + mining + " known, cancelling");
                         return true;
@@ -411,7 +410,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return true;
                 }
             } else {
-                waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
+                waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
                 if (waypoint == null) {
                     logDirect("None saved for tag " + tag);
                     return true;
@@ -422,7 +421,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("spawn") || msg.equals("bed")) {
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
             if (waypoint == null) {
                 BlockPos spawnPoint = player().getBedLocation();
                 // for some reason the default spawnpoint is underground sometimes
@@ -437,12 +436,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("sethome")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
             logDirect("Saved. Say home to set goal.");
             return true;
         }
         if (msg.equals("home")) {
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
             if (waypoint == null) {
                 logDirect("home not saved");
             } else {

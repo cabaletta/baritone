@@ -20,6 +20,7 @@ package baritone.pathing.movement.movements;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -27,7 +28,6 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.api.utils.RotationUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -46,9 +46,9 @@ public class MovementPillar extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        Block fromDown = BlockStateInterface.get(x, y, z).getBlock();
+        Block fromDown = context.get(x, y, z).getBlock();
         boolean ladder = fromDown instanceof BlockLadder || fromDown instanceof BlockVine;
-        IBlockState fromDownDown = BlockStateInterface.get(x, y - 1, z);
+        IBlockState fromDownDown = context.get(x, y - 1, z);
         if (!ladder) {
             if (fromDownDown.getBlock() instanceof BlockLadder || fromDownDown.getBlock() instanceof BlockVine) {
                 return COST_INF;
@@ -57,17 +57,17 @@ public class MovementPillar extends Movement {
                 return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
-        if (fromDown instanceof BlockVine && !hasAgainst(x, y, z)) {
+        if (fromDown instanceof BlockVine && !hasAgainst(context, x, y, z)) {
             return COST_INF;
         }
-        IBlockState toBreak = BlockStateInterface.get(x, y + 2, z);
+        IBlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
         if (toBreakBlock instanceof BlockFenceGate) {
             return COST_INF;
         }
         Block srcUp = null;
         if (MovementHelper.isWater(toBreakBlock) && MovementHelper.isWater(fromDown)) {
-            srcUp = BlockStateInterface.get(x, y + 1, z).getBlock();
+            srcUp = context.get(x, y + 1, z).getBlock();
             if (MovementHelper.isWater(srcUp)) {
                 return LADDER_UP_ONE_COST;
             }
@@ -83,11 +83,11 @@ public class MovementPillar extends Movement {
             if (toBreakBlock instanceof BlockLadder || toBreakBlock instanceof BlockVine) {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
-                IBlockState check = BlockStateInterface.get(x, y + 3, z);
+                IBlockState check = context.get(x, y + 3, z);
                 if (check.getBlock() instanceof BlockFalling) {
                     // see MovementAscend's identical check for breaking a falling block above our head
                     if (srcUp == null) {
-                        srcUp = BlockStateInterface.get(x, y + 1, z).getBlock();
+                        srcUp = context.get(x, y + 1, z).getBlock();
                     }
                     if (!(toBreakBlock instanceof BlockFalling) || !(srcUp instanceof BlockFalling)) {
                         return COST_INF;
@@ -112,24 +112,24 @@ public class MovementPillar extends Movement {
         }
     }
 
-    public static boolean hasAgainst(int x, int y, int z) {
-        return BlockStateInterface.get(x + 1, y, z).isBlockNormalCube() ||
-                BlockStateInterface.get(x - 1, y, z).isBlockNormalCube() ||
-                BlockStateInterface.get(x, y, z + 1).isBlockNormalCube() ||
-                BlockStateInterface.get(x, y, z - 1).isBlockNormalCube();
+    public static boolean hasAgainst(CalculationContext context, int x, int y, int z) {
+        return context.get(x + 1, y, z).isBlockNormalCube() ||
+                context.get(x - 1, y, z).isBlockNormalCube() ||
+                context.get(x, y, z + 1).isBlockNormalCube() ||
+                context.get(x, y, z - 1).isBlockNormalCube();
     }
 
-    public static BlockPos getAgainst(BlockPos vine) {
-        if (BlockStateInterface.get(vine.north()).isBlockNormalCube()) {
+    public static BlockPos getAgainst(CalculationContext context, BetterBlockPos vine) {
+        if (context.get(vine.north()).isBlockNormalCube()) {
             return vine.north();
         }
-        if (BlockStateInterface.get(vine.south()).isBlockNormalCube()) {
+        if (context.get(vine.south()).isBlockNormalCube()) {
             return vine.south();
         }
-        if (BlockStateInterface.get(vine.east()).isBlockNormalCube()) {
+        if (context.get(vine.east()).isBlockNormalCube()) {
             return vine.east();
         }
-        if (BlockStateInterface.get(vine.west()).isBlockNormalCube()) {
+        if (context.get(vine.west()).isBlockNormalCube()) {
             return vine.west();
         }
         return null;
@@ -166,7 +166,7 @@ public class MovementPillar extends Movement {
 
         boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;
         if (ladder) {
-            BlockPos against = vine ? getAgainst(src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
+            BlockPos against = vine ? getAgainst(new CalculationContext(), src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
                 logDebug("Unable to climb vines");
                 return state.setStatus(MovementStatus.UNREACHABLE);
@@ -175,7 +175,7 @@ public class MovementPillar extends Movement {
             if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (MovementHelper.isBottomSlab(src.down())) {
+            if (MovementHelper.isBottomSlab(BlockStateInterface.get(src.down()))) {
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
             }
             /*

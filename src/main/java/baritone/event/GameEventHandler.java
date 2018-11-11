@@ -92,7 +92,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
                 && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
         if (isPostPopulate || isPreUnload) {
-            WorldProvider.INSTANCE.ifWorldLoaded(world -> {
+            baritone.getWorldProvider().ifWorldLoaded(world -> {
                 Chunk chunk = mc.world.getChunk(event.getX(), event.getZ());
                 world.getCachedWorld().queueForPacking(chunk);
             });
@@ -109,14 +109,14 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onWorldEvent(WorldEvent event) {
-        WorldProvider cache = WorldProvider.INSTANCE;
+        WorldProvider cache = baritone.getWorldProvider();
 
         BlockStateInterface.clearCachedChunk();
 
         if (event.getState() == EventState.POST) {
             cache.closeWorld();
             if (event.getWorld() != null) {
-                cache.initWorld(event.getWorld());
+                cache.initWorld(event.getWorld().provider.getDimensionType().getId());
             }
         }
 

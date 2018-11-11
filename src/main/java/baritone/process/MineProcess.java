@@ -22,15 +22,16 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.RotationUtils;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import baritone.api.utils.RotationUtils;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -158,7 +159,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (Baritone.settings().legitMine.get()) {
             return;
         }
-        List<BlockPos> locs = searchWorld(mining, ORE_LOCATIONS_COUNT, world(), already);
+        List<BlockPos> locs = searchWorld(mining, ORE_LOCATIONS_COUNT, baritone.getWorldProvider(), world(), already);
         locs.addAll(droppedItemsScan(mining, world()));
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
@@ -216,13 +217,13 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     /*public static List<BlockPos> searchWorld(List<Block> mining, int max, World world) {
 
     }*/
-    public static List<BlockPos> searchWorld(List<Block> mining, int max, World world, List<BlockPos> alreadyKnown) {
+    public static List<BlockPos> searchWorld(List<Block> mining, int max, WorldProvider provider, World world, List<BlockPos> alreadyKnown) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
-                locs.addAll(WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, 1));
+                locs.addAll(provider.getCurrentWorld().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, 1));
             } else {
                 uninteresting.add(m);
             }
@@ -279,7 +280,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     public static boolean plausibleToBreak(BlockPos pos) {
-        if (MovementHelper.avoidBreaking(pos.getX(), pos.getY(), pos.getZ(), BlockStateInterface.get(pos))) {
+        if (MovementHelper.avoidBreaking(new CalculationContext(), pos.getX(), pos.getY(), pos.getZ(), BlockStateInterface.get(pos))) {
             return false;
         }
         // bedrock above and below makes it implausible, otherwise we're good

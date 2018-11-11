@@ -66,6 +66,9 @@ public interface Helper {
     }
 
     default WorldClient world() {
+        if (!mc.isCallingFromMinecraftThread()) {
+            throw new IllegalStateException("h00000000");
+        }
         return mc.world;
     }
 

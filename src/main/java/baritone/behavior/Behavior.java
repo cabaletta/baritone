@@ -21,7 +21,7 @@ import baritone.Baritone;
 import baritone.api.behavior.IBehavior;
 
 /**
- * A type of game event listener that can be toggled.
+ * A type of game event listener that is given {@link Baritone} instance context.
  *
  * @author Brady
  * @since 8/1/2018 6:29 PM

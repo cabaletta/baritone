@@ -82,6 +82,8 @@ public enum Baritone implements IBaritone {
 
     private PathingControlManager pathingControlManager;
 
+    private WorldProvider worldProvider;
+
     private static ThreadPoolExecutor threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
 
     Baritone() {
@@ -114,6 +116,8 @@ public enum Baritone implements IBaritone {
             customGoalProcess = new CustomGoalProcess(this); // very high iq
             getToBlockProcess = new GetToBlockProcess(this);
         }
+
+        this.worldProvider = new WorldProvider();
 
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             registerEventListener(BaritoneAutoTest.INSTANCE);
@@ -194,7 +198,7 @@ public enum Baritone implements IBaritone {
 
     @Override
     public WorldProvider getWorldProvider() {
-        return WorldProvider.INSTANCE;
+        return worldProvider;
     }
 
     @Override
