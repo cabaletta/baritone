@@ -17,7 +17,6 @@
 
 package baritone.cache;
 
-import baritone.api.cache.IBlockTypeAccess;
 import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
@@ -31,7 +30,7 @@ import java.util.*;
  * @author Brady
  * @since 8/3/2018 1:04 AM
  */
-public final class CachedChunk implements IBlockTypeAccess, Helper {
+public final class CachedChunk implements Helper {
 
     public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF;
 
@@ -143,8 +142,7 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
         calculateHeightMap();
     }
 
-    @Override
-    public final IBlockState getBlock(int x, int y, int z) {
+    public final IBlockState getBlock(int x, int y, int z, int dimension) {
         int internalPos = z << 4 | x;
         if (heightMap[internalPos] == y) {
             // we have this exact block, it's a surface block
@@ -155,10 +153,10 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
             return overview[internalPos];
         }
         PathingBlockType type = getType(x, y, z);
-        if (type == PathingBlockType.SOLID && y == 127 && mc.player.dimension == -1) {
+        if (type == PathingBlockType.SOLID && y == 127 && dimension == -1) {
             return Blocks.BEDROCK.getDefaultState();
         }
-        return ChunkPacker.pathingTypeToBlock(type);
+        return ChunkPacker.pathingTypeToBlock(type, dimension);
     }
 
     private PathingBlockType getType(int x, int y, int z) {

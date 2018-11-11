@@ -19,6 +19,9 @@ package baritone.api.process;
 
 import net.minecraft.entity.Entity;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 /**
  * @author Brady
  * @since 9/23/2018
@@ -26,16 +29,18 @@ import net.minecraft.entity.Entity;
 public interface IFollowProcess extends IBaritoneProcess {
 
     /**
-     * Set the follow target to the specified entity;
+     * Set the follow target to any entities matching this predicate
      *
-     * @param entity The entity to follow
+     * @param filter the predicate
      */
-    void follow(Entity entity);
+    void follow(Predicate<Entity> filter);
 
     /**
-     * @return The entity that is currently being followed
+     * @return The entities that are currently being followed. null if not currently following, empty if nothing matches the predicate
      */
-    Entity following();
+    List<Entity> following();
+
+    Predicate<Entity> currentFilter();
 
     /**
      * Cancels the follow behavior, this will clear the current follow target.

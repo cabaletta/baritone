@@ -55,6 +55,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
+    private boolean cancelRequested;
     private boolean calcFailedLastTick;
 
     private volatile boolean isPathCalcInProgress;
@@ -91,17 +92,21 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             baritone.getPathingControlManager().cancelEverything();
             return;
         }
+        baritone.getPathingControlManager().preTick();
         tickPath();
         dispatchEvents();
     }
 
     private void tickPath() {
-        baritone.getPathingControlManager().doTheThingWithTheStuff();
         if (pauseRequestedLastTick && safeToCancel) {
             pauseRequestedLastTick = false;
             baritone.getInputOverrideHandler().clearAllKeys();
             BlockBreakHelper.stopBreakingBlock();
             return;
+        }
+        if (cancelRequested) {
+            cancelRequested = false;
+            baritone.getInputOverrideHandler().clearAllKeys();
         }
         if (current == null) {
             return;
@@ -273,6 +278,17 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return calcFailedLastTick;
     }
 
+    public void softCancelIfSafe() {
+        if (!isSafeToCancel()) {
+            return;
+        }
+        current = null;
+        next = null;
+        cancelRequested = true;
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
+        // do everything BUT clear keys
+    }
+
     // just cancel the current path
     public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
@@ -384,7 +400,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             Optional<IPath> path = calcResult.path;
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
-                    IPath result = p.cutoffAtLoadedChunks();
+                    IPath result = p.cutoffAtLoadedChunks(context.world());
 
                     if (result instanceof CutoffPath) {
                         logDebug("Cutting off path at edge of loaded chunks");

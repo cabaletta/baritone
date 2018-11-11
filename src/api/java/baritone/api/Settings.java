@@ -312,17 +312,17 @@ public class Settings {
     /**
      * Ignore depth when rendering the goal
      */
-    public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(false);
+    public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
 
     /**
      * Ignore depth when rendering the selection boxes (to break, to place, to walk into)
      */
-    public Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(false);
+    public Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(true);
 
     /**
      * Ignore depth when rendering the path
      */
-    public Setting<Boolean> renderPathIgnoreDepth = new Setting<>(false);
+    public Setting<Boolean> renderPathIgnoreDepth = new Setting<>(true);
 
     /**
      * Line width of the path when rendered, in pixels

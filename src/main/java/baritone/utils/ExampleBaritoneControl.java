@@ -32,6 +32,7 @@ import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
 import baritone.cache.WorldProvider;
 import baritone.pathing.calc.AbstractNodeCostSearch;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
@@ -264,6 +265,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             });
             return true;
         }
+        if (msg.startsWith("followplayers")) {
+            baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
+            logDirect("Following any players");
+            return true;
+        }
         if (msg.startsWith("follow")) {
             String name = msg.substring(6).trim();
             Optional<Entity> toFollow = Optional.empty();
@@ -281,7 +287,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Not found");
                 return true;
             }
-            baritone.getFollowProcess().follow(toFollow.get());
+            Entity effectivelyFinal = toFollow.get();
+            baritone.getFollowProcess().follow(x -> effectivelyFinal.equals(x));
             logDirect("Following " + toFollow.get());
             return true;
         }
@@ -446,7 +453,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("costs")) {
-            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(playerFeet())).collect(Collectors.toCollection(ArrayList::new));
+            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(new CalculationContext(), playerFeet())).collect(Collectors.toCollection(ArrayList::new));
             while (moves.contains(null)) {
                 moves.remove(null);
             }

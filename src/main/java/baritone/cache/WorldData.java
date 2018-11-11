@@ -35,11 +35,13 @@ public class WorldData implements IWorldData {
     private final Waypoints waypoints;
     //public final MapData map;
     public final Path directory;
+    public final int dimension;
 
-    WorldData(Path directory) {
+    WorldData(Path directory, int dimension) {
         this.directory = directory;
-        this.cache = new CachedWorld(directory.resolve("cache"));
+        this.cache = new CachedWorld(directory.resolve("cache"), dimension);
         this.waypoints = new Waypoints(directory.resolve("waypoints"));
+        this.dimension = dimension;
     }
 
     public void onClose() {

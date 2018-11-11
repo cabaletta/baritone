@@ -20,7 +20,6 @@ package baritone.pathing.movement.movements;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
 import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -28,9 +27,9 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
+import baritone.api.utils.RotationUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -158,11 +157,11 @@ public class MovementPillar extends Movement {
         }
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
-        Rotation rotation = RotationUtils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
+        Rotation rotation = RotationUtils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
                 VecUtils.getBlockPosCenter(positionToPlace),
-                new Rotation(mc.player.rotationYaw, mc.player.rotationPitch));
+                new Rotation(player().rotationYaw, player().rotationPitch));
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(new Rotation(mc.player.rotationYaw, rotation.getPitch()), true));
+            state.setTarget(new MovementState.MovementTarget(new Rotation(player().rotationYaw, rotation.getPitch()), true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;
@@ -215,10 +214,10 @@ public class MovementPillar extends Movement {
 
             if (!blockIsThere) {
                 Block fr = BlockStateInterface.get(src).getBlock();
-                if (!(fr instanceof BlockAir || fr.isReplaceable(Minecraft.getMinecraft().world, src))) {
+                if (!(fr instanceof BlockAir || fr.isReplaceable(world(), src))) {
                     state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (Minecraft.getMinecraft().player.isSneaking()) { // 1 tick after we're able to place
+                } else if (player().isSneaking()) { // 1 tick after we're able to place
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }

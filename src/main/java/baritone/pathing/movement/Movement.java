@@ -20,13 +20,8 @@ package baritone.pathing.movement;
 import baritone.Baritone;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
-import baritone.api.utils.VecUtils;
-import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
+import baritone.api.utils.*;
+import baritone.utils.*;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -34,6 +29,7 @@ import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static baritone.utils.InputOverrideHandler.Input;
@@ -151,10 +147,13 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         for (BetterBlockPos blockPos : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(blockPos) && !(BlockStateInterface.getBlock(blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
-                Optional<Rotation> reachable = RotationUtils.reachable(player(), blockPos);
+                Optional<Rotation> reachable = RotationUtils.reachable(player(), blockPos, playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     MovementHelper.switchToBestToolFor(BlockStateInterface.get(blockPos));
-                    state.setTarget(new MovementState.MovementTarget(reachable.get(), true)).setInput(Input.CLICK_LEFT, true);
+                    state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
+                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), blockPos)) {
+                        state.setInput(Input.CLICK_LEFT, true);
+                    }
                     return false;
                 }
                 //get rekt minecraft
@@ -163,7 +162,9 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
                 //you dont own me!!!!
                 state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
                         VecUtils.getBlockPosCenter(blockPos)), true)
-                ).setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
+                );
+                // don't check selectedblock on this one, this is a fallback when we can't see any face directly, it's intended to be breaking the "incorrect" block
+                state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 return false;
             }
         }

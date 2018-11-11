@@ -21,6 +21,7 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.path.CutoffPath;
@@ -63,9 +64,11 @@ class Path extends PathBase {
 
     private final int numNodes;
 
+    private final CalculationContext context;
+
     private volatile boolean verified;
 
-    Path(PathNode start, PathNode end, int numNodes, Goal goal) {
+    Path(PathNode start, PathNode end, int numNodes, Goal goal, CalculationContext context) {
         this.start = new BetterBlockPos(start.x, start.y, start.z);
         this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
@@ -73,6 +76,7 @@ class Path extends PathBase {
         this.movements = new ArrayList<>();
         this.nodes = new ArrayList<>();
         this.goal = goal;
+        this.context = context;
         assemblePath(end);
     }
 
@@ -123,9 +127,9 @@ class Path extends PathBase {
         return false;
     }
 
-    private static Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double cost) {
+    private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double cost) {
         for (Moves moves : Moves.values()) {
-            Movement move = moves.apply0(src);
+            Movement move = moves.apply0(context, src);
             if (move.getDest().equals(dest)) {
                 // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
                 move.override(cost);

@@ -18,6 +18,8 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.process.IFollowProcess;
@@ -27,6 +29,12 @@ import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * Follow an entity
  *
@@ -34,7 +42,8 @@ import net.minecraft.util.math.BlockPos;
  */
 public final class FollowProcess extends BaritoneProcessHelper implements IFollowProcess {
 
-    private Entity following;
+    private Predicate<Entity> filter;
+    private List<Entity> cache;
 
     public FollowProcess(Baritone baritone) {
         super(baritone, 1);
@@ -42,39 +51,76 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        scanWorld();
+        Goal goal = new GoalComposite(cache.stream().map(this::towards).toArray(Goal[]::new));
+        return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+    }
+
+    private Goal towards(Entity following) {
         // lol this is trashy but it works
         BlockPos pos;
         if (Baritone.settings().followOffsetDistance.get() == 0) {
-            pos = following.getPosition();
+            pos = new BlockPos(following);
         } else {
             GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.get(), Baritone.settings().followOffsetDistance.get());
             pos = new BlockPos(g.getX(), following.posY, g.getZ());
         }
-        return new PathingCommand(new GoalNear(pos, Baritone.settings().followRadius.get()), PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+        return new GoalNear(pos, Baritone.settings().followRadius.get());
+    }
+
+
+    private boolean followable(Entity entity) {
+        if (entity == null) {
+            return false;
+        }
+        if (entity.isDead) {
+            return false;
+        }
+        if (entity.equals(player())) {
+            return false;
+        }
+        if (!world().loadedEntityList.contains(entity) && !world().playerEntities.contains(entity)) {
+            return false;
+        }
+        return true;
+    }
+
+    private void scanWorld() {
+        cache = Stream.of(world().loadedEntityList, world().playerEntities).flatMap(List::stream).filter(this::followable).filter(this.filter).distinct().collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override
     public boolean isActive() {
-        return following != null;
+        if (filter == null) {
+            return false;
+        }
+        scanWorld();
+        return !cache.isEmpty();
     }
 
     @Override
     public void onLostControl() {
-        following = null;
+        filter = null;
+        cache = null;
     }
 
     @Override
     public String displayName() {
-        return "Follow " + following;
+        return "Follow " + cache;
     }
 
     @Override
-    public void follow(Entity entity) {
-        this.following = entity;
+    public void follow(Predicate<Entity> filter) {
+        this.filter = filter;
     }
 
     @Override
-    public Entity following() {
-        return this.following;
+    public List<Entity> following() {
+        return cache;
+    }
+
+    @Override
+    public Predicate<Entity> currentFilter() {
+        return filter;
     }
 }

@@ -19,7 +19,10 @@ package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.utils.*;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
@@ -67,13 +70,13 @@ public class MovementFall extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
+            if (player().posY - dest.getY() < playerController().getBlockReachDistance()) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
 
                 targetRotation = new Rotation(player().rotationYaw, 90.0F);
 
-                RayTraceResult trace = RayTraceUtils.simulateRayTrace(player().rotationYaw, 90.0F);
-                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK) {
+                RayTraceResult trace = mc.objectMouseOver;
+                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && player().rotationPitch > 89.0F) {
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }

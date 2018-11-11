@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
@@ -36,7 +37,7 @@ import java.util.function.Function;
  *
  * @author Avery, Brady, leijurv
  */
-public class ToolSet implements Helper {
+public class ToolSet {
     /**
      * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
@@ -48,8 +49,11 @@ public class ToolSet implements Helper {
      */
     private final Function<Block, Double> backendCalculation;
 
-    public ToolSet() {
+    private final EntityPlayerSP player;
+
+    public ToolSet(EntityPlayerSP player) {
         breakStrengthCache = new HashMap<>();
+        this.player = player;
 
         if (Baritone.settings().considerPotionEffects.get()) {
             double amplifier = potionAmplifier();
@@ -98,7 +102,7 @@ public class ToolSet implements Helper {
         int materialCost = Integer.MIN_VALUE;
         IBlockState blockState = b.getDefaultState();
         for (byte i = 0; i < 9; i++) {
-            ItemStack itemStack = player().inventory.getStackInSlot(i);
+            ItemStack itemStack = player.inventory.getStackInSlot(i);
             double v = calculateStrVsBlock(itemStack, blockState);
             if (v > value) {
                 value = v;
@@ -123,7 +127,7 @@ public class ToolSet implements Helper {
      * @return A double containing the destruction ticks with the best tool
      */
     private double getBestDestructionTime(Block b) {
-        ItemStack stack = player().inventory.getStackInSlot(getBestSlot(b));
+        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b));
         return calculateStrVsBlock(stack, b.getDefaultState());
     }
 
@@ -164,11 +168,11 @@ public class ToolSet implements Helper {
      */
     private double potionAmplifier() {
         double speed = 1;
-        if (player().isPotionActive(MobEffects.HASTE)) {
-            speed *= 1 + (player().getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
+        if (player.isPotionActive(MobEffects.HASTE)) {
+            speed *= 1 + (player.getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
         }
-        if (player().isPotionActive(MobEffects.MINING_FATIGUE)) {
-            switch (player().getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
+        if (player.isPotionActive(MobEffects.MINING_FATIGUE)) {
+            switch (player.getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
                 case 0:
                     speed *= 0.3;
                     break;

@@ -22,19 +22,23 @@ import baritone.api.pathing.movement.ActionCosts;
 import baritone.utils.Helper;
 import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 /**
  * @author Brady
  * @since 8/7/2018 4:30 PM
  */
-public class CalculationContext implements Helper {
+public class CalculationContext {
 
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
+    private final EntityPlayerSP player;
+    private final World world;
     private final ToolSet toolSet;
     private final boolean hasWaterBucket;
     private final boolean hasThrowaway;
@@ -48,15 +52,17 @@ public class CalculationContext implements Helper {
     private final BetterWorldBorder worldBorder;
 
     public CalculationContext() {
-        this.toolSet = new ToolSet();
+        this.player = Helper.HELPER.player();
+        this.world = Helper.HELPER.world();
+        this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(false);
-        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) && !world().provider.isNether();
-        this.canSprint = Baritone.settings().allowSprint.get() && player().getFoodStats().getFoodLevel() > 6;
+        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.provider.isNether();
+        this.canSprint = Baritone.settings().allowSprint.get() && player.getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
         this.allowBreak = Baritone.settings().allowBreak.get();
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
-        int depth = EnchantmentHelper.getDepthStriderModifier(player());
+        int depth = EnchantmentHelper.getDepthStriderModifier(player);
         if (depth > 3) {
             depth = 3;
         }
@@ -66,7 +72,7 @@ public class CalculationContext implements Helper {
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
-        this.worldBorder = new BetterWorldBorder(world().getWorldBorder());
+        this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
     }
 
     public boolean canPlaceThrowawayAt(int x, int y, int z) {
@@ -90,6 +96,15 @@ public class CalculationContext implements Helper {
         // TODO more protection logic here; see #220
         return false;
     }
+
+    public World world() {
+        return world;
+    }
+
+    public EntityPlayerSP player() {
+        return player;
+    }
+
 
     public ToolSet getToolSet() {
         return toolSet;
