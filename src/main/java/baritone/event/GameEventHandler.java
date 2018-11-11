@@ -103,7 +103,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         if (event.getState() == EventState.POST) {
             cache.closeWorld();
             if (event.getWorld() != null) {
-                cache.initWorld(event.getWorld());
+                cache.initWorld(event.getWorld().provider.getDimensionType().getId());
             }
         }
 

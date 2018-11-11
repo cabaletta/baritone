@@ -22,7 +22,6 @@ import baritone.api.cache.IWorldProvider;
 import baritone.utils.Helper;
 import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.WorldServer;
 
@@ -50,13 +49,20 @@ public class WorldProvider implements IWorldProvider, Helper {
         return this.currentWorld;
     }
 
-    public final void initWorld(WorldClient world) {
-        int dimensionID = world.provider.getDimensionType().getId();
-        File directory;
-        File readme;
+    /**
+     * Called when a new world is initialized to discover the
+     *
+     * @param dimension The ID of the world's dimension
+     */
+    public final void initWorld(int dimension) {
+        // Fight me @leijurv
+        File directory, readme;
+
         IntegratedServer integratedServer = mc.getIntegratedServer();
+
+        // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
         if (integratedServer != null) {
-            WorldServer localServerWorld = integratedServer.getWorld(dimensionID);
+            WorldServer localServerWorld = integratedServer.getWorld(dimension);
             IChunkProviderServer provider = (IChunkProviderServer) localServerWorld.getChunkProvider();
             IAnvilChunkLoader loader = (IAnvilChunkLoader) provider.getChunkLoader();
             directory = loader.getChunkSaveLocation();
@@ -69,27 +75,27 @@ public class WorldProvider implements IWorldProvider, Helper {
 
             directory = new File(directory, "baritone");
             readme = directory;
-
-        } else {
-            //remote
+        } else { // Otherwise, the server must be remote...
             directory = new File(Baritone.getDir(), mc.getCurrentServerData().serverIP);
             readme = Baritone.getDir();
         }
+
         // lol wtf is this baritone folder in my minecraft save?
         try (FileOutputStream out = new FileOutputStream(new File(readme, "readme.txt"))) {
             // good thing we have a readme
             out.write("https://github.com/cabaletta/baritone\n".getBytes());
         } catch (IOException ignored) {}
 
-        directory = new File(directory, "DIM" + dimensionID);
-        Path dir = directory.toPath();
+        // We will actually store the world data in a subfolder: "DIM<id>"
+        Path dir = new File(directory, "DIM" + dimension).toPath();
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);
             } catch (IOException ignored) {}
         }
+
         System.out.println("Baritone world data dir: " + dir);
-        this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimensionID));
+        this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension));
     }
 
     public final void closeWorld() {
