@@ -23,6 +23,7 @@ import baritone.behavior.Behavior;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,13 +42,9 @@ public final class InputOverrideHandler extends Behavior implements Helper {
     }
 
     /**
-     * Maps keybinds to whether or not we are forcing their state down.
+     * Maps inputs to whether or not we are forcing their state down.
      */
-    private final Map<KeyBinding, Boolean> inputForceStateMap = new HashMap<>();
-
-    public final void clearAllKeys() {
-        inputForceStateMap.clear();
-    }
+    private final Map<Input, Boolean> inputForceStateMap = new HashMap<>();
 
     /**
      * Returns whether or not we are forcing down the specified {@link KeyBinding}.
@@ -56,7 +53,17 @@ public final class InputOverrideHandler extends Behavior implements Helper {
      * @return Whether or not it is being forced down
      */
     public final boolean isInputForcedDown(KeyBinding key) {
-        return inputForceStateMap.getOrDefault(key, false);
+        return isInputForcedDown(Input.getInputForBind(key));
+    }
+
+    /**
+     * Returns whether or not we are forcing down the specified {@link Input}.
+     *
+     * @param input The input
+     * @return Whether or not it is being forced down
+     */
+    public final boolean isInputForcedDown(Input input) {
+        return input == null ? false : this.inputForceStateMap.getOrDefault(input, false);
     }
 
     /**
@@ -66,7 +73,14 @@ public final class InputOverrideHandler extends Behavior implements Helper {
      * @param forced Whether or not the state is being forced
      */
     public final void setInputForceState(Input input, boolean forced) {
-        inputForceStateMap.put(input.getKeyBinding(), forced);
+        this.inputForceStateMap.put(input, forced);
+    }
+
+    /**
+     * Clears the override state for all keys
+     */
+    public final void clearAllKeys() {
+        this.inputForceStateMap.clear();
     }
 
     @Override
@@ -97,7 +111,9 @@ public final class InputOverrideHandler extends Behavior implements Helper {
     }
 
     /**
-     * An {@link Enum} representing the possible inputs that we may want to force.
+     * An {@link Enum} representing the inputs that control the player's
+     * behavior. This includes moving, interacting with blocks, jumping,
+     * sneaking, and sprinting.
      */
     public enum Input {
 
@@ -147,6 +163,11 @@ public final class InputOverrideHandler extends Behavior implements Helper {
         SPRINT(mc.gameSettings.keyBindSprint);
 
         /**
+         * Map of {@link KeyBinding} to {@link Input}. Values should be queried through {@link #getInputForBind(KeyBinding)}
+         */
+        private static final Map<KeyBinding, Input> bindToInputMap = new HashMap<>();
+
+        /**
          * The actual game {@link KeyBinding} being forced.
          */
         private final KeyBinding keyBinding;
@@ -160,6 +181,16 @@ public final class InputOverrideHandler extends Behavior implements Helper {
          */
         public final KeyBinding getKeyBinding() {
             return this.keyBinding;
+        }
+
+        /**
+         * Finds the {@link Input} constant that is associated with the specified {@link KeyBinding}.
+         *
+         * @param binding The {@link KeyBinding} to find the associated {@link Input} for
+         * @return The {@link Input} associated with the specified {@link KeyBinding}
+         */
+        public static Input getInputForBind(KeyBinding binding) {
+            return bindToInputMap.computeIfAbsent(binding, b -> Arrays.stream(values()).filter(input -> input.keyBinding == b).findFirst().orElse(null));
         }
     }
 }
