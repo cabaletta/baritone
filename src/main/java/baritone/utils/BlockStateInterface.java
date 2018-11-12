@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
+import baritone.pathing.movement.CalculationContext;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -53,9 +54,9 @@ public class BlockStateInterface implements Helper {
     }
 
     public static IBlockState get(BlockPos pos) {
-        // this is the version thats called from updatestate and stuff, not from cost calculation
-        // doesn't need to be fast or cached actually
-        return Helper.HELPER.world().getBlockState(pos);
+        return new CalculationContext().get(pos); // immense iq
+        // can't just do world().get because that doesn't work for out of bounds
+        // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
     }
 
     public IBlockState get0(int x, int y, int z) {

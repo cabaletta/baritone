@@ -19,6 +19,7 @@ package baritone.pathing.movement;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.cache.WorldData;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.ToolSet;
@@ -43,6 +44,7 @@ public class CalculationContext {
 
     private final EntityPlayerSP player;
     private final World world;
+    private final WorldData worldData;
     private final BlockStateInterface bsi;
     private final ToolSet toolSet;
     private final boolean hasWaterBucket;
@@ -59,7 +61,8 @@ public class CalculationContext {
     public CalculationContext() {
         this.player = Helper.HELPER.player();
         this.world = Helper.HELPER.world();
-        this.bsi = new BlockStateInterface(world, Baritone.INSTANCE.getWorldProvider().getCurrentWorld()); // TODO TODO TODO
+        this.worldData = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
+        this.bsi = new BlockStateInterface(world, worldData); // TODO TODO TODO
         // new CalculationContext() needs to happen, can't add an argument (i'll beat you), can we get the world provider from currentlyTicking?
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(false);
@@ -88,10 +91,6 @@ public class CalculationContext {
 
     public boolean isLoaded(int x, int z) {
         return bsi.isLoaded(x, z);
-    }
-
-    public BlockStateInterface bsi() {
-        return bsi;
     }
 
     public IBlockState get(BlockPos pos) {
@@ -132,6 +131,13 @@ public class CalculationContext {
         return player;
     }
 
+    public BlockStateInterface bsi() {
+        return bsi;
+    }
+
+    public WorldData worldData() {
+        return worldData;
+    }
 
     public ToolSet getToolSet() {
         return toolSet;
