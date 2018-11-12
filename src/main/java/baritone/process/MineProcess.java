@@ -131,13 +131,14 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         // only in non-Xray mode (aka legit mode) do we do this
         int y = Baritone.settings().legitMineYLevel.get();
         if (branchPoint == null) {
-            if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
+            /*if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
                 // cool, path is over and we are at desired y
                 branchPoint = playerFeet();
                 branchPointRunaway = null;
             } else {
                 return new GoalYLevel(y);
-            }
+            }*/
+            branchPoint = playerFeet();
         }
         // TODO shaft mode, mine 1x1 shafts to either side
         // TODO also, see if the GoalRunAway with maintain Y at 11 works even from the surface
