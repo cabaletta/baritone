@@ -16,34 +16,44 @@
  */
 
 group 'baritone'
-version '1.0.0-hotfix-2'
+version '1.0.1'
 
 buildscript {
     repositories {
+        maven { url 'https://www.dimdev.org/maven/' }
+        maven { url = 'http://repo.spongepowered.org/maven' }
+        maven { url = 'https://plugins.gradle.org/m2/' }
         maven {
-            name = 'forge'
-            url = 'http://files.minecraftforge.net/maven'
-        }
-        maven {
-            name = 'SpongePowered'
-            url = 'http://repo.spongepowered.org/maven'
-        }
-        jcenter()
+
+        name = 'impactdevelopment-repo'
+
+        url = 'https://impactdevelopment.github.io/maven/' }
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+        classpath "org.dimdev:ForgeGradle:${project.forgeGradleVersion}"
+        classpath "org.spongepowered:mixingradle:${project.mixinGradleVersion}"
+        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.0"
     }
 }
+
+def forgeBuild = project.hasProperty('forgebuild') ? project.property('forgebuild').toBoolean() : false
+
 
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 apply plugin: 'java'
-apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+
+if (forgeBuild) {
+	apply plugin: 'net.minecraftforge.gradle.forge'
+} else {
+	apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+}
+
 apply plugin: 'org.spongepowered.mixin'
+apply plugin: "com.github.johnrengelman.shadow"
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
@@ -57,32 +67,28 @@ sourceSets {
 }
 
 minecraft {
-    version = '1.12.2'
-    mappings = 'stable_39'
-    tweakClass = 'baritone.launch.BaritoneTweaker'
+    version = forgeBuild ? project.minecraftVersion + project.forgeVersion : project.minecraftVersion
     runDir = 'run'
-
-    // The sources jar should use SRG names not MCP to ensure compatibility with all mappings
+    mappings = project.mappingsVer
     makeObfSourceJar = true
+    if (!forgeBuild) {
+		tweakClass = 'baritone.launch.BaritoneTweaker'
+    }
 }
+
 
 repositories {
     mavenCentral()
 
-    maven {
-        name = 'spongepowered-repo'
-        url = 'http://repo.spongepowered.org/maven/'
-    }
-
-    maven {
-        name = 'impactdevelopment-repo'
-        url = 'https://impactdevelopment.github.io/maven/'
-    }
+    maven { url = 'http://repo.spongepowered.org/maven/' }
+    maven { url = 'https://impactdevelopment.github.io/maven/' }
+    maven { url 'https://www.dimdev.org/maven/' }
+    maven { url 'https://libraries.minecraft.net/' }
 }
 
 dependencies {
     runtime launchCompile('com.github.ImpactDevelopment:SimpleTweaker:1.2')
-    runtime launchCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+    runtime launchCompile('org.dimdev:mixin:0.7.11-SNAPSHOT') {
         // Mixin includes a lot of dependencies that are too up-to-date
         exclude module: 'launchwrapper'
         exclude module: 'guava'
@@ -91,12 +97,53 @@ dependencies {
         exclude module: 'log4j-core'
     }
     testImplementation 'junit:junit:4.12'
+
 }
 
+}
+
+
+shadowJar {
+    dependencies {
+        include('org.dimdev:mixin')
+    }
+    classifier = 'full'
+}
+
+
 mixin {
-    defaultObfuscationEnv notch
+    defaultObfuscationEnv forgeBuild ? searge : notch
     add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
+
+
+reobf {
+    shadowJar {
+        mappingType = forgeBuild ? 'SEARGE' : 'NOTCH'
+        classpath = sourceSets.main.compileClasspath
+    }
+}
+
+if (forgeBuild) {
+	jar {
+	    manifest.attributes(
+                "Version": version,
+                "ForgeBuild": forgeBuild,
+	            "MixinConfigs": 'mixins.client.json',
+	            "tweakClass": 'org.spongepowered.asm.launch.MixinTweaker',
+	            "TweakOrder": 0,
+	            "FMLCorePluginContainsFMLMod": 'baritone.forge.MixinLoader',
+	            "Manifest-Version": 1.0
+	    )
+	}
+} else {
+    jar {
+        from sourceSets.launch.output, sourceSets.api.output
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+    }
+}
+
 
 jar {
     from sourceSets.launch.output, sourceSets.api.output
