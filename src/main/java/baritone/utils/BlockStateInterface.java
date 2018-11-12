@@ -20,7 +20,6 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
-import baritone.pathing.movement.CalculationContext;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -35,21 +34,31 @@ import net.minecraft.world.chunk.Chunk;
  */
 public class BlockStateInterface implements Helper {
 
-    private static Chunk prev = null;
-    private static CachedRegion prevCached = null;
+    private final World world;
+    private final WorldData worldData;
+
+
+    private Chunk prev = null;
+    private CachedRegion prevCached = null;
 
     private static final IBlockState AIR = Blocks.AIR.getDefaultState();
 
+    public BlockStateInterface(World world, WorldData worldData) {
+        this.worldData = worldData;
+        this.world = world;
+    }
+
+    public static Block getBlock(BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
+        return get(pos).getBlock();
+    }
+
     public static IBlockState get(BlockPos pos) {
-        return get(pos.getX(), pos.getY(), pos.getZ());
+        // this is the version thats called from updatestate and stuff, not from cost calculation
+        // doesn't need to be fast or cached actually
+        return Helper.HELPER.world().getBlockState(pos);
     }
 
-
-    public static IBlockState get(int x, int y, int z) {
-        return get(Helper.HELPER.world(), x, y, z);
-    }
-
-    public static IBlockState get(World world, int x, int y, int z) {
+    public IBlockState get0(int x, int y, int z) {
 
         // Invalid vertical position
         if (y < 0 || y >= 256) {
@@ -77,7 +86,6 @@ public class BlockStateInterface implements Helper {
         // except here, it's 512x512 tiles instead of 16x16, so even better repetition
         CachedRegion cached = prevCached;
         if (cached == null || cached.getX() != x >> 9 || cached.getZ() != z >> 9) {
-            WorldData worldData = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
             if (worldData == null) {
                 return AIR;
             }
@@ -95,12 +103,12 @@ public class BlockStateInterface implements Helper {
         return type;
     }
 
-    public static boolean isLoaded(CalculationContext context, int x, int z) {
+    public boolean isLoaded(int x, int z) {
         Chunk prevChunk = prev;
         if (prevChunk != null && prevChunk.x == x >> 4 && prevChunk.z == z >> 4) {
             return true;
         }
-        prevChunk = context.world().getChunk(x >> 4, z >> 4);
+        prevChunk = world.getChunk(x >> 4, z >> 4);
         if (prevChunk.isLoaded()) {
             prev = prevChunk;
             return true;
@@ -109,28 +117,14 @@ public class BlockStateInterface implements Helper {
         if (prevRegion != null && prevRegion.getX() == x >> 9 && prevRegion.getZ() == z >> 9) {
             return prevRegion.isCached(x & 511, z & 511);
         }
-        WorldData world = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
-        if (world == null) {
+        if (worldData == null) {
             return false;
         }
-        prevRegion = world.cache.getRegion(x >> 9, z >> 9);
+        prevRegion = worldData.cache.getRegion(x >> 9, z >> 9);
         if (prevRegion == null) {
             return false;
         }
         prevCached = prevRegion;
         return prevRegion.isCached(x & 511, z & 511);
-    }
-
-    public static void clearCachedChunk() {
-        prev = null;
-        prevCached = null;
-    }
-
-    public static Block getBlock(BlockPos pos) {
-        return get(pos).getBlock();
-    }
-
-    public static Block getBlock(int x, int y, int z) {
-        return get(x, y, z).getBlock();
     }
 }

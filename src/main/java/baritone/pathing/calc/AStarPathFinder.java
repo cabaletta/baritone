@@ -25,7 +25,6 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterWorldBorder;
 import baritone.utils.pathing.MutableMoveResult;
@@ -66,7 +65,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         MutableMoveResult res = new MutableMoveResult();
         HashSet<Long> favored = favoredPositions.orElse(null);
         BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world().getWorldBorder());
-        BlockStateInterface.clearCachedChunk();
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {
@@ -100,7 +98,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             for (Moves moves : Moves.values()) {
                 int newX = currentNode.x + moves.xOffset;
                 int newZ = currentNode.z + moves.zOffset;
-                if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !BlockStateInterface.isLoaded(calcContext, newX, newZ)) {
+                if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !calcContext.isLoaded(newX, newZ)) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
                     if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
                         numEmptyChunk++;

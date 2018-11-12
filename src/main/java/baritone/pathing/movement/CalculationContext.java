@@ -43,6 +43,7 @@ public class CalculationContext {
 
     private final EntityPlayerSP player;
     private final World world;
+    private final BlockStateInterface bsi;
     private final ToolSet toolSet;
     private final boolean hasWaterBucket;
     private final boolean hasThrowaway;
@@ -58,6 +59,8 @@ public class CalculationContext {
     public CalculationContext() {
         this.player = Helper.HELPER.player();
         this.world = Helper.HELPER.world();
+        this.bsi = new BlockStateInterface(world, Baritone.INSTANCE.getWorldProvider().getCurrentWorld()); // TODO TODO TODO
+        // new CalculationContext() needs to happen, can't add an argument (i'll beat you), can we get the world provider from currentlyTicking?
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(false);
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.provider.isNether();
@@ -80,7 +83,15 @@ public class CalculationContext {
     }
 
     public IBlockState get(int x, int y, int z) {
-        return BlockStateInterface.get(world, x, y, z);
+        return bsi.get0(x, y, z); // laughs maniacally
+    }
+
+    public boolean isLoaded(int x, int z) {
+        return bsi.isLoaded(x, z);
+    }
+
+    public BlockStateInterface bsi() {
+        return bsi;
     }
 
     public IBlockState get(BlockPos pos) {
