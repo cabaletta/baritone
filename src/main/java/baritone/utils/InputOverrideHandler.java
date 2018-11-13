@@ -37,14 +37,14 @@ import java.util.Map;
  */
 public final class InputOverrideHandler extends Behavior implements Helper {
 
-    public InputOverrideHandler(Baritone baritone) {
-        super(baritone);
-    }
-
     /**
      * Maps inputs to whether or not we are forcing their state down.
      */
     private final Map<Input, Boolean> inputForceStateMap = new HashMap<>();
+
+    public InputOverrideHandler(Baritone baritone) {
+        super(baritone);
+    }
 
     /**
      * Returns whether or not we are forcing down the specified {@link KeyBinding}.
