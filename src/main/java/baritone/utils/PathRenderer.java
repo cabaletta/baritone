@@ -18,13 +18,17 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.event.events.RenderEvent;
+import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.pathing.goals.GoalXZ;
-import baritone.pathing.path.IPath;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
-import baritone.utils.pathing.BetterBlockPos;
+import baritone.behavior.PathingBehavior;
+import baritone.pathing.calc.AbstractNodeCostSearch;
+import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -40,6 +44,7 @@ import net.minecraft.util.math.MathHelper;
 
 import java.awt.*;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -49,11 +54,67 @@ import static org.lwjgl.opengl.GL11.*;
  * @since 8/9/2018 4:39 PM
  */
 public final class PathRenderer implements Helper {
-    
+
     private static final Tessellator TESSELLATOR = Tessellator.getInstance();
     private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
 
     private PathRenderer() {}
+
+    public static void render(RenderEvent event, PathingBehavior behavior) {
+        // System.out.println("Render passing");
+        // System.out.println(event.getPartialTicks());
+        float partialTicks = event.getPartialTicks();
+        Goal goal = behavior.getGoal();
+        EntityPlayerSP player = mc.player;
+        if (goal != null && Baritone.settings().renderGoal.value) {
+            drawLitDankGoalBox(player, goal, partialTicks, Baritone.settings().colorGoalBox.get());
+        }
+        if (!Baritone.settings().renderPath.get()) {
+            return;
+        }
+
+        //drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()), partialTicks, Color.WHITE);
+        //long start = System.nanoTime();
+
+
+        PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
+        PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
+        // TODO is this enough, or do we need to acquire a lock here?
+        // TODO benchmark synchronized in render loop
+
+        // Render the current path, if there is one
+        if (current != null && current.getPath() != null) {
+            int renderBegin = Math.max(current.getPosition() - 3, 0);
+            drawPath(current.getPath(), renderBegin, player, partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+        }
+        if (next != null && next.getPath() != null) {
+            drawPath(next.getPath(), 0, player, partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+        }
+
+        //long split = System.nanoTime();
+        if (current != null) {
+            drawManySelectionBoxes(player, current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
+            drawManySelectionBoxes(player, current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
+            drawManySelectionBoxes(player, current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
+        }
+
+        // If there is a path calculation currently running, render the path calculation process
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
+            currentlyRunning.bestPathSoFar().ifPresent(p -> {
+                drawPath(p, 0, player, partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
+            });
+            currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
+
+                drawPath(mr, 0, player, partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
+                drawManySelectionBoxes(player, Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
+            });
+        });
+        //long end = System.nanoTime();
+        //System.out.println((end - split) + " " + (split - start));
+        // if (end - start > 0) {
+        //   System.out.println("Frame took " + (split - start) + " " + (end - split));
+        //}
+    }
 
     public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         GlStateManager.enableBlend();
@@ -62,28 +123,33 @@ public final class PathRenderer implements Helper {
         GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
+        if (Baritone.settings().renderPathIgnoreDepth.get()) {
+            GlStateManager.disableDepth();
+        }
         List<BetterBlockPos> positions = path.positions();
         int next;
         Tessellator tessellator = Tessellator.getInstance();
         int fadeStart = fadeStart0 + startIndex;
         int fadeEnd = fadeEnd0 + startIndex;
         for (int i = startIndex; i < positions.size() - 1; i = next) {
-            BlockPos start = positions.get(i);
+            BetterBlockPos start = positions.get(i);
 
             next = i + 1;
-            BlockPos end = positions.get(next);
+            BetterBlockPos end = positions.get(next);
 
-            BlockPos direction = Utils.diff(start, end);
-            while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) && direction.equals(Utils.diff(end, positions.get(next + 1)))) {
+            int dirX = end.x - start.x;
+            int dirY = end.y - start.y;
+            int dirZ = end.z - start.z;
+            while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) && (dirX == positions.get(next + 1).x - end.x && dirY == positions.get(next + 1).y - end.y && dirZ == positions.get(next + 1).z - end.z)) {
                 next++;
                 end = positions.get(next);
             }
-            double x1 = start.getX();
-            double y1 = start.getY();
-            double z1 = start.getZ();
-            double x2 = end.getX();
-            double y2 = end.getY();
-            double z2 = end.getZ();
+            double x1 = start.x;
+            double y1 = start.y;
+            double z1 = start.z;
+            double x2 = end.x;
+            double y2 = end.y;
+            double z2 = end.z;
             if (fadeOut) {
 
                 float alpha;
@@ -99,6 +165,9 @@ public final class PathRenderer implements Helper {
             }
             drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks);
             tessellator.draw();
+        }
+        if (Baritone.settings().renderPathIgnoreDepth.get()) {
+            GlStateManager.enableDepth();
         }
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
         GlStateManager.depthMask(true);
@@ -125,6 +194,11 @@ public final class PathRenderer implements Helper {
         GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
+
+        if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
+            GlStateManager.disableDepth();
+        }
+
         float expand = 0.002F;
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
 
@@ -165,6 +239,10 @@ public final class PathRenderer implements Helper {
             BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
             TESSELLATOR.draw();
         });
+
+        if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
+            GlStateManager.enableDepth();
+        }
 
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
@@ -230,26 +308,12 @@ public final class PathRenderer implements Helper {
         GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
-
-        if (y1 != 0) {
-            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            BUFFER.pos(minX, y1, minZ).endVertex();
-            BUFFER.pos(maxX, y1, minZ).endVertex();
-            BUFFER.pos(maxX, y1, maxZ).endVertex();
-            BUFFER.pos(minX, y1, maxZ).endVertex();
-            BUFFER.pos(minX, y1, minZ).endVertex();
-            TESSELLATOR.draw();
+        if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+            GlStateManager.disableDepth();
         }
 
-        if (y2 != 0) {
-            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            BUFFER.pos(minX, y2, minZ).endVertex();
-            BUFFER.pos(maxX, y2, minZ).endVertex();
-            BUFFER.pos(maxX, y2, maxZ).endVertex();
-            BUFFER.pos(minX, y2, maxZ).endVertex();
-            BUFFER.pos(minX, y2, minZ).endVertex();
-            TESSELLATOR.draw();
-        }
+        renderHorizontalQuad(minX, maxX, minZ, maxZ, y1);
+        renderHorizontalQuad(minX, maxX, minZ, maxZ, y2);
 
         BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
         BUFFER.pos(minX, minY, minZ).endVertex();
@@ -262,9 +326,22 @@ public final class PathRenderer implements Helper {
         BUFFER.pos(minX, maxY, maxZ).endVertex();
         TESSELLATOR.draw();
 
-
+        if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+            GlStateManager.enableDepth();
+        }
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
+    }
+
+    private static void renderHorizontalQuad(double minX, double maxX, double minZ, double maxZ, double y) {
+        if (y != 0) {
+            BUFFER.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
+            BUFFER.pos(minX, y, minZ).endVertex();
+            BUFFER.pos(maxX, y, minZ).endVertex();
+            BUFFER.pos(maxX, y, maxZ).endVertex();
+            BUFFER.pos(minX, y, maxZ).endVertex();
+            TESSELLATOR.draw();
+        }
     }
 }

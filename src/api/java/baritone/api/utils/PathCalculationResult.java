@@ -15,30 +15,27 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.api.utils;
 
-import net.minecraft.entity.Entity;
+import baritone.api.pathing.calc.IPath;
 
-/**
- * @author Brady
- * @since 9/23/2018
- */
-public interface IFollowBehavior extends IBehavior {
+import java.util.Optional;
 
-    /**
-     * Set the follow target to the specified entity;
-     *
-     * @param entity The entity to follow
-     */
-    void follow(Entity entity);
+public class PathCalculationResult {
 
-    /**
-     * @return The entity that is currently being followed
-     */
-    Entity following();
+    public final Optional<IPath> path;
+    public final Type type;
 
-    /**
-     * Cancels the follow behavior, this will clear the current follow target.
-     */
-    void cancel();
+    public PathCalculationResult(Type type, Optional<IPath> path) {
+        this.path = path;
+        this.type = type;
+    }
+
+    public enum Type {
+        SUCCESS_TO_GOAL,
+        SUCCESS_SEGMENT,
+        FAILURE,
+        CANCELLATION,
+        EXCEPTION,
+    }
 }

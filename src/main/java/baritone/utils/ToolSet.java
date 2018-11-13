@@ -20,44 +20,48 @@ package baritone.utils;
 import baritone.Baritone;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
+import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemTool;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A cached list of the best tools on the hotbar for any block
  *
- * @author avecowa, Brady, leijurv
+ * @author Avery, Brady, leijurv
  */
-public class ToolSet implements Helper {
-
+public class ToolSet {
     /**
      * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
      */
-    private Map<Block, Double> breakStrengthCache = new HashMap<>();
+    private final Map<Block, Double> breakStrengthCache;
 
     /**
-     * Calculate which tool on the hotbar is best for mining
-     *
-     * @param b the blockstate to be mined
-     * @return a byte indicating the index in the tools array that worked best
+     * My buddy leijurv owned me so we have this to not create a new lambda instance.
      */
-    public byte getBestSlot(IBlockState b) {
-        byte best = 0;
-        double value = -1;
-        for (byte i = 0; i < 9; i++) {
-            double v = calculateStrVsBlock(i, b);
-            if (v > value || value == -1) {
-                value = v;
-                best = i;
-            }
+    private final Function<Block, Double> backendCalculation;
+
+    private final EntityPlayerSP player;
+
+    public ToolSet(EntityPlayerSP player) {
+        breakStrengthCache = new HashMap<>();
+        this.player = player;
+
+        if (Baritone.settings().considerPotionEffects.get()) {
+            double amplifier = potionAmplifier();
+            Function<Double, Double> amplify = x -> amplifier * x;
+            backendCalculation = amplify.compose(this::getBestDestructionTime);
+        } else {
+            backendCalculation = this::getBestDestructionTime;
         }
-        return best;
     }
 
     /**
@@ -67,7 +71,64 @@ public class ToolSet implements Helper {
      * @return how long it would take in ticks
      */
     public double getStrVsBlock(IBlockState state) {
-        return this.breakStrengthCache.computeIfAbsent(state.getBlock(), b -> calculateStrVsBlock(getBestSlot(state), state));
+        return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation);
+    }
+
+    /**
+     * Evaluate the material cost of a possible tool. The priority matches the
+     * listed order in the Item.ToolMaterial enum.
+     *
+     * @param itemStack a possibly empty ItemStack
+     * @return values range from -1 to 4
+     */
+    private int getMaterialCost(ItemStack itemStack) {
+        if (itemStack.getItem() instanceof ItemTool) {
+            ItemTool tool = (ItemTool) itemStack.getItem();
+            return ToolMaterial.valueOf(tool.getToolMaterialName()).ordinal();
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * Calculate which tool on the hotbar is best for mining
+     *
+     * @param b the blockstate to be mined
+     * @return A byte containing the index in the tools array that worked best
+     */
+    public byte getBestSlot(Block b) {
+        byte best = 0;
+        double value = Double.NEGATIVE_INFINITY;
+        int materialCost = Integer.MIN_VALUE;
+        IBlockState blockState = b.getDefaultState();
+        for (byte i = 0; i < 9; i++) {
+            ItemStack itemStack = player.inventory.getStackInSlot(i);
+            double v = calculateStrVsBlock(itemStack, blockState);
+            if (v > value) {
+                value = v;
+                best = i;
+                materialCost = getMaterialCost(itemStack);
+            } else if (v == value) {
+                int c = getMaterialCost(itemStack);
+                if (c < materialCost) {
+                    value = v;
+                    best = i;
+                    materialCost = c;
+                }
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Calculate how effectively a block can be destroyed
+     *
+     * @param b the blockstate to be mined
+     * @return A double containing the destruction ticks with the best tool
+     */
+    private double getBestDestructionTime(Block b) {
+        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b));
+        return calculateStrVsBlock(stack, b.getDefaultState());
     }
 
     /**
@@ -77,49 +138,55 @@ public class ToolSet implements Helper {
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */
-    private double calculateStrVsBlock(byte slot, IBlockState state) {
-        // Calculate the slot with the best item
-        ItemStack contents = player().inventory.getStackInSlot(slot);
-
-        float blockHard = state.getBlockHardness(null, null);
-        if (blockHard < 0) {
+    private double calculateStrVsBlock(ItemStack item, IBlockState state) {
+        float hardness = state.getBlockHardness(null, null);
+        if (hardness < 0) {
             return -1;
         }
 
-        float speed = contents.getDestroySpeed(state);
+        float speed = item.getDestroySpeed(state);
         if (speed > 1) {
-            int effLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, contents);
-            if (effLevel > 0 && !contents.isEmpty()) {
+            int effLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, item);
+            if (effLevel > 0 && !item.isEmpty()) {
                 speed += effLevel * effLevel + 1;
             }
         }
 
-        if (Baritone.settings().considerPotionEffects.get()) {
-            if (player().isPotionActive(MobEffects.HASTE)) {
-                speed *= 1 + (player().getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
-            }
-            if (player().isPotionActive(MobEffects.MINING_FATIGUE)) {
-                switch (player().getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
-                    case 0:
-                        speed *= 0.3;
-                        break;
-                    case 1:
-                        speed *= 0.09;
-                        break;
-                    case 2:
-                        speed *= 0.0027;
-                        break;
-                    default:
-                        speed *= 0.00081;
-                        break;
-                }
-            }
-        }
-        speed /= blockHard;
-        if (state.getMaterial().isToolNotRequired() || (!contents.isEmpty() && contents.canHarvestBlock(state))) {
-            return speed / 30;
+        speed /= hardness;
+        if (state.getMaterial().isToolNotRequired() || (!item.isEmpty() && item.canHarvestBlock(state))) {
+            speed /= 30;
         } else {
-            return speed / 100;
+            speed /= 100;
         }
+        return speed;
+    }
+
+    /**
+     * Calculates any modifier to breaking time based on status effects.
+     *
+     * @return a double to scale block breaking speed.
+     */
+    private double potionAmplifier() {
+        double speed = 1;
+        if (player.isPotionActive(MobEffects.HASTE)) {
+            speed *= 1 + (player.getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
+        }
+        if (player.isPotionActive(MobEffects.MINING_FATIGUE)) {
+            switch (player.getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
+                case 0:
+                    speed *= 0.3;
+                    break;
+                case 1:
+                    speed *= 0.09;
+                    break;
+                case 2:
+                    speed *= 0.0027;
+                    break;
+                default:
+                    speed *= 0.00081;
+                    break;
+            }
+        }
+        return speed;
     }
 }

@@ -17,54 +17,21 @@
 
 package baritone.behavior;
 
+import baritone.Baritone;
 import baritone.api.behavior.IBehavior;
 
 /**
- * A type of game event listener that can be toggled.
+ * A type of game event listener that is given {@link Baritone} instance context.
  *
  * @author Brady
  * @since 8/1/2018 6:29 PM
  */
 public class Behavior implements IBehavior {
 
-    /**
-     * Whether or not this behavior is enabled
-     */
-    private boolean enabled = true;
+    public final Baritone baritone;
 
-    /**
-     * Toggles the enabled state of this {@link Behavior}.
-     *
-     * @return The new state.
-     */
-    @Override
-    public final boolean toggle() {
-        return this.setEnabled(!this.isEnabled());
-    }
-
-    /**
-     * Sets the enabled state of this {@link Behavior}.
-     *
-     * @return The new state.
-     */
-    @Override
-    public final boolean setEnabled(boolean enabled) {
-        if (enabled == this.enabled) {
-            return this.enabled;
-        }
-        if (this.enabled = enabled) {
-            this.onEnable();
-        } else {
-            this.onDisable();
-        }
-        return this.enabled;
-    }
-
-    /**
-     * @return Whether or not this {@link Behavior} is active.
-     */
-    @Override
-    public final boolean isEnabled() {
-        return this.enabled;
+    protected Behavior(Baritone baritone) {
+        this.baritone = baritone;
+        baritone.registerBehavior(this);
     }
 }

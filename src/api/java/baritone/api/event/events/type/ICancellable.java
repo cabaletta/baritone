@@ -15,40 +15,21 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils.interfaces;
+package baritone.api.event.events.type;
 
 /**
  * @author Brady
- * @since 8/20/2018
+ * @since 10/11/2018
  */
-public interface Toggleable {
+public interface ICancellable {
 
     /**
-     * Toggles the enabled state of this {@link Toggleable}.
-     *
-     * @return The new state.
+     * Cancels this event
      */
-    boolean toggle();
+    void cancel();
 
     /**
-     * Sets the enabled state of this {@link Toggleable}.
-     *
-     * @return The new state.
+     * @return Whether or not this event has been cancelled
      */
-    boolean setEnabled(boolean enabled);
-
-    /**
-     * @return Whether or not this {@link Toggleable} object is enabled
-     */
-    boolean isEnabled();
-
-    /**
-     * Called when the state changes from disabled to enabled
-     */
-    default void onEnable() {}
-
-    /**
-     * Called when the state changes from enabled to disabled
-     */
-    default void onDisable() {}
+    boolean isCancelled();
 }

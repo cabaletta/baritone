@@ -17,11 +17,11 @@
 
 package baritone.utils;
 
+import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
-import baritone.behavior.PathingBehavior;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.settings.GameSettings;
@@ -34,8 +34,6 @@ import net.minecraft.world.WorldType;
 public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     public static final BaritoneAutoTest INSTANCE = new BaritoneAutoTest();
-
-    private BaritoneAutoTest() {}
 
     public static final boolean ENABLE_AUTO_TEST = "true".equals(System.getenv("BARITONE_AUTO_TEST"));
     private static final long TEST_SEED = -928872506371745L;
@@ -107,8 +105,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             }
 
             // Setup Baritone's pathing goal and (if needed) begin pathing
-            PathingBehavior.INSTANCE.setGoal(GOAL);
-            PathingBehavior.INSTANCE.path();
+            Baritone.INSTANCE.getCustomGoalProcess().setGoalAndPath(GOAL);
 
             // If we have reached our goal, print a message and safely close the game
             if (GOAL.isInGoal(playerFeet())) {
@@ -123,4 +120,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             }
         }
     }
+
+    private BaritoneAutoTest() {}
 }

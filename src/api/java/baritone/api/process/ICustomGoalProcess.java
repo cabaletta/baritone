@@ -15,20 +15,36 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch;
+package baritone.api.process;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import baritone.api.pathing.goals.Goal;
 
-/**
- * @author Brady
- * @since 7/31/2018 10:10 PM
- */
-public class BaritoneTweakerOptifine extends BaritoneTweaker {
+public interface ICustomGoalProcess extends IBaritoneProcess {
 
-    @Override
-    public final void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
-        this.args = new ArrayList<>();
+    /**
+     * Sets the pathing goal
+     *
+     * @param goal The new goal
+     */
+    void setGoal(Goal goal);
+
+    /**
+     * Starts path calculation and execution.
+     */
+    void path();
+
+    /**
+     * @return The current goal
+     */
+    Goal getGoal();
+
+    /**
+     * Sets the goal and begins the path execution.
+     *
+     * @param goal The new goal
+     */
+    default void setGoalAndPath(Goal goal) {
+        this.setGoal(goal);
+        this.path();
     }
 }

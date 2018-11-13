@@ -19,39 +19,59 @@ package baritone.launch.mixins;
 
 import baritone.Baritone;
 import baritone.api.event.events.RotationMoveEvent;
-import baritone.api.event.events.type.EventState;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static org.spongepowered.asm.lib.Opcodes.GETFIELD;
 
 /**
  * @author Brady
  * @since 9/10/2018
  */
 @Mixin(EntityLivingBase.class)
-public class MixinEntityLivingBase {
+public abstract class MixinEntityLivingBase extends Entity {
+
+    /**
+     * Event called to override the movement direction when jumping
+     */
+    private RotationMoveEvent jumpRotationEvent;
+
+    public MixinEntityLivingBase(World worldIn, RotationMoveEvent jumpRotationEvent) {
+        super(worldIn);
+        this.jumpRotationEvent = jumpRotationEvent;
+    }
 
     @Inject(
             method = "jump",
             at = @At("HEAD")
     )
-    private void preJump(CallbackInfo ci) {
-        Entity _this = (Entity) (Object) this;
-        if (_this == Minecraft.getMinecraft().player)
-            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.PRE, RotationMoveEvent.Type.JUMP));
+    private void preMoveRelative(CallbackInfo ci) {
+        // noinspection ConstantConditions
+        if (EntityPlayerSP.class.isInstance(this)) {
+            this.jumpRotationEvent = new RotationMoveEvent((EntityPlayerSP) (Object) this, RotationMoveEvent.Type.JUMP, this.rotationYaw);
+            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
+        }
     }
 
-    @Inject(
+    @Redirect(
             method = "jump",
-            at = @At("RETURN")
+            at = @At(
+                    value = "FIELD",
+                    opcode = GETFIELD,
+                    target = "net/minecraft/entity/EntityLivingBase.rotationYaw:F"
+            )
     )
-    private void postJump(CallbackInfo ci) {
-        Entity _this = (Entity) (Object) this;
-        if (_this == Minecraft.getMinecraft().player)
-            Baritone.INSTANCE.getGameEventHandler().onPlayerRotationMove(new RotationMoveEvent(EventState.POST, RotationMoveEvent.Type.JUMP));
+    private float overrideYaw(EntityLivingBase self) {
+        if (self instanceof EntityPlayerSP) {
+            return this.jumpRotationEvent.getYaw();
+        }
+        return self.rotationYaw;
     }
 }

@@ -17,28 +17,35 @@
 
 package baritone.pathing.path;
 
+import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.movement.Movement;
-import baritone.utils.pathing.BetterBlockPos;
+import baritone.api.pathing.movement.IMovement;
+import baritone.api.utils.BetterBlockPos;
+import baritone.utils.pathing.PathBase;
 
 import java.util.Collections;
 import java.util.List;
 
-public class CutoffPath implements IPath {
+public class CutoffPath extends PathBase {
 
     private final List<BetterBlockPos> path;
 
-    private final List<Movement> movements;
+    private final List<IMovement> movements;
 
     private final int numNodes;
 
     private final Goal goal;
 
-    public CutoffPath(IPath prev, int lastPositionToInclude) {
-        path = prev.positions().subList(0, lastPositionToInclude + 1);
-        movements = prev.movements().subList(0, lastPositionToInclude + 1);
+    public CutoffPath(IPath prev, int firstPositionToInclude, int lastPositionToInclude) {
+        path = prev.positions().subList(firstPositionToInclude, lastPositionToInclude + 1);
+        movements = prev.movements().subList(firstPositionToInclude, lastPositionToInclude);
         numNodes = prev.getNumNodesConsidered();
         goal = prev.getGoal();
+        sanityCheck();
+    }
+
+    public CutoffPath(IPath prev, int lastPositionToInclude) {
+        this(prev, 0, lastPositionToInclude);
     }
 
     @Override
@@ -47,7 +54,7 @@ public class CutoffPath implements IPath {
     }
 
     @Override
-    public List<Movement> movements() {
+    public List<IMovement> movements() {
         return Collections.unmodifiableList(movements);
     }
 

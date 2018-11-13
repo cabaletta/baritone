@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '0.0.3'
+version '1.0.0-hotfix-2'
 
 buildscript {
     repositories {
@@ -37,6 +37,10 @@ buildscript {
     }
 }
 
+
+import baritone.gradle.task.CreateDistTask
+import baritone.gradle.task.ProguardTask
+
 apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle.tweaker-client'
 apply plugin: 'org.spongepowered.mixin'
@@ -54,10 +58,12 @@ sourceSets {
 
 minecraft {
     version = '1.12.2'
-    mappings = 'snapshot_20180731'
+    mappings = 'stable_39'
     tweakClass = 'baritone.launch.BaritoneTweaker'
     runDir = 'run'
-    makeObfSourceJar = false
+
+    // The sources jar should use SRG names not MCP to ensure compatibility with all mappings
+    makeObfSourceJar = true
 }
 
 repositories {
@@ -67,9 +73,15 @@ repositories {
         name = 'spongepowered-repo'
         url = 'http://repo.spongepowered.org/maven/'
     }
+
+    maven {
+        name = 'impactdevelopment-repo'
+        url = 'https://impactdevelopment.github.io/maven/'
+    }
 }
 
 dependencies {
+    runtime launchCompile('com.github.ImpactDevelopment:SimpleTweaker:1.2')
     runtime launchCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
         // Mixin includes a lot of dependencies that are too up-to-date
         exclude module: 'launchwrapper'
@@ -88,4 +100,16 @@ mixin {
 
 jar {
     from sourceSets.launch.output, sourceSets.api.output
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
+
+task proguard(type: ProguardTask) {
+    url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
+    extract 'proguard6.0.3/lib/proguard.jar'
+    versionManifest 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
+}
+
+task createDist(type: CreateDistTask, dependsOn: proguard)
+
+build.finalizedBy(createDist)

@@ -23,38 +23,40 @@ import baritone.api.event.events.PathEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.calc.IPath;
+import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.PathCalculationResult;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.calc.IPathFinder;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.path.IPath;
+import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
-import baritone.utils.pathing.BetterBlockPos;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
-
-    public static final PathingBehavior INSTANCE = new PathingBehavior();
 
     private PathExecutor current;
     private PathExecutor next;
 
     private Goal goal;
+
+    private boolean safeToCancel;
+    private boolean pauseRequestedLastTick;
+    private boolean cancelRequested;
+    private boolean calcFailedLastTick;
 
     private volatile boolean isPathCalcInProgress;
     private final Object pathCalcLock = new Object();
@@ -63,29 +65,59 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private boolean lastAutoJump;
 
-    private PathingBehavior() {}
+    private final LinkedBlockingQueue<PathEvent> toDispatch = new LinkedBlockingQueue<>();
 
-    private void dispatchPathEvent(PathEvent event) {
-        Baritone.INSTANCE.getExecutor().execute(() -> Baritone.INSTANCE.getGameEventHandler().onPathEvent(event));
+    public PathingBehavior(Baritone baritone) {
+        super(baritone);
+    }
+
+    private void queuePathEvent(PathEvent event) {
+        toDispatch.add(event);
+    }
+
+    private void dispatchEvents() {
+        ArrayList<PathEvent> curr = new ArrayList<>();
+        toDispatch.drainTo(curr);
+        calcFailedLastTick = curr.contains(PathEvent.CALC_FAILED);
+        for (PathEvent event : curr) {
+            baritone.getGameEventHandler().onPathEvent(event);
+        }
     }
 
     @Override
     public void onTick(TickEvent event) {
+        dispatchEvents();
         if (event.getType() == TickEvent.Type.OUT) {
-            this.cancel();
+            secretInternalSegmentCancel();
+            baritone.getPathingControlManager().cancelEverything();
             return;
         }
-        mc.playerController.setPlayerCapabilities(mc.player);
+        baritone.getPathingControlManager().preTick();
+        tickPath();
+        dispatchEvents();
+    }
+
+    private void tickPath() {
+        if (pauseRequestedLastTick && safeToCancel) {
+            pauseRequestedLastTick = false;
+            baritone.getInputOverrideHandler().clearAllKeys();
+            BlockBreakHelper.stopBreakingBlock();
+            return;
+        }
+        if (cancelRequested) {
+            cancelRequested = false;
+            baritone.getInputOverrideHandler().clearAllKeys();
+        }
         if (current == null) {
             return;
         }
-        boolean safe = current.onTick(event);
+        safeToCancel = current.onTick();
         synchronized (pathPlanLock) {
             if (current.failed() || current.finished()) {
                 current = null;
                 if (goal == null || goal.isInGoal(playerFeet())) {
                     logDebug("All done. At " + goal);
-                    dispatchPathEvent(PathEvent.AT_GOAL);
+                    queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
                     return;
                 }
@@ -97,41 +129,42 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // but if we fail in the middle of current
                     // we're nowhere close to our planned ahead path
                     // so need to discard it sadly.
-                    dispatchPathEvent(PathEvent.DISCARD_NEXT);
+                    queuePathEvent(PathEvent.DISCARD_NEXT);
                     next = null;
                 }
                 if (next != null) {
                     logDebug("Continuing on to planned next path");
-                    dispatchPathEvent(PathEvent.CONTINUING_ONTO_PLANNED_NEXT);
+                    queuePathEvent(PathEvent.CONTINUING_ONTO_PLANNED_NEXT);
                     current = next;
                     next = null;
+                    current.onTick();
                     return;
                 }
                 // at this point, current just ended, but we aren't in the goal and have no plan for the future
                 synchronized (pathCalcLock) {
                     if (isPathCalcInProgress) {
-                        dispatchPathEvent(PathEvent.PATH_FINISHED_NEXT_STILL_CALCULATING);
+                        queuePathEvent(PathEvent.PATH_FINISHED_NEXT_STILL_CALCULATING);
                         // if we aren't calculating right now
                         return;
                     }
-                    dispatchPathEvent(PathEvent.CALC_STARTED);
+                    queuePathEvent(PathEvent.CALC_STARTED);
                     findPathInNewThread(pathStart(), true, Optional.empty());
                 }
                 return;
             }
             // at this point, we know current is in progress
-            if (safe) {
-                // a movement just ended
-                if (next != null) {
-                    if (next.getPath().positions().contains(playerFeet())) {
-                        // jump directly onto the next path
-                        logDebug("Splicing into planned next path early...");
-                        dispatchPathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
-                        current = next;
-                        next = null;
-                        return;
-                    }
-                }
+            if (safeToCancel && next != null && next.snipsnapifpossible()) {
+                // a movement just ended; jump directly onto the next path
+                logDebug("Splicing into planned next path early...");
+                queuePathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
+                current = next;
+                next = null;
+                current.onTick();
+                return;
+            }
+            current = current.trySplice(next);
+            if (next != null && current.getPath().getDest().equals(next.getPath().getDest())) {
+                next = null;
             }
             synchronized (pathCalcLock) {
                 if (isPathCalcInProgress) {
@@ -149,7 +182,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 if (ticksRemainingInSegment().get() < Baritone.settings().planningTickLookAhead.get()) {
                     // and this path has 5 seconds or less left
                     logDebug("Path almost over. Planning ahead...");
-                    dispatchPathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
+                    queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
                     findPathInNewThread(current.getPath().getDest(), false, Optional.of(current.getPath()));
                 }
             }
@@ -181,9 +214,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
     }
 
-    @Override
-    public void setGoal(Goal goal) {
+    public void secretInternalSetGoal(Goal goal) {
         this.goal = goal;
+    }
+
+    public boolean secretInternalSetGoalAndPath(Goal goal) {
+        secretInternalSetGoal(goal);
+        return secretInternalPath();
     }
 
     @Override
@@ -191,19 +228,19 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return goal;
     }
 
+    @Override
     public PathExecutor getCurrent() {
         return current;
     }
 
+    @Override
     public PathExecutor getNext() {
         return next;
     }
 
-    // TODO: Expose this method in the API?
-    // In order to do so, we'd need to move over IPath which has a whole lot of references to other
-    // things that may not need to be exposed necessarily, so we'll need to figure that out.
-    public Optional<IPath> getPath() {
-        return Optional.ofNullable(current).map(PathExecutor::getPath);
+    @Override
+    public Optional<IPathFinder> getPathFinder() {
+        return Optional.ofNullable(AbstractNodeCostSearch.currentlyRunning());
     }
 
     @Override
@@ -211,17 +248,60 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return this.current != null;
     }
 
+    public boolean isSafeToCancel() {
+        return current == null || safeToCancel;
+    }
+
+    public void requestPause() {
+        pauseRequestedLastTick = true;
+    }
+
+    public boolean cancelSegmentIfSafe() {
+        if (isSafeToCancel()) {
+            secretInternalSegmentCancel();
+            return true;
+        }
+        return false;
+    }
+
     @Override
-    public void cancel() {
-        dispatchPathEvent(PathEvent.CANCELED);
+    public boolean cancelEverything() {
+        boolean doIt = isSafeToCancel();
+        if (doIt) {
+            secretInternalSegmentCancel();
+        }
+        baritone.getPathingControlManager().cancelEverything();
+        return doIt;
+    }
+
+    public boolean calcFailedLastTick() { // NOT exposed on public api
+        return calcFailedLastTick;
+    }
+
+    public void softCancelIfSafe() {
+        if (!isSafeToCancel()) {
+            return;
+        }
         current = null;
         next = null;
-        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+        cancelRequested = true;
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
+        // do everything BUT clear keys
+    }
+
+    // just cancel the current path
+    public void secretInternalSegmentCancel() {
+        queuePathEvent(PathEvent.CANCELED);
+        current = null;
+        next = null;
+        baritone.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
         BlockBreakHelper.stopBreakingBlock();
     }
 
     public void forceCancel() { // NOT exposed on public api
+        cancelEverything();
+        secretInternalSegmentCancel();
         isPathCalcInProgress = false;
     }
 
@@ -230,8 +310,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      *
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
-    @Override
-    public boolean path() {
+    public boolean secretInternalPath() {
         if (goal == null) {
             return false;
         }
@@ -246,7 +325,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 if (isPathCalcInProgress) {
                     return false;
                 }
-                dispatchPathEvent(PathEvent.CALC_STARTED);
+                queuePathEvent(PathEvent.CALC_STARTED);
                 findPathInNewThread(pathStart(), true, Optional.empty());
                 return true;
             }
@@ -254,12 +333,46 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     /**
+     * See issue #209
+     *
      * @return The starting {@link BlockPos} for a new path
      */
-    private BlockPos pathStart() {
+    public BlockPos pathStart() {
         BetterBlockPos feet = playerFeet();
-        if (BlockStateInterface.get(feet.down()).getBlock().equals(Blocks.AIR) && MovementHelper.canWalkOn(feet.down().down())) {
-            return feet.down();
+        if (!MovementHelper.canWalkOn(feet.down())) {
+            if (player().onGround) {
+                double playerX = player().posX;
+                double playerZ = player().posZ;
+                ArrayList<BetterBlockPos> closest = new ArrayList<>();
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        closest.add(new BetterBlockPos(feet.x + dx, feet.y, feet.z + dz));
+                    }
+                }
+                closest.sort(Comparator.comparingDouble(pos -> ((pos.x + 0.5D) - playerX) * ((pos.x + 0.5D) - playerX) + ((pos.z + 0.5D) - playerZ) * ((pos.z + 0.5D) - playerZ)));
+                for (int i = 0; i < 4; i++) {
+                    BetterBlockPos possibleSupport = closest.get(i);
+                    double xDist = Math.abs((possibleSupport.x + 0.5D) - playerX);
+                    double zDist = Math.abs((possibleSupport.z + 0.5D) - playerZ);
+                    if (xDist > 0.8 && zDist > 0.8) {
+                        // can't possibly be sneaking off of this one, we're too far away
+                        continue;
+                    }
+                    if (MovementHelper.canWalkOn(possibleSupport.down()) && MovementHelper.canWalkThrough(possibleSupport) && MovementHelper.canWalkThrough(possibleSupport.up())) {
+                        // this is plausible
+                        logDebug("Faking path start assuming player is standing off the edge of a block");
+                        return possibleSupport;
+                    }
+                }
+
+            } else {
+                // !onGround
+                // we're in the middle of a jump
+                if (MovementHelper.canWalkOn(feet.down().down())) {
+                    logDebug("Faking path start assuming player is midair and falling");
+                    return feet.down();
+                }
+            }
         }
         return feet;
     }
@@ -277,48 +390,72 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             }
             isPathCalcInProgress = true;
         }
-        Baritone.INSTANCE.getExecutor().execute(() -> {
+        CalculationContext context = new CalculationContext(); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
+        Baritone.getExecutor().execute(() -> {
             if (talkAboutIt) {
                 logDebug("Starting to search for path from " + start + " to " + goal);
             }
 
-            Optional<IPath> path = findPath(start, previous);
+            PathCalculationResult calcResult = findPath(start, previous, context);
+            Optional<IPath> path = calcResult.path;
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
-                path = path.map(IPath::cutoffAtLoadedChunks);
+                path = path.map(p -> {
+                    IPath result = p.cutoffAtLoadedChunks(context.world());
+
+                    if (result instanceof CutoffPath) {
+                        logDebug("Cutting off path at edge of loaded chunks");
+                        logDebug("Length decreased by " + (p.length() - result.length()));
+                    } else {
+                        logDebug("Path ends within loaded chunks");
+                    }
+
+                    return result;
+                });
             }
-            Optional<PathExecutor> executor = path.map(p -> p.staticCutoff(goal)).map(PathExecutor::new);
+
+            Optional<PathExecutor> executor = path.map(p -> {
+                IPath result = p.staticCutoff(goal);
+
+                if (result instanceof CutoffPath) {
+                    logDebug("Static cutoff " + p.length() + " to " + result.length());
+                }
+
+                return result;
+            }).map(PathExecutor::new);
+
             synchronized (pathPlanLock) {
                 if (current == null) {
                     if (executor.isPresent()) {
-                        dispatchPathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
+                        queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                         current = executor.get();
                     } else {
-                        dispatchPathEvent(PathEvent.CALC_FAILED);
+                        if (calcResult.type != PathCalculationResult.Type.CANCELLATION && calcResult.type != PathCalculationResult.Type.EXCEPTION) {
+                            // don't dispatch CALC_FAILED on cancellation
+                            queuePathEvent(PathEvent.CALC_FAILED);
+                        }
                     }
                 } else {
                     if (next == null) {
                         if (executor.isPresent()) {
-                            dispatchPathEvent(PathEvent.NEXT_SEGMENT_CALC_FINISHED);
+                            queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_FINISHED);
                             next = executor.get();
                         } else {
-                            dispatchPathEvent(PathEvent.NEXT_CALC_FAILED);
+                            queuePathEvent(PathEvent.NEXT_CALC_FAILED);
                         }
                     } else {
                         throw new IllegalStateException("I have no idea what to do with this path");
                     }
                 }
-            }
-
-            if (talkAboutIt && current != null && current.getPath() != null) {
-                if (goal == null || goal.isInGoal(current.getPath().getDest())) {
-                    logDebug("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
-                } else {
-                    logDebug("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
-
+                if (talkAboutIt && current != null && current.getPath() != null) {
+                    if (goal == null || goal.isInGoal(current.getPath().getDest())) {
+                        logDebug("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                    } else {
+                        logDebug("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                    }
                 }
-            }
-            synchronized (pathCalcLock) {
-                isPathCalcInProgress = false;
+                synchronized (pathCalcLock) {
+                    isPathCalcInProgress = false;
+                }
             }
         });
     }
@@ -329,20 +466,15 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @param start
      * @return
      */
-    private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous) {
+    private PathCalculationResult findPath(BlockPos start, Optional<IPath> previous, CalculationContext context) {
         Goal goal = this.goal;
         if (goal == null) {
             logDebug("no goal");
-            return Optional.empty();
+            return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, Optional.empty());
         }
-        if (Baritone.settings().simplifyUnloadedYCoord.get()) {
-            BlockPos pos = null;
-            if (goal instanceof IGoalRenderPos) {
-                pos = ((IGoalRenderPos) goal).getGoalPos();
-            }
-
-            // TODO simplify each individual goal in a GoalComposite
-            if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
+        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
+            BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
+            if (context.world().getChunk(pos) instanceof EmptyChunk) {
                 logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
@@ -353,89 +485,24 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         } else {
             timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
         }
-        Optional<HashSet<Long>> favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(y -> y.hashCode)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
+        Optional<HashSet<Long>> favoredPositions;
+        if (Baritone.settings().backtrackCostFavoringCoefficient.get() == 1D) {
+            favoredPositions = Optional.empty();
+        } else {
+            favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(BetterBlockPos::longHash)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
+        }
         try {
-            IPathFinder pf = new AStarPathFinder(start, goal, favoredPositions);
+            IPathFinder pf = new AStarPathFinder(start.getX(), start.getY(), start.getZ(), goal, favoredPositions, context);
             return pf.calculate(timeout);
         } catch (Exception e) {
             logDebug("Pathing exception: " + e);
             e.printStackTrace();
-            return Optional.empty();
-        }
-    }
-
-    public void revalidateGoal() {
-        if (!Baritone.settings().cancelOnGoalInvalidation.get()) {
-            return;
-        }
-        if (current == null || goal == null) {
-            return;
-        }
-        Goal intended = current.getPath().getGoal();
-        BlockPos end = current.getPath().getDest();
-        if (intended.isInGoal(end) && !goal.isInGoal(end)) {
-            // this path used to end in the goal
-            // but the goal has changed, so there's no reason to continue...
-            cancel();
+            return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION, Optional.empty());
         }
     }
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        // System.out.println("Render passing");
-        // System.out.println(event.getPartialTicks());
-        float partialTicks = event.getPartialTicks();
-        if (goal != null && Baritone.settings().renderGoal.value) {
-            PathRenderer.drawLitDankGoalBox(player(), goal, partialTicks, Baritone.settings().colorGoalBox.get());
-        }
-        if (!Baritone.settings().renderPath.get()) {
-            return;
-        }
-
-        //long start = System.nanoTime();
-
-
-        PathExecutor current = this.current; // this should prevent most race conditions?
-        PathExecutor next = this.next; // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
-        // TODO is this enough, or do we need to acquire a lock here?
-        // TODO benchmark synchronized in render loop
-
-        // Render the current path, if there is one
-        if (current != null && current.getPath() != null) {
-            int renderBegin = Math.max(current.getPosition() - 3, 0);
-            PathRenderer.drawPath(current.getPath(), renderBegin, player(), partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
-        }
-        if (next != null && next.getPath() != null) {
-            PathRenderer.drawPath(next.getPath(), 0, player(), partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
-        }
-
-        //long split = System.nanoTime();
-        if (current != null) {
-            PathRenderer.drawManySelectionBoxes(player(), current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
-            PathRenderer.drawManySelectionBoxes(player(), current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
-            PathRenderer.drawManySelectionBoxes(player(), current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
-        }
-
-        // If there is a path calculation currently running, render the path calculation process
-        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
-            currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                PathRenderer.drawPath(p, 0, player(), partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
-                currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-
-                    PathRenderer.drawPath(mr, 0, player(), partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
-                    PathRenderer.drawManySelectionBoxes(player(), Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
-                });
-            });
-        });
-        //long end = System.nanoTime();
-        //System.out.println((end - split) + " " + (split - start));
-        // if (end - start > 0) {
-        //   System.out.println("Frame took " + (split - start) + " " + (end - split));
-        //}
-    }
-
-    @Override
-    public void onDisable() {
-        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+        PathRenderer.render(event, this);
     }
 }

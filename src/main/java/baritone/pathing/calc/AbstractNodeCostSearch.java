@@ -18,11 +18,12 @@
 package baritone.pathing.calc;
 
 import baritone.Baritone;
+import baritone.api.pathing.calc.IPath;
+import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.path.IPath;
-import baritone.utils.pathing.BetterBlockPos;
+import baritone.api.utils.PathCalculationResult;
+import baritone.pathing.movement.CalculationContext;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Optional;
 
@@ -38,9 +39,13 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      */
     private static AbstractNodeCostSearch currentlyRunning = null;
 
-    protected final BetterBlockPos start;
+    protected final int startX;
+    protected final int startY;
+    protected final int startZ;
 
     protected final Goal goal;
+
+    private final CalculationContext context;
 
     /**
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
@@ -69,9 +74,12 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      */
     protected final static double MIN_DIST_PATH = 5;
 
-    AbstractNodeCostSearch(BlockPos start, Goal goal) {
-        this.start = new BetterBlockPos(start.getX(), start.getY(), start.getZ());
+    AbstractNodeCostSearch(int startX, int startY, int startZ, Goal goal, CalculationContext context) {
+        this.startX = startX;
+        this.startY = startY;
+        this.startZ = startZ;
         this.goal = goal;
+        this.context = context;
         this.map = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.get());
     }
 
@@ -79,16 +87,26 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         cancelRequested = true;
     }
 
-    public synchronized Optional<IPath> calculate(long timeout) {
+    public synchronized PathCalculationResult calculate(long timeout) {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
         this.cancelRequested = false;
         try {
             Optional<IPath> path = calculate0(timeout);
-            path.ifPresent(IPath::postprocess);
+            path = path.map(IPath::postProcess);
             isFinished = true;
-            return path;
+            if (cancelRequested) {
+                return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, path);
+            }
+            if (!path.isPresent()) {
+                return new PathCalculationResult(PathCalculationResult.Type.FAILURE, path);
+            }
+            if (goal.isInGoal(path.get().getDest())) {
+                return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_TO_GOAL, path);
+            } else {
+                return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
+            }
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
             currentlyRunning = null;
@@ -115,14 +133,14 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * @return The distance, squared
      */
     protected double getDistFromStartSq(PathNode n) {
-        int xDiff = n.x - start.x;
-        int yDiff = n.y - start.y;
-        int zDiff = n.z - start.z;
+        int xDiff = n.x - startX;
+        int yDiff = n.y - startY;
+        int zDiff = n.z - startZ;
         return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
     }
 
     /**
-     * Attempts to search the {@link BlockPos} to {@link PathNode} map
+     * Attempts to search the block position hashCode long to {@link PathNode} map
      * for the node mapped to the specified pos. If no node is found,
      * a new node is created.
      *
@@ -136,25 +154,6 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             map.put(hashCode, node);
         }
         return node;
-    }
-
-    public static long posHash(int x, int y, int z) {
-        /*
-         *   This is the hashcode implementation of Vec3i, the superclass of BlockPos
-         *
-         *   public int hashCode() {
-         *       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
-         *   }
-         *
-         *   That is terrible and has tons of collisions and makes the HashMap terribly inefficient.
-         *
-         *   That's why we grab out the X, Y, Z and calculate our own hashcode
-         */
-        long hash = 3241;
-        hash = 3457689L * hash + x;
-        hash = 8734625L * hash + y;
-        hash = 2873465L * hash + z;
-        return hash;
     }
 
     public static void forceCancel() {
@@ -176,7 +175,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public Optional<IPath> pathToMostRecentNodeConsidered() {
         try {
-            return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal));
+            return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal, context));
         } catch (IllegalStateException ex) {
             System.out.println("Unable to construct path to render");
             return Optional.empty();
@@ -198,7 +197,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             }
             if (getDistFromStartSq(bestSoFar[i]) > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
                 try {
-                    return Optional.of(new Path(startNode, bestSoFar[i], 0, goal));
+                    return Optional.of(new Path(startNode, bestSoFar[i], 0, goal, context));
                 } catch (IllegalStateException ex) {
                     System.out.println("Unable to construct path to render");
                     return Optional.empty();
@@ -220,12 +219,11 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         return goal;
     }
 
-    @Override
-    public final BlockPos getStart() {
-        return start;
-    }
-
     public static Optional<AbstractNodeCostSearch> getCurrentlyRunning() {
         return Optional.ofNullable(currentlyRunning);
+    }
+
+    public static AbstractNodeCostSearch currentlyRunning() {
+        return currentlyRunning;
     }
 }

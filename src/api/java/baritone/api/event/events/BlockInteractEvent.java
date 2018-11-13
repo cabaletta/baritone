@@ -20,6 +20,8 @@ package baritone.api.event.events;
 import net.minecraft.util.math.BlockPos;
 
 /**
+ * Called when the local player interacts with a block, can be either {@link Type#BREAK} or {@link Type#USE}.
+ *
  * @author Brady
  * @since 8/22/2018
  */

@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement;
 
+import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.Rotation;
 import baritone.utils.InputOverrideHandler.Input;
 import net.minecraft.util.math.Vec3d;
@@ -72,10 +73,6 @@ public class MovementState {
         return this.inputState;
     }
 
-    public enum MovementStatus {
-        PREPPING, WAITING, RUNNING, SUCCESS, UNREACHABLE, FAILED, CANCELED
-    }
-
     public static class MovementTarget {
 
         /**
@@ -87,9 +84,6 @@ public class MovementState {
 
         /**
          * Yaw and pitch angles that must be matched
-         * <p>
-         * getFirst()  -> YAW
-         * getSecond() -> PITCH
          */
         public Rotation rotation;
 

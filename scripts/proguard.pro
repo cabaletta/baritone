@@ -1,7 +1,3 @@
--injars baritone-0.0.3.jar
--outjars Obfuscated
-
-
 -keepattributes Signature
 -keepattributes *Annotation*
 
@@ -16,10 +12,14 @@
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
-#-keep class baritone.behavior.** { *; }
--keep class baritone.api.** { *; }
-#-keep class baritone.* { *; }
-#-keep class baritone.pathing.goals.** { *; }
+-keep class baritone.api.** { *; } # this is the keep api
+
+# service provider needs these class names
+-keep class baritone.BaritoneProvider
+-keep class baritone.api.IBaritoneProvider
+
+# hack
+-keep class baritone.utils.ExampleBaritoneControl { *; }
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
@@ -30,9 +30,10 @@
 -keep class baritone.launch.** { *; }
 
 # copy all necessary libraries into tempLibraries to build
--libraryjars '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/lib/rt.jar' # this is the rt jar
 
 -libraryjars 'tempLibraries/minecraft-1.12.2.jar'
+
+-libraryjars 'tempLibraries/SimpleTweaker-1.2.jar'
 
 -libraryjars 'tempLibraries/authlib-1.5.25.jar'
 -libraryjars 'tempLibraries/codecjorbis-20101023.jar'
@@ -48,7 +49,6 @@
 -libraryjars 'tempLibraries/httpclient-4.3.3.jar'
 -libraryjars 'tempLibraries/httpcore-4.3.2.jar'
 -libraryjars 'tempLibraries/icu4j-core-mojang-51.2.jar'
--libraryjars 'tempLibraries/java-objc-bridge-1.0.0.jar'
 -libraryjars 'tempLibraries/jinput-2.0.5.jar'
 -libraryjars 'tempLibraries/jna-4.4.0.jar'
 -libraryjars 'tempLibraries/jopt-simple-5.0.3.jar'
@@ -58,8 +58,12 @@
 -libraryjars 'tempLibraries/librarylwjglopenal-20100824.jar'
 -libraryjars 'tempLibraries/log4j-api-2.8.1.jar'
 -libraryjars 'tempLibraries/log4j-core-2.8.1.jar'
--libraryjars 'tempLibraries/lwjgl-2.9.4-nightly-20150209.jar'
--libraryjars 'tempLibraries/lwjgl_util-2.9.4-nightly-20150209.jar'
+
+# startsWith is used to check the library, and mac/linux differ in which version they use
+# this is FINE
+-libraryjars 'tempLibraries/lwjgl-.jar'
+-libraryjars 'tempLibraries/lwjgl_util-.jar'
+
 -libraryjars 'tempLibraries/netty-all-4.1.9.Final.jar'
 -libraryjars 'tempLibraries/oshi-core-1.1.jar'
 -libraryjars 'tempLibraries/patchy-1.1.jar'

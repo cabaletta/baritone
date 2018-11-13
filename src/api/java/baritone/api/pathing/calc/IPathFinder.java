@@ -15,11 +15,10 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.calc;
+package baritone.api.pathing.calc;
 
 import baritone.api.pathing.goals.Goal;
-import baritone.pathing.path.IPath;
-import net.minecraft.util.math.BlockPos;
+import baritone.api.utils.PathCalculationResult;
 
 import java.util.Optional;
 
@@ -30,8 +29,6 @@ import java.util.Optional;
  */
 public interface IPathFinder {
 
-    BlockPos getStart();
-
     Goal getGoal();
 
     /**
@@ -39,7 +36,7 @@ public interface IPathFinder {
      *
      * @return The final path
      */
-    Optional<IPath> calculate(long timeout);
+    PathCalculationResult calculate(long timeout);
 
     /**
      * Intended to be called concurrently with calculatePath from a different thread to tell if it's finished yet

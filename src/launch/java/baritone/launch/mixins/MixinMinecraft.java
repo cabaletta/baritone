@@ -22,9 +22,7 @@ import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.behavior.PathingBehavior;
 import baritone.utils.BaritoneAutoTest;
-import baritone.utils.ExampleBaritoneControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
@@ -40,7 +38,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
@@ -50,8 +47,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 
-    @Shadow
-    private int leftClickCounter;
     @Shadow
     public EntityPlayerSP player;
     @Shadow
@@ -63,7 +58,6 @@ public class MixinMinecraft {
     )
     private void postInit(CallbackInfo ci) {
         Baritone.INSTANCE.init();
-        ExampleBaritoneControl.INSTANCE.initAndRegister();
     }
 
     @Inject(
@@ -89,10 +83,9 @@ public class MixinMinecraft {
             )
     )
     private void runTick(CallbackInfo ci) {
-        Minecraft mc = (Minecraft) (Object) this;
         Baritone.INSTANCE.getGameEventHandler().onTick(new TickEvent(
                 EventState.PRE,
-                (mc.player != null && mc.world != null)
+                (player != null && world != null)
                         ? TickEvent.Type.IN
                         : TickEvent.Type.OUT
         ));
@@ -148,7 +141,7 @@ public class MixinMinecraft {
             )
     )
     private boolean isAllowUserInput(GuiScreen screen) {
-        return (PathingBehavior.INSTANCE.getCurrent() != null && player != null) || screen.allowUserInput;
+        return (Baritone.INSTANCE.getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
     }
 
     @Inject(

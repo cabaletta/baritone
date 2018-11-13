@@ -20,12 +20,12 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
-import baritone.cache.WorldProvider;
+import baritone.pathing.movement.CalculationContext;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 /**
@@ -37,16 +37,29 @@ public class BlockStateInterface implements Helper {
 
     public static int numBlockStateLookups = 0;
     public static int numTimesChunkSucceeded = 0;
-    private static Chunk prev = null;
-    private static CachedRegion prevCached = null;
+    private final World world;
+    private final WorldData worldData;
+    private Chunk prev = null;
+    private CachedRegion prevCached = null;
 
-    private static IBlockState AIR = Blocks.AIR.getDefaultState();
+    private static final IBlockState AIR = Blocks.AIR.getDefaultState();
 
-    public static IBlockState get(BlockPos pos) {
-        return get(pos.getX(), pos.getY(), pos.getZ());
+    public BlockStateInterface(World world, WorldData worldData) {
+        this.worldData = worldData;
+        this.world = world;
     }
 
-    public static IBlockState get(int x, int y, int z) {
+    public static Block getBlock(BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
+        return get(pos).getBlock();
+    }
+
+    public static IBlockState get(BlockPos pos) {
+        return new CalculationContext().get(pos); // immense iq
+        // can't just do world().get because that doesn't work for out of bounds
+        // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
+    }
+
+    public IBlockState get0(int x, int y, int z) {
         numBlockStateLookups++;
         // Invalid vertical position
         if (y < 0 || y >= 256) {
@@ -65,7 +78,7 @@ public class BlockStateInterface implements Helper {
                 numTimesChunkSucceeded++;
                 return cached.getBlockState(x, y, z);
             }
-            Chunk chunk = mc.world.getChunk(x >> 4, z >> 4);
+            Chunk chunk = world.getChunk(x >> 4, z >> 4);
             if (chunk.isLoaded()) {
                 prev = chunk;
                 return chunk.getBlockState(x, y, z);
@@ -75,11 +88,10 @@ public class BlockStateInterface implements Helper {
         // except here, it's 512x512 tiles instead of 16x16, so even better repetition
         CachedRegion cached = prevCached;
         if (cached == null || cached.getX() != x >> 9 || cached.getZ() != z >> 9) {
-            WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
-            if (world == null) {
+            if (worldData == null) {
                 return AIR;
             }
-            CachedRegion region = world.cache.getRegion(x >> 9, z >> 9);
+            CachedRegion region = worldData.cache.getRegion(x >> 9, z >> 9);
             if (region == null) {
                 return AIR;
             }
@@ -93,12 +105,12 @@ public class BlockStateInterface implements Helper {
         return type;
     }
 
-    public static boolean isLoaded(int x, int z) {
+    public boolean isLoaded(int x, int z) {
         Chunk prevChunk = prev;
         if (prevChunk != null && prevChunk.x == x >> 4 && prevChunk.z == z >> 4) {
             return true;
         }
-        prevChunk = mc.world.getChunk(x >> 4, z >> 4);
+        prevChunk = world.getChunk(x >> 4, z >> 4);
         if (prevChunk.isLoaded()) {
             prev = prevChunk;
             return true;
@@ -107,71 +119,14 @@ public class BlockStateInterface implements Helper {
         if (prevRegion != null && prevRegion.getX() == x >> 9 && prevRegion.getZ() == z >> 9) {
             return prevRegion.isCached(x & 511, z & 511);
         }
-        WorldData world = WorldProvider.INSTANCE.getCurrentWorld();
-        if (world == null) {
+        if (worldData == null) {
             return false;
         }
-        prevRegion = world.cache.getRegion(x >> 9, z >> 9);
+        prevRegion = worldData.cache.getRegion(x >> 9, z >> 9);
         if (prevRegion == null) {
             return false;
         }
         prevCached = prevRegion;
         return prevRegion.isCached(x & 511, z & 511);
-    }
-
-    public static void clearCachedChunk() {
-        prev = null;
-        prevCached = null;
-    }
-
-    public static Block getBlock(BlockPos pos) {
-        return get(pos).getBlock();
-    }
-
-    public static Block getBlock(int x, int y, int z) {
-        return get(x, y, z).getBlock();
-    }
-
-    /**
-     * Returns whether or not the specified block is
-     * water, regardless of whether or not it is flowing.
-     *
-     * @param b The block
-     * @return Whether or not the block is water
-     */
-    public static boolean isWater(Block b) {
-        return b == Blocks.FLOWING_WATER || b == Blocks.WATER;
-    }
-
-    /**
-     * Returns whether or not the block at the specified pos is
-     * water, regardless of whether or not it is flowing.
-     *
-     * @param bp The block pos
-     * @return Whether or not the block is water
-     */
-    public static boolean isWater(BlockPos bp) {
-        return isWater(BlockStateInterface.getBlock(bp));
-    }
-
-    public static boolean isLava(Block b) {
-        return b == Blocks.FLOWING_LAVA || b == Blocks.LAVA;
-    }
-
-    /**
-     * Returns whether or not the specified pos has a liquid
-     *
-     * @param p The pos
-     * @return Whether or not the block is a liquid
-     */
-    public static boolean isLiquid(BlockPos p) {
-        return BlockStateInterface.getBlock(p) instanceof BlockLiquid;
-    }
-
-    public static boolean isFlowing(IBlockState state) {
-        // Will be IFluidState in 1.13
-        return state.getBlock() instanceof BlockLiquid
-                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
-                && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 }

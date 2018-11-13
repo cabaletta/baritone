@@ -17,12 +17,18 @@
 
 package baritone.behavior;
 
+import baritone.Baritone;
 import baritone.api.behavior.IMemoryBehavior;
 import baritone.api.behavior.memory.IRememberedInventory;
+import baritone.api.cache.IWorldData;
+import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.cache.Waypoint;
+import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
+import net.minecraft.block.BlockBed;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;
@@ -41,29 +47,21 @@ import java.util.*;
  */
 public final class MemoryBehavior extends Behavior implements IMemoryBehavior, Helper {
 
-    public static MemoryBehavior INSTANCE = new MemoryBehavior();
+    private final Map<IWorldData, WorldDataContainer> worldDataContainers = new HashMap<>();
 
-    /**
-     * Possible future inventories that we will be able to remember
-     */
-    private final List<FutureInventory> futureInventories = new ArrayList<>();
-
-    /**
-     * The current remembered inventories
-     */
-    private final Map<BlockPos, RememberedInventory> rememberedInventories = new HashMap<>();
-
-    private MemoryBehavior() {}
+    public MemoryBehavior(Baritone baritone) {
+        super(baritone);
+    }
 
     @Override
-    public void onPlayerUpdate(PlayerUpdateEvent event) {
+    public synchronized void onPlayerUpdate(PlayerUpdateEvent event) {
         if (event.getState() == EventState.PRE) {
             updateInventory();
         }
     }
 
     @Override
-    public void onSendPacket(PacketEvent event) {
+    public synchronized void onSendPacket(PacketEvent event) {
         Packet p = event.getPacket();
 
         if (event.getState() == EventState.PRE) {
@@ -78,7 +76,7 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
                     TileEntityLockable lockable = (TileEntityLockable) tileEntity;
                     int size = lockable.getSizeInventory();
 
-                    this.futureInventories.add(new FutureInventory(System.nanoTime() / 1000000L, size, lockable.getGuiID(), tileEntity.getPos()));
+                    this.getCurrentContainer().futureInventories.add(new FutureInventory(System.nanoTime() / 1000000L, size, lockable.getGuiID(), tileEntity.getPos()));
                 }
             }
 
@@ -89,24 +87,26 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
     }
 
     @Override
-    public void onReceivePacket(PacketEvent event) {
+    public synchronized void onReceivePacket(PacketEvent event) {
         Packet p = event.getPacket();
 
         if (event.getState() == EventState.PRE) {
             if (p instanceof SPacketOpenWindow) {
                 SPacketOpenWindow packet = event.cast();
 
-                // Remove any entries that were created over a second ago, this should make up for INSANE latency
-                this.futureInventories.removeIf(i -> System.nanoTime() / 1000000L - i.time > 1000);
+                WorldDataContainer container = this.getCurrentContainer();
 
-                this.futureInventories.stream()
+                // Remove any entries that were created over a second ago, this should make up for INSANE latency
+                container.futureInventories.removeIf(i -> System.nanoTime() / 1000000L - i.time > 1000);
+
+                container.futureInventories.stream()
                         .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
                         .findFirst().ifPresent(matched -> {
                     // Remove the future inventory
-                    this.futureInventories.remove(matched);
+                    container.futureInventories.remove(matched);
 
                     // Setup the remembered inventory
-                    RememberedInventory inventory = this.rememberedInventories.computeIfAbsent(matched.pos, pos -> new RememberedInventory());
+                    RememberedInventory inventory = container.rememberedInventories.computeIfAbsent(matched.pos, pos -> new RememberedInventory());
                     inventory.windowId = packet.getWindowId();
                     inventory.size = packet.getSlotCount();
                 });
@@ -118,8 +118,20 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
         }
     }
 
+    @Override
+    public void onBlockInteract(BlockInteractEvent event) {
+        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(event.getPos()) instanceof BlockBed) {
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
+        }
+    }
+
+    @Override
+    public void onPlayerDeath() {
+        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, playerFeet()));
+    }
+
     private Optional<RememberedInventory> getInventoryFromWindow(int windowId) {
-        return this.rememberedInventories.values().stream().filter(i -> i.windowId == windowId).findFirst();
+        return this.getCurrentContainer().rememberedInventories.values().stream().filter(i -> i.windowId == windowId).findFirst();
     }
 
     private void updateInventory() {
@@ -129,9 +141,32 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
         });
     }
 
+    private WorldDataContainer getCurrentContainer() {
+        return this.worldDataContainers.computeIfAbsent(baritone.getWorldProvider().getCurrentWorld(), data -> new WorldDataContainer());
+    }
+
     @Override
-    public final RememberedInventory getInventoryByPos(BlockPos pos) {
-        return this.rememberedInventories.get(pos);
+    public final synchronized RememberedInventory getInventoryByPos(BlockPos pos) {
+        return this.getCurrentContainer().rememberedInventories.get(pos);
+    }
+
+    @Override
+    public final synchronized Map<BlockPos, IRememberedInventory> getRememberedInventories() {
+        // make a copy since this map is modified from the packet thread
+        return new HashMap<>(this.getCurrentContainer().rememberedInventories);
+    }
+
+    private static final class WorldDataContainer {
+
+        /**
+         * Possible future inventories that we will be able to remember
+         */
+        private final List<FutureInventory> futureInventories = new ArrayList<>();
+
+        /**
+         * The current remembered inventories
+         */
+        private final Map<BlockPos, RememberedInventory> rememberedInventories = new HashMap<>();
     }
 
     /**
@@ -170,7 +205,7 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
     /**
      * An inventory that we are aware of.
      * <p>
-     * Associated with a {@link BlockPos} in {@link MemoryBehavior#rememberedInventories}.
+     * Associated with a {@link BlockPos} in {@link WorldDataContainer#rememberedInventories}.
      */
     public static class RememberedInventory implements IRememberedInventory {
 
@@ -195,7 +230,7 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
 
         @Override
         public final List<ItemStack> getContents() {
-            return this.items;
+            return Collections.unmodifiableList(this.items);
         }
 
         @Override

@@ -42,18 +42,6 @@ public enum PathingBlockType {
     }
 
     public static PathingBlockType fromBits(boolean b1, boolean b2) {
-        if (b1) {
-            if (b2) {
-                return PathingBlockType.SOLID;
-            } else {
-                return PathingBlockType.AVOID;
-            }
-        } else {
-            if (b2) {
-                return PathingBlockType.WATER;
-            } else {
-                return PathingBlockType.AIR;
-            }
-        }
+        return b1 ? b2 ? SOLID : AVOID : b2 ? WATER : AIR;
     }
 }

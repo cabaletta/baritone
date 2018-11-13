@@ -56,7 +56,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     private final LinkedBlockingQueue<Chunk> toPack = new LinkedBlockingQueue<>();
 
-    CachedWorld(Path directory) {
+    private final int dimension;
+
+    CachedWorld(Path directory, int dimension) {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);
@@ -64,11 +66,12 @@ public final class CachedWorld implements ICachedWorld, Helper {
             }
         }
         this.directory = directory.toString();
+        this.dimension = dimension;
         System.out.println("Cached world directory: " + directory);
         // Insert an invalid region element
         cachedRegions.put(0, null);
-        Baritone.INSTANCE.getExecutor().execute(new PackerThread());
-        Baritone.INSTANCE.getExecutor().execute(() -> {
+        Baritone.getExecutor().execute(new PackerThread());
+        Baritone.getExecutor().execute(() -> {
             try {
                 Thread.sleep(30000);
                 while (true) {
@@ -142,6 +145,12 @@ public final class CachedWorld implements ICachedWorld, Helper {
     public final void save() {
         if (!Baritone.settings().chunkCaching.get()) {
             System.out.println("Not saving to disk; chunk caching is disabled.");
+            allRegions().forEach(region -> {
+                if (region != null) {
+                    region.removeExpired();
+                }
+            }); // even if we aren't saving to disk, still delete expired old chunks from RAM
+            prune();
             return;
         }
         long start = System.nanoTime() / 1000000L;
@@ -152,6 +161,56 @@ public final class CachedWorld implements ICachedWorld, Helper {
         });
         long now = System.nanoTime() / 1000000L;
         System.out.println("World save took " + (now - start) + "ms");
+        prune();
+    }
+
+    /**
+     * Delete regions that are too far from the player
+     */
+    private synchronized void prune() {
+        if (!Baritone.settings().pruneRegionsFromRAM.get()) {
+            return;
+        }
+        BlockPos pruneCenter = guessPosition();
+        for (CachedRegion region : allRegions()) {
+            if (region == null) {
+                continue;
+            }
+            int distX = (region.getX() * 512 + 256) - pruneCenter.getX();
+            int distZ = (region.getZ() * 512 + 256) - pruneCenter.getZ();
+            double dist = Math.sqrt(distX * distX + distZ * distZ);
+            if (dist > 1024) {
+                logDebug("Deleting cached region " + region.getX() + "," + region.getZ() + " from ram");
+                cachedRegions.remove(getRegionID(region.getX(), region.getZ()));
+            }
+        }
+    }
+
+    /**
+     * If we are still in this world and dimension, return player feet, otherwise return most recently modified chunk
+     */
+    private BlockPos guessPosition() {
+        WorldData data = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
+        if (data != null && data.getCachedWorld() == this) {
+            return playerFeet();
+        }
+        CachedChunk mostRecentlyModified = null;
+        for (CachedRegion region : allRegions()) {
+            if (region == null) {
+                continue;
+            }
+            CachedChunk ch = region.mostRecentlyModified();
+            if (ch == null) {
+                continue;
+            }
+            if (mostRecentlyModified == null || mostRecentlyModified.cacheTimestamp < ch.cacheTimestamp) {
+                mostRecentlyModified = ch;
+            }
+        }
+        if (mostRecentlyModified == null) {
+            return new BlockPos(0, 0, 0);
+        }
+        return new BlockPos(mostRecentlyModified.x * 16 + 8, 0, mostRecentlyModified.z * 16 + 8);
     }
 
     private synchronized List<CachedRegion> allRegions() {
@@ -185,7 +244,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      */
     private synchronized CachedRegion getOrCreateRegion(int regionX, int regionZ) {
         return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
-            CachedRegion newRegion = new CachedRegion(regionX, regionZ);
+            CachedRegion newRegion = new CachedRegion(regionX, regionZ, dimension);
             newRegion.load(this.directory);
             return newRegion;
         });

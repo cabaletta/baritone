@@ -106,7 +106,7 @@ public final class ChunkPacker implements Helper {
                 blocks[z << 4 | x] = Blocks.AIR.getDefaultState();
             }
         }
-        return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks);
+        return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
     }
 
     public static String blockToString(Block block) {
@@ -144,7 +144,7 @@ public final class ChunkPacker implements Helper {
         return PathingBlockType.SOLID;
     }
 
-    public static IBlockState pathingTypeToBlock(PathingBlockType type) {
+    public static IBlockState pathingTypeToBlock(PathingBlockType type, int dimension) {
         switch (type) {
             case AIR:
                 return Blocks.AIR.getDefaultState();
@@ -154,7 +154,7 @@ public final class ChunkPacker implements Helper {
                 return Blocks.LAVA.getDefaultState();
             case SOLID:
                 // Dimension solid types
-                switch (mc.player.dimension) {
+                switch (dimension) {
                     case -1:
                         return Blocks.NETHERRACK.getDefaultState();
                     case 0:

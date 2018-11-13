@@ -17,20 +17,22 @@
 
 package baritone.api.event.events;
 
-import baritone.api.event.events.type.Cancellable;
+import baritone.api.event.events.type.ManagedPlayerEvent;
+import net.minecraft.client.entity.EntityPlayerSP;
 
 /**
  * @author Brady
  * @since 8/1/2018 6:39 PM
  */
-public final class ChatEvent extends Cancellable {
+public final class ChatEvent extends ManagedPlayerEvent.Cancellable {
 
     /**
      * The message being sent
      */
     private final String message;
 
-    public ChatEvent(String message) {
+    public ChatEvent(EntityPlayerSP player, String message) {
+        super(player);
         this.message = message;
     }
 

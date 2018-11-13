@@ -18,16 +18,16 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
-import baritone.behavior.LookBehaviorUtils;
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.RotationUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.pathing.movement.MovementState.MovementStatus;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.Utils;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -58,24 +58,24 @@ public class MovementAscend extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        IBlockState srcDown = BlockStateInterface.get(x, y - 1, z);
+        IBlockState srcDown = context.get(x, y - 1, z);
         if (srcDown.getBlock() == Blocks.LADDER || srcDown.getBlock() == Blocks.VINE) {
             return COST_INF;
         }
         // we can jump from soul sand, but not from a bottom slab
         boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
-        IBlockState toPlace = BlockStateInterface.get(destX, y, destZ);
+        IBlockState toPlace = context.get(destX, y, destZ);
         boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
 
         if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
             return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
         }
         boolean hasToPlace = false;
-        if (!MovementHelper.canWalkOn(destX, y, z, toPlace)) {
-            if (!context.hasThrowaway()) {
+        if (!MovementHelper.canWalkOn(context, destX, y, destZ, toPlace)) {
+            if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
                 return COST_INF;
             }
-            if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace)) {
+            if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace)) {
                 return COST_INF;
             }
             // TODO: add ability to place against .down() as well as the cardinal directions
@@ -87,7 +87,7 @@ public class MovementAscend extends Movement {
                 if (againstX == x && againstZ == z) {
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(againstX, y, againstZ)) {
+                if (MovementHelper.canPlaceAgainst(context, againstX, y, againstZ)) {
                     hasToPlace = true;
                     break;
                 }
@@ -97,20 +97,19 @@ public class MovementAscend extends Movement {
             }
         }
         IBlockState srcUp2 = null;
-        if (BlockStateInterface.get(x, y + 3, z).getBlock() instanceof BlockFalling) {//it would fall on us and possibly suffocate us
+        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context, x, y + 1, z) || !((srcUp2 = context.get(x, y + 2, z)).getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
-            if (!(BlockStateInterface.getBlock(x, y + 1, z) instanceof BlockFalling) || !((srcUp2 = BlockStateInterface.get(x, y + 2, z)).getBlock() instanceof BlockFalling)) {
-                // if both of those are BlockFalling, that means that by standing on src
-                // (the presupposition of this Movement)
-                // we have necessarily already cleared the entire BlockFalling stack
-                // on top of our head
+            // if the lower one is can't walk through and the upper one is falling, that means that by standing on src
+            // (the presupposition of this Movement)
+            // we have necessarily already cleared the entire BlockFalling stack
+            // on top of our head
 
-                // but if either of them aren't BlockFalling, that means we're still in suffocation danger
-                // so don't do it
-                return COST_INF;
-            }
+            // as in, if we have a block, then two BlockFallings on top of it
+            // and that block is x, y+1, z, and we'd have to clear it to even start this movement
+            // we don't need to worry about those BlockFallings because we've already cleared them
+            return COST_INF;
             // you may think we only need to check srcUp2, not srcUp
             // however, in the scenario where glitchy world gen where unsupported sand / gravel generates
             // it's possible srcUp is AIR from the start, and srcUp2 is falling
@@ -139,7 +138,7 @@ public class MovementAscend extends Movement {
             totalCost += context.placeBlockCost();
         }
         if (srcUp2 == null) {
-            srcUp2 = BlockStateInterface.get(x, y + 2, z);
+            srcUp2 = context.get(x, y + 2, z);
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false); // TODO MAKE ABSOLUTELY SURE we don't need includeFalling here, from the falling check above
         if (totalCost >= COST_INF) {
@@ -180,10 +179,10 @@ public class MovementAscend extends Movement {
                     double faceX = (dest.getX() + anAgainst.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + anAgainst.getY()) * 0.5D;
                     double faceZ = (dest.getZ() + anAgainst.getZ() + 1.0D) * 0.5D;
-                    state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
+                    state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
 
-                    LookBehaviorUtils.getSelectedBlock().ifPresent(selectedBlock -> {
+                    RayTraceUtils.getSelectedBlock().ifPresent(selectedBlock -> {
                         if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionToPlace)) {
                             ticksWithoutPlacement++;
                             state.setInput(InputOverrideHandler.Input.SNEAK, true);
@@ -197,7 +196,7 @@ public class MovementAscend extends Movement {
                         } else {
                             state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true); // break whatever replaceable block is in the way
                         }
-                        System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
+                        //System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
                     });
                     return state;
                 }
@@ -205,10 +204,8 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
-        if (MovementHelper.isBottomSlab(jumpingOnto)) {
-            if (!MovementHelper.isBottomSlab(src.down())) {
-                return state; // don't jump while walking from a non double slab into a bottom slab
-            }
+        if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(src.down()))) {
+            return state; // don't jump while walking from a non double slab into a bottom slab
         }
 
         if (Baritone.settings().assumeStep.get()) {

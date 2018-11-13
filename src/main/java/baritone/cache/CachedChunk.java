@@ -17,7 +17,6 @@
 
 package baritone.cache;
 
-import baritone.api.cache.IBlockTypeAccess;
 import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
@@ -31,42 +30,64 @@ import java.util.*;
  * @author Brady
  * @since 8/3/2018 1:04 AM
  */
-public final class CachedChunk implements IBlockTypeAccess, Helper {
+public final class CachedChunk implements Helper {
 
-    public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(new HashSet<Block>() {{
-        add(Blocks.DIAMOND_ORE);
-        add(Blocks.DIAMOND_BLOCK);
-        //add(Blocks.COAL_ORE);
-        add(Blocks.COAL_BLOCK);
-        //add(Blocks.IRON_ORE);
-        add(Blocks.IRON_BLOCK);
-        //add(Blocks.GOLD_ORE);
-        add(Blocks.GOLD_BLOCK);
-        add(Blocks.EMERALD_ORE);
-        add(Blocks.EMERALD_BLOCK);
+    public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF;
 
-        add(Blocks.ENDER_CHEST);
-        add(Blocks.FURNACE);
-        add(Blocks.CHEST);
-        add(Blocks.END_PORTAL);
-        add(Blocks.END_PORTAL_FRAME);
-        add(Blocks.MOB_SPAWNER);
-        // TODO add all shulker colors
-        add(Blocks.PORTAL);
-        add(Blocks.HOPPER);
-        add(Blocks.BEACON);
-        add(Blocks.BREWING_STAND);
-        add(Blocks.SKULL);
-        add(Blocks.ENCHANTING_TABLE);
-        add(Blocks.ANVIL);
-        add(Blocks.LIT_FURNACE);
-        add(Blocks.BED);
-        add(Blocks.DRAGON_EGG);
-        add(Blocks.JUKEBOX);
-        add(Blocks.END_GATEWAY);
-        add(Blocks.WEB);
-        add(Blocks.NETHER_WART);
-    }});
+    static {
+        HashSet<Block> temp = new HashSet<>();
+        temp.add(Blocks.DIAMOND_ORE);
+        temp.add(Blocks.DIAMOND_BLOCK);
+        //temp.add(Blocks.COAL_ORE);
+        temp.add(Blocks.COAL_BLOCK);
+        //temp.add(Blocks.IRON_ORE);
+        temp.add(Blocks.IRON_BLOCK);
+        //temp.add(Blocks.GOLD_ORE);
+        temp.add(Blocks.GOLD_BLOCK);
+        temp.add(Blocks.EMERALD_ORE);
+        temp.add(Blocks.EMERALD_BLOCK);
+
+        temp.add(Blocks.ENDER_CHEST);
+        temp.add(Blocks.FURNACE);
+        temp.add(Blocks.CHEST);
+        temp.add(Blocks.TRAPPED_CHEST);
+        temp.add(Blocks.END_PORTAL);
+        temp.add(Blocks.END_PORTAL_FRAME);
+        temp.add(Blocks.MOB_SPAWNER);
+        temp.add(Blocks.BARRIER);
+        temp.add(Blocks.OBSERVER);
+        temp.add(Blocks.WHITE_SHULKER_BOX);
+        temp.add(Blocks.ORANGE_SHULKER_BOX);
+        temp.add(Blocks.MAGENTA_SHULKER_BOX);
+        temp.add(Blocks.LIGHT_BLUE_SHULKER_BOX);
+        temp.add(Blocks.YELLOW_SHULKER_BOX);
+        temp.add(Blocks.LIME_SHULKER_BOX);
+        temp.add(Blocks.PINK_SHULKER_BOX);
+        temp.add(Blocks.GRAY_SHULKER_BOX);
+        temp.add(Blocks.SILVER_SHULKER_BOX);
+        temp.add(Blocks.CYAN_SHULKER_BOX);
+        temp.add(Blocks.PURPLE_SHULKER_BOX);
+        temp.add(Blocks.BLUE_SHULKER_BOX);
+        temp.add(Blocks.BROWN_SHULKER_BOX);
+        temp.add(Blocks.GREEN_SHULKER_BOX);
+        temp.add(Blocks.RED_SHULKER_BOX);
+        temp.add(Blocks.BLACK_SHULKER_BOX);
+        temp.add(Blocks.PORTAL);
+        temp.add(Blocks.HOPPER);
+        temp.add(Blocks.BEACON);
+        temp.add(Blocks.BREWING_STAND);
+        temp.add(Blocks.SKULL);
+        temp.add(Blocks.ENCHANTING_TABLE);
+        temp.add(Blocks.ANVIL);
+        temp.add(Blocks.LIT_FURNACE);
+        temp.add(Blocks.BED);
+        temp.add(Blocks.DRAGON_EGG);
+        temp.add(Blocks.JUKEBOX);
+        temp.add(Blocks.END_GATEWAY);
+        temp.add(Blocks.WEB);
+        temp.add(Blocks.NETHER_WART);
+        BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(temp);
+    }
 
     /**
      * The size of the chunk data in bits. Equal to 16 KiB.
@@ -106,7 +127,9 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
 
     private final Map<String, List<BlockPos>> specialBlockLocations;
 
-    CachedChunk(int x, int z, BitSet data, IBlockState[] overview, Map<String, List<BlockPos>> specialBlockLocations) {
+    public final long cacheTimestamp;
+
+    CachedChunk(int x, int z, BitSet data, IBlockState[] overview, Map<String, List<BlockPos>> specialBlockLocations, long cacheTimestamp) {
         validateSize(data);
 
         this.x = x;
@@ -115,11 +138,11 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
         this.overview = overview;
         this.heightMap = new int[256];
         this.specialBlockLocations = specialBlockLocations;
+        this.cacheTimestamp = cacheTimestamp;
         calculateHeightMap();
     }
 
-    @Override
-    public final IBlockState getBlock(int x, int y, int z) {
+    public final IBlockState getBlock(int x, int y, int z, int dimension) {
         int internalPos = z << 4 | x;
         if (heightMap[internalPos] == y) {
             // we have this exact block, it's a surface block
@@ -130,10 +153,10 @@ public final class CachedChunk implements IBlockTypeAccess, Helper {
             return overview[internalPos];
         }
         PathingBlockType type = getType(x, y, z);
-        if (type == PathingBlockType.SOLID && y == 127 && mc.player.dimension == -1) {
+        if (type == PathingBlockType.SOLID && y == 127 && dimension == -1) {
             return Blocks.BEDROCK.getDefaultState();
         }
-        return ChunkPacker.pathingTypeToBlock(type);
+        return ChunkPacker.pathingTypeToBlock(type, dimension);
     }
 
     private PathingBlockType getType(int x, int y, int z) {

@@ -17,8 +17,20 @@
 
 package baritone.api;
 
-import baritone.api.behavior.*;
+import baritone.api.behavior.ILookBehavior;
+import baritone.api.behavior.IMemoryBehavior;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
+import baritone.api.cache.IWorldScanner;
+import baritone.api.event.listener.IGameEventListener;
+import baritone.api.process.ICustomGoalProcess;
+import baritone.api.process.IFollowProcess;
+import baritone.api.process.IGetToBlockProcess;
+import baritone.api.process.IMineProcess;
+import baritone.api.utils.SettingsUtil;
+
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
 /**
  * API exposure for various things implemented in Baritone.
@@ -28,37 +40,38 @@ import baritone.api.cache.IWorldProvider;
  * @author Brady
  * @since 9/23/2018
  */
-public class BaritoneAPI {
+public final class BaritoneAPI {
 
-    // General
-    private static final Settings settings = new Settings();
-    private static IWorldProvider worldProvider;
+    private static final IBaritone baritone;
+    private static final Settings settings;
 
-    // Behaviors
-    private static IFollowBehavior followBehavior;
-    private static ILookBehavior lookBehavior;
-    private static IMemoryBehavior memoryBehavior;
-    private static IMineBehavior mineBehavior;
-    private static IPathingBehavior pathingBehavior;
+    static {
+        ServiceLoader<IBaritoneProvider> baritoneLoader = ServiceLoader.load(IBaritoneProvider.class);
+        Iterator<IBaritoneProvider> instances = baritoneLoader.iterator();
+        baritone = instances.next().getBaritoneForPlayer(null); // PWNAGE
 
-    public static IFollowBehavior getFollowBehavior() {
-        return followBehavior;
+        settings = new Settings();
+        SettingsUtil.readAndApply(settings);
+    }
+
+    public static IFollowProcess getFollowProcess() {
+        return baritone.getFollowProcess();
     }
 
     public static ILookBehavior getLookBehavior() {
-        return lookBehavior;
+        return baritone.getLookBehavior();
     }
 
     public static IMemoryBehavior getMemoryBehavior() {
-        return memoryBehavior;
+        return baritone.getMemoryBehavior();
     }
 
-    public static IMineBehavior getMineBehavior() {
-        return mineBehavior;
+    public static IMineProcess getMineProcess() {
+        return baritone.getMineProcess();
     }
 
     public static IPathingBehavior getPathingBehavior() {
-        return pathingBehavior;
+        return baritone.getPathingBehavior();
     }
 
     public static Settings getSettings() {
@@ -66,34 +79,22 @@ public class BaritoneAPI {
     }
 
     public static IWorldProvider getWorldProvider() {
-        return worldProvider;
+        return baritone.getWorldProvider();
     }
 
-    /**
-     * FOR INTERNAL USE ONLY
-     */
-    public static void registerProviders(
-            IWorldProvider worldProvider
-    ) {
-        BaritoneAPI.worldProvider = worldProvider;
+    public static IWorldScanner getWorldScanner() {
+        return baritone.getWorldScanner();
     }
 
-    /**
-     * FOR INTERNAL USE ONLY
-     */
-    // @formatter:off
-    public static void registerDefaultBehaviors(
-            IFollowBehavior  followBehavior,
-            ILookBehavior    lookBehavior,
-            IMemoryBehavior  memoryBehavior,
-            IMineBehavior    mineBehavior,
-            IPathingBehavior pathingBehavior
-    ) {
-        BaritoneAPI.followBehavior  = followBehavior;
-        BaritoneAPI.lookBehavior    = lookBehavior;
-        BaritoneAPI.memoryBehavior  = memoryBehavior;
-        BaritoneAPI.mineBehavior    = mineBehavior;
-        BaritoneAPI.pathingBehavior = pathingBehavior;
+    public static ICustomGoalProcess getCustomGoalProcess() {
+        return baritone.getCustomGoalProcess();
     }
-    // @formatter:on
+
+    public static IGetToBlockProcess getGetToBlockProcess() {
+        return baritone.getGetToBlockProcess();
+    }
+
+    public static void registerEventListener(IGameEventListener listener) {
+        baritone.registerEventListener(listener);
+    }
 }

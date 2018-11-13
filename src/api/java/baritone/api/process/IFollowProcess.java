@@ -15,30 +15,37 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch;
+package baritone.api.process;
 
-import net.minecraft.launchwrapper.LaunchClassLoader;
-import org.spongepowered.asm.mixin.MixinEnvironment;
-import org.spongepowered.tools.obfuscation.mcp.ObfuscationServiceMCP;
+import net.minecraft.entity.Entity;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * @author Brady
- * @since 7/31/2018 10:09 PM
+ * @since 9/23/2018
  */
-public class BaritoneTweakerForge extends BaritoneTweaker {
+public interface IFollowProcess extends IBaritoneProcess {
 
-    @Override
-    public final void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
-        this.args = new ArrayList<>();
-    }
+    /**
+     * Set the follow target to any entities matching this predicate
+     *
+     * @param filter the predicate
+     */
+    void follow(Predicate<Entity> filter);
 
-    @Override
-    public final void injectIntoClassLoader(LaunchClassLoader classLoader) {
-        super.injectIntoClassLoader(classLoader);
-        MixinEnvironment.getDefaultEnvironment().setObfuscationContext(ObfuscationServiceMCP.SEARGE);
+    /**
+     * @return The entities that are currently being followed. null if not currently following, empty if nothing matches the predicate
+     */
+    List<Entity> following();
+
+    Predicate<Entity> currentFilter();
+
+    /**
+     * Cancels the follow behavior, this will clear the current follow target.
+     */
+    default void cancel() {
+        onLostControl();
     }
 }

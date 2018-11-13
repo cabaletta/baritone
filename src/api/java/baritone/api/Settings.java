@@ -57,6 +57,13 @@ public class Settings {
     public Setting<Double> blockPlacementPenalty = new Setting<>(20D);
 
     /**
+     * This is just a tiebreaker to make it less likely to break blocks if it can avoid it.
+     * For example, fire has a break cost of 0, this makes it nonzero, so all else being equal
+     * it will take an otherwise equivalent route that doesn't require it to put out fire.
+     */
+    public Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
+
+    /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
      * Reliability: questionable.
      */
@@ -149,7 +156,7 @@ public class Settings {
      *
      * @see <a href="https://github.com/cabaletta/baritone/issues/18">Issue #18</a>
      */
-    public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.9);
+    public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.5);
 
     /**
      * Don't repropagate cost improvements below 0.01 ticks. They're all just floating point inaccuracies,
@@ -191,7 +198,7 @@ public class Settings {
     /**
      * Start planning the next path once the remaining movements tick estimates sum up to less than this value
      */
-    public Setting<Integer> planningTickLookAhead = new Setting<>(100);
+    public Setting<Integer> planningTickLookAhead = new Setting<>(150);
 
     /**
      * Default size of the Long2ObjectOpenHashMap used in pathing
@@ -270,6 +277,13 @@ public class Settings {
     public Setting<Boolean> chunkCaching = new Setting<>(true);
 
     /**
+     * On save, delete from RAM any cached regions that are more than 1024 blocks away from the player
+     * <p>
+     * Temporarily disabled, see issue #248
+     */
+    public Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
+
+    /**
      * Print all the debug messages to chat
      */
     public Setting<Boolean> chatDebug = new Setting<>(true);
@@ -294,6 +308,21 @@ public class Settings {
      * Render the goal
      */
     public Setting<Boolean> renderGoal = new Setting<>(true);
+
+    /**
+     * Ignore depth when rendering the goal
+     */
+    public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
+
+    /**
+     * Ignore depth when rendering the selection boxes (to break, to place, to walk into)
+     */
+    public Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(true);
+
+    /**
+     * Ignore depth when rendering the path
+     */
+    public Setting<Boolean> renderPathIgnoreDepth = new Setting<>(true);
 
     /**
      * Line width of the path when rendered, in pixels
@@ -349,10 +378,25 @@ public class Settings {
     public Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
     /**
+     * If we are more than 500 movements into the current path, discard the oldest segments, as they are no longer useful
+     */
+    public Setting<Integer> maxPathHistoryLength = new Setting<>(300);
+
+    /**
+     * If the current path is too long, cut off this many movements from the beginning.
+     */
+    public Setting<Integer> pathHistoryCutoffAmount = new Setting<>(50);
+
+    /**
      * Rescan for the goal once every 5 ticks.
      * Set to 0 to disable.
      */
     public Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
+
+    /**
+     * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
+     */
+    public Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
 
     /**
      * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.
@@ -373,6 +417,18 @@ public class Settings {
      * The "axis" command (aka GoalAxis) will go to a axis, or diagonal axis, at this Y level.
      */
     public Setting<Integer> axisHeight = new Setting<>(120);
+
+    /**
+     * Allow MineBehavior to use X-Ray to see where the ores are. Turn this option off to force it to mine "legit"
+     * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
+     * couldn't. If you don't want it to look like you're X-Raying, turn this off
+     */
+    public Setting<Boolean> legitMine = new Setting<>(false);
+
+    /**
+     * What Y level to go to for legit strip mining
+     */
+    public Setting<Integer> legitMineYLevel = new Setting<>(11);
 
     /**
      * When mining block of a certain type, try to mine two at once instead of one.
@@ -403,6 +459,28 @@ public class Settings {
      * The radius (for the GoalNear) of how close to your target position you actually have to be
      */
     public Setting<Integer> followRadius = new Setting<>(3);
+
+    /**
+     * Cached chunks (regardless of if they're in RAM or saved to disk) expire and are deleted after this number of seconds
+     * -1 to disable
+     * <p>
+     * I would highly suggest leaving this setting disabled (-1).
+     * <p>
+     * The only valid reason I can think of enable this setting is if you are extremely low on disk space and you play on multiplayer,
+     * and can't take (average) 300kb saved for every 512x512 area. (note that more complicated terrain is less compressible and will take more space)
+     * <p>
+     * However, simply discarding old chunks because they are old is inadvisable. Baritone is extremely good at correcting
+     * itself and its paths as it learns new information, as new chunks load. There is no scenario in which having an
+     * incorrect cache can cause Baritone to get stuck, take damage, or perform any action it wouldn't otherwise, everything
+     * is rechecked once the real chunk is in range.
+     * <p>
+     * Having a robust cache greatly improves long distance pathfinding, as it's able to go around large scale obstacles
+     * before they're in render distance. In fact, when the chunkCaching setting is disabled and Baritone starts anew
+     * every time, or when you enter a completely new and very complicated area, it backtracks far more often because it
+     * has to build up that cache from scratch. But after it's gone through an area just once, the next time will have zero
+     * backtracking, since the entire area is now known and cached.
+     */
+    public Setting<Long> cachedChunksExpirySeconds = new Setting<>(-1L);
 
     /**
      * The function that is called when Baritone will log to chat. This function can be added to
@@ -451,11 +529,19 @@ public class Settings {
      */
     public Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
 
+    /**
+     * A map of lowercase setting field names to their respective setting
+     */
     public final Map<String, Setting<?>> byLowerName;
+
+    /**
+     * A list of all settings
+     */
     public final List<Setting<?>> allSettings;
 
     public class Setting<T> {
         public T value;
+        public final T defaultValue;
         private String name;
         private final Class<T> klass;
 
@@ -465,6 +551,7 @@ public class Settings {
                 throw new IllegalArgumentException("Cannot determine value type class from null");
             }
             this.value = value;
+            this.defaultValue = value;
             this.klass = (Class<T>) value.getClass();
         }
 
@@ -488,7 +575,7 @@ public class Settings {
 
     // here be dragons
 
-    {
+    Settings() {
         Field[] temp = getClass().getFields();
         HashMap<String, Setting<?>> tmpByName = new HashMap<>();
         List<Setting<?>> tmpAll = new ArrayList<>();
@@ -523,6 +610,4 @@ public class Settings {
         }
         return result;
     }
-
-    Settings() { }
 }

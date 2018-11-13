@@ -18,22 +18,19 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.pathing.movement.MovementState.MovementStatus;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.pathing.BetterBlockPos;
-import baritone.utils.pathing.MoveResult;
+import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-
-import static baritone.utils.pathing.MoveResult.IMPOSSIBLE;
 
 public class MovementDescend extends Movement {
 
@@ -51,32 +48,33 @@ public class MovementDescend extends Movement {
 
     @Override
     protected double calculateCost(CalculationContext context) {
-        MoveResult result = cost(context, src.x, src.y, src.z, dest.x, dest.z);
-        if (result.destY != dest.y) {
+        MutableMoveResult result = new MutableMoveResult();
+        cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
+        if (result.y != dest.y) {
             return COST_INF; // doesn't apply to us, this position is a fall not a descend
         }
         return result.cost;
     }
 
-    public static MoveResult cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        Block fromDown = BlockStateInterface.get(x, y - 1, z).getBlock();
+    public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
+        Block fromDown = context.get(x, y - 1, z).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
-            return IMPOSSIBLE;
+            return;
         }
 
         double totalCost = 0;
-        IBlockState destDown = BlockStateInterface.get(destX, y - 1, destZ);
+        IBlockState destDown = context.get(destX, y - 1, destZ);
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false);
         if (totalCost >= COST_INF) {
-            return IMPOSSIBLE;
+            return;
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y, destZ, false);
         if (totalCost >= COST_INF) {
-            return IMPOSSIBLE;
+            return;
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true); // only the top block in the 3 we need to mine needs to consider the falling blocks above
         if (totalCost >= COST_INF) {
-            return IMPOSSIBLE;
+            return;
         }
 
         // A
@@ -89,13 +87,14 @@ public class MovementDescend extends Movement {
         //A is plausibly breakable by either descend or fall
         //C, D, etc determine the length of the fall
 
-        IBlockState below = BlockStateInterface.get(destX, y - 2, destZ);
-        if (!MovementHelper.canWalkOn(destX, y - 2, destZ, below)) {
-            return dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below);
+        IBlockState below = context.get(destX, y - 2, destZ);
+        if (!MovementHelper.canWalkOn(context, destX, y - 2, destZ, below)) {
+            dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res);
+            return;
         }
 
         if (destDown.getBlock() == Blocks.LADDER || destDown.getBlock() == Blocks.VINE) {
-            return IMPOSSIBLE;
+            return;
         }
 
         // we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
@@ -105,55 +104,72 @@ public class MovementDescend extends Movement {
             walk = WALK_ONE_OVER_SOUL_SAND_COST;
         }
         totalCost += walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
-        return new MoveResult(destX, y - 1, destZ, totalCost);
+        res.x = destX;
+        res.y = y - 1;
+        res.z = destZ;
+        res.cost = totalCost;
     }
 
-    public static MoveResult dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below) {
-        if (frontBreak != 0 && BlockStateInterface.get(destX, y + 2, destZ).getBlock() instanceof BlockFalling) {
+    public static void dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below, MutableMoveResult res) {
+        if (frontBreak != 0 && context.get(destX, y + 2, destZ).getBlock() instanceof BlockFalling) {
             // if frontBreak is 0 we can actually get through this without updating the falling block and making it actually fall
             // but if frontBreak is nonzero, we're breaking blocks in front, so don't let anything fall through this column,
             // and potentially replace the water we're going to fall into
-            return IMPOSSIBLE;
+            return;
         }
-        if (!MovementHelper.canWalkThrough(destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
-            return IMPOSSIBLE;
+        if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
+            return;
         }
         for (int fallHeight = 3; true; fallHeight++) {
             int newY = y - fallHeight;
             if (newY < 0) {
                 // when pathing in the end, where you could plausibly fall into the void
                 // this check prevents it from getting the block at y=-1 and crashing
-                return IMPOSSIBLE;
+                return;
             }
-            IBlockState ontoBlock = BlockStateInterface.get(destX, newY, destZ);
+            IBlockState ontoBlock = context.get(destX, newY, destZ);
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[fallHeight] + frontBreak;
-            if (ontoBlock.getBlock() == Blocks.WATER && !BlockStateInterface.isFlowing(ontoBlock)) { // TODO flowing check required here?
+            if (ontoBlock.getBlock() == Blocks.WATER && !MovementHelper.isFlowing(ontoBlock) && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) { // TODO flowing check required here?
+                // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
+                // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
                 if (Baritone.settings().assumeWalkOnWater.get()) {
-                    return IMPOSSIBLE; // TODO fix
+                    return; // TODO fix
                 }
                 // found a fall into water
-                return new MoveResult(destX, newY, destZ, tentativeCost); // TODO incorporate water swim up cost?
+                res.x = destX;
+                res.y = newY;
+                res.z = destZ;
+                res.cost = tentativeCost;// TODO incorporate water swim up cost?
+                return;
             }
             if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
-                return IMPOSSIBLE;
+                return;
             }
-            if (MovementHelper.canWalkThrough(destX, newY, destZ, ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                 continue;
             }
-            if (!MovementHelper.canWalkOn(destX, newY, destZ, ontoBlock)) {
-                return IMPOSSIBLE;
+            if (!MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
+                return;
             }
             if (MovementHelper.isBottomSlab(ontoBlock)) {
-                return IMPOSSIBLE; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
+                return; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
             }
             if (context.hasWaterBucket() && fallHeight <= context.maxFallHeightBucket() + 1) {
-                return new MoveResult(destX, newY + 1, destZ, tentativeCost + context.placeBlockCost()); // this is the block we're falling onto, so dest is +1
+                res.x = destX;
+                res.y = newY + 1;// this is the block we're falling onto, so dest is +1
+                res.z = destZ;
+                res.cost = tentativeCost + context.placeBlockCost();
+                return;
             }
             if (fallHeight <= context.maxFallHeightNoWater() + 1) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
-                return new MoveResult(destX, newY + 1, destZ, tentativeCost);
+                res.x = destX;
+                res.y = newY + 1;
+                res.z = destZ;
+                res.cost = tentativeCost;
+                return;
             } else {
-                return IMPOSSIBLE;
+                return;
             }
         }
     }
@@ -166,13 +182,12 @@ public class MovementDescend extends Movement {
         }
 
         BlockPos playerFeet = playerFeet();
-        if (playerFeet.equals(dest)) {
-            if (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094) { // lilypads
-                // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
-                return state.setStatus(MovementStatus.SUCCESS);
-            } else {
-                System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
-            }
+        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094)) { // lilypads
+            // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
+            return state.setStatus(MovementStatus.SUCCESS);
+            /* else {
+                // System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
+            }*/
         }
         double diffX = player().posX - (dest.getX() + 0.5);
         double diffZ = player().posZ - (dest.getZ() + 0.5);

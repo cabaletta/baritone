@@ -17,6 +17,7 @@
 
 package baritone.cache;
 
+import baritone.api.cache.IWorldScanner;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -29,20 +30,12 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import java.util.LinkedList;
 import java.util.List;
 
-public enum WorldScanner implements Helper {
+public enum WorldScanner implements IWorldScanner, Helper {
+
     INSTANCE;
 
-    /**
-     * Scans the world, up to your render distance, for the specified blocks.
-     *
-     * @param blocks          The blocks to scan for
-     * @param max             The maximum number of blocks to scan before cutoff
-     * @param yLevelThreshold If a block is found within this Y level, the current result will be
-     *                        returned, if the value is negative, then this condition doesn't apply.
-     * @param maxSearchRadius The maximum chunk search radius
-     * @return The matching block positions
-     */
-    public List<BlockPos> scanLoadedChunks(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
+    @Override
+    public List<BlockPos> scanChunkRadius(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
         if (blocks.contains(null)) {
             throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }

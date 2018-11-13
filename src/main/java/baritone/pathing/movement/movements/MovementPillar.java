@@ -17,33 +17,27 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.api.pathing.movement.MovementStatus;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
-import baritone.utils.Utils;
-import baritone.utils.pathing.BetterBlockPos;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 public class MovementPillar extends Movement {
-    private int numTicks = 0;
 
     public MovementPillar(BetterBlockPos start, BetterBlockPos end) {
         super(start, end, new BetterBlockPos[]{start.up(2)}, start);
-    }
-
-    @Override
-    public void reset() {
-        super.reset();
-        numTicks = 0;
     }
 
     @Override
@@ -52,37 +46,33 @@ public class MovementPillar extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        Block fromDown = BlockStateInterface.get(x, y, z).getBlock();
+        Block fromDown = context.get(x, y, z).getBlock();
         boolean ladder = fromDown instanceof BlockLadder || fromDown instanceof BlockVine;
-        IBlockState fromDownDown = BlockStateInterface.get(x, y - 1, z);
+        IBlockState fromDownDown = context.get(x, y - 1, z);
         if (!ladder) {
             if (fromDownDown.getBlock() instanceof BlockLadder || fromDownDown.getBlock() instanceof BlockVine) {
                 return COST_INF;
             }
-            if (fromDownDown.getBlock() instanceof BlockSlab) {
-                if (!((BlockSlab) fromDownDown.getBlock()).isDouble() && fromDownDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
-                    return COST_INF; // can't pillar up from a bottom slab onto a non ladder
-                }
+            if (fromDownDown.getBlock() instanceof BlockSlab && !((BlockSlab) fromDownDown.getBlock()).isDouble() && fromDownDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+                return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
-        if (fromDown instanceof BlockVine) {
-            if (!hasAgainst(x, y, z)) {
-                return COST_INF;
-            }
+        if (fromDown instanceof BlockVine && !hasAgainst(context, x, y, z)) {
+            return COST_INF;
         }
-        IBlockState toBreak = BlockStateInterface.get(x, y + 2, z);
+        IBlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
         if (toBreakBlock instanceof BlockFenceGate) {
             return COST_INF;
         }
         Block srcUp = null;
-        if (BlockStateInterface.isWater(toBreakBlock) && BlockStateInterface.isWater(fromDown)) {
-            srcUp = BlockStateInterface.get(x, y + 1, z).getBlock();
-            if (BlockStateInterface.isWater(srcUp)) {
+        if (MovementHelper.isWater(toBreakBlock) && MovementHelper.isWater(fromDown)) {
+            srcUp = context.get(x, y + 1, z).getBlock();
+            if (MovementHelper.isWater(srcUp)) {
                 return LADDER_UP_ONE_COST;
             }
         }
-        if (!context.hasThrowaway() && !ladder) {
+        if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) {
             return COST_INF;
         }
         double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);
@@ -93,11 +83,11 @@ public class MovementPillar extends Movement {
             if (toBreakBlock instanceof BlockLadder || toBreakBlock instanceof BlockVine) {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
-                IBlockState check = BlockStateInterface.get(x, y + 3, z);
+                IBlockState check = context.get(x, y + 3, z);
                 if (check.getBlock() instanceof BlockFalling) {
                     // see MovementAscend's identical check for breaking a falling block above our head
                     if (srcUp == null) {
-                        srcUp = BlockStateInterface.get(x, y + 1, z).getBlock();
+                        srcUp = context.get(x, y + 1, z).getBlock();
                     }
                     if (!(toBreakBlock instanceof BlockFalling) || !(srcUp instanceof BlockFalling)) {
                         return COST_INF;
@@ -122,24 +112,24 @@ public class MovementPillar extends Movement {
         }
     }
 
-    public static boolean hasAgainst(int x, int y, int z) {
-        return BlockStateInterface.get(x + 1, y, z).isBlockNormalCube() ||
-                BlockStateInterface.get(x - 1, y, z).isBlockNormalCube() ||
-                BlockStateInterface.get(x, y, z + 1).isBlockNormalCube() ||
-                BlockStateInterface.get(x, y, z - 1).isBlockNormalCube();
+    public static boolean hasAgainst(CalculationContext context, int x, int y, int z) {
+        return context.get(x + 1, y, z).isBlockNormalCube() ||
+                context.get(x - 1, y, z).isBlockNormalCube() ||
+                context.get(x, y, z + 1).isBlockNormalCube() ||
+                context.get(x, y, z - 1).isBlockNormalCube();
     }
 
-    public static BlockPos getAgainst(BlockPos vine) {
-        if (BlockStateInterface.get(vine.north()).isBlockNormalCube()) {
+    public static BlockPos getAgainst(CalculationContext context, BetterBlockPos vine) {
+        if (context.get(vine.north()).isBlockNormalCube()) {
             return vine.north();
         }
-        if (BlockStateInterface.get(vine.south()).isBlockNormalCube()) {
+        if (context.get(vine.south()).isBlockNormalCube()) {
             return vine.south();
         }
-        if (BlockStateInterface.get(vine.east()).isBlockNormalCube()) {
+        if (context.get(vine.east()).isBlockNormalCube()) {
             return vine.east();
         }
-        if (BlockStateInterface.get(vine.west()).isBlockNormalCube()) {
+        if (context.get(vine.west()).isBlockNormalCube()) {
             return vine.west();
         }
         return null;
@@ -148,43 +138,44 @@ public class MovementPillar extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        if (state.getStatus() != MovementState.MovementStatus.RUNNING) {
+        if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
 
         IBlockState fromDown = BlockStateInterface.get(src);
-        if (BlockStateInterface.isWater(fromDown.getBlock()) && BlockStateInterface.isWater(dest)) {
+        if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(dest)) {
             // stay centered while swimming up a water column
-            state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(playerHead(), Utils.getBlockPosCenter(dest)), false));
-            Vec3d destCenter = Utils.getBlockPosCenter(dest);
+            state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), VecUtils.getBlockPosCenter(dest)), false));
+            Vec3d destCenter = VecUtils.getBlockPosCenter(dest);
             if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
                 state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
             }
             if (playerFeet().equals(dest)) {
-                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+                return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
         }
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
+        Rotation rotation = RotationUtils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
+                VecUtils.getBlockPosCenter(positionToPlace),
+                new Rotation(player().rotationYaw, player().rotationPitch));
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(Utils.calcRotationFromVec3d(mc.player.getPositionEyes(1.0F),
-                    Utils.getBlockPosCenter(positionToPlace),
-                    new Rotation(mc.player.rotationYaw, mc.player.rotationPitch)), true));
+            state.setTarget(new MovementState.MovementTarget(new Rotation(player().rotationYaw, rotation.getPitch()), true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;
         if (ladder) {
-            BlockPos against = vine ? getAgainst(src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
+            BlockPos against = vine ? getAgainst(new CalculationContext(), src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
                 logDebug("Unable to climb vines");
-                return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
             if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
-                return state.setStatus(MovementState.MovementStatus.SUCCESS);
+                return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (MovementHelper.isBottomSlab(src.down())) {
+            if (MovementHelper.isBottomSlab(BlockStateInterface.get(src.down()))) {
                 state.setInput(InputOverrideHandler.Input.JUMP, true);
             }
             /*
@@ -198,34 +189,37 @@ public class MovementPillar extends Movement {
         } else {
             // Get ready to place a throwaway block
             if (!MovementHelper.throwaway(true)) {
-                return state.setStatus(MovementState.MovementStatus.UNREACHABLE);
+                return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            numTicks++;
-            // If our Y coordinate is above our goal, stop jumping
-            state.setInput(InputOverrideHandler.Input.JUMP, player().posY < dest.getY());
-            state.setInput(InputOverrideHandler.Input.SNEAK, true);
 
-            // Otherwise jump
-            if (numTicks > 20) {
-                double diffX = player().posX - (dest.getX() + 0.5);
-                double diffZ = player().posZ - (dest.getZ() + 0.5);
-                double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
-                if (dist > 0.17) {//why 0.17? because it seemed like a good number, that's why
-                    //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
-                    //and 0.17 is reasonably less than 0.2
+            state.setInput(InputOverrideHandler.Input.SNEAK, player().posY > dest.getY()); // delay placement by 1 tick for ncp compatibility
+            // since (lower down) we only right click once player.isSneaking, and that happens the tick after we request to sneak
 
-                    // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
-                    state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
-                }
+            double diffX = player().posX - (dest.getX() + 0.5);
+            double diffZ = player().posZ - (dest.getZ() + 0.5);
+            double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
+            if (dist > 0.17) {//why 0.17? because it seemed like a good number, that's why
+                //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
+                //and 0.17 is reasonably less than 0.2
+
+                // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
+                state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+
+                // revise our target to both yaw and pitch if we're going to be moving forward
+                state.setTarget(new MovementState.MovementTarget(rotation, true));
+            } else {
+                // If our Y coordinate is above our goal, stop jumping
+                state.setInput(InputOverrideHandler.Input.JUMP, player().posY < dest.getY());
             }
+
 
             if (!blockIsThere) {
                 Block fr = BlockStateInterface.get(src).getBlock();
-                if (!(fr instanceof BlockAir || fr.isReplaceable(Minecraft.getMinecraft().world, src))) {
+                if (!(fr instanceof BlockAir || fr.isReplaceable(world(), src))) {
                     state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (Minecraft.getMinecraft().player.isSneaking()) {
+                } else if (player().isSneaking()) { // 1 tick after we're able to place
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }
@@ -233,7 +227,7 @@ public class MovementPillar extends Movement {
 
         // If we are at our goal and the block below us is placed
         if (playerFeet().equals(dest) && blockIsThere) {
-            return state.setStatus(MovementState.MovementStatus.SUCCESS);
+            return state.setStatus(MovementStatus.SUCCESS);
         }
 
         return state;
@@ -247,7 +241,7 @@ public class MovementPillar extends Movement {
                 state.setInput(InputOverrideHandler.Input.SNEAK, true);
             }
         }
-        if (BlockStateInterface.isWater(dest.up())) {
+        if (MovementHelper.isWater(dest.up())) {
             return true;
         }
         return super.prepared(state);

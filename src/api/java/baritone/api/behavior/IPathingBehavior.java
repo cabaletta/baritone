@@ -17,7 +17,10 @@
 
 package baritone.api.behavior;
 
+import baritone.api.pathing.calc.IPath;
+import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.path.IPathExecutor;
 
 import java.util.Optional;
 
@@ -37,24 +40,9 @@ public interface IPathingBehavior extends IBehavior {
     Optional<Double> ticksRemainingInSegment();
 
     /**
-     * Sets the pathing goal.
-     *
-     * @param goal The pathing goal
-     */
-    void setGoal(Goal goal);
-
-    /**
      * @return The current pathing goal
      */
     Goal getGoal();
-
-    /**
-     * Begins pathing. Calculation will start in a new thread, and once completed,
-     * movement will commence. Returns whether or not the operation was successful.
-     *
-     * @return Whether or not the operation was successful
-     */
-    boolean path();
 
     /**
      * @return Whether or not a path is currently being executed.
@@ -62,7 +50,38 @@ public interface IPathingBehavior extends IBehavior {
     boolean isPathing();
 
     /**
-     * Cancels the pathing behavior or the current path calculation.
+     * Cancels the pathing behavior or the current path calculation, and all processes that could be controlling path.
+     * <p>
+     * Basically, "MAKE IT STOP".
+     *
+     * @return Whether or not the pathing behavior was canceled. All processes are guaranteed to be canceled, but the
+     * PathingBehavior might be in the middle of an uncancelable action like a parkour jump
      */
-    void cancel();
+    boolean cancelEverything();
+
+    /**
+     * Returns the current path, from the current path executor, if there is one.
+     *
+     * @return The current path
+     */
+    default Optional<IPath> getPath() {
+        return Optional.ofNullable(getCurrent()).map(IPathExecutor::getPath);
+    }
+
+    /**
+     * @return The current path finder being executed
+     */
+    Optional<IPathFinder> getPathFinder();
+
+    /**
+     * @return The current path executor
+     */
+    IPathExecutor getCurrent();
+
+    /**
+     * Returns the next path executor, created when planning ahead.
+     *
+     * @return The next path executor
+     */
+    IPathExecutor getNext();
 }
