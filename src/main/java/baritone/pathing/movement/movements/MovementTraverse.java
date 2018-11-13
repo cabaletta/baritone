@@ -59,14 +59,14 @@ public class MovementTraverse extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        IBlockState pb0 = BlockStateInterface.get(destX, y + 1, destZ);
-        IBlockState pb1 = BlockStateInterface.get(destX, y, destZ);
-        IBlockState destOn = BlockStateInterface.get(destX, y - 1, destZ);
-        Block srcDown = BlockStateInterface.getBlock(x, y - 1, z);
-        if (MovementHelper.canWalkOn(destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
+        IBlockState pb0 = context.get(destX, y + 1, destZ);
+        IBlockState pb1 = context.get(destX, y, destZ);
+        IBlockState destOn = context.get(destX, y - 1, destZ);
+        Block srcDown = context.getBlock(x, y - 1, z);
+        if (MovementHelper.canWalkOn(context, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
-            if (BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock())) {
+            if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {
                 WC = context.waterWalkSpeed();
                 water = true;
             } else {
@@ -101,8 +101,8 @@ public class MovementTraverse extends Movement {
                 return COST_INF;
             }
             if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(destX, y - 1, destZ, destOn)) {
-                boolean throughWater = BlockStateInterface.isWater(pb0.getBlock()) || BlockStateInterface.isWater(pb1.getBlock());
-                if (BlockStateInterface.isWater(destOn.getBlock()) && throughWater) {
+                boolean throughWater = MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock());
+                if (MovementHelper.isWater(destOn.getBlock()) && throughWater) {
                     return COST_INF;
                 }
                 if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
@@ -121,7 +121,7 @@ public class MovementTraverse extends Movement {
                     if (againstX == x && againstZ == z) {
                         continue;
                     }
-                    if (MovementHelper.canPlaceAgainst(againstX, y - 1, againstZ)) {
+                    if (MovementHelper.canPlaceAgainst(context, againstX, y - 1, againstZ)) {
                         return WC + context.placeBlockCost() + hardness1 + hardness2;
                     }
                 }
@@ -223,7 +223,7 @@ public class MovementTraverse extends Movement {
             if (playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (wasTheBridgeBlockAlwaysThere && !BlockStateInterface.isLiquid(playerFeet())) {
+            if (wasTheBridgeBlockAlwaysThere && !MovementHelper.isLiquid(playerFeet())) {
                 state.setInput(InputOverrideHandler.Input.SPRINT, true);
             }
             Block destDown = BlockStateInterface.get(dest.down()).getBlock();
@@ -265,7 +265,7 @@ public class MovementTraverse extends Movement {
                     state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations()), true));
 
                     EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), against1) && (Minecraft.getMinecraft().player.isSneaking() || Baritone.settings().assumeSafeWalk.get()) && RayTraceUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
+                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), against1) && (player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && RayTraceUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                         return state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                     }
                     //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());

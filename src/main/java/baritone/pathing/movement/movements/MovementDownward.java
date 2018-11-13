@@ -23,7 +23,6 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -48,10 +47,10 @@ public class MovementDownward extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        if (!MovementHelper.canWalkOn(x, y - 2, z)) {
+        if (!MovementHelper.canWalkOn(context, x, y - 2, z)) {
             return COST_INF;
         }
-        IBlockState d = BlockStateInterface.get(x, y - 1, z);
+        IBlockState d = context.get(x, y - 1, z);
         Block td = d.getBlock();
         boolean ladder = td == Blocks.LADDER || td == Blocks.VINE;
         if (ladder) {

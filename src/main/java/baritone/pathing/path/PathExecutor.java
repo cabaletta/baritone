@@ -454,6 +454,43 @@ public class PathExecutor implements IPathExecutor, Helper {
         return pathPosition;
     }
 
+    public PathExecutor trySplice(PathExecutor next) {
+        if (next == null) {
+            return cutIfTooLong();
+        }
+        return SplicedPath.trySplice(path, next.path).map(path -> {
+            if (!path.getDest().equals(next.getPath().getDest())) {
+                throw new IllegalStateException();
+            }
+            PathExecutor ret = new PathExecutor(path);
+            ret.pathPosition = pathPosition;
+            ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;
+            ret.costEstimateIndex = costEstimateIndex;
+            ret.ticksOnCurrent = ticksOnCurrent;
+            return ret;
+        }).orElse(cutIfTooLong());
+    }
+
+    private PathExecutor cutIfTooLong() {
+        if (pathPosition > Baritone.settings().maxPathHistoryLength.get()) {
+            int cutoffAmt = Baritone.settings().pathHistoryCutoffAmount.get();
+            CutoffPath newPath = new CutoffPath(path, cutoffAmt, path.length() - 1);
+            if (!newPath.getDest().equals(path.getDest())) {
+                throw new IllegalStateException();
+            }
+            logDebug("Discarding earliest segment movements, length cut from " + path.length() + " to " + newPath.length());
+            PathExecutor ret = new PathExecutor(newPath);
+            ret.pathPosition = pathPosition - cutoffAmt;
+            ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;
+            if (costEstimateIndex != null) {
+                ret.costEstimateIndex = costEstimateIndex - cutoffAmt;
+            }
+            ret.ticksOnCurrent = ticksOnCurrent;
+            return ret;
+        }
+        return this;
+    }
+
     @Override
     public IPath getPath() {
         return path;

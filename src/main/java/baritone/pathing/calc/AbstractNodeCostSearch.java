@@ -21,6 +21,8 @@ import baritone.Baritone;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.utils.PathCalculationResult;
+import baritone.pathing.movement.CalculationContext;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.Optional;
@@ -42,6 +44,8 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     protected final int startZ;
 
     protected final Goal goal;
+
+    private final CalculationContext context;
 
     /**
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
@@ -70,11 +74,12 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      */
     protected final static double MIN_DIST_PATH = 5;
 
-    AbstractNodeCostSearch(int startX, int startY, int startZ, Goal goal) {
+    AbstractNodeCostSearch(int startX, int startY, int startZ, Goal goal, CalculationContext context) {
         this.startX = startX;
         this.startY = startY;
         this.startZ = startZ;
         this.goal = goal;
+        this.context = context;
         this.map = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.get());
     }
 
@@ -82,16 +87,26 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         cancelRequested = true;
     }
 
-    public synchronized Optional<IPath> calculate(long timeout) {
+    public synchronized PathCalculationResult calculate(long timeout) {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
         this.cancelRequested = false;
         try {
             Optional<IPath> path = calculate0(timeout);
-            path.ifPresent(IPath::postProcess);
+            path = path.map(IPath::postProcess);
             isFinished = true;
-            return path;
+            if (cancelRequested) {
+                return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, path);
+            }
+            if (!path.isPresent()) {
+                return new PathCalculationResult(PathCalculationResult.Type.FAILURE, path);
+            }
+            if (goal.isInGoal(path.get().getDest())) {
+                return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_TO_GOAL, path);
+            } else {
+                return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
+            }
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
             currentlyRunning = null;
@@ -160,7 +175,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public Optional<IPath> pathToMostRecentNodeConsidered() {
         try {
-            return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal));
+            return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal, context));
         } catch (IllegalStateException ex) {
             System.out.println("Unable to construct path to render");
             return Optional.empty();
@@ -182,7 +197,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             }
             if (getDistFromStartSq(bestSoFar[i]) > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
                 try {
-                    return Optional.of(new Path(startNode, bestSoFar[i], 0, goal));
+                    return Optional.of(new Path(startNode, bestSoFar[i], 0, goal, context));
                 } catch (IllegalStateException ex) {
                     System.out.println("Unable to construct path to render");
                     return Optional.empty();

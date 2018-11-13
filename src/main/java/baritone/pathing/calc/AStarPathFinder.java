@@ -25,7 +25,6 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterWorldBorder;
 import baritone.utils.pathing.MutableMoveResult;
@@ -44,7 +43,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
     private final CalculationContext calcContext;
 
     public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions, CalculationContext context) {
-        super(startX, startY, startZ, goal);
+        super(startX, startY, startZ, goal, context);
         this.favoredPositions = favoredPositions;
         this.calcContext = context;
     }
@@ -65,8 +64,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         }
         MutableMoveResult res = new MutableMoveResult();
         HashSet<Long> favored = favoredPositions.orElse(null);
-        BetterWorldBorder worldBorder = new BetterWorldBorder(world().getWorldBorder());
-        BlockStateInterface.clearCachedChunk();
+        BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world().getWorldBorder());
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {
@@ -95,12 +93,12 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
-                return Optional.of(new Path(startNode, currentNode, numNodes, goal));
+                return Optional.of(new Path(startNode, currentNode, numNodes, goal, calcContext));
             }
             for (Moves moves : Moves.values()) {
                 int newX = currentNode.x + moves.xOffset;
                 int newZ = currentNode.z + moves.zOffset;
-                if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !BlockStateInterface.isLoaded(newX, newZ)) {
+                if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !calcContext.isLoaded(newX, newZ)) {
                     // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
                     if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
                         numEmptyChunk++;
@@ -131,7 +129,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     throw new IllegalStateException(moves + " " + res.x + " " + newX + " " + res.z + " " + newZ);
                 }
                 if (!moves.dynamicY && res.y != currentNode.y + moves.yOffset) {
-                    throw new IllegalStateException(moves + " " + res.x + " " + newX + " " + res.z + " " + newZ);
+                    throw new IllegalStateException(moves + " " + res.y + " " + (currentNode.y + moves.yOffset));
                 }
                 long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
                 if (favoring && favored.contains(hashCode)) {
@@ -198,7 +196,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     System.out.println("But I'm going to do it anyway, because yolo");
                 }
                 System.out.println("Path goes for " + Math.sqrt(dist) + " blocks");
-                return Optional.of(new Path(startNode, bestSoFar[i], numNodes, goal));
+                return Optional.of(new Path(startNode, bestSoFar[i], numNodes, goal, calcContext));
             }
         }
         logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");

@@ -24,7 +24,6 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
@@ -58,13 +57,13 @@ public class MovementDescend extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
-        Block fromDown = BlockStateInterface.get(x, y - 1, z).getBlock();
+        Block fromDown = context.get(x, y - 1, z).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return;
         }
 
         double totalCost = 0;
-        IBlockState destDown = BlockStateInterface.get(destX, y - 1, destZ);
+        IBlockState destDown = context.get(destX, y - 1, destZ);
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false);
         if (totalCost >= COST_INF) {
             return;
@@ -88,8 +87,8 @@ public class MovementDescend extends Movement {
         //A is plausibly breakable by either descend or fall
         //C, D, etc determine the length of the fall
 
-        IBlockState below = BlockStateInterface.get(destX, y - 2, destZ);
-        if (!MovementHelper.canWalkOn(destX, y - 2, destZ, below)) {
+        IBlockState below = context.get(destX, y - 2, destZ);
+        if (!MovementHelper.canWalkOn(context, destX, y - 2, destZ, below)) {
             dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res);
             return;
         }
@@ -112,13 +111,13 @@ public class MovementDescend extends Movement {
     }
 
     public static void dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below, MutableMoveResult res) {
-        if (frontBreak != 0 && BlockStateInterface.get(destX, y + 2, destZ).getBlock() instanceof BlockFalling) {
+        if (frontBreak != 0 && context.get(destX, y + 2, destZ).getBlock() instanceof BlockFalling) {
             // if frontBreak is 0 we can actually get through this without updating the falling block and making it actually fall
             // but if frontBreak is nonzero, we're breaking blocks in front, so don't let anything fall through this column,
             // and potentially replace the water we're going to fall into
             return;
         }
-        if (!MovementHelper.canWalkThrough(destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
+        if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
             return;
         }
         for (int fallHeight = 3; true; fallHeight++) {
@@ -128,9 +127,9 @@ public class MovementDescend extends Movement {
                 // this check prevents it from getting the block at y=-1 and crashing
                 return;
             }
-            IBlockState ontoBlock = BlockStateInterface.get(destX, newY, destZ);
+            IBlockState ontoBlock = context.get(destX, newY, destZ);
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[fallHeight] + frontBreak;
-            if (ontoBlock.getBlock() == Blocks.WATER && !BlockStateInterface.isFlowing(ontoBlock) && BlockStateInterface.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) { // TODO flowing check required here?
+            if (ontoBlock.getBlock() == Blocks.WATER && !MovementHelper.isFlowing(ontoBlock) && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) { // TODO flowing check required here?
                 // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
                 // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
                 if (Baritone.settings().assumeWalkOnWater.get()) {
@@ -146,10 +145,10 @@ public class MovementDescend extends Movement {
             if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
                 return;
             }
-            if (MovementHelper.canWalkThrough(destX, newY, destZ, ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                 continue;
             }
-            if (!MovementHelper.canWalkOn(destX, newY, destZ, ontoBlock)) {
+            if (!MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
                 return;
             }
             if (MovementHelper.isBottomSlab(ontoBlock)) {
@@ -183,7 +182,7 @@ public class MovementDescend extends Movement {
         }
 
         BlockPos playerFeet = playerFeet();
-        if (playerFeet.equals(dest) && (BlockStateInterface.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094)) { // lilypads
+        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094)) { // lilypads
             // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
             return state.setStatus(MovementStatus.SUCCESS);
             /* else {

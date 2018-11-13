@@ -19,7 +19,6 @@ package baritone.api.utils;
 
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
 
@@ -30,11 +29,6 @@ import java.util.Optional;
  * @since 9/25/2018
  */
 public final class RotationUtils {
-
-    /**
-     * The {@link Minecraft} instance
-     */
-    private static final Minecraft mc = Minecraft.getMinecraft();
 
     /**
      * Constant that a degree value is multiplied by to get the equivalent radian value
@@ -59,33 +53,6 @@ public final class RotationUtils {
     };
 
     private RotationUtils() {}
-
-    /**
-     * Clamps the specified pitch value between -90 and 90.
-     *
-     * @param pitch The input pitch
-     * @return The clamped pitch
-     */
-    public static float clampPitch(float pitch) {
-        return Math.max(-90, Math.min(90, pitch));
-    }
-
-    /**
-     * Normalizes the specified yaw value between -180 and 180.
-     *
-     * @param yaw The input yaw
-     * @return The normalized yaw
-     */
-    public static float normalizeYaw(float yaw) {
-        float newYaw = yaw % 360F;
-        if (newYaw < -180F) {
-            newYaw += 360F;
-        }
-        if (newYaw >= 180F) {
-            newYaw -= 360F;
-        }
-        return newYaw;
-    }
 
     /**
      * Calculates the rotation from BlockPos<sub>dest</sub> to BlockPos<sub>orig</sub>
@@ -168,7 +135,7 @@ public final class RotationUtils {
      * @param pos    The target block position
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachable(Entity entity, BlockPos pos) {
+    public static Optional<Rotation> reachable(Entity entity, BlockPos pos, double blockReachDistance) {
         if (pos.equals(RayTraceUtils.getSelectedBlock().orElse(null))) {
             /*
              * why add 0.0001?
@@ -182,19 +149,19 @@ public final class RotationUtils {
              */
             return Optional.of(new Rotation(entity.rotationYaw, entity.rotationPitch + 0.0001F));
         }
-        Optional<Rotation> possibleRotation = reachableCenter(entity, pos);
+        Optional<Rotation> possibleRotation = reachableCenter(entity, pos, blockReachDistance);
         //System.out.println("center: " + possibleRotation);
         if (possibleRotation.isPresent()) {
             return possibleRotation;
         }
 
-        IBlockState state = mc.world.getBlockState(pos);
+        IBlockState state = entity.world.getBlockState(pos);
         AxisAlignedBB aabb = state.getBoundingBox(entity.world, pos);
         for (Vec3d sideOffset : BLOCK_SIDE_MULTIPLIERS) {
             double xDiff = aabb.minX * sideOffset.x + aabb.maxX * (1 - sideOffset.x);
             double yDiff = aabb.minY * sideOffset.y + aabb.maxY * (1 - sideOffset.y);
             double zDiff = aabb.minZ * sideOffset.z + aabb.maxZ * (1 - sideOffset.z);
-            possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff));
+            possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff), blockReachDistance);
             if (possibleRotation.isPresent()) {
                 return possibleRotation;
             }
@@ -212,9 +179,9 @@ public final class RotationUtils {
      * @param offsetPos The position of the block with the offset applied.
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos) {
+    public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance) {
         Rotation rotation = calcRotationFromVec3d(entity.getPositionEyes(1.0F), offsetPos);
-        RayTraceResult result = RayTraceUtils.rayTraceTowards(rotation);
+        RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance);
         //System.out.println(result);
         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
             if (result.getBlockPos().equals(pos)) {
@@ -235,7 +202,7 @@ public final class RotationUtils {
      * @param pos    The target block position
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos) {
-        return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(pos));
+    public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos, double blockReachDistance) {
+        return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(pos), blockReachDistance);
     }
 }

@@ -17,10 +17,14 @@
 
 package baritone.utils.pathing;
 
-import baritone.utils.Helper;
 import net.minecraft.world.border.WorldBorder;
 
-public class BetterWorldBorder implements Helper {
+/**
+ * Essentially, a "rule" for the path finder, prevents proposed movements from attempting to venture
+ * into the world border, and prevents actual movements from placing blocks in the world border.
+ */
+public class BetterWorldBorder {
+
     private final double minX;
     private final double maxX;
     private final double minZ;

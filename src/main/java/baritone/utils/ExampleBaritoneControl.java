@@ -29,10 +29,11 @@ import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
-import baritone.cache.WorldProvider;
 import baritone.pathing.calc.AbstractNodeCostSearch;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
+import baritone.process.CustomGoalProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
@@ -45,6 +46,35 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ExampleBaritoneControl extends Behavior implements Helper {
+
+    private static final String HELP_MSG =
+            "baritone - Output settings into chat\n" +
+                    "settings - Same as baritone\n" +
+                    "goal - Create a goal (one number is '<Y>', two is '<X> <Z>', three is '<X> <Y> <Z>, 'clear' to clear)\n" +
+                    "path - Go towards goal\n" +
+                    "repack - (debug) Repacks chunk cache\n" +
+                    "rescan - (debug) Same as repack\n" +
+                    "axis - Paths towards the closest axis or diagonal axis, at y=120\n" +
+                    "cancel - Cancels current path\n" +
+                    "forcecancel - sudo cancel (only use if very glitched, try toggling 'pause' first)\n" +
+                    "gc - Calls System.gc();\n" +
+                    "invert - Runs away from the goal instead of towards it\n" +
+                    "follow - Follows a player 'follow username'\n" +
+                    "reloadall - (debug) Reloads chunk cache\n" +
+                    "saveall - (debug) Saves chunk cache\n" +
+                    "find - (debug) outputs how many blocks of a certain type are within the cache\n" +
+                    "mine - Paths to and mines specified blocks 'mine x_ore y_ore ...'\n" +
+                    "thisway - Creates a goal X blocks where you're facing\n" +
+                    "list - Lists waypoints under a category\n" +
+                    "get - Same as list\n" +
+                    "show - Same as list\n" +
+                    "save - Saves a waypoint (works but don't try to make sense of it)\n" +
+                    "goto - Paths towards specified block or waypoint\n" +
+                    "spawn - Paths towards world spawn or your most recent bed right-click\n" +
+                    "sethome - Sets \"home\"\n" +
+                    "home - Paths towards \"home\" \n" +
+                    "costs - (debug) all movement costs from current location\n" +
+                    "damn - Daniel ";
 
     public ExampleBaritoneControl(Baritone baritone) {
         super(baritone);
@@ -70,6 +100,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     public boolean runCommand(String msg0) {
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
         PathingBehavior pathingBehavior = baritone.getPathingBehavior();
+        CustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
@@ -84,6 +115,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect(setting.toString());
             }
             return true;
+        }
+        if (msg.equals("") || msg.equals("help") || msg.equals("?")) {
+            for (String line : HELP_MSG.split("\n")) {
+                logDirect(line);
+            }
+            return false;
         }
         if (msg.contains(" ")) {
             String[] data = msg.split(" ");
@@ -151,21 +188,19 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("unable to parse integer " + ex);
                 return true;
             }
-            pathingBehavior.setGoal(goal);
+            customGoalProcess.setGoal(goal);
             logDirect("Goal: " + goal);
             return true;
         }
         if (msg.equals("path")) {
-            if (!pathingBehavior.path()) {
-                if (pathingBehavior.getGoal() == null) {
-                    logDirect("No goal.");
-                } else {
-                    if (pathingBehavior.getGoal().isInGoal(playerFeet())) {
-                        logDirect("Already in goal");
-                    } else {
-                        logDirect("Currently executing a path. Please cancel it first.");
-                    }
-                }
+            if (pathingBehavior.getGoal() == null) {
+                logDirect("No goal.");
+            } else if (pathingBehavior.getGoal().isInGoal(playerFeet())) {
+                logDirect("Already in goal");
+            } else if (pathingBehavior.isPathing()) {
+                logDirect("Currently executing a path. Please cancel it first.");
+            } else {
+                customGoalProcess.setGoalAndPath(pathingBehavior.getGoal());
             }
             return true;
         }
@@ -179,7 +214,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     Chunk chunk = cli.getLoadedChunk(x, z);
                     if (chunk != null) {
                         count++;
-                        WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().queueForPacking(chunk);
+                        baritone.getWorldProvider().getCurrentWorld().getCachedWorld().queueForPacking(chunk);
                     }
                 }
             }
@@ -187,21 +222,16 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("axis")) {
-            pathingBehavior.setGoal(new GoalAxis());
-            pathingBehavior.path();
+            customGoalProcess.setGoalAndPath(new GoalAxis());
             return true;
         }
         if (msg.equals("cancel") || msg.equals("stop")) {
-            baritone.getMineBehavior().cancel();
-            baritone.getFollowBehavior().cancel();
-            pathingBehavior.cancel();
+            pathingBehavior.cancelEverything();
             logDirect("ok canceled");
             return true;
         }
         if (msg.equals("forcecancel")) {
-            baritone.getMineBehavior().cancel();
-            baritone.getFollowBehavior().cancel();
-            pathingBehavior.cancel();
+            pathingBehavior.cancelEverything();
             AbstractNodeCostSearch.forceCancel();
             pathingBehavior.forceCancel();
             logDirect("ok force canceled");
@@ -224,15 +254,17 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Inverting goal of player feet");
                 runAwayFrom = playerFeet();
             }
-            pathingBehavior.setGoal(new GoalRunAway(1, runAwayFrom) {
+            customGoalProcess.setGoalAndPath(new GoalRunAway(1, runAwayFrom) {
                 @Override
-                public boolean isInGoal(BlockPos pos) {
+                public boolean isInGoal(int x, int y, int z) {
                     return false;
                 }
             });
-            if (!pathingBehavior.path()) {
-                logDirect("Currently executing a path. Please cancel it first.");
-            }
+            return true;
+        }
+        if (msg.startsWith("followplayers")) {
+            baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
+            logDirect("Following any players");
             return true;
         }
         if (msg.startsWith("follow")) {
@@ -252,23 +284,24 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Not found");
                 return true;
             }
-            baritone.getFollowBehavior().follow(toFollow.get());
+            Entity effectivelyFinal = toFollow.get();
+            baritone.getFollowProcess().follow(x -> effectivelyFinal.equals(x));
             logDirect("Following " + toFollow.get());
             return true;
         }
         if (msg.equals("reloadall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().reloadAllFromDisk();
+            baritone.getWorldProvider().getCurrentWorld().getCachedWorld().reloadAllFromDisk();
             logDirect("ok");
             return true;
         }
         if (msg.equals("saveall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().save();
+            baritone.getWorldProvider().getCurrentWorld().getCachedWorld().save();
             logDirect("ok");
             return true;
         }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
+            LinkedList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(pos).getBlock();
@@ -284,7 +317,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 int quantity = Integer.parseInt(blockTypes[1]);
                 Block block = ChunkPacker.stringToBlock(blockTypes[0]);
                 Objects.requireNonNull(block);
-                baritone.getMineBehavior().mine(quantity, block);
+                baritone.getMineProcess().mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
@@ -295,14 +328,14 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
 
             }
-            baritone.getMineBehavior().mine(0, blockTypes);
+            baritone.getMineProcess().mineByName(0, blockTypes);
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
             return true;
         }
         if (msg.startsWith("thisway")) {
             try {
                 Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-                pathingBehavior.setGoal(goal);
+                customGoalProcess.setGoal(goal);
                 logDirect("Goal: " + goal);
             } catch (NumberFormatException ex) {
                 logDirect("Error unable to parse '" + msg.substring(7).trim() + "' to a double.");
@@ -320,7 +353,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 return true;
             }
-            Set<IWaypoint> waypoints = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getByTag(tag);
+            Set<IWaypoint> waypoints = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getByTag(tag);
             // might as well show them from oldest to newest
             List<IWaypoint> sorted = new ArrayList<>(waypoints);
             sorted.sort(Comparator.comparingLong(IWaypoint::getCreationTimestamp));
@@ -348,7 +381,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
                 name = parts[0];
             }
-            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
             logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto " + name + "' to set goal, say 'list user' to list custom waypoints.");
             return true;
         }
@@ -365,69 +398,59 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 Block block = ChunkPacker.stringToBlock(mining);
                 //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 if (block == null) {
-                    waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
+                    waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
                     if (waypoint == null) {
                         logDirect("No locations for " + mining + " known, cancelling");
                         return true;
                     }
                 } else {
-                    List<BlockPos> locs = baritone.getMineBehavior().searchWorld(Collections.singletonList(block), 64);
-                    if (locs.isEmpty()) {
-                        logDirect("No locations for " + mining + " known, cancelling");
-                        return true;
-                    }
-                    pathingBehavior.setGoal(new GoalComposite(locs.stream().map(GoalGetToBlock::new).toArray(Goal[]::new)));
-                    pathingBehavior.path();
+                    baritone.getGetToBlockProcess().getToBlock(block);
                     return true;
                 }
             } else {
-                waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
+                waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(tag);
                 if (waypoint == null) {
                     logDirect("None saved for tag " + tag);
                     return true;
                 }
             }
             Goal goal = new GoalBlock(waypoint.getLocation());
-            pathingBehavior.setGoal(goal);
-            if (!pathingBehavior.path() && !goal.isInGoal(playerFeet())) {
-                logDirect("Currently executing a path. Please cancel it first.");
-            }
+            customGoalProcess.setGoalAndPath(goal);
             return true;
         }
         if (msg.equals("spawn") || msg.equals("bed")) {
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
             if (waypoint == null) {
                 BlockPos spawnPoint = player().getBedLocation();
                 // for some reason the default spawnpoint is underground sometimes
                 Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getZ());
                 logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
-                pathingBehavior.setGoal(goal);
+                customGoalProcess.setGoalAndPath(goal);
             } else {
-                Goal goal = new GoalBlock(waypoint.getLocation());
-                pathingBehavior.setGoal(goal);
+                Goal goal = new GoalGetToBlock(waypoint.getLocation());
+                customGoalProcess.setGoalAndPath(goal);
                 logDirect("Set goal to most recent bed " + goal);
             }
             return true;
         }
         if (msg.equals("sethome")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
             logDirect("Saved. Say home to set goal.");
             return true;
         }
         if (msg.equals("home")) {
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
             if (waypoint == null) {
                 logDirect("home not saved");
             } else {
                 Goal goal = new GoalBlock(waypoint.getLocation());
-                pathingBehavior.setGoal(goal);
-                pathingBehavior.path();
+                customGoalProcess.setGoalAndPath(goal);
                 logDirect("Going to saved home " + goal);
             }
             return true;
         }
         if (msg.equals("costs")) {
-            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(playerFeet())).collect(Collectors.toCollection(ArrayList::new));
+            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(new CalculationContext(), playerFeet())).collect(Collectors.toCollection(ArrayList::new));
             while (moves.contains(null)) {
                 moves.remove(null);
             }
@@ -441,11 +464,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
                 logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
             }
-            return true;
-        }
-        if (msg.equals("pause")) {
-            boolean enabled = pathingBehavior.toggle();
-            logDirect("Pathing Behavior has " + (enabled ? "resumed" : "paused") + ".");
             return true;
         }
         if (msg.equals("damn")) {

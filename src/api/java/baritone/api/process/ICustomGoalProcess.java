@@ -15,40 +15,36 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils.interfaces;
+package baritone.api.process;
 
-/**
- * @author Brady
- * @since 8/20/2018
- */
-public interface Toggleable {
+import baritone.api.pathing.goals.Goal;
+
+public interface ICustomGoalProcess extends IBaritoneProcess {
 
     /**
-     * Toggles the enabled state of this {@link Toggleable}.
+     * Sets the pathing goal
      *
-     * @return The new state.
+     * @param goal The new goal
      */
-    boolean toggle();
+    void setGoal(Goal goal);
 
     /**
-     * Sets the enabled state of this {@link Toggleable}.
+     * Starts path calculation and execution.
+     */
+    void path();
+
+    /**
+     * @return The current goal
+     */
+    Goal getGoal();
+
+    /**
+     * Sets the goal and begins the path execution.
      *
-     * @return The new state.
+     * @param goal The new goal
      */
-    boolean setEnabled(boolean enabled);
-
-    /**
-     * @return Whether or not this {@link Toggleable} object is enabled
-     */
-    boolean isEnabled();
-
-    /**
-     * Called when the state changes from disabled to enabled
-     */
-    default void onEnable() {}
-
-    /**
-     * Called when the state changes from enabled to disabled
-     */
-    default void onDisable() {}
+    default void setGoalAndPath(Goal goal) {
+        this.setGoal(goal);
+        this.path();
+    }
 }

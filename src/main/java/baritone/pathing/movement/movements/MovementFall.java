@@ -19,13 +19,15 @@ package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.utils.*;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementTarget;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -63,18 +65,18 @@ public class MovementFall extends Movement {
 
         BlockPos playerFeet = playerFeet();
         Rotation targetRotation = null;
-        if (!BlockStateInterface.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
+        if (!MovementHelper.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_WATER)) || world().provider.isNether()) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (player().posY - dest.getY() < mc.playerController.getBlockReachDistance()) {
+            if (player().posY - dest.getY() < playerController().getBlockReachDistance()) {
                 player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_WATER);
 
                 targetRotation = new Rotation(player().rotationYaw, 90.0F);
 
-                RayTraceResult trace = RayTraceUtils.simulateRayTrace(player().rotationYaw, 90.0F);
-                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK) {
+                RayTraceResult trace = mc.objectMouseOver;
+                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && player().rotationPitch > 89.0F) {
                     state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
                 }
             }
@@ -84,8 +86,8 @@ public class MovementFall extends Movement {
         } else {
             state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), VecUtils.getBlockPosCenter(dest)), false));
         }
-        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 || BlockStateInterface.isWater(dest))) { // 0.094 because lilypads
-            if (BlockStateInterface.isWater(dest)) {
+        if (playerFeet.equals(dest) && (player().posY - playerFeet.getY() < 0.094 || MovementHelper.isWater(dest))) { // 0.094 because lilypads
+            if (MovementHelper.isWater(dest)) {
                 if (InventoryPlayer.isHotbar(player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                     player().inventory.currentItem = player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                     if (player().motionY >= 0) {

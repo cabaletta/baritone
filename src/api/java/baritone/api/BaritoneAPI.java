@@ -17,10 +17,16 @@
 
 package baritone.api;
 
-import baritone.api.behavior.*;
+import baritone.api.behavior.ILookBehavior;
+import baritone.api.behavior.IMemoryBehavior;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.process.ICustomGoalProcess;
+import baritone.api.process.IFollowProcess;
+import baritone.api.process.IGetToBlockProcess;
+import baritone.api.process.IMineProcess;
 import baritone.api.utils.SettingsUtil;
 
 import java.util.Iterator;
@@ -36,20 +42,20 @@ import java.util.ServiceLoader;
  */
 public final class BaritoneAPI {
 
-    private static final IBaritoneProvider baritone;
+    private static final IBaritone baritone;
     private static final Settings settings;
 
     static {
         ServiceLoader<IBaritoneProvider> baritoneLoader = ServiceLoader.load(IBaritoneProvider.class);
         Iterator<IBaritoneProvider> instances = baritoneLoader.iterator();
-        baritone = instances.next();
+        baritone = instances.next().getBaritoneForPlayer(null); // PWNAGE
 
         settings = new Settings();
         SettingsUtil.readAndApply(settings);
     }
 
-    public static IFollowBehavior getFollowBehavior() {
-        return baritone.getFollowBehavior();
+    public static IFollowProcess getFollowProcess() {
+        return baritone.getFollowProcess();
     }
 
     public static ILookBehavior getLookBehavior() {
@@ -60,8 +66,8 @@ public final class BaritoneAPI {
         return baritone.getMemoryBehavior();
     }
 
-    public static IMineBehavior getMineBehavior() {
-        return baritone.getMineBehavior();
+    public static IMineProcess getMineProcess() {
+        return baritone.getMineProcess();
     }
 
     public static IPathingBehavior getPathingBehavior() {
@@ -78,6 +84,14 @@ public final class BaritoneAPI {
 
     public static IWorldScanner getWorldScanner() {
         return baritone.getWorldScanner();
+    }
+
+    public static ICustomGoalProcess getCustomGoalProcess() {
+        return baritone.getCustomGoalProcess();
+    }
+
+    public static IGetToBlockProcess getGetToBlockProcess() {
+        return baritone.getGetToBlockProcess();
     }
 
     public static void registerEventListener(IGameEventListener listener) {

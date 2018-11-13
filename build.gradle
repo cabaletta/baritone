@@ -62,7 +62,7 @@ sourceSets {
 
 minecraft {
     version = '1.12.2'
-    mappings = 'snapshot_20180731'
+    mappings = 'stable_39'
     tweakClass = 'baritone.launch.BaritoneTweaker'
     runDir = 'run'
 

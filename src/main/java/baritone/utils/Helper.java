@@ -23,6 +23,7 @@ import baritone.api.utils.Rotation;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
@@ -51,10 +52,23 @@ public interface Helper {
     Minecraft mc = Minecraft.getMinecraft();
 
     default EntityPlayerSP player() {
+        if (!mc.isCallingFromMinecraftThread()) {
+            throw new IllegalStateException("h00000000");
+        }
         return mc.player;
     }
 
+    default PlayerControllerMP playerController() { // idk
+        if (!mc.isCallingFromMinecraftThread()) {
+            throw new IllegalStateException("h00000000");
+        }
+        return mc.playerController;
+    }
+
     default WorldClient world() {
+        if (!mc.isCallingFromMinecraftThread()) {
+            throw new IllegalStateException("h00000000");
+        }
         return mc.world;
     }
 

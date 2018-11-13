@@ -85,6 +85,6 @@ public class MixinEntityPlayerSP {
     )
     private boolean isAllowFlying(PlayerCapabilities capabilities) {
         PathingBehavior pathingBehavior = Baritone.INSTANCE.getPathingBehavior();
-        return (!pathingBehavior.isEnabled() || !pathingBehavior.isPathing()) && capabilities.allowFlying;
+        return !pathingBehavior.isPathing() && capabilities.allowFlying;
     }
 }

@@ -28,12 +28,13 @@ import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.PathCalculationResult;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.calc.CutoffPath;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
 import baritone.utils.Helper;
@@ -51,6 +52,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private PathExecutor next;
 
     private Goal goal;
+
+    private boolean safeToCancel;
+    private boolean pauseRequestedLastTick;
+    private boolean cancelRequested;
+    private boolean calcFailedLastTick;
 
     private volatile boolean isPathCalcInProgress;
     private final Object pathCalcLock = new Object();
@@ -72,8 +78,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private void dispatchEvents() {
         ArrayList<PathEvent> curr = new ArrayList<>();
         toDispatch.drainTo(curr);
+        calcFailedLastTick = curr.contains(PathEvent.CALC_FAILED);
         for (PathEvent event : curr) {
-            Baritone.INSTANCE.getGameEventHandler().onPathEvent(event);
+            baritone.getGameEventHandler().onPathEvent(event);
         }
     }
 
@@ -81,18 +88,30 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public void onTick(TickEvent event) {
         dispatchEvents();
         if (event.getType() == TickEvent.Type.OUT) {
-            cancel();
+            secretInternalSegmentCancel();
+            baritone.getPathingControlManager().cancelEverything();
             return;
         }
+        baritone.getPathingControlManager().preTick();
         tickPath();
         dispatchEvents();
     }
 
     private void tickPath() {
+        if (pauseRequestedLastTick && safeToCancel) {
+            pauseRequestedLastTick = false;
+            baritone.getInputOverrideHandler().clearAllKeys();
+            BlockBreakHelper.stopBreakingBlock();
+            return;
+        }
+        if (cancelRequested) {
+            cancelRequested = false;
+            baritone.getInputOverrideHandler().clearAllKeys();
+        }
         if (current == null) {
             return;
         }
-        boolean safe = current.onTick();
+        safeToCancel = current.onTick();
         synchronized (pathPlanLock) {
             if (current.failed() || current.finished()) {
                 current = null;
@@ -134,7 +153,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 return;
             }
             // at this point, we know current is in progress
-            if (safe && next != null && next.snipsnapifpossible()) {
+            if (safeToCancel && next != null && next.snipsnapifpossible()) {
                 // a movement just ended; jump directly onto the next path
                 logDebug("Splicing into planned next path early...");
                 queuePathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
@@ -142,6 +161,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 next = null;
                 current.onTick();
                 return;
+            }
+            current = current.trySplice(next);
+            if (next != null && current.getPath().getDest().equals(next.getPath().getDest())) {
+                next = null;
             }
             synchronized (pathCalcLock) {
                 if (isPathCalcInProgress) {
@@ -191,14 +214,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
     }
 
-    @Override
-    public void setGoal(Goal goal) {
+    public void secretInternalSetGoal(Goal goal) {
         this.goal = goal;
     }
 
-    public boolean setGoalAndPath(Goal goal) {
-        setGoal(goal);
-        return path();
+    public boolean secretInternalSetGoalAndPath(Goal goal) {
+        secretInternalSetGoal(goal);
+        return secretInternalPath();
     }
 
     @Override
@@ -226,17 +248,60 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return this.current != null;
     }
 
+    public boolean isSafeToCancel() {
+        return current == null || safeToCancel;
+    }
+
+    public void requestPause() {
+        pauseRequestedLastTick = true;
+    }
+
+    public boolean cancelSegmentIfSafe() {
+        if (isSafeToCancel()) {
+            secretInternalSegmentCancel();
+            return true;
+        }
+        return false;
+    }
+
     @Override
-    public void cancel() {
+    public boolean cancelEverything() {
+        boolean doIt = isSafeToCancel();
+        if (doIt) {
+            secretInternalSegmentCancel();
+        }
+        baritone.getPathingControlManager().cancelEverything();
+        return doIt;
+    }
+
+    public boolean calcFailedLastTick() { // NOT exposed on public api
+        return calcFailedLastTick;
+    }
+
+    public void softCancelIfSafe() {
+        if (!isSafeToCancel()) {
+            return;
+        }
+        current = null;
+        next = null;
+        cancelRequested = true;
+        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
+        // do everything BUT clear keys
+    }
+
+    // just cancel the current path
+    public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
         current = null;
         next = null;
-        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+        baritone.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
         BlockBreakHelper.stopBreakingBlock();
     }
 
     public void forceCancel() { // NOT exposed on public api
+        cancelEverything();
+        secretInternalSegmentCancel();
         isPathCalcInProgress = false;
     }
 
@@ -245,8 +310,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      *
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
-    @Override
-    public boolean path() {
+    public boolean secretInternalPath() {
         if (goal == null) {
             return false;
         }
@@ -327,15 +391,16 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             isPathCalcInProgress = true;
         }
         CalculationContext context = new CalculationContext(); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
-        Baritone.INSTANCE.getExecutor().execute(() -> {
+        Baritone.getExecutor().execute(() -> {
             if (talkAboutIt) {
                 logDebug("Starting to search for path from " + start + " to " + goal);
             }
 
-            Optional<IPath> path = findPath(start, previous, context);
+            PathCalculationResult calcResult = findPath(start, previous, context);
+            Optional<IPath> path = calcResult.path;
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
-                    IPath result = p.cutoffAtLoadedChunks();
+                    IPath result = p.cutoffAtLoadedChunks(context.world());
 
                     if (result instanceof CutoffPath) {
                         logDebug("Cutting off path at edge of loaded chunks");
@@ -364,7 +429,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                         current = executor.get();
                     } else {
-                        queuePathEvent(PathEvent.CALC_FAILED);
+                        if (calcResult.type != PathCalculationResult.Type.CANCELLATION && calcResult.type != PathCalculationResult.Type.EXCEPTION) {
+                            // don't dispatch CALC_FAILED on cancellation
+                            queuePathEvent(PathEvent.CALC_FAILED);
+                        }
                     }
                 } else {
                     if (next == null) {
@@ -378,18 +446,16 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         throw new IllegalStateException("I have no idea what to do with this path");
                     }
                 }
-            }
-
-            if (talkAboutIt && current != null && current.getPath() != null) {
-                if (goal == null || goal.isInGoal(current.getPath().getDest())) {
-                    logDebug("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
-                } else {
-                    logDebug("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
-
+                if (talkAboutIt && current != null && current.getPath() != null) {
+                    if (goal == null || goal.isInGoal(current.getPath().getDest())) {
+                        logDebug("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                    } else {
+                        logDebug("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
+                    }
                 }
-            }
-            synchronized (pathCalcLock) {
-                isPathCalcInProgress = false;
+                synchronized (pathCalcLock) {
+                    isPathCalcInProgress = false;
+                }
             }
         });
     }
@@ -400,19 +466,15 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @param start
      * @return
      */
-    private Optional<IPath> findPath(BlockPos start, Optional<IPath> previous, CalculationContext context) {
+    private PathCalculationResult findPath(BlockPos start, Optional<IPath> previous, CalculationContext context) {
         Goal goal = this.goal;
         if (goal == null) {
             logDebug("no goal");
-            return Optional.empty();
+            return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, Optional.empty());
         }
-        if (Baritone.settings().simplifyUnloadedYCoord.get()) {
-            BlockPos pos = null;
-            if (goal instanceof IGoalRenderPos) {
-                pos = ((IGoalRenderPos) goal).getGoalPos();
-            }
-
-            if (pos != null && world().getChunk(pos) instanceof EmptyChunk) {
+        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
+            BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
+            if (context.world().getChunk(pos) instanceof EmptyChunk) {
                 logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
                 goal = new GoalXZ(pos.getX(), pos.getZ());
             }
@@ -435,35 +497,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         } catch (Exception e) {
             logDebug("Pathing exception: " + e);
             e.printStackTrace();
-            return Optional.empty();
-        }
-    }
-
-    public void revalidateGoal() {
-        if (!Baritone.settings().cancelOnGoalInvalidation.get()) {
-            return;
-        }
-        synchronized (pathPlanLock) {
-            if (current == null || goal == null) {
-                return;
-            }
-            Goal intended = current.getPath().getGoal();
-            BlockPos end = current.getPath().getDest();
-            if (intended.isInGoal(end) && !goal.isInGoal(end)) {
-                // this path used to end in the goal
-                // but the goal has changed, so there's no reason to continue...
-                cancel();
-            }
+            return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION, Optional.empty());
         }
     }
 
     @Override
     public void onRenderPass(RenderEvent event) {
         PathRenderer.render(event, this);
-    }
-
-    @Override
-    public void onDisable() {
-        Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
     }
 }

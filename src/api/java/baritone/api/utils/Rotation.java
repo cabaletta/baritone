@@ -86,7 +86,7 @@ public class Rotation {
     public Rotation clamp() {
         return new Rotation(
                 this.yaw,
-                RotationUtils.clampPitch(this.pitch)
+                clampPitch(this.pitch)
         );
     }
 
@@ -95,7 +95,7 @@ public class Rotation {
      */
     public Rotation normalize() {
         return new Rotation(
-                RotationUtils.normalizeYaw(this.yaw),
+                normalizeYaw(this.yaw),
                 this.pitch
         );
     }
@@ -105,8 +105,35 @@ public class Rotation {
      */
     public Rotation normalizeAndClamp() {
         return new Rotation(
-                RotationUtils.normalizeYaw(this.yaw),
-                RotationUtils.clampPitch(this.pitch)
+                normalizeYaw(this.yaw),
+                clampPitch(this.pitch)
         );
+    }
+
+    /**
+     * Clamps the specified pitch value between -90 and 90.
+     *
+     * @param pitch The input pitch
+     * @return The clamped pitch
+     */
+    public static float clampPitch(float pitch) {
+        return Math.max(-90, Math.min(90, pitch));
+    }
+
+    /**
+     * Normalizes the specified yaw value between -180 and 180.
+     *
+     * @param yaw The input yaw
+     * @return The normalized yaw
+     */
+    public static float normalizeYaw(float yaw) {
+        float newYaw = yaw % 360F;
+        if (newYaw < -180F) {
+            newYaw += 360F;
+        }
+        if (newYaw >= 180F) {
+            newYaw -= 360F;
+        }
+        return newYaw;
     }
 }

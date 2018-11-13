@@ -23,7 +23,6 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -57,16 +56,16 @@ public class MovementDiagonal extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        Block fromDown = BlockStateInterface.get(x, y - 1, z).getBlock();
+        Block fromDown = context.get(x, y - 1, z).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return COST_INF;
         }
-        IBlockState destInto = BlockStateInterface.get(destX, y, destZ);
-        if (!MovementHelper.canWalkThrough(destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(destX, y + 1, destZ)) {
+        IBlockState destInto = context.get(destX, y, destZ);
+        if (!MovementHelper.canWalkThrough(context, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context, destX, y + 1, destZ)) {
             return COST_INF;
         }
-        IBlockState destWalkOn = BlockStateInterface.get(destX, y - 1, destZ);
-        if (!MovementHelper.canWalkOn(destX, y - 1, destZ, destWalkOn)) {
+        IBlockState destWalkOn = context.get(destX, y - 1, destZ);
+        if (!MovementHelper.canWalkOn(context, destX, y - 1, destZ, destWalkOn)) {
             return COST_INF;
         }
         double multiplier = WALK_ONE_BLOCK_COST;
@@ -77,16 +76,16 @@ public class MovementDiagonal extends Movement {
         if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        Block cuttingOver1 = BlockStateInterface.get(x, y - 1, destZ).getBlock();
-        if (cuttingOver1 == Blocks.MAGMA || BlockStateInterface.isLava(cuttingOver1)) {
+        Block cuttingOver1 = context.get(x, y - 1, destZ).getBlock();
+        if (cuttingOver1 == Blocks.MAGMA || MovementHelper.isLava(cuttingOver1)) {
             return COST_INF;
         }
-        Block cuttingOver2 = BlockStateInterface.get(destX, y - 1, z).getBlock();
-        if (cuttingOver2 == Blocks.MAGMA || BlockStateInterface.isLava(cuttingOver2)) {
+        Block cuttingOver2 = context.get(destX, y - 1, z).getBlock();
+        if (cuttingOver2 == Blocks.MAGMA || MovementHelper.isLava(cuttingOver2)) {
             return COST_INF;
         }
-        IBlockState pb0 = BlockStateInterface.get(x, y, destZ);
-        IBlockState pb2 = BlockStateInterface.get(destX, y, z);
+        IBlockState pb0 = context.get(x, y, destZ);
+        IBlockState pb2 = context.get(destX, y, z);
         double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false);
         double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false);
         if (optionA != 0 && optionB != 0) {
@@ -94,13 +93,13 @@ public class MovementDiagonal extends Movement {
             // so no need to check pb1 as well, might as well return early here
             return COST_INF;
         }
-        IBlockState pb1 = BlockStateInterface.get(x, y + 1, destZ);
+        IBlockState pb1 = context.get(x, y + 1, destZ);
         optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true);
         if (optionA != 0 && optionB != 0) {
             // same deal, if pb1 makes optionA nonzero and option B already was nonzero, pb3 can't affect the result
             return COST_INF;
         }
-        IBlockState pb3 = BlockStateInterface.get(destX, y + 1, z);
+        IBlockState pb3 = context.get(destX, y + 1, z);
         if (optionA == 0 && ((MovementHelper.avoidWalkingInto(pb2.getBlock()) && pb2.getBlock() != Blocks.WATER) || (MovementHelper.avoidWalkingInto(pb3.getBlock()) && pb3.getBlock() != Blocks.WATER))) {
             // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
             return COST_INF;
@@ -115,7 +114,7 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         boolean water = false;
-        if (BlockStateInterface.isWater(BlockStateInterface.getBlock(x, y, z)) || BlockStateInterface.isWater(destInto.getBlock())) {
+        if (MovementHelper.isWater(context.getBlock(x, y, z)) || MovementHelper.isWater(destInto.getBlock())) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
@@ -145,7 +144,7 @@ public class MovementDiagonal extends Movement {
             state.setStatus(MovementStatus.SUCCESS);
             return state;
         }
-        if (!BlockStateInterface.isLiquid(playerFeet())) {
+        if (!MovementHelper.isLiquid(playerFeet())) {
             state.setInput(InputOverrideHandler.Input.SPRINT, true);
         }
         MovementHelper.moveTowards(state, dest);

@@ -58,24 +58,24 @@ public class MovementAscend extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        IBlockState srcDown = BlockStateInterface.get(x, y - 1, z);
+        IBlockState srcDown = context.get(x, y - 1, z);
         if (srcDown.getBlock() == Blocks.LADDER || srcDown.getBlock() == Blocks.VINE) {
             return COST_INF;
         }
         // we can jump from soul sand, but not from a bottom slab
         boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
-        IBlockState toPlace = BlockStateInterface.get(destX, y, destZ);
+        IBlockState toPlace = context.get(destX, y, destZ);
         boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
 
         if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
             return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
         }
         boolean hasToPlace = false;
-        if (!MovementHelper.canWalkOn(destX, y, destZ, toPlace)) {
+        if (!MovementHelper.canWalkOn(context, destX, y, destZ, toPlace)) {
             if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
                 return COST_INF;
             }
-            if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace)) {
+            if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace)) {
                 return COST_INF;
             }
             // TODO: add ability to place against .down() as well as the cardinal directions
@@ -87,7 +87,7 @@ public class MovementAscend extends Movement {
                 if (againstX == x && againstZ == z) {
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(againstX, y, againstZ)) {
+                if (MovementHelper.canPlaceAgainst(context, againstX, y, againstZ)) {
                     hasToPlace = true;
                     break;
                 }
@@ -97,7 +97,7 @@ public class MovementAscend extends Movement {
             }
         }
         IBlockState srcUp2 = null;
-        if (BlockStateInterface.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(x, y + 1, z) || !((srcUp2 = BlockStateInterface.get(x, y + 2, z)).getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
+        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context, x, y + 1, z) || !((srcUp2 = context.get(x, y + 2, z)).getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
@@ -138,7 +138,7 @@ public class MovementAscend extends Movement {
             totalCost += context.placeBlockCost();
         }
         if (srcUp2 == null) {
-            srcUp2 = BlockStateInterface.get(x, y + 2, z);
+            srcUp2 = context.get(x, y + 2, z);
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false); // TODO MAKE ABSOLUTELY SURE we don't need includeFalling here, from the falling check above
         if (totalCost >= COST_INF) {
@@ -204,7 +204,7 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(state, dest);
-        if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(src.down())) {
+        if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(src.down()))) {
             return state; // don't jump while walking from a non double slab into a bottom slab
         }
 

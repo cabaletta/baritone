@@ -56,7 +56,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     private final LinkedBlockingQueue<Chunk> toPack = new LinkedBlockingQueue<>();
 
-    CachedWorld(Path directory) {
+    private final int dimension;
+
+    CachedWorld(Path directory, int dimension) {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);
@@ -64,11 +66,12 @@ public final class CachedWorld implements ICachedWorld, Helper {
             }
         }
         this.directory = directory.toString();
+        this.dimension = dimension;
         System.out.println("Cached world directory: " + directory);
         // Insert an invalid region element
         cachedRegions.put(0, null);
-        Baritone.INSTANCE.getExecutor().execute(new PackerThread());
-        Baritone.INSTANCE.getExecutor().execute(() -> {
+        Baritone.getExecutor().execute(new PackerThread());
+        Baritone.getExecutor().execute(() -> {
             try {
                 Thread.sleep(30000);
                 while (true) {
@@ -165,6 +168,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * Delete regions that are too far from the player
      */
     private synchronized void prune() {
+        if (!Baritone.settings().pruneRegionsFromRAM.get()) {
+            return;
+        }
         BlockPos pruneCenter = guessPosition();
         for (CachedRegion region : allRegions()) {
             if (region == null) {
@@ -184,7 +190,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * If we are still in this world and dimension, return player feet, otherwise return most recently modified chunk
      */
     private BlockPos guessPosition() {
-        WorldData data = WorldProvider.INSTANCE.getCurrentWorld();
+        WorldData data = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
         if (data != null && data.getCachedWorld() == this) {
             return playerFeet();
         }
@@ -238,7 +244,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      */
     private synchronized CachedRegion getOrCreateRegion(int regionX, int regionZ) {
         return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
-            CachedRegion newRegion = new CachedRegion(regionX, regionZ);
+            CachedRegion newRegion = new CachedRegion(regionX, regionZ, dimension);
             newRegion.load(this.directory);
             return newRegion;
         });

@@ -24,8 +24,8 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -277,6 +277,13 @@ public class Settings {
     public Setting<Boolean> chunkCaching = new Setting<>(true);
 
     /**
+     * On save, delete from RAM any cached regions that are more than 1024 blocks away from the player
+     * <p>
+     * Temporarily disabled, see issue #248
+     */
+    public Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
+
+    /**
      * Print all the debug messages to chat
      */
     public Setting<Boolean> chatDebug = new Setting<>(true);
@@ -305,17 +312,17 @@ public class Settings {
     /**
      * Ignore depth when rendering the goal
      */
-    public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(false);
+    public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
 
     /**
      * Ignore depth when rendering the selection boxes (to break, to place, to walk into)
      */
-    public Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(false);
+    public Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(true);
 
     /**
      * Ignore depth when rendering the path
      */
-    public Setting<Boolean> renderPathIgnoreDepth = new Setting<>(false);
+    public Setting<Boolean> renderPathIgnoreDepth = new Setting<>(true);
 
     /**
      * Line width of the path when rendered, in pixels
@@ -371,10 +378,25 @@ public class Settings {
     public Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
     /**
+     * If we are more than 500 movements into the current path, discard the oldest segments, as they are no longer useful
+     */
+    public Setting<Integer> maxPathHistoryLength = new Setting<>(300);
+
+    /**
+     * If the current path is too long, cut off this many movements from the beginning.
+     */
+    public Setting<Integer> pathHistoryCutoffAmount = new Setting<>(50);
+
+    /**
      * Rescan for the goal once every 5 ticks.
      * Set to 0 to disable.
      */
     public Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
+
+    /**
+     * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
+     */
+    public Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
 
     /**
      * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.
@@ -389,7 +411,7 @@ public class Settings {
      * <p>
      * Also on cosmic prisons this should be set to true since you don't actually mine the ore it just gets replaced with stone.
      */
-    public Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(false);
+    public Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(true);
 
     /**
      * The "axis" command (aka GoalAxis) will go to a axis, or diagonal axis, at this Y level.

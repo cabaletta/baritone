@@ -20,22 +20,18 @@ package baritone.pathing.movement;
 import baritone.Baritone;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
-import baritone.api.utils.VecUtils;
-import baritone.utils.BlockBreakHelper;
+import baritone.api.utils.*;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static baritone.utils.InputOverrideHandler.Input;
@@ -59,8 +55,6 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
      * The position where we need to place a block before this movement can ensue
      */
     protected final BetterBlockPos positionToPlace;
-
-    private boolean didBreakLastTick;
 
     private Double cost;
 
@@ -97,7 +91,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         return getCost();
     }
 
-    protected void override(double cost) {
+    public void override(double cost) {
         this.cost = cost;
     }
 
@@ -115,52 +109,31 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
     @Override
     public MovementStatus update() {
         player().capabilities.isFlying = false;
-        MovementState latestState = updateState(currentState);
-        if (BlockStateInterface.isLiquid(playerFeet())) {
-            latestState.setInput(Input.JUMP, true);
+        currentState = updateState(currentState);
+        if (MovementHelper.isLiquid(playerFeet())) {
+            currentState.setInput(Input.JUMP, true);
         }
         if (player().isEntityInsideOpaqueBlock()) {
-            latestState.setInput(Input.CLICK_LEFT, true);
+            currentState.setInput(Input.CLICK_LEFT, true);
         }
 
         // If the movement target has to force the new rotations, or we aren't using silent move, then force the rotations
-        latestState.getTarget().getRotation().ifPresent(rotation ->
+        currentState.getTarget().getRotation().ifPresent(rotation ->
                 Baritone.INSTANCE.getLookBehavior().updateTarget(
                         rotation,
-                        latestState.getTarget().hasToForceRotations()));
+                        currentState.getTarget().hasToForceRotations()));
 
         // TODO: calculate movement inputs from latestState.getGoal().position
         // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
 
-        this.didBreakLastTick = false;
-
-        latestState.getInputStates().forEach((input, forced) -> {
-            if (Baritone.settings().leftClickWorkaround.get()) {
-                RayTraceResult trace = mc.objectMouseOver;
-                boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
-                boolean isLeftClick = forced && input == Input.CLICK_LEFT;
-
-                // If we're forcing left click, we're in a gui screen, and we're looking
-                // at a block, break the block without a direct game input manipulation.
-                if (mc.currentScreen != null && isLeftClick && isBlockTrace) {
-                    BlockBreakHelper.tryBreakBlock(trace.getBlockPos(), trace.sideHit);
-                    this.didBreakLastTick = true;
-                    return;
-                }
-            }
+        currentState.getInputStates().forEach((input, forced) -> {
             Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
         });
-        latestState.getInputStates().replaceAll((input, forced) -> false);
-
-        if (!this.didBreakLastTick) {
-            BlockBreakHelper.stopBreakingBlock();
-        }
-
-        currentState = latestState;
+        currentState.getInputStates().replaceAll((input, forced) -> false);
 
         // If the current status indicates a completed movement
         if (currentState.getStatus().isComplete()) {
-            onFinish(latestState);
+            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
         }
 
         return currentState.getStatus();
@@ -174,10 +147,13 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         for (BetterBlockPos blockPos : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(blockPos) && !(BlockStateInterface.getBlock(blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
-                Optional<Rotation> reachable = RotationUtils.reachable(player(), blockPos);
+                Optional<Rotation> reachable = RotationUtils.reachable(player(), blockPos, playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     MovementHelper.switchToBestToolFor(BlockStateInterface.get(blockPos));
-                    state.setTarget(new MovementState.MovementTarget(reachable.get(), true)).setInput(Input.CLICK_LEFT, true);
+                    state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
+                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), blockPos)) {
+                        state.setInput(Input.CLICK_LEFT, true);
+                    }
                     return false;
                 }
                 //get rekt minecraft
@@ -186,7 +162,9 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
                 //you dont own me!!!!
                 state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
                         VecUtils.getBlockPosCenter(blockPos)), true)
-                ).setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
+                );
+                // don't check selectedblock on this one, this is a fallback when we can't see any face directly, it's intended to be breaking the "incorrect" block
+                state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
                 return false;
             }
         }
@@ -216,20 +194,6 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
     @Override
     public BetterBlockPos getDest() {
         return dest;
-    }
-
-    /**
-     * Run cleanup on state finish and declare success.
-     */
-    public void onFinish(MovementState state) {
-        state.getInputStates().replaceAll((input, forced) -> false);
-        state.getInputStates().forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
-    }
-
-    public void cancel() {
-        currentState.getInputStates().replaceAll((input, forced) -> false);
-        currentState.getInputStates().forEach((input, forced) -> Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced));
-        currentState.setStatus(MovementStatus.CANCELED);
     }
 
     @Override
@@ -262,8 +226,8 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         return getDest().subtract(getSrc());
     }
 
-    public void checkLoadedChunk() {
-        calculatedWhileLoaded = !(world().getChunk(getDest()) instanceof EmptyChunk);
+    public void checkLoadedChunk(CalculationContext context) {
+        calculatedWhileLoaded = !(context.world().getChunk(getDest()) instanceof EmptyChunk);
     }
 
     @Override

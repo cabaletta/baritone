@@ -35,6 +35,12 @@ public class MixinBlockPos extends Vec3i {
         super(xIn, yIn, zIn);
     }
 
+    /**
+     * The purpose of this was to ensure a friendly name for when we print raw
+     * block positions to chat in the context of an obfuscated environment.
+     *
+     * @return a string representation of the object.
+     */
     @Override
     @Nonnull
     public String toString() {

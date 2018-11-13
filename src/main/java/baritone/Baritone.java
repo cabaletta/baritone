@@ -18,16 +18,24 @@
 package baritone;
 
 import baritone.api.BaritoneAPI;
-import baritone.api.IBaritoneProvider;
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IGameEventListener;
-import baritone.behavior.*;
+import baritone.behavior.Behavior;
+import baritone.behavior.LookBehavior;
+import baritone.behavior.MemoryBehavior;
+import baritone.behavior.PathingBehavior;
 import baritone.cache.WorldProvider;
 import baritone.cache.WorldScanner;
 import baritone.event.GameEventHandler;
+import baritone.process.CustomGoalProcess;
+import baritone.process.FollowProcess;
+import baritone.process.GetToBlockProcess;
+import baritone.process.MineProcess;
 import baritone.utils.BaritoneAutoTest;
 import baritone.utils.ExampleBaritoneControl;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.PathingControlManager;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -44,12 +52,26 @@ import java.util.concurrent.TimeUnit;
  * @author Brady
  * @since 7/31/2018 10:50 PM
  */
-public enum Baritone implements IBaritoneProvider {
+public enum Baritone implements IBaritone {
 
     /**
      * Singleton instance of this class
      */
     INSTANCE;
+
+    private static ThreadPoolExecutor threadPool;
+    private static File dir;
+
+    static {
+        threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+
+        dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
+        if (!Files.exists(dir.toPath())) {
+            try {
+                Files.createDirectories(dir.toPath());
+            } catch (IOException ignored) {}
+        }
+    }
 
     /**
      * Whether or not {@link Baritone#init()} has been called yet
@@ -57,37 +79,30 @@ public enum Baritone implements IBaritoneProvider {
     private boolean initialized;
 
     private GameEventHandler gameEventHandler;
-    private InputOverrideHandler inputOverrideHandler;
-    private Settings settings;
-    private File dir;
-    private ThreadPoolExecutor threadPool;
 
     private List<Behavior> behaviors;
     private PathingBehavior pathingBehavior;
     private LookBehavior lookBehavior;
     private MemoryBehavior memoryBehavior;
-    private FollowBehavior followBehavior;
-    private MineBehavior mineBehavior;
+    private InputOverrideHandler inputOverrideHandler;
 
-    /**
-     * Whether or not Baritone is active
-     */
-    private boolean active;
+    private FollowProcess followProcess;
+    private MineProcess mineProcess;
+    private GetToBlockProcess getToBlockProcess;
+    private CustomGoalProcess customGoalProcess;
+
+    private PathingControlManager pathingControlManager;
+
+    private WorldProvider worldProvider;
 
     Baritone() {
-        this.gameEventHandler = new GameEventHandler();
+        this.gameEventHandler = new GameEventHandler(this);
     }
 
     public synchronized void init() {
         if (initialized) {
             return;
         }
-        this.threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        this.inputOverrideHandler = new InputOverrideHandler();
-
-        // Acquire the "singleton" instance of the settings directly from the API
-        // We might want to change this...
-        this.settings = BaritoneAPI.getSettings();
 
         this.behaviors = new ArrayList<>();
         {
@@ -95,26 +110,29 @@ public enum Baritone implements IBaritoneProvider {
             pathingBehavior = new PathingBehavior(this);
             lookBehavior = new LookBehavior(this);
             memoryBehavior = new MemoryBehavior(this);
-            followBehavior = new FollowBehavior(this);
-            mineBehavior = new MineBehavior(this);
+            inputOverrideHandler = new InputOverrideHandler(this);
             new ExampleBaritoneControl(this);
         }
+
+        this.pathingControlManager = new PathingControlManager(this);
+        {
+            followProcess = new FollowProcess(this);
+            mineProcess = new MineProcess(this);
+            customGoalProcess = new CustomGoalProcess(this); // very high iq
+            getToBlockProcess = new GetToBlockProcess(this);
+        }
+
+        this.worldProvider = new WorldProvider();
+
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             registerEventListener(BaritoneAutoTest.INSTANCE);
         }
-        this.dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
-        if (!Files.exists(dir.toPath())) {
-            try {
-                Files.createDirectories(dir.toPath());
-            } catch (IOException ignored) {}
-        }
 
-        this.active = true;
         this.initialized = true;
     }
 
-    public boolean isInitialized() {
-        return this.initialized;
+    public PathingControlManager getPathingControlManager() {
+        return pathingControlManager;
     }
 
     public IGameEventListener getGameEventHandler() {
@@ -129,18 +147,24 @@ public enum Baritone implements IBaritoneProvider {
         return this.behaviors;
     }
 
-    public Executor getExecutor() {
-        return threadPool;
-    }
-
     public void registerBehavior(Behavior behavior) {
         this.behaviors.add(behavior);
         this.registerEventListener(behavior);
     }
 
     @Override
-    public FollowBehavior getFollowBehavior() {
-        return followBehavior;
+    public CustomGoalProcess getCustomGoalProcess() { // Iffy
+        return customGoalProcess;
+    }
+
+    @Override
+    public GetToBlockProcess getGetToBlockProcess() {  // Iffy
+        return getToBlockProcess;
+    }
+
+    @Override
+    public FollowProcess getFollowProcess() {
+        return followProcess;
     }
 
     @Override
@@ -154,8 +178,8 @@ public enum Baritone implements IBaritoneProvider {
     }
 
     @Override
-    public MineBehavior getMineBehavior() {
-        return mineBehavior;
+    public MineProcess getMineProcess() {
+        return mineProcess;
     }
 
     @Override
@@ -165,7 +189,7 @@ public enum Baritone implements IBaritoneProvider {
 
     @Override
     public WorldProvider getWorldProvider() {
-        return WorldProvider.INSTANCE;
+        return worldProvider;
     }
 
     @Override
@@ -178,19 +202,15 @@ public enum Baritone implements IBaritoneProvider {
         this.gameEventHandler.registerEventListener(listener);
     }
 
-    public boolean isActive() {
-        return this.active;
-    }
-
-    public Settings getSettings() {
-        return this.settings;
-    }
-
     public static Settings settings() {
-        return Baritone.INSTANCE.settings; // yolo
+        return BaritoneAPI.getSettings();
     }
 
-    public File getDir() {
-        return this.dir;
+    public static File getDir() {
+        return dir;
+    }
+
+    public static Executor getExecutor() {
+        return threadPool;
     }
 }

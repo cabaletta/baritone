@@ -83,10 +83,9 @@ public class MixinMinecraft {
             )
     )
     private void runTick(CallbackInfo ci) {
-        Minecraft mc = (Minecraft) (Object) this;
         Baritone.INSTANCE.getGameEventHandler().onTick(new TickEvent(
                 EventState.PRE,
-                (mc.player != null && mc.world != null)
+                (player != null && world != null)
                         ? TickEvent.Type.IN
                         : TickEvent.Type.OUT
         ));
@@ -142,7 +141,7 @@ public class MixinMinecraft {
             )
     )
     private boolean isAllowUserInput(GuiScreen screen) {
-        return (Baritone.INSTANCE.getPathingBehavior().getCurrent() != null && Baritone.INSTANCE.getPathingBehavior().isEnabled() && player != null) || screen.allowUserInput;
+        return (Baritone.INSTANCE.getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
     }
 
     @Inject(

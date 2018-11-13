@@ -67,40 +67,50 @@ public class MovementParkour extends Movement {
         if (!Baritone.settings().allowParkour.get()) {
             return;
         }
-        IBlockState standingOn = BlockStateInterface.get(x, y - 1, z);
+        IBlockState standingOn = context.get(x, y - 1, z);
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || MovementHelper.isBottomSlab(standingOn)) {
             return;
         }
         int xDiff = dir.getXOffset();
         int zDiff = dir.getZOffset();
-        IBlockState adj = BlockStateInterface.get(x + xDiff, y - 1, z + zDiff);
+        IBlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
         if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
             return;
         }
-        if (MovementHelper.canWalkOn(x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+        if (MovementHelper.canWalkOn(context,x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
             return;
         }
 
-        if (!MovementHelper.fullyPassable(x + xDiff, y, z + zDiff)) {
+        if (!MovementHelper.fullyPassable(context,x + xDiff, y, z + zDiff)) {
             return;
         }
-        if (!MovementHelper.fullyPassable(x + xDiff, y + 1, z + zDiff)) {
+        if (!MovementHelper.fullyPassable(context,x + xDiff, y + 1, z + zDiff)) {
             return;
         }
-        if (!MovementHelper.fullyPassable(x + xDiff, y + 2, z + zDiff)) {
+        if (!MovementHelper.fullyPassable(context,x + xDiff, y + 2, z + zDiff)) {
             return;
         }
-        if (!MovementHelper.fullyPassable(x, y + 2, z)) {
+        if (!MovementHelper.fullyPassable(context,x, y + 2, z)) {
             return;
         }
-        for (int i = 2; i <= (context.canSprint() ? 4 : 3); i++) {
+        int maxJump;
+        if (standingOn.getBlock() == Blocks.SOUL_SAND) {
+            maxJump = 2; // 1 block gap
+        } else {
+            if (context.canSprint()) {
+                maxJump = 4;
+            } else {
+                maxJump = 3;
+            }
+        }
+        for (int i = 2; i <= maxJump; i++) {
             // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
             for (int y2 = 0; y2 < 4; y2++) {
-                if (!MovementHelper.fullyPassable(x + xDiff * i, y + y2, z + zDiff * i)) {
+                if (!MovementHelper.fullyPassable(context,x + xDiff * i, y + y2, z + zDiff * i)) {
                     return;
                 }
             }
-            if (MovementHelper.canWalkOn(x + xDiff * i, y - 1, z + zDiff * i)) {
+            if (MovementHelper.canWalkOn(context,x + xDiff * i, y - 1, z + zDiff * i)) {
                 res.x = x + xDiff * i;
                 res.y = y;
                 res.z = z + zDiff * i;
@@ -108,7 +118,7 @@ public class MovementParkour extends Movement {
                 return;
             }
         }
-        if (!context.canSprint()) {
+        if (maxJump != 4) {
             return;
         }
         if (!Baritone.settings().allowParkourPlace.get()) {
@@ -120,11 +130,11 @@ public class MovementParkour extends Movement {
         }
         int destX = x + 4 * xDiff;
         int destZ = z + 4 * zDiff;
-        IBlockState toPlace = BlockStateInterface.get(destX, y - 1, destZ);
+        IBlockState toPlace = context.get(destX, y - 1, destZ);
         if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
             return;
         }
-        if (toPlace.getBlock() != Blocks.AIR && !BlockStateInterface.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace)) {
+        if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace)) {
             return;
         }
         for (int i = 0; i < 5; i++) {
@@ -133,7 +143,7 @@ public class MovementParkour extends Movement {
             if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
                 continue;
             }
-            if (MovementHelper.canPlaceAgainst(againstX, y - 1, againstZ)) {
+            if (MovementHelper.canPlaceAgainst(context,againstX, y - 1, againstZ)) {
                 res.x = destX;
                 res.y = y;
                 res.z = destZ;
@@ -217,7 +227,7 @@ public class MovementParkour extends Movement {
                             double faceY = (dest.getY() + against1.getY()) * 0.5D;
                             double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
                             Rotation place = RotationUtils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations());
-                            RayTraceResult res = RayTraceUtils.rayTraceTowards(place);
+                            RayTraceResult res = RayTraceUtils.rayTraceTowards(player(), place, playerController().getBlockReachDistance());
                             if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
                                 state.setTarget(new MovementState.MovementTarget(place, true));
                             }

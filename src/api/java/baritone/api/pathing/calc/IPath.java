@@ -21,6 +21,8 @@ import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.List;
 
@@ -51,7 +53,9 @@ public interface IPath {
      * This path is actually going to be executed in the world. Do whatever additional processing is required.
      * (as opposed to Path objects that are just constructed every frame for rendering)
      */
-    default void postProcess() {}
+    default IPath postProcess() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Returns the number of positions in this path. Equivalent to {@code positions().size()}.
@@ -117,20 +121,48 @@ public interface IPath {
      *
      * @return The result of this cut-off operation
      */
-    default IPath cutoffAtLoadedChunks() {
-        return this;
+    default IPath cutoffAtLoadedChunks(World world) {
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Cuts off this path using the min length and cutoff factor settings, and returns the resulting path.
      * Default implementation just returns this path, without the intended functionality.
      *
+     * @return The result of this cut-off operation
      * @see Settings#pathCutoffMinimumLength
      * @see Settings#pathCutoffFactor
-     *
-     * @return The result of this cut-off operation
      */
     default IPath staticCutoff(Goal destination) {
-        return this;
+        throw new UnsupportedOperationException();
+    }
+
+
+    /**
+     * Performs a series of checks to ensure that the assembly of the path went as expected.
+     */
+    default void sanityCheck() {
+        List<BetterBlockPos> path = positions();
+        List<IMovement> movements = movements();
+        if (!getSrc().equals(path.get(0))) {
+            throw new IllegalStateException("Start node does not equal first path element");
+        }
+        if (!getDest().equals(path.get(path.size() - 1))) {
+            throw new IllegalStateException("End node does not equal last path element");
+        }
+        if (path.size() != movements.size() + 1) {
+            throw new IllegalStateException("Size of path array is unexpected");
+        }
+        for (int i = 0; i < path.size() - 1; i++) {
+            BlockPos src = path.get(i);
+            BlockPos dest = path.get(i + 1);
+            IMovement movement = movements.get(i);
+            if (!src.equals(movement.getSrc())) {
+                throw new IllegalStateException("Path source is not equal to the movement source");
+            }
+            if (!dest.equals(movement.getDest())) {
+                throw new IllegalStateException("Path destination is not equal to the movement destination");
+            }
+        }
     }
 }
