@@ -192,8 +192,7 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            // If our Y coordinate is above our goal, stop jumping
-            state.setInput(InputOverrideHandler.Input.JUMP, player().posY < dest.getY());
+
             state.setInput(InputOverrideHandler.Input.SNEAK, player().posY > dest.getY()); // delay placement by 1 tick for ncp compatibility
             // since (lower down) we only right click once player.isSneaking, and that happens the tick after we request to sneak
 
@@ -209,6 +208,9 @@ public class MovementPillar extends Movement {
 
                 // revise our target to both yaw and pitch if we're going to be moving forward
                 state.setTarget(new MovementState.MovementTarget(rotation, true));
+            } else {
+                // If our Y coordinate is above our goal, stop jumping
+                state.setInput(InputOverrideHandler.Input.JUMP, player().posY < dest.getY());
             }
 
 
