@@ -22,9 +22,8 @@ import baritone.cache.WorldProvider;
 import java.io.File;
 
 /**
- * @see WorldProvider
- *
  * @author Brady
+ * @see WorldProvider
  * @since 8/4/2018 11:36 AM
  */
 public interface IAnvilChunkLoader {
