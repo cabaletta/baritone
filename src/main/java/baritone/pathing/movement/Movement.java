@@ -23,7 +23,6 @@ import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class Movement implements IMovement, Helper, MovementHelper {
+public abstract class Movement implements IMovement, MovementHelper {
 
     protected static final EnumFacing[] HORIZONTALS = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST};
 

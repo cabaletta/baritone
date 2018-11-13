@@ -27,7 +27,6 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.cache.Waypoint;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import net.minecraft.block.BlockBed;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
@@ -45,7 +44,7 @@ import java.util.*;
  * @author Brady
  * @since 8/6/2018 9:47 PM
  */
-public final class MemoryBehavior extends Behavior implements IMemoryBehavior, Helper {
+public final class MemoryBehavior extends Behavior implements IMemoryBehavior {
 
     private final Map<IWorldData, WorldDataContainer> worldDataContainers = new HashMap<>();
 

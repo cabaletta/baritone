@@ -19,7 +19,6 @@ package baritone.cache;
 
 import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.IPlayerContext;
-import baritone.utils.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
@@ -31,7 +30,7 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import java.util.LinkedList;
 import java.util.List;
 
-public enum WorldScanner implements IWorldScanner, Helper {
+public enum WorldScanner implements IWorldScanner {
 
     INSTANCE;
 

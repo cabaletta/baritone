@@ -31,7 +31,7 @@ import net.minecraft.world.World;
  * @author Brady
  * @since 11/12/2018
  */
-public final class LocalPlayerContext extends AbstractPlayerContext {
+public final class LocalPlayerContext implements IPlayerContext {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
 

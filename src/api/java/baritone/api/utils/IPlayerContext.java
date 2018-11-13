@@ -18,6 +18,7 @@
 package baritone.api.utils;
 
 import baritone.api.cache.IWorldData;
+import net.minecraft.block.BlockSlab;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.util.math.Vec3d;
@@ -37,7 +38,14 @@ public interface IPlayerContext {
 
     IWorldData worldData();
 
-    BetterBlockPos playerFeet();
+    default BetterBlockPos playerFeet() {
+        // TODO find a better way to deal with soul sand!!!!!
+        BetterBlockPos feet = new BetterBlockPos(player().posX, player().posY + 0.1251, player().posZ);
+        if (world().getBlockState(feet).getBlock() instanceof BlockSlab) {
+            return feet.up();
+        }
+        return feet;
+    }
 
     default Vec3d playerFeetAsVec() {
         return new Vec3d(player().posX, player().posY, player().posZ);

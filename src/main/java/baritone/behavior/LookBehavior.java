@@ -23,9 +23,8 @@ import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
 import baritone.api.utils.Rotation;
-import baritone.utils.Helper;
 
-public final class LookBehavior extends Behavior implements ILookBehavior, Helper {
+public final class LookBehavior extends Behavior implements ILookBehavior {
 
     /**
      * Target's values are as follows:

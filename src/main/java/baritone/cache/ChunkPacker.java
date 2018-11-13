@@ -18,7 +18,6 @@
 package baritone.cache;
 
 import baritone.pathing.movement.MovementHelper;
-import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoublePlant;
@@ -38,7 +37,7 @@ import java.util.*;
  * @author Brady
  * @since 8/3/2018 1:09 AM
  */
-public final class ChunkPacker implements Helper {
+public final class ChunkPacker {
 
     private ChunkPacker() {}
 

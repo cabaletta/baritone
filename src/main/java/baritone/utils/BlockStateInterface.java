@@ -35,7 +35,7 @@ import net.minecraft.world.chunk.Chunk;
  *
  * @author leijurv
  */
-public class BlockStateInterface implements Helper {
+public class BlockStateInterface {
 
     private final World world;
     private final WorldData worldData;

@@ -88,7 +88,7 @@ public class CalculationContext {
     }
 
     public final IBaritone getBaritone() {
-        return this.baritone;
+        return baritone;
     }
 
     public IBlockState get(int x, int y, int z) {
