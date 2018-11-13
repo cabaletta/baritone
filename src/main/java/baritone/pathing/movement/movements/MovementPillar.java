@@ -17,17 +17,18 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.VecUtils;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -36,8 +37,8 @@ import net.minecraft.util.math.Vec3d;
 
 public class MovementPillar extends Movement {
 
-    public MovementPillar(BetterBlockPos start, BetterBlockPos end) {
-        super(start, end, new BetterBlockPos[]{start.up(2)}, start);
+    public MovementPillar(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
+        super(baritone, start, end, new BetterBlockPos[]{start.up(2)}, start);
     }
 
     @Override
@@ -142,41 +143,41 @@ public class MovementPillar extends Movement {
             return state;
         }
 
-        IBlockState fromDown = BlockStateInterface.get(src);
-        if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(dest)) {
+        IBlockState fromDown = BlockStateInterface.get(ctx, src);
+        if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(ctx, dest)) {
             // stay centered while swimming up a water column
-            state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(playerHead(), VecUtils.getBlockPosCenter(dest)), false));
+            state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest)), false));
             Vec3d destCenter = VecUtils.getBlockPosCenter(dest);
-            if (Math.abs(player().posX - destCenter.x) > 0.2 || Math.abs(player().posZ - destCenter.z) > 0.2) {
-                state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+            if (Math.abs(ctx.player().posX - destCenter.x) > 0.2 || Math.abs(ctx.player().posZ - destCenter.z) > 0.2) {
+                state.setInput(Input.MOVE_FORWARD, true);
             }
-            if (playerFeet().equals(dest)) {
+            if (ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
         }
         boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
         boolean vine = fromDown.getBlock() instanceof BlockVine;
-        Rotation rotation = RotationUtils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
+        Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
                 VecUtils.getBlockPosCenter(positionToPlace),
-                new Rotation(player().rotationYaw, player().rotationPitch));
+                new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch));
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(new Rotation(player().rotationYaw, rotation.getPitch()), true));
+            state.setTarget(new MovementState.MovementTarget(new Rotation(ctx.player().rotationYaw, rotation.getPitch()), true));
         }
 
-        boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;
+        boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
         if (ladder) {
-            BlockPos against = vine ? getAgainst(new CalculationContext(), src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
+            BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
                 logDebug("Unable to climb vines");
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (playerFeet().equals(against.up()) || playerFeet().equals(dest)) {
+            if (ctx.playerFeet().equals(against.up()) || ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (MovementHelper.isBottomSlab(BlockStateInterface.get(src.down()))) {
-                state.setInput(InputOverrideHandler.Input.JUMP, true);
+            if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
+                state.setInput(Input.JUMP, true);
             }
             /*
             if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
@@ -184,49 +185,49 @@ public class MovementPillar extends Movement {
             }
              */
 
-            MovementHelper.moveTowards(state, against);
+            MovementHelper.moveTowards(ctx, state, against);
             return state;
         } else {
             // Get ready to place a throwaway block
-            if (!MovementHelper.throwaway(true)) {
+            if (!MovementHelper.throwaway(ctx, true)) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
 
-            state.setInput(InputOverrideHandler.Input.SNEAK, player().posY > dest.getY()); // delay placement by 1 tick for ncp compatibility
+            state.setInput(Input.SNEAK, ctx.player().posY > dest.getY()); // delay placement by 1 tick for ncp compatibility
             // since (lower down) we only right click once player.isSneaking, and that happens the tick after we request to sneak
 
-            double diffX = player().posX - (dest.getX() + 0.5);
-            double diffZ = player().posZ - (dest.getZ() + 0.5);
+            double diffX = ctx.player().posX - (dest.getX() + 0.5);
+            double diffZ = ctx.player().posZ - (dest.getZ() + 0.5);
             double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
             if (dist > 0.17) {//why 0.17? because it seemed like a good number, that's why
                 //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
                 //and 0.17 is reasonably less than 0.2
 
                 // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
-                state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+                state.setInput(Input.MOVE_FORWARD, true);
 
                 // revise our target to both yaw and pitch if we're going to be moving forward
                 state.setTarget(new MovementState.MovementTarget(rotation, true));
             } else {
                 // If our Y coordinate is above our goal, stop jumping
-                state.setInput(InputOverrideHandler.Input.JUMP, player().posY < dest.getY());
+                state.setInput(Input.JUMP, ctx.player().posY < dest.getY());
             }
 
 
             if (!blockIsThere) {
-                Block fr = BlockStateInterface.get(src).getBlock();
-                if (!(fr instanceof BlockAir || fr.isReplaceable(world(), src))) {
-                    state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
+                Block fr = BlockStateInterface.get(ctx, src).getBlock();
+                if (!(fr instanceof BlockAir || fr.isReplaceable(ctx.world(), src))) {
+                    state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (player().isSneaking()) { // 1 tick after we're able to place
-                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                } else if (ctx.player().isSneaking()) { // 1 tick after we're able to place
+                    state.setInput(Input.CLICK_RIGHT, true);
                 }
             }
         }
 
         // If we are at our goal and the block below us is placed
-        if (playerFeet().equals(dest) && blockIsThere) {
+        if (ctx.playerFeet().equals(dest) && blockIsThere) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
@@ -235,13 +236,13 @@ public class MovementPillar extends Movement {
 
     @Override
     protected boolean prepared(MovementState state) {
-        if (playerFeet().equals(src) || playerFeet().equals(src.down())) {
-            Block block = BlockStateInterface.getBlock(src.down());
+        if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.down())) {
+            Block block = BlockStateInterface.getBlock(ctx, src.down());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
-                state.setInput(InputOverrideHandler.Input.SNEAK, true);
+                state.setInput(Input.SNEAK, true);
             }
         }
-        if (MovementHelper.isWater(dest.up())) {
+        if (MovementHelper.isWater(ctx, dest.up())) {
             return true;
         }
         return super.prepared(state);

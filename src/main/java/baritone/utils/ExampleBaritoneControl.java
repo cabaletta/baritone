@@ -30,7 +30,6 @@ import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
@@ -165,7 +164,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             try {
                 switch (params.length) {
                     case 0:
-                        goal = new GoalBlock(playerFeet());
+                        goal = new GoalBlock(ctx.playerFeet());
                         break;
                     case 1:
                         if (params[0].equals("clear") || params[0].equals("none")) {
@@ -195,7 +194,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         if (msg.equals("path")) {
             if (pathingBehavior.getGoal() == null) {
                 logDirect("No goal.");
-            } else if (pathingBehavior.getGoal().isInGoal(playerFeet())) {
+            } else if (pathingBehavior.getGoal().isInGoal(ctx.playerFeet())) {
                 logDirect("Already in goal");
             } else if (pathingBehavior.isPathing()) {
                 logDirect("Currently executing a path. Please cancel it first.");
@@ -205,9 +204,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("repack") || msg.equals("rescan")) {
-            ChunkProviderClient cli = world().getChunkProvider();
-            int playerChunkX = playerFeet().getX() >> 4;
-            int playerChunkZ = playerFeet().getZ() >> 4;
+            ChunkProviderClient cli = (ChunkProviderClient) ctx.world().getChunkProvider();
+            int playerChunkX = ctx.playerFeet().getX() >> 4;
+            int playerChunkZ = ctx.playerFeet().getZ() >> 4;
             int count = 0;
             for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
                 for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
@@ -252,7 +251,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             } else {
                 logDirect("Goal must be GoalXZ or GoalBlock to invert");
                 logDirect("Inverting goal of player feet");
-                runAwayFrom = playerFeet();
+                runAwayFrom = ctx.playerFeet();
             }
             customGoalProcess.setGoalAndPath(new GoalRunAway(1, runAwayFrom) {
                 @Override
@@ -273,9 +272,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             if (name.length() == 0) {
                 toFollow = RayTraceUtils.getSelectedEntity();
             } else {
-                for (EntityPlayer pl : world().playerEntities) {
+                for (EntityPlayer pl : ctx.world().playerEntities) {
                     String theirName = pl.getName().trim().toLowerCase();
-                    if (!theirName.equals(player().getName().trim().toLowerCase()) && (theirName.contains(name) || name.contains(theirName))) { // don't follow ourselves lol
+                    if (!theirName.equals(ctx.player().getName().trim().toLowerCase()) && (theirName.contains(name) || name.contains(theirName))) { // don't follow ourselves lol
                         toFollow = Optional.of(pl);
                     }
                 }
@@ -301,10 +300,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
+            LinkedList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
-                Block actually = BlockStateInterface.get(pos).getBlock();
+                Block actually = BlockStateInterface.get(ctx, pos).getBlock();
                 if (!ChunkPacker.blockToString(actually).equalsIgnoreCase(blockType)) {
                     System.out.println("Was looking for " + blockType + " but actually found " + actually + " " + ChunkPacker.blockToString(actually));
                 }
@@ -334,7 +333,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.startsWith("thisway")) {
             try {
-                Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
+                Goal goal = GoalXZ.fromDirection(ctx.playerFeetAsVec(), ctx.player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
                 customGoalProcess.setGoal(goal);
                 logDirect("Goal: " + goal);
             } catch (NumberFormatException ex) {
@@ -365,7 +364,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.startsWith("save")) {
             String name = msg.substring(4).trim();
-            BlockPos pos = playerFeet();
+            BlockPos pos = ctx.playerFeet();
             if (name.contains(" ")) {
                 logDirect("Name contains a space, assuming it's in the format 'save waypointName X Y Z'");
                 String[] parts = name.split(" ");
@@ -421,7 +420,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         if (msg.equals("spawn") || msg.equals("bed")) {
             IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
             if (waypoint == null) {
-                BlockPos spawnPoint = player().getBedLocation();
+                BlockPos spawnPoint = ctx.player().getBedLocation();
                 // for some reason the default spawnpoint is underground sometimes
                 Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getZ());
                 logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
@@ -434,7 +433,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("sethome")) {
-            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, ctx.playerFeet()));
             logDirect("Saved. Say home to set goal.");
             return true;
         }
@@ -450,7 +449,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("costs")) {
-            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(new CalculationContext(), playerFeet())).collect(Collectors.toCollection(ArrayList::new));
+            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(baritone, ctx.playerFeet())).collect(Collectors.toCollection(ArrayList::new));
             while (moves.contains(null)) {
                 moves.remove(null);
             }

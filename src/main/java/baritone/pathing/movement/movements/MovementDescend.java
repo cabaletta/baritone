@@ -18,13 +18,14 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
@@ -36,8 +37,8 @@ public class MovementDescend extends Movement {
 
     private int numTicks = 0;
 
-    public MovementDescend(BetterBlockPos start, BetterBlockPos end) {
-        super(start, end, new BetterBlockPos[]{end.up(2), end.up(), end}, end.down());
+    public MovementDescend(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
+        super(baritone, start, end, new BetterBlockPos[]{end.up(2), end.up(), end}, end.down());
     }
 
     @Override
@@ -88,7 +89,7 @@ public class MovementDescend extends Movement {
         //C, D, etc determine the length of the fall
 
         IBlockState below = context.get(destX, y - 2, destZ);
-        if (!MovementHelper.canWalkOn(context, destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkOn(context.bsi(), destX, y - 2, destZ, below)) {
             dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res);
             return;
         }
@@ -117,7 +118,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return;
         }
-        if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
+        if (!MovementHelper.canWalkThrough(context.bsi(), destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
             return;
         }
         for (int fallHeight = 3; true; fallHeight++) {
@@ -145,10 +146,10 @@ public class MovementDescend extends Movement {
             if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
                 return;
             }
-            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context.bsi(), destX, newY, destZ, ontoBlock)) {
                 continue;
             }
-            if (!MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
+            if (!MovementHelper.canWalkOn(context.bsi(), destX, newY, destZ, ontoBlock)) {
                 return;
             }
             if (MovementHelper.isBottomSlab(ontoBlock)) {
@@ -181,30 +182,30 @@ public class MovementDescend extends Movement {
             return state;
         }
 
-        BlockPos playerFeet = playerFeet();
-        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(dest) || player().posY - playerFeet.getY() < 0.094)) { // lilypads
+        BlockPos playerFeet = ctx.playerFeet();
+        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(ctx, dest) || ctx.player().posY - playerFeet.getY() < 0.094)) { // lilypads
             // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
             return state.setStatus(MovementStatus.SUCCESS);
             /* else {
                 // System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
             }*/
         }
-        double diffX = player().posX - (dest.getX() + 0.5);
-        double diffZ = player().posZ - (dest.getZ() + 0.5);
+        double diffX = ctx.player().posX - (dest.getX() + 0.5);
+        double diffZ = ctx.player().posZ - (dest.getZ() + 0.5);
         double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
-        double x = player().posX - (src.getX() + 0.5);
-        double z = player().posZ - (src.getZ() + 0.5);
+        double x = ctx.player().posX - (src.getX() + 0.5);
+        double z = ctx.player().posZ - (src.getZ() + 0.5);
         double fromStart = Math.sqrt(x * x + z * z);
         if (!playerFeet.equals(dest) || ab > 0.25) {
             BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
             if (numTicks++ < 20) {
-                MovementHelper.moveTowards(state, fakeDest);
+                MovementHelper.moveTowards(ctx, state, fakeDest);
                 if (fromStart > 1.25) {
-                    state.setInput(InputOverrideHandler.Input.MOVE_FORWARD, false);
-                    state.setInput(InputOverrideHandler.Input.MOVE_BACK, true);
+                    state.setInput(Input.MOVE_FORWARD, false);
+                    state.setInput(Input.MOVE_BACK, true);
                 }
             } else {
-                MovementHelper.moveTowards(state, dest);
+                MovementHelper.moveTowards(ctx, state, dest);
             }
         }
         return state;

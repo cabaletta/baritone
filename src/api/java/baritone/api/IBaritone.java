@@ -27,6 +27,8 @@ import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IFollowProcess;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.IMineProcess;
+import baritone.api.utils.IInputOverrideHandler;
+import baritone.api.utils.IPlayerContext;
 
 /**
  * @author Brady
@@ -76,9 +78,13 @@ public interface IBaritone {
      */
     IWorldScanner getWorldScanner();
 
+    IInputOverrideHandler getInputOverrideHandler();
+
     ICustomGoalProcess getCustomGoalProcess();
 
     IGetToBlockProcess getGetToBlockProcess();
+
+    IPlayerContext getPlayerContext();
 
     /**
      * Registers a {@link IGameEventListener} with Baritone's "event bus".

@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.utils.IPlayerContext;
 import baritone.behavior.Behavior;
 import baritone.behavior.LookBehavior;
 import baritone.behavior.MemoryBehavior;
@@ -36,6 +37,7 @@ import baritone.utils.BaritoneAutoTest;
 import baritone.utils.ExampleBaritoneControl;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
+import baritone.utils.player.LocalPlayerContext;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -139,6 +141,7 @@ public enum Baritone implements IBaritone {
         return this.gameEventHandler;
     }
 
+    @Override
     public InputOverrideHandler getInputOverrideHandler() {
         return this.inputOverrideHandler;
     }
@@ -160,6 +163,11 @@ public enum Baritone implements IBaritone {
     @Override
     public GetToBlockProcess getGetToBlockProcess() {  // Iffy
         return getToBlockProcess;
+    }
+
+    @Override
+    public IPlayerContext getPlayerContext() {
+        return LocalPlayerContext.INSTANCE;
     }
 
     @Override
@@ -192,6 +200,11 @@ public enum Baritone implements IBaritone {
         return worldProvider;
     }
 
+    /**
+     * TODO-yeet This shouldn't be baritone-instance specific
+     *
+     * @return world scanner instance
+     */
     @Override
     public WorldScanner getWorldScanner() {
         return WorldScanner.INSTANCE;

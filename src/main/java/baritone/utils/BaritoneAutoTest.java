@@ -22,6 +22,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.settings.GameSettings;
@@ -40,6 +41,8 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
     private static final BlockPos STARTING_POSITION = new BlockPos(0, 65, 0);
     private static final Goal GOAL = new GoalBlock(69, 121, 420);
     private static final int MAX_TICKS = 3500;
+    private static final Baritone baritone = Baritone.INSTANCE;
+    private static final IPlayerContext ctx = baritone.getPlayerContext();
 
     /**
      * Called right after the {@link GameSettings} object is created in the {@link Minecraft} instance.
@@ -101,15 +104,15 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
             // Print out an update of our position every 5 seconds
             if (event.getCount() % 100 == 0) {
-                System.out.println(playerFeet() + " " + event.getCount());
+                System.out.println(ctx.playerFeet() + " " + event.getCount());
             }
 
             // Setup Baritone's pathing goal and (if needed) begin pathing
-            Baritone.INSTANCE.getCustomGoalProcess().setGoalAndPath(GOAL);
+            baritone.getCustomGoalProcess().setGoalAndPath(GOAL);
 
             // If we have reached our goal, print a message and safely close the game
-            if (GOAL.isInGoal(playerFeet())) {
-                System.out.println("Successfully pathed to " + playerFeet() + " in " + event.getCount() + " ticks");
+            if (GOAL.isInGoal(ctx.playerFeet())) {
+                System.out.println("Successfully pathed to " + ctx.playerFeet() + " in " + event.getCount() + " ticks");
                 mc.shutdown();
             }
 
