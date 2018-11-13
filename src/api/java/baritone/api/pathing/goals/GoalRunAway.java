@@ -75,7 +75,7 @@ public class GoalRunAway implements Goal {
         }
         min = -min;
         if (maintainY.isPresent()) {
-            min = min * 0.6 + GoalYLevel.calculate(maintainY.get(), y);
+            min = min * 0.5 + GoalYLevel.calculate(maintainY.get(), y);
         }
         return min;
     }
