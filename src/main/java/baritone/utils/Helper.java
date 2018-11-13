@@ -44,50 +44,6 @@ public interface Helper {
 
     Minecraft mc = Minecraft.getMinecraft();
 
-    /*
-    default EntityPlayerSP player() {
-        if (!mc.isCallingFromMinecraftThread()) {
-            throw new IllegalStateException("h00000000");
-        }
-        return mc.player;
-    }
-
-    default PlayerControllerMP playerController() { // idk
-        if (!mc.isCallingFromMinecraftThread()) {
-            throw new IllegalStateException("h00000000");
-        }
-        return mc.playerController;
-    }
-
-    default WorldClient world() {
-        if (!mc.isCallingFromMinecraftThread()) {
-            throw new IllegalStateException("h00000000");
-        }
-        return mc.world;
-    }
-
-    default BetterBlockPos playerFeet() {
-        // TODO find a better way to deal with soul sand!!!!!
-        BetterBlockPos feet = new BetterBlockPos(player().posX, player().posY + 0.1251, player().posZ);
-        if (BlockStateInterface.get(feet).getBlock() instanceof BlockSlab) {
-            return feet.up();
-        }
-        return feet;
-    }
-
-    default Vec3d playerFeetAsVec() {
-        return new Vec3d(player().posX, player().posY, player().posZ);
-    }
-
-    default Vec3d playerHead() {
-        return new Vec3d(player().posX, player().posY + player().getEyeHeight(), player().posZ);
-    }
-
-    default Rotation playerRotations() {
-        return new Rotation(player().rotationYaw, player().rotationPitch);
-    }
-    */
-
     /**
      * Send a message to chat only if chatDebug is on
      *

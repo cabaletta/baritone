@@ -89,6 +89,14 @@ public enum Input {
     private final KeyBinding keyBinding;
 
     Input(Function<GameSettings, KeyBinding> keyBindingMapper) {
+        /*
+
+        Here, a Function is used because referring to a static field in this enum for the game instance,
+        as it was before, wouldn't be possible in an Enum constructor unless the static field was in an
+        interface that this class implemented. (Helper acted as this interface) I didn't feel like making
+        an interface with a game instance field just to not have to do this.
+
+         */
         this.keyBinding = keyBindingMapper.apply(Minecraft.getMinecraft().gameSettings);
     }
 
