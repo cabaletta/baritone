@@ -18,6 +18,7 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
@@ -119,7 +120,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private Goal updateGoal() {
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
-            List<BlockPos> locs2 = prune(new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
+            List<BlockPos> locs2 = prune(baritone, new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new));
             knownOreLocations = locs2;
@@ -161,7 +162,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (Baritone.settings().legitMine.get()) {
             return;
         }
-        List<BlockPos> locs = searchWorld(mining, ORE_LOCATIONS_COUNT, baritone.getWorldProvider(), already);
+        List<BlockPos> locs = searchWorld(baritone, mining, ORE_LOCATIONS_COUNT, already);
         locs.addAll(droppedItemsScan(mining, ctx.world()));
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
@@ -219,13 +220,15 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     /*public static List<BlockPos> searchWorld(List<Block> mining, int max, World world) {
 
     }*/
-    public List<BlockPos> searchWorld(List<Block> mining, int max, WorldProvider provider, List<BlockPos> alreadyKnown) {
+    public static List<BlockPos> searchWorld(IBaritone baritone, List<Block> mining, int max, List<BlockPos> alreadyKnown) {
+        IPlayerContext ctx = baritone.getPlayerContext();
+
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
-                locs.addAll(provider.getCurrentWorld().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 1));
+                locs.addAll(baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 1));
             } else {
                 uninteresting.add(m);
             }
@@ -240,7 +243,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
         locs.addAll(alreadyKnown);
-        return prune(locs, mining, max);
+        return prune(baritone, locs, mining, max);
     }
 
     public void addNearby() {
@@ -258,10 +261,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 }
             }
         }
-        knownOreLocations = prune(knownOreLocations, mining, ORE_LOCATIONS_COUNT);
+        knownOreLocations = prune(baritone, knownOreLocations, mining, ORE_LOCATIONS_COUNT);
     }
 
-    public List<BlockPos> prune(List<BlockPos> locs2, List<Block> mining, int max) {
+    public static List<BlockPos> prune(IBaritone baritone, List<BlockPos> locs2, List<Block> mining, int max) {
+        IPlayerContext ctx = baritone.getPlayerContext();
+
         List<BlockPos> dropped = droppedItemsScan(mining, ctx.world());
         List<BlockPos> locs = locs2
                 .stream()
@@ -271,7 +276,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 .filter(pos -> ctx.world().getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.get(pos).getBlock()) || dropped.contains(pos))
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
-                .filter(this::plausibleToBreak)
+                .filter(pos -> MineProcess.plausibleToBreak(baritone, pos))
 
                 .sorted(Comparator.comparingDouble(ctx.playerFeet()::distanceSq))
                 .collect(Collectors.toList());
@@ -282,7 +287,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return locs;
     }
 
-    public boolean plausibleToBreak(BlockPos pos) {
+    public static boolean plausibleToBreak(IBaritone baritone, BlockPos pos) {
         if (MovementHelper.avoidBreaking(new CalculationContext(baritone), pos.getX(), pos.getY(), pos.getZ(), BlockStateInterface.get(pos))) {
             return false;
         }

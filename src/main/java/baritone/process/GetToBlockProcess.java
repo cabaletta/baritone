@@ -29,6 +29,7 @@ import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
@@ -96,7 +97,6 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     private void rescan(List<BlockPos> known) {
-        // TODO-yeet
-//        knownLocations = MineProcess.searchWorld(ctx, Collections.singletonList(gettingTo), 64, baritone.getWorldProvider(), known);
+        knownLocations = MineProcess.searchWorld(baritone, Collections.singletonList(gettingTo), 64, known);
     }
 }
