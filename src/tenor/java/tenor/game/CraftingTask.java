@@ -17,7 +17,6 @@
 
 package tenor.game;
 
-import net.minecraft.util.Tuple;
 import tenor.*;
 
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.List;
 public class CraftingTask extends QuantizedTaskNode implements ISingleParentQuantizedPriorityAllocator {
 
     int outputQuantity;
-    List<Tuple<AquireItemTask, Integer>> recipe;
+    List<RecipeInput> recipe;
 
     final AquireCraftingItems inputs;
     final GetToCraftingTableTask step2;
@@ -62,11 +61,17 @@ public class CraftingTask extends QuantizedTaskNode implements ISingleParentQuan
     }
 
     public int inputSizeFor(AquireItemTask task) {
-        for (Tuple<AquireItemTask, Integer> tup : recipe) {
-            if (tup.getFirst().equals(task)) {
-                return tup.getSecond();
+        for (RecipeInput item : recipe) {
+            if (item.task.equals(task)) {
+                return item.quantity;
             }
         }
         throw new IllegalStateException();
+    }
+
+    private class RecipeInput {
+
+        private AquireItemTask task;
+        private int quantity;
     }
 }
