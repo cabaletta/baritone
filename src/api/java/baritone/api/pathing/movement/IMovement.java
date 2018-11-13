@@ -18,6 +18,7 @@
 package baritone.api.pathing.movement;
 
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.IPlayerContext;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;

@@ -63,10 +63,12 @@ public interface ICachedWorld {
      *
      * @param block               The special block to search for
      * @param maximum             The maximum number of position results to receive
+     * @param centerX             The x block coordinate center of the search
+     * @param centerZ             The z block coordinate center of the search
      * @param maxRegionDistanceSq The maximum region distance, squared
      * @return The locations found that match the special block
      */
-    LinkedList<BlockPos> getLocationsOf(String block, int maximum, int maxRegionDistanceSq);
+    LinkedList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq);
 
     /**
      * Reloads all of the cached regions in this world from disk. Anything that is not saved

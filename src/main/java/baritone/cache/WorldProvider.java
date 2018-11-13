@@ -55,8 +55,8 @@ public class WorldProvider implements IWorldProvider, Helper {
      * @param dimension The ID of the world's dimension
      */
     public final void initWorld(int dimension) {
-        // Fight me @leijurv
-        File directory, readme;
+        File directory;
+        File readme;
 
         IntegratedServer integratedServer = mc.getIntegratedServer();
 

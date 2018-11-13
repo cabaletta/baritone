@@ -106,10 +106,10 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     @Override
-    public final LinkedList<BlockPos> getLocationsOf(String block, int maximum, int maxRegionDistanceSq) {
+    public final LinkedList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
         LinkedList<BlockPos> res = new LinkedList<>();
-        int playerRegionX = playerFeet().getX() >> 9;
-        int playerRegionZ = playerFeet().getZ() >> 9;
+        int centerRegionX = centerX >> 9;
+        int centerRegionZ = centerZ >> 9;
 
         int searchRadius = 0;
         while (searchRadius <= maxRegionDistanceSq) {
@@ -119,8 +119,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     if (distance != searchRadius) {
                         continue;
                     }
-                    int regionX = xoff + playerRegionX;
-                    int regionZ = zoff + playerRegionZ;
+                    int regionX = xoff + centerRegionX;
+                    int regionZ = zoff + centerRegionZ;
                     CachedRegion region = getOrCreateRegion(regionX, regionZ);
                     if (region != null) {
                         // TODO: 100% verify if this or addAll is faster.
@@ -192,7 +192,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
     private BlockPos guessPosition() {
         WorldData data = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
         if (data != null && data.getCachedWorld() == this) {
-            return playerFeet();
+            // TODO-yeet fix
+            return Baritone.INSTANCE.getPlayerContext().playerFeet();
         }
         CachedChunk mostRecentlyModified = null;
         for (CachedRegion region : allRegions()) {

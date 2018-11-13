@@ -18,9 +18,10 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.cache.WorldData;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
 import net.minecraft.block.Block;
@@ -41,8 +42,11 @@ public class CalculationContext {
 
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
+    private final IBaritone baritone;
     private final EntityPlayerSP player;
     private final World world;
+    private final WorldData worldData;
+    private final BlockStateInterface bsi;
     private final ToolSet toolSet;
     private final boolean hasWaterBucket;
     private final boolean hasThrowaway;
@@ -55,11 +59,15 @@ public class CalculationContext {
     private final double breakBlockAdditionalCost;
     private final BetterWorldBorder worldBorder;
 
-    public CalculationContext() {
-        this.player = Helper.HELPER.player();
-        this.world = Helper.HELPER.world();
+    public CalculationContext(IBaritone baritone) {
+        this.baritone = baritone;
+        this.player = baritone.getPlayerContext().player();
+        this.world = baritone.getPlayerContext().world();
+        this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
+        this.bsi = new BlockStateInterface(world, worldData); // TODO TODO TODO
+        // new CalculationContext() needs to happen, can't add an argument (i'll beat you), can we get the world provider from currentlyTicking?
         this.toolSet = new ToolSet(player);
-        this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(false);
+        this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(baritone.getPlayerContext(), false);
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.provider.isNether();
         this.canSprint = Baritone.settings().allowSprint.get() && player.getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
@@ -79,8 +87,16 @@ public class CalculationContext {
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
     }
 
+    public final IBaritone getBaritone() {
+        return baritone;
+    }
+
     public IBlockState get(int x, int y, int z) {
-        return BlockStateInterface.get(world, x, y, z);
+        return bsi.get0(x, y, z); // laughs maniacally
+    }
+
+    public boolean isLoaded(int x, int z) {
+        return bsi.isLoaded(x, z);
     }
 
     public IBlockState get(BlockPos pos) {
@@ -121,6 +137,13 @@ public class CalculationContext {
         return player;
     }
 
+    public BlockStateInterface bsi() {
+        return bsi;
+    }
+
+    public WorldData worldData() {
+        return worldData;
+    }
 
     public ToolSet getToolSet() {
         return toolSet;

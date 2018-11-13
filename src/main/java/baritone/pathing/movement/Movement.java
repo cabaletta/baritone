@@ -17,13 +17,12 @@
 
 package baritone.pathing.movement;
 
-import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
+import baritone.api.utils.input.Input;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -34,11 +33,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static baritone.utils.InputOverrideHandler.Input;
-
-public abstract class Movement implements IMovement, Helper, MovementHelper {
+public abstract class Movement implements IMovement, MovementHelper {
 
     protected static final EnumFacing[] HORIZONTALS = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST};
+
+    protected final IBaritone baritone;
+    protected final IPlayerContext ctx;
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
 
@@ -56,8 +56,6 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
      */
     protected final BetterBlockPos positionToPlace;
 
-    private boolean didBreakLastTick;
-
     private Double cost;
 
     public List<BlockPos> toBreakCached = null;
@@ -66,21 +64,23 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
 
     private Boolean calculatedWhileLoaded;
 
-    protected Movement(BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak, BetterBlockPos toPlace) {
+    protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak, BetterBlockPos toPlace) {
+        this.baritone = baritone;
+        this.ctx = baritone.getPlayerContext();
         this.src = src;
         this.dest = dest;
         this.positionsToBreak = toBreak;
         this.positionToPlace = toPlace;
     }
 
-    protected Movement(BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
-        this(src, dest, toBreak, null);
+    protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
+        this(baritone, src, dest, toBreak, null);
     }
 
     @Override
     public double getCost() {
         if (cost == null) {
-            cost = calculateCost(new CalculationContext());
+            cost = calculateCost(new CalculationContext(baritone));
         }
         return cost;
     }
@@ -99,7 +99,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
 
     @Override
     public double calculateCostWithoutCaching() {
-        return calculateCost(new CalculationContext());
+        return calculateCost(new CalculationContext(baritone));
     }
 
     /**
@@ -110,18 +110,18 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
      */
     @Override
     public MovementStatus update() {
-        player().capabilities.isFlying = false;
+        ctx.player().capabilities.isFlying = false;
         currentState = updateState(currentState);
-        if (MovementHelper.isLiquid(playerFeet())) {
+        if (MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             currentState.setInput(Input.JUMP, true);
         }
-        if (player().isEntityInsideOpaqueBlock()) {
+        if (ctx.player().isEntityInsideOpaqueBlock()) {
             currentState.setInput(Input.CLICK_LEFT, true);
         }
 
         // If the movement target has to force the new rotations, or we aren't using silent move, then force the rotations
         currentState.getTarget().getRotation().ifPresent(rotation ->
-                Baritone.INSTANCE.getLookBehavior().updateTarget(
+                baritone.getLookBehavior().updateTarget(
                         rotation,
                         currentState.getTarget().hasToForceRotations()));
 
@@ -129,13 +129,13 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
 
         currentState.getInputStates().forEach((input, forced) -> {
-            Baritone.INSTANCE.getInputOverrideHandler().setInputForceState(input, forced);
+            baritone.getInputOverrideHandler().setInputForceState(input, forced);
         });
         currentState.getInputStates().replaceAll((input, forced) -> false);
 
         // If the current status indicates a completed movement
         if (currentState.getStatus().isComplete()) {
-            Baritone.INSTANCE.getInputOverrideHandler().clearAllKeys();
+            baritone.getInputOverrideHandler().clearAllKeys();
         }
 
         return currentState.getStatus();
@@ -147,11 +147,11 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         }
         boolean somethingInTheWay = false;
         for (BetterBlockPos blockPos : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(blockPos) && !(BlockStateInterface.getBlock(blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
+            if (!MovementHelper.canWalkThrough(ctx, blockPos) && !(BlockStateInterface.getBlock(ctx, blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
-                Optional<Rotation> reachable = RotationUtils.reachable(player(), blockPos, playerController().getBlockReachDistance());
+                Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
-                    MovementHelper.switchToBestToolFor(BlockStateInterface.get(blockPos));
+                    MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                     state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
                     if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), blockPos)) {
                         state.setInput(Input.CLICK_LEFT, true);
@@ -162,11 +162,11 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
                 //i'm doing it anyway
                 //i dont care if theres snow in the way!!!!!!!
                 //you dont own me!!!!
-                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(player().getPositionEyes(1.0F),
+                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
                         VecUtils.getBlockPosCenter(blockPos)), true)
                 );
                 // don't check selectedblock on this one, this is a fallback when we can't see any face directly, it's intended to be breaking the "incorrect" block
-                state.setInput(InputOverrideHandler.Input.CLICK_LEFT, true);
+                state.setInput(Input.CLICK_LEFT, true);
                 return false;
             }
         }
@@ -251,7 +251,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         }
         List<BlockPos> result = new ArrayList<>();
         for (BetterBlockPos positionToBreak : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(positionToBreak)) {
+            if (!MovementHelper.canWalkThrough(ctx, positionToBreak)) {
                 result.add(positionToBreak);
             }
         }
@@ -265,7 +265,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
             return toPlaceCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        if (positionToPlace != null && !MovementHelper.canWalkOn(positionToPlace)) {
+        if (positionToPlace != null && !MovementHelper.canWalkOn(ctx, positionToPlace)) {
             result.add(positionToPlace);
         }
         toPlaceCached = result;

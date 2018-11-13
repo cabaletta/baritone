@@ -115,13 +115,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         synchronized (pathPlanLock) {
             if (current.failed() || current.finished()) {
                 current = null;
-                if (goal == null || goal.isInGoal(playerFeet())) {
+                if (goal == null || goal.isInGoal(ctx.playerFeet())) {
                     logDebug("All done. At " + goal);
                     queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
                     return;
                 }
-                if (next != null && !next.getPath().positions().contains(playerFeet())) {
+                if (next != null && !next.getPath().positions().contains(ctx.playerFeet())) {
                     // if the current path failed, we may not actually be on the next one, so make sure
                     logDebug("Discarding next path as it does not contain current position");
                     // for example if we had a nicely planned ahead path that starts where current ends
@@ -314,7 +314,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (goal == null) {
             return false;
         }
-        if (goal.isInGoal(playerFeet())) {
+        if (goal.isInGoal(ctx.playerFeet())) {
             return false;
         }
         synchronized (pathPlanLock) {
@@ -338,11 +338,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @return The starting {@link BlockPos} for a new path
      */
     public BlockPos pathStart() {
-        BetterBlockPos feet = playerFeet();
-        if (!MovementHelper.canWalkOn(feet.down())) {
-            if (player().onGround) {
-                double playerX = player().posX;
-                double playerZ = player().posZ;
+        BetterBlockPos feet = ctx.playerFeet();
+        if (!MovementHelper.canWalkOn(ctx, feet.down())) {
+            if (ctx.player().onGround) {
+                double playerX = ctx.player().posX;
+                double playerZ = ctx.player().posZ;
                 ArrayList<BetterBlockPos> closest = new ArrayList<>();
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dz = -1; dz <= 1; dz++) {
@@ -358,7 +358,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         // can't possibly be sneaking off of this one, we're too far away
                         continue;
                     }
-                    if (MovementHelper.canWalkOn(possibleSupport.down()) && MovementHelper.canWalkThrough(possibleSupport) && MovementHelper.canWalkThrough(possibleSupport.up())) {
+                    if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport) && MovementHelper.canWalkThrough(ctx, possibleSupport.up())) {
                         // this is plausible
                         logDebug("Faking path start assuming player is standing off the edge of a block");
                         return possibleSupport;
@@ -368,7 +368,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             } else {
                 // !onGround
                 // we're in the middle of a jump
-                if (MovementHelper.canWalkOn(feet.down().down())) {
+                if (MovementHelper.canWalkOn(ctx, feet.down().down())) {
                     logDebug("Faking path start assuming player is midair and falling");
                     return feet.down();
                 }
@@ -390,7 +390,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             }
             isPathCalcInProgress = true;
         }
-        CalculationContext context = new CalculationContext(); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
+        CalculationContext context = new CalculationContext(baritone); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         Baritone.getExecutor().execute(() -> {
             if (talkAboutIt) {
                 logDebug("Starting to search for path from " + start + " to " + goal);
@@ -421,7 +421,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 }
 
                 return result;
-            }).map(PathExecutor::new);
+            }).map(p -> new PathExecutor(this, p));
 
             synchronized (pathPlanLock) {
                 if (current == null) {

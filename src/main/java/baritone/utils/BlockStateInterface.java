@@ -18,6 +18,8 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
+import baritone.api.utils.IPlayerContext;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.pathing.movement.CalculationContext;
@@ -33,23 +35,36 @@ import net.minecraft.world.chunk.Chunk;
  *
  * @author leijurv
  */
-public class BlockStateInterface implements Helper {
+public class BlockStateInterface {
 
-    private static Chunk prev = null;
-    private static CachedRegion prevCached = null;
+    private final World world;
+    private final WorldData worldData;
+
+    private Chunk prev = null;
+    private CachedRegion prevCached = null;
 
     private static final IBlockState AIR = Blocks.AIR.getDefaultState();
 
-    public static IBlockState get(BlockPos pos) {
-        return get(pos.getX(), pos.getY(), pos.getZ());
+    public BlockStateInterface(IPlayerContext ctx) {
+        this(ctx.world(), (WorldData) ctx.worldData());
     }
 
-
-    public static IBlockState get(int x, int y, int z) {
-        return get(Helper.HELPER.world(), x, y, z);
+    public BlockStateInterface(World world, WorldData worldData) {
+        this.worldData = worldData;
+        this.world = world;
     }
 
-    public static IBlockState get(World world, int x, int y, int z) {
+    public static Block getBlock(IPlayerContext ctx, BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
+        return get(ctx, pos).getBlock();
+    }
+
+    public static IBlockState get(IPlayerContext ctx, BlockPos pos) {
+        return new BlockStateInterface(ctx).get0(pos.getX(), pos.getY(), pos.getZ()); // immense iq
+        // can't just do world().get because that doesn't work for out of bounds
+        // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
+    }
+
+    public IBlockState get0(int x, int y, int z) { // Mickey resigned
 
         // Invalid vertical position
         if (y < 0 || y >= 256) {
@@ -77,7 +92,6 @@ public class BlockStateInterface implements Helper {
         // except here, it's 512x512 tiles instead of 16x16, so even better repetition
         CachedRegion cached = prevCached;
         if (cached == null || cached.getX() != x >> 9 || cached.getZ() != z >> 9) {
-            WorldData worldData = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
             if (worldData == null) {
                 return AIR;
             }
@@ -95,12 +109,12 @@ public class BlockStateInterface implements Helper {
         return type;
     }
 
-    public static boolean isLoaded(CalculationContext context, int x, int z) {
+    public boolean isLoaded(int x, int z) {
         Chunk prevChunk = prev;
         if (prevChunk != null && prevChunk.x == x >> 4 && prevChunk.z == z >> 4) {
             return true;
         }
-        prevChunk = context.world().getChunk(x >> 4, z >> 4);
+        prevChunk = world.getChunk(x >> 4, z >> 4);
         if (prevChunk.isLoaded()) {
             prev = prevChunk;
             return true;
@@ -109,28 +123,14 @@ public class BlockStateInterface implements Helper {
         if (prevRegion != null && prevRegion.getX() == x >> 9 && prevRegion.getZ() == z >> 9) {
             return prevRegion.isCached(x & 511, z & 511);
         }
-        WorldData world = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
-        if (world == null) {
+        if (worldData == null) {
             return false;
         }
-        prevRegion = world.cache.getRegion(x >> 9, z >> 9);
+        prevRegion = worldData.cache.getRegion(x >> 9, z >> 9);
         if (prevRegion == null) {
             return false;
         }
         prevCached = prevRegion;
         return prevRegion.isCached(x & 511, z & 511);
-    }
-
-    public static void clearCachedChunk() {
-        prev = null;
-        prevCached = null;
-    }
-
-    public static Block getBlock(BlockPos pos) {
-        return get(pos).getBlock();
-    }
-
-    public static Block getBlock(int x, int y, int z) {
-        return get(x, y, z).getBlock();
     }
 }

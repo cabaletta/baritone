@@ -23,7 +23,6 @@ import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.bot.UserManager;
 import baritone.cache.WorldProvider;
-import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.world.chunk.Chunk;
 
@@ -110,8 +109,6 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     @Override
     public final void onWorldEvent(WorldEvent event) {
         WorldProvider cache = baritone.getWorldProvider();
-
-        BlockStateInterface.clearCachedChunk();
 
         if (event.getState() == EventState.POST) {
             cache.closeWorld();

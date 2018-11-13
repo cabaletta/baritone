@@ -15,33 +15,25 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.pathing;
+package baritone.api.utils;
+
+import baritone.api.behavior.IBehavior;
+import baritone.api.utils.input.Input;
+import net.minecraft.client.settings.KeyBinding;
 
 /**
  * @author Brady
- * @since 8/4/2018 1:11 AM
+ * @since 11/12/2018
  */
-public enum PathingBlockType {
+public interface IInputOverrideHandler extends IBehavior {
 
-    AIR(0b00),
-    WATER(0b01),
-    AVOID(0b10),
-    SOLID(0b11);
-
-    private final boolean[] bits;
-
-    PathingBlockType(int bits) {
-        this.bits = new boolean[]{
-                (bits & 0b10) != 0,
-                (bits & 0b01) != 0
-        };
+    default boolean isInputForcedDown(KeyBinding key) {
+        return isInputForcedDown(Input.getInputForBind(key));
     }
 
-    public final boolean[] getBits() {
-        return this.bits;
-    }
+    boolean isInputForcedDown(Input input);
 
-    public static PathingBlockType fromBits(boolean b1, boolean b2) {
-        return b1 ? b2 ? SOLID : AVOID : b2 ? WATER : AIR;
-    }
+    void setInputForceState(Input input, boolean forced);
+
+    void clearAllKeys();
 }
