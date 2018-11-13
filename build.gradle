@@ -16,18 +16,13 @@
  */
 
 group 'baritone'
-version '1.0.0-hotfix-2'
+version project.version
 
 buildscript {
     repositories {
-        maven {
-            name = 'forge'
-            url = 'http://files.minecraftforge.net/maven'
-        }
-        maven {
-            name = 'SpongePowered'
-            url = 'http://repo.spongepowered.org/maven'
-        }
+        maven { url = 'http://repo.spongepowered.org/maven' }
+        maven { url = 'https://plugins.gradle.org/m2/' }
+        maven { url 'https://www.dimdev.org/maven/' }
         jcenter()
     }
 
@@ -37,12 +32,17 @@ buildscript {
     }
 }
 
+def forgeBuild = project.hasProperty('forgebuild') ? project.property('forgebuild').toBoolean() : false
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 apply plugin: 'java'
-apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+if (forgeBuild) {
+	apply plugin: 'net.minecraftforge.gradle.forge'
+} else {
+	apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+}
 apply plugin: 'org.spongepowered.mixin'
 
 sourceCompatibility = targetCompatibility = '1.8'
@@ -56,14 +56,15 @@ sourceSets {
     }
 }
 
-minecraft {
-    version = '1.12.2'
-    mappings = 'stable_39'
-    tweakClass = 'baritone.launch.BaritoneTweaker'
-    runDir = 'run'
 
-    // The sources jar should use SRG names not MCP to ensure compatibility with all mappings
+minecraft {
+    version = forgeBuild ? project.minecraftVersion + project.forgeVersion : project.minecraftVersion
+    runDir = 'run'
+    mappings = project.mappingsVer
     makeObfSourceJar = true
+    if (!forgeBuild) {
+		tweakClass = 'baritone.launch.BaritoneTweaker'
+    }
 }
 
 repositories {
@@ -94,14 +95,35 @@ dependencies {
 }
 
 mixin {
-    defaultObfuscationEnv notch
+    defaultObfuscationEnv forgeBuild ? searge : notch
     add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
-
-jar {
-    from sourceSets.launch.output, sourceSets.api.output
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
+if(forgeBuild){
+    jar {
+        from sourceSets.launch.output, sourceSets.api.output
+        manifest.attributes(
+            "Version": version,
+            "ForgeBuild": forgeBuild,
+	        "MixinConfigs": 'mixins.client.json',
+	        "tweakClass": 'org.spongepowered.asm.launch.MixinTweaker',
+	        "TweakOrder": 0,
+	        "FMLCorePluginContainsFMLMod": 'baritone.forge.MixinLoader',
+	        "Manifest-Version": 1.0
+	    )
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+    }
+}else{
+     jar {
+        from sourceSets.launch.output, sourceSets.api.output
+        manifest.attributes(
+            "Version:": version,
+            "ForgeBuild": forgeBuild,
+            "Manifest-Version": 1.0
+        )
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+    }
 }
 
 task proguard(type: ProguardTask) {
