@@ -339,7 +339,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      */
     public BlockPos pathStart() {
         BetterBlockPos feet = ctx.playerFeet();
-        if (!MovementHelper.canWalkOn(feet.down())) {
+        if (!MovementHelper.canWalkOn(ctx, feet.down())) {
             if (ctx.player().onGround) {
                 double playerX = ctx.player().posX;
                 double playerZ = ctx.player().posZ;
@@ -358,7 +358,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         // can't possibly be sneaking off of this one, we're too far away
                         continue;
                     }
-                    if (MovementHelper.canWalkOn(possibleSupport.down()) && MovementHelper.canWalkThrough(possibleSupport) && MovementHelper.canWalkThrough(possibleSupport.up())) {
+                    if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport) && MovementHelper.canWalkThrough(ctx, possibleSupport.up())) {
                         // this is plausible
                         logDebug("Faking path start assuming player is standing off the edge of a block");
                         return possibleSupport;
@@ -368,7 +368,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             } else {
                 // !onGround
                 // we're in the middle of a jump
-                if (MovementHelper.canWalkOn(feet.down().down())) {
+                if (MovementHelper.canWalkOn(ctx, feet.down().down())) {
                     logDebug("Faking path start assuming player is midair and falling");
                     return feet.down();
                 }

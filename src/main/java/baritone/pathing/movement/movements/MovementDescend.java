@@ -89,7 +89,7 @@ public class MovementDescend extends Movement {
         //C, D, etc determine the length of the fall
 
         IBlockState below = context.get(destX, y - 2, destZ);
-        if (!MovementHelper.canWalkOn(context, destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkOn(context.bsi(), destX, y - 2, destZ, below)) {
             dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res);
             return;
         }
@@ -118,7 +118,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return;
         }
-        if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
+        if (!MovementHelper.canWalkThrough(context.bsi(), destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
             return;
         }
         for (int fallHeight = 3; true; fallHeight++) {
@@ -146,10 +146,10 @@ public class MovementDescend extends Movement {
             if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
                 return;
             }
-            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context.bsi(), destX, newY, destZ, ontoBlock)) {
                 continue;
             }
-            if (!MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
+            if (!MovementHelper.canWalkOn(context.bsi(), destX, newY, destZ, ontoBlock)) {
                 return;
             }
             if (MovementHelper.isBottomSlab(ontoBlock)) {
@@ -183,7 +183,7 @@ public class MovementDescend extends Movement {
         }
 
         BlockPos playerFeet = ctx.playerFeet();
-        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(dest) || ctx.player().posY - playerFeet.getY() < 0.094)) { // lilypads
+        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(ctx, dest) || ctx.player().posY - playerFeet.getY() < 0.094)) { // lilypads
             // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
             return state.setStatus(MovementStatus.SUCCESS);
             /* else {

@@ -17,6 +17,8 @@
 
 package baritone.utils.player;
 
+import baritone.Baritone;
+import baritone.api.cache.IWorldData;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -50,5 +52,10 @@ public final class LocalPlayerContext extends AbstractPlayerContext {
     @Override
     public World world() {
         return mc.world;
+    }
+
+    @Override
+    public IWorldData worldData() {
+        return Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
     }
 }

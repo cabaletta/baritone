@@ -97,6 +97,6 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     private void rescan(List<BlockPos> known) {
-        knownLocations = MineProcess.searchWorld(baritone, Collections.singletonList(gettingTo), 64, known);
+        knownLocations = MineProcess.searchWorld(ctx, Collections.singletonList(gettingTo), 64, known);
     }
 }

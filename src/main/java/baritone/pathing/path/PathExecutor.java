@@ -110,7 +110,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
 
             //System.out.println("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
-            if (!Blocks.AIR.equals(BlockStateInterface.getBlock(whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
+            if (!Blocks.AIR.equals(BlockStateInterface.getBlock(ctx, whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.positions().get(i))) {
                         logDebug("Skipping back " + (pathPosition - i) + " steps, to " + i);
@@ -303,11 +303,11 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!ctx.player().onGround) {
             return false;
         }
-        if (!MovementHelper.canWalkOn(ctx.playerFeet().down())) {
+        if (!MovementHelper.canWalkOn(ctx, ctx.playerFeet().down())) {
             // we're in some kind of sketchy situation, maybe parkouring
             return false;
         }
-        if (!MovementHelper.canWalkThrough(ctx.playerFeet()) || !MovementHelper.canWalkThrough(ctx.playerFeet().up())) {
+        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet()) || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().up())) {
             // suffocating?
             return false;
         }
@@ -384,7 +384,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
             BlockPos into = current.getDest().subtract(current.getSrc().down()).add(current.getDest());
             for (int y = 0; y <= 2; y++) { // we could hit any of the three blocks
-                if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(into.up(y)))) {
+                if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(ctx, into.up(y)))) {
                     logDebug("Sprinting would be unsafe");
                     ctx.player().setSprinting(false);
                     return;
@@ -402,7 +402,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 logDebug("Skipping descend to straight ascend");
                 return;
             }
-            if (canSprintInto(current, next)) {
+            if (canSprintInto(ctx, current, next)) {
                 if (ctx.playerFeet().equals(current.getDest())) {
                     pathPosition++;
                     onChangeInPathPosition();
@@ -430,11 +430,11 @@ public class PathExecutor implements IPathExecutor, Helper {
         ctx.player().setSprinting(false);
     }
 
-    private static boolean canSprintInto(IMovement current, IMovement next) {
+    private static boolean canSprintInto(IPlayerContext ctx, IMovement current, IMovement next) {
         if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
             return true;
         }
-        if (next instanceof MovementTraverse && next.getDirection().down().equals(current.getDirection()) && MovementHelper.canWalkOn(next.getDest().down())) {
+        if (next instanceof MovementTraverse && next.getDirection().down().equals(current.getDirection()) && MovementHelper.canWalkOn(ctx, next.getDest().down())) {
             return true;
         }
         return next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.get();

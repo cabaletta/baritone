@@ -62,11 +62,11 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         IBlockState destInto = context.get(destX, y, destZ);
-        if (!MovementHelper.canWalkThrough(context, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context, destX, y + 1, destZ)) {
+        if (!MovementHelper.canWalkThrough(context.bsi(), destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context.bsi(), destX, y + 1, destZ)) {
             return COST_INF;
         }
         IBlockState destWalkOn = context.get(destX, y - 1, destZ);
-        if (!MovementHelper.canWalkOn(context, destX, y - 1, destZ, destWalkOn)) {
+        if (!MovementHelper.canWalkOn(context.bsi(), destX, y - 1, destZ, destWalkOn)) {
             return COST_INF;
         }
         double multiplier = WALK_ONE_BLOCK_COST;
@@ -145,7 +145,7 @@ public class MovementDiagonal extends Movement {
             state.setStatus(MovementStatus.SUCCESS);
             return state;
         }
-        if (!MovementHelper.isLiquid(ctx.playerFeet())) {
+        if (!MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             state.setInput(Input.SPRINT, true);
         }
         MovementHelper.moveTowards(ctx, state, dest);
@@ -164,7 +164,7 @@ public class MovementDiagonal extends Movement {
         }
         List<BlockPos> result = new ArrayList<>();
         for (int i = 4; i < 6; i++) {
-            if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
+            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
                 result.add(positionsToBreak[i]);
             }
         }
@@ -179,7 +179,7 @@ public class MovementDiagonal extends Movement {
         }
         List<BlockPos> result = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
+            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
                 result.add(positionsToBreak[i]);
             }
         }

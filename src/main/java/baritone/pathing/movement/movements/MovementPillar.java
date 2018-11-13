@@ -143,8 +143,8 @@ public class MovementPillar extends Movement {
             return state;
         }
 
-        IBlockState fromDown = BlockStateInterface.get(src);
-        if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(dest)) {
+        IBlockState fromDown = BlockStateInterface.get(ctx, src);
+        if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(ctx, dest)) {
             // stay centered while swimming up a water column
             state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest)), false));
             Vec3d destCenter = VecUtils.getBlockPosCenter(dest);
@@ -165,7 +165,7 @@ public class MovementPillar extends Movement {
             state.setTarget(new MovementState.MovementTarget(new Rotation(ctx.player().rotationYaw, rotation.getPitch()), true));
         }
 
-        boolean blockIsThere = MovementHelper.canWalkOn(src) || ladder;
+        boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
         if (ladder) {
             BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
@@ -176,7 +176,7 @@ public class MovementPillar extends Movement {
             if (ctx.playerFeet().equals(against.up()) || ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (MovementHelper.isBottomSlab(BlockStateInterface.get(src.down()))) {
+            if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
                 state.setInput(Input.JUMP, true);
             }
             /*
@@ -214,7 +214,7 @@ public class MovementPillar extends Movement {
 
 
             if (!blockIsThere) {
-                Block fr = BlockStateInterface.get(src).getBlock();
+                Block fr = BlockStateInterface.get(ctx, src).getBlock();
                 if (!(fr instanceof BlockAir || fr.isReplaceable(ctx.world(), src))) {
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
@@ -235,12 +235,12 @@ public class MovementPillar extends Movement {
     @Override
     protected boolean prepared(MovementState state) {
         if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.down())) {
-            Block block = BlockStateInterface.getBlock(src.down());
+            Block block = BlockStateInterface.getBlock(ctx, src.down());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
                 state.setInput(Input.SNEAK, true);
             }
         }
-        if (MovementHelper.isWater(dest.up())) {
+        if (MovementHelper.isWater(ctx, dest.up())) {
             return true;
         }
         return super.prepared(state);

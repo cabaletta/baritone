@@ -18,6 +18,8 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
+import baritone.api.utils.IPlayerContext;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.pathing.movement.CalculationContext;
@@ -43,22 +45,26 @@ public class BlockStateInterface implements Helper {
 
     private static final IBlockState AIR = Blocks.AIR.getDefaultState();
 
+    public BlockStateInterface(IPlayerContext ctx) {
+        this(ctx.world(), (WorldData) ctx.worldData());
+    }
+
     public BlockStateInterface(World world, WorldData worldData) {
         this.worldData = worldData;
         this.world = world;
     }
 
-    public static Block getBlock(BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
-        return get(pos).getBlock();
+    public static Block getBlock(IPlayerContext ctx, BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
+        return get(ctx, pos).getBlock();
     }
 
-    public static IBlockState get(BlockPos pos) {
-        return new CalculationContext(Baritone.INSTANCE).get(pos); // immense iq
+    public static IBlockState get(IPlayerContext ctx, BlockPos pos) {
+        return new BlockStateInterface(ctx).get0(pos.getX(), pos.getY(), pos.getZ()); // immense iq
         // can't just do world().get because that doesn't work for out of bounds
         // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
     }
 
-    public IBlockState get0(int x, int y, int z) {
+    public IBlockState get0(int x, int y, int z) { // Mickey resigned
 
         // Invalid vertical position
         if (y < 0 || y >= 256) {

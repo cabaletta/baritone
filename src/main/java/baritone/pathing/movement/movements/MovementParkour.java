@@ -78,20 +78,20 @@ public class MovementParkour extends Movement {
         if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
             return;
         }
-        if (MovementHelper.canWalkOn(context,x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+        if (MovementHelper.canWalkOn(context.bsi(), x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
             return;
         }
 
-        if (!MovementHelper.fullyPassable(context,x + xDiff, y, z + zDiff)) {
+        if (!MovementHelper.fullyPassable(context, x + xDiff, y, z + zDiff)) {
             return;
         }
-        if (!MovementHelper.fullyPassable(context,x + xDiff, y + 1, z + zDiff)) {
+        if (!MovementHelper.fullyPassable(context, x + xDiff, y + 1, z + zDiff)) {
             return;
         }
-        if (!MovementHelper.fullyPassable(context,x + xDiff, y + 2, z + zDiff)) {
+        if (!MovementHelper.fullyPassable(context, x + xDiff, y + 2, z + zDiff)) {
             return;
         }
-        if (!MovementHelper.fullyPassable(context,x, y + 2, z)) {
+        if (!MovementHelper.fullyPassable(context, x, y + 2, z)) {
             return;
         }
         int maxJump;
@@ -107,11 +107,11 @@ public class MovementParkour extends Movement {
         for (int i = 2; i <= maxJump; i++) {
             // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
             for (int y2 = 0; y2 < 4; y2++) {
-                if (!MovementHelper.fullyPassable(context,x + xDiff * i, y + y2, z + zDiff * i)) {
+                if (!MovementHelper.fullyPassable(context, x + xDiff * i, y + y2, z + zDiff * i)) {
                     return;
                 }
             }
-            if (MovementHelper.canWalkOn(context,x + xDiff * i, y - 1, z + zDiff * i)) {
+            if (MovementHelper.canWalkOn(context.bsi(), x + xDiff * i, y - 1, z + zDiff * i)) {
                 res.x = x + xDiff * i;
                 res.y = y;
                 res.z = z + zDiff * i;
@@ -144,7 +144,7 @@ public class MovementParkour extends Movement {
             if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
                 continue;
             }
-            if (MovementHelper.canPlaceAgainst(context,againstX, y - 1, againstZ)) {
+            if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, y - 1, againstZ)) {
                 res.x = destX;
                 res.y = y;
                 res.z = destZ;
@@ -201,7 +201,7 @@ public class MovementParkour extends Movement {
         }
         MovementHelper.moveTowards(ctx, state, dest);
         if (ctx.playerFeet().equals(dest)) {
-            Block d = BlockStateInterface.getBlock(dest);
+            Block d = BlockStateInterface.getBlock(ctx, dest);
             if (d == Blocks.VINE || d == Blocks.LADDER) {
                 // it physically hurt me to add support for parkour jumping onto a vine
                 // but i did it anyway
@@ -213,14 +213,14 @@ public class MovementParkour extends Movement {
         } else if (!ctx.playerFeet().equals(src)) {
             if (ctx.playerFeet().equals(src.offset(direction)) || ctx.player().posY - ctx.playerFeet().getY() > 0.0001) {
 
-                if (!MovementHelper.canWalkOn(dest.down()) && !ctx.player().onGround) {
+                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround) {
                     BlockPos positionToPlace = dest.down();
                     for (int i = 0; i < 5; i++) {
                         BlockPos against1 = positionToPlace.offset(HORIZONTAL_AND_DOWN[i]);
                         if (against1.up().equals(src.offset(direction, 3))) { // we can't turn around that fast
                             continue;
                         }
-                        if (MovementHelper.canPlaceAgainst(against1)) {
+                        if (MovementHelper.canPlaceAgainst(ctx, against1)) {
                             if (!MovementHelper.throwaway(ctx, true)) {//get ready to place a throwaway block
                                 return state.setStatus(MovementStatus.UNREACHABLE);
                             }

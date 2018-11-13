@@ -66,7 +66,7 @@ public class MovementFall extends Movement {
 
         BlockPos playerFeet = ctx.playerFeet();
         Rotation targetRotation = null;
-        if (!MovementHelper.isWater(dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
+        if (!MovementHelper.isWater(ctx, dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().provider.isNether()) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
@@ -87,8 +87,8 @@ public class MovementFall extends Movement {
         } else {
             state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest)), false));
         }
-        if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || MovementHelper.isWater(dest))) { // 0.094 because lilypads
-            if (MovementHelper.isWater(dest)) {
+        if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || MovementHelper.isWater(ctx, dest))) { // 0.094 because lilypads
+            if (MovementHelper.isWater(ctx, dest)) {
                 if (InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                     ctx.player().inventory.currentItem = ctx.player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                     if (ctx.player().motionY >= 0) {
@@ -139,7 +139,7 @@ public class MovementFall extends Movement {
         // only break if one of the first three needs to be broken
         // specifically ignore the last one which might be water
         for (int i = 0; i < 4 && i < positionsToBreak.length; i++) {
-            if (!MovementHelper.canWalkThrough(positionsToBreak[i])) {
+            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
                 return super.prepared(state);
             }
         }

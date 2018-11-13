@@ -120,7 +120,7 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
 
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
-        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(event.getPos()) instanceof BlockBed) {
+        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(ctx, event.getPos()) instanceof BlockBed) {
             baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
         }
     }

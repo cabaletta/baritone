@@ -303,7 +303,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             LinkedList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
-                Block actually = BlockStateInterface.get(pos).getBlock();
+                Block actually = BlockStateInterface.get(ctx, pos).getBlock();
                 if (!ChunkPacker.blockToString(actually).equalsIgnoreCase(blockType)) {
                     System.out.println("Was looking for " + blockType + " but actually found " + actually + " " + ChunkPacker.blockToString(actually));
                 }

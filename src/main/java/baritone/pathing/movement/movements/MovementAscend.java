@@ -72,7 +72,7 @@ public class MovementAscend extends Movement {
             return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
         }
         boolean hasToPlace = false;
-        if (!MovementHelper.canWalkOn(context, destX, y, destZ, toPlace)) {
+        if (!MovementHelper.canWalkOn(context.bsi(), destX, y, destZ, toPlace)) {
             if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
                 return COST_INF;
             }
@@ -88,7 +88,7 @@ public class MovementAscend extends Movement {
                 if (againstX == x && againstZ == z) {
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(context, againstX, y, againstZ)) {
+                if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, y, againstZ)) {
                     hasToPlace = true;
                     break;
                 }
@@ -98,7 +98,7 @@ public class MovementAscend extends Movement {
             }
         }
         IBlockState srcUp2 = null;
-        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context, x, y + 1, z) || !((srcUp2 = context.get(x, y + 2, z)).getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
+        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context.bsi(), x, y + 1, z) || !((srcUp2 = context.get(x, y + 2, z)).getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
@@ -166,14 +166,14 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
-        IBlockState jumpingOnto = BlockStateInterface.get(positionToPlace);
-        if (!MovementHelper.canWalkOn(positionToPlace, jumpingOnto)) {
+        IBlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
+        if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
             for (int i = 0; i < 4; i++) {
                 BlockPos anAgainst = positionToPlace.offset(HORIZONTALS[i]);
                 if (anAgainst.equals(src)) {
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(anAgainst)) {
+                if (MovementHelper.canPlaceAgainst(ctx, anAgainst)) {
                     if (!MovementHelper.throwaway(ctx, true)) {//get ready to place a throwaway block
                         return state.setStatus(MovementStatus.UNREACHABLE);
                     }
@@ -205,7 +205,7 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         MovementHelper.moveTowards(ctx, state, dest);
-        if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(src.down()))) {
+        if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
             return state; // don't jump while walking from a non double slab into a bottom slab
         }
 
@@ -236,7 +236,7 @@ public class MovementAscend extends Movement {
         BetterBlockPos startUp = src.up(2);
         for (int i = 0; i < 4; i++) {
             BetterBlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));
-            if (!MovementHelper.canWalkThrough(check)) {
+            if (!MovementHelper.canWalkThrough(ctx, check)) {
                 // We might bonk our head
                 return false;
             }

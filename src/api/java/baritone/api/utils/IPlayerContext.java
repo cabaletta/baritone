@@ -17,6 +17,7 @@
 
 package baritone.api.utils;
 
+import baritone.api.cache.IWorldData;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.util.math.Vec3d;
@@ -33,6 +34,8 @@ public interface IPlayerContext {
     PlayerControllerMP playerController();
 
     World world();
+
+    IWorldData worldData();
 
     BetterBlockPos playerFeet();
 

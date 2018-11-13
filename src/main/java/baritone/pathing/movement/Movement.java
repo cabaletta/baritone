@@ -115,7 +115,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
     public MovementStatus update() {
         ctx.player().capabilities.isFlying = false;
         currentState = updateState(currentState);
-        if (MovementHelper.isLiquid(ctx.playerFeet())) {
+        if (MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             currentState.setInput(Input.JUMP, true);
         }
         if (ctx.player().isEntityInsideOpaqueBlock()) {
@@ -150,11 +150,11 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         }
         boolean somethingInTheWay = false;
         for (BetterBlockPos blockPos : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(blockPos) && !(BlockStateInterface.getBlock(blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
+            if (!MovementHelper.canWalkThrough(ctx, blockPos) && !(BlockStateInterface.getBlock(ctx, blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
-                    MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(blockPos));
+                    MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                     state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
                     if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), blockPos)) {
                         state.setInput(Input.CLICK_LEFT, true);
@@ -254,7 +254,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
         }
         List<BlockPos> result = new ArrayList<>();
         for (BetterBlockPos positionToBreak : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(positionToBreak)) {
+            if (!MovementHelper.canWalkThrough(ctx, positionToBreak)) {
                 result.add(positionToBreak);
             }
         }
@@ -268,7 +268,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
             return toPlaceCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        if (positionToPlace != null && !MovementHelper.canWalkOn(positionToPlace)) {
+        if (positionToPlace != null && !MovementHelper.canWalkOn(ctx, positionToPlace)) {
             result.add(positionToPlace);
         }
         toPlaceCached = result;

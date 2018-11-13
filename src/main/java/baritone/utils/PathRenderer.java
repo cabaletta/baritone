@@ -206,7 +206,7 @@ public final class PathRenderer implements Helper {
         double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
         positions.forEach(pos -> {
-            IBlockState state = BlockStateInterface.get(pos);
+            IBlockState state = BlockStateInterface.get(Baritone.INSTANCE.getPlayerContext(), pos);
             AxisAlignedBB toDraw;
             if (state.getBlock().equals(Blocks.AIR)) {
                 toDraw = Blocks.DIRT.getDefaultState().getSelectedBoundingBox(Minecraft.getMinecraft().world, pos);
