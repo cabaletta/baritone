@@ -20,10 +20,10 @@ package baritone.pathing.movement;
 import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.*;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
 import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
@@ -63,7 +63,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @return
      */
     static boolean canWalkThrough(BetterBlockPos pos) {
-        return canWalkThrough(new CalculationContext(), pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
+        return canWalkThrough(new CalculationContext(Baritone.INSTANCE), pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
     }
 
     static boolean canWalkThrough(CalculationContext context, int x, int y, int z) {
@@ -295,11 +295,11 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canWalkOn(BetterBlockPos pos, IBlockState state) {
-        return canWalkOn(new CalculationContext(), pos.x, pos.y, pos.z, state);
+        return canWalkOn(new CalculationContext(Baritone.INSTANCE), pos.x, pos.y, pos.z, state);
     }
 
     static boolean canWalkOn(BetterBlockPos pos) {
-        return canWalkOn(new CalculationContext(), pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
+        return canWalkOn(new CalculationContext(Baritone.INSTANCE), pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
     }
 
     static boolean canWalkOn(CalculationContext context, int x, int y, int z) {
@@ -361,25 +361,12 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
-     * AutoTool
-     */
-    static void switchToBestTool() {
-        RayTraceUtils.getSelectedBlock().ifPresent(pos -> {
-            IBlockState state = BlockStateInterface.get(pos);
-            if (state.getBlock().equals(Blocks.AIR)) {
-                return;
-            }
-            switchToBestToolFor(state);
-        });
-    }
-
-    /**
      * AutoTool for a specific block
      *
      * @param b the blockstate to mine
      */
-    static void switchToBestToolFor(IBlockState b) {
-        switchToBestToolFor(b, new ToolSet(Helper.HELPER.player()));
+    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
+        switchToBestToolFor(ctx, b, new ToolSet(ctx.player()));
     }
 
     /**
@@ -388,12 +375,12 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param b  the blockstate to mine
      * @param ts previously calculated ToolSet
      */
-    static void switchToBestToolFor(IBlockState b, ToolSet ts) {
-        Helper.HELPER.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
+    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts) {
+        ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
     }
 
-    static boolean throwaway(boolean select) {
-        EntityPlayerSP p = Helper.HELPER.player();
+    static boolean throwaway(IPlayerContext ctx, boolean select) {
+        EntityPlayerSP p = ctx.player();
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);
@@ -428,14 +415,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         return false;
     }
 
-    static void moveTowards(MovementState state, BlockPos pos) {
-        EntityPlayerSP player = Helper.HELPER.player();
+    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
+        EntityPlayerSP player = ctx.player();
         state.setTarget(new MovementTarget(
                 new Rotation(RotationUtils.calcRotationFromVec3d(player.getPositionEyes(1.0F),
                         VecUtils.getBlockPosCenter(pos),
                         new Rotation(player.rotationYaw, player.rotationPitch)).getYaw(), player.rotationPitch),
                 false
-        )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+        )).setInput(Input.MOVE_FORWARD, true);
     }
 
     /**

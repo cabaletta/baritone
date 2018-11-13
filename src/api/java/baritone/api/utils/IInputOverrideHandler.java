@@ -15,26 +15,25 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior;
+package baritone.api.utils;
 
-import baritone.Baritone;
 import baritone.api.behavior.IBehavior;
-import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.input.Input;
+import net.minecraft.client.settings.KeyBinding;
 
 /**
- * A type of game event listener that is given {@link Baritone} instance context.
- *
  * @author Brady
- * @since 8/1/2018 6:29 PM
+ * @since 11/12/2018
  */
-public class Behavior implements IBehavior {
+public interface IInputOverrideHandler extends IBehavior {
 
-    public final Baritone baritone;
-    public final IPlayerContext ctx;
-
-    protected Behavior(Baritone baritone) {
-        this.baritone = baritone;
-        this.ctx = baritone.getPlayerContext();
-        baritone.registerBehavior(this);
+    default boolean isInputForcedDown(KeyBinding key) {
+        return isInputForcedDown(Input.getInputForBind(key));
     }
+
+    boolean isInputForcedDown(Input input);
+
+    void setInputForceState(Input input, boolean forced);
+
+    void clearAllKeys();
 }

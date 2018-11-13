@@ -15,26 +15,26 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior;
+package baritone.utils.player;
 
-import baritone.Baritone;
-import baritone.api.behavior.IBehavior;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
+import baritone.utils.BlockStateInterface;
+import net.minecraft.block.BlockSlab;
 
 /**
- * A type of game event listener that is given {@link Baritone} instance context.
- *
  * @author Brady
- * @since 8/1/2018 6:29 PM
+ * @since 11/12/2018
  */
-public class Behavior implements IBehavior {
+public abstract class AbstractPlayerContext implements IPlayerContext {
 
-    public final Baritone baritone;
-    public final IPlayerContext ctx;
-
-    protected Behavior(Baritone baritone) {
-        this.baritone = baritone;
-        this.ctx = baritone.getPlayerContext();
-        baritone.registerBehavior(this);
+    @Override
+    public BetterBlockPos playerFeet() {
+        // TODO find a better way to deal with soul sand!!!!!
+        BetterBlockPos feet = new BetterBlockPos(player().posX, player().posY + 0.1251, player().posZ);
+        if (BlockStateInterface.get(feet).getBlock() instanceof BlockSlab) {
+            return feet.up();
+        }
+        return feet;
     }
 }

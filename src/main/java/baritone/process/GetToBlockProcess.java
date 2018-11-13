@@ -29,7 +29,6 @@ import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
@@ -79,7 +78,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             Baritone.getExecutor().execute(() -> rescan(current));
         }
         Goal goal = new GoalComposite(knownLocations.stream().map(GoalGetToBlock::new).toArray(Goal[]::new));
-        if (goal.isInGoal(playerFeet())) {
+        if (goal.isInGoal(ctx.playerFeet())) {
             onLostControl();
         }
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
@@ -97,6 +96,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     private void rescan(List<BlockPos> known) {
-        knownLocations = MineProcess.searchWorld(Collections.singletonList(gettingTo), 64, baritone.getWorldProvider(), world(), known);
+        // TODO-yeet
+//        knownLocations = MineProcess.searchWorld(ctx, Collections.singletonList(gettingTo), 64, baritone.getWorldProvider(), known);
     }
 }

@@ -69,24 +69,24 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
         switch (event.getState()) {
             case PRE: {
                 if (this.force) {
-                    player().rotationYaw = this.target.getYaw();
-                    float oldPitch = player().rotationPitch;
+                    ctx.player().rotationYaw = this.target.getYaw();
+                    float oldPitch = ctx.player().rotationPitch;
                     float desiredPitch = this.target.getPitch();
-                    player().rotationPitch = desiredPitch;
+                    ctx.player().rotationPitch = desiredPitch;
                     if (desiredPitch == oldPitch) {
                         nudgeToLevel();
                     }
                     this.target = null;
                 }
                 if (silent) {
-                    this.lastYaw = player().rotationYaw;
-                    player().rotationYaw = this.target.getYaw();
+                    this.lastYaw = ctx.player().rotationYaw;
+                    ctx.player().rotationYaw = this.target.getYaw();
                 }
                 break;
             }
             case POST: {
                 if (silent) {
-                    player().rotationYaw = this.lastYaw;
+                    ctx.player().rotationYaw = this.lastYaw;
                     this.target = null;
                 }
                 break;
@@ -114,10 +114,10 @@ public final class LookBehavior extends Behavior implements ILookBehavior, Helpe
      * Nudges the player's pitch to a regular level. (Between {@code -20} and {@code 10}, increments are by {@code 1})
      */
     private void nudgeToLevel() {
-        if (player().rotationPitch < -20) {
-            player().rotationPitch++;
-        } else if (player().rotationPitch > 10) {
-            player().rotationPitch--;
+        if (ctx.player().rotationPitch < -20) {
+            ctx.player().rotationPitch++;
+        } else if (ctx.player().rotationPitch > 10) {
+            ctx.player().rotationPitch--;
         }
     }
 }

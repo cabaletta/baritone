@@ -38,7 +38,6 @@ public class BlockStateInterface implements Helper {
     private final World world;
     private final WorldData worldData;
 
-
     private Chunk prev = null;
     private CachedRegion prevCached = null;
 
@@ -54,7 +53,7 @@ public class BlockStateInterface implements Helper {
     }
 
     public static IBlockState get(BlockPos pos) {
-        return new CalculationContext().get(pos); // immense iq
+        return new CalculationContext(Baritone.INSTANCE).get(pos); // immense iq
         // can't just do world().get because that doesn't work for out of bounds
         // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
     }

@@ -17,13 +17,14 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
-import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -37,17 +38,17 @@ public class MovementDiagonal extends Movement {
 
     private static final double SQRT_2 = Math.sqrt(2);
 
-    public MovementDiagonal(BetterBlockPos start, EnumFacing dir1, EnumFacing dir2) {
-        this(start, start.offset(dir1), start.offset(dir2), dir2);
+    public MovementDiagonal(IBaritone baritone, BetterBlockPos start, EnumFacing dir1, EnumFacing dir2) {
+        this(baritone, start, start.offset(dir1), start.offset(dir2), dir2);
         // super(start, start.offset(dir1).offset(dir2), new BlockPos[]{start.offset(dir1), start.offset(dir1).up(), start.offset(dir2), start.offset(dir2).up(), start.offset(dir1).offset(dir2), start.offset(dir1).offset(dir2).up()}, new BlockPos[]{start.offset(dir1).offset(dir2).down()});
     }
 
-    private MovementDiagonal(BetterBlockPos start, BetterBlockPos dir1, BetterBlockPos dir2, EnumFacing drr2) {
-        this(start, dir1.offset(drr2), dir1, dir2);
+    private MovementDiagonal(IBaritone baritone, BetterBlockPos start, BetterBlockPos dir1, BetterBlockPos dir2, EnumFacing drr2) {
+        this(baritone, start, dir1.offset(drr2), dir1, dir2);
     }
 
-    private MovementDiagonal(BetterBlockPos start, BetterBlockPos end, BetterBlockPos dir1, BetterBlockPos dir2) {
-        super(start, end, new BetterBlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
+    private MovementDiagonal(IBaritone baritone, BetterBlockPos start, BetterBlockPos end, BetterBlockPos dir1, BetterBlockPos dir2) {
+        super(baritone, start, end, new BetterBlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
     }
 
     @Override
@@ -140,14 +141,14 @@ public class MovementDiagonal extends Movement {
             return state;
         }
 
-        if (playerFeet().equals(dest)) {
+        if (ctx.playerFeet().equals(dest)) {
             state.setStatus(MovementStatus.SUCCESS);
             return state;
         }
-        if (!MovementHelper.isLiquid(playerFeet())) {
-            state.setInput(InputOverrideHandler.Input.SPRINT, true);
+        if (!MovementHelper.isLiquid(ctx.playerFeet())) {
+            state.setInput(Input.SPRINT, true);
         }
-        MovementHelper.moveTowards(state, dest);
+        MovementHelper.moveTowards(ctx, state, dest);
         return state;
     }
 

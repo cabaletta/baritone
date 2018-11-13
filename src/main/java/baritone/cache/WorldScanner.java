@@ -18,6 +18,7 @@
 package baritone.cache;
 
 import baritone.api.cache.IWorldScanner;
+import baritone.api.utils.IPlayerContext;
 import baritone.utils.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -35,7 +36,7 @@ public enum WorldScanner implements IWorldScanner, Helper {
     INSTANCE;
 
     @Override
-    public List<BlockPos> scanChunkRadius(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
+    public List<BlockPos> scanChunkRadius(IPlayerContext ctx, List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
         if (blocks.contains(null)) {
             throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }
@@ -43,12 +44,12 @@ public enum WorldScanner implements IWorldScanner, Helper {
         if (blocks.isEmpty()) {
             return res;
         }
-        ChunkProviderClient chunkProvider = world().getChunkProvider();
+        ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
 
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
-        int playerChunkX = playerFeet().getX() >> 4;
-        int playerChunkZ = playerFeet().getZ() >> 4;
-        int playerY = playerFeet().getY();
+        int playerChunkX = ctx.playerFeet().getX() >> 4;
+        int playerChunkZ = ctx.playerFeet().getZ() >> 4;
+        int playerY = ctx.playerFeet().getY();
 
         int searchRadiusSq = 0;
         boolean foundWithinY = false;

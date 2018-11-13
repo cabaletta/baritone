@@ -18,14 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Rotation;
-import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
@@ -51,6 +44,7 @@ public interface Helper {
 
     Minecraft mc = Minecraft.getMinecraft();
 
+    /*
     default EntityPlayerSP player() {
         if (!mc.isCallingFromMinecraftThread()) {
             throw new IllegalStateException("h00000000");
@@ -92,6 +86,7 @@ public interface Helper {
     default Rotation playerRotations() {
         return new Rotation(player().rotationYaw, player().rotationPitch);
     }
+    */
 
     /**
      * Send a message to chat only if chatDebug is on

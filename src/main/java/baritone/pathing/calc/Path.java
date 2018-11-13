@@ -129,7 +129,7 @@ class Path extends PathBase {
 
     private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double cost) {
         for (Moves moves : Moves.values()) {
-            Movement move = moves.apply0(context, src);
+            Movement move = moves.apply0(context.getBaritone(), src);
             if (move.getDest().equals(dest)) {
                 // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
                 move.override(cost);
