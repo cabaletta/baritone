@@ -19,7 +19,6 @@ package baritone.utils.player;
 
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
-import baritone.utils.BlockStateInterface;
 import net.minecraft.block.BlockSlab;
 
 /**
@@ -32,7 +31,7 @@ public abstract class AbstractPlayerContext implements IPlayerContext {
     public BetterBlockPos playerFeet() {
         // TODO find a better way to deal with soul sand!!!!!
         BetterBlockPos feet = new BetterBlockPos(player().posX, player().posY + 0.1251, player().posZ);
-        if (BlockStateInterface.get(feet).getBlock() instanceof BlockSlab) {
+        if (world().getBlockState(feet).getBlock() instanceof BlockSlab) {
             return feet.up();
         }
         return feet;
