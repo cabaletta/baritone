@@ -57,8 +57,6 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
      */
     protected final BetterBlockPos positionToPlace;
 
-    private boolean didBreakLastTick;
-
     private Double cost;
 
     public List<BlockPos> toBreakCached = null;

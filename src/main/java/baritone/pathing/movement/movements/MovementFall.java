@@ -65,16 +65,17 @@ public class MovementFall extends Movement {
         }
 
         BlockPos playerFeet = ctx.playerFeet();
+        Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest));
         Rotation targetRotation = null;
         if (!MovementHelper.isWater(ctx, dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().provider.isNether()) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (ctx.player().posY - dest.getY() < ctx.playerController().getBlockReachDistance()) {
+            if (ctx.player().posY - dest.getY() < ctx.playerController().getBlockReachDistance() && !ctx.player().onGround) {
                 ctx.player().inventory.currentItem = ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER);
 
-                targetRotation = new Rotation(ctx.player().rotationYaw, 90.0F);
+                targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
                 RayTraceResult trace = mc.objectMouseOver;
                 if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && ctx.player().rotationPitch > 89.0F) {
@@ -85,7 +86,7 @@ public class MovementFall extends Movement {
         if (targetRotation != null) {
             state.setTarget(new MovementTarget(targetRotation, true));
         } else {
-            state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest)), false));
+            state.setTarget(new MovementTarget(toDest, false));
         }
         if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || MovementHelper.isWater(ctx, dest))) { // 0.094 because lilypads
             if (MovementHelper.isWater(ctx, dest)) {
