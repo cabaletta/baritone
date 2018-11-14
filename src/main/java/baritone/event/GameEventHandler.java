@@ -52,7 +52,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     @Override
     public final void onPlayerUpdate(PlayerUpdateEvent event) {
         // TODO temporary bot event call prevention
-        if (event.getPlayer() != player())
+        if (event.getPlayer() != baritone.getPlayerContext().player())
             return;
 
         listeners.forEach(l -> l.onPlayerUpdate(event));
@@ -66,7 +66,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     @Override
     public final void onSendChatMessage(ChatEvent event) {
         // TODO temporary bot event call prevention
-        if (event.getPlayer() != player())
+        if (event.getPlayer() != baritone.getPlayerContext().player())
             return;
 
         // Ensure UserManager is created to prevent a ConcurrentModificationException
@@ -133,7 +133,7 @@ public final class GameEventHandler implements IGameEventListener, Helper {
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         // TODO temporary bot event call prevention
-        if (event.getPlayer() != player())
+        if (event.getPlayer() != baritone.getPlayerContext().player())
             return;
 
         listeners.forEach(l -> l.onPlayerRotationMove(event));
