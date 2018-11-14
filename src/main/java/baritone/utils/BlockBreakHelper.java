@@ -81,7 +81,7 @@ public final class BlockBreakHelper implements Helper {
             return isLeftClick;
         }
 
-        RayTraceResult trace = mc.objectMouseOver; // TODO per-player objectMouseOver
+        RayTraceResult trace = playerContext.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
 
         if (isLeftClick && isBlockTrace) {
