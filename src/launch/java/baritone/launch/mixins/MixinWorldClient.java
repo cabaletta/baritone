@@ -18,6 +18,8 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.type.EventState;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -38,14 +40,19 @@ public class MixinWorldClient {
             at = @At("HEAD")
     )
     private void preDoPreChunk(int chunkX, int chunkZ, boolean loadChunk, CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onChunkEvent(
-                new ChunkEvent(
-                        EventState.PRE,
-                        loadChunk ? ChunkEvent.Type.LOAD : ChunkEvent.Type.UNLOAD,
-                        chunkX,
-                        chunkZ
-                )
-        );
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().world() == (WorldClient) (Object) this) {
+                ((Baritone) ibaritone).getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(
+                                EventState.PRE,
+                                loadChunk ? ChunkEvent.Type.LOAD : ChunkEvent.Type.UNLOAD,
+                                chunkX,
+                                chunkZ
+                        )
+                );
+            }
+        }
+
     }
 
     @Inject(
@@ -53,13 +60,17 @@ public class MixinWorldClient {
             at = @At("RETURN")
     )
     private void postDoPreChunk(int chunkX, int chunkZ, boolean loadChunk, CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onChunkEvent(
-                new ChunkEvent(
-                        EventState.POST,
-                        loadChunk ? ChunkEvent.Type.LOAD : ChunkEvent.Type.UNLOAD,
-                        chunkX,
-                        chunkZ
-                )
-        );
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().world() == (WorldClient) (Object) this) {
+                ((Baritone) ibaritone).getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(
+                                EventState.POST,
+                                loadChunk ? ChunkEvent.Type.LOAD : ChunkEvent.Type.UNLOAD,
+                                chunkX,
+                                chunkZ
+                        )
+                );
+            }
+        }
     }
 }

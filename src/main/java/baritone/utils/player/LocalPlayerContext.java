@@ -17,7 +17,7 @@
 
 package baritone.utils.player;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.Minecraft;
@@ -56,6 +56,6 @@ public final class LocalPlayerContext implements IPlayerContext {
 
     @Override
     public IWorldData worldData() {
-        return Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
+        return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
     }
 }

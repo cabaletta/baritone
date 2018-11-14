@@ -18,10 +18,11 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.behavior.PathingBehavior;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.PlayerCapabilities;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,7 +45,7 @@ public class MixinEntityPlayerSP {
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
         ChatEvent event = new ChatEvent((EntityPlayerSP) (Object) this, msg);
-        Baritone.INSTANCE.getGameEventHandler().onSendChatMessage(event);
+        ((Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this)).getGameEventHandler().onSendChatMessage(event);
         if (event.isCancelled()) {
             ci.cancel();
         }
@@ -60,7 +61,7 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPreUpdate(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.PRE));
+        ((Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this)).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.PRE));
     }
 
     @Inject(
@@ -73,7 +74,7 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPostUpdate(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.POST));
+        ((Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this)).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.POST));
     }
 
     @Redirect(
@@ -84,7 +85,7 @@ public class MixinEntityPlayerSP {
             )
     )
     private boolean isAllowFlying(PlayerCapabilities capabilities) {
-        PathingBehavior pathingBehavior = Baritone.INSTANCE.getPathingBehavior();
+        IPathingBehavior pathingBehavior = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getPathingBehavior();
         return !pathingBehavior.isPathing() && capabilities.allowFlying;
     }
 }

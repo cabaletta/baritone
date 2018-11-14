@@ -18,6 +18,8 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
 import net.minecraft.client.renderer.EntityRenderer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,6 +39,8 @@ public class MixinEntityRenderer {
             )
     )
     private void renderWorldPass(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            ((Baritone) ibaritone).getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
+        }
     }
 }

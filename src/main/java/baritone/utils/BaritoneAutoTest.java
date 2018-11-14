@@ -17,7 +17,7 @@
 
 package baritone.utils;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
@@ -41,7 +41,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
     private static final BlockPos STARTING_POSITION = new BlockPos(0, 65, 0);
     private static final Goal GOAL = new GoalBlock(69, 121, 420);
     private static final int MAX_TICKS = 3500;
-    private static final Baritone baritone = Baritone.INSTANCE;
 
     /**
      * Called right after the {@link GameSettings} object is created in the {@link Minecraft} instance.
@@ -71,7 +70,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        IPlayerContext ctx = baritone.getPlayerContext();
+        IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
         // If we're on the main menu then create the test world and launch the integrated server
         if (mc.currentScreen instanceof GuiMainMenu) {
             System.out.println("Beginning Baritone automatic test routine");
@@ -107,7 +106,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             }
 
             // Setup Baritone's pathing goal and (if needed) begin pathing
-            baritone.getCustomGoalProcess().setGoalAndPath(GOAL);
+            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(GOAL);
 
             // If we have reached our goal, print a message and safely close the game
             if (GOAL.isInGoal(ctx.playerFeet())) {

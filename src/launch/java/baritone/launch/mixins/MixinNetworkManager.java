@@ -18,6 +18,8 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.type.EventState;
 import io.netty.channel.Channel;
@@ -53,8 +55,14 @@ public class MixinNetworkManager {
             at = @At("HEAD")
     )
     private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
-        if (this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, inPacket));
+        if (this.direction != EnumPacketDirection.CLIENTBOUND) {
+            return;
+        }
+
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (NetworkManager) (Object) this) {
+                ((Baritone) ibaritone).getGameEventHandler().onSendPacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, inPacket));
+            }
         }
     }
 
@@ -63,8 +71,14 @@ public class MixinNetworkManager {
             at = @At("RETURN")
     )
     private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
-        if (this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onSendPacket(new PacketEvent((NetworkManager) (Object) this, EventState.POST, inPacket));
+        if (this.direction != EnumPacketDirection.CLIENTBOUND) {
+            return;
+        }
+
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (NetworkManager) (Object) this) {
+                ((Baritone) ibaritone).getGameEventHandler().onSendPacket(new PacketEvent((NetworkManager) (Object) this, EventState.POST, inPacket));
+            }
         }
     }
 
@@ -76,8 +90,13 @@ public class MixinNetworkManager {
             )
     )
     private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        if (this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, packet));
+        if (this.direction != EnumPacketDirection.CLIENTBOUND) {
+            return;
+        }
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (NetworkManager) (Object) this) {
+                ((Baritone) ibaritone).getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, packet));
+            }
         }
     }
 
@@ -86,8 +105,13 @@ public class MixinNetworkManager {
             at = @At("RETURN")
     )
     private void postProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        if (this.channel.isOpen() && this.direction == EnumPacketDirection.CLIENTBOUND) {
-            Baritone.INSTANCE.getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.POST, packet));
+        if (!this.channel.isOpen() || this.direction != EnumPacketDirection.CLIENTBOUND) {
+            return;
+        }
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (NetworkManager) (Object) this) {
+                ((Baritone) ibaritone).getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.POST, packet));
+            }
         }
     }
 }

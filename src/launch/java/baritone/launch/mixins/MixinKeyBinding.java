@@ -17,7 +17,7 @@
 
 package baritone.launch.mixins;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import net.minecraft.client.settings.KeyBinding;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -37,7 +37,8 @@ public class MixinKeyBinding {
             cancellable = true
     )
     private void isKeyDown(CallbackInfoReturnable<Boolean> cir) {
-        if (Baritone.INSTANCE.getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this)) {
+        // only the primary baritone forces keys
+        if (BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this)) {
             cir.setReturnValue(true);
         }
     }

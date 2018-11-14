@@ -18,6 +18,8 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
@@ -57,7 +59,7 @@ public class MixinMinecraft {
             at = @At("RETURN")
     )
     private void postInit(CallbackInfo ci) {
-        Baritone.INSTANCE.init();
+        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).init();
     }
 
     @Inject(
@@ -83,12 +85,15 @@ public class MixinMinecraft {
             )
     )
     private void runTick(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onTick(new TickEvent(
-                EventState.PRE,
-                (player != null && world != null)
-                        ? TickEvent.Type.IN
-                        : TickEvent.Type.OUT
-        ));
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            ((Baritone) ibaritone).getGameEventHandler().onTick(new TickEvent(
+                    EventState.PRE,
+                    (player != null && world != null)
+                            ? TickEvent.Type.IN
+                            : TickEvent.Type.OUT
+            ));
+        }
+
     }
 
     @Inject(
@@ -96,7 +101,8 @@ public class MixinMinecraft {
             at = @At("HEAD")
     )
     private void runTickKeyboard(CallbackInfo ci) {
-        Baritone.INSTANCE.getGameEventHandler().onProcessKeyBinds();
+        // keyboard input is only the primary baritone
+        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onProcessKeyBinds();
     }
 
     @Inject(
@@ -109,7 +115,9 @@ public class MixinMinecraft {
             return;
         }
 
-        Baritone.INSTANCE.getGameEventHandler().onWorldEvent(
+        // mc.world changing is only the primary baritone
+
+        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onWorldEvent(
                 new WorldEvent(
                         world,
                         EventState.PRE
@@ -124,7 +132,9 @@ public class MixinMinecraft {
     private void postLoadWorld(WorldClient world, String loadingMessage, CallbackInfo ci) {
         // still fire event for both null, as that means we've just finished exiting a world
 
-        Baritone.INSTANCE.getGameEventHandler().onWorldEvent(
+        // mc.world changing is only the primary baritone
+
+        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onWorldEvent(
                 new WorldEvent(
                         world,
                         EventState.POST
@@ -141,7 +151,8 @@ public class MixinMinecraft {
             )
     )
     private boolean isAllowUserInput(GuiScreen screen) {
-        return (Baritone.INSTANCE.getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
+        // allow user input is only the primary baritone
+        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
     }
 
     @Inject(
@@ -153,7 +164,8 @@ public class MixinMinecraft {
             locals = LocalCapture.CAPTURE_FAILHARD
     )
     private void onBlockBreak(CallbackInfo ci, BlockPos pos) {
-        Baritone.INSTANCE.getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.BREAK));
+        // clickMouse is only for the main player
+        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.BREAK));
     }
 
     @Inject(
@@ -165,6 +177,7 @@ public class MixinMinecraft {
             locals = LocalCapture.CAPTURE_FAILHARD
     )
     private void onBlockUse(CallbackInfo ci, EnumHand var1[], int var2, int var3, EnumHand enumhand, ItemStack itemstack, BlockPos blockpos, int i, EnumActionResult enumactionresult) {
-        Baritone.INSTANCE.getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
+        // rightClickMouse is only for the main player
+        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
     }
 }
