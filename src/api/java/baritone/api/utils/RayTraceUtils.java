@@ -17,21 +17,15 @@
 
 package baritone.api.utils;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-
-import java.util.Optional;
 
 /**
  * @author Brady
  * @since 8/25/2018
  */
 public final class RayTraceUtils {
-
-    private static final Minecraft mc = Minecraft.getMinecraft();
 
     private RayTraceUtils() {}
 
@@ -52,29 +46,5 @@ public final class RayTraceUtils {
                 direction.z * blockReachDistance
         );
         return entity.world.rayTraceBlocks(start, end, false, false, true);
-    }
-
-    /**
-     * Returns the block that the crosshair is currently placed over. Updated once per render tick.
-     *
-     * @return The position of the highlighted block
-     */
-    public static Optional<BlockPos> getSelectedBlock() {
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
-            return Optional.of(mc.objectMouseOver.getBlockPos());
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Returns the entity that the crosshair is currently placed over. Updated once per render tick.
-     *
-     * @return The entity
-     */
-    public static Optional<Entity> getSelectedEntity() {
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
-            return Optional.of(mc.objectMouseOver.entityHit);
-        }
-        return Optional.empty();
     }
 }

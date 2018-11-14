@@ -153,7 +153,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                 if (reachable.isPresent()) {
                     MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                     state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
-                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), blockPos)) {
+                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), blockPos)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
                     return false;

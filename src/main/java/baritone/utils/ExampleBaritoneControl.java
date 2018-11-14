@@ -23,7 +23,6 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
 import baritone.api.pathing.movement.ActionCosts;
-import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
@@ -270,7 +269,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             String name = msg.substring(6).trim();
             Optional<Entity> toFollow = Optional.empty();
             if (name.length() == 0) {
-                toFollow = RayTraceUtils.getSelectedEntity();
+                toFollow = ctx.getSelectedEntity();
             } else {
                 for (EntityPlayer pl : ctx.world().playerEntities) {
                     String theirName = pl.getName().trim().toLowerCase();

@@ -17,8 +17,11 @@
 
 package baritone.api.utils;
 
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
 
@@ -135,8 +138,9 @@ public final class RotationUtils {
      * @param pos    The target block position
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachable(Entity entity, BlockPos pos, double blockReachDistance) {
-        if (pos.equals(RayTraceUtils.getSelectedBlock().orElse(null))) {
+    public static Optional<Rotation> reachable(EntityPlayerSP entity, BlockPos pos, double blockReachDistance) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(entity);
+        if (pos.equals(baritone.getPlayerContext().getSelectedBlock().orElse(null))) {
             /*
              * why add 0.0001?
              * to indicate that we actually have a desired pitch

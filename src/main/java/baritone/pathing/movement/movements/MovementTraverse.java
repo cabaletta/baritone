@@ -20,7 +20,10 @@ package baritone.pathing.movement.movements;
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.utils.*;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -29,7 +32,6 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -265,8 +267,8 @@ public class MovementTraverse extends Movement {
                     double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
                     state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations()), true));
 
-                    EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), against1) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && RayTraceUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
+                    EnumFacing side = ctx.objectMouseOver().sideHit;
+                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), against1) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && ctx.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                         return state.setInput(Input.CLICK_RIGHT, true);
                     }
                     //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
@@ -300,7 +302,7 @@ public class MovementTraverse extends Movement {
                     state.setTarget(new MovementState.MovementTarget(backToFace, true));
                 }
                 state.setInput(Input.SNEAK, true);
-                if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), goalLook)) {
+                if (Objects.equals(ctx.getSelectedBlock().orElse(null), goalLook)) {
                     return state.setInput(Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());

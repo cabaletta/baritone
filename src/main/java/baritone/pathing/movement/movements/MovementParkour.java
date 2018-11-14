@@ -34,7 +34,6 @@ import baritone.utils.Helper;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -232,8 +231,8 @@ public class MovementParkour extends Movement {
                             if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
                                 state.setTarget(new MovementState.MovementTarget(place, true));
                             }
-                            RayTraceUtils.getSelectedBlock().ifPresent(selectedBlock -> {
-                                EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
+                            ctx.getSelectedBlock().ifPresent(selectedBlock -> {
+                                EnumFacing side = ctx.objectMouseOver().sideHit;
                                 if (Objects.equals(selectedBlock, against1) && selectedBlock.offset(side).equals(dest.down())) {
                                     state.setInput(Input.CLICK_RIGHT, true);
                                 }

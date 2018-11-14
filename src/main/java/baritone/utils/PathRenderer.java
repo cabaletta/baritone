@@ -31,7 +31,6 @@ import baritone.behavior.PathingBehavior;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -224,9 +223,9 @@ public final class PathRenderer implements Helper {
             IBlockState state = BlockStateInterface.get(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext(), pos);
             AxisAlignedBB toDraw;
             if (state.getBlock().equals(Blocks.AIR)) {
-                toDraw = Blocks.DIRT.getDefaultState().getSelectedBoundingBox(Minecraft.getMinecraft().world, pos);
+                toDraw = Blocks.DIRT.getDefaultState().getSelectedBoundingBox(player.world, pos);
             } else {
-                toDraw = state.getSelectedBoundingBox(Minecraft.getMinecraft().world, pos);
+                toDraw = state.getSelectedBoundingBox(player.world, pos);
             }
             toDraw = toDraw.expand(expand, expand, expand).offset(-renderPosX, -renderPosY, -renderPosZ);
             BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);

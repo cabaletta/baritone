@@ -23,6 +23,7 @@ import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 /**
@@ -57,5 +58,10 @@ public final class LocalPlayerContext implements IPlayerContext {
     @Override
     public IWorldData worldData() {
         return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
+    }
+
+    @Override
+    public RayTraceResult objectMouseOver() {
+        return mc.objectMouseOver;
     }
 }
