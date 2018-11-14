@@ -21,7 +21,6 @@ import baritone.api.behavior.ILookBehavior;
 import baritone.api.behavior.IMemoryBehavior;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
-import baritone.api.cache.IWorldScanner;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IFollowProcess;
