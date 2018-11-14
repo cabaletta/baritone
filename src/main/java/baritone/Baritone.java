@@ -107,6 +107,9 @@ public enum Baritone implements IBaritone {
             return;
         }
 
+        // Define this before behaviors try and get it, or else it will be null and the builds will fail!
+        this.playerContext = LocalPlayerContext.INSTANCE;
+
         this.behaviors = new ArrayList<>();
         {
             // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
@@ -125,7 +128,6 @@ public enum Baritone implements IBaritone {
             getToBlockProcess = new GetToBlockProcess(this);
         }
 
-        this.playerContext = LocalPlayerContext.INSTANCE;
         this.worldProvider = new WorldProvider();
 
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
