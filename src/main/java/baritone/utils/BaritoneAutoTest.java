@@ -42,7 +42,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
     private static final Goal GOAL = new GoalBlock(69, 121, 420);
     private static final int MAX_TICKS = 3500;
     private static final Baritone baritone = Baritone.INSTANCE;
-    private static final IPlayerContext ctx = baritone.getPlayerContext();
 
     /**
      * Called right after the {@link GameSettings} object is created in the {@link Minecraft} instance.
@@ -72,7 +71,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     @Override
     public void onTick(TickEvent event) {
-
+        IPlayerContext ctx = baritone.getPlayerContext();
         // If we're on the main menu then create the test world and launch the integrated server
         if (mc.currentScreen instanceof GuiMainMenu) {
             System.out.println("Beginning Baritone automatic test routine");
