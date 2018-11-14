@@ -136,7 +136,7 @@ public enum Baritone implements IBaritone {
     }
 
     public PathingControlManager getPathingControlManager() {
-        return pathingControlManager;
+        return this.pathingControlManager;
     }
 
     public IGameEventListener getGameEventHandler() {
@@ -159,47 +159,47 @@ public enum Baritone implements IBaritone {
 
     @Override
     public CustomGoalProcess getCustomGoalProcess() { // Iffy
-        return customGoalProcess;
+        return this.customGoalProcess;
     }
 
     @Override
     public GetToBlockProcess getGetToBlockProcess() {  // Iffy
-        return getToBlockProcess;
+        return this.getToBlockProcess;
     }
 
     @Override
     public IPlayerContext getPlayerContext() {
-        return playerContext;
+        return this.playerContext;
     }
 
     @Override
     public FollowProcess getFollowProcess() {
-        return followProcess;
+        return this.followProcess;
     }
 
     @Override
     public LookBehavior getLookBehavior() {
-        return lookBehavior;
+        return this.lookBehavior;
     }
 
     @Override
     public MemoryBehavior getMemoryBehavior() {
-        return memoryBehavior;
+        return this.memoryBehavior;
     }
 
     @Override
     public MineProcess getMineProcess() {
-        return mineProcess;
+        return this.mineProcess;
     }
 
     @Override
     public PathingBehavior getPathingBehavior() {
-        return pathingBehavior;
+        return this.pathingBehavior;
     }
 
     @Override
     public WorldProvider getWorldProvider() {
-        return worldProvider;
+        return this.worldProvider;
     }
 
     @Override
