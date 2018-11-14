@@ -24,7 +24,7 @@ import baritone.cache.WorldScanner;
 import net.minecraft.client.entity.EntityPlayerSP;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Brady
@@ -38,8 +38,8 @@ public final class BaritoneProvider implements IBaritoneProvider {
     }
 
     @Override
-    public List<IBaritone> getAllBaritones() {
-        return Collections.singletonList(Baritone.INSTANCE);
+    public Set<IBaritone> getAllBaritones() {
+        return Collections.singleton(Baritone.INSTANCE);
     }
 
     @Override

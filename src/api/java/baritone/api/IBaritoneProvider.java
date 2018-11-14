@@ -20,7 +20,7 @@ package baritone.api;
 import baritone.api.cache.IWorldScanner;
 import net.minecraft.client.entity.EntityPlayerSP;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Leijurv
@@ -40,11 +40,10 @@ public interface IBaritoneProvider {
      * Returns all of the active {@link IBaritone} instances. This includes the local one
      * returned by {@link #getPrimaryBaritone()}.
      *
-     * @see #getBaritoneForPlayer(EntityPlayerSP)
-     *
      * @return All active {@link IBaritone} instances.
+     * @see #getBaritoneForPlayer(EntityPlayerSP)
      */
-    List<IBaritone> getAllBaritones();
+    Set<IBaritone> getAllBaritones();
 
     /**
      * Provides the {@link IBaritone} instance for a given {@link EntityPlayerSP}. This will likely be
