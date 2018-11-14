@@ -86,12 +86,12 @@ public class MixinMinecraft {
     )
     private void runTick(CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ((Baritone) ibaritone).getGameEventHandler().onTick(new TickEvent(
-                    EventState.PRE,
-                    (player != null && world != null)
-                            ? TickEvent.Type.IN
-                            : TickEvent.Type.OUT
-            ));
+
+            TickEvent.Type type = ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().world() != null
+                    ? TickEvent.Type.IN
+                    : TickEvent.Type.OUT;
+
+            ((Baritone) ibaritone).getGameEventHandler().onTick(new TickEvent(EventState.PRE, type));
         }
 
     }
