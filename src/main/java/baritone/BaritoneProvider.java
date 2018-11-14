@@ -19,15 +19,36 @@ package baritone;
 
 import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
+import baritone.api.cache.IWorldScanner;
+import baritone.cache.WorldScanner;
 import net.minecraft.client.entity.EntityPlayerSP;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Brady
  * @since 9/29/2018
  */
 public final class BaritoneProvider implements IBaritoneProvider {
+
+    @Override
+    public IBaritone getPrimaryBaritone() {
+        return Baritone.INSTANCE;
+    }
+
+    @Override
+    public List<IBaritone> getAllBaritones() {
+        return Collections.singletonList(Baritone.INSTANCE);
+    }
+
     @Override
     public IBaritone getBaritoneForPlayer(EntityPlayerSP player) {
-        return Baritone.INSTANCE; // pwnage
+        return Baritone.INSTANCE;
+    }
+
+    @Override
+    public IWorldScanner getWorldScanner() {
+        return WorldScanner.INSTANCE;
     }
 }

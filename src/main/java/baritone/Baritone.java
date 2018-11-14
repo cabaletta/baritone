@@ -95,6 +95,7 @@ public enum Baritone implements IBaritone {
 
     private PathingControlManager pathingControlManager;
 
+    private IPlayerContext playerContext;
     private WorldProvider worldProvider;
 
     Baritone() {
@@ -124,6 +125,7 @@ public enum Baritone implements IBaritone {
             getToBlockProcess = new GetToBlockProcess(this);
         }
 
+        this.playerContext = LocalPlayerContext.INSTANCE;
         this.worldProvider = new WorldProvider();
 
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
@@ -141,11 +143,6 @@ public enum Baritone implements IBaritone {
         return this.gameEventHandler;
     }
 
-    @Override
-    public InputOverrideHandler getInputOverrideHandler() {
-        return this.inputOverrideHandler;
-    }
-
     public List<Behavior> getBehaviors() {
         return this.behaviors;
     }
@@ -153,6 +150,11 @@ public enum Baritone implements IBaritone {
     public void registerBehavior(Behavior behavior) {
         this.behaviors.add(behavior);
         this.registerEventListener(behavior);
+    }
+
+    @Override
+    public InputOverrideHandler getInputOverrideHandler() {
+        return this.inputOverrideHandler;
     }
 
     @Override
@@ -167,7 +169,7 @@ public enum Baritone implements IBaritone {
 
     @Override
     public IPlayerContext getPlayerContext() {
-        return LocalPlayerContext.INSTANCE;
+        return playerContext;
     }
 
     @Override
@@ -198,16 +200,6 @@ public enum Baritone implements IBaritone {
     @Override
     public WorldProvider getWorldProvider() {
         return worldProvider;
-    }
-
-    /**
-     * TODO-yeet This shouldn't be baritone-instance specific
-     *
-     * @return world scanner instance
-     */
-    @Override
-    public WorldScanner getWorldScanner() {
-        return WorldScanner.INSTANCE;
     }
 
     @Override

@@ -72,12 +72,6 @@ public interface IBaritone {
      */
     IWorldProvider getWorldProvider();
 
-    /**
-     * @return The {@link IWorldScanner} instance
-     * @see IWorldScanner
-     */
-    IWorldScanner getWorldScanner();
-
     IInputOverrideHandler getInputOverrideHandler();
 
     ICustomGoalProcess getCustomGoalProcess();
