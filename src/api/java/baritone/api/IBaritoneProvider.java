@@ -20,7 +20,7 @@ package baritone.api;
 import baritone.api.cache.IWorldScanner;
 import net.minecraft.client.entity.EntityPlayerSP;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author Leijurv
@@ -43,7 +43,7 @@ public interface IBaritoneProvider {
      * @return All active {@link IBaritone} instances.
      * @see #getBaritoneForPlayer(EntityPlayerSP)
      */
-    Set<IBaritone> getAllBaritones();
+    List<IBaritone> getAllBaritones();
 
     /**
      * Provides the {@link IBaritone} instance for a given {@link EntityPlayerSP}. This will likely be
@@ -52,7 +52,14 @@ public interface IBaritoneProvider {
      * @param player The player
      * @return The {@link IBaritone} instance.
      */
-    IBaritone getBaritoneForPlayer(EntityPlayerSP player);
+    default IBaritone getBaritoneForPlayer(EntityPlayerSP player) {
+        for (IBaritone baritone : getAllBaritones()) {
+            if (player.equals(baritone.getPlayerContext().player())) {
+                return baritone;
+            }
+        }
+        throw new IllegalStateException("No baritone for player " + player);
+    }
 
     /**
      * Returns the {@link IWorldScanner} instance. This is not a type returned by

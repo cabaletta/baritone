@@ -21,10 +21,9 @@ import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.cache.WorldScanner;
-import net.minecraft.client.entity.EntityPlayerSP;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author Brady
@@ -40,14 +39,9 @@ public final class BaritoneProvider implements IBaritoneProvider {
     }
 
     @Override
-    public Set<IBaritone> getAllBaritones() {
-        return Collections.singleton(primary);
-    }
-
-    @Override
-    public IBaritone getBaritoneForPlayer(EntityPlayerSP player) {
-        // TODO implement on bot-system branch
-        return primary;
+    public List<IBaritone> getAllBaritones() {
+        // TODO return a CopyOnWriteArrayList
+        return Collections.singletonList(primary);
     }
 
     @Override
