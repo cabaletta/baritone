@@ -28,7 +28,6 @@ import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
-import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
@@ -230,7 +229,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.equals("forcecancel")) {
             pathingBehavior.cancelEverything();
-            AbstractNodeCostSearch.forceCancel();
             pathingBehavior.forceCancel();
             logDirect("ok force canceled");
             return true;
