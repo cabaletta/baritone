@@ -35,11 +35,6 @@ import java.util.Optional;
  */
 public abstract class AbstractNodeCostSearch implements IPathFinder {
 
-    /**
-     * The currently running search task
-     */
-    private static AbstractNodeCostSearch currentlyRunning = null;
-
     protected final int startX;
     protected final int startY;
     protected final int startZ;
@@ -114,17 +109,8 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION, Optional.empty());
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
-            currentlyRunning = null;
             isFinished = true;
         }
-    }
-
-    /**
-     * Don't set currentlyRunning to this until everything is all ready to go, and we're about to enter the main loop.
-     * For example, bestSoFar is null so bestPathSoFar (which gets bestSoFar[0]) could NPE if we set currentlyRunning before calculate0
-     */
-    protected void loopBegin() {
-        currentlyRunning = this;
     }
 
     protected abstract Optional<IPath> calculate0(long timeout);
@@ -159,22 +145,6 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             map.put(hashCode, node);
         }
         return node;
-    }
-
-    public static void forceCancel() {
-        currentlyRunning = null;
-    }
-
-    public PathNode mostRecentNodeConsidered() {
-        return mostRecentConsidered;
-    }
-
-    public PathNode bestNodeSoFar() {
-        return bestSoFar[0];
-    }
-
-    public PathNode startNode() {
-        return startNode;
     }
 
     @Override
