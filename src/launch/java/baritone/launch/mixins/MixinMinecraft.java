@@ -91,7 +91,7 @@ public class MixinMinecraft {
                     ? TickEvent.Type.IN
                     : TickEvent.Type.OUT;
 
-            ((Baritone) ibaritone).getGameEventHandler().onTick(new TickEvent(EventState.PRE, type));
+            ibaritone.getGameEventHandler().onTick(new TickEvent(EventState.PRE, type));
         }
 
     }
@@ -102,7 +102,7 @@ public class MixinMinecraft {
     )
     private void runTickKeyboard(CallbackInfo ci) {
         // keyboard input is only the primary baritone
-        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onProcessKeyBinds();
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onProcessKeyBinds();
     }
 
     @Inject(
@@ -117,7 +117,7 @@ public class MixinMinecraft {
 
         // mc.world changing is only the primary baritone
 
-        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onWorldEvent(
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onWorldEvent(
                 new WorldEvent(
                         world,
                         EventState.PRE
@@ -133,8 +133,7 @@ public class MixinMinecraft {
         // still fire event for both null, as that means we've just finished exiting a world
 
         // mc.world changing is only the primary baritone
-
-        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onWorldEvent(
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onWorldEvent(
                 new WorldEvent(
                         world,
                         EventState.POST
@@ -165,7 +164,7 @@ public class MixinMinecraft {
     )
     private void onBlockBreak(CallbackInfo ci, BlockPos pos) {
         // clickMouse is only for the main player
-        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.BREAK));
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.BREAK));
     }
 
     @Inject(
@@ -178,6 +177,6 @@ public class MixinMinecraft {
     )
     private void onBlockUse(CallbackInfo ci, EnumHand var1[], int var2, int var3, EnumHand enumhand, ItemStack itemstack, BlockPos blockpos, int i, EnumActionResult enumactionresult) {
         // rightClickMouse is only for the main player
-        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
     }
 }

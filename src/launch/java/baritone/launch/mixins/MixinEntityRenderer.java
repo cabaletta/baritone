@@ -17,7 +17,6 @@
 
 package baritone.launch.mixins;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
@@ -40,7 +39,7 @@ public class MixinEntityRenderer {
     )
     private void renderWorldPass(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ((Baritone) ibaritone).getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
         }
     }
 }

@@ -43,7 +43,7 @@ public class PathingControlManager {
     public PathingControlManager(Baritone baritone) {
         this.baritone = baritone;
         this.processes = new HashSet<>();
-        baritone.registerEventListener(new AbstractGameEventListener() { // needs to be after all behavior ticks
+        baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() { // needs to be after all behavior ticks
             @Override
             public void onTick(TickEvent event) {
                 if (event.getType() == TickEvent.Type.OUT) {

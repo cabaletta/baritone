@@ -17,7 +17,6 @@
 
 package baritone.launch.mixins;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RotationMoveEvent;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -54,7 +53,7 @@ public class MixinEntity {
         // noinspection ConstantConditions
         if (EntityPlayerSP.class.isInstance(this)) {
             this.motionUpdateRotationEvent = new RotationMoveEvent((EntityPlayerSP) (Object) this, RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw);
-            ((Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this)).getGameEventHandler().onPlayerRotationMove(this.motionUpdateRotationEvent);
+            BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerRotationMove(this.motionUpdateRotationEvent);
         }
     }
 

@@ -17,7 +17,6 @@
 
 package baritone.launch.mixins;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.ChatEvent;
@@ -45,7 +44,7 @@ public class MixinEntityPlayerSP {
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
         ChatEvent event = new ChatEvent((EntityPlayerSP) (Object) this, msg);
-        ((Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this)).getGameEventHandler().onSendChatMessage(event);
+        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onSendChatMessage(event);
         if (event.isCancelled()) {
             ci.cancel();
         }
@@ -61,7 +60,7 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPreUpdate(CallbackInfo ci) {
-        ((Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this)).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.PRE));
+        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.PRE));
     }
 
     @Inject(
@@ -74,7 +73,7 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPostUpdate(CallbackInfo ci) {
-        ((Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this)).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.POST));
+        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.POST));
     }
 
     @Redirect(

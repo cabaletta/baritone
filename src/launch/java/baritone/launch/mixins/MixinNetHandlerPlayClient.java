@@ -17,7 +17,6 @@
 
 package baritone.launch.mixins;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.ChunkEvent;
@@ -47,7 +46,7 @@ public class MixinNetHandlerPlayClient {
     private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
-                ((Baritone) ibaritone).getGameEventHandler().onChunkEvent(
+                ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.PRE,
                                 ChunkEvent.Type.POPULATE,
@@ -66,7 +65,7 @@ public class MixinNetHandlerPlayClient {
     private void postHandleChunkData(SPacketChunkData packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
-                ((Baritone) ibaritone).getGameEventHandler().onChunkEvent(
+                ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.POST,
                                 ChunkEvent.Type.POPULATE,
@@ -88,7 +87,7 @@ public class MixinNetHandlerPlayClient {
     private void onPlayerDeath(SPacketCombatEvent packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
-                ((Baritone) ibaritone).getGameEventHandler().onPlayerDeath();
+                ibaritone.getGameEventHandler().onPlayerDeath();
             }
         }
     }

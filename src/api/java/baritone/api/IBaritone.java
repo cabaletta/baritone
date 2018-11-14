@@ -21,7 +21,7 @@ import baritone.api.behavior.ILookBehavior;
 import baritone.api.behavior.IMemoryBehavior;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
-import baritone.api.event.listener.IGameEventListener;
+import baritone.api.event.listener.IEventBus;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IFollowProcess;
 import baritone.api.process.IGetToBlockProcess;
@@ -79,10 +79,5 @@ public interface IBaritone {
 
     IPlayerContext getPlayerContext();
 
-    /**
-     * Registers a {@link IGameEventListener} with Baritone's "event bus".
-     *
-     * @param listener The listener
-     */
-    void registerEventListener(IGameEventListener listener);
+    IEventBus getGameEventHandler();
 }

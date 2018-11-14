@@ -20,7 +20,7 @@ package baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.api.event.listener.IGameEventListener;
+import baritone.api.event.listener.IEventBus;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.Behavior;
 import baritone.behavior.LookBehavior;
@@ -125,7 +125,7 @@ public class Baritone implements IBaritone {
         this.worldProvider = new WorldProvider();
 
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
-            registerEventListener(BaritoneAutoTest.INSTANCE);
+            this.gameEventHandler.registerEventListener(BaritoneAutoTest.INSTANCE);
         }
 
         this.initialized = true;
@@ -135,17 +135,13 @@ public class Baritone implements IBaritone {
         return this.pathingControlManager;
     }
 
-    public IGameEventListener getGameEventHandler() {
-        return this.gameEventHandler;
-    }
-
     public List<Behavior> getBehaviors() {
         return this.behaviors;
     }
 
     public void registerBehavior(Behavior behavior) {
         this.behaviors.add(behavior);
-        this.registerEventListener(behavior);
+        this.gameEventHandler.registerEventListener(behavior);
     }
 
     @Override
@@ -199,8 +195,8 @@ public class Baritone implements IBaritone {
     }
 
     @Override
-    public void registerEventListener(IGameEventListener listener) {
-        this.gameEventHandler.registerEventListener(listener);
+    public IEventBus getGameEventHandler() {
+        return this.gameEventHandler;
     }
 
     public static Settings settings() {

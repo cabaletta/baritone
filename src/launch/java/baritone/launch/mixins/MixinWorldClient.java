@@ -17,7 +17,6 @@
 
 package baritone.launch.mixins;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.ChunkEvent;
@@ -42,7 +41,7 @@ public class MixinWorldClient {
     private void preDoPreChunk(int chunkX, int chunkZ, boolean loadChunk, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             if (ibaritone.getPlayerContext().world() == (WorldClient) (Object) this) {
-                ((Baritone) ibaritone).getGameEventHandler().onChunkEvent(
+                ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.PRE,
                                 loadChunk ? ChunkEvent.Type.LOAD : ChunkEvent.Type.UNLOAD,
@@ -62,7 +61,7 @@ public class MixinWorldClient {
     private void postDoPreChunk(int chunkX, int chunkZ, boolean loadChunk, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             if (ibaritone.getPlayerContext().world() == (WorldClient) (Object) this) {
-                ((Baritone) ibaritone).getGameEventHandler().onChunkEvent(
+                ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.POST,
                                 loadChunk ? ChunkEvent.Type.LOAD : ChunkEvent.Type.UNLOAD,

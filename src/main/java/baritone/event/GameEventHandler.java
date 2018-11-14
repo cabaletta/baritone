@@ -20,6 +20,7 @@ package baritone.event;
 import baritone.Baritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
+import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.cache.WorldProvider;
 import baritone.utils.Helper;
@@ -33,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author Brady
  * @since 7/31/2018
  */
-public final class GameEventHandler implements IGameEventListener, Helper {
+public final class GameEventHandler implements IEventBus, Helper {
 
     private final Baritone baritone;
 
@@ -140,8 +141,8 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         listeners.forEach(l -> l.onPathEvent(event));
     }
 
+    @Override
     public final void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
     }
-
 }
