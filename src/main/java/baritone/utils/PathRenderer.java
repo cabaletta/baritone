@@ -28,7 +28,6 @@ import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
-import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -113,7 +112,7 @@ public final class PathRenderer implements Helper {
         }
 
         // If there is a path calculation currently running, render the path calculation process
-        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
+        behavior.getInProgress().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
                 drawPath(p, 0, renderView, partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
             });

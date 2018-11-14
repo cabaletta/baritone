@@ -23,6 +23,7 @@ import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.PathCalculationResult;
 import baritone.pathing.movement.CalculationContext;
+import baritone.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.Optional;
@@ -107,6 +108,10 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             } else {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
             }
+        } catch (Exception e) {
+            Helper.HELPER.logDebug("Pathing exception: " + e);
+            e.printStackTrace();
+            return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION, Optional.empty());
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
             currentlyRunning = null;
@@ -217,13 +222,5 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public final Goal getGoal() {
         return goal;
-    }
-
-    public static Optional<AbstractNodeCostSearch> getCurrentlyRunning() {
-        return Optional.ofNullable(currentlyRunning);
-    }
-
-    public static AbstractNodeCostSearch currentlyRunning() {
-        return currentlyRunning;
     }
 }

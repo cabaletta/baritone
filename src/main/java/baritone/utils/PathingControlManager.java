@@ -24,7 +24,6 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.behavior.PathingBehavior;
-import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.util.math.BlockPos;
 
@@ -90,12 +89,12 @@ public class PathingControlManager {
                 p.cancelSegmentIfSafe();
                 break;
             case FORCE_REVALIDATE_GOAL_AND_PATH:
-                if (!p.isPathing() && !AbstractNodeCostSearch.getCurrentlyRunning().isPresent()) {
+                if (!p.isPathing() && !p.getInProgress().isPresent()) {
                     p.secretInternalSetGoalAndPath(command.goal);
                 }
                 break;
             case REVALIDATE_GOAL_AND_PATH:
-                if (!p.isPathing() && !AbstractNodeCostSearch.getCurrentlyRunning().isPresent()) {
+                if (!p.isPathing() && !p.getInProgress().isPresent()) {
                     p.secretInternalSetGoalAndPath(command.goal);
                 }
                 break;
