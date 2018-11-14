@@ -146,7 +146,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         return;
                     }
                     queuePathEvent(PathEvent.CALC_STARTED);
-                    findPathInNewThread(pathStart(), true, Optional.empty());
+                    findPathInNewThread(pathStart(), true);
                 }
                 return;
             }
@@ -181,7 +181,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // and this path has 5 seconds or less left
                     logDebug("Path almost over. Planning ahead...");
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
-                    findPathInNewThread(current.getPath().getDest(), false, Optional.of(current.getPath()));
+                    findPathInNewThread(current.getPath().getDest(), false);
                 }
             }
         }
@@ -324,7 +324,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     return false;
                 }
                 queuePathEvent(PathEvent.CALC_STARTED);
-                findPathInNewThread(pathStart(), true, Optional.empty());
+                findPathInNewThread(pathStart(), true);
                 return true;
             }
         }
@@ -381,7 +381,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @param start
      * @param talkAboutIt
      */
-    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt, final Optional<IPath> previous) {
+    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt) {
         // this must be called with synchronization on pathCalcLock!
         // actually, we can check this, muahaha
         if (!Thread.holdsLock(pathCalcLock)) {
@@ -403,7 +403,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
         }
         CalculationContext context = new CalculationContext(baritone); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
-        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, previous, context);
+        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, Optional.ofNullable(current).map(PathExecutor::getPath), context);
         inProgress = pathfinder;
         Baritone.getExecutor().execute(() -> {
             if (talkAboutIt) {
