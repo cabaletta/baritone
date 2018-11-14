@@ -115,4 +115,8 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         boolean stillClick = blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT.getKeyBinding()));
         setInputForceState(Input.CLICK_LEFT, stillClick);
     }
+
+    public BlockBreakHelper getBlockBreakHelper() {
+        return blockBreakHelper;
+    }
 }

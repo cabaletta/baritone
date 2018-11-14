@@ -36,7 +36,6 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
-import baritone.utils.BlockBreakHelper;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
 import net.minecraft.util.math.BlockPos;
@@ -101,7 +100,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (pauseRequestedLastTick && safeToCancel) {
             pauseRequestedLastTick = false;
             baritone.getInputOverrideHandler().clearAllKeys();
-            BlockBreakHelper.stopBreakingBlock();
+            baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
             return;
         }
         if (cancelRequested) {
@@ -296,7 +295,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         next = null;
         baritone.getInputOverrideHandler().clearAllKeys();
         AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(AbstractNodeCostSearch::cancel);
-        BlockBreakHelper.stopBreakingBlock();
+        baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
     }
 
     public void forceCancel() { // NOT exposed on public api

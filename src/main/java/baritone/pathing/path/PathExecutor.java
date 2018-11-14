@@ -452,7 +452,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private void cancel() {
         clearKeys();
-        BlockBreakHelper.stopBreakingBlock();
+        behavior.baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
         pathPosition = path.length() + 3;
         failed = true;
     }
