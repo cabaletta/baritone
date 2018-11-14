@@ -77,7 +77,7 @@ public class MovementFall extends Movement {
 
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
-                RayTraceResult trace = mc.objectMouseOver;
+                RayTraceResult trace = ctx.objectMouseOver();
                 if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && ctx.player().rotationPitch > 89.0F) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
