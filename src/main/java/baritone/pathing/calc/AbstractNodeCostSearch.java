@@ -193,7 +193,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     @Override
     public Optional<IPath> bestPathSoFar() {
-        if (startNode == null || bestSoFar[0] == null) {
+        if (startNode == null || bestSoFar == null || bestSoFar[0] == null) {
             return Optional.empty();
         }
         for (int i = 0; i < bestSoFar.length; i++) {
