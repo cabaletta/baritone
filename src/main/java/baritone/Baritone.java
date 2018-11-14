@@ -27,7 +27,6 @@ import baritone.behavior.LookBehavior;
 import baritone.behavior.MemoryBehavior;
 import baritone.behavior.PathingBehavior;
 import baritone.cache.WorldProvider;
-import baritone.cache.WorldScanner;
 import baritone.event.GameEventHandler;
 import baritone.process.CustomGoalProcess;
 import baritone.process.FollowProcess;
@@ -54,12 +53,7 @@ import java.util.concurrent.TimeUnit;
  * @author Brady
  * @since 7/31/2018
  */
-public enum Baritone implements IBaritone {
-
-    /**
-     * Singleton instance of this class
-     */
-    INSTANCE;
+public class Baritone implements IBaritone {
 
     private static ThreadPoolExecutor threadPool;
     private static File dir;

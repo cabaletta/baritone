@@ -32,19 +32,22 @@ import java.util.Set;
  */
 public final class BaritoneProvider implements IBaritoneProvider {
 
+    private final Baritone primary = new Baritone();
+
     @Override
     public IBaritone getPrimaryBaritone() {
-        return Baritone.INSTANCE;
+        return primary;
     }
 
     @Override
     public Set<IBaritone> getAllBaritones() {
-        return Collections.singleton(Baritone.INSTANCE);
+        return Collections.singleton(primary);
     }
 
     @Override
     public IBaritone getBaritoneForPlayer(EntityPlayerSP player) {
-        return Baritone.INSTANCE;
+        // TODO implement on bot-system branch
+        return primary;
     }
 
     @Override
