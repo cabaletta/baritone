@@ -335,7 +335,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      *
      * @return The starting {@link BlockPos} for a new path
      */
-    public BlockPos pathStart() {
+    public BlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
         if (!MovementHelper.canWalkOn(ctx, feet.down())) {
             if (ctx.player().onGround) {
