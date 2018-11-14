@@ -43,8 +43,11 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
      */
     private final Map<Input, Boolean> inputForceStateMap = new HashMap<>();
 
+    private final BlockBreakHelper blockBreakHelper;
+
     public InputOverrideHandler(Baritone baritone) {
         super(baritone);
+        this.blockBreakHelper = new BlockBreakHelper(baritone.getPlayerContext());
     }
 
     /**
@@ -109,9 +112,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (Baritone.settings().leftClickWorkaround.get()) {
-            boolean stillClick = BlockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT.getKeyBinding()));
-            setInputForceState(Input.CLICK_LEFT, stillClick);
-        }
+        boolean stillClick = blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT.getKeyBinding()));
+        setInputForceState(Input.CLICK_LEFT, stillClick);
     }
 }
