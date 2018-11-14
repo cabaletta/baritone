@@ -203,6 +203,6 @@ public final class RotationUtils {
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos, double blockReachDistance) {
-        return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(pos), blockReachDistance);
+        return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(entity.world, pos), blockReachDistance);
     }
 }

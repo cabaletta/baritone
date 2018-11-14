@@ -35,6 +35,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.EmptyChunk;
 
 /**
@@ -85,7 +86,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // so the only remaining dynamic isPassables are snow and trapdoor
             // if they're cached as a top block, we don't know their metadata
             // default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (mc.world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
+            if (bsi.getWorld().getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
                 return true;
             }
             if (snow) {
@@ -150,7 +151,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block.isPassable(null, null);
     }
 
-    static boolean isReplacable(int x, int y, int z, IBlockState state) {
+    static boolean isReplacable(int x, int y, int z, IBlockState state, World world) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
         // all other overrides just return true or false
@@ -164,7 +165,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block block = state.getBlock();
         if (block instanceof BlockSnow) {
             // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (mc.world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
+            if (world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
                 return true;
             }
             return state.getValue(BlockSnow.LAYERS) == 1;
@@ -439,7 +440,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * water, regardless of whether or not it is flowing.
      *
      * @param ctx The player context
-     * @param bp The block pos
+     * @param bp  The block pos
      * @return Whether or not the block is water
      */
     static boolean isWater(IPlayerContext ctx, BlockPos bp) {
@@ -454,7 +455,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * Returns whether or not the specified pos has a liquid
      *
      * @param ctx The player context
-     * @param p The pos
+     * @param p   The pos
      * @return Whether or not the block is a liquid
      */
     static boolean isLiquid(IPlayerContext ctx, BlockPos p) {

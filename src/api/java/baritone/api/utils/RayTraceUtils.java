@@ -51,7 +51,7 @@ public final class RayTraceUtils {
                 direction.y * blockReachDistance,
                 direction.z * blockReachDistance
         );
-        return mc.world.rayTraceBlocks(start, end, false, false, true);
+        return entity.world.rayTraceBlocks(start, end, false, false, true);
     }
 
     /**

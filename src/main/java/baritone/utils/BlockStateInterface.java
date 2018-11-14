@@ -18,11 +18,9 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.api.IBaritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
-import baritone.pathing.movement.CalculationContext;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -52,6 +50,10 @@ public class BlockStateInterface {
     public BlockStateInterface(World world, WorldData worldData) {
         this.worldData = worldData;
         this.world = world;
+    }
+
+    public World getWorld() {
+        return world;
     }
 
     public static Block getBlock(IPlayerContext ctx, BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
