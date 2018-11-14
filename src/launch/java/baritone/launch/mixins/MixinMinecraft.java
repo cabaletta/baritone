@@ -42,7 +42,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
  * @author Brady
- * @since 7/31/2018 10:51 PM
+ * @since 7/31/2018
  */
 @Mixin(Minecraft.class)
 public class MixinMinecraft {

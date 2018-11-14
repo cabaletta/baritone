@@ -35,7 +35,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Brady
- * @since 8/4/2018 12:02 AM
+ * @since 8/4/2018
  */
 public final class CachedWorld implements ICachedWorld, Helper {
 

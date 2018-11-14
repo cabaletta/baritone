@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * @author Brady
- * @since 7/31/2018 11:04 PM
+ * @since 7/31/2018
  */
 public final class GameEventHandler implements IGameEventListener, Helper {
 

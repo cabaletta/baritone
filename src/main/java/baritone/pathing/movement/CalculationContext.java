@@ -36,7 +36,7 @@ import net.minecraft.world.World;
 
 /**
  * @author Brady
- * @since 8/7/2018 4:30 PM
+ * @since 8/7/2018
  */
 public class CalculationContext {
 

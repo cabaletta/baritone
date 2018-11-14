@@ -26,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * @author Brady
- * @since 7/31/2018 11:44 PM
+ * @since 7/31/2018
  */
 @Mixin(KeyBinding.class)
 public class MixinKeyBinding {

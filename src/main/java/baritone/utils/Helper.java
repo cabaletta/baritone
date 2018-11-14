@@ -25,7 +25,7 @@ import net.minecraft.util.text.TextFormatting;
 
 /**
  * @author Brady
- * @since 8/1/2018 12:18 AM
+ * @since 8/1/2018
  */
 public interface Helper {
 

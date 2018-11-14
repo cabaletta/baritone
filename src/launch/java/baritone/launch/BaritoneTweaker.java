@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * @author Brady
- * @since 7/31/2018 9:59 PM
+ * @since 7/31/2018
  */
 public class BaritoneTweaker extends SimpleTweaker {
 

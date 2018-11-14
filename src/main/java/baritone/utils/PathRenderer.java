@@ -51,7 +51,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author Brady
- * @since 8/9/2018 4:39 PM
+ * @since 8/9/2018
  */
 public final class PathRenderer implements Helper {
 

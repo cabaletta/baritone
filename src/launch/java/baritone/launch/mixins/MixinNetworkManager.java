@@ -36,7 +36,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * @author Brady
- * @since 8/6/2018 9:30 PM
+ * @since 8/6/2018
  */
 @Mixin(NetworkManager.class)
 public class MixinNetworkManager {

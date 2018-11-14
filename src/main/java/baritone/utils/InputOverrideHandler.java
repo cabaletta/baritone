@@ -34,7 +34,7 @@ import java.util.Map;
  * physically forcing down the assigned key.
  *
  * @author Brady
- * @since 7/31/2018 11:20 PM
+ * @since 7/31/2018
  */
 public final class InputOverrideHandler extends Behavior implements IInputOverrideHandler {
 

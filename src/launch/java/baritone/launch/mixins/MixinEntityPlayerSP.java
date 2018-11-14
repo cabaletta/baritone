@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * @author Brady
- * @since 8/1/2018 5:06 PM
+ * @since 8/1/2018
  */
 @Mixin(EntityPlayerSP.class)
 public class MixinEntityPlayerSP {

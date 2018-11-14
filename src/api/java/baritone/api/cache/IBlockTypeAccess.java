@@ -22,7 +22,7 @@ import net.minecraft.util.math.BlockPos;
 
 /**
  * @author Brady
- * @since 8/4/2018 2:01 AM
+ * @since 8/4/2018
  */
 public interface IBlockTypeAccess {
 

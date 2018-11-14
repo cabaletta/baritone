@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author Brady
- * @since 7/31/2018 10:50 PM
+ * @since 7/31/2018
  */
 public enum Baritone implements IBaritone {
 

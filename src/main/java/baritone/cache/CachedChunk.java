@@ -27,7 +27,7 @@ import java.util.*;
 
 /**
  * @author Brady
- * @since 8/3/2018 1:04 AM
+ * @since 8/3/2018
  */
 public final class CachedChunk {
 
