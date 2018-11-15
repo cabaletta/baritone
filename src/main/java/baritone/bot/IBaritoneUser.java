@@ -17,6 +17,7 @@
 
 package baritone.bot;
 
+import baritone.api.IBaritone;
 import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.INetHandler;
@@ -33,7 +34,7 @@ public interface IBaritoneUser {
     /**
      * Called when the user successfully logs into a server.
      *
-     * @param profile The game profile returned by the server on login
+     * @param profile              The game profile returned by the server on login
      * @param netHandlerPlayClient The client play network handler
      */
     void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient);
@@ -76,4 +77,6 @@ public interface IBaritoneUser {
      * @return The manager that spawned this {@link IBaritoneUser}.
      */
     UserManager getManager();
+
+    IBaritone getBaritone();
 }

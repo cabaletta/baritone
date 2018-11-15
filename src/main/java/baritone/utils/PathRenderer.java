@@ -63,7 +63,9 @@ public final class PathRenderer implements Helper {
         // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
-
+        if (behavior.baritone.getPlayerContext().world() == null) {
+            return;
+        }
         int thisPlayerDimension = behavior.baritone.getPlayerContext().world().provider.getDimensionType().getId();
         int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().provider.getDimensionType().getId();
 

@@ -35,6 +35,7 @@ import net.minecraft.util.Session;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -175,5 +176,9 @@ public final class UserManager implements Helper {
      */
     public final BotWorldProvider getWorldProvider() {
         return this.worldProvider;
+    }
+
+    public final List<IBaritoneUser> users() {
+        return Collections.unmodifiableList(this.users);
     }
 }

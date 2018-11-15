@@ -20,9 +20,12 @@ package baritone;
 import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
+import baritone.bot.IBaritoneUser;
+import baritone.bot.UserManager;
 import baritone.cache.WorldScanner;
+import baritone.utils.player.PrimaryPlayerContext;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +34,7 @@ import java.util.List;
  */
 public final class BaritoneProvider implements IBaritoneProvider {
 
-    private final Baritone primary = new Baritone();
+    private final Baritone primary = new Baritone(PrimaryPlayerContext.INSTANCE);
 
     @Override
     public IBaritone getPrimaryBaritone() {
@@ -40,8 +43,12 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public List<IBaritone> getAllBaritones() {
-        // TODO return a CopyOnWriteArrayList
-        return Collections.singletonList(primary);
+        List<IBaritone> baritones = new ArrayList<>();
+        baritones.add(getPrimaryBaritone());
+        for (IBaritoneUser ibu : UserManager.INSTANCE.users()) {
+            baritones.add(ibu.getBaritone());
+        }
+        return baritones;
     }
 
     @Override

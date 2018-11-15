@@ -67,10 +67,6 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     @Override
     public final void onSendChatMessage(ChatEvent event) {
-        // TODO temporary bot event call prevention
-        if (event.getPlayer() != baritone.getPlayerContext().player())
-            return;
-
         // Ensure UserManager is created to prevent a ConcurrentModificationException
         Objects.requireNonNull(UserManager.INSTANCE);
 

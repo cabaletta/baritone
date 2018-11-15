@@ -27,6 +27,7 @@ import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
 import baritone.bot.UserManager;
+import baritone.bot.connect.ConnectionResult;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
 import baritone.pathing.movement.Movement;
@@ -469,7 +470,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         // TODO: Temporary command to test bots offline
         if (msg.equals("bot")) {
-            UserManager.INSTANCE.connect(new Session("Bot" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
+            System.out.println("DOING A BOT");
+            ConnectionResult result = UserManager.INSTANCE.connect(new Session("Bot" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
+            System.out.println(result);
             return true;
         }
         return false;

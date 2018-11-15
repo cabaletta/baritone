@@ -18,6 +18,7 @@
 package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
@@ -44,7 +45,11 @@ public class MixinEntityPlayerSP {
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
         ChatEvent event = new ChatEvent((EntityPlayerSP) (Object) this, msg);
-        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onSendChatMessage(event);
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            System.out.println("Sending chat event to baritone " + ibaritone);
+            ibaritone.getGameEventHandler().onSendChatMessage(event);
+        }
+        //BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onSendChatMessage(event);
         if (event.isCancelled()) {
             ci.cancel();
         }

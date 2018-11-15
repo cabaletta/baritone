@@ -36,7 +36,6 @@ import baritone.utils.BaritoneAutoTest;
 import baritone.utils.ExampleBaritoneControl;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
-import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -74,7 +73,7 @@ public class Baritone implements IBaritone {
      */
     private boolean initialized;
 
-    private GameEventHandler gameEventHandler;
+    private final GameEventHandler gameEventHandler;
 
     private List<Behavior> behaviors;
     private PathingBehavior pathingBehavior;
@@ -89,20 +88,18 @@ public class Baritone implements IBaritone {
 
     private PathingControlManager pathingControlManager;
 
-    private IPlayerContext playerContext;
+    private final IPlayerContext playerContext;
     private WorldProvider worldProvider;
 
-    Baritone() {
+    public Baritone(IPlayerContext playerContext) {
         this.gameEventHandler = new GameEventHandler(this);
+        this.playerContext = playerContext;
     }
 
     public synchronized void init() {
         if (initialized) {
             return;
         }
-
-        // Define this before behaviors try and get it, or else it will be null and the builds will fail!
-        this.playerContext = PrimaryPlayerContext.INSTANCE;
 
         this.behaviors = new ArrayList<>();
         {

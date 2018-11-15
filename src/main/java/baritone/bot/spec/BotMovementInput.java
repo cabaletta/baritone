@@ -17,6 +17,8 @@
 
 package baritone.bot.spec;
 
+import baritone.api.utils.IInputOverrideHandler;
+import baritone.api.utils.input.Input;
 import baritone.bot.IBaritoneUser;
 import net.minecraft.util.MovementInput;
 
@@ -37,8 +39,13 @@ public class BotMovementInput extends MovementInput {
         this.moveForward = 0.0F;
 
         // These are placeholders until an input overrider is implemented for bots
-        boolean forward, back, left, right, jump, sneak;
-        forward = back = left = right = jump = sneak = false;
+        IInputOverrideHandler i = user.getBaritone().getInputOverrideHandler();
+        boolean forward = i.isInputForcedDown(Input.MOVE_FORWARD);
+        boolean back = i.isInputForcedDown(Input.MOVE_BACK);
+        boolean left = i.isInputForcedDown(Input.MOVE_LEFT);
+        boolean right = i.isInputForcedDown(Input.MOVE_RIGHT);
+        jump = i.isInputForcedDown(Input.JUMP); // oppa
+        boolean sneak = i.isInputForcedDown(Input.SNEAK);
 
         if (this.forwardKeyDown = forward) {
             this.moveForward++;
@@ -55,8 +62,6 @@ public class BotMovementInput extends MovementInput {
         if (this.rightKeyDown = right) {
             this.moveStrafe--;
         }
-
-        this.jump = true;
 
         if (this.sneak = sneak) {
             this.moveStrafe *= 0.3D;

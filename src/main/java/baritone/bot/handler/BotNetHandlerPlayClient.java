@@ -425,9 +425,9 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
         PlayerCapabilities c = this.player.capabilities;
-        c.disableDamage  = packetIn.isInvulnerable();
-        c.isFlying       = packetIn.isFlying();
-        c.allowFlying    = packetIn.isAllowFlying();
+        c.disableDamage = packetIn.isInvulnerable();
+        c.isFlying = packetIn.isFlying();
+        c.allowFlying = packetIn.isAllowFlying();
         c.isCreativeMode = packetIn.isCreativeMode();
         c.setFlySpeed(packetIn.getFlySpeed());
         c.setPlayerWalkSpeed(packetIn.getWalkSpeed());
@@ -454,7 +454,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
         Entity entity = packetIn.getEntity(this.world);
         if (entity instanceof EntityLivingBase) {
-            ((EntityLivingBase)entity).removeActivePotionEffect(packetIn.getPotion());
+            ((EntityLivingBase) entity).removeActivePotionEffect(packetIn.getPotion());
         }
     }
 
@@ -685,5 +685,13 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public ClientAdvancementManager getAdvancementManager() {
         throw new UnsupportedOperationException("This method shouldn't have been called; That is unepic!");
+    }
+
+    public EntityBot player() {
+        return player;
+    }
+
+    public BotWorld world() {
+        return world;
     }
 }
