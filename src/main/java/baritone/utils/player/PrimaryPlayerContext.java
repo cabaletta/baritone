@@ -20,7 +20,7 @@ package baritone.utils.player;
 import baritone.api.BaritoneAPI;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.IPlayerContext;
-import net.minecraft.client.Minecraft;
+import baritone.utils.Helper;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.util.math.RayTraceResult;
@@ -32,13 +32,9 @@ import net.minecraft.world.World;
  * @author Brady
  * @since 11/12/2018
  */
-public final class LocalPlayerContext implements IPlayerContext {
+public enum PrimaryPlayerContext implements IPlayerContext, Helper {
 
-    private static final Minecraft mc = Minecraft.getMinecraft();
-
-    public static final LocalPlayerContext INSTANCE = new LocalPlayerContext();
-
-    private LocalPlayerContext() {}
+    INSTANCE;
 
     @Override
     public EntityPlayerSP player() {

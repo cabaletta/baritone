@@ -36,7 +36,7 @@ import baritone.utils.BaritoneAutoTest;
 import baritone.utils.ExampleBaritoneControl;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
-import baritone.utils.player.LocalPlayerContext;
+import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -102,7 +102,7 @@ public class Baritone implements IBaritone {
         }
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
-        this.playerContext = LocalPlayerContext.INSTANCE;
+        this.playerContext = PrimaryPlayerContext.INSTANCE;
 
         this.behaviors = new ArrayList<>();
         {
