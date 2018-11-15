@@ -18,6 +18,8 @@
 package baritone.bot;
 
 import baritone.api.IBaritone;
+import baritone.bot.spec.BotPlayerController;
+import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.INetHandler;
@@ -40,6 +42,15 @@ public interface IBaritoneUser {
     void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient);
 
     /**
+     * Called when the user loads into a world.
+     *
+     * @param world The world object
+     * @param player The player object
+     * @param playerController The player controller
+     */
+    void onWorldLoad(BotWorld world, EntityBot player, BotPlayerController playerController);
+
+    /**
      * @return The network manager that is responsible for the current connection.
      */
     NetworkManager getNetworkManager();
@@ -57,6 +68,11 @@ public interface IBaritoneUser {
      * @return The locally managed entity for this user.
      */
     EntityBot getEntity();
+
+    /**
+     * @return The bot player controller
+     */
+    BotPlayerController getPlayerController();
 
     /**
      * Returns the user login session. Should never be {@code null}, as this should be set when the

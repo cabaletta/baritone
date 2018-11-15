@@ -17,10 +17,8 @@
 
 package baritone.bot;
 
-import baritone.api.BaritoneAPI;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.IPlayerContext;
-import baritone.bot.handler.BotNetHandlerPlayClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
@@ -28,6 +26,10 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public class BotPlayerContext implements IPlayerContext {
+
+    /**
+     * The backing {@link IBaritoneUser}
+     */
     private final IBaritoneUser bot;
 
     public BotPlayerContext(IBaritoneUser bot) {
@@ -36,32 +38,36 @@ public class BotPlayerContext implements IPlayerContext {
 
     @Override
     public EntityPlayerSP player() {
-        if (bot.getConnection() == null) {
+        if (bot.getEntity() == null) {
             return null;
         }
-        return ((BotNetHandlerPlayClient) bot.getConnection()).player();
+        return bot.getEntity();
     }
 
     @Override
     public PlayerControllerMP playerController() {
-        return Minecraft.getMinecraft().playerController; // idk LOL
+        if (bot.getEntity() == null) {
+            return null;
+        }
+        return bot.getPlayerController();
     }
 
     @Override
     public World world() {
-        if (bot.getConnection() == null) {
+        if (bot.getEntity() == null) {
             return null;
         }
-        return ((BotNetHandlerPlayClient) bot.getConnection()).world();
+        return bot.getEntity().world;
     }
 
     @Override
     public IWorldData worldData() {
-        return BaritoneAPI.getProvider().getBaritoneForPlayer(player()).getWorldProvider().getCurrentWorld();
+        return bot.getBaritone().getWorldProvider().getCurrentWorld();
     }
 
     @Override
     public RayTraceResult objectMouseOver() {
-        return Minecraft.getMinecraft().objectMouseOver; // idk LOL
+        // TODO-yeet lol fix this
+        return Minecraft.getMinecraft().objectMouseOver;
     }
 }

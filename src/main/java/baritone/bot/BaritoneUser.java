@@ -19,6 +19,8 @@ package baritone.bot;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
+import baritone.bot.spec.BotPlayerController;
+import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.NetworkManager;
@@ -40,6 +42,10 @@ class BaritoneUser implements IBaritoneUser {
     private GameProfile profile;
     private INetHandlerPlayClient netHandlerPlayClient;
 
+    private BotWorld world;
+    private EntityBot player;
+    private BotPlayerController playerController;
+
     private final Baritone baritone;
 
     BaritoneUser(UserManager manager, NetworkManager networkManager, Session session) {
@@ -48,6 +54,18 @@ class BaritoneUser implements IBaritoneUser {
         this.session = session;
         this.baritone = new Baritone(new BotPlayerContext(this)); // OPPA GANGNAM STYLE
         this.baritone.init(); // actually massive iq
+    }
+
+    @Override
+    public void onWorldLoad(BotWorld world, EntityBot player, BotPlayerController playerController) {
+        this.world = world;
+        this.player = player;
+        this.playerController = playerController;
+    }
+
+    @Override
+    public BotPlayerController getPlayerController() {
+        return this.playerController;
     }
 
     @Override
@@ -68,8 +86,7 @@ class BaritoneUser implements IBaritoneUser {
 
     @Override
     public EntityBot getEntity() {
-        // TODO
-        return null;
+        return this.player;
     }
 
     @Override

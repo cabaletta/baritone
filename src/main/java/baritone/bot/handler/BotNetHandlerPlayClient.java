@@ -18,6 +18,7 @@
 package baritone.bot.handler;
 
 import baritone.bot.IBaritoneUser;
+import baritone.bot.spec.BotPlayerController;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
 import baritone.utils.Helper;
@@ -96,6 +97,11 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
      * The current world.
      */
     private BotWorld world;
+
+    /**
+     * The current player controller
+     */
+    private BotPlayerController playerController;
 
     public BotNetHandlerPlayClient(NetworkManager networkManager, IBaritoneUser user, Minecraft client, GameProfile profile) {
         // noinspection ConstantConditions
@@ -349,19 +355,22 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void handleJoinGame(@Nonnull SPacketJoinGame packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
+        this.playerController = new BotPlayerController((Minecraft) this.client, this);
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
         this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
         this.player.preparePlayerToSpawn();
         this.world.spawnEntity(this.player);
         this.player.setEntityId(packetIn.getPlayerId());
         this.player.dimension = packetIn.getDimension();
-        this.player.setGameType(packetIn.getGameType());
+        this.playerController.setGameType(packetIn.getGameType());
         packetIn.getGameType().configurePlayerCapabilities(this.player.capabilities);
 
         this.networkManager.sendPacket(new CPacketClientSettings("en_us", 8, EntityPlayer.EnumChatVisibility.FULL, true, 0, EnumHandSide.RIGHT));
         this.networkManager.sendPacket(new CPacketCustomPayload("MC|Brand", new PacketBuffer(Unpooled.buffer()).writeString("vanilla")));
 
         this.world.registerBot(packetIn.getPlayerId(), this.player);
+
+        this.user.onWorldLoad(this.world, this.player, this.playerController);
 
         Helper.HELPER.logDirect("Initialized Player and World");
     }
@@ -477,7 +486,9 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.player.setEntityId(prev.getEntityId());
         this.player.dimension = packetIn.getDimensionID();
         this.player.setServerBrand(prev.getServerBrand());
-        this.player.setGameType(packetIn.getGameType());
+        this.playerController.setGameType(packetIn.getGameType());
+
+        this.user.onWorldLoad(this.world, this.player, this.playerController);
     }
 
     @Override

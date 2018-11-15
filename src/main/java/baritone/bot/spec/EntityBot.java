@@ -62,7 +62,6 @@ public class EntityBot extends EntityPlayerSP {
 
     private final IBaritoneUser user;
     private NetworkPlayerInfo playerInfo;
-    private GameType gameType;
 
     public EntityBot(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
         super(mc, world, netHandlerPlayClient, statisticsManager, recipeBook);
@@ -166,14 +165,5 @@ public class EntityBot extends EntityPlayerSP {
     @Override
     protected NetworkPlayerInfo getPlayerInfo() {
         return this.playerInfo == null ? (this.playerInfo = this.connection.getPlayerInfo(this.getUniqueID())) : null;
-    }
-
-    @Override
-    public void setGameType(GameType gameType) {
-        this.gameType = gameType;
-    }
-
-    public GameType getGameType() {
-        return this.gameType;
     }
 }

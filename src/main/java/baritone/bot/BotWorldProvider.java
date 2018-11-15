@@ -50,6 +50,12 @@ public class BotWorldProvider {
         return worlds.computeIfAbsent(dimension, this::createWorldForDim);
     }
 
+    /**
+     * Creates a new {@link BotWorld} for the given dimension id.
+     *
+     * @param dimension The dimension id
+     * @return The new world
+     */
     private BotWorld createWorldForDim(int dimension) {
         return new BotWorld(GENERIC_WORLD_SETTINGS, dimension);
     }
