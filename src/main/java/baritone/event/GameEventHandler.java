@@ -20,25 +20,27 @@ package baritone.event;
 import baritone.Baritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
+import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.bot.UserManager;
 import baritone.cache.WorldProvider;
 import baritone.utils.Helper;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Brady
- * @since 7/31/2018 11:04 PM
+ * @since 7/31/2018
  */
-public final class GameEventHandler implements IGameEventListener, Helper {
+public final class GameEventHandler implements IEventBus, Helper {
 
     private final Baritone baritone;
 
-    private final List<IGameEventListener> listeners = new ArrayList<>();
+    private final List<IGameEventListener> listeners = new CopyOnWriteArrayList<>();
 
     public GameEventHandler(Baritone baritone) {
         this.baritone = baritone;
@@ -83,17 +85,19 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         boolean isPostPopulate = state == EventState.POST
                 && type == ChunkEvent.Type.POPULATE;
 
+        World world = baritone.getPlayerContext().world();
+
         // Whenever the server sends us to another dimension, chunks are unloaded
         // technically after the new world has been loaded, so we perform a check
         // to make sure the chunk being unloaded is already loaded.
         boolean isPreUnload = state == EventState.PRE
                 && type == ChunkEvent.Type.UNLOAD
-                && mc.world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
+                && world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
         if (isPostPopulate || isPreUnload) {
-            baritone.getWorldProvider().ifWorldLoaded(world -> {
-                Chunk chunk = mc.world.getChunk(event.getX(), event.getZ());
-                world.getCachedWorld().queueForPacking(chunk);
+            baritone.getWorldProvider().ifWorldLoaded(worldData -> {
+                Chunk chunk = world.getChunk(event.getX(), event.getZ());
+                worldData.getCachedWorld().queueForPacking(chunk);
             });
         }
 
@@ -154,8 +158,8 @@ public final class GameEventHandler implements IGameEventListener, Helper {
         listeners.forEach(l -> l.onPathEvent(event));
     }
 
+    @Override
     public final void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
     }
-
 }

@@ -18,7 +18,10 @@
 package baritone.cache;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.cache.ICachedWorld;
+import baritone.api.cache.IWorldData;
 import baritone.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -35,7 +38,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Brady
- * @since 8/4/2018 12:02 AM
+ * @since 8/4/2018
  */
 public final class CachedWorld implements ICachedWorld, Helper {
 
@@ -190,10 +193,11 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * If we are still in this world and dimension, return player feet, otherwise return most recently modified chunk
      */
     private BlockPos guessPosition() {
-        WorldData data = Baritone.INSTANCE.getWorldProvider().getCurrentWorld();
-        if (data != null && data.getCachedWorld() == this) {
-            // TODO-yeet fix
-            return Baritone.INSTANCE.getPlayerContext().playerFeet();
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            IWorldData data = ibaritone.getWorldProvider().getCurrentWorld();
+            if (data != null && data.getCachedWorld() == this) {
+                return ibaritone.getPlayerContext().playerFeet();
+            }
         }
         CachedChunk mostRecentlyModified = null;
         for (CachedRegion region : allRegions()) {

@@ -15,20 +15,22 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.cache;
-
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
+package baritone.api.event.listener;
 
 /**
+ * A type of {@link IGameEventListener} that can have additional listeners
+ * registered so that they receive the events that are dispatched to this
+ * listener.
+ *
  * @author Brady
- * @since 8/4/2018
+ * @since 11/14/2018
  */
-public interface IBlockTypeAccess {
+public interface IEventBus extends IGameEventListener {
 
-    IBlockState getBlock(int x, int y, int z);
-
-    default IBlockState getBlock(BlockPos pos) {
-        return getBlock(pos.getX(), pos.getY(), pos.getZ());
-    }
+    /**
+     * Registers the specified {@link IGameEventListener} to this event bus
+     *
+     * @param listener The listener
+     */
+    void registerEventListener(IGameEventListener listener);
 }

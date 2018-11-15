@@ -23,6 +23,7 @@ import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.PathCalculationResult;
 import baritone.pathing.movement.CalculationContext;
+import baritone.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.Optional;
@@ -33,11 +34,6 @@ import java.util.Optional;
  * @author leijurv
  */
 public abstract class AbstractNodeCostSearch implements IPathFinder {
-
-    /**
-     * The currently running search task
-     */
-    private static AbstractNodeCostSearch currentlyRunning = null;
 
     protected final int startX;
     protected final int startY;
@@ -107,19 +103,14 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
             } else {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
             }
+        } catch (Exception e) {
+            Helper.HELPER.logDebug("Pathing exception: " + e);
+            e.printStackTrace();
+            return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION, Optional.empty());
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
-            currentlyRunning = null;
             isFinished = true;
         }
-    }
-
-    /**
-     * Don't set currentlyRunning to this until everything is all ready to go, and we're about to enter the main loop.
-     * For example, bestSoFar is null so bestPathSoFar (which gets bestSoFar[0]) could NPE if we set currentlyRunning before calculate0
-     */
-    protected void loopBegin() {
-        currentlyRunning = this;
     }
 
     protected abstract Optional<IPath> calculate0(long timeout);
@@ -156,22 +147,6 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         return node;
     }
 
-    public static void forceCancel() {
-        currentlyRunning = null;
-    }
-
-    public PathNode mostRecentNodeConsidered() {
-        return mostRecentConsidered;
-    }
-
-    public PathNode bestNodeSoFar() {
-        return bestSoFar[0];
-    }
-
-    public PathNode startNode() {
-        return startNode;
-    }
-
     @Override
     public Optional<IPath> pathToMostRecentNodeConsidered() {
         try {
@@ -188,7 +163,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     @Override
     public Optional<IPath> bestPathSoFar() {
-        if (startNode == null || bestSoFar[0] == null) {
+        if (startNode == null || bestSoFar == null || bestSoFar[0] == null) {
             return Optional.empty();
         }
         for (int i = 0; i < bestSoFar.length; i++) {
@@ -217,13 +192,5 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public final Goal getGoal() {
         return goal;
-    }
-
-    public static Optional<AbstractNodeCostSearch> getCurrentlyRunning() {
-        return Optional.ofNullable(currentlyRunning);
-    }
-
-    public static AbstractNodeCostSearch currentlyRunning() {
-        return currentlyRunning;
     }
 }

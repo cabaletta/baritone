@@ -23,7 +23,7 @@ import net.minecraft.network.Packet;
 
 /**
  * @author Brady
- * @since 8/6/2018 9:31 PM
+ * @since 8/6/2018
  */
 public final class PacketEvent {
 

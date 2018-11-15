@@ -20,14 +20,13 @@ package baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.api.event.listener.IGameEventListener;
+import baritone.api.event.listener.IEventBus;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.Behavior;
 import baritone.behavior.LookBehavior;
 import baritone.behavior.MemoryBehavior;
 import baritone.behavior.PathingBehavior;
 import baritone.cache.WorldProvider;
-import baritone.cache.WorldScanner;
 import baritone.event.GameEventHandler;
 import baritone.process.CustomGoalProcess;
 import baritone.process.FollowProcess;
@@ -37,7 +36,7 @@ import baritone.utils.BaritoneAutoTest;
 import baritone.utils.ExampleBaritoneControl;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
-import baritone.utils.player.LocalPlayerContext;
+import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -52,14 +51,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author Brady
- * @since 7/31/2018 10:50 PM
+ * @since 7/31/2018
  */
-public enum Baritone implements IBaritone {
-
-    /**
-     * Singleton instance of this class
-     */
-    INSTANCE;
+public class Baritone implements IBaritone {
 
     private static ThreadPoolExecutor threadPool;
     private static File dir;
@@ -95,6 +89,7 @@ public enum Baritone implements IBaritone {
 
     private PathingControlManager pathingControlManager;
 
+    private IPlayerContext playerContext;
     private WorldProvider worldProvider;
 
     Baritone() {
@@ -105,6 +100,9 @@ public enum Baritone implements IBaritone {
         if (initialized) {
             return;
         }
+
+        // Define this before behaviors try and get it, or else it will be null and the builds will fail!
+        this.playerContext = PrimaryPlayerContext.INSTANCE;
 
         this.behaviors = new ArrayList<>();
         {
@@ -127,23 +125,14 @@ public enum Baritone implements IBaritone {
         this.worldProvider = new WorldProvider();
 
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
-            registerEventListener(BaritoneAutoTest.INSTANCE);
+            this.gameEventHandler.registerEventListener(BaritoneAutoTest.INSTANCE);
         }
 
         this.initialized = true;
     }
 
     public PathingControlManager getPathingControlManager() {
-        return pathingControlManager;
-    }
-
-    public IGameEventListener getGameEventHandler() {
-        return this.gameEventHandler;
-    }
-
-    @Override
-    public InputOverrideHandler getInputOverrideHandler() {
-        return this.inputOverrideHandler;
+        return this.pathingControlManager;
     }
 
     public List<Behavior> getBehaviors() {
@@ -152,67 +141,62 @@ public enum Baritone implements IBaritone {
 
     public void registerBehavior(Behavior behavior) {
         this.behaviors.add(behavior);
-        this.registerEventListener(behavior);
+        this.gameEventHandler.registerEventListener(behavior);
+    }
+
+    @Override
+    public InputOverrideHandler getInputOverrideHandler() {
+        return this.inputOverrideHandler;
     }
 
     @Override
     public CustomGoalProcess getCustomGoalProcess() { // Iffy
-        return customGoalProcess;
+        return this.customGoalProcess;
     }
 
     @Override
     public GetToBlockProcess getGetToBlockProcess() {  // Iffy
-        return getToBlockProcess;
+        return this.getToBlockProcess;
     }
 
     @Override
     public IPlayerContext getPlayerContext() {
-        return LocalPlayerContext.INSTANCE;
+        return this.playerContext;
     }
 
     @Override
     public FollowProcess getFollowProcess() {
-        return followProcess;
+        return this.followProcess;
     }
 
     @Override
     public LookBehavior getLookBehavior() {
-        return lookBehavior;
+        return this.lookBehavior;
     }
 
     @Override
     public MemoryBehavior getMemoryBehavior() {
-        return memoryBehavior;
+        return this.memoryBehavior;
     }
 
     @Override
     public MineProcess getMineProcess() {
-        return mineProcess;
+        return this.mineProcess;
     }
 
     @Override
     public PathingBehavior getPathingBehavior() {
-        return pathingBehavior;
+        return this.pathingBehavior;
     }
 
     @Override
     public WorldProvider getWorldProvider() {
-        return worldProvider;
-    }
-
-    /**
-     * TODO-yeet This shouldn't be baritone-instance specific
-     *
-     * @return world scanner instance
-     */
-    @Override
-    public WorldScanner getWorldScanner() {
-        return WorldScanner.INSTANCE;
+        return this.worldProvider;
     }
 
     @Override
-    public void registerEventListener(IGameEventListener listener) {
-        this.gameEventHandler.registerEventListener(listener);
+    public IEventBus getGameEventHandler() {
+        return this.gameEventHandler;
     }
 
     public static Settings settings() {

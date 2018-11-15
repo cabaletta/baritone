@@ -20,7 +20,10 @@ package baritone.pathing.movement.movements;
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.utils.*;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -29,7 +32,6 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -101,7 +103,7 @@ public class MovementTraverse extends Movement {
             if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
                 return COST_INF;
             }
-            if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(destX, y - 1, destZ, destOn)) {
+            if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(destX, y - 1, destZ, destOn, context.world())) {
                 boolean throughWater = MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock());
                 if (MovementHelper.isWater(destOn.getBlock()) && throughWater) {
                     return COST_INF;
@@ -167,7 +169,7 @@ public class MovementTraverse extends Movement {
 
             // combine the yaw to the center of the destination, and the pitch to the specific block we're trying to break
             // it's safe to do this since the two blocks we break (in a traverse) are right on top of each other and so will have the same yaw
-            float yawToDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(dest)).getYaw();
+            float yawToDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), dest)).getYaw();
             float pitchToBreak = state.getTarget().getRotation().get().getPitch();
 
             state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
@@ -191,7 +193,7 @@ public class MovementTraverse extends Movement {
                 isDoorActuallyBlockingUs = true;
             }
             if (isDoorActuallyBlockingUs && !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
-                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(positionsToBreak[0])), true))
+                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), positionsToBreak[0])), true))
                         .setInput(Input.CLICK_RIGHT, true);
             }
         }
@@ -205,7 +207,7 @@ public class MovementTraverse extends Movement {
             }
 
             if (blocked != null) {
-                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(blocked)), true))
+                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), blocked)), true))
                         .setInput(Input.CLICK_RIGHT, true);
             }
         }
@@ -265,8 +267,8 @@ public class MovementTraverse extends Movement {
                     double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
                     state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations()), true));
 
-                    EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
-                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), against1) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && RayTraceUtils.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
+                    EnumFacing side = ctx.objectMouseOver().sideHit;
+                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), against1) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && ctx.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                         return state.setInput(Input.CLICK_RIGHT, true);
                     }
                     //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
@@ -300,7 +302,7 @@ public class MovementTraverse extends Movement {
                     state.setTarget(new MovementState.MovementTarget(backToFace, true));
                 }
                 state.setInput(Input.SNEAK, true);
-                if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), goalLook)) {
+                if (Objects.equals(ctx.getSelectedBlock().orElse(null), goalLook)) {
                     return state.setInput(Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());

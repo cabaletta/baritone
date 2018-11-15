@@ -42,7 +42,7 @@ import java.util.*;
 
 /**
  * @author Brady
- * @since 8/6/2018 9:47 PM
+ * @since 8/6/2018
  */
 public final class MemoryBehavior extends Behavior implements IMemoryBehavior {
 

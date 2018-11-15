@@ -17,7 +17,7 @@
 
 package baritone.bot;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
@@ -56,7 +56,7 @@ public final class UserManager implements Helper {
 
     private UserManager() {
         // Setup an event listener that automatically disconnects bots when we're not in-game
-        Baritone.INSTANCE.registerEventListener(new AbstractGameEventListener() {
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
 
             @Override
             public final void onTick(TickEvent event) {
@@ -131,7 +131,7 @@ public final class UserManager implements Helper {
      * Notifies the manager of an {@link IBaritoneUser} disconnect, and
      * removes the {@link IBaritoneUser} from the list of users.
      *
-     * @param user The user that disconnected
+     * @param user  The user that disconnected
      * @param state The connection state at the time of disconnect
      */
     public final void notifyDisconnect(IBaritoneUser user, EnumConnectionState state) {

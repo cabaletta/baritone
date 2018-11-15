@@ -21,7 +21,7 @@ import baritone.api.event.events.type.EventState;
 
 /**
  * @author Brady
- * @since 8/2/2018 12:32 AM
+ * @since 8/2/2018
  */
 public final class ChunkEvent {
 

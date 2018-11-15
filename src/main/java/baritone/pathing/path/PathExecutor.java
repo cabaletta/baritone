@@ -32,7 +32,6 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
-import baritone.utils.BlockBreakHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.init.Blocks;
@@ -296,7 +295,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private boolean shouldPause() {
-        Optional<AbstractNodeCostSearch> current = AbstractNodeCostSearch.getCurrentlyRunning();
+        Optional<AbstractNodeCostSearch> current = behavior.getInProgress();
         if (!current.isPresent()) {
             return false;
         }
@@ -452,7 +451,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private void cancel() {
         clearKeys();
-        BlockBreakHelper.stopBreakingBlock();
+        behavior.baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
         pathPosition = path.length() + 3;
         failed = true;
     }

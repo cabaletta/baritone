@@ -19,7 +19,7 @@ package baritone.api.event.events;
 
 /**
  * @author Brady
- * @since 8/5/2018 12:28 AM
+ * @since 8/5/2018
  */
 public final class RenderEvent {
 

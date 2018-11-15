@@ -34,7 +34,6 @@ import baritone.utils.Helper;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -45,7 +44,7 @@ import java.util.Objects;
 
 public class MovementParkour extends Movement {
 
-    private static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = { EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN };
+    private static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
 
     private final EnumFacing direction;
@@ -135,12 +134,12 @@ public class MovementParkour extends Movement {
         if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
             return;
         }
-        if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace)) {
+        if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace, context.world())) {
             return;
         }
         for (int i = 0; i < 5; i++) {
-            int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP [i].getXOffset();
-            int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP [i].getZOffset();
+            int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
+            int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
             if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
                 continue;
             }
@@ -216,7 +215,7 @@ public class MovementParkour extends Movement {
                 if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround) {
                     BlockPos positionToPlace = dest.down();
                     for (int i = 0; i < 5; i++) {
-                        BlockPos against1 = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP [i]);
+                        BlockPos against1 = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
                         if (against1.up().equals(src.offset(direction, 3))) { // we can't turn around that fast
                             continue;
                         }
@@ -232,8 +231,8 @@ public class MovementParkour extends Movement {
                             if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
                                 state.setTarget(new MovementState.MovementTarget(place, true));
                             }
-                            RayTraceUtils.getSelectedBlock().ifPresent(selectedBlock -> {
-                                EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
+                            ctx.getSelectedBlock().ifPresent(selectedBlock -> {
+                                EnumFacing side = ctx.objectMouseOver().sideHit;
                                 if (Objects.equals(selectedBlock, against1) && selectedBlock.offset(side).equals(dest.down())) {
                                     state.setInput(Input.CLICK_RIGHT, true);
                                 }

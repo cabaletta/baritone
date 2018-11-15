@@ -21,8 +21,13 @@ import baritone.api.cache.IWorldData;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+
+import java.util.Optional;
 
 /**
  * @author Brady
@@ -37,6 +42,8 @@ public interface IPlayerContext {
     World world();
 
     IWorldData worldData();
+
+    RayTraceResult objectMouseOver();
 
     default BetterBlockPos playerFeet() {
         // TODO find a better way to deal with soul sand!!!!!
@@ -57,5 +64,29 @@ public interface IPlayerContext {
 
     default Rotation playerRotations() {
         return new Rotation(player().rotationYaw, player().rotationPitch);
+    }
+
+    /**
+     * Returns the block that the crosshair is currently placed over. Updated once per tick.
+     *
+     * @return The position of the highlighted block
+     */
+    default Optional<BlockPos> getSelectedBlock() {
+        if (objectMouseOver() != null && objectMouseOver().typeOfHit == RayTraceResult.Type.BLOCK) {
+            return Optional.of(objectMouseOver().getBlockPos());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the entity that the crosshair is currently placed over. Updated once per tick.
+     *
+     * @return The entity
+     */
+    default Optional<Entity> getSelectedEntity() {
+        if (objectMouseOver() != null && objectMouseOver().typeOfHit == RayTraceResult.Type.ENTITY) {
+            return Optional.of(objectMouseOver().entityHit);
+        }
+        return Optional.empty();
     }
 }

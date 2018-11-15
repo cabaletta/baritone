@@ -19,7 +19,7 @@ package baritone.utils.pathing;
 
 /**
  * @author Brady
- * @since 8/4/2018 1:11 AM
+ * @since 8/4/2018
  */
 public enum PathingBlockType {
 

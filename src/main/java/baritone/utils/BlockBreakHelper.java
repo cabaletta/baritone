@@ -17,6 +17,9 @@
 
 package baritone.utils;
 
+import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.utils.IPlayerContext;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -32,41 +35,62 @@ public final class BlockBreakHelper implements Helper {
      * The last block that we tried to break, if this value changes
      * between attempts, then we re-initialize the breaking process.
      */
-    private static BlockPos lastBlock;
-    private static boolean didBreakLastTick;
+    private BlockPos lastBlock;
+    private boolean didBreakLastTick;
 
-    private BlockBreakHelper() {}
+    private IPlayerContext playerContext;
 
-    public static void tryBreakBlock(BlockPos pos, EnumFacing side) {
+    public BlockBreakHelper(IPlayerContext playerContext) {
+        this.playerContext = playerContext;
+    }
+
+    public void tryBreakBlock(BlockPos pos, EnumFacing side) {
         if (!pos.equals(lastBlock)) {
-            mc.playerController.clickBlock(pos, side);
+            playerContext.playerController().clickBlock(pos, side);
         }
-        if (mc.playerController.onPlayerDamageBlock(pos, side)) {
-            mc.player.swingArm(EnumHand.MAIN_HAND);
+        if (playerContext.playerController().onPlayerDamageBlock(pos, side)) {
+            playerContext.player().swingArm(EnumHand.MAIN_HAND);
         }
         lastBlock = pos;
     }
 
-    public static void stopBreakingBlock() {
-        if (mc.playerController != null) {
-            mc.playerController.resetBlockRemoving();
+    public void stopBreakingBlock() {
+        if (playerContext.playerController() != null) {
+            playerContext.playerController().resetBlockRemoving();
         }
         lastBlock = null;
     }
 
-    public static boolean tick(boolean isLeftClick) {
-        RayTraceResult trace = mc.objectMouseOver;
+    private boolean fakeBreak() {
+        if (playerContext != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext()) {
+            // for a non primary player, we need to fake break always, CLICK_LEFT has no effect
+            return true;
+        }
+        if (!Baritone.settings().leftClickWorkaround.get()) {
+            // if this setting is false, we CLICK_LEFT regardless of gui status
+            return false;
+        }
+        return mc.currentScreen != null;
+    }
+
+    public boolean tick(boolean isLeftClick) {
+        if (!fakeBreak()) {
+            if (didBreakLastTick) {
+                stopBreakingBlock();
+            }
+            return isLeftClick;
+        }
+
+        RayTraceResult trace = playerContext.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
 
-        // If we're forcing left click, we're in a gui screen, and we're looking
-        // at a block, break the block without a direct game input manipulation.
-        if (mc.currentScreen != null && isLeftClick && isBlockTrace) {
+        if (isLeftClick && isBlockTrace) {
             tryBreakBlock(trace.getBlockPos(), trace.sideHit);
             didBreakLastTick = true;
         } else if (didBreakLastTick) {
             stopBreakingBlock();
             didBreakLastTick = false;
         }
-        return !didBreakLastTick && isLeftClick;
+        return false; // fakeBreak is true so no matter what we aren't forcing CLICK_LEFT
     }
 }

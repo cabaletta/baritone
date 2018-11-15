@@ -71,7 +71,7 @@ public interface IPathingBehavior extends IBehavior {
     /**
      * @return The current path finder being executed
      */
-    Optional<IPathFinder> getPathFinder();
+    Optional<? extends IPathFinder> getInProgress();
 
     /**
      * @return The current path executor

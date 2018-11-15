@@ -21,7 +21,6 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
@@ -31,7 +30,6 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -76,7 +74,7 @@ public class MovementAscend extends Movement {
             if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
                 return COST_INF;
             }
-            if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace)) {
+            if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace, context.world())) {
                 return COST_INF;
             }
             // TODO: add ability to place against .down() as well as the cardinal directions
@@ -181,9 +179,9 @@ public class MovementAscend extends Movement {
                     double faceY = (dest.getY() + anAgainst.getY()) * 0.5D;
                     double faceZ = (dest.getZ() + anAgainst.getZ() + 1.0D) * 0.5D;
                     state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations()), true));
-                    EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
+                    EnumFacing side = ctx.objectMouseOver().sideHit;
 
-                    RayTraceUtils.getSelectedBlock().ifPresent(selectedBlock -> {
+                    ctx.getSelectedBlock().ifPresent(selectedBlock -> {
                         if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionToPlace)) {
                             ticksWithoutPlacement++;
                             state.setInput(Input.SNEAK, true);
