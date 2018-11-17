@@ -23,12 +23,24 @@ import java.util.Optional;
 
 public class PathCalculationResult {
 
-    public final Optional<IPath> path;
-    public final Type type;
+    private final IPath path;
+    private final Type type;
 
-    public PathCalculationResult(Type type, Optional<IPath> path) {
+    public PathCalculationResult(Type type) {
+        this(type, null);
+    }
+
+    public PathCalculationResult(Type type, IPath path) {
         this.path = path;
         this.type = type;
+    }
+
+    public final Optional<IPath> getPath() {
+        return Optional.ofNullable(this.path);
+    }
+
+    public final Type getType() {
+        return this.type;
     }
 
     public enum Type {

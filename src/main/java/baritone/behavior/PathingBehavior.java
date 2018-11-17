@@ -411,7 +411,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             }
 
             PathCalculationResult calcResult = pathfinder.calculate(timeout);
-            Optional<IPath> path = calcResult.path;
+            Optional<IPath> path = calcResult.getPath();
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
                     IPath result = p.cutoffAtLoadedChunks(context.world());
@@ -443,7 +443,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                         current = executor.get();
                     } else {
-                        if (calcResult.type != PathCalculationResult.Type.CANCELLATION && calcResult.type != PathCalculationResult.Type.EXCEPTION) {
+                        if (calcResult.getType() != PathCalculationResult.Type.CANCELLATION && calcResult.getType() != PathCalculationResult.Type.EXCEPTION) {
                             // don't dispatch CALC_FAILED on cancellation
                             queuePathEvent(PathEvent.CALC_FAILED);
                         }

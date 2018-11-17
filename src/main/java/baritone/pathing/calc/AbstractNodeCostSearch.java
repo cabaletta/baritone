@@ -89,16 +89,15 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         }
         this.cancelRequested = false;
         try {
-            Optional<IPath> path = calculate0(timeout);
-            path = path.map(IPath::postProcess);
+            IPath path = calculate0(timeout).map(IPath::postProcess).orElse(null);
             isFinished = true;
             if (cancelRequested) {
                 return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, path);
             }
-            if (!path.isPresent()) {
-                return new PathCalculationResult(PathCalculationResult.Type.FAILURE, path);
+            if (path == null) {
+                return new PathCalculationResult(PathCalculationResult.Type.FAILURE);
             }
-            if (goal.isInGoal(path.get().getDest())) {
+            if (goal.isInGoal(path.getDest())) {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_TO_GOAL, path);
             } else {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
@@ -106,7 +105,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         } catch (Exception e) {
             Helper.HELPER.logDebug("Pathing exception: " + e);
             e.printStackTrace();
-            return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION, Optional.empty());
+            return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION);
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
             isFinished = true;

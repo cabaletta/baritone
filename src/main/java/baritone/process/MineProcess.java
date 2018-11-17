@@ -141,7 +141,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         // TODO shaft mode, mine 1x1 shafts to either side
         // TODO also, see if the GoalRunAway with maintain Y at 11 works even from the surface
         if (branchPointRunaway == null) {
-            branchPointRunaway = new GoalRunAway(1, Optional.of(y), branchPoint) {
+            branchPointRunaway = new GoalRunAway(1, y, branchPoint) {
                 @Override
                 public boolean isInGoal(int x, int y, int z) {
                     return false;
