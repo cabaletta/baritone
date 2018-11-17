@@ -483,10 +483,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
-        HashSet<Long> favoredPositions;
-        if (Baritone.settings().backtrackCostFavoringCoefficient.get() == 1D) {
-            favoredPositions = null;
-        } else {
+        HashSet<Long> favoredPositions = null;
+        if (Baritone.settings().backtrackCostFavoringCoefficient.get() != 1D && previous != null) {
             favoredPositions = previous.positions().stream().map(BetterBlockPos::longHash).collect(Collectors.toCollection(HashSet::new));
         }
         return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoredPositions, context);
