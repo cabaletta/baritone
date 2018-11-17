@@ -149,12 +149,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     @Override
     public Optional<IPath> pathToMostRecentNodeConsidered() {
-        try {
-            return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal, context));
-        } catch (IllegalStateException ex) {
-            System.out.println("Unable to construct path to render");
-            return Optional.empty();
-        }
+        return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal, context));
     }
 
     protected int mapSize() {
