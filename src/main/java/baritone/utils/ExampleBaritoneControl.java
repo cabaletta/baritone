@@ -31,6 +31,7 @@ import baritone.cache.Waypoint;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
+import comms.SocketConnection;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
@@ -38,6 +39,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -459,6 +462,23 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     strCost = "IMPOSSIBLE";
                 }
                 logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
+            }
+            return true;
+        }
+        if (msg.startsWith("connect")) {
+            String dest = msg.substring(7).trim();
+            String[] parts = dest.split(" ");
+            if (parts.length != 2) {
+                logDirect("Unable to parse");
+                return true;
+            }
+            try {
+                Socket s = new Socket(parts[0], Integer.parseInt(parts[1]));
+                SocketConnection conn = new SocketConnection(s);
+                baritone.getControllerBehavior().connectTo(conn);
+                logDirect("Created and attached socket connection");
+            } catch (IOException | NumberFormatException e) {
+                logDirect("Unable to connect " + e);
             }
             return true;
         }
