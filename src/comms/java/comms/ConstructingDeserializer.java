@@ -26,20 +26,20 @@ import java.util.List;
 
 public enum ConstructingDeserializer implements MessageDeserializer {
     INSTANCE;
-    private final List<Class<? extends SerializableMessage>> MSGS;
+    private final List<Class<? extends iMessage>> MSGS;
 
     ConstructingDeserializer() {
         MSGS = new ArrayList<>();
         // imagine doing something in reflect but it's actually concise and you don't need to catch 42069 different exceptions. huh.
         for (Method m : IMessageListener.class.getDeclaredMethods()) {
             if (m.getName().equals("handle")) {
-                MSGS.add((Class<? extends SerializableMessage>) m.getParameterTypes()[0]);
+                MSGS.add((Class<? extends iMessage>) m.getParameterTypes()[0]);
             }
         }
     }
 
     @Override
-    public SerializableMessage deserialize(DataInputStream in) throws IOException {
+    public iMessage deserialize(DataInputStream in) throws IOException {
         int type = ((int) in.readByte()) & 0xff;
         try {
             return MSGS.get(type).getConstructor(DataInputStream.class).newInstance(in);
@@ -48,7 +48,7 @@ public enum ConstructingDeserializer implements MessageDeserializer {
         }
     }
 
-    public byte getHeader(Class<? extends SerializableMessage> klass) {
+    public byte getHeader(Class<? extends iMessage> klass) {
         return (byte) MSGS.indexOf(klass);
     }
 }

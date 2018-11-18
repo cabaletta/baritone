@@ -21,8 +21,11 @@ import baritone.Baritone;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.utils.Helper;
-import comms.*;
+import comms.BufferedConnection;
+import comms.IConnection;
+import comms.IMessageListener;
 import comms.downward.MessageChat;
+import comms.iMessage;
 import comms.upward.MessageStatus;
 
 import java.io.IOException;
@@ -33,7 +36,7 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
         super(baritone);
     }
 
-    private BufferedConnection<SerializableMessage> conn;
+    private BufferedConnection conn;
 
     @Override
     public void onTick(TickEvent event) {
@@ -48,15 +51,15 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
             return;
         }
         try {
-            List<SerializableMessage> msgs = conn.receiveMessagesNonBlocking();
-            msgs.forEach(msg -> ((HandlableMessage) msg).handle(this));
+            List<iMessage> msgs = conn.receiveMessagesNonBlocking();
+            msgs.forEach(msg -> msg.handle(this));
         } catch (IOException e) {
             e.printStackTrace();
             disconnect();
         }
     }
 
-    public boolean trySend(SerializableMessage msg) {
+    public boolean trySend(iMessage msg) {
         if (conn == null) {
             return false;
         }

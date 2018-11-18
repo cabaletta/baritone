@@ -19,10 +19,10 @@ package comms;
 
 import java.io.IOException;
 
-public interface IConnection<T extends iMessage> {
-    void sendMessage(T message) throws IOException;
+public interface IConnection {
+    void sendMessage(iMessage message) throws IOException;
 
-    T receiveMessage() throws IOException;
+    iMessage receiveMessage() throws IOException;
 
     void close();
 }

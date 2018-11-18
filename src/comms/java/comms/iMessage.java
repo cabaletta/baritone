@@ -17,6 +17,9 @@
 
 package comms;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 /**
  * hell yeah
  * <p>
@@ -27,4 +30,15 @@ package comms;
  * @author leijurv
  */
 public interface iMessage {
+    void write(DataOutputStream out) throws IOException;
+
+    default void writeHeader(DataOutputStream out) throws IOException {
+        out.writeByte(getHeader());
+    }
+
+    default byte getHeader() {
+        return ConstructingDeserializer.INSTANCE.getHeader(getClass());
+    }
+
+    void handle(IMessageListener listener);
 }

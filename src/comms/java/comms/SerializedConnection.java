@@ -19,7 +19,7 @@ package comms;
 
 import java.io.*;
 
-public class SerializedConnection implements IConnection<SerializableMessage> {
+public class SerializedConnection implements IConnection {
     private final DataInputStream in;
     private final DataOutputStream out;
     private final MessageDeserializer deserializer;
@@ -35,13 +35,13 @@ public class SerializedConnection implements IConnection<SerializableMessage> {
     }
 
     @Override
-    public void sendMessage(SerializableMessage message) throws IOException {
+    public void sendMessage(iMessage message) throws IOException {
         message.writeHeader(out);
         message.write(out);
     }
 
     @Override
-    public SerializableMessage receiveMessage() throws IOException {
+    public iMessage receiveMessage() throws IOException {
         return deserializer.deserialize(in);
     }
 

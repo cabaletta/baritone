@@ -17,15 +17,14 @@
 
 package comms.upward;
 
-import comms.HandlableMessage;
 import comms.IMessageListener;
-import comms.SerializableMessage;
+import comms.iMessage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class MessageStatus implements SerializableMessage, HandlableMessage {
+public class MessageStatus implements iMessage {
 
     public final double x;
     public final double y;

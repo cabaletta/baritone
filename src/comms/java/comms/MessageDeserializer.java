@@ -21,5 +21,5 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public interface MessageDeserializer {
-    SerializableMessage deserialize(DataInputStream in) throws IOException;
+    iMessage deserialize(DataInputStream in) throws IOException;
 }

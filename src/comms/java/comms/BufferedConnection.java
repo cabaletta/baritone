@@ -32,16 +32,16 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  * @author leijurv
  */
-public class BufferedConnection<T extends iMessage> implements IConnection<T> {
+public class BufferedConnection implements IConnection {
     private final IConnection wrapped;
-    private final LinkedBlockingQueue<T> queue;
+    private final LinkedBlockingQueue<iMessage> queue;
     private volatile transient IOException thrownOnRead;
 
-    public BufferedConnection(IConnection<T> wrapped) {
+    public BufferedConnection(IConnection wrapped) {
         this(wrapped, Integer.MAX_VALUE); // LinkedBlockingQueue accepts this as "no limit"
     }
 
-    public BufferedConnection(IConnection<T> wrapped, int maxInternalQueueSize) {
+    public BufferedConnection(IConnection wrapped, int maxInternalQueueSize) {
         this.wrapped = wrapped;
         this.queue = new LinkedBlockingQueue<>();
         this.thrownOnRead = null;
@@ -59,12 +59,12 @@ public class BufferedConnection<T extends iMessage> implements IConnection<T> {
     }
 
     @Override
-    public void sendMessage(T message) throws IOException {
+    public void sendMessage(iMessage message) throws IOException {
         wrapped.sendMessage(message);
     }
 
     @Override
-    public T receiveMessage() {
+    public iMessage receiveMessage() {
         throw new UnsupportedOperationException("BufferedConnection can only be read from non-blockingly");
     }
 
@@ -74,8 +74,8 @@ public class BufferedConnection<T extends iMessage> implements IConnection<T> {
         thrownOnRead = new EOFException("Closed");
     }
 
-    public List<T> receiveMessagesNonBlocking() throws IOException {
-        ArrayList<T> msgs = new ArrayList<>();
+    public List<iMessage> receiveMessagesNonBlocking() throws IOException {
+        ArrayList<iMessage> msgs = new ArrayList<>();
         queue.drainTo(msgs); // preserves order -- first message received will be first in this arraylist
         if (msgs.isEmpty() && thrownOnRead != null) {
             IOException up = new IOException("BufferedConnection wrapped", thrownOnRead);

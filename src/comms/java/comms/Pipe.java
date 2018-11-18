@@ -26,8 +26,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Do you want a socket to localhost without actually making a gross real socket to localhost?
  */
 public class Pipe<T extends iMessage> {
-    private final LinkedBlockingQueue<Optional<T>> AtoB;
-    private final LinkedBlockingQueue<Optional<T>> BtoA;
+    private final LinkedBlockingQueue<Optional<iMessage>> AtoB;
+    private final LinkedBlockingQueue<Optional<iMessage>> BtoA;
     private final PipedConnection A;
     private final PipedConnection B;
     private volatile boolean closed;
@@ -47,17 +47,17 @@ public class Pipe<T extends iMessage> {
         return B;
     }
 
-    public class PipedConnection implements IConnection<T> {
-        private final LinkedBlockingQueue<Optional<T>> in;
-        private final LinkedBlockingQueue<Optional<T>> out;
+    public class PipedConnection implements IConnection {
+        private final LinkedBlockingQueue<Optional<iMessage>> in;
+        private final LinkedBlockingQueue<Optional<iMessage>> out;
 
-        private PipedConnection(LinkedBlockingQueue<Optional<T>> in, LinkedBlockingQueue<Optional<T>> out) {
+        private PipedConnection(LinkedBlockingQueue<Optional<iMessage>> in, LinkedBlockingQueue<Optional<iMessage>> out) {
             this.in = in;
             this.out = out;
         }
 
         @Override
-        public void sendMessage(T message) throws IOException {
+        public void sendMessage(iMessage message) throws IOException {
             if (closed) {
                 throw new EOFException("Closed");
             }
@@ -69,12 +69,12 @@ public class Pipe<T extends iMessage> {
         }
 
         @Override
-        public T receiveMessage() throws IOException {
+        public iMessage receiveMessage() throws IOException {
             if (closed) {
                 throw new EOFException("Closed");
             }
             try {
-                Optional<T> t = in.take();
+                Optional<iMessage> t = in.take();
                 if (!t.isPresent()) {
                     throw new EOFException("Closed");
                 }

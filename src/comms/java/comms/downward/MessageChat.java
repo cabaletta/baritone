@@ -17,15 +17,14 @@
 
 package comms.downward;
 
-import comms.HandlableMessage;
 import comms.IMessageListener;
-import comms.SerializableMessage;
+import comms.iMessage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class MessageChat implements SerializableMessage, HandlableMessage {
+public class MessageChat implements iMessage {
 
     public final String msg;
 
