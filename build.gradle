@@ -53,7 +53,7 @@ compileJava {
 sourceSets {
     comms {}
     main {
-        compileClasspath += comms.compileClasspath
+        compileClasspath += comms.compileClasspath + comms.runtimeClasspath + comms.output
     }
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
