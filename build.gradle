@@ -51,12 +51,12 @@ compileJava {
 }
 
 sourceSets {
-    launch {
-        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-    }
     comms {}
     main {
         compileClasspath += comms.compileClasspath
+    }
+    launch {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
 }
 
