@@ -53,7 +53,7 @@ compileJava {
 sourceSets {
     comms {}
     main {
-        compileClasspath += comms.compileClasspath + comms.runtimeClasspath + comms.output
+        compileClasspath += comms.compileClasspath + comms.output
     }
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
@@ -103,7 +103,7 @@ mixin {
 }
 
 jar {
-    from sourceSets.launch.output, sourceSets.api.output
+    from sourceSets.comms.output, sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
