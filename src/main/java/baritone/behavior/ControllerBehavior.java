@@ -44,6 +44,7 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
             return;
         }
         trySend(new MessageStatus(ctx.player().posX, ctx.player().posY, ctx.player().posZ));
+        readAndHandle();
     }
 
     private void readAndHandle() {
