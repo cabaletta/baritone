@@ -58,8 +58,7 @@ Quick start example: `thisway 1000` or `goal 70` to set the goal, `path` to actu
 BaritoneAPI.getSettings().allowSprint.value = true;
 BaritoneAPI.getSettings().pathTimeoutMS.value = 2000L;
 
-BaritoneAPI.getPathingBehavior().setGoal(new GoalXZ(10000, 20000));
-BaritoneAPI.getPathingBehavior().path();
+BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalXZ(10000, 20000));
 ```
 
 # FAQ
