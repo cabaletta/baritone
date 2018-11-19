@@ -15,39 +15,22 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package comms;
 
-import baritone.api.pathing.calc.IPath;
+import comms.downward.MessageChat;
+import comms.upward.MessageStatus;
 
-import java.util.Optional;
-
-public class PathCalculationResult {
-
-    private final IPath path;
-    private final Type type;
-
-    public PathCalculationResult(Type type) {
-        this(type, null);
+public interface IMessageListener {
+    default void handle(MessageStatus message) {
+        unhandled(message);
     }
 
-    public PathCalculationResult(Type type, IPath path) {
-        this.path = path;
-        this.type = type;
+    default void handle(MessageChat message) {
+        unhandled(message);
     }
 
-    public final Optional<IPath> getPath() {
-        return Optional.ofNullable(this.path);
-    }
-
-    public final Type getType() {
-        return this.type;
-    }
-
-    public enum Type {
-        SUCCESS_TO_GOAL,
-        SUCCESS_SEGMENT,
-        FAILURE,
-        CANCELLATION,
-        EXCEPTION,
+    default void unhandled(iMessage msg) {
+        // can override this to throw UnsupportedOperationException, if you want to make sure you're handling everything
+        // default is to silently ignore messages without handlers
     }
 }

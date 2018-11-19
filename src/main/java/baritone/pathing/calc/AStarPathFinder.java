@@ -39,10 +39,10 @@ import java.util.Optional;
  */
 public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
-    private final Optional<HashSet<Long>> favoredPositions;
+    private final HashSet<Long> favoredPositions;
     private final CalculationContext calcContext;
 
-    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions, CalculationContext context) {
+    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, HashSet<Long> favoredPositions, CalculationContext context) {
         super(startX, startY, startZ, goal, context);
         this.favoredPositions = favoredPositions;
         this.calcContext = context;
@@ -63,7 +63,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             bestSoFar[i] = startNode;
         }
         MutableMoveResult res = new MutableMoveResult();
-        HashSet<Long> favored = favoredPositions.orElse(null);
+        HashSet<Long> favored = favoredPositions;
         BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world().getWorldBorder());
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
@@ -75,7 +75,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         int numNodes = 0;
         int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
-        boolean favoring = favoredPositions.isPresent();
+        boolean favoring = favored != null;
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();

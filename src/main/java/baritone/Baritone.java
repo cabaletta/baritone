@@ -22,10 +22,7 @@ import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.utils.IPlayerContext;
-import baritone.behavior.Behavior;
-import baritone.behavior.LookBehavior;
-import baritone.behavior.MemoryBehavior;
-import baritone.behavior.PathingBehavior;
+import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
 import baritone.process.CustomGoalProcess;
@@ -76,6 +73,7 @@ public class Baritone implements IBaritone {
     private final GameEventHandler gameEventHandler;
 
     private List<Behavior> behaviors;
+    private ControllerBehavior controllerBehavior;
     private PathingBehavior pathingBehavior;
     private LookBehavior lookBehavior;
     private MemoryBehavior memoryBehavior;
@@ -104,6 +102,7 @@ public class Baritone implements IBaritone {
         this.behaviors = new ArrayList<>();
         {
             // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
+            controllerBehavior = new ControllerBehavior(this);
             pathingBehavior = new PathingBehavior(this);
             lookBehavior = new LookBehavior(this);
             memoryBehavior = new MemoryBehavior(this);
@@ -128,10 +127,6 @@ public class Baritone implements IBaritone {
         this.initialized = true;
     }
 
-    public PathingControlManager getPathingControlManager() {
-        return this.pathingControlManager;
-    }
-
     public List<Behavior> getBehaviors() {
         return this.behaviors;
     }
@@ -141,9 +136,17 @@ public class Baritone implements IBaritone {
         this.gameEventHandler.registerEventListener(behavior);
     }
 
+    public PathingControlManager getPathingControlManager() {
+        return this.pathingControlManager;
+    }
+
     @Override
     public InputOverrideHandler getInputOverrideHandler() {
         return this.inputOverrideHandler;
+    }
+
+    public ControllerBehavior getControllerBehavior() {
+        return this.controllerBehavior;
     }
 
     @Override
@@ -157,18 +160,8 @@ public class Baritone implements IBaritone {
     }
 
     @Override
-    public IPlayerContext getPlayerContext() {
-        return this.playerContext;
-    }
-
-    @Override
-    public FollowProcess getFollowProcess() {
-        return this.followProcess;
-    }
-
-    @Override
-    public LookBehavior getLookBehavior() {
-        return this.lookBehavior;
+    public PathingBehavior getPathingBehavior() {
+        return this.pathingBehavior;
     }
 
     @Override
@@ -177,13 +170,13 @@ public class Baritone implements IBaritone {
     }
 
     @Override
-    public MineProcess getMineProcess() {
-        return this.mineProcess;
+    public IPlayerContext getPlayerContext() {
+        return this.playerContext;
     }
 
     @Override
-    public PathingBehavior getPathingBehavior() {
-        return this.pathingBehavior;
+    public FollowProcess getFollowProcess() {
+        return this.followProcess;
     }
 
     @Override
@@ -196,15 +189,25 @@ public class Baritone implements IBaritone {
         return this.gameEventHandler;
     }
 
+    @Override
+    public LookBehavior getLookBehavior() {
+        return this.lookBehavior;
+    }
+
+    @Override
+    public MineProcess getMineProcess() {
+        return this.mineProcess;
+    }
+
+    public static Executor getExecutor() {
+        return threadPool;
+    }
+
     public static Settings settings() {
         return BaritoneAPI.getSettings();
     }
 
     public static File getDir() {
         return dir;
-    }
-
-    public static Executor getExecutor() {
-        return threadPool;
     }
 }

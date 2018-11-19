@@ -15,39 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package comms;
 
-import baritone.api.pathing.calc.IPath;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-import java.util.Optional;
+/**
+ * hell yeah
+ * <p>
+ * <p>
+ * dumb android users cant read this file
+ * <p>
+ *
+ * @author leijurv
+ */
+public interface iMessage {
+    void write(DataOutputStream out) throws IOException;
 
-public class PathCalculationResult {
-
-    private final IPath path;
-    private final Type type;
-
-    public PathCalculationResult(Type type) {
-        this(type, null);
+    default void writeHeader(DataOutputStream out) throws IOException {
+        out.writeByte(getHeader());
     }
 
-    public PathCalculationResult(Type type, IPath path) {
-        this.path = path;
-        this.type = type;
+    default byte getHeader() {
+        return ConstructingDeserializer.INSTANCE.getHeader(getClass());
     }
 
-    public final Optional<IPath> getPath() {
-        return Optional.ofNullable(this.path);
-    }
-
-    public final Type getType() {
-        return this.type;
-    }
-
-    public enum Type {
-        SUCCESS_TO_GOAL,
-        SUCCESS_SEGMENT,
-        FAILURE,
-        CANCELLATION,
-        EXCEPTION,
-    }
+    void handle(IMessageListener listener);
 }

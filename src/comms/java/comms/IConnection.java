@@ -15,39 +15,14 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package comms;
 
-import baritone.api.pathing.calc.IPath;
+import java.io.IOException;
 
-import java.util.Optional;
+public interface IConnection {
+    void sendMessage(iMessage message) throws IOException;
 
-public class PathCalculationResult {
+    iMessage receiveMessage() throws IOException;
 
-    private final IPath path;
-    private final Type type;
-
-    public PathCalculationResult(Type type) {
-        this(type, null);
-    }
-
-    public PathCalculationResult(Type type, IPath path) {
-        this.path = path;
-        this.type = type;
-    }
-
-    public final Optional<IPath> getPath() {
-        return Optional.ofNullable(this.path);
-    }
-
-    public final Type getType() {
-        return this.type;
-    }
-
-    public enum Type {
-        SUCCESS_TO_GOAL,
-        SUCCESS_SEGMENT,
-        FAILURE,
-        CANCELLATION,
-        EXCEPTION,
-    }
+    void close();
 }

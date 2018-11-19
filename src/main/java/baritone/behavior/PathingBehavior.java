@@ -403,7 +403,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
         }
         CalculationContext context = new CalculationContext(baritone); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
-        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, Optional.ofNullable(current).map(PathExecutor::getPath), context);
+        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
         inProgress = pathfinder;
         Baritone.getExecutor().execute(() -> {
             if (talkAboutIt) {
@@ -411,7 +411,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             }
 
             PathCalculationResult calcResult = pathfinder.calculate(timeout);
-            Optional<IPath> path = calcResult.path;
+            Optional<IPath> path = calcResult.getPath();
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
                     IPath result = p.cutoffAtLoadedChunks(context.world());
@@ -443,7 +443,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                         current = executor.get();
                     } else {
-                        if (calcResult.type != PathCalculationResult.Type.CANCELLATION && calcResult.type != PathCalculationResult.Type.EXCEPTION) {
+                        if (calcResult.getType() != PathCalculationResult.Type.CANCELLATION && calcResult.getType() != PathCalculationResult.Type.EXCEPTION) {
                             // don't dispatch CALC_FAILED on cancellation
                             queuePathEvent(PathEvent.CALC_FAILED);
                         }
@@ -474,7 +474,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         });
     }
 
-    private AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, Optional<IPath> previous, CalculationContext context) {
+    private AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
         Goal transformed = goal;
         if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
@@ -483,11 +483,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
-        Optional<HashSet<Long>> favoredPositions;
-        if (Baritone.settings().backtrackCostFavoringCoefficient.get() == 1D) {
-            favoredPositions = Optional.empty();
-        } else {
-            favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(BetterBlockPos::longHash)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
+        HashSet<Long> favoredPositions = null;
+        if (Baritone.settings().backtrackCostFavoringCoefficient.get() != 1D && previous != null) {
+            favoredPositions = previous.positions().stream().map(BetterBlockPos::longHash).collect(Collectors.toCollection(HashSet::new));
         }
         return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoredPositions, context);
     }

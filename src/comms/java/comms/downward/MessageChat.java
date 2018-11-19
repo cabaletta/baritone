@@ -15,39 +15,34 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package comms.downward;
 
-import baritone.api.pathing.calc.IPath;
+import comms.IMessageListener;
+import comms.iMessage;
 
-import java.util.Optional;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-public class PathCalculationResult {
+public class MessageChat implements iMessage {
 
-    private final IPath path;
-    private final Type type;
+    public final String msg;
 
-    public PathCalculationResult(Type type) {
-        this(type, null);
+    public MessageChat(DataInputStream in) throws IOException {
+        this.msg = in.readUTF();
     }
 
-    public PathCalculationResult(Type type, IPath path) {
-        this.path = path;
-        this.type = type;
+    public MessageChat(String msg) {
+        this.msg = msg;
     }
 
-    public final Optional<IPath> getPath() {
-        return Optional.ofNullable(this.path);
+    @Override
+    public void write(DataOutputStream out) throws IOException {
+        out.writeUTF(msg);
     }
 
-    public final Type getType() {
-        return this.type;
-    }
-
-    public enum Type {
-        SUCCESS_TO_GOAL,
-        SUCCESS_SEGMENT,
-        FAILURE,
-        CANCELLATION,
-        EXCEPTION,
+    @Override
+    public void handle(IMessageListener listener) {
+        listener.handle(this);
     }
 }
