@@ -139,6 +139,7 @@ public class Baritone implements IBaritone {
         this.gameEventHandler.registerEventListener(behavior);
     }
 
+    @Override
     public PathingControlManager getPathingControlManager() {
         return this.pathingControlManager;
     }

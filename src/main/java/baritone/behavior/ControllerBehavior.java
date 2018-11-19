@@ -20,6 +20,7 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TickEvent;
+import baritone.api.process.IBaritoneProcess;
 import baritone.utils.Helper;
 import comms.BufferedConnection;
 import comms.IConnection;
@@ -43,8 +44,31 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        trySend(new MessageStatus(ctx.player().posX, ctx.player().posY, ctx.player().posZ));
+        trySend(buildStatus());
         readAndHandle();
+    }
+
+    public MessageStatus buildStatus() {
+        // TODO inventory
+        return new MessageStatus(
+                ctx.player().posX,
+                ctx.player().posY,
+                ctx.player().posZ,
+                ctx.player().rotationYaw,
+                ctx.player().rotationPitch,
+                ctx.player().onGround,
+                ctx.player().getHealth(),
+                ctx.player().getFoodStats().getSaturationLevel(),
+                ctx.player().getFoodStats().getFoodLevel(),
+                baritone.getPathingBehavior().getCurrent() != null,
+                baritone.getPathingBehavior().getNext() != null,
+                baritone.getPathingBehavior().getInProgress().isPresent(),
+                baritone.getPathingBehavior().ticksRemainingInSegment().orElse(0D),
+                baritone.getPathingBehavior().calcFailedLastTick(),
+                baritone.getPathingBehavior().isSafeToCancel(),
+                baritone.getPathingBehavior().getGoal() + "",
+                baritone.getPathingControlManager().mostRecentInControl().map(IBaritoneProcess::displayName).orElse("")
+        );
     }
 
     private void readAndHandle() {
