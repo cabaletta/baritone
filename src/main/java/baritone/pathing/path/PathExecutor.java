@@ -378,16 +378,10 @@ public class PathExecutor implements IPathExecutor, Helper {
         IMovement current = path.movements().get(pathPosition);
         if (current instanceof MovementDescend && pathPosition < path.length() - 2) {
 
-            // (dest - src) + dest is offset 1 more in the same direction
-            // so it's the block we'd need to worry about running into if we decide to sprint straight through this descend
-
-            BlockPos into = current.getDest().subtract(current.getSrc().down()).add(current.getDest());
-            for (int y = 0; y <= 2; y++) { // we could hit any of the three blocks
-                if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(ctx, into.up(y)))) {
-                    logDebug("Sprinting would be unsafe");
-                    ctx.player().setSprinting(false);
-                    return;
-                }
+            if (((MovementDescend) current).safeMode()) {
+                logDebug("Sprinting would be unsafe");
+                ctx.player().setSprinting(false);
+                return;
             }
 
             IMovement next = path.movements().get(pathPosition + 1);
