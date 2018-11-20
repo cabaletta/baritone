@@ -196,8 +196,8 @@ public class MovementDescend extends Movement {
             }*/
         }
         if (safeMode()) {
-            double destX = (src.getX() + 0.5) * 0.25 + (dest.getX() + 0.5) * 0.75;
-            double destZ = (src.getZ() + 0.5) * 0.25 + (dest.getZ() + 0.5) * 0.75;
+            double destX = (src.getX() + 0.5) * 0.19 + (dest.getX() + 0.5) * 0.81;
+            double destZ = (src.getZ() + 0.5) * 0.19 + (dest.getZ() + 0.5) * 0.81;
             EntityPlayerSP player = ctx.player();
             state.setTarget(new MovementState.MovementTarget(
                     new Rotation(RotationUtils.calcRotationFromVec3d(player.getPositionEyes(1.0F),
