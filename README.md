@@ -63,7 +63,7 @@ BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAnd
 
 # FAQ
 
-## Can I use Baritone as a library in my hacked client?
+## Can I use Baritone as a library in my custom utility client?
 
 Sure! (As long as usage is in compliance with the LGPL 3 License)
 
