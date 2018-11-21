@@ -226,7 +226,10 @@ public class MovementTraverse extends Movement {
             if (ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (wasTheBridgeBlockAlwaysThere && !MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+            BlockPos into = dest.subtract(src).add(dest);
+            Block intoBelow = BlockStateInterface.get(ctx, into).getBlock();
+            Block intoAbove = BlockStateInterface.get(ctx, into.up()).getBlock();
+            if (wasTheBridgeBlockAlwaysThere && !MovementHelper.isLiquid(ctx, ctx.playerFeet()) && !MovementHelper.avoidWalkingInto(intoBelow) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
             }
             Block destDown = BlockStateInterface.get(ctx, dest.down()).getBlock();
