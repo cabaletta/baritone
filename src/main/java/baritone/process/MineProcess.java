@@ -205,7 +205,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     /*public static List<BlockPos> searchWorld(List<Block> mining, int max, World world) {
 
     }*/
-        public static List<BlockPos> searchWorld(IPlayerContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown) {
+    public static List<BlockPos> searchWorld(IPlayerContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
@@ -232,15 +232,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     public void addNearby() {
         knownOreLocations.addAll(droppedItemsScan(mining, ctx.world()));
         BlockPos playerFeet = ctx.playerFeet();
-        int searchDist = 4; // why four? idk
+        BlockStateInterface bsi = new BlockStateInterface(ctx);
+        int searchDist = 10;
+        double fakedBlockReachDistance = 20; // at least 10 * sqrt(3) with some extra space to account for positioning within the block
         for (int x = playerFeet.getX() - searchDist; x <= playerFeet.getX() + searchDist; x++) {
             for (int y = playerFeet.getY() - searchDist; y <= playerFeet.getY() + searchDist; y++) {
                 for (int z = playerFeet.getZ() - searchDist; z <= playerFeet.getZ() + searchDist; z++) {
-                    BlockPos pos = new BlockPos(x, y, z);
                     // crucial to only add blocks we can see because otherwise this
                     // is an x-ray and it'll get caught
-                    if (mining.contains(BlockStateInterface.getBlock(ctx, pos)) && RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance()).isPresent()) {
-                        knownOreLocations.add(pos);
+                    if (mining.contains(bsi.get0(x, y, z).getBlock()) && RotationUtils.reachable(ctx.player(), new BlockPos(x, y, z), fakedBlockReachDistance).isPresent()) {
+                        knownOreLocations.add(new BlockPos(x, y, z));
                     }
                 }
             }
