@@ -194,12 +194,13 @@ public class MovementPillar extends Movement {
             }
 
 
-            state.setInput(Input.SNEAK, ctx.player().posY > dest.getY()); // delay placement by 1 tick for ncp compatibility
+            state.setInput(Input.SNEAK, ctx.player().posY > dest.getY() || ctx.player().posY < src.getY() + 0.5D); // delay placement by 1 tick for ncp compatibility
             // since (lower down) we only right click once player.isSneaking, and that happens the tick after we request to sneak
 
             double diffX = ctx.player().posX - (dest.getX() + 0.5);
             double diffZ = ctx.player().posZ - (dest.getZ() + 0.5);
             double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
+            double flatMotion = Math.sqrt(ctx.player().motionX * ctx.player().motionX + ctx.player().motionZ * ctx.player().motionZ);
             if (dist > 0.17) {//why 0.17? because it seemed like a good number, that's why
                 //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
                 //and 0.17 is reasonably less than 0.2
@@ -209,7 +210,7 @@ public class MovementPillar extends Movement {
 
                 // revise our target to both yaw and pitch if we're going to be moving forward
                 state.setTarget(new MovementState.MovementTarget(rotation, true));
-            } else {
+            } else if (flatMotion < 0.05) {
                 // If our Y coordinate is above our goal, stop jumping
                 state.setInput(Input.JUMP, ctx.player().posY < dest.getY());
             }
