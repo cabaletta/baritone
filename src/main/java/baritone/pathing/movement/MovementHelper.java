@@ -200,7 +200,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
 
-        return isHorizontalBlockPassable(gatePos, state, playerPos, BlockFenceGate.OPEN);
+        return state.getValue(BlockFenceGate.OPEN);
     }
 
     static boolean isHorizontalBlockPassable(BlockPos blockPos, IBlockState blockState, BlockPos playerPos, PropertyBool propertyOpen) {
