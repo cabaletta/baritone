@@ -85,9 +85,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             if (now - failureTimeoutTime >= 0 || (!failing && now - primaryTimeoutTime >= 0)) {
                 break;
             }
-            if (failing == bestPathSoFar().isPresent()) {
-                throw new IllegalStateException();
-            }
             if (slowPath) {
                 try {
                     Thread.sleep(Baritone.settings().slowPathTimeDelayMS.<Long>get());
