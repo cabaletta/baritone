@@ -44,7 +44,6 @@ public class MixinNetHandlerPlayClient {
             )
     )
     private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
-        packetIn.isFullChunk();
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
