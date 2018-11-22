@@ -36,7 +36,7 @@ public interface IPathFinder {
      *
      * @return The final path
      */
-    PathCalculationResult calculate(long timeout);
+    PathCalculationResult calculate(long primaryTimeout, long failureTimeout);
 
     /**
      * Intended to be called concurrently with calculatePath from a different thread to tell if it's finished yet

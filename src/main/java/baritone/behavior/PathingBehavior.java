@@ -40,7 +40,10 @@ import baritone.utils.PathRenderer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -396,11 +399,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             logDebug("no goal"); // TODO should this be an exception too? definitely should be checked by caller
             return;
         }
-        long timeout;
+        long primaryTimeout;
+        long failureTimeout;
         if (current == null) {
-            timeout = Baritone.settings().pathTimeoutMS.<Long>get();
+            primaryTimeout = Baritone.settings().primaryTimeoutMS.get();
+            failureTimeout = Baritone.settings().failureTimeoutMS.get();
         } else {
-            timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
+            primaryTimeout = Baritone.settings().planAheadPrimaryTimeoutMS.get();
+            failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.get();
         }
         CalculationContext context = new CalculationContext(baritone); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
@@ -410,7 +416,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 logDebug("Starting to search for path from " + start + " to " + goal);
             }
 
-            PathCalculationResult calcResult = pathfinder.calculate(timeout);
+            PathCalculationResult calcResult = pathfinder.calculate(primaryTimeout, failureTimeout);
             Optional<IPath> path = calcResult.getPath();
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
