@@ -44,12 +44,13 @@ public class MixinNetHandlerPlayClient {
             )
     )
     private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
+        packetIn.isFullChunk();
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.PRE,
-                                ChunkEvent.Type.POPULATE,
+                                packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
                                 packetIn.getChunkX(),
                                 packetIn.getChunkZ()
                         )
@@ -68,7 +69,7 @@ public class MixinNetHandlerPlayClient {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.POST,
-                                ChunkEvent.Type.POPULATE,
+                                packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
                                 packetIn.getChunkX(),
                                 packetIn.getChunkZ()
                         )
