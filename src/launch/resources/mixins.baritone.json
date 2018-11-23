@@ -10,6 +10,7 @@
   "client": [
     "MixinAnvilChunkLoader",
     "MixinBlockPos",
+    "MixinChunkProviderClient",
     "MixinChunkProviderServer",
     "MixinEntity",
     "MixinEntityLivingBase",

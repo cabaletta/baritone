@@ -27,6 +27,7 @@ import baritone.api.utils.RotationUtils;
 import baritone.cache.CachedChunk;
 import baritone.cache.ChunkPacker;
 import baritone.cache.WorldScanner;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
@@ -88,7 +89,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             List<BlockPos> curr = new ArrayList<>(knownOreLocations);
-            Baritone.getExecutor().execute(() -> rescan(curr));
+            CalculationContext context = new CalculationContext(baritone);
+            Baritone.getExecutor().execute(() -> rescan(curr, context));
         }
         if (Baritone.settings().legitMine.get()) {
             addNearby();
@@ -116,7 +118,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private Goal updateGoal() {
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
-            List<BlockPos> locs2 = prune(ctx, new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
+            List<BlockPos> locs2 = prune(new CalculationContext(baritone), new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(ctx, loc, locs2)).toArray(Goal[]::new));
             knownOreLocations = locs2;
@@ -151,14 +153,14 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return branchPointRunaway;
     }
 
-    private void rescan(List<BlockPos> already) {
+    private void rescan(List<BlockPos> already, CalculationContext context) {
         if (mining == null) {
             return;
         }
         if (Baritone.settings().legitMine.get()) {
             return;
         }
-        List<BlockPos> locs = searchWorld(ctx, mining, ORE_LOCATIONS_COUNT, already);
+        List<BlockPos> locs = searchWorld(context, mining, ORE_LOCATIONS_COUNT, already);
         locs.addAll(droppedItemsScan(mining, ctx.world()));
         if (locs.isEmpty()) {
             logDebug("No locations for " + mining + " known, cancelling");
@@ -202,16 +204,13 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return ret;
     }
 
-    /*public static List<BlockPos> searchWorld(List<Block> mining, int max, World world) {
-
-    }*/
-        public static List<BlockPos> searchWorld(IPlayerContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown) {
+    public static List<BlockPos> searchWorld(CalculationContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
-                locs.addAll(ctx.worldData().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 1));
+                locs.addAll(ctx.worldData().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 1));
             } else {
                 uninteresting.add(m);
             }
@@ -222,7 +221,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         if (!uninteresting.isEmpty()) {
             //long before = System.currentTimeMillis();
-            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx, uninteresting, max, 10, 26));
+            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx.getBaritone().getPlayerContext(), uninteresting, max, 10, 26));
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
         locs.addAll(alreadyKnown);
@@ -232,35 +231,36 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     public void addNearby() {
         knownOreLocations.addAll(droppedItemsScan(mining, ctx.world()));
         BlockPos playerFeet = ctx.playerFeet();
-        int searchDist = 4; // why four? idk
+        BlockStateInterface bsi = new BlockStateInterface(ctx);
+        int searchDist = 10;
+        double fakedBlockReachDistance = 20; // at least 10 * sqrt(3) with some extra space to account for positioning within the block
         for (int x = playerFeet.getX() - searchDist; x <= playerFeet.getX() + searchDist; x++) {
             for (int y = playerFeet.getY() - searchDist; y <= playerFeet.getY() + searchDist; y++) {
                 for (int z = playerFeet.getZ() - searchDist; z <= playerFeet.getZ() + searchDist; z++) {
-                    BlockPos pos = new BlockPos(x, y, z);
                     // crucial to only add blocks we can see because otherwise this
                     // is an x-ray and it'll get caught
-                    if (mining.contains(BlockStateInterface.getBlock(ctx, pos)) && RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance()).isPresent()) {
-                        knownOreLocations.add(pos);
+                    if (mining.contains(bsi.get0(x, y, z).getBlock()) && RotationUtils.reachable(ctx.player(), new BlockPos(x, y, z), fakedBlockReachDistance).isPresent()) {
+                        knownOreLocations.add(new BlockPos(x, y, z));
                     }
                 }
             }
         }
-        knownOreLocations = prune(ctx, knownOreLocations, mining, ORE_LOCATIONS_COUNT);
+        knownOreLocations = prune(new CalculationContext(baritone), knownOreLocations, mining, ORE_LOCATIONS_COUNT);
     }
 
-    public static List<BlockPos> prune(IPlayerContext ctx, List<BlockPos> locs2, List<Block> mining, int max) {
+    public static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, List<Block> mining, int max) {
         List<BlockPos> dropped = droppedItemsScan(mining, ctx.world());
         List<BlockPos> locs = locs2
                 .stream()
                 .distinct()
 
                 // remove any that are within loaded chunks that aren't actually what we want
-                .filter(pos -> ctx.world().getChunk(pos) instanceof EmptyChunk || mining.contains(BlockStateInterface.getBlock(ctx, pos)) || dropped.contains(pos))
+                .filter(pos -> ctx.world().getChunk(pos) instanceof EmptyChunk || mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) || dropped.contains(pos))
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
-                .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
+                .filter(pos -> MineProcess.plausibleToBreak(ctx.bsi(), pos))
 
-                .sorted(Comparator.comparingDouble(ctx.playerFeet()::distanceSq))
+                .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().playerFeet()::distanceSq))
                 .collect(Collectors.toList());
 
         if (locs.size() > max) {
@@ -269,12 +269,13 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return locs;
     }
 
-    public static boolean plausibleToBreak(IPlayerContext ctx, BlockPos pos) {
-        if (MovementHelper.avoidBreaking(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ(), BlockStateInterface.get(ctx, pos))) {
+    public static boolean plausibleToBreak(BlockStateInterface bsi, BlockPos pos) {
+        if (MovementHelper.avoidBreaking(bsi, pos.getX(), pos.getY(), pos.getZ(), bsi.get0(pos))) {
             return false;
         }
+
         // bedrock above and below makes it implausible, otherwise we're good
-        return !(BlockStateInterface.getBlock(ctx, pos.up()) == Blocks.BEDROCK && BlockStateInterface.getBlock(ctx, pos.down()) == Blocks.BEDROCK);
+        return !(bsi.get0(pos.up()).getBlock() == Blocks.BEDROCK && bsi.get0(pos.down()).getBlock() == Blocks.BEDROCK);
     }
 
     @Override
@@ -289,6 +290,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.knownOreLocations = new ArrayList<>();
         this.branchPoint = null;
         this.branchPointRunaway = null;
-        rescan(new ArrayList<>());
+        if (mining != null) {
+            rescan(new ArrayList<>(), new CalculationContext(baritone));
+        }
     }
 }

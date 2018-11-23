@@ -21,9 +21,9 @@ import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -153,9 +153,10 @@ public interface IPath {
         if (path.size() != movements.size() + 1) {
             throw new IllegalStateException("Size of path array is unexpected");
         }
+        HashSet<BetterBlockPos> seenSoFar = new HashSet<>();
         for (int i = 0; i < path.size() - 1; i++) {
-            BlockPos src = path.get(i);
-            BlockPos dest = path.get(i + 1);
+            BetterBlockPos src = path.get(i);
+            BetterBlockPos dest = path.get(i + 1);
             IMovement movement = movements.get(i);
             if (!src.equals(movement.getSrc())) {
                 throw new IllegalStateException("Path source is not equal to the movement source");
@@ -163,6 +164,10 @@ public interface IPath {
             if (!dest.equals(movement.getDest())) {
                 throw new IllegalStateException("Path destination is not equal to the movement destination");
             }
+            if (seenSoFar.contains(src)) {
+                throw new IllegalStateException("Path doubles back on itself, making a loop");
+            }
+            seenSoFar.add(src);
         }
     }
 }

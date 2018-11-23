@@ -49,7 +49,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
     }
 
     @Override
-    protected Optional<IPath> calculate0(long timeout) {
+    protected Optional<IPath> calculate0(long primaryTimeout, long failureTimeout) {
         startNode = getNodeAtPosition(startX, startY, startZ, BetterBlockPos.longHash(startX, startY, startZ));
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
@@ -68,10 +68,11 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {
-            logDebug("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + timeout + "ms");
+            logDebug("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + primaryTimeout + "ms");
         }
-        long timeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : timeout);
-        //long lastPrintout = 0;
+        long primaryTimeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : primaryTimeout);
+        long failureTimeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : failureTimeout);
+        boolean failing = true;
         int numNodes = 0;
         int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
@@ -79,7 +80,11 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
-        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && System.nanoTime() / 1000000L - timeoutTime < 0 && !cancelRequested) {
+        while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && !cancelRequested) {
+            long now = System.nanoTime() / 1000000L;
+            if (now - failureTimeoutTime >= 0 || (!failing && now - primaryTimeoutTime >= 0)) {
+                break;
+            }
             if (slowPath) {
                 try {
                     Thread.sleep(Baritone.settings().slowPathTimeDelayMS.<Long>get());
@@ -166,6 +171,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                             }
                             bestHeuristicSoFar[i] = heuristic;
                             bestSoFar[i] = neighbor;
+                            if (getDistFromStartSq(neighbor) > MIN_DIST_PATH * MIN_DIST_PATH) {
+                                failing = false;
+                            }
                         }
                     }
                 }

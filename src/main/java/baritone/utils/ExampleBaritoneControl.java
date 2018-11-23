@@ -28,6 +28,7 @@ import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
 import baritone.cache.ChunkPacker;
 import baritone.cache.Waypoint;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
@@ -449,7 +450,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("costs")) {
-            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(baritone, ctx.playerFeet())).collect(Collectors.toCollection(ArrayList::new));
+            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(new CalculationContext(baritone), ctx.playerFeet())).collect(Collectors.toCollection(ArrayList::new));
             while (moves.contains(null)) {
                 moves.remove(null);
             }

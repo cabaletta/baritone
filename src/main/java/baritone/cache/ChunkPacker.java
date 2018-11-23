@@ -124,7 +124,7 @@ public final class ChunkPacker {
 
     private static PathingBlockType getPathingBlockType(IBlockState state) {
         Block block = state.getBlock();
-        if (block.equals(Blocks.WATER)) {
+        if (block.equals(Blocks.WATER) && !MovementHelper.isFlowing(state)) {
             // only water source blocks are plausibly usable, flowing water should be avoid
             return PathingBlockType.WATER;
         }

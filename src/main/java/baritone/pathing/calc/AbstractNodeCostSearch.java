@@ -83,13 +83,14 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         cancelRequested = true;
     }
 
-    public synchronized PathCalculationResult calculate(long timeout) {
+    @Override
+    public synchronized PathCalculationResult calculate(long primaryTimeout, long failureTimeout) {
         if (isFinished) {
             throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
         }
         this.cancelRequested = false;
         try {
-            IPath path = calculate0(timeout).map(IPath::postProcess).orElse(null);
+            IPath path = calculate0(primaryTimeout, failureTimeout).map(IPath::postProcess).orElse(null);
             isFinished = true;
             if (cancelRequested) {
                 return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, path);
@@ -112,7 +113,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         }
     }
 
-    protected abstract Optional<IPath> calculate0(long timeout);
+    protected abstract Optional<IPath> calculate0(long primaryTimeout, long failureTimeout);
 
     /**
      * Determines the distance squared from the specified node to the start
@@ -157,7 +158,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     @Override
     public Optional<IPath> bestPathSoFar() {
-        if (startNode == null || bestSoFar == null || bestSoFar[0] == null) {
+        if (startNode == null || bestSoFar == null) {
             return Optional.empty();
         }
         for (int i = 0; i < bestSoFar.length; i++) {
@@ -165,12 +166,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
                 continue;
             }
             if (getDistFromStartSq(bestSoFar[i]) > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                try {
-                    return Optional.of(new Path(startNode, bestSoFar[i], 0, goal, context));
-                } catch (IllegalStateException ex) {
-                    System.out.println("Unable to construct path to render");
-                    return Optional.empty();
-                }
+                return Optional.of(new Path(startNode, bestSoFar[i], 0, goal, context));
             }
         }
         // instead of returning bestSoFar[0], be less misleading

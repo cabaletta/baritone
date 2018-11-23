@@ -211,6 +211,10 @@ public class MovementAscend extends Movement {
             return state;
         }
 
+        if (ctx.playerFeet().equals(src.up())) {
+            return state; // no need to hit space if we're already jumping
+        }
+
         if (headBonkClear()) {
             return state.setInput(Input.JUMP, true);
         }

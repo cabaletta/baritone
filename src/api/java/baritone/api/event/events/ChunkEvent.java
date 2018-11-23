@@ -94,7 +94,16 @@ public final class ChunkEvent {
 
         /**
          * When the chunk is being populated with blocks, tile entities, etc.
+         * <p>
+         * And it's a full chunk
          */
-        POPULATE
+        POPULATE_FULL,
+
+        /**
+         * When the chunk is being populated with blocks, tile entities, etc.
+         * <p>
+         * And it's a partial chunk
+         */
+        POPULATE_PARTIAL
     }
 }
