@@ -86,7 +86,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // so the only remaining dynamic isPassables are snow and trapdoor
             // if they're cached as a top block, we don't know their metadata
             // default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (bsi.getWorld().getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
+            if (!bsi.worldContainsLoadedChunk(x, z)) {
                 return true;
             }
             if (snow) {
