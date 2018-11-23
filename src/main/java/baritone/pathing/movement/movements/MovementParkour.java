@@ -57,11 +57,11 @@ public class MovementParkour extends Movement {
         this.dist = dist;
     }
 
-    public static MovementParkour cost(IBaritone baritone, BetterBlockPos src, EnumFacing direction) {
+    public static MovementParkour cost(CalculationContext context, BetterBlockPos src, EnumFacing direction) {
         MutableMoveResult res = new MutableMoveResult();
-        cost(new CalculationContext(baritone), src.x, src.y, src.z, direction, res);
+        cost(context, src.x, src.y, src.z, direction, res);
         int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
-        return new MovementParkour(baritone, src, dist, direction);
+        return new MovementParkour(context.getBaritone(), src, dist, direction);
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {

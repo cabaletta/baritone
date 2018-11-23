@@ -21,12 +21,17 @@ import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
+import baritone.utils.accessor.IChunkProviderClient;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.EmptyChunk;
 
 /**
  * Wraps get for chuck caching capability
@@ -36,6 +41,7 @@ import net.minecraft.world.chunk.Chunk;
 public class BlockStateInterface {
 
     private final World world;
+    private final Long2ObjectMap<Chunk> loadedChunks;
     private final WorldData worldData;
 
     private Chunk prev = null;
@@ -50,6 +56,10 @@ public class BlockStateInterface {
     public BlockStateInterface(World world, WorldData worldData) {
         this.worldData = worldData;
         this.world = world;
+        this.loadedChunks = ((IChunkProviderClient) world.getChunkProvider()).loadedChunks();
+        if (!Minecraft.getMinecraft().isCallingFromMinecraftThread()) {
+            throw new IllegalStateException();
+        }
     }
 
     public World getWorld() {
@@ -64,6 +74,10 @@ public class BlockStateInterface {
         return new BlockStateInterface(ctx).get0(pos.getX(), pos.getY(), pos.getZ()); // immense iq
         // can't just do world().get because that doesn't work for out of bounds
         // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
+    }
+
+    public IBlockState get0(BlockPos pos) {
+        return get0(pos.getX(), pos.getY(), pos.getZ());
     }
 
     public IBlockState get0(int x, int y, int z) { // Mickey resigned
@@ -84,7 +98,12 @@ public class BlockStateInterface {
             if (cached != null && cached.x == x >> 4 && cached.z == z >> 4) {
                 return cached.getBlockState(x, y, z);
             }
+            Chunk c2 = loadedChunks.get(ChunkPos.asLong(x >> 4, z >> 4));
             Chunk chunk = world.getChunk(x >> 4, z >> 4);
+
+            if ((c2 != null && c2 != chunk) || (c2 == null && !(chunk instanceof EmptyChunk))) {
+                throw new IllegalStateException((((IChunkProviderClient) world.getChunkProvider()).loadedChunks() == loadedChunks) + " " + x + " " + y + " " + c2 + " " + chunk);
+            }
             if (chunk.isLoaded()) {
                 prev = chunk;
                 return chunk.getBlockState(x, y, z);
