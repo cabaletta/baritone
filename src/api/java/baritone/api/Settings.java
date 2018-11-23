@@ -247,7 +247,9 @@ public class Settings {
     public Setting<Integer> movementTimeoutTicks = new Setting<>(100);
 
     /**
-     * Pathing ends after this amount of time, if a path has been found
+     * Pathing ends after this amount of time, but only if a path has been found
+     * <p>
+     * If no valid path (length above the minimum) has been found, pathing continues up until the failure timeout
      */
     public Setting<Long> primaryTimeoutMS = new Setting<>(500L);
 
@@ -257,7 +259,9 @@ public class Settings {
     public Setting<Long> failureTimeoutMS = new Setting<>(2000L);
 
     /**
-     * Planning ahead while executing a segment ends after this amount of time, if a path has been found
+     * Planning ahead while executing a segment ends after this amount of time, but only if a path has been found
+     * <p>
+     * If no valid path (length above the minimum) has been found, pathing continues up until the failure timeout
      */
     public Setting<Long> planAheadPrimaryTimeoutMS = new Setting<>(4000L);
 

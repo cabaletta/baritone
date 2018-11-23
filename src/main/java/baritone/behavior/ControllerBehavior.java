@@ -20,7 +20,6 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TickEvent;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.process.IBaritoneProcess;
@@ -41,7 +40,6 @@ import net.minecraft.util.math.BlockPos;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class ControllerBehavior extends Behavior implements IMessageListener {
 
@@ -143,27 +141,25 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
         // TODO this may require scanning the world for blocks of a certain type, idk how to manage that
         Goal goal = new GoalYLevel(Integer.parseInt(msg.goal)); // im already winston
         SegmentedCalculator.calculateSegmentsThreaded(start, goal, new CalculationContext(baritone), path -> {
-            if (path.isPresent() && !Objects.equals(path.get().getGoal(), goal)) {
+            if (!Objects.equals(path.getGoal(), goal)) {
                 throw new IllegalStateException(); // sanity check
             }
             try {
-                conn.sendMessage(buildResponse(path, msg));
+                BetterBlockPos dest = path.getDest();
+                conn.sendMessage(new MessageComputationResponse(msg.computationID, path.length(), path.totalTicks(), path.getGoal().isInGoal(dest), dest.x, dest.y, dest.z));
             } catch (IOException e) {
                 // nothing we can do about this, we just completed a computation but our tenor connection was closed in the meantime
                 // just discard the path we made for them =((
                 e.printStackTrace(); // and complain =)
             }
+        }, () -> {
+            try {
+                conn.sendMessage(new MessageComputationResponse(msg.computationID, 0, 0, false, 0, 0, 0));
+            } catch (IOException e) {
+                // same deal
+                e.printStackTrace();
+            }
         });
-    }
-
-    private static MessageComputationResponse buildResponse(Optional<IPath> optPath, MessageComputationRequest req) {
-        if (optPath.isPresent()) {
-            IPath path = optPath.get();
-            BetterBlockPos dest = path.getDest();
-            return new MessageComputationResponse(req.computationID, path.length(), path.totalTicks(), path.getGoal().isInGoal(dest), dest.x, dest.y, dest.z);
-        } else {
-            return new MessageComputationResponse(req.computationID, 0, 0, false, 0, 0, 0);
-        }
     }
 
     @Override

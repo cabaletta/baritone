@@ -63,10 +63,7 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
         int xDiff = x - this.x;
         int yDiff = y - this.y;
         int zDiff = z - this.z;
-        if (yDiff < 0) {
-            yDiff++;
-        }
-        return GoalBlock.calculate(xDiff, yDiff, zDiff);
+        return GoalBlock.calculate(xDiff, yDiff < 0 ? yDiff + 1 : yDiff, zDiff);
     }
 
     @Override
