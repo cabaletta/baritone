@@ -281,7 +281,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
             return isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
         }
-        if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
+        if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
             return true;
         }
         if (block instanceof BlockSlab) {
