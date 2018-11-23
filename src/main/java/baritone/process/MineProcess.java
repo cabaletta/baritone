@@ -204,11 +204,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return ret;
     }
 
-    /*public static List<BlockPos> searchWorld(List<Block> mining, int max, World world) {
-
-    }*/
     public static List<BlockPos> searchWorld(CalculationContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown) {
-        IPlayerContext ipc;
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
