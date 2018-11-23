@@ -35,7 +35,7 @@ public class SerializedConnection implements IConnection {
     }
 
     @Override
-    public void sendMessage(iMessage message) throws IOException {
+    public synchronized void sendMessage(iMessage message) throws IOException {
         message.writeHeader(out);
         message.write(out);
     }
