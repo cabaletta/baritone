@@ -20,20 +20,31 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TickEvent;
+import baritone.api.pathing.calc.IPath;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.process.IBaritoneProcess;
+import baritone.api.utils.BetterBlockPos;
+import baritone.pathing.movement.CalculationContext;
 import baritone.utils.Helper;
+import baritone.utils.pathing.SegmentedCalculator;
 import comms.BufferedConnection;
 import comms.IConnection;
 import comms.IMessageListener;
 import comms.downward.MessageChat;
+import comms.downward.MessageComputationRequest;
 import comms.iMessage;
+import comms.upward.MessageComputationResponse;
 import comms.upward.MessageStatus;
 import net.minecraft.util.math.BlockPos;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class ControllerBehavior extends Behavior implements IMessageListener {
+
     public ControllerBehavior(Baritone baritone) {
         super(baritone);
     }
@@ -124,6 +135,35 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
     public void handle(MessageChat msg) { // big brain
         ChatEvent event = new ChatEvent(ctx.player(), msg.msg);
         baritone.getGameEventHandler().onSendChatMessage(event);
+    }
+
+    @Override
+    public void handle(MessageComputationRequest msg) {
+        BetterBlockPos start = new BetterBlockPos(msg.startX, msg.startY, msg.startZ);
+        // TODO this may require scanning the world for blocks of a certain type, idk how to manage that
+        Goal goal = new GoalYLevel(Integer.parseInt(msg.goal)); // im already winston
+        SegmentedCalculator.calculateSegmentsThreaded(start, goal, new CalculationContext(baritone), path -> {
+            if (path.isPresent() && !Objects.equals(path.get().getGoal(), goal)) {
+                throw new IllegalStateException(); // sanity check
+            }
+            try {
+                conn.sendMessage(buildResponse(path, msg));
+            } catch (IOException e) {
+                // nothing we can do about this, we just completed a computation but our tenor connection was closed in the meantime
+                // just discard the path we made for them =((
+                e.printStackTrace(); // and complain =)
+            }
+        });
+    }
+
+    private static MessageComputationResponse buildResponse(Optional<IPath> optPath, MessageComputationRequest req) {
+        if (optPath.isPresent()) {
+            IPath path = optPath.get();
+            BetterBlockPos dest = path.getDest();
+            return new MessageComputationResponse(req.computationID, path.length(), path.totalTicks(), path.getGoal().isInGoal(dest), dest.x, dest.y, dest.z);
+        } else {
+            return new MessageComputationResponse(req.computationID, 0, 0, false, 0, 0, 0);
+        }
     }
 
     @Override

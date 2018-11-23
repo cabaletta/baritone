@@ -18,6 +18,8 @@
 package comms;
 
 import comms.downward.MessageChat;
+import comms.downward.MessageComputationRequest;
+import comms.upward.MessageComputationResponse;
 import comms.upward.MessageStatus;
 
 public interface IMessageListener {
@@ -26,6 +28,14 @@ public interface IMessageListener {
     }
 
     default void handle(MessageChat message) {
+        unhandled(message);
+    }
+
+    default void handle(MessageComputationRequest message) {
+        unhandled(message);
+    }
+
+    default void handle(MessageComputationResponse message) {
         unhandled(message);
     }
 
