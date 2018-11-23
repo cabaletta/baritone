@@ -72,7 +72,7 @@ public class SegmentedCalculator {
         return search.calculate(Baritone.settings().primaryTimeoutMS.get(), Baritone.settings().failureTimeoutMS.get()); // use normal time settings, not the plan ahead settings, so as to not overwhelm the computer
     }
 
-    public static void calculateSegmentsThreaded(BetterBlockPos start, Goal goal, CalculationContext context, Consumer<Optional<IPath>> onCompletion) {
+    public static void calculateSegmentsThreaded(BetterBlockPos start, Goal goal, CalculationContext context, Consumer<IPath> onCompletion, Runnable onFailure) {
         Baritone.getExecutor().execute(() -> {
             Optional<IPath> result;
             try {
@@ -81,7 +81,11 @@ public class SegmentedCalculator {
                 ex.printStackTrace();
                 result = Optional.empty();
             }
-            onCompletion.accept(result);
+            if (result.isPresent()) {
+                onCompletion.accept(result.get());
+            } else {
+                onFailure.run();
+            }
         });
     }
 }
