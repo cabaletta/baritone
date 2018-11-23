@@ -40,10 +40,7 @@ import baritone.utils.PathRenderer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -410,6 +407,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
         CalculationContext context = new CalculationContext(baritone); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
+        if (!Objects.equals(pathfinder.getGoal(), goal)) {
+            logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
+        }
         inProgress = pathfinder;
         Baritone.getExecutor().execute(() -> {
             if (talkAboutIt) {
@@ -480,12 +480,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         });
     }
 
-    private AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
+    public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
         Goal transformed = goal;
         if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
             if (context.world().getChunk(pos) instanceof EmptyChunk) {
-                logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
