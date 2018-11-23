@@ -40,7 +40,10 @@ import baritone.utils.PathRenderer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 

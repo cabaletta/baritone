@@ -17,10 +17,7 @@
 
 package baritone.api.pathing.goals;
 
-import net.minecraft.util.math.BlockPos;
-
 import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * A composite of many goals, any one of which satisfies the composite.
@@ -38,14 +35,6 @@ public class GoalComposite implements Goal {
 
     public GoalComposite(Goal... goals) {
         this.goals = goals;
-    }
-
-    public GoalComposite(BlockPos... blocks) {
-        this(Arrays.asList(blocks));
-    }
-
-    public GoalComposite(Collection<BlockPos> blocks) {
-        this(blocks.stream().map(GoalBlock::new).toArray(Goal[]::new));
     }
 
     @Override
