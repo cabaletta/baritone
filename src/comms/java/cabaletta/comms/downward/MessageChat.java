@@ -15,44 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms.downward;
+package cabaletta.comms.downward;
 
-import comms.IMessageListener;
-import comms.iMessage;
+import cabaletta.comms.IMessageListener;
+import cabaletta.comms.iMessage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class MessageComputationRequest implements iMessage {
-    public final long computationID;
-    public final int startX;
-    public final int startY;
-    public final int startZ;
-    public final String goal; // TODO find a better way to do this lol
+public class MessageChat implements iMessage {
 
-    public MessageComputationRequest(DataInputStream in) throws IOException {
-        this.computationID = in.readLong();
-        this.startX = in.readInt();
-        this.startY = in.readInt();
-        this.startZ = in.readInt();
-        this.goal = in.readUTF();
+    public final String msg;
+
+    public MessageChat(DataInputStream in) throws IOException {
+        this.msg = in.readUTF();
     }
 
-    public MessageComputationRequest(long computationID, int startX, int startY, int startZ, String goal) {
-        this.computationID = computationID;
-        this.startX = startX;
-        this.startY = startY;
-        this.startZ = startZ;
-        this.goal = goal;
+    public MessageChat(String msg) {
+        this.msg = msg;
     }
 
     @Override
     public void write(DataOutputStream out) throws IOException {
-        out.writeLong(computationID);
-        out.writeInt(startX);
-        out.writeInt(startY);
-        out.writeUTF(goal);
+        out.writeUTF(msg);
     }
 
     @Override
