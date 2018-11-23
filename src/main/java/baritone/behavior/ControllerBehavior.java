@@ -28,6 +28,7 @@ import comms.IMessageListener;
 import comms.downward.MessageChat;
 import comms.iMessage;
 import comms.upward.MessageStatus;
+import net.minecraft.util.math.BlockPos;
 
 import java.io.IOException;
 import java.util.List;
@@ -49,7 +50,9 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
     }
 
     public MessageStatus buildStatus() {
-        // TODO inventory
+        // TODO report inventory and echest contents
+        // TODO figure out who should remember echest contents when it isn't open, baritone or tenor?
+        BlockPos pathStart = baritone.getPathingBehavior().pathStart();
         return new MessageStatus(
                 ctx.player().posX,
                 ctx.player().posY,
@@ -60,6 +63,9 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
                 ctx.player().getHealth(),
                 ctx.player().getFoodStats().getSaturationLevel(),
                 ctx.player().getFoodStats().getFoodLevel(),
+                pathStart.getX(),
+                pathStart.getY(),
+                pathStart.getZ(),
                 baritone.getPathingBehavior().getCurrent() != null,
                 baritone.getPathingBehavior().getNext() != null,
                 baritone.getPathingBehavior().getInProgress().isPresent(),
