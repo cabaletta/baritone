@@ -458,7 +458,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (next == null) {
             return cutIfTooLong();
         }
-        return SplicedPath.trySplice(path, next.path).map(path -> {
+        return SplicedPath.trySplice(path, next.path, false).map(path -> {
             if (!path.getDest().equals(next.getPath().getDest())) {
                 throw new IllegalStateException();
             }
