@@ -19,7 +19,7 @@ package baritone.api.event.events.type;
 
 /**
  * @author Brady
- * @since 8/1/2018 6:41 PM
+ * @since 8/1/2018
  */
 public class Cancellable implements ICancellable {
 

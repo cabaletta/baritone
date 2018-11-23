@@ -20,21 +20,18 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
+import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.behavior.PathingBehavior;
-import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class PathingControlManager {
+public class PathingControlManager implements IPathingControlManager {
     private final Baritone baritone;
     private final HashSet<IBaritoneProcess> processes; // unGh
     private IBaritoneProcess inControlLastTick;
@@ -44,7 +41,7 @@ public class PathingControlManager {
     public PathingControlManager(Baritone baritone) {
         this.baritone = baritone;
         this.processes = new HashSet<>();
-        baritone.registerEventListener(new AbstractGameEventListener() { // needs to be after all behavior ticks
+        baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() { // needs to be after all behavior ticks
             @Override
             public void onTick(TickEvent event) {
                 if (event.getType() == TickEvent.Type.OUT) {
@@ -55,12 +52,16 @@ public class PathingControlManager {
         });
     }
 
+    @Override
     public void registerProcess(IBaritoneProcess process) {
         process.onLostControl(); // make sure it's reset
         processes.add(process);
     }
 
-    public void cancelEverything() {
+    public void cancelEverything() { // called by PathingBehavior on TickEvent Type OUT
+        inControlLastTick = null;
+        inControlThisTick = null;
+        command = null;
         for (IBaritoneProcess proc : processes) {
             proc.onLostControl();
             if (proc.isActive() && !proc.isTemporary()) { // it's okay for a temporary thing (like combat pause) to maintain control even if you say to cancel
@@ -70,8 +71,14 @@ public class PathingControlManager {
         }
     }
 
-    public IBaritoneProcess inControlThisTick() {
-        return inControlThisTick;
+    @Override
+    public Optional<IBaritoneProcess> mostRecentInControl() {
+        return Optional.ofNullable(inControlThisTick);
+    }
+
+    @Override
+    public Optional<PathingCommand> mostRecentCommand() {
+        return Optional.ofNullable(command);
     }
 
     public void preTick() {
@@ -90,12 +97,12 @@ public class PathingControlManager {
                 p.cancelSegmentIfSafe();
                 break;
             case FORCE_REVALIDATE_GOAL_AND_PATH:
-                if (!p.isPathing() && !AbstractNodeCostSearch.getCurrentlyRunning().isPresent()) {
+                if (!p.isPathing() && !p.getInProgress().isPresent()) {
                     p.secretInternalSetGoalAndPath(command.goal);
                 }
                 break;
             case REVALIDATE_GOAL_AND_PATH:
-                if (!p.isPathing() && !AbstractNodeCostSearch.getCurrentlyRunning().isPresent()) {
+                if (!p.isPathing() && !p.getInProgress().isPresent()) {
                     p.secretInternalSetGoalAndPath(command.goal);
                 }
                 break;

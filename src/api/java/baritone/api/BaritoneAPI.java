@@ -17,16 +17,6 @@
 
 package baritone.api;
 
-import baritone.api.behavior.ILookBehavior;
-import baritone.api.behavior.IMemoryBehavior;
-import baritone.api.behavior.IPathingBehavior;
-import baritone.api.cache.IWorldProvider;
-import baritone.api.cache.IWorldScanner;
-import baritone.api.event.listener.IGameEventListener;
-import baritone.api.process.ICustomGoalProcess;
-import baritone.api.process.IFollowProcess;
-import baritone.api.process.IGetToBlockProcess;
-import baritone.api.process.IMineProcess;
 import baritone.api.utils.SettingsUtil;
 
 import java.util.Iterator;
@@ -42,59 +32,23 @@ import java.util.ServiceLoader;
  */
 public final class BaritoneAPI {
 
-    private static final IBaritone baritone;
+    private static final IBaritoneProvider provider;
     private static final Settings settings;
 
     static {
         ServiceLoader<IBaritoneProvider> baritoneLoader = ServiceLoader.load(IBaritoneProvider.class);
         Iterator<IBaritoneProvider> instances = baritoneLoader.iterator();
-        baritone = instances.next().getBaritoneForPlayer(null); // PWNAGE
+        provider = instances.next();
 
         settings = new Settings();
         SettingsUtil.readAndApply(settings);
     }
 
-    public static IFollowProcess getFollowProcess() {
-        return baritone.getFollowProcess();
-    }
-
-    public static ILookBehavior getLookBehavior() {
-        return baritone.getLookBehavior();
-    }
-
-    public static IMemoryBehavior getMemoryBehavior() {
-        return baritone.getMemoryBehavior();
-    }
-
-    public static IMineProcess getMineProcess() {
-        return baritone.getMineProcess();
-    }
-
-    public static IPathingBehavior getPathingBehavior() {
-        return baritone.getPathingBehavior();
+    public static IBaritoneProvider getProvider() {
+        return BaritoneAPI.provider;
     }
 
     public static Settings getSettings() {
-        return settings;
-    }
-
-    public static IWorldProvider getWorldProvider() {
-        return baritone.getWorldProvider();
-    }
-
-    public static IWorldScanner getWorldScanner() {
-        return baritone.getWorldScanner();
-    }
-
-    public static ICustomGoalProcess getCustomGoalProcess() {
-        return baritone.getCustomGoalProcess();
-    }
-
-    public static IGetToBlockProcess getGetToBlockProcess() {
-        return baritone.getGetToBlockProcess();
-    }
-
-    public static void registerEventListener(IGameEventListener listener) {
-        baritone.registerEventListener(listener);
+        return BaritoneAPI.settings;
     }
 }

@@ -18,13 +18,17 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.utils.IPlayerContext;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
-import baritone.pathing.movement.CalculationContext;
+import baritone.utils.accessor.IChunkProviderClient;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -33,33 +37,47 @@ import net.minecraft.world.chunk.Chunk;
  *
  * @author leijurv
  */
-public class BlockStateInterface implements Helper {
+public class BlockStateInterface {
 
-    private final World world;
+    private final Long2ObjectMap<Chunk> loadedChunks;
     private final WorldData worldData;
-
 
     private Chunk prev = null;
     private CachedRegion prevCached = null;
 
     private static final IBlockState AIR = Blocks.AIR.getDefaultState();
 
+    public BlockStateInterface(IPlayerContext ctx) {
+        this(ctx.world(), (WorldData) ctx.worldData());
+    }
+
     public BlockStateInterface(World world, WorldData worldData) {
         this.worldData = worldData;
-        this.world = world;
+        this.loadedChunks = ((IChunkProviderClient) world.getChunkProvider()).loadedChunks();
+        if (!Minecraft.getMinecraft().isCallingFromMinecraftThread()) {
+            throw new IllegalStateException();
+        }
     }
 
-    public static Block getBlock(BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
-        return get(pos).getBlock();
+    public boolean worldContainsLoadedChunk(int blockX, int blockZ) {
+        return loadedChunks.containsKey(ChunkPos.asLong(blockX >> 4, blockZ >> 4));
     }
 
-    public static IBlockState get(BlockPos pos) {
-        return new CalculationContext().get(pos); // immense iq
+    public static Block getBlock(IPlayerContext ctx, BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
+        return get(ctx, pos).getBlock();
+    }
+
+    public static IBlockState get(IPlayerContext ctx, BlockPos pos) {
+        return new BlockStateInterface(ctx).get0(pos.getX(), pos.getY(), pos.getZ()); // immense iq
         // can't just do world().get because that doesn't work for out of bounds
         // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
     }
 
-    public IBlockState get0(int x, int y, int z) {
+    public IBlockState get0(BlockPos pos) {
+        return get0(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public IBlockState get0(int x, int y, int z) { // Mickey resigned
 
         // Invalid vertical position
         if (y < 0 || y >= 256) {
@@ -77,8 +95,9 @@ public class BlockStateInterface implements Helper {
             if (cached != null && cached.x == x >> 4 && cached.z == z >> 4) {
                 return cached.getBlockState(x, y, z);
             }
-            Chunk chunk = world.getChunk(x >> 4, z >> 4);
-            if (chunk.isLoaded()) {
+            Chunk chunk = loadedChunks.get(ChunkPos.asLong(x >> 4, z >> 4));
+
+            if (chunk != null && chunk.isLoaded()) {
                 prev = chunk;
                 return chunk.getBlockState(x, y, z);
             }
@@ -109,8 +128,8 @@ public class BlockStateInterface implements Helper {
         if (prevChunk != null && prevChunk.x == x >> 4 && prevChunk.z == z >> 4) {
             return true;
         }
-        prevChunk = world.getChunk(x >> 4, z >> 4);
-        if (prevChunk.isLoaded()) {
+        prevChunk = loadedChunks.get(ChunkPos.asLong(x >> 4, z >> 4));
+        if (prevChunk != null && prevChunk.isLoaded()) {
             prev = prevChunk;
             return true;
         }

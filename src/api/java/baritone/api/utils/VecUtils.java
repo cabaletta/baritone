@@ -19,21 +19,17 @@ package baritone.api.utils;
 
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 /**
  * @author Brady
  * @since 10/13/2018
  */
 public final class VecUtils {
-    /**
-     * The {@link Minecraft} instance
-     */
-    private static final Minecraft mc = Minecraft.getMinecraft();
 
     private VecUtils() {}
 
@@ -44,9 +40,9 @@ public final class VecUtils {
      * @return The center of the block's bounding box
      * @see #getBlockPosCenter(BlockPos)
      */
-    public static Vec3d calculateBlockCenter(BlockPos pos) {
-        IBlockState b = mc.world.getBlockState(pos);
-        AxisAlignedBB bbox = b.getBoundingBox(mc.world, pos);
+    public static Vec3d calculateBlockCenter(World world, BlockPos pos) {
+        IBlockState b = world.getBlockState(pos);
+        AxisAlignedBB bbox = b.getBoundingBox(world, pos);
         double xDiff = (bbox.minX + bbox.maxX) / 2;
         double yDiff = (bbox.minY + bbox.maxY) / 2;
         double zDiff = (bbox.minZ + bbox.maxZ) / 2;
@@ -68,7 +64,7 @@ public final class VecUtils {
      *
      * @param pos The block position
      * @return The assumed center of the position
-     * @see #calculateBlockCenter(BlockPos)
+     * @see #calculateBlockCenter(World, BlockPos)
      */
     public static Vec3d getBlockPosCenter(BlockPos pos) {
         return new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);

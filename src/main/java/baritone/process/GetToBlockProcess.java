@@ -24,6 +24,7 @@ import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.pathing.movement.CalculationContext;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
@@ -46,7 +47,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     public void getToBlock(Block block) {
         gettingTo = block;
         knownLocations = null;
-        rescan(new ArrayList<>());
+        rescan(new ArrayList<>(), new CalculationContext(baritone));
     }
 
     @Override
@@ -57,7 +58,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (knownLocations == null) {
-            rescan(new ArrayList<>());
+            rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
         if (knownLocations.isEmpty()) {
             logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
@@ -76,10 +77,11 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             List<BlockPos> current = new ArrayList<>(knownLocations);
-            Baritone.getExecutor().execute(() -> rescan(current));
+            CalculationContext context = new CalculationContext(baritone);
+            Baritone.getExecutor().execute(() -> rescan(current, context));
         }
         Goal goal = new GoalComposite(knownLocations.stream().map(GoalGetToBlock::new).toArray(Goal[]::new));
-        if (goal.isInGoal(playerFeet())) {
+        if (goal.isInGoal(ctx.playerFeet())) {
             onLostControl();
         }
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
@@ -96,7 +98,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         return "Get To Block " + gettingTo;
     }
 
-    private void rescan(List<BlockPos> known) {
-        knownLocations = MineProcess.searchWorld(Collections.singletonList(gettingTo), 64, baritone.getWorldProvider(), world(), known);
+    private void rescan(List<BlockPos> known, CalculationContext context) {
+        knownLocations = MineProcess.searchWorld(context, Collections.singletonList(gettingTo), 64, known);
     }
 }

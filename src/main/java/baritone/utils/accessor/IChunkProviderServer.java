@@ -21,10 +21,9 @@ import net.minecraft.world.WorldProvider;
 import net.minecraft.world.chunk.storage.IChunkLoader;
 
 /**
- * @see WorldProvider
- *
  * @author Brady
- * @since 8/4/2018 11:33 AM
+ * @see WorldProvider
+ * @since 8/4/2018
  */
 public interface IChunkProviderServer {
 

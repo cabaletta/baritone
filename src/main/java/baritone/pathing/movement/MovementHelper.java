@@ -20,10 +20,10 @@ package baritone.pathing.movement;
 import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.*;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
 import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
@@ -35,6 +35,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.EmptyChunk;
 
 /**
@@ -44,33 +45,27 @@ import net.minecraft.world.chunk.EmptyChunk;
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
-    static boolean avoidBreaking(CalculationContext context, int x, int y, int z, IBlockState state) {
+    static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block b = state.getBlock();
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no reason
-                || context.get(x, y + 1, z).getBlock() instanceof BlockLiquid//don't break anything touching liquid on any side
-                || context.get(x + 1, y, z).getBlock() instanceof BlockLiquid
-                || context.get(x - 1, y, z).getBlock() instanceof BlockLiquid
-                || context.get(x, y, z + 1).getBlock() instanceof BlockLiquid
-                || context.get(x, y, z - 1).getBlock() instanceof BlockLiquid;
+                || bsi.get0(x, y + 1, z).getBlock() instanceof BlockLiquid//don't break anything touching liquid on any side
+                || bsi.get0(x + 1, y, z).getBlock() instanceof BlockLiquid
+                || bsi.get0(x - 1, y, z).getBlock() instanceof BlockLiquid
+                || bsi.get0(x, y, z + 1).getBlock() instanceof BlockLiquid
+                || bsi.get0(x, y, z - 1).getBlock() instanceof BlockLiquid;
     }
 
-    /**
-     * Can I walk through this block? e.g. air, saplings, torches, etc
-     *
-     * @param pos
-     * @return
-     */
-    static boolean canWalkThrough(BetterBlockPos pos) {
-        return canWalkThrough(new CalculationContext(), pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
+    static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {
+        return canWalkThrough(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
     }
 
-    static boolean canWalkThrough(CalculationContext context, int x, int y, int z) {
-        return canWalkThrough(context, x, y, z, context.get(x, y, z));
+    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z) {
+        return canWalkThrough(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
-    static boolean canWalkThrough(CalculationContext context, int x, int y, int z, IBlockState state) {
+    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) { // early return for most common case
             return true;
@@ -91,7 +86,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // so the only remaining dynamic isPassables are snow and trapdoor
             // if they're cached as a top block, we don't know their metadata
             // default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (mc.world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
+            if (!bsi.worldContainsLoadedChunk(x, z)) {
                 return true;
             }
             if (snow) {
@@ -111,7 +106,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (Baritone.settings().assumeWalkOnWater.get()) {
                 return false;
             }
-            IBlockState up = context.get(x, y + 1, z);
+            IBlockState up = bsi.get0(x, y + 1, z);
             if (up.getBlock() instanceof BlockLiquid || up.getBlock() instanceof BlockLilyPad) {
                 return false;
             }
@@ -156,7 +151,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block.isPassable(null, null);
     }
 
-    static boolean isReplacable(int x, int y, int z, IBlockState state) {
+    static boolean isReplacable(int x, int y, int z, IBlockState state, World world) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
         // all other overrides just return true or false
@@ -170,7 +165,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block block = state.getBlock();
         if (block instanceof BlockSnow) {
             // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (mc.world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
+            if (world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
                 return true;
             }
             return state.getValue(BlockSnow.LAYERS) == 1;
@@ -182,12 +177,12 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.getMaterial().isReplaceable();
     }
 
-    static boolean isDoorPassable(BlockPos doorPos, BlockPos playerPos) {
+    static boolean isDoorPassable(IPlayerContext ctx, BlockPos doorPos, BlockPos playerPos) {
         if (playerPos.equals(doorPos)) {
             return false;
         }
 
-        IBlockState state = BlockStateInterface.get(doorPos);
+        IBlockState state = BlockStateInterface.get(ctx, doorPos);
         if (!(state.getBlock() instanceof BlockDoor)) {
             return true;
         }
@@ -195,17 +190,17 @@ public interface MovementHelper extends ActionCosts, Helper {
         return isHorizontalBlockPassable(doorPos, state, playerPos, BlockDoor.OPEN);
     }
 
-    static boolean isGatePassable(BlockPos gatePos, BlockPos playerPos) {
+    static boolean isGatePassable(IPlayerContext ctx, BlockPos gatePos, BlockPos playerPos) {
         if (playerPos.equals(gatePos)) {
             return false;
         }
 
-        IBlockState state = BlockStateInterface.get(gatePos);
+        IBlockState state = BlockStateInterface.get(ctx, gatePos);
         if (!(state.getBlock() instanceof BlockFenceGate)) {
             return true;
         }
 
-        return isHorizontalBlockPassable(gatePos, state, playerPos, BlockFenceGate.OPEN);
+        return state.getValue(BlockFenceGate.OPEN);
     }
 
     static boolean isHorizontalBlockPassable(BlockPos blockPos, IBlockState blockState, BlockPos playerPos, PropertyBool propertyOpen) {
@@ -245,7 +240,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      *
      * @return
      */
-    static boolean canWalkOn(CalculationContext context, int x, int y, int z, IBlockState state) {
+    static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR || block == Blocks.MAGMA) {
             // early return for most common case (air)
@@ -267,7 +262,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (isWater(block)) {
             // since this is called literally millions of times per second, the benefit of not allocating millions of useless "pos.up()"
             // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
-            Block up = context.get(x, y + 1, z).getBlock();
+            Block up = bsi.get0(x, y + 1, z).getBlock();
             if (up == Blocks.WATERLILY) {
                 return true;
             }
@@ -279,7 +274,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
             return isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
         }
-        if (block instanceof BlockGlass || block instanceof BlockStainedGlass) {
+        if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
             return true;
         }
         if (block instanceof BlockSlab) {
@@ -294,24 +289,28 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block instanceof BlockStairs;
     }
 
-    static boolean canWalkOn(BetterBlockPos pos, IBlockState state) {
-        return canWalkOn(new CalculationContext(), pos.x, pos.y, pos.z, state);
+    static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos, IBlockState state) {
+        return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z, state);
     }
 
-    static boolean canWalkOn(BetterBlockPos pos) {
-        return canWalkOn(new CalculationContext(), pos.x, pos.y, pos.z, BlockStateInterface.get(pos));
+    static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos) {
+        return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
     }
 
-    static boolean canWalkOn(CalculationContext context, int x, int y, int z) {
-        return canWalkOn(context, x, y, z, context.get(x, y, z));
+    static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z) {
+        return canWalkOn(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
-    static boolean canPlaceAgainst(CalculationContext context, int x, int y, int z) {
-        return canPlaceAgainst(context.get(x, y, z));
+    static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z) {
+        return canPlaceAgainst(bsi.get0(x, y, z));
     }
 
-    static boolean canPlaceAgainst(BlockPos pos) {
-        return canPlaceAgainst(BlockStateInterface.get(pos));
+    static boolean canPlaceAgainst(BlockStateInterface bsi, BlockPos pos) {
+        return canPlaceAgainst(bsi.get0(pos.getX(), pos.getY(), pos.getZ()));
+    }
+
+    static boolean canPlaceAgainst(IPlayerContext ctx, BlockPos pos) {
+        return canPlaceAgainst(new BlockStateInterface(ctx), pos);
     }
 
     static boolean canPlaceAgainst(IBlockState state) {
@@ -325,11 +324,11 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
-        if (!canWalkThrough(context, x, y, z, state)) {
+        if (!canWalkThrough(context.bsi(), x, y, z, state)) {
             if (!context.canBreakAt(x, y, z)) {
                 return COST_INF;
             }
-            if (avoidBreaking(context, x, y, z, state)) {
+            if (avoidBreaking(context.bsi(), x, y, z, state)) {
                 return COST_INF;
             }
             if (block instanceof BlockLiquid) {
@@ -361,25 +360,12 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
-     * AutoTool
-     */
-    static void switchToBestTool() {
-        RayTraceUtils.getSelectedBlock().ifPresent(pos -> {
-            IBlockState state = BlockStateInterface.get(pos);
-            if (state.getBlock().equals(Blocks.AIR)) {
-                return;
-            }
-            switchToBestToolFor(state);
-        });
-    }
-
-    /**
      * AutoTool for a specific block
      *
      * @param b the blockstate to mine
      */
-    static void switchToBestToolFor(IBlockState b) {
-        switchToBestToolFor(b, new ToolSet(Helper.HELPER.player()));
+    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
+        switchToBestToolFor(ctx, b, new ToolSet(ctx.player()));
     }
 
     /**
@@ -388,12 +374,12 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param b  the blockstate to mine
      * @param ts previously calculated ToolSet
      */
-    static void switchToBestToolFor(IBlockState b, ToolSet ts) {
-        Helper.HELPER.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
+    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts) {
+        ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
     }
 
-    static boolean throwaway(boolean select) {
-        EntityPlayerSP p = Helper.HELPER.player();
+    static boolean throwaway(IPlayerContext ctx, boolean select) {
+        EntityPlayerSP p = ctx.player();
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);
@@ -428,14 +414,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         return false;
     }
 
-    static void moveTowards(MovementState state, BlockPos pos) {
-        EntityPlayerSP player = Helper.HELPER.player();
+    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
+        EntityPlayerSP player = ctx.player();
         state.setTarget(new MovementTarget(
                 new Rotation(RotationUtils.calcRotationFromVec3d(player.getPositionEyes(1.0F),
                         VecUtils.getBlockPosCenter(pos),
                         new Rotation(player.rotationYaw, player.rotationPitch)).getYaw(), player.rotationPitch),
                 false
-        )).setInput(InputOverrideHandler.Input.MOVE_FORWARD, true);
+        )).setInput(Input.MOVE_FORWARD, true);
     }
 
     /**
@@ -453,11 +439,12 @@ public interface MovementHelper extends ActionCosts, Helper {
      * Returns whether or not the block at the specified pos is
      * water, regardless of whether or not it is flowing.
      *
-     * @param bp The block pos
+     * @param ctx The player context
+     * @param bp  The block pos
      * @return Whether or not the block is water
      */
-    static boolean isWater(BlockPos bp) {
-        return isWater(BlockStateInterface.getBlock(bp));
+    static boolean isWater(IPlayerContext ctx, BlockPos bp) {
+        return isWater(BlockStateInterface.getBlock(ctx, bp));
     }
 
     static boolean isLava(Block b) {
@@ -467,11 +454,12 @@ public interface MovementHelper extends ActionCosts, Helper {
     /**
      * Returns whether or not the specified pos has a liquid
      *
-     * @param p The pos
+     * @param ctx The player context
+     * @param p   The pos
      * @return Whether or not the block is a liquid
      */
-    static boolean isLiquid(BlockPos p) {
-        return BlockStateInterface.getBlock(p) instanceof BlockLiquid;
+    static boolean isLiquid(IPlayerContext ctx, BlockPos p) {
+        return BlockStateInterface.getBlock(ctx, p) instanceof BlockLiquid;
     }
 
     static boolean isFlowing(IBlockState state) {

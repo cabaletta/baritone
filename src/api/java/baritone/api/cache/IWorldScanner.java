@@ -17,6 +17,7 @@
 
 package baritone.api.cache;
 
+import baritone.api.utils.IPlayerContext;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 
@@ -31,6 +32,8 @@ public interface IWorldScanner {
     /**
      * Scans the world, up to the specified max chunk radius, for the specified blocks.
      *
+     * @param ctx             The {@link IPlayerContext} containing player and world info that the
+     *                        scan is based upon
      * @param blocks          The blocks to scan for
      * @param max             The maximum number of blocks to scan before cutoff
      * @param yLevelThreshold If a block is found within this Y level, the current result will be
@@ -38,5 +41,5 @@ public interface IWorldScanner {
      * @param maxSearchRadius The maximum chunk search radius
      * @return The matching block positions
      */
-    List<BlockPos> scanChunkRadius(List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius);
+    List<BlockPos> scanChunkRadius(IPlayerContext ctx, List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius);
 }
