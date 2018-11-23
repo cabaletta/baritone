@@ -21,17 +21,22 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
+import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class MovementDescend extends Movement {
 
@@ -190,6 +195,18 @@ public class MovementDescend extends Movement {
                 // System.out.println(player().posY + " " + playerFeet.getY() + " " + (player().posY - playerFeet.getY()));
             }*/
         }
+        if (safeMode()) {
+            double destX = (src.getX() + 0.5) * 0.19 + (dest.getX() + 0.5) * 0.81;
+            double destZ = (src.getZ() + 0.5) * 0.19 + (dest.getZ() + 0.5) * 0.81;
+            EntityPlayerSP player = ctx.player();
+            state.setTarget(new MovementState.MovementTarget(
+                    new Rotation(RotationUtils.calcRotationFromVec3d(player.getPositionEyes(1.0F),
+                            new Vec3d(destX, dest.getY(), destZ),
+                            new Rotation(player.rotationYaw, player.rotationPitch)).getYaw(), player.rotationPitch),
+                    false
+            )).setInput(Input.MOVE_FORWARD, true);
+            return state;
+        }
         double diffX = ctx.player().posX - (dest.getX() + 0.5);
         double diffZ = ctx.player().posZ - (dest.getZ() + 0.5);
         double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
@@ -209,5 +226,17 @@ public class MovementDescend extends Movement {
             }
         }
         return state;
+    }
+
+    public boolean safeMode() {
+        // (dest - src) + dest is offset 1 more in the same direction
+        // so it's the block we'd need to worry about running into if we decide to sprint straight through this descend
+        BlockPos into = dest.subtract(src.down()).add(dest);
+        for (int y = 0; y <= 2; y++) { // we could hit any of the three blocks
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(ctx, into.up(y)))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

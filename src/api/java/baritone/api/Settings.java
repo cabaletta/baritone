@@ -247,14 +247,28 @@ public class Settings {
     public Setting<Integer> movementTimeoutTicks = new Setting<>(100);
 
     /**
-     * Pathing can never take longer than this
+     * Pathing ends after this amount of time, but only if a path has been found
+     * <p>
+     * If no valid path (length above the minimum) has been found, pathing continues up until the failure timeout
      */
-    public Setting<Long> pathTimeoutMS = new Setting<>(2000L);
+    public Setting<Long> primaryTimeoutMS = new Setting<>(500L);
 
     /**
-     * Planning ahead while executing a segment can never take longer than this
+     * Pathing can never take longer than this, even if that means failing to find any path at all
      */
-    public Setting<Long> planAheadTimeoutMS = new Setting<>(4000L);
+    public Setting<Long> failureTimeoutMS = new Setting<>(2000L);
+
+    /**
+     * Planning ahead while executing a segment ends after this amount of time, but only if a path has been found
+     * <p>
+     * If no valid path (length above the minimum) has been found, pathing continues up until the failure timeout
+     */
+    public Setting<Long> planAheadPrimaryTimeoutMS = new Setting<>(4000L);
+
+    /**
+     * Planning ahead while executing a segment can never take longer than this, even if that means failing to find any path at all
+     */
+    public Setting<Long> planAheadFailureTimeoutMS = new Setting<>(5000L);
 
     /**
      * For debugging, consider nodes much much slower

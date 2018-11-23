@@ -33,6 +33,9 @@ public class PathCalculationResult {
     public PathCalculationResult(Type type, IPath path) {
         this.path = path;
         this.type = type;
+        if (type == null) {
+            throw new IllegalArgumentException("come on");
+        }
     }
 
     public final Optional<IPath> getPath() {

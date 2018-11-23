@@ -79,7 +79,7 @@ public final class GameEventHandler implements IEventBus, Helper {
         ChunkEvent.Type type = event.getType();
 
         boolean isPostPopulate = state == EventState.POST
-                && type == ChunkEvent.Type.POPULATE;
+                && (type == ChunkEvent.Type.POPULATE_FULL || type == ChunkEvent.Type.POPULATE_PARTIAL);
 
         World world = baritone.getPlayerContext().world();
 

@@ -33,6 +33,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockStairs;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
@@ -56,11 +57,11 @@ public class MovementParkour extends Movement {
         this.dist = dist;
     }
 
-    public static MovementParkour cost(IBaritone baritone, BetterBlockPos src, EnumFacing direction) {
+    public static MovementParkour cost(CalculationContext context, BetterBlockPos src, EnumFacing direction) {
         MutableMoveResult res = new MutableMoveResult();
-        cost(new CalculationContext(baritone), src.x, src.y, src.z, direction, res);
+        cost(context, src.x, src.y, src.z, direction, res);
         int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
-        return new MovementParkour(baritone, src, dist, direction);
+        return new MovementParkour(context.getBaritone(), src, dist, direction);
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
@@ -68,7 +69,7 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState standingOn = context.get(x, y - 1, z);
-        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || MovementHelper.isBottomSlab(standingOn)) {
+        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn)) {
             return;
         }
         int xDiff = dir.getXOffset();
