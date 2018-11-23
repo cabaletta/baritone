@@ -17,10 +17,28 @@
 
 package tenor;
 
-public class Bot {
+import comms.IConnection;
+import comms.IMessageListener;
+import comms.upward.MessageStatus;
+
+public class Bot implements IMessageListener {
     public final BotTaskRegistry taskRegistry = new BotTaskRegistry(this);
 
+    private final IConnection connectionToBot;
+    private volatile MessageStatus mostRecentUpdate;
+
+    public Bot(IConnection conn) {
+        this.connectionToBot = conn;
+        // TODO event loop to read messages non blockingly
+    }
+
     public int getCurrentQuantityInInventory(String item) {
+        // TODO get this information from the most recent update
         throw new UnsupportedOperationException("oppa");
+    }
+
+    @Override
+    public void handle(MessageStatus msg) {
+        mostRecentUpdate = msg;
     }
 }

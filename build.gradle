@@ -58,9 +58,11 @@ sourceSets {
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
-    tenor {}
+    tenor {
+        compileClasspath += comms.compileClasspath + comms.output
+    }
     main {
-        compileClasspath += tenor.compileClasspath
+        compileClasspath += tenor.compileClasspath + tenor.output
     }
 }
 
