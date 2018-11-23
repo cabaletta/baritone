@@ -35,6 +35,9 @@ public class MessageStatus implements iMessage {
     public final float health;
     public final float saturation;
     public final int foodLevel;
+    public final int pathStartX;
+    public final int pathStartY;
+    public final int pathStartZ;
     public final boolean hasCurrentSegment;
     public final boolean hasNextSegment;
     public final boolean calcInProgress;
@@ -54,6 +57,9 @@ public class MessageStatus implements iMessage {
         this.health = in.readFloat();
         this.saturation = in.readFloat();
         this.foodLevel = in.readInt();
+        this.pathStartX = in.readInt();
+        this.pathStartY = in.readInt();
+        this.pathStartZ = in.readInt();
         this.hasCurrentSegment = in.readBoolean();
         this.hasNextSegment = in.readBoolean();
         this.calcInProgress = in.readBoolean();
@@ -64,7 +70,7 @@ public class MessageStatus implements iMessage {
         this.currentProcess = in.readUTF();
     }
 
-    public MessageStatus(double x, double y, double z, float yaw, float pitch, boolean onGround, float health, float saturation, int foodLevel, boolean hasCurrentSegment, boolean hasNextSegment, boolean calcInProgress, double ticksRemainingInCurrent, boolean calcFailedLastTick, boolean safeToCancel, String currentGoal, String currentProcess) {
+    public MessageStatus(double x, double y, double z, float yaw, float pitch, boolean onGround, float health, float saturation, int foodLevel, int pathStartX, int pathStartY, int pathStartZ, boolean hasCurrentSegment, boolean hasNextSegment, boolean calcInProgress, double ticksRemainingInCurrent, boolean calcFailedLastTick, boolean safeToCancel, String currentGoal, String currentProcess) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -74,6 +80,9 @@ public class MessageStatus implements iMessage {
         this.health = health;
         this.saturation = saturation;
         this.foodLevel = foodLevel;
+        this.pathStartX = pathStartX;
+        this.pathStartY = pathStartY;
+        this.pathStartZ = pathStartZ;
         this.hasCurrentSegment = hasCurrentSegment;
         this.hasNextSegment = hasNextSegment;
         this.calcInProgress = calcInProgress;
@@ -95,6 +104,9 @@ public class MessageStatus implements iMessage {
         out.writeFloat(health);
         out.writeFloat(saturation);
         out.writeInt(foodLevel);
+        out.writeInt(pathStartX);
+        out.writeInt(pathStartY);
+        out.writeInt(pathStartZ);
         out.writeBoolean(hasCurrentSegment);
         out.writeBoolean(hasNextSegment);
         out.writeBoolean(calcInProgress);
