@@ -15,20 +15,25 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.cache;
+package baritone.launch.mixins;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
+import baritone.utils.accessor.IChunkProviderClient;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import net.minecraft.client.multiplayer.ChunkProviderClient;
+import net.minecraft.world.chunk.Chunk;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
-/**
- * @author Brady
- * @since 8/4/2018
- */
-public interface IBlockTypeAccess {
+@Mixin(ChunkProviderClient.class)
+public class MixinChunkProviderClient implements IChunkProviderClient {
 
-    IBlockState getBlock(int x, int y, int z);
+    @Shadow
+    @Final
+    private Long2ObjectMap<Chunk> loadedChunks;
 
-    default IBlockState getBlock(BlockPos pos) {
-        return getBlock(pos.getX(), pos.getY(), pos.getZ());
+    @Override
+    public Long2ObjectMap<Chunk> loadedChunks() {
+        return this.loadedChunks;
     }
 }

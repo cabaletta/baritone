@@ -15,20 +15,25 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.cache;
+package baritone.api.utils;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
+import baritone.api.behavior.IBehavior;
+import baritone.api.utils.input.Input;
+import net.minecraft.client.settings.KeyBinding;
 
 /**
  * @author Brady
- * @since 8/4/2018
+ * @since 11/12/2018
  */
-public interface IBlockTypeAccess {
+public interface IInputOverrideHandler extends IBehavior {
 
-    IBlockState getBlock(int x, int y, int z);
-
-    default IBlockState getBlock(BlockPos pos) {
-        return getBlock(pos.getX(), pos.getY(), pos.getZ());
+    default boolean isInputForcedDown(KeyBinding key) {
+        return isInputForcedDown(Input.getInputForBind(key));
     }
+
+    boolean isInputForcedDown(Input input);
+
+    void setInputForceState(Input input, boolean forced);
+
+    void clearAllKeys();
 }

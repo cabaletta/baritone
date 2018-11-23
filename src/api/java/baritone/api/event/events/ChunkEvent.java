@@ -21,7 +21,7 @@ import baritone.api.event.events.type.EventState;
 
 /**
  * @author Brady
- * @since 8/2/2018 12:32 AM
+ * @since 8/2/2018
  */
 public final class ChunkEvent {
 
@@ -94,7 +94,16 @@ public final class ChunkEvent {
 
         /**
          * When the chunk is being populated with blocks, tile entities, etc.
+         * <p>
+         * And it's a full chunk
          */
-        POPULATE
+        POPULATE_FULL,
+
+        /**
+         * When the chunk is being populated with blocks, tile entities, etc.
+         * <p>
+         * And it's a partial chunk
+         */
+        POPULATE_PARTIAL
     }
 }

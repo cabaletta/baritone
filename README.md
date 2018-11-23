@@ -58,13 +58,12 @@ Quick start example: `thisway 1000` or `goal 70` to set the goal, `path` to actu
 BaritoneAPI.getSettings().allowSprint.value = true;
 BaritoneAPI.getSettings().pathTimeoutMS.value = 2000L;
 
-BaritoneAPI.getPathingBehavior().setGoal(new GoalXZ(10000, 20000));
-BaritoneAPI.getPathingBehavior().path();
+BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalXZ(10000, 20000));
 ```
 
 # FAQ
 
-## Can I use Baritone as a library in my hacked client?
+## Can I use Baritone as a library in my custom utility client?
 
 Sure! (As long as usage is in compliance with the LGPL 3 License)
 

@@ -18,22 +18,23 @@
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
-import baritone.utils.InputOverrideHandler;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockStairs;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -50,8 +51,8 @@ public class MovementParkour extends Movement {
     private final EnumFacing direction;
     private final int dist;
 
-    private MovementParkour(BetterBlockPos src, int dist, EnumFacing dir) {
-        super(src, src.offset(dir, dist), EMPTY, src.offset(dir, dist).down());
+    private MovementParkour(IBaritone baritone, BetterBlockPos src, int dist, EnumFacing dir) {
+        super(baritone, src, src.offset(dir, dist), EMPTY, src.offset(dir, dist).down());
         this.direction = dir;
         this.dist = dist;
     }
@@ -60,7 +61,7 @@ public class MovementParkour extends Movement {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, direction, res);
         int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
-        return new MovementParkour(src, dist, direction);
+        return new MovementParkour(context.getBaritone(), src, dist, direction);
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
@@ -68,7 +69,7 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState standingOn = context.get(x, y - 1, z);
-        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || MovementHelper.isBottomSlab(standingOn)) {
+        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn)) {
             return;
         }
         int xDiff = dir.getXOffset();
@@ -77,7 +78,7 @@ public class MovementParkour extends Movement {
         if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
             return;
         }
-        if (MovementHelper.canWalkOn(context, x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+        if (MovementHelper.canWalkOn(context.bsi(), x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
             return;
         }
 
@@ -110,7 +111,7 @@ public class MovementParkour extends Movement {
                     return;
                 }
             }
-            if (MovementHelper.canWalkOn(context, x + xDiff * i, y - 1, z + zDiff * i)) {
+            if (MovementHelper.canWalkOn(context.bsi(), x + xDiff * i, y - 1, z + zDiff * i)) {
                 res.x = x + xDiff * i;
                 res.y = y;
                 res.z = z + zDiff * i;
@@ -134,7 +135,7 @@ public class MovementParkour extends Movement {
         if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
             return;
         }
-        if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace)) {
+        if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace, context.world())) {
             return;
         }
         for (int i = 0; i < 5; i++) {
@@ -143,7 +144,7 @@ public class MovementParkour extends Movement {
             if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
                 continue;
             }
-            if (MovementHelper.canPlaceAgainst(context, againstX, y - 1, againstZ)) {
+            if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, y - 1, againstZ)) {
                 res.x = destX;
                 res.y = y;
                 res.z = destZ;
@@ -191,71 +192,71 @@ public class MovementParkour extends Movement {
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
-        if (player().isHandActive()) {
+        if (ctx.player().isHandActive()) {
             logDebug("Pausing parkour since hand is active");
             return state;
         }
         if (dist >= 4) {
-            state.setInput(InputOverrideHandler.Input.SPRINT, true);
+            state.setInput(Input.SPRINT, true);
         }
-        MovementHelper.moveTowards(state, dest);
-        if (playerFeet().equals(dest)) {
-            Block d = BlockStateInterface.getBlock(dest);
+        MovementHelper.moveTowards(ctx, state, dest);
+        if (ctx.playerFeet().equals(dest)) {
+            Block d = BlockStateInterface.getBlock(ctx, dest);
             if (d == Blocks.VINE || d == Blocks.LADDER) {
                 // it physically hurt me to add support for parkour jumping onto a vine
                 // but i did it anyway
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (player().posY - playerFeet().getY() < 0.094) { // lilypads
+            if (ctx.player().posY - ctx.playerFeet().getY() < 0.094) { // lilypads
                 state.setStatus(MovementStatus.SUCCESS);
             }
-        } else if (!playerFeet().equals(src)) {
-            if (playerFeet().equals(src.offset(direction)) || player().posY - playerFeet().getY() > 0.0001) {
+        } else if (!ctx.playerFeet().equals(src)) {
+            if (ctx.playerFeet().equals(src.offset(direction)) || ctx.player().posY - ctx.playerFeet().getY() > 0.0001) {
 
-                if (!MovementHelper.canWalkOn(dest.down()) && !player().onGround) {
+                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround) {
                     BlockPos positionToPlace = dest.down();
                     for (int i = 0; i < 5; i++) {
                         BlockPos against1 = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
                         if (against1.up().equals(src.offset(direction, 3))) { // we can't turn around that fast
                             continue;
                         }
-                        if (MovementHelper.canPlaceAgainst(against1)) {
-                            if (!MovementHelper.throwaway(true)) {//get ready to place a throwaway block
+                        if (MovementHelper.canPlaceAgainst(ctx, against1)) {
+                            if (!MovementHelper.throwaway(ctx, true)) {//get ready to place a throwaway block
                                 return state.setStatus(MovementStatus.UNREACHABLE);
                             }
                             double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
                             double faceY = (dest.getY() + against1.getY()) * 0.5D;
                             double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                            Rotation place = RotationUtils.calcRotationFromVec3d(playerHead(), new Vec3d(faceX, faceY, faceZ), playerRotations());
-                            RayTraceResult res = RayTraceUtils.rayTraceTowards(player(), place, playerController().getBlockReachDistance());
+                            Rotation place = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
+                            RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance());
                             if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
                                 state.setTarget(new MovementState.MovementTarget(place, true));
                             }
-                            RayTraceUtils.getSelectedBlock().ifPresent(selectedBlock -> {
-                                EnumFacing side = Minecraft.getMinecraft().objectMouseOver.sideHit;
+                            ctx.getSelectedBlock().ifPresent(selectedBlock -> {
+                                EnumFacing side = ctx.objectMouseOver().sideHit;
                                 if (Objects.equals(selectedBlock, against1) && selectedBlock.offset(side).equals(dest.down())) {
-                                    state.setInput(InputOverrideHandler.Input.CLICK_RIGHT, true);
+                                    state.setInput(Input.CLICK_RIGHT, true);
                                 }
                             });
                         }
                     }
                 }
                 if (dist == 3) { // this is a 2 block gap, dest = src + direction * 3
-                    double xDiff = (src.x + 0.5) - player().posX;
-                    double zDiff = (src.z + 0.5) - player().posZ;
+                    double xDiff = (src.x + 0.5) - ctx.player().posX;
+                    double zDiff = (src.z + 0.5) - ctx.player().posZ;
                     double distFromStart = Math.max(Math.abs(xDiff), Math.abs(zDiff));
                     if (distFromStart < 0.7) {
                         return state;
                     }
                 }
 
-                state.setInput(InputOverrideHandler.Input.JUMP, true);
-            } else if (!playerFeet().equals(dest.offset(direction, -1))) {
-                state.setInput(InputOverrideHandler.Input.SPRINT, false);
-                if (playerFeet().equals(src.offset(direction, -1))) {
-                    MovementHelper.moveTowards(state, src);
+                state.setInput(Input.JUMP, true);
+            } else if (!ctx.playerFeet().equals(dest.offset(direction, -1))) {
+                state.setInput(Input.SPRINT, false);
+                if (ctx.playerFeet().equals(src.offset(direction, -1))) {
+                    MovementHelper.moveTowards(ctx, state, src);
                 } else {
-                    MovementHelper.moveTowards(state, src.offset(direction, -1));
+                    MovementHelper.moveTowards(ctx, state, src.offset(direction, -1));
                 }
             }
         }

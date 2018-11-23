@@ -17,11 +17,12 @@
 
 package baritone.utils;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.settings.GameSettings;
@@ -69,7 +70,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     @Override
     public void onTick(TickEvent event) {
-
+        IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
         // If we're on the main menu then create the test world and launch the integrated server
         if (mc.currentScreen instanceof GuiMainMenu) {
             System.out.println("Beginning Baritone automatic test routine");
@@ -101,15 +102,15 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
             // Print out an update of our position every 5 seconds
             if (event.getCount() % 100 == 0) {
-                System.out.println(playerFeet() + " " + event.getCount());
+                System.out.println(ctx.playerFeet() + " " + event.getCount());
             }
 
             // Setup Baritone's pathing goal and (if needed) begin pathing
-            Baritone.INSTANCE.getCustomGoalProcess().setGoalAndPath(GOAL);
+            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(GOAL);
 
             // If we have reached our goal, print a message and safely close the game
-            if (GOAL.isInGoal(playerFeet())) {
-                System.out.println("Successfully pathed to " + playerFeet() + " in " + event.getCount() + " ticks");
+            if (GOAL.isInGoal(ctx.playerFeet())) {
+                System.out.println("Successfully pathed to " + ctx.playerFeet() + " in " + event.getCount() + " ticks");
                 mc.shutdown();
             }
 

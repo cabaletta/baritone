@@ -33,7 +33,7 @@ import net.minecraft.util.text.ITextComponent;
 
 /**
  * @author Brady
- * @since 7/31/2018 11:05 PM
+ * @since 7/31/2018
  */
 public interface IGameEventListener {
 

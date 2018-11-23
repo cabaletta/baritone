@@ -76,14 +76,14 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
         if (entity.isDead) {
             return false;
         }
-        if (entity.equals(player())) {
+        if (entity.equals(ctx.player())) {
             return false;
         }
-        return world().loadedEntityList.contains(entity) || world().playerEntities.contains(entity);
+        return ctx.world().loadedEntityList.contains(entity) || ctx.world().playerEntities.contains(entity);
     }
 
     private void scanWorld() {
-        cache = Stream.of(world().loadedEntityList, world().playerEntities).flatMap(List::stream).filter(this::followable).filter(this.filter).distinct().collect(Collectors.toCollection(ArrayList::new));
+        cache = Stream.of(ctx.world().loadedEntityList, ctx.world().playerEntities).flatMap(List::stream).filter(this::followable).filter(this.filter).distinct().collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override

@@ -18,7 +18,6 @@
 package baritone.cache;
 
 import baritone.pathing.movement.MovementHelper;
-import baritone.utils.Helper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoublePlant;
@@ -36,9 +35,9 @@ import java.util.*;
 
 /**
  * @author Brady
- * @since 8/3/2018 1:09 AM
+ * @since 8/3/2018
  */
-public final class ChunkPacker implements Helper {
+public final class ChunkPacker {
 
     private ChunkPacker() {}
 
@@ -93,7 +92,8 @@ public final class ChunkPacker implements Helper {
 
         for (int z = 0; z < 16; z++) {
             // @formatter:off
-            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            https:
+//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             // @formatter:on
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
@@ -125,7 +125,7 @@ public final class ChunkPacker implements Helper {
 
     private static PathingBlockType getPathingBlockType(IBlockState state) {
         Block block = state.getBlock();
-        if (block.equals(Blocks.WATER)) {
+        if (block == Blocks.WATER && !MovementHelper.isFlowing(state)) {
             // only water source blocks are plausibly usable, flowing water should be avoid
             return PathingBlockType.WATER;
         }

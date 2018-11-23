@@ -22,7 +22,7 @@ import net.minecraft.client.multiplayer.WorldClient;
 
 /**
  * @author Brady
- * @since 8/4/2018 3:13 AM
+ * @since 8/4/2018
  */
 public final class WorldEvent {
 

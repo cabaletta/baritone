@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.movement.CalculationContext;
@@ -31,8 +32,8 @@ public class MovementDownward extends Movement {
 
     private int numTicks = 0;
 
-    public MovementDownward(BetterBlockPos start, BetterBlockPos end) {
-        super(start, end, new BetterBlockPos[]{end});
+    public MovementDownward(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
+        super(baritone, start, end, new BetterBlockPos[]{end});
     }
 
     @Override
@@ -47,7 +48,7 @@ public class MovementDownward extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        if (!MovementHelper.canWalkOn(context, x, y - 2, z)) {
+        if (!MovementHelper.canWalkOn(context.bsi(), x, y - 2, z)) {
             return COST_INF;
         }
         IBlockState d = context.get(x, y - 1, z);
@@ -68,17 +69,17 @@ public class MovementDownward extends Movement {
             return state;
         }
 
-        if (playerFeet().equals(dest)) {
+        if (ctx.playerFeet().equals(dest)) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
-        double diffX = player().posX - (dest.getX() + 0.5);
-        double diffZ = player().posZ - (dest.getZ() + 0.5);
+        double diffX = ctx.player().posX - (dest.getX() + 0.5);
+        double diffZ = ctx.player().posZ - (dest.getZ() + 0.5);
         double ab = Math.sqrt(diffX * diffX + diffZ * diffZ);
 
         if (numTicks++ < 10 && ab < 0.2) {
             return state;
         }
-        MovementHelper.moveTowards(state, positionsToBreak[0]);
+        MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
         return state;
     }
 }

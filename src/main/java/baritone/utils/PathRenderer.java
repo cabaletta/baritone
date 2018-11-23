@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
@@ -27,16 +28,13 @@ import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
-import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -51,7 +49,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author Brady
- * @since 8/9/2018 4:39 PM
+ * @since 8/9/2018
  */
 public final class PathRenderer implements Helper {
 
@@ -65,9 +63,26 @@ public final class PathRenderer implements Helper {
         // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
-        EntityPlayerSP player = mc.player;
+
+        int thisPlayerDimension = behavior.baritone.getPlayerContext().world().provider.getDimensionType().getId();
+        int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().provider.getDimensionType().getId();
+
+        if (thisPlayerDimension != currentRenderViewDimension) {
+            // this is a path for a bot in a different dimension, don't render it
+            return;
+        }
+
+        Entity renderView = mc.getRenderViewEntity();
+
+        if (renderView.world != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world()) {
+            System.out.println("I have no idea what's going on");
+            System.out.println("The primary baritone is in a different world than the render view entity");
+            System.out.println("Not rendering the path");
+            return;
+        }
+
         if (goal != null && Baritone.settings().renderGoal.value) {
-            drawLitDankGoalBox(player, goal, partialTicks, Baritone.settings().colorGoalBox.get());
+            drawLitDankGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.get());
         }
         if (!Baritone.settings().renderPath.get()) {
             return;
@@ -79,34 +94,32 @@ public final class PathRenderer implements Helper {
 
         PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
         PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
-        // TODO is this enough, or do we need to acquire a lock here?
-        // TODO benchmark synchronized in render loop
 
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(current.getPath(), renderBegin, player, partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+            drawPath(current.getPath(), renderBegin, renderView, partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
         }
         if (next != null && next.getPath() != null) {
-            drawPath(next.getPath(), 0, player, partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+            drawPath(next.getPath(), 0, renderView, partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
         }
 
         //long split = System.nanoTime();
         if (current != null) {
-            drawManySelectionBoxes(player, current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
-            drawManySelectionBoxes(player, current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
-            drawManySelectionBoxes(player, current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
+            drawManySelectionBoxes(renderView, current.toBreak(), partialTicks, Baritone.settings().colorBlocksToBreak.get());
+            drawManySelectionBoxes(renderView, current.toPlace(), partialTicks, Baritone.settings().colorBlocksToPlace.get());
+            drawManySelectionBoxes(renderView, current.toWalkInto(), partialTicks, Baritone.settings().colorBlocksToWalkInto.get());
         }
 
         // If there is a path calculation currently running, render the path calculation process
-        AbstractNodeCostSearch.getCurrentlyRunning().ifPresent(currentlyRunning -> {
+        behavior.getInProgress().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(p, 0, player, partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
+                drawPath(p, 0, renderView, partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
             });
             currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
 
-                drawPath(mr, 0, player, partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
-                drawManySelectionBoxes(player, Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
+                drawPath(mr, 0, renderView, partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
+                drawManySelectionBoxes(renderView, Collections.singletonList(mr.getDest()), partialTicks, Baritone.settings().colorMostRecentConsidered.get());
             });
         });
         //long end = System.nanoTime();
@@ -116,7 +129,7 @@ public final class PathRenderer implements Helper {
         //}
     }
 
-    public static void drawPath(IPath path, int startIndex, EntityPlayerSP player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+    public static void drawPath(IPath path, int startIndex, Entity player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
@@ -175,7 +188,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.disableBlend();
     }
 
-    public static void drawLine(EntityPlayer player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks) {
+    public static void drawLine(Entity player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z, float partialTicks) {
         double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
@@ -187,7 +200,7 @@ public final class PathRenderer implements Helper {
         BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
     }
 
-    public static void drawManySelectionBoxes(EntityPlayer player, Collection<BlockPos> positions, float partialTicks, Color color) {
+    public static void drawManySelectionBoxes(Entity player, Collection<BlockPos> positions, float partialTicks, Color color) {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
@@ -206,12 +219,12 @@ public final class PathRenderer implements Helper {
         double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
         positions.forEach(pos -> {
-            IBlockState state = BlockStateInterface.get(pos);
+            IBlockState state = BlockStateInterface.get(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext(), pos);
             AxisAlignedBB toDraw;
             if (state.getBlock().equals(Blocks.AIR)) {
-                toDraw = Blocks.DIRT.getDefaultState().getSelectedBoundingBox(Minecraft.getMinecraft().world, pos);
+                toDraw = Blocks.DIRT.getDefaultState().getSelectedBoundingBox(player.world, pos);
             } else {
-                toDraw = state.getSelectedBoundingBox(Minecraft.getMinecraft().world, pos);
+                toDraw = state.getSelectedBoundingBox(player.world, pos);
             }
             toDraw = toDraw.expand(expand, expand, expand).offset(-renderPosX, -renderPosY, -renderPosZ);
             BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
@@ -249,7 +262,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.disableBlend();
     }
 
-    public static void drawLitDankGoalBox(EntityPlayer player, Goal goal, float partialTicks, Color color) {
+    public static void drawLitDankGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
         double renderPosX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;

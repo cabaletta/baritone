@@ -26,7 +26,7 @@ import baritone.api.event.events.*;
  *
  * @author Brady
  * @see IGameEventListener
- * @since 8/1/2018 6:29 PM
+ * @since 8/1/2018
  */
 public interface AbstractGameEventListener extends IGameEventListener {
 

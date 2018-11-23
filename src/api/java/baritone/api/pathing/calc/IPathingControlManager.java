@@ -15,20 +15,17 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.cache;
+package baritone.api.pathing.calc;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
+import baritone.api.process.IBaritoneProcess;
+import baritone.api.process.PathingCommand;
 
-/**
- * @author Brady
- * @since 8/4/2018
- */
-public interface IBlockTypeAccess {
+import java.util.Optional;
 
-    IBlockState getBlock(int x, int y, int z);
+public interface IPathingControlManager {
+    void registerProcess(IBaritoneProcess process);
 
-    default IBlockState getBlock(BlockPos pos) {
-        return getBlock(pos.getX(), pos.getY(), pos.getZ());
-    }
+    Optional<IBaritoneProcess> mostRecentInControl();
+
+    Optional<PathingCommand> mostRecentCommand();
 }

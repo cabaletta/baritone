@@ -27,7 +27,6 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.cache.Waypoint;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import net.minecraft.block.BlockBed;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
@@ -43,9 +42,9 @@ import java.util.*;
 
 /**
  * @author Brady
- * @since 8/6/2018 9:47 PM
+ * @since 8/6/2018
  */
-public final class MemoryBehavior extends Behavior implements IMemoryBehavior, Helper {
+public final class MemoryBehavior extends Behavior implements IMemoryBehavior {
 
     private final Map<IWorldData, WorldDataContainer> worldDataContainers = new HashMap<>();
 
@@ -68,7 +67,7 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
             if (p instanceof CPacketPlayerTryUseItemOnBlock) {
                 CPacketPlayerTryUseItemOnBlock packet = event.cast();
 
-                TileEntity tileEntity = world().getTileEntity(packet.getPos());
+                TileEntity tileEntity = ctx.world().getTileEntity(packet.getPos());
 
                 // Ensure the TileEntity is a container of some sort
                 if (tileEntity instanceof TileEntityLockable) {
@@ -120,14 +119,14 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
 
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
-        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(event.getPos()) instanceof BlockBed) {
+        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(ctx, event.getPos()) instanceof BlockBed) {
             baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
         }
     }
 
     @Override
     public void onPlayerDeath() {
-        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, playerFeet()));
+        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet()));
     }
 
     private Optional<RememberedInventory> getInventoryFromWindow(int windowId) {
@@ -135,9 +134,9 @@ public final class MemoryBehavior extends Behavior implements IMemoryBehavior, H
     }
 
     private void updateInventory() {
-        getInventoryFromWindow(player().openContainer.windowId).ifPresent(inventory -> {
+        getInventoryFromWindow(ctx.player().openContainer.windowId).ifPresent(inventory -> {
             inventory.items.clear();
-            inventory.items.addAll(player().openContainer.getInventory().subList(0, inventory.size));
+            inventory.items.addAll(ctx.player().openContainer.getInventory().subList(0, inventory.size));
         });
     }
 

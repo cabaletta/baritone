@@ -31,7 +31,7 @@ public enum Moves {
     DOWNWARD(0, -1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDownward(src, src.down());
+            return new MovementDownward(context.getBaritone(), src, src.down());
         }
 
         @Override
@@ -43,7 +43,7 @@ public enum Moves {
     PILLAR(0, +1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementPillar(src, src.up());
+            return new MovementPillar(context.getBaritone(), src, src.up());
         }
 
         @Override
@@ -55,7 +55,7 @@ public enum Moves {
     TRAVERSE_NORTH(0, 0, -1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementTraverse(src, src.north());
+            return new MovementTraverse(context.getBaritone(), src, src.north());
         }
 
         @Override
@@ -67,7 +67,7 @@ public enum Moves {
     TRAVERSE_SOUTH(0, 0, +1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementTraverse(src, src.south());
+            return new MovementTraverse(context.getBaritone(), src, src.south());
         }
 
         @Override
@@ -79,7 +79,7 @@ public enum Moves {
     TRAVERSE_EAST(+1, 0, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementTraverse(src, src.east());
+            return new MovementTraverse(context.getBaritone(), src, src.east());
         }
 
         @Override
@@ -91,7 +91,7 @@ public enum Moves {
     TRAVERSE_WEST(-1, 0, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementTraverse(src, src.west());
+            return new MovementTraverse(context.getBaritone(), src, src.west());
         }
 
         @Override
@@ -103,7 +103,7 @@ public enum Moves {
     ASCEND_NORTH(0, +1, -1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(src, new BetterBlockPos(src.x, src.y + 1, src.z - 1));
+            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x, src.y + 1, src.z - 1));
         }
 
         @Override
@@ -115,7 +115,7 @@ public enum Moves {
     ASCEND_SOUTH(0, +1, +1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(src, new BetterBlockPos(src.x, src.y + 1, src.z + 1));
+            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x, src.y + 1, src.z + 1));
         }
 
         @Override
@@ -127,7 +127,7 @@ public enum Moves {
     ASCEND_EAST(+1, +1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(src, new BetterBlockPos(src.x + 1, src.y + 1, src.z));
+            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x + 1, src.y + 1, src.z));
         }
 
         @Override
@@ -139,7 +139,7 @@ public enum Moves {
     ASCEND_WEST(-1, +1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(src, new BetterBlockPos(src.x - 1, src.y + 1, src.z));
+            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x - 1, src.y + 1, src.z));
         }
 
         @Override
@@ -154,9 +154,9 @@ public enum Moves {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
             if (res.y == src.y - 1) {
-                return new MovementDescend(src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             } else {
-                return new MovementFall(src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             }
         }
 
@@ -172,9 +172,9 @@ public enum Moves {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
             if (res.y == src.y - 1) {
-                return new MovementDescend(src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             } else {
-                return new MovementFall(src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             }
         }
 
@@ -190,9 +190,9 @@ public enum Moves {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
             if (res.y == src.y - 1) {
-                return new MovementDescend(src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             } else {
-                return new MovementFall(src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             }
         }
 
@@ -208,9 +208,9 @@ public enum Moves {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
             if (res.y == src.y - 1) {
-                return new MovementDescend(src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             } else {
-                return new MovementFall(src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             }
         }
 
@@ -223,7 +223,7 @@ public enum Moves {
     DIAGONAL_NORTHEAST(+1, 0, -1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDiagonal(src, EnumFacing.NORTH, EnumFacing.EAST);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.EAST);
         }
 
         @Override
@@ -235,7 +235,7 @@ public enum Moves {
     DIAGONAL_NORTHWEST(-1, 0, -1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDiagonal(src, EnumFacing.NORTH, EnumFacing.WEST);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.WEST);
         }
 
         @Override
@@ -247,7 +247,7 @@ public enum Moves {
     DIAGONAL_SOUTHEAST(+1, 0, +1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDiagonal(src, EnumFacing.SOUTH, EnumFacing.EAST);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.EAST);
         }
 
         @Override
@@ -259,7 +259,7 @@ public enum Moves {
     DIAGONAL_SOUTHWEST(-1, 0, +1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDiagonal(src, EnumFacing.SOUTH, EnumFacing.WEST);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.WEST);
         }
 
         @Override
