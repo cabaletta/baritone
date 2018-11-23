@@ -17,9 +17,9 @@
 
 package tenor;
 
-import comms.IConnection;
-import comms.IMessageListener;
-import comms.upward.MessageStatus;
+import cabaletta.comms.IConnection;
+import cabaletta.comms.IMessageListener;
+import cabaletta.comms.upward.MessageStatus;
 
 public class Bot implements IMessageListener {
     public final BotTaskRegistry taskRegistry = new BotTaskRegistry(this);
