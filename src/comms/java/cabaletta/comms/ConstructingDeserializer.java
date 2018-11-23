@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
 import java.io.DataInputStream;
 import java.io.IOException;

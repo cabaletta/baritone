@@ -15,34 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms.downward;
+package cabaletta.comms;
 
-import comms.IMessageListener;
-import comms.iMessage;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 
-public class MessageChat implements iMessage {
-
-    public final String msg;
-
-    public MessageChat(DataInputStream in) throws IOException {
-        this.msg = in.readUTF();
-    }
-
-    public MessageChat(String msg) {
-        this.msg = msg;
-    }
-
-    @Override
-    public void write(DataOutputStream out) throws IOException {
-        out.writeUTF(msg);
-    }
-
-    @Override
-    public void handle(IMessageListener listener) {
-        listener.handle(this);
+public class SocketConnection extends SerializedConnection {
+    public SocketConnection(Socket s) throws IOException {
+        super(s.getInputStream(), s.getOutputStream());
     }
 }

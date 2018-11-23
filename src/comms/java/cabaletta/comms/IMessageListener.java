@@ -15,13 +15,22 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
-import java.io.IOException;
-import java.net.Socket;
+import cabaletta.comms.downward.MessageChat;
+import cabaletta.comms.upward.MessageStatus;
 
-public class SocketConnection extends SerializedConnection {
-    public SocketConnection(Socket s) throws IOException {
-        super(s.getInputStream(), s.getOutputStream());
+public interface IMessageListener {
+    default void handle(MessageStatus message) {
+        unhandled(message);
+    }
+
+    default void handle(MessageChat message) {
+        unhandled(message);
+    }
+
+    default void unhandled(iMessage msg) {
+        // can override this to throw UnsupportedOperationException, if you want to make sure you're handling everything
+        // default is to silently ignore messages without handlers
     }
 }

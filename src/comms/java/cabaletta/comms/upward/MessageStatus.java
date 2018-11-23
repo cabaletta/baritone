@@ -15,10 +15,10 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms.upward;
+package cabaletta.comms.upward;
 
-import comms.IMessageListener;
-import comms.iMessage;
+import cabaletta.comms.IMessageListener;
+import cabaletta.comms.iMessage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

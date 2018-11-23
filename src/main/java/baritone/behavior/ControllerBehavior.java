@@ -22,12 +22,12 @@ import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.process.IBaritoneProcess;
 import baritone.utils.Helper;
-import comms.BufferedConnection;
-import comms.IConnection;
-import comms.IMessageListener;
-import comms.downward.MessageChat;
-import comms.iMessage;
-import comms.upward.MessageStatus;
+import cabaletta.comms.BufferedConnection;
+import cabaletta.comms.IConnection;
+import cabaletta.comms.IMessageListener;
+import cabaletta.comms.downward.MessageChat;
+import cabaletta.comms.iMessage;
+import cabaletta.comms.upward.MessageStatus;
 import net.minecraft.util.math.BlockPos;
 
 import java.io.IOException;

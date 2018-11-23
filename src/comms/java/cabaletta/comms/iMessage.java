@@ -15,22 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
-import comms.downward.MessageChat;
-import comms.upward.MessageStatus;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-public interface IMessageListener {
-    default void handle(MessageStatus message) {
-        unhandled(message);
+/**
+ * hell yeah
+ * <p>
+ * <p>
+ * dumb android users cant read this file
+ * <p>
+ *
+ * @author leijurv
+ */
+public interface iMessage {
+    void write(DataOutputStream out) throws IOException;
+
+    default void writeHeader(DataOutputStream out) throws IOException {
+        out.writeByte(getHeader());
     }
 
-    default void handle(MessageChat message) {
-        unhandled(message);
+    default byte getHeader() {
+        return ConstructingDeserializer.INSTANCE.getHeader(getClass());
     }
 
-    default void unhandled(iMessage msg) {
-        // can override this to throw UnsupportedOperationException, if you want to make sure you're handling everything
-        // default is to silently ignore messages without handlers
-    }
+    void handle(IMessageListener listener);
 }
