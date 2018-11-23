@@ -15,14 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
 import java.io.IOException;
+import java.net.Socket;
 
-public interface IConnection {
-    void sendMessage(iMessage message) throws IOException;
-
-    iMessage receiveMessage() throws IOException;
-
-    void close();
+public class SocketConnection extends SerializedConnection {
+    public SocketConnection(Socket s) throws IOException {
+        super(s.getInputStream(), s.getOutputStream());
+    }
 }

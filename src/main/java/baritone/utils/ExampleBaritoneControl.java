@@ -32,7 +32,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
-import comms.SocketConnection;
+import cabaletta.comms.SocketConnection;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;

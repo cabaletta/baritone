@@ -15,30 +15,14 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 
-/**
- * hell yeah
- * <p>
- * <p>
- * dumb android users cant read this file
- * <p>
- *
- * @author leijurv
- */
-public interface iMessage {
-    void write(DataOutputStream out) throws IOException;
+public interface IConnection {
+    void sendMessage(iMessage message) throws IOException;
 
-    default void writeHeader(DataOutputStream out) throws IOException {
-        out.writeByte(getHeader());
-    }
+    iMessage receiveMessage() throws IOException;
 
-    default byte getHeader() {
-        return ConstructingDeserializer.INSTANCE.getHeader(getClass());
-    }
-
-    void handle(IMessageListener listener);
+    void close();
 }
