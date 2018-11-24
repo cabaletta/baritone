@@ -28,6 +28,9 @@ public abstract class TaskNode<T extends IChildTaskRelationship & ITaskRelations
     public TaskNode(Bot bot, DependencyType type) {
         super(bot);
         this.type = type;
+        if (type == null) {
+            throw new IllegalArgumentException();
+        }
     }
 
     @Override

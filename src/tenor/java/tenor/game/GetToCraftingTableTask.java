@@ -17,20 +17,26 @@
 
 package tenor.game;
 
-import tenor.Bot;
-import tenor.ISingularChildTaskRelationship;
-import tenor.SingularTaskLeaf;
+import tenor.*;
 
 public class GetToCraftingTableTask extends SingularTaskLeaf {
+
+    private final ComputationRequest craftingTable;
 
     public GetToCraftingTableTask(Bot bot) {
         super(bot);
         registry().registerSingleton(this);
+        this.craftingTable = ComputationRequestManager.INSTANCE.getByGoal(this, "GoalGetToBlock crafting_table"); // idk
     }
 
     @Override
     public double cost() {
-        return 69;
+        Double d = craftingTable.cost();
+        if (d == null) {
+            // unknown, has not been calculated yet either way
+            return 1000D; // estimate
+        }
+        return d;
     }
 
     @Override

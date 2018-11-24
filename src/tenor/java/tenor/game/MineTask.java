@@ -17,31 +17,41 @@
 
 package tenor.game;
 
-import tenor.*;
+import tenor.DependencyType;
+import tenor.IQuantizedDependentCostCalculator;
+import tenor.ISingleParentQuantizedPriorityAllocator;
+import tenor.QuantizedTaskPriorityAllocationCache;
 
-public class MineTask extends QuantizedTaskNode implements ISingleParentQuantizedPriorityAllocator {
+public class MineTask extends QuantizedTaskPriorityAllocationCache implements ISingleParentQuantizedPriorityAllocator, IQuantizedDependentCostCalculator {
 
     // TODO shared claims of block locations in the world across all mine tasks across all bots
 
     final AquireItemTask parent;
-
-    final DoMine doMine;
+    final MineWithToolTask[] children;
 
 
     public MineTask(AquireItemTask parent) {
         super(parent.bot, DependencyType.ANY_ONE_OF);
         this.parent = parent;
         addParent(parent);
-        this.doMine = new DoMine(this);
+        String[] tools = getToolsCapableOfMining(parent.item);
+        children = new MineWithToolTask[tools.length];
+        for (int i = 0; i < children.length; i++) {
+            children[i] = new MineWithToolTask(this, tools[i]);
+        }
     }
 
-    @Override
-    public IQuantityRelationship cost() {
-        return x -> x * 324232;
-    }
-
-    @Override
-    public double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity) {
-        return 0;
+    static String[] getToolsCapableOfMining(String block) {
+        switch (block) {
+            case "iron_ore":
+                return new String[]{"stone_pickaxe"};
+            case "stone":
+            case "cobblestone":
+                return new String[]{"wooden_pickaxe"};
+            case "log":
+                return new String[]{"hand"};
+            default:
+                throw new IllegalStateException(block);
+        }
     }
 }

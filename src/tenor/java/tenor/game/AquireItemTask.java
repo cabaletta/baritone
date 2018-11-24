@@ -21,9 +21,8 @@ import tenor.*;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider, IQuantizedDependentCostCalculator {
+public class AquireItemTask extends QuantizedTaskPriorityAllocationCache implements IClaimProvider, IQuantizedDependentCostCalculator {
 
     HashMap<IQuantizedChildTaskRelationship, Integer> allocation; // allocation of what tasks have claim over what items in our inventory i guess
     String item;
@@ -62,7 +61,7 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
     }
 
     public int cachedCurrentQuantity() {
-        return allocation.entrySet().stream().mapToInt(Map.Entry::getValue).sum();
+        return allocation.values().stream().mapToInt(x -> x).sum();
     }
 
     @Override
@@ -71,7 +70,7 @@ public class AquireItemTask extends QuantizedTaskNode implements IClaimProvider,
     }
 
     @Override
-    public double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity) {
+    public double effectiveAllocationSize(int quantity) {
         // how much of our priority would go to this child if it could provide us with quantity of the item we need
 
         // here's the thing honey, we *already have* some, so you're really asking what's the priority of getting quantity MORE

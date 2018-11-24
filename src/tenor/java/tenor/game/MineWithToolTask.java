@@ -17,5 +17,28 @@
 
 package tenor.game;
 
-public class MineWithToolTask {
+import tenor.DependencyType;
+import tenor.IQuantizedDependentCostCalculator;
+import tenor.ISingleParentQuantizedPriorityAllocator;
+import tenor.QuantizedTaskPriorityAllocationCache;
+
+public class MineWithToolTask extends QuantizedTaskPriorityAllocationCache implements ISingleParentQuantizedPriorityAllocator, IQuantizedDependentCostCalculator {
+
+    public final String tool;
+    MineTask parent;
+
+    AquireItemTask aquireTool;
+    // TODO locate task?
+    DoMine doMine;
+
+
+    public MineWithToolTask(MineTask parent, String tool) {
+        super(parent.bot, DependencyType.SERIAL);
+        this.tool = tool;
+        this.parent = parent;
+        addParent(parent);
+        this.aquireTool = registry().getItemBased(AquireItemTask.class, tool);
+        aquireTool.addParent(this); // we aren't constructing this, so need to add us as a parent manually
+        this.doMine = new DoMine(this);
+    }
 }

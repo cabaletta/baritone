@@ -22,9 +22,9 @@ import tenor.ISingleParentQuantizedPriorityAllocator;
 import tenor.QuantizedTaskLeaf;
 
 public class DoMine extends QuantizedTaskLeaf implements ISingleParentQuantizedPriorityAllocator {
-    final MineTask parent;
+    final MineWithToolTask parent;
 
-    public DoMine(MineTask parent) {
+    public DoMine(MineWithToolTask parent) {
         super(parent.bot);
         this.parent = parent;
         addParent(parent);

@@ -20,7 +20,7 @@ package tenor.game;
 import tenor.ISingleParentSingularPriorityAllocator;
 import tenor.SingularTaskLeaf;
 
-public class DoCraft extends SingularTaskLeaf implements ISingleParentSingularPriorityAllocator {
+public class DoCraft extends SingularTaskLeaf implements ISingleParentSingularPriorityAllocator { // TODO this should be quantized!
 
     public final CraftingTask parent;
 
@@ -32,6 +32,8 @@ public class DoCraft extends SingularTaskLeaf implements ISingleParentSingularPr
 
     @Override
     public double cost() {
-        return 420;
+        // this is a dummy task to represent actually completing the crafting, given that we have all the ingredients and are at a crafting table
+        // it's effectively free, so let's say it takes 1 second (20 ticks)
+        return 20D;
     }
 }
