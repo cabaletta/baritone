@@ -84,6 +84,10 @@ public class BufferedConnection implements IConnection {
         return msgs;
     }
 
+    public void handleAllPendingMessages(IMessageListener listener) throws IOException {
+        receiveMessagesNonBlocking().forEach(msg -> msg.handle(listener));
+    }
+
     public static BufferedConnection makeBuffered(IConnection conn) {
         if (conn instanceof BufferedConnection) {
             return (BufferedConnection) conn;

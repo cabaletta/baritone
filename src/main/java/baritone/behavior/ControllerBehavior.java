@@ -31,7 +31,6 @@ import cabaletta.comms.upward.MessageStatus;
 import net.minecraft.util.math.BlockPos;
 
 import java.io.IOException;
-import java.util.List;
 
 public class ControllerBehavior extends Behavior implements IMessageListener {
     public ControllerBehavior(Baritone baritone) {
@@ -82,8 +81,7 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
             return;
         }
         try {
-            List<iMessage> msgs = conn.receiveMessagesNonBlocking();
-            msgs.forEach(msg -> msg.handle(this));
+            conn.handleAllPendingMessages(this);
         } catch (IOException e) {
             e.printStackTrace();
             disconnect();
