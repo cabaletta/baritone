@@ -76,6 +76,7 @@ public class ComputationRequest {
                 return resp.pathCost;
             case IN_PROGRESS:
             case QUEUED:
+            default:
                 return null;
         }
     }
