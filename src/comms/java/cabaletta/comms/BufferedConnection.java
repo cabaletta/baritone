@@ -83,4 +83,12 @@ public class BufferedConnection implements IConnection {
         }
         return msgs;
     }
+
+    public static BufferedConnection makeBuffered(IConnection conn) {
+        if (conn instanceof BufferedConnection) {
+            return (BufferedConnection) conn;
+        } else {
+            return new BufferedConnection(conn);
+        }
+    }
 }

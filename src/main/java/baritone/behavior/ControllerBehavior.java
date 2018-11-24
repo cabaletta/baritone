@@ -106,11 +106,7 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
 
     public void connectTo(IConnection conn) {
         disconnect();
-        if (conn instanceof BufferedConnection) {
-            this.conn = (BufferedConnection) conn;
-        } else {
-            this.conn = new BufferedConnection(conn);
-        }
+        this.conn = BufferedConnection.makeBuffered(conn);
     }
 
     public void disconnect() {
