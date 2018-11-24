@@ -45,7 +45,7 @@ public abstract class QuantizedTaskPriorityAllocationCache extends QuantizedTask
         Allocation alloc = new Allocation(amount);
         List<IQuantizedParentTaskRelationship> children = childTasks();
         if (children.size() < 2) {
-            return new Allocation(amount).distributeEqually(); // 0 or 1 cannot be anything but equal distribution
+            return alloc.distributeEqually(); // 0 or 1 cannot be anything but equal distribution
         }
         double[] costs = new double[children.size()];
         for (int i = 0; i < costs.length; i++) {
