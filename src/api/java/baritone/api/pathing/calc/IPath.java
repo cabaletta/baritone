@@ -104,7 +104,7 @@ public interface IPath {
      * Returns the estimated number of ticks to complete the path from the given node index.
      *
      * @param pathPosition The index of the node we're calculating from
-     * @return The estimated number of ticks remaining frm the given position
+     * @return The estimated number of ticks remaining from the given position
      */
     default double ticksRemainingFrom(int pathPosition) {
         double sum = 0;
@@ -113,6 +113,15 @@ public interface IPath {
             sum += movements().get(i).getCost();
         }
         return sum;
+    }
+
+    /**
+     * Returns the estimated amount of time needed to complete this path from start to finish
+     *
+     * @return The estimated amount of time, in ticks
+     */
+    default double totalTicks() {
+        return ticksRemainingFrom(0);
     }
 
     /**
