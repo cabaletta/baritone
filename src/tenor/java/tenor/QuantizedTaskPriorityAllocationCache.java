@@ -32,7 +32,12 @@ public abstract class QuantizedTaskPriorityAllocationCache extends QuantizedTask
 
     @Override
     public final double priorityAllocatedTo(IQuantizedParentTaskRelationship child, int quantity) {
-        return allocationByQuantity.computeIfAbsent(quantity, this::allocationStrategy).allocatedTo(child);
+        Allocation allocation = allocationByQuantity.get(quantity);
+        if (allocation == null || allocation.total != effectiveAllocationSize(quantity)) {
+            allocation = allocationStrategy(quantity);
+            allocationByQuantity.put(quantity, allocation);
+        }
+        return allocation.allocatedTo(child);
     }
 
     protected Allocation allocationStrategy(int quantity) { // overridable
