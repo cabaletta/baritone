@@ -23,6 +23,7 @@ import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.utils.accessor.IChunkProviderClient;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -53,7 +54,7 @@ public class BlockStateInterface {
 
     public BlockStateInterface(World world, WorldData worldData) {
         this.worldData = worldData;
-        this.loadedChunks = ((IChunkProviderClient) world.getChunkProvider()).loadedChunks();
+        this.loadedChunks = new Long2ObjectOpenHashMap<>(((IChunkProviderClient) world.getChunkProvider()).loadedChunks()); // make a copy that we can safely access from another thread
         if (!Minecraft.getMinecraft().isCallingFromMinecraftThread()) {
             throw new IllegalStateException();
         }
