@@ -51,21 +51,45 @@ public abstract class QuantizedTaskPriorityAllocationCache extends QuantizedTask
         for (int i = 0; i < costs.length; i++) {
             costs[i] = children.get(i).cost().value(quantity);
         }
+        applyAllocation(alloc, costs);
+        return alloc;
+    }
+
+    protected void applyAllocation(Allocation alloc, double[] childCosts) { // overridable
         switch (type) {
             case ANY_ONE_OF:
                 // by default, give it all to the lowest cost
                 // this is stable
                 int lowestInd = 0;
-                for (int i = 1; i < costs.length; i++) {
-                    if (costs[i] < costs[lowestInd]) {
+                for (int i = 1; i < childCosts.length; i++) {
+                    if (childCosts[i] < childCosts[lowestInd]) {
                         lowestInd = i;
                     }
                 }
                 alloc.givePriority(lowestInd, alloc.unallocated());
-                return alloc;
+            case SERIAL:
+                // give it all to the first nonzero cost? maybe?
+                for (int i = 1; i < childCosts.length; i++) {
+                    if (childCosts[i] > 0) {
+                        alloc.givePriority(i, alloc.unallocated());
+                        return;
+                    }
+                }
+                break;
             default:
                 throw new UnsupportedOperationException("Not implemented yet");
         }
+    }
+
+    protected Allocation blend(Allocation previous, Allocation current) { // overridable
+        if (previous.priorities.length != current.priorities.length) {
+            return current;
+        }
+        Allocation blended = new Allocation(current.total);
+        for (int i = 0; i < current.priorities.length; i++) {
+            blended.givePriority(i, current.priorities[i] * 0.1d + previous.priorities[i] * 0.9d);
+        }
+        return blended;
     }
 
     protected double effectiveAllocationSize(int quantity) { // overridable
@@ -73,7 +97,7 @@ public abstract class QuantizedTaskPriorityAllocationCache extends QuantizedTask
     }
 
     protected class Allocation {
-        private final double[] priorities;
+        private final double[] priorities; // always sums up to 1 or less
         private final double total;
 
         public Allocation(double total) {
@@ -82,7 +106,7 @@ public abstract class QuantizedTaskPriorityAllocationCache extends QuantizedTask
         }
 
         public double unallocated() {
-            return total - allocated();
+            return 1 - allocated();
         }
 
         public double allocated() {
