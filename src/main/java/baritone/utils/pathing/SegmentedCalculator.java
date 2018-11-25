@@ -23,9 +23,11 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.PathCalculationResult;
 import baritone.behavior.PathingBehavior;
+import baritone.cache.CachedWorld;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.path.SplicedPath;
+import net.minecraft.util.EnumFacing;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -52,8 +54,8 @@ public class SegmentedCalculator {
             PathCalculationResult result = segment(soFar);
             switch (result.getType()) {
                 case SUCCESS_SEGMENT:
+                case SUCCESS_TO_GOAL:
                     break;
-                case SUCCESS_TO_GOAL: // if we've gotten all the way to the goal, we're done
                 case FAILURE: // if path calculation failed, we're done
                 case EXCEPTION: // if path calculation threw an exception, we're done
                     return soFar;
@@ -62,13 +64,30 @@ public class SegmentedCalculator {
             }
             IPath segment = result.getPath().get(); // path calculation result type is SUCCESS_SEGMENT, so the path must be present
             IPath combined = soFar.map(previous -> (IPath) SplicedPath.trySplice(previous, segment, true).get()).orElse(segment);
+            loadAdjacent(combined.getDest().getX(), combined.getDest().getZ());
             soFar = Optional.of(combined);
+            if (result.getType() == PathCalculationResult.Type.SUCCESS_TO_GOAL) {
+                return soFar;
+            }
+        }
+    }
+
+    private void loadAdjacent(int blockX, int blockZ) {
+        BetterBlockPos bp = new BetterBlockPos(blockX, 64, blockZ);
+        CachedWorld cached = (CachedWorld) context.getBaritone().getPlayerContext().worldData().getCachedWorld();
+        for (int i = 0; i < 4; i++) {
+            // pathing thread is not allowed to load new cached regions from disk
+            // it checks if every chunk is loaded before getting blocks from it
+            // so you see path segments ending at multiples of 512 (plus or minus one) on either x or z axis
+            // this loads every adjacent chunk to the segment end, so it can continue into the next cached region
+            BetterBlockPos toLoad = bp.offset(EnumFacing.byHorizontalIndex(i), 16);
+            cached.tryLoadFromDisk(toLoad.x >> 9, toLoad.z >> 9);
         }
     }
 
     private PathCalculationResult segment(Optional<IPath> previous) {
         BetterBlockPos segmentStart = previous.map(IPath::getDest).orElse(start); // <-- e p i c
-        AbstractNodeCostSearch search = PathingBehavior.createPathfinder(segmentStart, goal, previous.orElse(null), context);
+        AbstractNodeCostSearch search = PathingBehavior.createPathfinder(segmentStart, goal, previous.orElse(null), context, false);
         return search.calculate(Baritone.settings().primaryTimeoutMS.get(), Baritone.settings().failureTimeoutMS.get()); // use normal time settings, not the plan ahead settings, so as to not overwhelm the computer
     }
 

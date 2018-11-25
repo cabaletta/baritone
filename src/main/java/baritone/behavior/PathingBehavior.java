@@ -330,12 +330,16 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
     }
 
+    public void secretCursedFunctionDoNotCall(IPath path) {
+        current = new PathExecutor(this, path);
+    }
+
     /**
      * See issue #209
      *
      * @return The starting {@link BlockPos} for a new path
      */
-    public BlockPos pathStart() { // TODO move to a helper or util class
+    public BetterBlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
         if (!MovementHelper.canWalkOn(ctx, feet.down())) {
             if (ctx.player().onGround) {
@@ -406,7 +410,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.get();
         }
         CalculationContext context = new CalculationContext(baritone); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
-        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
+        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context, true);
         if (!Objects.equals(pathfinder.getGoal(), goal)) {
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
         }
@@ -480,9 +484,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         });
     }
 
-    public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
+    public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context, boolean allowSimplifyUnloaded) {
         Goal transformed = goal;
-        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
+        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos && allowSimplifyUnloaded) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
             if (context.world().getChunk(pos) instanceof EmptyChunk) {
                 transformed = new GoalXZ(pos.getX(), pos.getZ());

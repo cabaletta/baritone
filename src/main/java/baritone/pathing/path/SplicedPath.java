@@ -77,6 +77,7 @@ public class SplicedPath extends PathBase {
         for (int i = 0; i < first.length() - 1; i++) { // overlap in the very last element is fine (and required) so only go up to first.length() - 1
             if (secondPos.contains(first.positions().get(i))) {
                 firstPositionInSecond = i;
+                break;
             }
         }
         if (firstPositionInSecond != -1) {
@@ -94,7 +95,7 @@ public class SplicedPath extends PathBase {
         List<IMovement> movements = new ArrayList<>();
         positions.addAll(first.positions().subList(0, firstPositionInSecond + 1));
         movements.addAll(first.movements().subList(0, firstPositionInSecond));
-        
+
         positions.addAll(second.positions().subList(positionInSecond + 1, second.length()));
         movements.addAll(second.movements().subList(positionInSecond, second.length() - 1));
         return Optional.of(new SplicedPath(positions, movements, first.getNumNodesConsidered() + second.getNumNodesConsidered(), first.getGoal()));

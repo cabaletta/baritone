@@ -32,6 +32,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
+import baritone.utils.pathing.SegmentedCalculator;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
@@ -199,6 +200,23 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("Currently executing a path. Please cancel it first.");
             } else {
                 customGoalProcess.setGoalAndPath(pathingBehavior.getGoal());
+            }
+            return true;
+        }
+        if (msg.equals("fullpath")) {
+            if (pathingBehavior.getGoal() == null) {
+                logDirect("No goal.");
+            } else {
+                logDirect("Started segmented calculator");
+                SegmentedCalculator.calculateSegmentsThreaded(pathingBehavior.pathStart(), pathingBehavior.getGoal(), new CalculationContext(baritone), ipath -> {
+                    logDirect("Found a path");
+                    logDirect("Ends at " + ipath.getDest());
+                    logDirect("Length " + ipath.length());
+                    logDirect("Estimated time " + ipath.ticksRemainingFrom(0));
+                    pathingBehavior.secretCursedFunctionDoNotCall(ipath); // it's okay when *I* do it
+                }, () -> {
+                    logDirect("Path calculation failed, no path");
+                });
             }
             return true;
         }
