@@ -143,9 +143,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
-                    if (tentativeCost < 0) {
-                        throw new IllegalStateException(moves + " overflowed into negative " + actionCost + " " + neighbor.cost + " " + tentativeCost);
-                    }
                     double improvementBy = neighbor.cost - tentativeCost;
                     // there are floating point errors caused by random combinations of traverse and diagonal over a flat area
                     // that means that sometimes there's a cost improvement of like 10 ^ -16
