@@ -25,6 +25,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
+import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -158,13 +159,13 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public List<BlockPos> toBreak() {
+    public List<BlockPos> toBreak(BlockStateInterface bsi) {
         if (toBreakCached != null) {
             return toBreakCached;
         }
         List<BlockPos> result = new ArrayList<>();
         for (int i = 4; i < 6; i++) {
-            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
+            if (!MovementHelper.canWalkThrough(bsi, positionsToBreak[i].x, positionsToBreak[i].y, positionsToBreak[i].z)) {
                 result.add(positionsToBreak[i]);
             }
         }
@@ -173,13 +174,13 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public List<BlockPos> toWalkInto() {
+    public List<BlockPos> toWalkInto(BlockStateInterface bsi) {
         if (toWalkIntoCached == null) {
             toWalkIntoCached = new ArrayList<>();
         }
         List<BlockPos> result = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
+            if (!MovementHelper.canWalkThrough(bsi, positionsToBreak[i].x, positionsToBreak[i].y, positionsToBreak[i].z)) {
                 result.add(positionsToBreak[i]);
             }
         }

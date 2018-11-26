@@ -30,6 +30,7 @@ import baritone.api.utils.input.Input;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
@@ -186,22 +187,23 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
         }*/
         //long start = System.nanoTime() / 1000000L;
+        BlockStateInterface bsi = new BlockStateInterface(ctx);
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i < 0 || i >= path.movements().size()) {
                 continue;
             }
-            IMovement m = path.movements().get(i);
-            HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak());
-            HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace());
-            HashSet<BlockPos> prevWalkInto = new HashSet<>(m.toWalkInto());
+            Movement m = (Movement) path.movements().get(i);
+            HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak(bsi));
+            HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace(bsi));
+            HashSet<BlockPos> prevWalkInto = new HashSet<>(m.toWalkInto(bsi));
             m.resetBlockCache();
-            if (!prevBreak.equals(new HashSet<>(m.toBreak()))) {
+            if (!prevBreak.equals(new HashSet<>(m.toBreak(bsi)))) {
                 recalcBP = true;
             }
-            if (!prevPlace.equals(new HashSet<>(m.toPlace()))) {
+            if (!prevPlace.equals(new HashSet<>(m.toPlace(bsi)))) {
                 recalcBP = true;
             }
-            if (!prevWalkInto.equals(new HashSet<>(m.toWalkInto()))) {
+            if (!prevWalkInto.equals(new HashSet<>(m.toWalkInto(bsi)))) {
                 recalcBP = true;
             }
         }
@@ -210,9 +212,10 @@ public class PathExecutor implements IPathExecutor, Helper {
             HashSet<BlockPos> newPlace = new HashSet<>();
             HashSet<BlockPos> newWalkInto = new HashSet<>();
             for (int i = pathPosition; i < path.movements().size(); i++) {
-                newBreak.addAll(path.movements().get(i).toBreak());
-                newPlace.addAll(path.movements().get(i).toPlace());
-                newWalkInto.addAll(path.movements().get(i).toWalkInto());
+                Movement movement = (Movement) path.movements().get(i);
+                newBreak.addAll(movement.toBreak(bsi));
+                newPlace.addAll(movement.toPlace(bsi));
+                newWalkInto.addAll(movement.toWalkInto(bsi));
             }
             toBreak = newBreak;
             toPlace = newPlace;
