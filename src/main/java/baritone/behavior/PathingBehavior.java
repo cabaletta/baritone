@@ -37,12 +37,15 @@ import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
 
 public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
 
@@ -492,9 +495,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
-        HashSet<Long> favoredPositions = null;
+        LongOpenHashSet favoredPositions = null;
         if (Baritone.settings().backtrackCostFavoringCoefficient.get() != 1D && previous != null) {
-            favoredPositions = previous.positions().stream().map(BetterBlockPos::longHash).collect(Collectors.toCollection(HashSet::new));
+            LongOpenHashSet tmp = new LongOpenHashSet();
+            previous.positions().forEach(pos -> tmp.add(BetterBlockPos.longHash(pos)));
+            favoredPositions = tmp;
         }
         return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoredPositions, context);
     }
