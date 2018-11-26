@@ -62,6 +62,11 @@ public class SplicedPath extends PathBase {
         return numNodes;
     }
 
+    @Override
+    public int length() {
+        return path.size();
+    }
+
     public static Optional<SplicedPath> trySplice(IPath first, IPath second, boolean allowOverlapCutoff) {
         if (second == null || first == null) {
             return Optional.empty();
