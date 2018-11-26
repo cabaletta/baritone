@@ -105,8 +105,9 @@ public interface IPath {
     default double ticksRemainingFrom(int pathPosition) {
         double sum = 0;
         //this is fast because we aren't requesting recalculation, it's just cached
-        for (int i = pathPosition; i < movements().size(); i++) {
-            sum += movements().get(i).getCost();
+        List<IMovement> movements = movements();
+        for (int i = pathPosition; i < movements.size(); i++) {
+            sum += movements.get(i).getCost();
         }
         return sum;
     }
