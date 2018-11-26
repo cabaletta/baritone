@@ -98,7 +98,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (snow) {
                 // the check in BlockSnow.isPassable is layers < 5
                 // while actually, we want < 3 because 3 or greater makes it impassable in a 2 high ceiling
-                return state.getValue(BlockSnow.LAYERS) < 3;
+                if (state.getValue(BlockSnow.LAYERS) >= 3) {
+                    return false;
+                }
+                // ok, it's low enough we could walk through it, but is it supported?
+                return canWalkOn(x, y - 1, z);
             }
             if (trapdoor) {
                 return !state.getValue(BlockTrapDoor.OPEN); // see BlockTrapDoor.isPassable
