@@ -482,7 +482,6 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean isFlowing(IBlockState state) {
         // Will be IFluidState in 1.13
         return state.getBlock() instanceof BlockLiquid
-                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
                 && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 }
