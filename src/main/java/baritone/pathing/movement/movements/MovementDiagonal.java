@@ -116,7 +116,8 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         boolean water = false;
-        if (MovementHelper.isWater(context.getBlock(x, y, z)) || MovementHelper.isWater(destInto.getBlock())) {
+        Block startIn = context.getBlock(x, y, z);
+        if (MovementHelper.isWater(startIn) || MovementHelper.isWater(destInto.getBlock())) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
@@ -125,6 +126,10 @@ public class MovementDiagonal extends Movement {
         }
         if (optionA != 0 || optionB != 0) {
             multiplier *= SQRT_2 - 0.001; // TODO tune
+            if (startIn == Blocks.LADDER || startIn == Blocks.VINE) {
+                // edging around doesn't work if doing so would climb a ladder or vine instead of moving sideways
+                return COST_INF;
+            }
         }
         if (context.canSprint() && !water) {
             // If we aren't edging around anything, and we aren't in water
