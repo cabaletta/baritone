@@ -409,7 +409,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             primaryTimeout = Baritone.settings().planAheadPrimaryTimeoutMS.get();
             failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.get();
         }
-        CalculationContext context = new CalculationContext(baritone); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
+        CalculationContext context = new CalculationContext(baritone, true); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context, true);
         if (!Objects.equals(pathfinder.getGoal(), goal)) {
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");

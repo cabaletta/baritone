@@ -60,11 +60,15 @@ public class CalculationContext {
     private final BetterWorldBorder worldBorder;
 
     public CalculationContext(IBaritone baritone) {
+        this(baritone, false);
+    }
+
+    public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
         this.baritone = baritone;
         this.player = baritone.getPlayerContext().player();
         this.world = baritone.getPlayerContext().world();
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
-        this.bsi = new BlockStateInterface(world, worldData); // TODO TODO TODO
+        this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
         // new CalculationContext() needs to happen, can't add an argument (i'll beat you), can we get the world provider from currentlyTicking?
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(baritone.getPlayerContext(), false);

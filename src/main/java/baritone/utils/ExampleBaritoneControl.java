@@ -208,7 +208,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("No goal.");
             } else {
                 logDirect("Started segmented calculator");
-                SegmentedCalculator.calculateSegmentsThreaded(pathingBehavior.pathStart(), pathingBehavior.getGoal(), new CalculationContext(baritone), ipath -> {
+                SegmentedCalculator.calculateSegmentsThreaded(pathingBehavior.pathStart(), pathingBehavior.getGoal(), new CalculationContext(baritone, true), ipath -> {
                     logDirect("Found a path");
                     logDirect("Ends at " + ipath.getDest());
                     logDirect("Length " + ipath.length());
