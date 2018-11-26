@@ -38,12 +38,14 @@ import baritone.pathing.path.PathExecutor;
 import baritone.utils.BlockBreakHelper;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
 
 public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
 
@@ -419,11 +421,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         } else {
             timeout = Baritone.settings().planAheadTimeoutMS.<Long>get();
         }
-        Optional<HashSet<Long>> favoredPositions;
-        if (Baritone.settings().backtrackCostFavoringCoefficient.get() == 1D) {
-            favoredPositions = Optional.empty();
-        } else {
-            favoredPositions = previous.map(IPath::positions).map(Collection::stream).map(x -> x.map(BetterBlockPos::longHash)).map(x -> x.collect(Collectors.toList())).map(HashSet::new); // <-- okay this is EPIC
+        Optional<LongOpenHashSet> favoredPositions = Optional.empty();
+        if (Baritone.settings().backtrackCostFavoringCoefficient.get() != 1D && previous.isPresent()) {
+            LongOpenHashSet tmp = new LongOpenHashSet();
+            previous.get().positions().forEach(pos -> tmp.add(BetterBlockPos.longHash(pos)));
+            favoredPositions = Optional.of(tmp);
         }
         try {
             IPathFinder pf = new AStarPathFinder(start.getX(), start.getY(), start.getZ(), goal, favoredPositions, context);

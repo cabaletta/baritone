@@ -29,8 +29,8 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterWorldBorder;
 import baritone.utils.pathing.MutableMoveResult;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
-import java.util.HashSet;
 import java.util.Optional;
 
 /**
@@ -40,10 +40,10 @@ import java.util.Optional;
  */
 public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
-    private final Optional<HashSet<Long>> favoredPositions;
+    private final Optional<LongOpenHashSet> favoredPositions;
     private final CalculationContext calcContext;
 
-    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<HashSet<Long>> favoredPositions, CalculationContext context) {
+    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Optional<LongOpenHashSet> favoredPositions, CalculationContext context) {
         super(startX, startY, startZ, goal);
         this.favoredPositions = favoredPositions;
         this.calcContext = context;
@@ -64,9 +64,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             bestSoFar[i] = startNode;
         }
         MutableMoveResult res = new MutableMoveResult();
-        HashSet<Long> favored = favoredPositions.orElse(null);
         BetterWorldBorder worldBorder = new BetterWorldBorder(world().getWorldBorder());
         BlockStateInterface.clearCachedChunk();
+        LongOpenHashSet favored = favoredPositions.orElse(null);
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {
