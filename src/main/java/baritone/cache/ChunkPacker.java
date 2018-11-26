@@ -39,6 +39,8 @@ import java.util.*;
  */
 public final class ChunkPacker {
 
+    private static final Map<String, Block> resourceCache = new HashMap<>();
+
     private ChunkPacker() {}
 
     public static CachedChunk pack(Chunk chunk) {
@@ -120,7 +122,7 @@ public final class ChunkPacker {
     }
 
     public static Block stringToBlock(String name) {
-        return Block.getBlockFromName(name.contains(":") ? name : "minecraft:" + name);
+        return resourceCache.computeIfAbsent(name, n -> Block.getBlockFromName(n.contains(":") ? n : "minecraft:" + n));
     }
 
     private static PathingBlockType getPathingBlockType(IBlockState state) {
