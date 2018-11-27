@@ -86,7 +86,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public synchronized PathCalculationResult calculate(long primaryTimeout, long failureTimeout) {
         if (isFinished) {
-            throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
+            throw new IllegalStateException("Path finder cannot be reused!");
         }
         cancelRequested = false;
         try {
