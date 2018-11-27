@@ -89,7 +89,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     }
 
     private void updateGoal() {
-        if (mining == null) {
+        if (mining == null || world() == null || player() == null) {
             return;
         }
         List<BlockPos> locs = knownOreLocations;
@@ -124,7 +124,7 @@ public final class MineBehavior extends Behavior implements IMineBehavior, Helpe
     }
 
     private void rescan() {
-        if (mining == null) {
+        if (mining == null || world() == null || player() == null) {
             return;
         }
         if (Baritone.settings().legitMine.get()) {
