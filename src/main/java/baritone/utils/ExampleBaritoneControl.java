@@ -277,6 +277,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             });
             return true;
         }
+        if (msg.equals("reset")) {
+            Baritone.settings().reset();
+            logDirect("Baritone settings reset");
+            return true;
+        }
         if (msg.startsWith("followplayers")) {
             baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
             logDirect("Following any players");
