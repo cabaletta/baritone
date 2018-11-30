@@ -26,6 +26,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -176,7 +177,7 @@ public abstract class Movement implements IMovement, Helper, MovementHelper {
                 if (reachable.isPresent()) {
                     MovementHelper.switchToBestToolFor(BlockStateInterface.get(blockPos));
                     state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
-                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), blockPos)) {
+                    if (Objects.equals(RayTraceUtils.getSelectedBlock().orElse(null), blockPos) || BlockStateInterface.getBlock(blockPos) == Blocks.FIRE) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
                     return false;
