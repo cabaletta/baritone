@@ -349,6 +349,9 @@ public class PathExecutor implements IPathExecutor, Helper {
      * Regardless of current path position, snap to the current player feet if possible
      */
     public boolean snipsnapifpossible() {
+        if (!ctx.player().onGround) {
+            return false;
+        }
         int index = path.positions().indexOf(ctx.playerFeet());
         if (index == -1) {
             return false;
