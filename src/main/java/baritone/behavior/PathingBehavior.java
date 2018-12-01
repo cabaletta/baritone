@@ -136,7 +136,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 return;
             }
             // at this point, we know current is in progress
-            if (safe && next != null && next.snipsnapifpossible()) {
+            if (safe && next != null && player().onGround && next.snipsnapifpossible()) {
                 // a movement just ended; jump directly onto the next path
                 logDebug("Splicing into planned next path early...");
                 queuePathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
