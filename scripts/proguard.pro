@@ -31,10 +31,8 @@
 
 # copy all necessary libraries into tempLibraries to build
 
--libraryjars 'tempLibraries/minecraft.jar'
-
 # The correct jar will be copied from the forgegradle cache based on the mapping type being compiled with
-#-libraryjars 'tempLibraries/minecraft.jar'
+-libraryjars 'tempLibraries/minecraft.jar'
 
 -libraryjars 'tempLibraries/SimpleTweaker-1.2.jar'
 

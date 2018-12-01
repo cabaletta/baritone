@@ -20,9 +20,7 @@ package baritone.gradle.task;
 import baritone.gradle.util.Determinizer;
 import baritone.gradle.util.MappingType;
 import baritone.gradle.util.ReobfWrapper;
-import com.google.gson.*;
 import java.lang.reflect.Field;
-import java.nio.file.StandardCopyOption;
 import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.gradle.api.NamedDomainObjectContainer;
@@ -59,10 +57,6 @@ public class ProguardTask extends BaritoneGradleTask {
     @Input
     private String extract;
 
-    @Input
-    private String versionManifest;
-
-    private Map<String, String> versionDownloadMap;
     private List<String> requiredLibraries;
 
     @TaskAction
@@ -74,7 +68,6 @@ public class ProguardTask extends BaritoneGradleTask {
         downloadProguard();
         extractProguard();
         generateConfigs();
-        downloadVersionManifest();
         acquireDependencies();
         proguardApi();
         proguardStandalone();
@@ -139,20 +132,6 @@ public class ProguardTask extends BaritoneGradleTask {
         });
     }
 
-    private void downloadVersionManifest() throws Exception {
-        Path manifestJson = getTemporaryFile(VERSION_MANIFEST);
-        write(new URL(this.versionManifest).openStream(), manifestJson);
-
-        // Place all the versions in the map with their download URL
-        this.versionDownloadMap = new HashMap<>();
-        JsonObject json = readJson(Files.readAllLines(manifestJson)).getAsJsonObject();
-        JsonArray versions = json.getAsJsonArray("versions");
-        versions.forEach(element -> {
-            JsonObject object = element.getAsJsonObject();
-            this.versionDownloadMap.put(object.get("id").getAsString(), object.get("url").getAsString());
-        });
-    }
-
     private void acquireDependencies() throws Exception {
 
         // Create a map of all of the dependencies that we are able to access in this project
@@ -173,7 +152,7 @@ public class ProguardTask extends BaritoneGradleTask {
             // copy from the forgegradle cache
             if (lib.equals("minecraft")) {
                 final Path cachedJar = getMinecraftJar();
-                final Path inTempDir = getTemporaryFile("tempLibraries/" + "minecraft.jar");
+                final Path inTempDir = getTemporaryFile("tempLibraries/minecraft.jar");
                 // TODO: maybe try not to copy every time
                 Files.copy(cachedJar, inTempDir, REPLACE_EXISTING);
 
@@ -200,14 +179,14 @@ public class ProguardTask extends BaritoneGradleTask {
         }
     }
 
-    // a bunch of bullshit to get the path to the cached jar
+    // a bunch of epic stuff to get the path to the cached jar
     private Path getMinecraftJar() throws Exception {
         MappingType mappingType;
         try {
             mappingType = getMappingType();
         } catch (Exception e) {
-            System.err.println("Failed to get mapping type, assuming NOTCH");
-            mappingType = MappingType.SEARGE;
+            System.err.println("Failed to get mapping type, assuming NOTCH.");
+            mappingType = MappingType.NOTCH;
         }
 
         String suffix;
@@ -219,12 +198,12 @@ public class ProguardTask extends BaritoneGradleTask {
                 suffix = "-srgBin";
                 break;
             case CUSTOM:
-                throw new IllegalStateException("custom mappings not supported");
+                throw new IllegalStateException("Custom mappings not supported!");
             default:
                 throw new IllegalStateException("Unknown mapping type: " + mappingType);
         }
 
-        DefaultConvention convention = (DefaultConvention)this.getProject().getConvention();
+        DefaultConvention convention = (DefaultConvention) this.getProject().getConvention();
         final Object extension = convention.getAsMap().get("minecraft");
         Objects.requireNonNull(extension);
 
@@ -237,24 +216,23 @@ public class ProguardTask extends BaritoneGradleTask {
         Field replacement_replaceMap = class_replacementProvider.getDeclaredField("replaceMap");
         replacement_replaceMap.setAccessible(true);
 
-        final Map<String, Object> replacements = (Map)replacement_replaceMap.get(replacer);
+        final Map<String, Object> replacements = (Map) replacement_replaceMap.get(replacer);
         final String cacheDir = replacements.get("CACHE_DIR").toString() + "/net/minecraft";
         final String mcVersion = replacements.get("MC_VERSION").toString();
         final String mcpInsert = replacements.get("MAPPING_CHANNEL").toString() + "/" + replacements.get("MAPPING_VERSION").toString();
-        final String fullJarName = "minecraft" + "-" + mcVersion + suffix + ".jar";
+        final String fullJarName = "minecraft-" + mcVersion + suffix + ".jar";
 
         final String baseDir = String.format("%s/minecraft/%s/", cacheDir, mcVersion);
 
         String jarPath;
         if (mappingType == MappingType.SEARGE) {
             jarPath = String.format("%s/%s/%s", baseDir, mcpInsert, fullJarName);
-
         } else {
             jarPath = baseDir + fullJarName;
         }
         jarPath = jarPath
-            .replace("/",  File.separator)
-            .replace("\\", File.separator);// fucking regex
+                .replace("/", File.separator)
+                .replace("\\", File.separator); // hecking regex
 
         return new File(jarPath).toPath();
     }
@@ -266,10 +244,11 @@ public class ProguardTask extends BaritoneGradleTask {
 
         final List<MappingType> mappingTypes = getUsedMappingTypes(reobf);
         final long mappingTypesUsed = mappingTypes.size();
-        if (mappingTypesUsed == 0)
+        if (mappingTypesUsed == 0) {
             throw new IllegalStateException("Failed to find mapping type (no jar task?)");
-        if (mappingTypesUsed > 1)
+        } if (mappingTypesUsed > 1) {
             throw new IllegalStateException("Ambiguous mapping type (multiple jars with different mapping types?)");
+        }
 
         return mappingTypes.get(0);
     }
@@ -304,10 +283,6 @@ public class ProguardTask extends BaritoneGradleTask {
 
     public void setExtract(String extract) {
         this.extract = extract;
-    }
-
-    public void setVersionManifest(String versionManifest) {
-        this.versionManifest = versionManifest;
     }
 
     private void runProguard(Path config) throws Exception {
