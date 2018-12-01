@@ -35,7 +35,7 @@ public final class CachedChunk {
 
     static {
         HashSet<Block> temp = new HashSet<>();
-        temp.add(Blocks.DIAMOND_ORE);
+        //temp.add(Blocks.DIAMOND_ORE);
         temp.add(Blocks.DIAMOND_BLOCK);
         //temp.add(Blocks.COAL_ORE);
         temp.add(Blocks.COAL_BLOCK);
