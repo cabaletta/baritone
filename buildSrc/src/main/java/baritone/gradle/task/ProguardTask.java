@@ -175,7 +175,7 @@ public class ProguardTask extends BaritoneGradleTask {
                 final Path cachedJar = getMinecraftJar();
                 final Path inTempDir = getTemporaryFile("tempLibraries/" + "minecraft.jar");
                 // TODO: maybe try not to copy every time
-                Files.copy(cachedJar, inTempDir, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(cachedJar, inTempDir, REPLACE_EXISTING);
 
                 continue;
             }
