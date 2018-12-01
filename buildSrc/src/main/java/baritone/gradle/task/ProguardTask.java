@@ -20,8 +20,6 @@ package baritone.gradle.task;
 import baritone.gradle.util.Determinizer;
 import baritone.gradle.util.MappingType;
 import baritone.gradle.util.ReobfWrapper;
-import java.lang.reflect.Field;
-import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.artifacts.Configuration;
@@ -32,12 +30,14 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.Pair;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -151,8 +151,8 @@ public class ProguardTask extends BaritoneGradleTask {
         for (String lib : this.requiredLibraries) {
             // copy from the forgegradle cache
             if (lib.equals("minecraft")) {
-                final Path cachedJar = getMinecraftJar();
-                final Path inTempDir = getTemporaryFile("tempLibraries/minecraft.jar");
+                Path cachedJar = getMinecraftJar();
+                Path inTempDir = getTemporaryFile("tempLibraries/minecraft.jar");
                 // TODO: maybe try not to copy every time
                 Files.copy(cachedJar, inTempDir, REPLACE_EXISTING);
 
@@ -204,25 +204,25 @@ public class ProguardTask extends BaritoneGradleTask {
         }
 
         DefaultConvention convention = (DefaultConvention) this.getProject().getConvention();
-        final Object extension = convention.getAsMap().get("minecraft");
+        Object extension = convention.getAsMap().get("minecraft");
         Objects.requireNonNull(extension);
 
         // for some reason cant use Class.forName
         Class<?> class_baseExtension = extension.getClass().getSuperclass().getSuperclass().getSuperclass();
         Field f_replacer = class_baseExtension.getDeclaredField("replacer");
         f_replacer.setAccessible(true);
-        final Object replacer = f_replacer.get(extension);
+        Object replacer = f_replacer.get(extension);
         Class<?> class_replacementProvider = replacer.getClass();
         Field replacement_replaceMap = class_replacementProvider.getDeclaredField("replaceMap");
         replacement_replaceMap.setAccessible(true);
 
-        final Map<String, Object> replacements = (Map) replacement_replaceMap.get(replacer);
-        final String cacheDir = replacements.get("CACHE_DIR").toString() + "/net/minecraft";
-        final String mcVersion = replacements.get("MC_VERSION").toString();
-        final String mcpInsert = replacements.get("MAPPING_CHANNEL").toString() + "/" + replacements.get("MAPPING_VERSION").toString();
-        final String fullJarName = "minecraft-" + mcVersion + suffix + ".jar";
+        Map<String, Object> replacements = (Map) replacement_replaceMap.get(replacer);
+        String cacheDir = replacements.get("CACHE_DIR").toString() + "/net/minecraft";
+        String mcVersion = replacements.get("MC_VERSION").toString();
+        String mcpInsert = replacements.get("MAPPING_CHANNEL").toString() + "/" + replacements.get("MAPPING_VERSION").toString();
+        String fullJarName = "minecraft-" + mcVersion + suffix + ".jar";
 
-        final String baseDir = String.format("%s/minecraft/%s/", cacheDir, mcVersion);
+        String baseDir = String.format("%s/minecraft/%s/", cacheDir, mcVersion);
 
         String jarPath;
         if (mappingType == MappingType.SEARGE) {
@@ -240,13 +240,14 @@ public class ProguardTask extends BaritoneGradleTask {
     // throws IllegalStateException if mapping type is ambiguous or it fails to find it
     private MappingType getMappingType() {
         // if it fails to find this then its probably a forgegradle version problem
-        final Set<Object> reobf = (NamedDomainObjectContainer<Object>) this.getProject().getExtensions().getByName("reobf");
+        Set<Object> reobf = (NamedDomainObjectContainer<Object>) this.getProject().getExtensions().getByName("reobf");
 
-        final List<MappingType> mappingTypes = getUsedMappingTypes(reobf);
-        final long mappingTypesUsed = mappingTypes.size();
+        List<MappingType> mappingTypes = getUsedMappingTypes(reobf);
+        long mappingTypesUsed = mappingTypes.size();
         if (mappingTypesUsed == 0) {
             throw new IllegalStateException("Failed to find mapping type (no jar task?)");
-        } if (mappingTypesUsed > 1) {
+        }
+        if (mappingTypesUsed > 1) {
             throw new IllegalStateException("Ambiguous mapping type (multiple jars with different mapping types?)");
         }
 
@@ -255,10 +256,10 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private List<MappingType> getUsedMappingTypes(Set<Object> reobf) {
         return reobf.stream()
-            .map(ReobfWrapper::new)
-            .map(ReobfWrapper::getMappingType)
-            .distinct()
-            .collect(Collectors.toList());
+                .map(ReobfWrapper::new)
+                .map(ReobfWrapper::getMappingType)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private void proguardApi() throws Exception {
@@ -314,7 +315,7 @@ public class ProguardTask extends BaritoneGradleTask {
                 while ((line = reader.readLine()) != null) {
                     System.out.println(line);
                 }
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }).start();
