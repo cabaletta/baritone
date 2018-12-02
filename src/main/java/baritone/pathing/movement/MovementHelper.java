@@ -70,7 +70,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -92,7 +92,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (snow) {
                 // the check in BlockSnow.isPassable is layers < 5
                 // while actually, we want < 3 because 3 or greater makes it impassable in a 2 high ceiling
-                return state.getValue(BlockSnow.LAYERS) < 3;
+                if (state.getValue(BlockSnow.LAYERS) >= 3) {
+                    return false;
+                }
+                // ok, it's low enough we could walk through it, but is it supported?
+                return canWalkOn(bsi, x, y - 1, z);
             }
             if (trapdoor) {
                 return !state.getValue(BlockTrapDoor.OPEN); // see BlockTrapDoor.isPassable
@@ -139,6 +143,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block == Blocks.WEB
                 || block == Blocks.VINE
                 || block == Blocks.LADDER
+                || block == Blocks.COCOA
                 || block instanceof BlockDoor
                 || block instanceof BlockFenceGate
                 || block instanceof BlockSnow
@@ -465,7 +470,6 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean isFlowing(IBlockState state) {
         // Will be IFluidState in 1.13
         return state.getBlock() instanceof BlockLiquid
-                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
                 && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 }

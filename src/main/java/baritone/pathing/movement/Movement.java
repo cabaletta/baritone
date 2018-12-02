@@ -151,9 +151,10 @@ public abstract class Movement implements IMovement, MovementHelper {
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
+                    Rotation rotTowardsBlock = reachable.get();
                     MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
-                    state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
-                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), blockPos)) {
+                    state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
+                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
                     return false;
@@ -244,14 +245,13 @@ public abstract class Movement implements IMovement, MovementHelper {
         toWalkIntoCached = null;
     }
 
-    @Override
-    public List<BlockPos> toBreak() {
+    public List<BlockPos> toBreak(BlockStateInterface bsi) {
         if (toBreakCached != null) {
             return toBreakCached;
         }
         List<BlockPos> result = new ArrayList<>();
         for (BetterBlockPos positionToBreak : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(ctx, positionToBreak)) {
+            if (!MovementHelper.canWalkThrough(bsi, positionToBreak.x, positionToBreak.y, positionToBreak.z)) {
                 result.add(positionToBreak);
             }
         }
@@ -259,21 +259,19 @@ public abstract class Movement implements IMovement, MovementHelper {
         return result;
     }
 
-    @Override
-    public List<BlockPos> toPlace() {
+    public List<BlockPos> toPlace(BlockStateInterface bsi) {
         if (toPlaceCached != null) {
             return toPlaceCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        if (positionToPlace != null && !MovementHelper.canWalkOn(ctx, positionToPlace)) {
+        if (positionToPlace != null && !MovementHelper.canWalkOn(bsi, positionToPlace.x, positionToPlace.y, positionToPlace.z)) {
             result.add(positionToPlace);
         }
         toPlaceCached = result;
         return result;
     }
 
-    @Override
-    public List<BlockPos> toWalkInto() { // overridden by movementdiagonal
+    public List<BlockPos> toWalkInto(BlockStateInterface bsi) { // overridden by movementdiagonal
         if (toWalkIntoCached == null) {
             toWalkIntoCached = new ArrayList<>();
         }

@@ -89,7 +89,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             List<BlockPos> curr = new ArrayList<>(knownOreLocations);
-            CalculationContext context = new CalculationContext(baritone);
+            CalculationContext context = new CalculationContext(baritone, true);
             Baritone.getExecutor().execute(() -> rescan(curr, context));
         }
         if (Baritone.settings().legitMine.get()) {
@@ -210,7 +210,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         //long b = System.currentTimeMillis();
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
-                locs.addAll(ctx.worldData().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 1));
+                locs.addAll(ctx.worldData().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
             } else {
                 uninteresting.add(m);
             }

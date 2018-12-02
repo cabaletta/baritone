@@ -25,6 +25,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
+import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -115,7 +116,8 @@ public class MovementDiagonal extends Movement {
             return COST_INF;
         }
         boolean water = false;
-        if (MovementHelper.isWater(context.getBlock(x, y, z)) || MovementHelper.isWater(destInto.getBlock())) {
+        Block startIn = context.getBlock(x, y, z);
+        if (MovementHelper.isWater(startIn) || MovementHelper.isWater(destInto.getBlock())) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
@@ -124,6 +126,10 @@ public class MovementDiagonal extends Movement {
         }
         if (optionA != 0 || optionB != 0) {
             multiplier *= SQRT_2 - 0.001; // TODO tune
+            if (startIn == Blocks.LADDER || startIn == Blocks.VINE) {
+                // edging around doesn't work if doing so would climb a ladder or vine instead of moving sideways
+                return COST_INF;
+            }
         }
         if (context.canSprint() && !water) {
             // If we aren't edging around anything, and we aren't in water
@@ -158,13 +164,13 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public List<BlockPos> toBreak() {
+    public List<BlockPos> toBreak(BlockStateInterface bsi) {
         if (toBreakCached != null) {
             return toBreakCached;
         }
         List<BlockPos> result = new ArrayList<>();
         for (int i = 4; i < 6; i++) {
-            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
+            if (!MovementHelper.canWalkThrough(bsi, positionsToBreak[i].x, positionsToBreak[i].y, positionsToBreak[i].z)) {
                 result.add(positionsToBreak[i]);
             }
         }
@@ -173,13 +179,13 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
-    public List<BlockPos> toWalkInto() {
+    public List<BlockPos> toWalkInto(BlockStateInterface bsi) {
         if (toWalkIntoCached == null) {
             toWalkIntoCached = new ArrayList<>();
         }
         List<BlockPos> result = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
+            if (!MovementHelper.canWalkThrough(bsi, positionsToBreak[i].x, positionsToBreak[i].y, positionsToBreak[i].z)) {
                 result.add(positionsToBreak[i]);
             }
         }

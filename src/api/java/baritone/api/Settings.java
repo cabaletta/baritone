@@ -553,6 +553,12 @@ public class Settings {
      */
     public final List<Setting<?>> allSettings;
 
+    public void reset() {
+        for (Setting setting : allSettings) {
+            setting.value = setting.defaultValue;
+        }
+    }
+
     public class Setting<T> {
         public T value;
         public final T defaultValue;

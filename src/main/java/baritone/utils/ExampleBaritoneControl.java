@@ -34,6 +34,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
+import baritone.utils.pathing.SegmentedCalculator;
 import comms.SocketConnection;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
@@ -208,6 +209,23 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             return true;
         }
+        if (msg.equals("fullpath")) {
+            if (pathingBehavior.getGoal() == null) {
+                logDirect("No goal.");
+            } else {
+                logDirect("Started segmented calculator");
+                SegmentedCalculator.calculateSegmentsThreaded(pathingBehavior.pathStart(), pathingBehavior.getGoal(), new CalculationContext(baritone, true), ipath -> {
+                    logDirect("Found a path");
+                    logDirect("Ends at " + ipath.getDest());
+                    logDirect("Length " + ipath.length());
+                    logDirect("Estimated time " + ipath.ticksRemainingFrom(0));
+                    pathingBehavior.secretCursedFunctionDoNotCall(ipath); // it's okay when *I* do it
+                }, () -> {
+                    logDirect("Path calculation failed, no path");
+                });
+            }
+            return true;
+        }
         if (msg.equals("repack") || msg.equals("rescan")) {
             ChunkProviderClient cli = (ChunkProviderClient) ctx.world().getChunkProvider();
             int playerChunkX = ctx.playerFeet().getX() >> 4;
@@ -263,6 +281,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return false;
                 }
             });
+            return true;
+        }
+        if (msg.equals("reset")) {
+            Baritone.settings().reset();
+            logDirect("Baritone settings reset");
             return true;
         }
         if (msg.startsWith("followplayers")) {
