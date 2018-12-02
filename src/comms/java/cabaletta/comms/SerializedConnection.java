@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
 import java.io.*;
 
@@ -35,7 +35,7 @@ public class SerializedConnection implements IConnection {
     }
 
     @Override
-    public void sendMessage(iMessage message) throws IOException {
+    public synchronized void sendMessage(iMessage message) throws IOException {
         message.writeHeader(out);
         message.write(out);
     }

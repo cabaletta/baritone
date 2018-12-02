@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -82,5 +82,17 @@ public class BufferedConnection implements IConnection {
             throw up;
         }
         return msgs;
+    }
+
+    public void handleAllPendingMessages(IMessageListener listener) throws IOException {
+        receiveMessagesNonBlocking().forEach(msg -> msg.handle(listener));
+    }
+
+    public static BufferedConnection makeBuffered(IConnection conn) {
+        if (conn instanceof BufferedConnection) {
+            return (BufferedConnection) conn;
+        } else {
+            return new BufferedConnection(conn);
+        }
     }
 }

@@ -15,10 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
-import comms.downward.MessageChat;
-import comms.upward.MessageStatus;
+import cabaletta.comms.downward.MessageChat;
+import cabaletta.comms.downward.MessageComputationRequest;
+import cabaletta.comms.upward.MessageComputationResponse;
+import cabaletta.comms.upward.MessageStatus;
 
 public interface IMessageListener {
     default void handle(MessageStatus message) {
@@ -26,6 +28,14 @@ public interface IMessageListener {
     }
 
     default void handle(MessageChat message) {
+        unhandled(message);
+    }
+
+    default void handle(MessageComputationRequest message) {
+        unhandled(message);
+    }
+
+    default void handle(MessageComputationResponse message) {
         unhandled(message);
     }
 

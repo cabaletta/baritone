@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package comms;
+package cabaletta.comms;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public enum ConstructingDeserializer implements MessageDeserializer {
     }
 
     @Override
-    public iMessage deserialize(DataInputStream in) throws IOException {
+    public synchronized iMessage deserialize(DataInputStream in) throws IOException {
         int type = ((int) in.readByte()) & 0xff;
         try {
             return MSGS.get(type).getConstructor(DataInputStream.class).newInstance(in);
