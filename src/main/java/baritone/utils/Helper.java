@@ -67,6 +67,6 @@ public interface Helper {
         ITextComponent component = MESSAGE_PREFIX.createCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
         component.appendSibling(new TextComponentString(" " + message));
-        Baritone.settings().logger.get().accept(component);
+        Minecraft.getMinecraft().addScheduledTask(() -> Baritone.settings().logger.get().accept(component));
     }
 }
