@@ -420,7 +420,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
         CalculationContext context = new CalculationContext(baritone, true); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
-        if (!Objects.equals(pathfinder.getGoal(), goal)) {
+        if (!Objects.equals(pathfinder.getGoal(), goal)) { // will return the exact same object if simplification didn't happen
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
         }
         inProgress = pathfinder;

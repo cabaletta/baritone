@@ -39,15 +39,14 @@ public abstract class PathBase implements IPath {
 
     @Override
     public PathBase staticCutoff(Goal destination) {
-        int min = BaritoneAPI.getSettings().pathCutoffMinimumLength.get();
-        if (length() < min) {
+        if (length() < BaritoneAPI.getSettings().pathCutoffMinimumLength.get()) {
             return this;
         }
         if (destination == null || destination.isInGoal(getDest())) {
             return this;
         }
         double factor = BaritoneAPI.getSettings().pathCutoffFactor.get();
-        int newLength = (int) ((length() - 1 - min) * factor) + min;
+        int newLength = (int) ((length() - 1) * factor);
         return new CutoffPath(this, newLength);
     }
 }

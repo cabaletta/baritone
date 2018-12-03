@@ -74,7 +74,7 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         switch (this.state) {
             case GOAL_SET:
-                if (!baritone.getPathingBehavior().isPathing() && Objects.equals(baritone.getPathingBehavior().getGoal(), this.goal)) {
+                if (!baritone.getPathingBehavior().isPathing() && Objects.equals(baritone.getPathingBehavior().getGoal() + "", this.goal + "")) {
                     this.state = State.NONE;
                 }
                 return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
