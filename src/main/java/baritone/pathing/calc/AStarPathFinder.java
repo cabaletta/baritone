@@ -27,8 +27,8 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterWorldBorder;
+import baritone.utils.pathing.Favoring;
 import baritone.utils.pathing.MutableMoveResult;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.Optional;
 
@@ -39,12 +39,12 @@ import java.util.Optional;
  */
 public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
-    private final Long2DoubleOpenHashMap favoredPositions;
+    private final Favoring favoring;
     private final CalculationContext calcContext;
 
-    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Long2DoubleOpenHashMap favoredPositions, CalculationContext context) {
+    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Favoring favoring, CalculationContext context) {
         super(startX, startY, startZ, goal, context);
-        this.favoredPositions = favoredPositions;
+        this.favoring = favoring;
         this.calcContext = context;
     }
 
@@ -63,8 +63,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             bestSoFar[i] = startNode;
         }
         MutableMoveResult res = new MutableMoveResult();
-        Long2DoubleOpenHashMap favored = favoredPositions;
-        favored.defaultReturnValue(1.0D);
+        Favoring favored = favoring;
         BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world().getWorldBorder());
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
@@ -97,6 +96,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             mostRecentConsidered = currentNode;
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
+                favored.printStats();
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal, calcContext));
             }
@@ -137,10 +137,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     throw new IllegalStateException(moves + " " + res.y + " " + (currentNode.y + moves.yOffset));
                 }
                 long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
-                favored.get(hashCode);
                 if (favoring) {
                     // see issue #18
-                    actionCost *= favored.get(hashCode);
+                    actionCost *= favored.calculate(res.x, res.y, res.z, hashCode);
                 }
                 PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
                 double tentativeCost = currentNode.cost + actionCost;
@@ -178,6 +177,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 }
             }
         }
+        favored.printStats();
         if (cancelRequested) {
             return Optional.empty();
         }

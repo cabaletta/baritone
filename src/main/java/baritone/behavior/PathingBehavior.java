@@ -37,8 +37,7 @@ import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
-import baritone.utils.pathing.AvoidanceHelper;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import baritone.utils.pathing.Favoring;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -504,13 +503,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
-        Long2DoubleOpenHashMap favoredPositions = new Long2DoubleOpenHashMap();
-        double coeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
-        if (coeff != 1D && previous != null) {
-            previous.positions().forEach(pos -> favoredPositions.put(BetterBlockPos.longHash(pos), coeff));
-        }
-        AvoidanceHelper.INSTANCE.apply(favoredPositions, context.getBaritone().getPlayerContext());
-        return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoredPositions, context);
+        Favoring favoring = new Favoring(context.getBaritone().getPlayerContext(), previous);
+        return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
     }
 
     @Override
