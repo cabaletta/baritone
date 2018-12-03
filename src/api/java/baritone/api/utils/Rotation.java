@@ -142,7 +142,7 @@ public class Rotation {
         if (newYaw < -180F) {
             newYaw += 360F;
         }
-        if (newYaw >= 180F) {
+        if (newYaw > 180F) {
             newYaw -= 360F;
         }
         return newYaw;
