@@ -419,7 +419,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.get();
         }
         CalculationContext context = new CalculationContext(baritone, true); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
-        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context, true);
+        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
         if (!Objects.equals(pathfinder.getGoal(), goal)) {
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
         }
@@ -495,9 +495,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         });
     }
 
-    public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context, boolean allowSimplifyUnloaded) {
+    public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
         Goal transformed = goal;
-        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos && allowSimplifyUnloaded) {
+        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
             if (context.world().getChunk(pos) instanceof EmptyChunk) {
                 transformed = new GoalXZ(pos.getX(), pos.getZ());

@@ -76,9 +76,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         int numNodes = 0;
         int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
-        boolean favoring = favored != null && !favored.isEmpty();
+        boolean favoring = !favored.isEmpty();
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
-        double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && !cancelRequested) {
             long now = System.nanoTime() / 1000000L;
@@ -96,7 +95,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             mostRecentConsidered = currentNode;
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
-                favored.printStats();
                 logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal, calcContext));
             }
@@ -139,7 +137,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
                 if (favoring) {
                     // see issue #18
-                    actionCost *= favored.calculate(res.x, res.y, res.z, hashCode);
+                    actionCost *= favored.calculate(hashCode);
                 }
                 PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
                 double tentativeCost = currentNode.cost + actionCost;
@@ -177,7 +175,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 }
             }
         }
-        favored.printStats();
         if (cancelRequested) {
             return Optional.empty();
         }

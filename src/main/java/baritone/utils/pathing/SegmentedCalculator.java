@@ -22,8 +22,8 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.PathCalculationResult;
-import baritone.behavior.PathingBehavior;
 import baritone.cache.CachedWorld;
+import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.path.SplicedPath;
@@ -87,7 +87,7 @@ public class SegmentedCalculator {
 
     private PathCalculationResult segment(Optional<IPath> previous) {
         BetterBlockPos segmentStart = previous.map(IPath::getDest).orElse(start); // <-- e p i c
-        AbstractNodeCostSearch search = PathingBehavior.createPathfinder(segmentStart, goal, previous.orElse(null), context, false);
+        AbstractNodeCostSearch search = new AStarPathFinder(segmentStart.x, segmentStart.y, segmentStart.z, goal, new Favoring(previous.orElse(null)), context); // this is on another thread, so cannot include mob avoidances.
         return search.calculate(Baritone.settings().primaryTimeoutMS.get(), Baritone.settings().failureTimeoutMS.get()); // use normal time settings, not the plan ahead settings, so as to not overwhelm the computer
     }
 

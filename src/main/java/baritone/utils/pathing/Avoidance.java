@@ -29,12 +29,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class Avoidance {
-    public final int centerX;
-    public final int centerY;
-    public final int centerZ;
-    public final double coefficient;
-    public final int radius;
-    public final int radiusSq;
+    private final int centerX;
+    private final int centerY;
+    private final int centerZ;
+    private final double coefficient;
+    private final int radius;
+    private final int radiusSq;
 
     public Avoidance(BlockPos center, double coefficient, int radius) {
         this(center.getX(), center.getY(), center.getZ(), coefficient, radius);
