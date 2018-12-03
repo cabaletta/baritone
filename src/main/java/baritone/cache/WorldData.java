@@ -19,6 +19,7 @@ package baritone.cache;
 
 import baritone.Baritone;
 import baritone.api.cache.ICachedWorld;
+import baritone.api.cache.IContainerMemory;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.cache.IWorldData;
 
@@ -33,6 +34,7 @@ public class WorldData implements IWorldData {
 
     public final CachedWorld cache;
     private final Waypoints waypoints;
+    private final ContainerMemory containerMemory;
     //public final MapData map;
     public final Path directory;
     public final int dimension;
@@ -41,6 +43,7 @@ public class WorldData implements IWorldData {
         this.directory = directory;
         this.cache = new CachedWorld(directory.resolve("cache"), dimension);
         this.waypoints = new Waypoints(directory.resolve("waypoints"));
+        this.containerMemory = new ContainerMemory(directory.resolve("containers"));
         this.dimension = dimension;
     }
 
@@ -59,5 +62,10 @@ public class WorldData implements IWorldData {
     @Override
     public IWaypointCollection getWaypoints() {
         return this.waypoints;
+    }
+
+    @Override
+    public IContainerMemory getContainerMemory() {
+        return this.containerMemory;
     }
 }

@@ -18,7 +18,6 @@
 package baritone.api;
 
 import baritone.api.behavior.ILookBehavior;
-import baritone.api.behavior.IMemoryBehavior;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.event.listener.IEventBus;
@@ -46,12 +45,6 @@ public interface IBaritone {
      * @see ILookBehavior
      */
     ILookBehavior getLookBehavior();
-
-    /**
-     * @return The {@link IMemoryBehavior} instance
-     * @see IMemoryBehavior
-     */
-    IMemoryBehavior getMemoryBehavior();
 
     /**
      * @return The {@link IMineProcess} instance

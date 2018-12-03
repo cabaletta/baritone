@@ -175,11 +175,6 @@ public class Baritone implements IBaritone {
     }
 
     @Override
-    public MemoryBehavior getMemoryBehavior() {
-        return this.memoryBehavior;
-    }
-
-    @Override
     public MineProcess getMineProcess() {
         return this.mineProcess;
     }

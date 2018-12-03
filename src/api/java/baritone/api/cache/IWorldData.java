@@ -36,4 +36,10 @@ public interface IWorldData {
      * @return The waypoint collection for this world
      */
     IWaypointCollection getWaypoints();
+
+    /**
+     * @return The {@link IContainerMemory} instance
+     * @see IContainerMemory
+     */
+    IContainerMemory getContainerMemory();
 }

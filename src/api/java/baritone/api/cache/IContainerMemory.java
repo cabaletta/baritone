@@ -15,9 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.api.cache;
 
-import baritone.api.behavior.memory.IRememberedInventory;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Map;
@@ -26,7 +25,7 @@ import java.util.Map;
  * @author Brady
  * @since 9/23/2018
  */
-public interface IMemoryBehavior extends IBehavior {
+public interface IContainerMemory {
 
     /**
      * Gets a remembered inventory by its block position.
