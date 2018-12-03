@@ -21,16 +21,16 @@ import baritone.api.BaritoneAPI;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.pathing.path.CutoffPath;
+import baritone.utils.BlockStateInterface;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.EmptyChunk;
 
 public abstract class PathBase implements IPath {
     @Override
-    public IPath cutoffAtLoadedChunks(World world) {
+    public PathBase cutoffAtLoadedChunks(Object bsi0) {
+        BlockStateInterface bsi = (BlockStateInterface) bsi0;
         for (int i = 0; i < positions().size(); i++) {
             BlockPos pos = positions().get(i);
-            if (world.getChunk(pos) instanceof EmptyChunk) {
+            if (!bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ())) {
                 return new CutoffPath(this, i);
             }
         }
@@ -38,7 +38,7 @@ public abstract class PathBase implements IPath {
     }
 
     @Override
-    public IPath staticCutoff(Goal destination) {
+    public PathBase staticCutoff(Goal destination) {
         int min = BaritoneAPI.getSettings().pathCutoffMinimumLength.get();
         if (length() < min) {
             return this;

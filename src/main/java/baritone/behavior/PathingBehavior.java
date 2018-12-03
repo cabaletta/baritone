@@ -433,7 +433,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             Optional<IPath> path = calcResult.getPath();
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
-                    IPath result = p.cutoffAtLoadedChunks(context.world());
+                    IPath result = p.cutoffAtLoadedChunks(context.bsi());
 
                     if (result instanceof CutoffPath) {
                         logDebug("Cutting off path at edge of loaded chunks");

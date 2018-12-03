@@ -21,7 +21,6 @@ import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.world.World;
 
 import java.util.HashSet;
 import java.util.List;
@@ -119,10 +118,12 @@ public interface IPath {
     /**
      * Cuts off this path at the loaded chunk border, and returns the resulting path. Default
      * implementation just returns this path, without the intended functionality.
+     * <p>
+     * The argument is supposed to be a BlockStateInterface LOL LOL LOL LOL LOL
      *
      * @return The result of this cut-off operation
      */
-    default IPath cutoffAtLoadedChunks(World world) {
+    default IPath cutoffAtLoadedChunks(Object bsi) {
         throw new UnsupportedOperationException();
     }
 
