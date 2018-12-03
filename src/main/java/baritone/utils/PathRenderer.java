@@ -33,6 +33,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
@@ -296,6 +297,31 @@ public final class PathRenderer implements Helper {
             }
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
+
+            if (Baritone.settings().renderGoalXZBeacon.get()) {
+                mc.getTextureManager().bindTexture(TileEntityBeaconRenderer.TEXTURE_BEACON_BEAM);
+
+                if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+                    GlStateManager.disableDepth();
+                }
+
+                TileEntityBeaconRenderer.renderBeamSegment(
+                        goalPos.getX() - renderPosX,
+                        -renderPosY,
+                        goalPos.getZ() - renderPosZ,
+                        partialTicks,
+                        1.0,
+                        player.world.getTotalWorldTime(),
+                        0,
+                        256,
+                        color.getColorComponents(null)
+                );
+
+                if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+                    GlStateManager.enableDepth();
+                }
+                return;
+            }
 
             minX = goalPos.getX() + 0.002 - renderPosX;
             maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
