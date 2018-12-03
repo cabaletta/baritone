@@ -159,6 +159,31 @@ public class Settings {
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.5);
 
     /**
+     * Toggle the following 4 settings
+     * <p>
+     * They have a noticable performance impact, so they default off
+     */
+    public Setting<Boolean> avoidance = new Setting<>(false);
+    /**
+     * Set to 1.0 to effectively disable this feature
+     * <p>
+     * Set below 1.0 to go out of your way to walk near mob spawners
+     */
+    public Setting<Double> mobSpawnerAvoidanceCoefficient = new Setting<>(2.0);
+
+    public Setting<Integer> mobSpawnerAvoidanceRadius = new Setting<>(16);
+
+    /**
+     * Set to 1.0 to effectively disable this feature
+     * <p>
+     * Set below 1.0 to go out of your way to walk near mobs
+     */
+    public Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
+
+    public Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
+
+
+    /**
      * Don't repropagate cost improvements below 0.01 ticks. They're all just floating point inaccuracies,
      * and there's no point.
      */
