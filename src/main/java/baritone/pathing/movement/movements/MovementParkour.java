@@ -212,7 +212,7 @@ public class MovementParkour extends Movement {
 
                 if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround) {
                     BlockPos positionToPlace = dest.down();
-                    for (int i = 0; i < 5; i++) {
+                    for (int i = 4; i >= 0; i--) { // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
                         BlockPos against1 = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
                         if (against1.up().equals(src.offset(direction, 3))) { // we can't turn around that fast
                             continue;
