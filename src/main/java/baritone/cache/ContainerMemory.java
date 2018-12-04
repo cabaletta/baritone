@@ -60,7 +60,7 @@ public class ContainerMemory implements IContainerMemory {
     /**
      * An inventory that we are aware of.
      * <p>
-     * Associated with a {@link BlockPos} in {@link WorldDataContainer#rememberedInventories}.
+     * Associated with a {@link BlockPos} in {@link ContainerMemory#inventories}.
      */
     public static class RememberedInventory implements IRememberedInventory {
 
