@@ -39,8 +39,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.Objects;
-
 public class MovementParkour extends Movement {
 
     static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
@@ -228,15 +226,16 @@ public class MovementParkour extends Movement {
                             RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance());
                             if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
                                 state.setTarget(new MovementState.MovementTarget(place, true));
+                                break;
                             }
-                            ctx.getSelectedBlock().ifPresent(selectedBlock -> {
-                                EnumFacing side = ctx.objectMouseOver().sideHit;
-                                if (Objects.equals(selectedBlock, against1) && selectedBlock.offset(side).equals(dest.down())) {
-                                    state.setInput(Input.CLICK_RIGHT, true);
-                                }
-                            });
                         }
                     }
+                    ctx.getSelectedBlock().ifPresent(selectedBlock -> {
+                        EnumFacing side = ctx.objectMouseOver().sideHit;
+                        if (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.offset(side).equals(dest.down())) {
+                            state.setInput(Input.CLICK_RIGHT, true);
+                        }
+                    });
                 }
                 if (dist == 3) { // this is a 2 block gap, dest = src + direction * 3
                     double xDiff = (src.x + 0.5) - ctx.player().posX;
