@@ -70,17 +70,17 @@ public class ContainerMemory implements IContainerMemory {
     }
 
     public synchronized void save() throws IOException {
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = Unpooled.buffer(0, Integer.MAX_VALUE);
         PacketBuffer out = new PacketBuffer(buf);
         out.writeInt(inventories.size());
         for (Map.Entry<BlockPos, RememberedInventory> entry : inventories.entrySet()) {
-            out.writeInt(entry.getKey().getX());
-            out.writeInt(entry.getKey().getY());
-            out.writeInt(entry.getKey().getZ());
-            writeItemStacks(entry.getValue().getContents());
+            out = new PacketBuffer(out.writeInt(entry.getKey().getX()));
+            out = new PacketBuffer(out.writeInt(entry.getKey().getY()));
+            out = new PacketBuffer(out.writeInt(entry.getKey().getZ()));
+            out = writeItemStacks(entry.getValue().getContents(), out);
         }
-        System.out.println("CONTAINER BYTES " + buf.array().length);
-        Files.write(saveTo, buf.array());
+        System.out.println("CONTAINER BYTES " + out.array().length);
+        Files.write(saveTo, out.array());
     }
 
     public synchronized void setup(BlockPos pos, int windowId, int slotCount) {
@@ -120,18 +120,20 @@ public class ContainerMemory implements IContainerMemory {
     }
 
     public static byte[] writeItemStacks(List<ItemStack> write) {
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = Unpooled.buffer(0, Integer.MAX_VALUE);
         PacketBuffer out = new PacketBuffer(buf);
-        writeItemStacks(write, out);
-        return buf.array();
+        out = writeItemStacks(write, out);
+        return out.array();
     }
 
-    public static void writeItemStacks(List<ItemStack> write, PacketBuffer out) {
+    public static PacketBuffer writeItemStacks(List<ItemStack> write, PacketBuffer out) {
         System.out.println("WRITING ITEM STACKS " + write.size() + " " + write);
-        out.writeInt(write.size());
+        out = new PacketBuffer(out.writeInt(write.size()));
         for (ItemStack stack : write) {
-            out.writeItemStack(stack);
+            System.out.println(out.writableBytes());
+            out = out.writeItemStack(stack);
         }
+        return out;
     }
 
     /**
