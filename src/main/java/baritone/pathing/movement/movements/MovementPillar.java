@@ -76,7 +76,10 @@ public class MovementPillar extends Movement {
         if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) { // we need to place a block where we started to jump on it
             return COST_INF;
         }
-        if (from instanceof BlockLiquid || fromDown.getBlock() instanceof BlockLiquid) {//can't pillar on water or in water
+        if (from instanceof BlockLiquid || (fromDown.getBlock() instanceof BlockLiquid && context.assumeWalkOnWater())) {
+            // otherwise, if we're standing in water, we cannot pillar
+            // if we're standing on water and assumeWalkOnWater is true, we cannot pillar
+            // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
             return COST_INF;
         }
         double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);

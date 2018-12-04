@@ -35,8 +35,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.EmptyChunk;
 
 /**
  * Static helpers for cost calculation
@@ -160,7 +158,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block.isPassable(null, null);
     }
 
-    static boolean isReplacable(int x, int y, int z, IBlockState state, World world) {
+    static boolean isReplacable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
         // all other overrides just return true or false
@@ -172,9 +170,13 @@ public interface MovementHelper extends ActionCosts, Helper {
          *     }
          */
         Block block = state.getBlock();
+        if (block == Blocks.AIR || isWater(block)) {
+            // early return for common cases hehe
+            return true;
+        }
         if (block instanceof BlockSnow) {
             // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
+            if (!bsi.worldContainsLoadedChunk(x, z)) {
                 return true;
             }
             return state.getValue(BlockSnow.LAYERS) == 1;

@@ -37,6 +37,8 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
 
+import static baritone.pathing.movement.movements.MovementParkour.HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP;
+
 public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
@@ -63,19 +65,17 @@ public class MovementAscend extends Movement {
             if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
                 return COST_INF;
             }
-            if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y, destZ, toPlace, context.world())) {
+            if (!MovementHelper.isReplacable(destX, y, destZ, toPlace, context.bsi())) {
                 return COST_INF;
             }
-            // TODO: add ability to place against .down() as well as the cardinal directions
-            // useful for when you are starting a staircase without anything to place against
-            // Counterpoint to the above TODO ^ you should move then pillar instead of ascend
-            for (int i = 0; i < 4; i++) {
-                int againstX = destX + HORIZONTALS[i].getXOffset();
-                int againstZ = destZ + HORIZONTALS[i].getZOffset();
-                if (againstX == x && againstZ == z) {
+            for (int i = 0; i < 5; i++) {
+                int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
+                int againstY = y + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
+                int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
+                if (againstX == x && againstZ == z) { // we might be able to backplace now, but it doesn't matter because it will have been broken by the time we'd need to use it
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, y, againstZ)) {
+                if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, againstY, againstZ)) {
                     hasToPlace = true;
                     break;
                 }
@@ -164,8 +164,8 @@ public class MovementAscend extends Movement {
 
         IBlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
         if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
-            for (int i = 0; i < 4; i++) {
-                BlockPos anAgainst = positionToPlace.offset(HORIZONTALS[i]);
+            for (int i = 0; i < 5; i++) {
+                BlockPos anAgainst = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
                 if (anAgainst.equals(src)) {
                     continue;
                 }

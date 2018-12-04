@@ -43,7 +43,7 @@ import java.util.Objects;
 
 public class MovementParkour extends Movement {
 
-    private static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
+    static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
 
     private final EnumFacing direction;
@@ -131,16 +131,17 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState toReplace = context.get(destX, y - 1, destZ);
-        if (toReplace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toReplace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.world())) {
+        if (!MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.bsi())) {
             return;
         }
         for (int i = 0; i < 5; i++) {
             int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
+            int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
             int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
             if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
                 continue;
             }
-            if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, y - 1, againstZ)) {
+            if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, againstY, againstZ)) {
                 res.x = destX;
                 res.y = y;
                 res.z = destZ;

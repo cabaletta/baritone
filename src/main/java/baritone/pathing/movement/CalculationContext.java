@@ -55,6 +55,7 @@ public class CalculationContext {
     private final boolean allowBreak;
     private final boolean allowParkour;
     private final boolean allowParkourPlace;
+    private final boolean assumeWalkOnWater;
     private final int maxFallHeightNoWater;
     private final int maxFallHeightBucket;
     private final double waterWalkSpeed;
@@ -80,6 +81,7 @@ public class CalculationContext {
         this.allowBreak = Baritone.settings().allowBreak.get();
         this.allowParkour = Baritone.settings().allowParkour.get();
         this.allowParkourPlace = Baritone.settings().allowParkourPlace.get();
+        this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.get();
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
         int depth = EnchantmentHelper.getDepthStriderModifier(player);
@@ -183,6 +185,10 @@ public class CalculationContext {
 
     public boolean allowParkourPlace() {
         return allowParkourPlace;
+    }
+
+    public boolean assumeWalkOnWater() {
+        return assumeWalkOnWater;
     }
 
     public int maxFallHeightNoWater() {
