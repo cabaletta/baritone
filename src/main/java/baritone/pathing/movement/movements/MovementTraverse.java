@@ -108,11 +108,11 @@ public class MovementTraverse extends Movement {
                 if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
                     return COST_INF;
                 }
-                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb0, false);
+                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
                 if (hardness1 >= COST_INF) {
                     return COST_INF;
                 }
-                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb1, true);
+                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true);
 
                 double WC = throughWater ? context.waterWalkSpeed() : WALK_ONE_BLOCK_COST;
                 for (int i = 0; i < 4; i++) {
