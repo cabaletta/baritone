@@ -126,7 +126,11 @@ public interface MovementHelper extends ActionCosts, Helper {
      * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
      * not including water, and not including ladders or vines or cobwebs (they slow us down)
      *
-     * @return
+     * @param context Calculation context to provide block state lookup
+     * @param x The block's x position
+     * @param y The block's y position
+     * @param z The block's z position
+     * @return Whether or not the block at the specified position
      */
     static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
         return fullyPassable(context.get(x, y, z));
@@ -243,7 +247,13 @@ public interface MovementHelper extends ActionCosts, Helper {
      * through? Includes water because we know that we automatically jump on
      * water
      *
-     * @return
+     * @param bsi Block state provider
+     * @param x The block's x position
+     * @param y The block's y position
+     * @param z The block's z position
+     * @param state The state of the block at the specified location
+     *
+     * @return Whether or not the specified block can be walked on
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
@@ -367,6 +377,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     /**
      * AutoTool for a specific block
      *
+     * @param ctx The player context
      * @param b the blockstate to mine
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
@@ -376,6 +387,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     /**
      * AutoTool for a specific block with precomputed ToolSet data
      *
+     * @param ctx The player context
      * @param b  the blockstate to mine
      * @param ts previously calculated ToolSet
      */

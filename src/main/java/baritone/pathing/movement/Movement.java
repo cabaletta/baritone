@@ -205,10 +205,11 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     /**
-     * Calculate latest movement state.
-     * Gets called once a tick.
+     * Calculate latest movement state. Gets called once a tick.
      *
-     * @return
+     * @param state The current state
+     *
+     * @return The new state
      */
     public MovementState updateState(MovementState state) {
         if (!prepared(state)) {
