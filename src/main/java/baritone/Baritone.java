@@ -164,6 +164,10 @@ public class Baritone implements IBaritone {
         return this.playerContext;
     }
 
+    public MemoryBehavior getMemoryBehavior() {
+        return this.memoryBehavior;
+    }
+
     @Override
     public FollowProcess getFollowProcess() {
         return this.followProcess;

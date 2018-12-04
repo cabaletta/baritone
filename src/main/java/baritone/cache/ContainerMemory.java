@@ -20,21 +20,68 @@ package baritone.cache;
 import baritone.api.cache.IContainerMemory;
 import baritone.api.cache.IRememberedInventory;
 import baritone.api.utils.IPlayerContext;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
 public class ContainerMemory implements IContainerMemory {
-    public ContainerMemory(Path saveTo) {
-        // eventually
-    }
 
+    private final Path saveTo;
     /**
      * The current remembered inventories
      */
     private final Map<BlockPos, RememberedInventory> inventories = new HashMap<>();
+
+
+    public ContainerMemory(Path saveTo) {
+        this.saveTo = saveTo;
+        try {
+            read(Files.readAllBytes(saveTo));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            inventories.clear();
+        }
+    }
+
+    private void read(byte[] bytes) throws IOException {
+        System.out.println("READ BYTES " + bytes.length);
+        PacketBuffer in = new PacketBuffer(Unpooled.wrappedBuffer(bytes));
+        int chests = in.readInt();
+        for (int i = 0; i < chests; i++) {
+            int x = in.readInt();
+            int y = in.readInt();
+            int z = in.readInt();
+            System.out.println("Read x y z " + x + " " + y + " " + z);
+            RememberedInventory rem = new RememberedInventory();
+            rem.items.addAll(readItemStacks(in));
+            rem.size = rem.items.size();
+            if (rem.items.isEmpty()) {
+                continue; // this only happens if the list has no elements, not if the list has elements that are all empty item stacks
+            }
+            inventories.put(new BlockPos(x, y, z), rem);
+        }
+    }
+
+    public synchronized void save() throws IOException {
+        ByteBuf buf = Unpooled.buffer();
+        PacketBuffer out = new PacketBuffer(buf);
+        out.writeInt(inventories.size());
+        for (Map.Entry<BlockPos, RememberedInventory> entry : inventories.entrySet()) {
+            out.writeInt(entry.getKey().getX());
+            out.writeInt(entry.getKey().getY());
+            out.writeInt(entry.getKey().getZ());
+            writeItemStacks(entry.getValue().getContents());
+        }
+        System.out.println("CONTAINER BYTES " + buf.array().length);
+        Files.write(saveTo, buf.array());
+    }
 
     public synchronized void setup(BlockPos pos, int windowId, int slotCount) {
         RememberedInventory inventory = inventories.computeIfAbsent(pos, x -> new RememberedInventory());
@@ -55,6 +102,36 @@ public class ContainerMemory implements IContainerMemory {
     public final synchronized Map<BlockPos, IRememberedInventory> getRememberedInventories() {
         // make a copy since this map is modified from the packet thread
         return new HashMap<>(inventories);
+    }
+
+    public static List<ItemStack> readItemStacks(byte[] bytes) throws IOException {
+        PacketBuffer in = new PacketBuffer(Unpooled.wrappedBuffer(bytes));
+        return readItemStacks(in);
+    }
+
+    public static List<ItemStack> readItemStacks(PacketBuffer in) throws IOException {
+        int count = in.readInt();
+        System.out.println("Read count " + count);
+        List<ItemStack> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            result.add(in.readItemStack());
+        }
+        return result;
+    }
+
+    public static byte[] writeItemStacks(List<ItemStack> write) {
+        ByteBuf buf = Unpooled.buffer();
+        PacketBuffer out = new PacketBuffer(buf);
+        writeItemStacks(write, out);
+        return buf.array();
+    }
+
+    public static void writeItemStacks(List<ItemStack> write, PacketBuffer out) {
+        System.out.println("WRITING ITEM STACKS " + write.size() + " " + write);
+        out.writeInt(write.size());
+        for (ItemStack stack : write) {
+            out.writeItemStack(stack);
+        }
     }
 
     /**
@@ -93,14 +170,9 @@ public class ContainerMemory implements IContainerMemory {
             return this.size;
         }
 
-        public int getWindowId() {
-            return this.windowId;
-        }
-
         public void updateFromOpenWindow(IPlayerContext ctx) {
             items.clear();
             items.addAll(ctx.player().openContainer.getInventory().subList(0, size));
-            System.out.println("Saved " + items);
         }
     }
 }

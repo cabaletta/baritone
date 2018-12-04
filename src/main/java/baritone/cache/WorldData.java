@@ -23,6 +23,7 @@ import baritone.api.cache.IContainerMemory;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.cache.IWorldData;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -51,6 +52,15 @@ public class WorldData implements IWorldData {
         Baritone.getExecutor().execute(() -> {
             System.out.println("Started saving the world in a new thread");
             cache.save();
+        });
+        Baritone.getExecutor().execute(() -> {
+            System.out.println("Started saving saved containers in a new thread");
+            try {
+                containerMemory.save();
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Failed to save saved containers");
+            }
         });
     }
 

@@ -29,6 +29,7 @@ import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketCloseWindow;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
@@ -38,9 +39,12 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityLockable;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * @author Brady
@@ -49,6 +53,8 @@ import java.util.List;
 public final class MemoryBehavior extends Behavior {
 
     private final List<FutureInventory> futureInventories = new ArrayList<>(); // this is per-bot
+
+    private Integer enderChestWindowId; // nae nae
 
     public MemoryBehavior(Baritone baritone) {
         super(baritone);
@@ -70,10 +76,7 @@ public final class MemoryBehavior extends Behavior {
                 CPacketPlayerTryUseItemOnBlock packet = event.cast();
 
                 TileEntity tileEntity = ctx.world().getTileEntity(packet.getPos());
-                if (tileEntity != null) {
-                    System.out.println(tileEntity.getPos() + " " + packet.getPos());
-                    System.out.println(tileEntity);
-                }
+                // if tileEntity is an ender chest, we don't need to do anything. ender chests are treated the same regardless of what coordinate right clicked
 
                 // Ensure the TileEntity is a container of some sort
                 if (tileEntity instanceof TileEntityLockable) {
@@ -96,6 +99,7 @@ public final class MemoryBehavior extends Behavior {
 
             if (p instanceof CPacketCloseWindow) {
                 updateInventory();
+                getCurrent().save();
             }
         }
     }
@@ -111,7 +115,14 @@ public final class MemoryBehavior extends Behavior {
                 futureInventories.removeIf(i -> System.nanoTime() / 1000000L - i.time > 1000);
 
                 System.out.println("Received packet " + packet.getGuiId() + " " + packet.getEntityId() + " " + packet.getSlotCount() + " " + packet.getWindowId());
-
+                System.out.println(packet.getWindowTitle());
+                if (packet.getWindowTitle() instanceof TextComponentTranslation) {
+                    // title is not customized (i.e. this isn't just a renamed shulker)
+                    if (((TextComponentTranslation) packet.getWindowTitle()).getKey().equals("container.enderchest")) {
+                        enderChestWindowId = packet.getWindowId();
+                        return;
+                    }
+                }
                 futureInventories.stream()
                         .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
                         .findFirst().ifPresent(matched -> {
@@ -125,6 +136,7 @@ public final class MemoryBehavior extends Behavior {
 
             if (p instanceof SPacketCloseWindow) {
                 updateInventory();
+                getCurrent().save();
             }
         }
     }
@@ -143,10 +155,24 @@ public final class MemoryBehavior extends Behavior {
 
 
     private void updateInventory() {
-        getCurrentContainer().getInventoryFromWindow(ctx.player().openContainer.windowId).ifPresent(inventory -> inventory.updateFromOpenWindow(ctx));
+        int windowId = ctx.player().openContainer.windowId;
+        if (enderChestWindowId != null) {
+            if (windowId == enderChestWindowId) {
+                getCurrent().contents = ctx.player().openContainer.getInventory().subList(0, 27);
+            } else {
+                getCurrent().save();
+                enderChestWindowId = null;
+            }
+        }
+        if (getCurrentContainer() != null) {
+            getCurrentContainer().getInventoryFromWindow(windowId).ifPresent(inventory -> inventory.updateFromOpenWindow(ctx));
+        }
     }
 
     private ContainerMemory getCurrentContainer() {
+        if (baritone.getWorldProvider().getCurrentWorld() == null) {
+            return null;
+        }
         return (ContainerMemory) baritone.getWorldProvider().getCurrentWorld().getContainerMemory();
     }
 
@@ -196,6 +222,50 @@ public final class MemoryBehavior extends Behavior {
             this.type = type;
             this.pos = pos;
             System.out.println("Future inventory created " + time + " " + slots + " " + type + " " + pos);
+        }
+    }
+
+    public Optional<List<ItemStack>> echest() {
+        return Optional.ofNullable(getCurrent().contents).map(Collections::unmodifiableList);
+    }
+
+    public EnderChestMemory getCurrent() {
+        Path path = baritone.getWorldProvider().getCurrentWorld().directory;
+        return EnderChestMemory.getByServerAndPlayer(path.getParent(), ctx.player().getUniqueID());
+    }
+
+    public static class EnderChestMemory {
+        private static final Map<Path, EnderChestMemory> memory = new HashMap<>();
+        private final Path enderChest;
+        private List<ItemStack> contents;
+
+        private EnderChestMemory(Path enderChest) {
+            this.enderChest = enderChest;
+            System.out.println("Echest storing in " + enderChest);
+            try {
+                this.contents = ContainerMemory.readItemStacks(Files.readAllBytes(enderChest));
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("CANNOT read echest =( =(");
+                this.contents = null;
+            }
+        }
+
+        public synchronized void save() {
+            System.out.println("Saving");
+            if (contents != null) {
+                try {
+                    enderChest.getParent().toFile().mkdir();
+                    Files.write(enderChest, ContainerMemory.writeItemStacks(contents));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("CANNOT save echest =( =(");
+                }
+            }
+        }
+
+        private static synchronized EnderChestMemory getByServerAndPlayer(Path serverStorage, UUID player) {
+            return memory.computeIfAbsent(serverStorage.resolve("echests").resolve(player.toString()), EnderChestMemory::new);
         }
     }
 }
