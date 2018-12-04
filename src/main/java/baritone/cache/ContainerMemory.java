@@ -62,6 +62,7 @@ public class ContainerMemory implements IContainerMemory {
             RememberedInventory rem = new RememberedInventory();
             rem.items.addAll(readItemStacks(in));
             rem.size = rem.items.size();
+            rem.windowId = -1;
             if (rem.items.isEmpty()) {
                 continue; // this only happens if the list has no elements, not if the list has elements that are all empty item stacks
             }
