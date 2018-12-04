@@ -36,7 +36,8 @@ public final class VecUtils {
     /**
      * Calculates the center of the block at the specified position's bounding box
      *
-     * @param pos The block position
+     * @param world The world that the block is in, used to provide the bounding box
+     * @param pos   The block position
      * @return The center of the block's bounding box
      * @see #getBlockPosCenter(BlockPos)
      */

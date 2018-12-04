@@ -41,6 +41,8 @@ public interface IGameEventListener {
      * Run once per game tick before screen input is handled.
      *
      * @see Minecraft#runTick()
+     *
+     * @param event The event
      */
     void onTick(TickEvent event);
 
@@ -48,13 +50,13 @@ public interface IGameEventListener {
      * Run once per game tick from before and after the player rotation is sent to the server.
      *
      * @see EntityPlayerSP#onUpdate()
+     *
+     * @param event The event
      */
     void onPlayerUpdate(PlayerUpdateEvent event);
 
     /**
      * Run once per game tick from before keybinds are processed.
-     *
-     * @see Minecraft#processKeyBinds()
      */
     void onProcessKeyBinds();
 
@@ -62,6 +64,8 @@ public interface IGameEventListener {
      * Runs whenever the client player sends a message to the server.
      *
      * @see EntityPlayerSP#sendChatMessage(String)
+     *
+     * @param event The event
      */
     void onSendChatMessage(ChatEvent event);
 
@@ -69,6 +73,8 @@ public interface IGameEventListener {
      * Runs before and after whenever a chunk is either loaded, unloaded, or populated.
      *
      * @see WorldClient#doPreChunk(int, int, boolean)
+     *
+     * @param event The event
      */
     void onChunkEvent(ChunkEvent event);
 
@@ -77,7 +83,7 @@ public interface IGameEventListener {
      * <p>
      * <b>Note:</b> {@link GameSettings#anaglyph} has been removed in Minecraft 1.13
      *
-     * @see EntityRenderer#renderWorldPass(int, float, long)
+     * @param event The event
      */
     void onRenderPass(RenderEvent event);
 
@@ -85,24 +91,28 @@ public interface IGameEventListener {
      * Runs before and after whenever a new world is loaded
      *
      * @see Minecraft#loadWorld(WorldClient, String)
+     *
+     * @param event The event
      */
     void onWorldEvent(WorldEvent event);
 
     /**
      * Runs before a outbound packet is sent
      *
-     * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
      * @see Packet
      * @see GenericFutureListener
+     *
+     * @param event The event
      */
     void onSendPacket(PacketEvent event);
 
     /**
      * Runs before an inbound packet is processed
      *
-     * @see NetworkManager#dispatchPacket(Packet, GenericFutureListener[])
      * @see Packet
      * @see GenericFutureListener
+     *
+     * @param event The event
      */
     void onReceivePacket(PacketEvent event);
 
@@ -111,30 +121,29 @@ public interface IGameEventListener {
      * and before and after the player jumps.
      *
      * @see Entity#moveRelative(float, float, float, float)
-     * @see EntityLivingBase#jump()
+     *
+     * @param event The event
      */
     void onPlayerRotationMove(RotationMoveEvent event);
 
     /**
      * Called when the local player interacts with a block, whether it is breaking or opening/placing.
      *
-     * @see Minecraft#clickMouse()
-     * @see Minecraft#rightClickMouse()
+     * @param event The event
      */
     void onBlockInteract(BlockInteractEvent event);
 
     /**
      * Called when the local player dies, as indicated by the creation of the {@link GuiGameOver} screen.
      *
-     * @see GuiGameOver(ITextComponent)
-     * @see ITextComponent
+     * @see GuiGameOver
      */
     void onPlayerDeath();
 
     /**
      * When the pathfinder's state changes
      *
-     * @param event
+     * @param event The event
      */
     void onPathEvent(PathEvent event);
 }

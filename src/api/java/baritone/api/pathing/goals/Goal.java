@@ -30,12 +30,20 @@ public interface Goal {
      * Returns whether or not the specified position
      * meets the requirement for this goal based.
      *
+     * @param x The goal X position
+     * @param y The goal Y position
+     * @param z The goal Z position
+     *
      * @return Whether or not it satisfies this goal
      */
     boolean isInGoal(int x, int y, int z);
 
     /**
      * Estimate the number of ticks it will take to get to the goal
+     *
+     * @param x The goal X position
+     * @param y The goal Y position
+     * @param z The goal Z position
      *
      * @return The estimate number of ticks to satisfy the goal
      */
