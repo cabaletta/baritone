@@ -53,6 +53,8 @@ public class CalculationContext {
     private final boolean canSprint;
     private final double placeBlockCost;
     private final boolean allowBreak;
+    private final boolean allowParkour;
+    private final boolean allowParkourPlace;
     private final int maxFallHeightNoWater;
     private final int maxFallHeightBucket;
     private final double waterWalkSpeed;
@@ -76,6 +78,8 @@ public class CalculationContext {
         this.canSprint = Baritone.settings().allowSprint.get() && player.getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
         this.allowBreak = Baritone.settings().allowBreak.get();
+        this.allowParkour = Baritone.settings().allowParkour.get();
+        this.allowParkourPlace = Baritone.settings().allowParkourPlace.get();
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
         int depth = EnchantmentHelper.getDepthStriderModifier(player);
@@ -171,6 +175,14 @@ public class CalculationContext {
 
     public boolean allowBreak() {
         return allowBreak;
+    }
+
+    public boolean allowParkour() {
+        return allowParkour;
+    }
+
+    public boolean allowParkourPlace() {
+        return allowParkourPlace;
     }
 
     public int maxFallHeightNoWater() {

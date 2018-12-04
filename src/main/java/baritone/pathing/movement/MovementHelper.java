@@ -127,9 +127,9 @@ public interface MovementHelper extends ActionCosts, Helper {
      * not including water, and not including ladders or vines or cobwebs (they slow us down)
      *
      * @param context Calculation context to provide block state lookup
-     * @param x The block's x position
-     * @param y The block's y position
-     * @param z The block's z position
+     * @param x       The block's x position
+     * @param y       The block's y position
+     * @param z       The block's z position
      * @return Whether or not the block at the specified position
      */
     static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
@@ -247,12 +247,11 @@ public interface MovementHelper extends ActionCosts, Helper {
      * through? Includes water because we know that we automatically jump on
      * water
      *
-     * @param bsi Block state provider
-     * @param x The block's x position
-     * @param y The block's y position
-     * @param z The block's z position
+     * @param bsi   Block state provider
+     * @param x     The block's x position
+     * @param y     The block's y position
+     * @param z     The block's z position
      * @param state The state of the block at the specified location
-     *
      * @return Whether or not the specified block can be walked on
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
@@ -378,7 +377,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * AutoTool for a specific block
      *
      * @param ctx The player context
-     * @param b the blockstate to mine
+     * @param b   the blockstate to mine
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
         switchToBestToolFor(ctx, b, new ToolSet(ctx.player()));
@@ -388,8 +387,8 @@ public interface MovementHelper extends ActionCosts, Helper {
      * AutoTool for a specific block with precomputed ToolSet data
      *
      * @param ctx The player context
-     * @param b  the blockstate to mine
-     * @param ts previously calculated ToolSet
+     * @param b   the blockstate to mine
+     * @param ts  previously calculated ToolSet
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts) {
         ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock());

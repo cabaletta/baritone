@@ -63,11 +63,6 @@ public class MovementDescend extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
-        Block fromDown = context.get(x, y - 1, z).getBlock();
-        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
-            return;
-        }
-
         double totalCost = 0;
         IBlockState destDown = context.get(destX, y - 1, destZ);
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false);
@@ -80,6 +75,11 @@ public class MovementDescend extends Movement {
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true); // only the top block in the 3 we need to mine needs to consider the falling blocks above
         if (totalCost >= COST_INF) {
+            return;
+        }
+
+        Block fromDown = context.get(x, y - 1, z).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return;
         }
 
@@ -107,7 +107,7 @@ public class MovementDescend extends Movement {
         double walk = WALK_OFF_BLOCK_COST;
         if (fromDown == Blocks.SOUL_SAND) {
             // use this ratio to apply the soul sand speed penalty to our 0.8 block distance
-            walk = WALK_ONE_OVER_SOUL_SAND_COST;
+            walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
         }
         totalCost += walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
         res.x = destX;

@@ -57,18 +57,7 @@ public class MovementAscend extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        IBlockState srcDown = context.get(x, y - 1, z);
-        if (srcDown.getBlock() == Blocks.LADDER || srcDown.getBlock() == Blocks.VINE) {
-            return COST_INF;
-        }
-        // we can jump from soul sand, but not from a bottom slab
-        boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
         IBlockState toPlace = context.get(destX, y, destZ);
-        boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
-
-        if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
-            return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
-        }
         boolean hasToPlace = false;
         if (!MovementHelper.canWalkOn(context.bsi(), destX, y, destZ, toPlace)) {
             if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
@@ -95,8 +84,8 @@ public class MovementAscend extends Movement {
                 return COST_INF;
             }
         }
-        IBlockState srcUp2 = null;
-        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context.bsi(), x, y + 1, z) || !((srcUp2 = context.get(x, y + 2, z)).getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
+        IBlockState srcUp2 = context.get(x, y + 2, z); // used lower down anyway
+        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context.bsi(), x, y + 1, z) || !(srcUp2.getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
@@ -113,6 +102,16 @@ public class MovementAscend extends Movement {
             // however, in the scenario where glitchy world gen where unsupported sand / gravel generates
             // it's possible srcUp is AIR from the start, and srcUp2 is falling
             // and in that scenario, when we arrive and break srcUp2, that lets srcUp3 fall on us and suffocate us
+        }
+        IBlockState srcDown = context.get(x, y - 1, z);
+        if (srcDown.getBlock() == Blocks.LADDER || srcDown.getBlock() == Blocks.VINE) {
+            return COST_INF;
+        }
+        // we can jump from soul sand, but not from a bottom slab
+        boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
+        boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
+        if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
+            return COST_INF;// the only thing we can ascend onto from a bottom slab is another bottom slab
         }
         double walk;
         if (jumpingToBottomSlab) {
@@ -136,10 +135,9 @@ public class MovementAscend extends Movement {
         if (hasToPlace) {
             totalCost += context.placeBlockCost();
         }
-        if (srcUp2 == null) {
-            srcUp2 = context.get(x, y + 2, z);
-        }
-        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false); // TODO MAKE ABSOLUTELY SURE we don't need includeFalling here, from the falling check above
+        // start with srcUp2 since we already have its state
+        // includeFalling isn't needed because of the falling check above -- if srcUp3 is falling we will have already exited with COST_INF if we'd actually have to break it
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false);
         if (totalCost >= COST_INF) {
             return COST_INF;
         }

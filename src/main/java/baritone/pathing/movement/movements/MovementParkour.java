@@ -17,7 +17,6 @@
 
 package baritone.pathing.movement.movements;
 
-import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -30,7 +29,6 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
@@ -65,24 +63,22 @@ public class MovementParkour extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
-        if (!Baritone.settings().allowParkour.get()) {
-            return;
-        }
-        IBlockState standingOn = context.get(x, y - 1, z);
-        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn)) {
-            return;
-        }
-        int xDiff = dir.getXOffset();
-        int zDiff = dir.getZOffset();
-        IBlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
-        if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
-            return;
-        }
-        if (MovementHelper.canWalkOn(context.bsi(), x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+        if (!context.allowParkour()) {
             return;
         }
 
+        int xDiff = dir.getXOffset();
+        int zDiff = dir.getZOffset();
         if (!MovementHelper.fullyPassable(context, x + xDiff, y, z + zDiff)) {
+            // most common case at the top -- the adjacent block isn't air
+            return;
+        }
+        IBlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
+        if (MovementHelper.canWalkOn(context.bsi(), x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+            // second most common case -- we could just traverse not parkour
+            return;
+        }
+        if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
             return;
         }
         if (!MovementHelper.fullyPassable(context, x + xDiff, y + 1, z + zDiff)) {
@@ -92,6 +88,10 @@ public class MovementParkour extends Movement {
             return;
         }
         if (!MovementHelper.fullyPassable(context, x, y + 2, z)) {
+            return;
+        }
+        IBlockState standingOn = context.get(x, y - 1, z);
+        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn)) {
             return;
         }
         int maxJump;
@@ -122,20 +122,16 @@ public class MovementParkour extends Movement {
         if (maxJump != 4) {
             return;
         }
-        if (!Baritone.settings().allowParkourPlace.get()) {
-            return;
-        }
-        if (!Baritone.settings().allowPlace.get()) {
-            Helper.HELPER.logDirect("allowParkourPlace enabled but allowPlace disabled?");
+        if (!context.allowParkourPlace()) {
             return;
         }
         int destX = x + 4 * xDiff;
         int destZ = z + 4 * zDiff;
-        IBlockState toPlace = context.get(destX, y - 1, destZ);
         if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
             return;
         }
-        if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace, context.world())) {
+        IBlockState toReplace = context.get(destX, y - 1, destZ);
+        if (toReplace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toReplace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.world())) {
             return;
         }
         for (int i = 0; i < 5; i++) {

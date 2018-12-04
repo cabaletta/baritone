@@ -58,10 +58,6 @@ public class MovementDiagonal extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        Block fromDown = context.get(x, y - 1, z).getBlock();
-        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
-            return COST_INF;
-        }
         IBlockState destInto = context.get(destX, y, destZ);
         if (!MovementHelper.canWalkThrough(context.bsi(), destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context.bsi(), destX, y + 1, destZ)) {
             return COST_INF;
@@ -74,6 +70,10 @@ public class MovementDiagonal extends Movement {
         // For either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+        }
+        Block fromDown = context.get(x, y - 1, z).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
+            return COST_INF;
         }
         if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
