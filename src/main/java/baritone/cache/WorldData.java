@@ -34,7 +34,7 @@ import java.nio.file.Path;
 public class WorldData implements IWorldData {
 
     public final CachedWorld cache;
-    private final Waypoints waypoints;
+    private final WaypointCollection waypoints;
     private final ContainerMemory containerMemory;
     //public final MapData map;
     public final Path directory;
@@ -43,7 +43,7 @@ public class WorldData implements IWorldData {
     WorldData(Path directory, int dimension) {
         this.directory = directory;
         this.cache = new CachedWorld(directory.resolve("cache"), dimension);
-        this.waypoints = new Waypoints(directory.resolve("waypoints"));
+        this.waypoints = new WaypointCollection(directory.resolve("waypoints"));
         this.containerMemory = new ContainerMemory(directory.resolve("containers"));
         this.dimension = dimension;
     }

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  *
  * @author leijurv
  */
-public class Waypoints implements IWaypointCollection {
+public class WaypointCollection implements IWaypointCollection {
 
     /**
      * Magic value to detect invalid waypoint files
@@ -42,7 +42,7 @@ public class Waypoints implements IWaypointCollection {
     private final Path directory;
     private final Map<IWaypoint.Tag, Set<IWaypoint>> waypoints;
 
-    Waypoints(Path directory) {
+    WaypointCollection(Path directory) {
         this.directory = directory;
         if (!Files.exists(directory)) {
             try {
