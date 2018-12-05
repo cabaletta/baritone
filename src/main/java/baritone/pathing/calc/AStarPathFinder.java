@@ -121,7 +121,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
-                if (actionCost <= 0) {
+                if (actionCost <= 0 || Double.isNaN(actionCost)) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
                 if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
