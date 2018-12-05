@@ -118,13 +118,14 @@ public class MovementTraverse extends Movement {
                 }
                 double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
                 double WC = throughWater ? context.waterWalkSpeed() : WALK_ONE_BLOCK_COST;
-                for (int i = 0; i < 4; i++) {
-                    int againstX = destX + HORIZONTALS[i].getXOffset();
-                    int againstZ = destZ + HORIZONTALS[i].getZOffset();
+                for (int i = 0; i < 5; i++) {
+                    int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
+                    int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
+                    int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
                     if (againstX == x && againstZ == z) { // this would be a backplace
                         continue;
                     }
-                    if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, y - 1, againstZ)) { // found a side place option
+                    if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, againstY, againstZ)) { // found a side place option
                         return WC + context.placeBlockCost() + hardness1 + hardness2;
                     }
                 }
@@ -241,8 +242,8 @@ public class MovementTraverse extends Movement {
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
-            for (int i = 0; i < 4; i++) {
-                BlockPos against1 = dest.offset(HORIZONTALS[i]);
+            for (int i = 0; i < 5; i++) {
+                BlockPos against1 = dest.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
                 if (against1.equals(src)) {
                     continue;
                 }

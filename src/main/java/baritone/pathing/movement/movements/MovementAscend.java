@@ -37,8 +37,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
 
-import static baritone.pathing.movement.movements.MovementParkour.HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP;
-
 public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
