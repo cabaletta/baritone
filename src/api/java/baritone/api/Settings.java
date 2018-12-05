@@ -141,8 +141,10 @@ public class Settings {
      * metric gets better and better with each block, instead of slightly worse.
      * <p>
      * Finding the optimal path is worth it, so it's the default.
+     * <p>
+     * This value is an expression instead of a literal so that it's exactly equal to SPRINT_ONE_BLOCK_COST defined in ActionCosts.java
      */
-    public Setting<Double> costHeuristic = new Setting<>(3.5D);
+    public Setting<Double> costHeuristic = new Setting<>(20 / 5.612);
 
     // a bunch of obscure internal A* settings that you probably don't want to change
     /**
