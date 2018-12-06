@@ -47,7 +47,7 @@ public abstract class PathBase implements IPath {
             return this;
         }
         double factor = BaritoneAPI.getSettings().pathCutoffFactor.get();
-        int newLength = (int) ((length() - 1 - min) * factor) + min;
+        int newLength = (int) ((length() - min) * factor) + min - 1;
         return new CutoffPath(this, newLength);
     }
 }
