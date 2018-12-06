@@ -357,7 +357,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             return false;
         } else {
             // we are either onGround or in liquid
-            if (ctx.player().motionY < 0) {
+            if (ctx.player().motionY < -0.1) {
                 // if we are strictly moving downwards (not stationary)
                 // we could be falling through water, which could be unsafe to splice
                 return false; // so don't
