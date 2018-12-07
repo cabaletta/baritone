@@ -51,14 +51,12 @@ public class ContainerMemory implements IContainerMemory {
     }
 
     private void read(byte[] bytes) throws IOException {
-        System.out.println("READ BYTES " + bytes.length);
         PacketBuffer in = new PacketBuffer(Unpooled.wrappedBuffer(bytes));
         int chests = in.readInt();
         for (int i = 0; i < chests; i++) {
             int x = in.readInt();
             int y = in.readInt();
             int z = in.readInt();
-            System.out.println("Read x y z " + x + " " + y + " " + z);
             RememberedInventory rem = new RememberedInventory();
             rem.items.addAll(readItemStacks(in));
             rem.size = rem.items.size();
@@ -80,7 +78,6 @@ public class ContainerMemory implements IContainerMemory {
             out = new PacketBuffer(out.writeInt(entry.getKey().getZ()));
             out = writeItemStacks(entry.getValue().getContents(), out);
         }
-        System.out.println("CONTAINER BYTES " + out.array().length);
         Files.write(saveTo, out.array());
     }
 
@@ -112,7 +109,6 @@ public class ContainerMemory implements IContainerMemory {
 
     public static List<ItemStack> readItemStacks(PacketBuffer in) throws IOException {
         int count = in.readInt();
-        System.out.println("Read count " + count);
         List<ItemStack> result = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             result.add(in.readItemStack());
@@ -128,10 +124,8 @@ public class ContainerMemory implements IContainerMemory {
     }
 
     public static PacketBuffer writeItemStacks(List<ItemStack> write, PacketBuffer out) {
-        System.out.println("WRITING ITEM STACKS " + write.size() + " " + write);
         out = new PacketBuffer(out.writeInt(write.size()));
         for (ItemStack stack : write) {
-            System.out.println(out.writableBytes());
             out = out.writeItemStack(stack);
         }
         return out;
