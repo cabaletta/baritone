@@ -21,19 +21,27 @@ import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalGetToBlock;
+import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
+
     private Block gettingTo;
     private List<BlockPos> knownLocations;
 
@@ -45,8 +53,8 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
 
     @Override
     public void getToBlock(Block block) {
+        onLostControl();
         gettingTo = block;
-        knownLocations = null;
         rescan(new ArrayList<>(), new CalculationContext(baritone));
     }
 
@@ -80,9 +88,16 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             CalculationContext context = new CalculationContext(baritone, true);
             Baritone.getExecutor().execute(() -> rescan(current, context));
         }
-        Goal goal = new GoalComposite(knownLocations.stream().map(GoalGetToBlock::new).toArray(Goal[]::new));
-        if (goal.isInGoal(ctx.playerFeet())) {
-            onLostControl();
+        Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
+        if (goal.isInGoal(ctx.playerFeet()) && isSafeToCancel) {
+            // we're there
+            if (rightClickOnArrival(gettingTo)) {
+                if (rightClick()) {
+                    onLostControl();
+                }
+            } else {
+                onLostControl();
+            }
         }
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
@@ -91,6 +106,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     public void onLostControl() {
         gettingTo = null;
         knownLocations = null;
+        baritone.getInputOverrideHandler().clearAllKeys();
     }
 
     @Override
@@ -100,5 +116,36 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
 
     private void rescan(List<BlockPos> known, CalculationContext context) {
         knownLocations = MineProcess.searchWorld(context, Collections.singletonList(gettingTo), 64, known);
+    }
+
+    private Goal createGoal(BlockPos pos) {
+        return walkIntoInsteadOfAdjacent(gettingTo) ? new GoalTwoBlocks(pos) : new GoalGetToBlock(pos);
+    }
+
+    private boolean rightClick() {
+        for (BlockPos pos : knownLocations) {
+            Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
+            if (reachable.isPresent()) {
+                baritone.getLookBehavior().updateTarget(reachable.get(), true);
+                if (knownLocations.contains(ctx.getSelectedBlock().orElse(null))) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // TODO find some way to right click even if we're in an ESC menu
+                    System.out.println(ctx.player().openContainer);
+                    if (!(ctx.player().openContainer instanceof ContainerPlayer)) {
+                        return true;
+                    }
+                }
+                return false; // trying to right click, will do it next tick or so
+            }
+        }
+        logDirect("Arrived but failed to right click open");
+        return true;
+    }
+
+    private boolean walkIntoInsteadOfAdjacent(Block block) {
+        return block == Blocks.PORTAL;
+    }
+
+    private boolean rightClickOnArrival(Block block) {
+        return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
     }
 }
