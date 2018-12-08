@@ -51,6 +51,11 @@ public class Settings {
     public Setting<Boolean> allowPlace = new Setting<>(true);
 
     /**
+     * Allow Baritone to move items in your inventory to your hotbar
+     */
+    public Setting<Boolean> allowInventory = new Setting<>(false);
+
+    /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited
      */
