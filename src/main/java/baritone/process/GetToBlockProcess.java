@@ -142,10 +142,16 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     private boolean walkIntoInsteadOfAdjacent(Block block) {
+        if (!Baritone.settings().enterPortal.get()) {
+            return false;
+        }
         return block == Blocks.PORTAL;
     }
 
     private boolean rightClickOnArrival(Block block) {
+        if (!Baritone.settings().rightClickContainerOnArrival.get()) {
+            return false;
+        }
         return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
     }
 }

@@ -184,6 +184,17 @@ public class Settings {
 
     public Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
 
+    /**
+     * When running a goto towards a container block (chest, ender chest, furnace, etc),
+     * right click and open it once you arrive.
+     */
+    public Setting<Boolean> rightClickContainerOnArrival = new Setting<>(true);
+
+    /**
+     * When running a goto towards a nether portal block, walk all the way into the portal
+     * instead of stopping one block before.
+     */
+    public Setting<Boolean> enterPortal = new Setting<>(true);
 
     /**
      * Don't repropagate cost improvements below 0.01 ticks. They're all just floating point inaccuracies,
