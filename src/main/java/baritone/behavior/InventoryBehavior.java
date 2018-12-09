@@ -41,7 +41,7 @@ public class InventoryBehavior extends Behavior {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (ctx.player().openContainer == ctx.player().inventoryContainer) {
+        if (ctx.player().openContainer != ctx.player().inventoryContainer) {
             // we have a crafting table or a chest or something open
             return;
         }
