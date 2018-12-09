@@ -21,8 +21,6 @@ import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemPickaxe;
@@ -43,8 +41,8 @@ public class InventoryBehavior extends Behavior {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (Minecraft.getMinecraft().currentScreen != null && !(Minecraft.getMinecraft().currentScreen instanceof GuiInventory)) {
-            // we have chat or a chest or something open
+        if (ctx.player().openContainer == ctx.player().inventoryContainer) {
+            // we have a crafting table or a chest or something open
             return;
         }
         if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
