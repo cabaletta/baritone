@@ -55,13 +55,12 @@ public class InventoryBehavior extends Behavior {
     }
 
     private void swapWithHotBar(int inInventory, int inHotbar) {
-        int windowId = ctx.player().inventoryContainer.windowId;
         // aaaaaaaaaaaaaaaaaaaaaaaaaaaa
         // aaaaaaaaAAAAAAaaaaaAAaaaAAAAaaAAA
         if (inInventory < 9) {
             inInventory += 36;
         }
-        ctx.playerController().windowClick(windowId, inInventory, inHotbar, ClickType.SWAP, ctx.player());
+        ctx.playerController().windowClick(ctx.player().inventoryContainer.windowId, inInventory, inHotbar, ClickType.SWAP, ctx.player());
     }
 
     private int firstValidThrowaway() { // TODO offhand idk
