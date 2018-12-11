@@ -55,8 +55,6 @@ public class InventoryBehavior extends Behavior {
     }
 
     private void swapWithHotBar(int inInventory, int inHotbar) {
-        // aaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        // aaaaaaaaAAAAAAaaaaaAAaaaAAAAaaAAA
         if (inInventory < 9) {
             inInventory += 36;
         }
