@@ -6,6 +6,10 @@
 [![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/cabaletta/baritone/issues)
 [![Minecraft](https://img.shields.io/badge/MC-1.12.2-green.svg)](https://minecraft.gamepedia.com/1.12.2)
+[![Impact integration](https://img.shields.io/badge/Impact%20integration-1.0.0--hotfix--4-green.svg)](https://impactdevelopment.github.io/)
+[![KAMI integration](https://img.shields.io/badge/KAMI%20integration-1.0.0-orange.svg)](https://github.com/zeroeightysix/KAMI/)
+[![Asuna integration](https://img.shields.io/badge/Asuna%20integration-1.0.0-orange.svg)](https://github.com/EmotionalLove/Asuna/)
+[![Future integration](https://img.shields.io/badge/Future%20integration-%3F%3F%3F-red.svg)](https://futureclient.net/)
 
 A Minecraft pathfinder bot. 
 
