@@ -23,13 +23,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
-import net.minecraft.util.text.ITextComponent;
 
 /**
  * @author Brady
@@ -40,18 +36,16 @@ public interface IGameEventListener {
     /**
      * Run once per game tick before screen input is handled.
      *
-     * @see Minecraft#runTick()
-     *
      * @param event The event
+     * @see Minecraft#runTick()
      */
     void onTick(TickEvent event);
 
     /**
      * Run once per game tick from before and after the player rotation is sent to the server.
      *
-     * @see EntityPlayerSP#onUpdate()
-     *
      * @param event The event
+     * @see EntityPlayerSP#onUpdate()
      */
     void onPlayerUpdate(PlayerUpdateEvent event);
 
@@ -63,18 +57,16 @@ public interface IGameEventListener {
     /**
      * Runs whenever the client player sends a message to the server.
      *
-     * @see EntityPlayerSP#sendChatMessage(String)
-     *
      * @param event The event
+     * @see EntityPlayerSP#sendChatMessage(String)
      */
     void onSendChatMessage(ChatEvent event);
 
     /**
      * Runs before and after whenever a chunk is either loaded, unloaded, or populated.
      *
-     * @see WorldClient#doPreChunk(int, int, boolean)
-     *
      * @param event The event
+     * @see WorldClient#doPreChunk(int, int, boolean)
      */
     void onChunkEvent(ChunkEvent event);
 
@@ -90,29 +82,26 @@ public interface IGameEventListener {
     /**
      * Runs before and after whenever a new world is loaded
      *
-     * @see Minecraft#loadWorld(WorldClient, String)
-     *
      * @param event The event
+     * @see Minecraft#loadWorld(WorldClient, String)
      */
     void onWorldEvent(WorldEvent event);
 
     /**
      * Runs before a outbound packet is sent
      *
+     * @param event The event
      * @see Packet
      * @see GenericFutureListener
-     *
-     * @param event The event
      */
     void onSendPacket(PacketEvent event);
 
     /**
      * Runs before an inbound packet is processed
      *
+     * @param event The event
      * @see Packet
      * @see GenericFutureListener
-     *
-     * @param event The event
      */
     void onReceivePacket(PacketEvent event);
 
@@ -120,9 +109,8 @@ public interface IGameEventListener {
      * Run once per game tick from before and after the player's moveRelative method is called
      * and before and after the player jumps.
      *
-     * @see Entity#moveRelative(float, float, float, float)
-     *
      * @param event The event
+     * @see Entity#moveRelative(float, float, float, float)
      */
     void onPlayerRotationMove(RotationMoveEvent event);
 
