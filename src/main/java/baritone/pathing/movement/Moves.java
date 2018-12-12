@@ -220,51 +220,59 @@ public enum Moves {
         }
     },
 
-    DIAGONAL_NORTHEAST(+1, 0, -1) {
+    DIAGONAL_NORTHEAST(+1, 0, -1, false, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.EAST);
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.EAST, res.y - src.y);
         }
 
         @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementDiagonal.cost(context, x, y, z, x + 1, z - 1);
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDiagonal.cost(context, x, y, z, x + 1, z - 1, result);
         }
     },
 
-    DIAGONAL_NORTHWEST(-1, 0, -1) {
+    DIAGONAL_NORTHWEST(-1, 0, -1, false, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.WEST);
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.WEST, res.y - src.y);
         }
 
         @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementDiagonal.cost(context, x, y, z, x - 1, z - 1);
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDiagonal.cost(context, x, y, z, x - 1, z - 1, result);
         }
     },
 
-    DIAGONAL_SOUTHEAST(+1, 0, +1) {
+    DIAGONAL_SOUTHEAST(+1, 0, +1, false, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.EAST);
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.EAST, res.y - src.y);
         }
 
         @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementDiagonal.cost(context, x, y, z, x + 1, z + 1);
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDiagonal.cost(context, x, y, z, x + 1, z + 1, result);
         }
     },
 
-    DIAGONAL_SOUTHWEST(-1, 0, +1) {
+    DIAGONAL_SOUTHWEST(-1, 0, +1, false, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.WEST);
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.WEST, res.y - src.y);
         }
 
         @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementDiagonal.cost(context, x, y, z, x - 1, z + 1);
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDiagonal.cost(context, x, y, z, x - 1, z + 1, result);
         }
     },
 
