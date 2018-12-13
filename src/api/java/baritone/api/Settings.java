@@ -95,6 +95,13 @@ public class Settings {
     public Setting<Boolean> assumeSafeWalk = new Setting<>(false);
 
     /**
+     * If true, parkour is allowed to make jumps when standing on blocks at the maximum height, so player feet is y=256
+     * <p>
+     * Defaults to false because this fails on NCP
+     */
+    public Setting<Boolean> allowJumpAt256 = new Setting<>(false);
+
+    /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
     public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(

@@ -63,6 +63,9 @@ public class MovementParkour extends Movement {
         if (!context.allowParkour()) {
             return;
         }
+        if (y == 256 && !context.allowJumpAt256()) {
+            return;
+        }
 
         int xDiff = dir.getXOffset();
         int zDiff = dir.getZOffset();

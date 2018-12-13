@@ -55,6 +55,7 @@ public class CalculationContext {
     private final boolean allowBreak;
     private final boolean allowParkour;
     private final boolean allowParkourPlace;
+    private final boolean allowJumpAt256;
     private final boolean assumeWalkOnWater;
     private final int maxFallHeightNoWater;
     private final int maxFallHeightBucket;
@@ -81,6 +82,7 @@ public class CalculationContext {
         this.allowBreak = Baritone.settings().allowBreak.get();
         this.allowParkour = Baritone.settings().allowParkour.get();
         this.allowParkourPlace = Baritone.settings().allowParkourPlace.get();
+        this.allowJumpAt256 = Baritone.settings().allowJumpAt256.get();
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.get();
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
@@ -185,6 +187,10 @@ public class CalculationContext {
 
     public boolean allowParkourPlace() {
         return allowParkourPlace;
+    }
+
+    public boolean allowJumpAt256() {
+        return allowJumpAt256;
     }
 
     public boolean assumeWalkOnWater() {
