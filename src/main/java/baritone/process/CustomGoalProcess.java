@@ -52,7 +52,9 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
     @Override
     public void setGoal(Goal goal) {
         this.goal = goal;
-        this.state = State.GOAL_SET;
+        if (this.state == State.NONE) {
+            this.state = State.GOAL_SET;
+        }
     }
 
     @Override
