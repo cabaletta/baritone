@@ -20,7 +20,7 @@ package baritone.api.event.events;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * Called when the local player interacts with a block, can be either {@link Type#BREAK} or {@link Type#USE}.
+ * Called when the local player interacts with a block, can be either {@link Type#START_BREAK} or {@link Type#USE}.
  *
  * @author Brady
  * @since 8/22/2018
@@ -59,9 +59,9 @@ public final class BlockInteractEvent {
     public enum Type {
 
         /**
-         * We're breaking the target block.
+         * We're starting to break the target block.
          */
-        BREAK,
+        START_BREAK,
 
         /**
          * We're right clicking on the target block. Either placing or interacting with.
