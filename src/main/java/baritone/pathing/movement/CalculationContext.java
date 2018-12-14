@@ -53,6 +53,10 @@ public class CalculationContext {
     private final boolean canSprint;
     private final double placeBlockCost;
     private final boolean allowBreak;
+    private final boolean allowParkour;
+    private final boolean allowParkourPlace;
+    private final boolean allowJumpAt256;
+    private final boolean assumeWalkOnWater;
     private final int maxFallHeightNoWater;
     private final int maxFallHeightBucket;
     private final double waterWalkSpeed;
@@ -60,11 +64,15 @@ public class CalculationContext {
     private final BetterWorldBorder worldBorder;
 
     public CalculationContext(IBaritone baritone) {
+        this(baritone, false);
+    }
+
+    public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
         this.baritone = baritone;
         this.player = baritone.getPlayerContext().player();
         this.world = baritone.getPlayerContext().world();
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
-        this.bsi = new BlockStateInterface(world, worldData); // TODO TODO TODO
+        this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
         // new CalculationContext() needs to happen, can't add an argument (i'll beat you), can we get the world provider from currentlyTicking?
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(baritone.getPlayerContext(), false);
@@ -72,6 +80,10 @@ public class CalculationContext {
         this.canSprint = Baritone.settings().allowSprint.get() && player.getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
         this.allowBreak = Baritone.settings().allowBreak.get();
+        this.allowParkour = Baritone.settings().allowParkour.get();
+        this.allowParkourPlace = Baritone.settings().allowParkourPlace.get();
+        this.allowJumpAt256 = Baritone.settings().allowJumpAt256.get();
+        this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.get();
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
         int depth = EnchantmentHelper.getDepthStriderModifier(player);
@@ -167,6 +179,22 @@ public class CalculationContext {
 
     public boolean allowBreak() {
         return allowBreak;
+    }
+
+    public boolean allowParkour() {
+        return allowParkour;
+    }
+
+    public boolean allowParkourPlace() {
+        return allowParkourPlace;
+    }
+
+    public boolean allowJumpAt256() {
+        return allowJumpAt256;
+    }
+
+    public boolean assumeWalkOnWater() {
+        return assumeWalkOnWater;
     }
 
     public int maxFallHeightNoWater() {

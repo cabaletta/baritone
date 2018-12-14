@@ -109,6 +109,7 @@ public class Baritone implements IBaritone {
             pathingBehavior = new PathingBehavior(this);
             lookBehavior = new LookBehavior(this);
             memoryBehavior = new MemoryBehavior(this);
+            new InventoryBehavior(this);
             inputOverrideHandler = new InputOverrideHandler(this);
             new ExampleBaritoneControl(this);
         }
@@ -168,7 +169,6 @@ public class Baritone implements IBaritone {
         return this.pathingBehavior;
     }
 
-    @Override
     public MemoryBehavior getMemoryBehavior() {
         return this.memoryBehavior;
     }

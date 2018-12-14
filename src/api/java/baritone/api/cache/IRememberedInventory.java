@@ -17,29 +17,23 @@
 
 package baritone.api.cache;
 
+import net.minecraft.item.ItemStack;
+
+import java.util.List;
+
 /**
  * @author Brady
- * @since 9/24/2018
+ * @since 9/23/2018
  */
-public interface IWorldData {
+public interface IRememberedInventory {
 
     /**
-     * Returns the cached world for this world. A cached world is a simplified format
-     * of a regular world, intended for use on multiplayer servers where chunks are not
-     * traditionally stored to disk, allowing for long distance pathing with minimal disk usage.
-     *
-     * @return The cached world for this world
+     * @return The contents of this inventory
      */
-    ICachedWorld getCachedWorld();
+    List<ItemStack> getContents();
 
     /**
-     * @return The waypoint collection for this world
+     * @return The number of slots in this inventory
      */
-    IWaypointCollection getWaypoints();
-
-    /**
-     * @return The {@link IContainerMemory} instance
-     * @see IContainerMemory
-     */
-    IContainerMemory getContainerMemory();
+    int getSize();
 }

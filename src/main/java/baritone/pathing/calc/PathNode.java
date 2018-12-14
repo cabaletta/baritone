@@ -73,6 +73,9 @@ public final class PathNode {
         this.previous = null;
         this.cost = ActionCosts.COST_INF;
         this.estimatedCostToGoal = goal.heuristic(x, y, z);
+        if (Double.isNaN(estimatedCostToGoal)) {
+            throw new IllegalStateException(goal + " calculated implausible heuristic");
+        }
         this.isOpen = false;
         this.x = x;
         this.y = y;

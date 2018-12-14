@@ -35,8 +35,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.EmptyChunk;
 
 /**
  * Static helpers for cost calculation
@@ -70,7 +68,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -92,7 +90,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (snow) {
                 // the check in BlockSnow.isPassable is layers < 5
                 // while actually, we want < 3 because 3 or greater makes it impassable in a 2 high ceiling
-                return state.getValue(BlockSnow.LAYERS) < 3;
+                if (state.getValue(BlockSnow.LAYERS) >= 3) {
+                    return false;
+                }
+                // ok, it's low enough we could walk through it, but is it supported?
+                return canWalkOn(bsi, x, y - 1, z);
             }
             if (trapdoor) {
                 return !state.getValue(BlockTrapDoor.OPEN); // see BlockTrapDoor.isPassable
@@ -122,7 +124,11 @@ public interface MovementHelper extends ActionCosts, Helper {
      * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
      * not including water, and not including ladders or vines or cobwebs (they slow us down)
      *
-     * @return
+     * @param context Calculation context to provide block state lookup
+     * @param x       The block's x position
+     * @param y       The block's y position
+     * @param z       The block's z position
+     * @return Whether or not the block at the specified position
      */
     static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
         return fullyPassable(context.get(x, y, z));
@@ -139,6 +145,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block == Blocks.WEB
                 || block == Blocks.VINE
                 || block == Blocks.LADDER
+                || block == Blocks.COCOA
                 || block instanceof BlockDoor
                 || block instanceof BlockFenceGate
                 || block instanceof BlockSnow
@@ -151,7 +158,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block.isPassable(null, null);
     }
 
-    static boolean isReplacable(int x, int y, int z, IBlockState state, World world) {
+    static boolean isReplacable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
         // all other overrides just return true or false
@@ -163,9 +170,13 @@ public interface MovementHelper extends ActionCosts, Helper {
          *     }
          */
         Block block = state.getBlock();
+        if (block == Blocks.AIR || isWater(block)) {
+            // early return for common cases hehe
+            return true;
+        }
         if (block instanceof BlockSnow) {
             // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
-            if (world.getChunk(x >> 4, z >> 4) instanceof EmptyChunk) {
+            if (!bsi.worldContainsLoadedChunk(x, z)) {
                 return true;
             }
             return state.getValue(BlockSnow.LAYERS) == 1;
@@ -238,7 +249,12 @@ public interface MovementHelper extends ActionCosts, Helper {
      * through? Includes water because we know that we automatically jump on
      * water
      *
-     * @return
+     * @param bsi   Block state provider
+     * @param x     The block's x position
+     * @param y     The block's y position
+     * @param z     The block's z position
+     * @param state The state of the block at the specified location
+     * @return Whether or not the specified block can be walked on
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
@@ -362,7 +378,8 @@ public interface MovementHelper extends ActionCosts, Helper {
     /**
      * AutoTool for a specific block
      *
-     * @param b the blockstate to mine
+     * @param ctx The player context
+     * @param b   the blockstate to mine
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
         switchToBestToolFor(ctx, b, new ToolSet(ctx.player()));
@@ -371,8 +388,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     /**
      * AutoTool for a specific block with precomputed ToolSet data
      *
-     * @param b  the blockstate to mine
-     * @param ts previously calculated ToolSet
+     * @param ctx The player context
+     * @param b   the blockstate to mine
+     * @param ts  previously calculated ToolSet
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts) {
         ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
@@ -465,7 +483,6 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean isFlowing(IBlockState state) {
         // Will be IFluidState in 1.13
         return state.getBlock() instanceof BlockLiquid
-                && state.getPropertyKeys().contains(BlockLiquid.LEVEL)
                 && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 }

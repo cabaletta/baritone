@@ -164,7 +164,7 @@ public class MixinMinecraft {
     )
     private void onBlockBreak(CallbackInfo ci, BlockPos pos) {
         // clickMouse is only for the main player
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.BREAK));
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.START_BREAK));
     }
 
     @Inject(

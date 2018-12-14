@@ -47,33 +47,39 @@ public class MovementPillar extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        Block fromDown = context.get(x, y, z).getBlock();
-        boolean ladder = fromDown instanceof BlockLadder || fromDown instanceof BlockVine;
-        IBlockState fromDownDown = context.get(x, y - 1, z);
+        Block from = context.get(x, y, z).getBlock();
+        boolean ladder = from == Blocks.LADDER || from == Blocks.VINE;
+        IBlockState fromDown = context.get(x, y - 1, z);
         if (!ladder) {
-            if (fromDownDown.getBlock() instanceof BlockLadder || fromDownDown.getBlock() instanceof BlockVine) {
-                return COST_INF;
+            if (fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE) {
+                return COST_INF; // can't pillar from a ladder or vine onto something that isn't also climbable
             }
-            if (fromDownDown.getBlock() instanceof BlockSlab && !((BlockSlab) fromDownDown.getBlock()).isDouble() && fromDownDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+            if (fromDown.getBlock() instanceof BlockSlab && !((BlockSlab) fromDown.getBlock()).isDouble() && fromDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
                 return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
-        if (fromDown instanceof BlockVine && !hasAgainst(context, x, y, z)) {
+        if (from instanceof BlockVine && !hasAgainst(context, x, y, z)) { // TODO this vine can't be climbed, but we could place a pillar still since vines are replacable, no? perhaps the pillar jump would be impossible because of the slowdown actually.
             return COST_INF;
         }
         IBlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
-        if (toBreakBlock instanceof BlockFenceGate) {
+        if (toBreakBlock instanceof BlockFenceGate) { // see issue #172
             return COST_INF;
         }
         Block srcUp = null;
-        if (MovementHelper.isWater(toBreakBlock) && MovementHelper.isWater(fromDown)) {
+        if (MovementHelper.isWater(toBreakBlock) && MovementHelper.isWater(from)) { // TODO should this also be allowed if toBreakBlock is air?
             srcUp = context.get(x, y + 1, z).getBlock();
             if (MovementHelper.isWater(srcUp)) {
-                return LADDER_UP_ONE_COST;
+                return LADDER_UP_ONE_COST; // allow ascending pillars of water, but only if we're already in one
             }
         }
-        if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) {
+        if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) { // we need to place a block where we started to jump on it
+            return COST_INF;
+        }
+        if (from instanceof BlockLiquid || (fromDown.getBlock() instanceof BlockLiquid && context.assumeWalkOnWater())) {
+            // otherwise, if we're standing in water, we cannot pillar
+            // if we're standing on water and assumeWalkOnWater is true, we cannot pillar
+            // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
             return COST_INF;
         }
         double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);
@@ -81,10 +87,10 @@ public class MovementPillar extends Movement {
             return COST_INF;
         }
         if (hardness != 0) {
-            if (toBreakBlock instanceof BlockLadder || toBreakBlock instanceof BlockVine) {
+            if (toBreakBlock == Blocks.LADDER || toBreakBlock == Blocks.VINE) {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
-                IBlockState check = context.get(x, y + 3, z);
+                IBlockState check = context.get(x, y + 3, z); // the block on top of the one we're going to break, could it fall on us?
                 if (check.getBlock() instanceof BlockFalling) {
                     // see MovementAscend's identical check for breaking a falling block above our head
                     if (srcUp == null) {
@@ -102,9 +108,6 @@ public class MovementPillar extends Movement {
                 //    return COST_INF;
                 //}
             }
-        }
-        if (fromDown instanceof BlockLiquid || fromDownDown.getBlock() instanceof BlockLiquid) {//can't pillar on water or in water
-            return COST_INF;
         }
         if (ladder) {
             return LADDER_UP_ONE_COST + hardness * 5;

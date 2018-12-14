@@ -95,7 +95,9 @@ public class WorldProvider implements IWorldProvider, Helper {
         }
 
         System.out.println("Baritone world data dir: " + dir);
-        this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension));
+        synchronized (worldCache) {
+            this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension));
+        }
     }
 
     public final void closeWorld() {

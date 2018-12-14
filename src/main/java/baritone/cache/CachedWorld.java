@@ -255,6 +255,10 @@ public final class CachedWorld implements ICachedWorld, Helper {
         });
     }
 
+    public void tryLoadFromDisk(int regionX, int regionZ) {
+        getOrCreateRegion(regionX, regionZ);
+    }
+
     /**
      * Returns the region ID based on the region coordinates. 0 will be
      * returned if the specified region coordinates are out of bounds.

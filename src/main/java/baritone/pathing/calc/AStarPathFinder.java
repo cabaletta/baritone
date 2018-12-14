@@ -27,9 +27,9 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
 import baritone.utils.Helper;
 import baritone.utils.pathing.BetterWorldBorder;
+import baritone.utils.pathing.Favoring;
 import baritone.utils.pathing.MutableMoveResult;
 
-import java.util.HashSet;
 import java.util.Optional;
 
 /**
@@ -39,12 +39,12 @@ import java.util.Optional;
  */
 public final class AStarPathFinder extends AbstractNodeCostSearch implements Helper {
 
-    private final HashSet<Long> favoredPositions;
+    private final Favoring favoring;
     private final CalculationContext calcContext;
 
-    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, HashSet<Long> favoredPositions, CalculationContext context) {
+    public AStarPathFinder(int startX, int startY, int startZ, Goal goal, Favoring favoring, CalculationContext context) {
         super(startX, startY, startZ, goal, context);
-        this.favoredPositions = favoredPositions;
+        this.favoring = favoring;
         this.calcContext = context;
     }
 
@@ -63,7 +63,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
             bestSoFar[i] = startNode;
         }
         MutableMoveResult res = new MutableMoveResult();
-        HashSet<Long> favored = favoredPositions;
+        Favoring favored = favoring;
         BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world().getWorldBorder());
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
@@ -76,9 +76,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         int numNodes = 0;
         int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
-        boolean favoring = favored != null;
+        boolean favoring = !favored.isEmpty();
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
-        double favorCoeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && !cancelRequested) {
             long now = System.nanoTime() / 1000000L;
@@ -122,7 +121,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
-                if (actionCost <= 0) {
+                if (actionCost <= 0 || Double.isNaN(actionCost)) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
                 if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
@@ -136,16 +135,13 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     throw new IllegalStateException(moves + " " + res.y + " " + (currentNode.y + moves.yOffset));
                 }
                 long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
-                if (favoring && favored.contains(hashCode)) {
+                if (favoring) {
                     // see issue #18
-                    actionCost *= favorCoeff;
+                    actionCost *= favored.calculate(hashCode);
                 }
                 PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
                 double tentativeCost = currentNode.cost + actionCost;
                 if (tentativeCost < neighbor.cost) {
-                    if (tentativeCost < 0) {
-                        throw new IllegalStateException(moves + " overflowed into negative " + actionCost + " " + neighbor.cost + " " + tentativeCost);
-                    }
                     double improvementBy = neighbor.cost - tentativeCost;
                     // there are floating point errors caused by random combinations of traverse and diagonal over a flat area
                     // that means that sometimes there's a cost improvement of like 10 ^ -16

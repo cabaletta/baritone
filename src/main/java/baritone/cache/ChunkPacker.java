@@ -39,6 +39,8 @@ import java.util.*;
  */
 public final class ChunkPacker {
 
+    private static final Map<String, Block> resourceCache = new HashMap<>();
+
     private ChunkPacker() {}
 
     public static CachedChunk pack(Chunk chunk) {
@@ -91,10 +93,7 @@ public final class ChunkPacker {
         IBlockState[] blocks = new IBlockState[256];
 
         for (int z = 0; z < 16; z++) {
-            // @formatter:off
-            https:
-//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
-            // @formatter:on
+            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
@@ -120,7 +119,7 @@ public final class ChunkPacker {
     }
 
     public static Block stringToBlock(String name) {
-        return Block.getBlockFromName(name.contains(":") ? name : "minecraft:" + name);
+        return resourceCache.computeIfAbsent(name, n -> Block.getBlockFromName(n.contains(":") ? n : "minecraft:" + n));
     }
 
     private static PathingBlockType getPathingBlockType(IBlockState state) {

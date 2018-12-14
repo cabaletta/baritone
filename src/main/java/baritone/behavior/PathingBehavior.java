@@ -37,12 +37,15 @@ import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
+import baritone.utils.pathing.Favoring;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
 
 public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
 
@@ -277,11 +280,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     public void softCancelIfSafe() {
-        if (!isSafeToCancel()) {
-            return;
+        synchronized (pathPlanLock) {
+            if (!isSafeToCancel()) {
+                return;
+            }
+            current = null;
+            next = null;
         }
-        current = null;
-        next = null;
         cancelRequested = true;
         getInProgress().ifPresent(AbstractNodeCostSearch::cancel); // only cancel ours
         // do everything BUT clear keys
@@ -290,8 +295,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     // just cancel the current path
     public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
-        current = null;
-        next = null;
+        synchronized (pathPlanLock) {
+            current = null;
+            next = null;
+        }
         baritone.getInputOverrideHandler().clearAllKeys();
         getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
         baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
@@ -330,12 +337,18 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
     }
 
+    public void secretCursedFunctionDoNotCall(IPath path) {
+        synchronized (pathPlanLock) {
+            current = new PathExecutor(this, path);
+        }
+    }
+
     /**
      * See issue #209
      *
      * @return The starting {@link BlockPos} for a new path
      */
-    public BlockPos pathStart() { // TODO move to a helper or util class
+    public BetterBlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
         if (!MovementHelper.canWalkOn(ctx, feet.down())) {
             if (ctx.player().onGround) {
@@ -405,9 +418,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             primaryTimeout = Baritone.settings().planAheadPrimaryTimeoutMS.get();
             failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.get();
         }
-        CalculationContext context = new CalculationContext(baritone); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
+        CalculationContext context = new CalculationContext(baritone, true); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
-        if (!Objects.equals(pathfinder.getGoal(), goal)) {
+        if (!Objects.equals(pathfinder.getGoal(), goal)) { // will return the exact same object if simplification didn't happen
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
         }
         inProgress = pathfinder;
@@ -420,7 +433,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             Optional<IPath> path = calcResult.getPath();
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
-                    IPath result = p.cutoffAtLoadedChunks(context.world());
+                    IPath result = p.cutoffAtLoadedChunks(context.bsi());
 
                     if (result instanceof CutoffPath) {
                         logDebug("Cutting off path at edge of loaded chunks");
@@ -463,7 +476,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                             queuePathEvent(PathEvent.NEXT_CALC_FAILED);
                         }
                     } else {
-                        throw new IllegalStateException("I have no idea what to do with this path");
+                        //throw new IllegalStateException("I have no idea what to do with this path");
+                        // no point in throwing an exception here, and it gets it stuck with inProgress being not null
+                        logDirect("Warning: PathingBehaivor illegal state! Discarding invalid path!");
                     }
                 }
                 if (talkAboutIt && current != null && current.getPath() != null) {
@@ -488,11 +503,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
-        HashSet<Long> favoredPositions = null;
-        if (Baritone.settings().backtrackCostFavoringCoefficient.get() != 1D && previous != null) {
-            favoredPositions = previous.positions().stream().map(BetterBlockPos::longHash).collect(Collectors.toCollection(HashSet::new));
-        }
-        return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoredPositions, context);
+        Favoring favoring = new Favoring(context.getBaritone().getPlayerContext(), previous);
+        return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
     }
 
     @Override

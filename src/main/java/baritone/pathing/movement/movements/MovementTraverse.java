@@ -80,11 +80,11 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
-            double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true);
+            double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
             if (hardness1 >= COST_INF) {
                 return COST_INF;
             }
-            double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
+            double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
             if (hardness1 == 0 && hardness2 == 0) {
                 if (!water && context.canSprint()) {
                     // If there's nothing in the way, and this isn't water, and we aren't sneak placing
@@ -103,42 +103,43 @@ public class MovementTraverse extends Movement {
             if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
                 return COST_INF;
             }
-            if (destOn.getBlock().equals(Blocks.AIR) || MovementHelper.isReplacable(destX, y - 1, destZ, destOn, context.world())) {
+            if (MovementHelper.isReplacable(destX, y - 1, destZ, destOn, context.bsi())) {
                 boolean throughWater = MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock());
                 if (MovementHelper.isWater(destOn.getBlock()) && throughWater) {
+                    // this happens when assume walk on water is true and this is a traverse in water, which isn't allowed
                     return COST_INF;
                 }
                 if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
                     return COST_INF;
                 }
-                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb0, false);
+                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
                 if (hardness1 >= COST_INF) {
                     return COST_INF;
                 }
-                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb1, true);
-
+                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
                 double WC = throughWater ? context.waterWalkSpeed() : WALK_ONE_BLOCK_COST;
-                for (int i = 0; i < 4; i++) {
-                    int againstX = destX + HORIZONTALS[i].getXOffset();
-                    int againstZ = destZ + HORIZONTALS[i].getZOffset();
-                    if (againstX == x && againstZ == z) {
+                for (int i = 0; i < 5; i++) {
+                    int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
+                    int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
+                    int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
+                    if (againstX == x && againstZ == z) { // this would be a backplace
                         continue;
                     }
-                    if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, y - 1, againstZ)) {
+                    if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, againstY, againstZ)) { // found a side place option
                         return WC + context.placeBlockCost() + hardness1 + hardness2;
                     }
                 }
+                // now that we've checked all possible directions to side place, we actually need to backplace
                 if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && !((BlockSlab) srcDown).isDouble())) {
                     return COST_INF; // can't sneak and backplace against soul sand or half slabs =/
                 }
                 if (srcDown == Blocks.FLOWING_WATER || srcDown == Blocks.WATER) {
                     return COST_INF; // this is obviously impossible
                 }
-                WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are placing, we are sneaking
+                WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are sneak backplacing, we are sneaking lol
                 return WC + context.placeBlockCost() + hardness1 + hardness2;
             }
             return COST_INF;
-            // Out.log("Can't walk on " + Baritone.get(positionsToPlace[0]).getBlock());
         }
     }
 
@@ -241,8 +242,8 @@ public class MovementTraverse extends Movement {
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
-            for (int i = 0; i < 4; i++) {
-                BlockPos against1 = dest.offset(HORIZONTALS[i]);
+            for (int i = 0; i < 5; i++) {
+                BlockPos against1 = dest.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
                 if (against1.equals(src)) {
                     continue;
                 }

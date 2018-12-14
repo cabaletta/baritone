@@ -30,10 +30,12 @@ import baritone.api.utils.input.Input;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
@@ -186,22 +188,23 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
         }*/
         //long start = System.nanoTime() / 1000000L;
+        BlockStateInterface bsi = new BlockStateInterface(ctx);
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i < 0 || i >= path.movements().size()) {
                 continue;
             }
-            IMovement m = path.movements().get(i);
-            HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak());
-            HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace());
-            HashSet<BlockPos> prevWalkInto = new HashSet<>(m.toWalkInto());
+            Movement m = (Movement) path.movements().get(i);
+            HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak(bsi));
+            HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace(bsi));
+            HashSet<BlockPos> prevWalkInto = new HashSet<>(m.toWalkInto(bsi));
             m.resetBlockCache();
-            if (!prevBreak.equals(new HashSet<>(m.toBreak()))) {
+            if (!prevBreak.equals(new HashSet<>(m.toBreak(bsi)))) {
                 recalcBP = true;
             }
-            if (!prevPlace.equals(new HashSet<>(m.toPlace()))) {
+            if (!prevPlace.equals(new HashSet<>(m.toPlace(bsi)))) {
                 recalcBP = true;
             }
-            if (!prevWalkInto.equals(new HashSet<>(m.toWalkInto()))) {
+            if (!prevWalkInto.equals(new HashSet<>(m.toWalkInto(bsi)))) {
                 recalcBP = true;
             }
         }
@@ -210,9 +213,10 @@ public class PathExecutor implements IPathExecutor, Helper {
             HashSet<BlockPos> newPlace = new HashSet<>();
             HashSet<BlockPos> newWalkInto = new HashSet<>();
             for (int i = pathPosition; i < path.movements().size(); i++) {
-                newBreak.addAll(path.movements().get(i).toBreak());
-                newPlace.addAll(path.movements().get(i).toPlace());
-                newWalkInto.addAll(path.movements().get(i).toWalkInto());
+                Movement movement = (Movement) path.movements().get(i);
+                newBreak.addAll(movement.toBreak(bsi));
+                newPlace.addAll(movement.toPlace(bsi));
+                newWalkInto.addAll(movement.toWalkInto(bsi));
             }
             toBreak = newBreak;
             toPlace = newPlace;
@@ -344,13 +348,26 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     /**
      * Regardless of current path position, snap to the current player feet if possible
+     *
+     * @return Whether or not it was possible to snap to the current player feet
      */
     public boolean snipsnapifpossible() {
+        if (!ctx.player().onGround && !(ctx.world().getBlockState(ctx.playerFeet()).getBlock() instanceof BlockLiquid)) {
+            // if we're falling in the air, and not in water, don't splice
+            return false;
+        } else {
+            // we are either onGround or in liquid
+            if (ctx.player().motionY < -0.1) {
+                // if we are strictly moving downwards (not stationary)
+                // we could be falling through water, which could be unsafe to splice
+                return false; // so don't
+            }
+        }
         int index = path.positions().indexOf(ctx.playerFeet());
         if (index == -1) {
             return false;
         }
-        pathPosition = index;
+        pathPosition = index; // jump directly to current position
         clearKeys();
         return true;
     }
