@@ -355,7 +355,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void handleJoinGame(@Nonnull SPacketJoinGame packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
-        this.playerController = new BotPlayerController((Minecraft) this.client, this);
+        this.playerController = new BotPlayerController(this.user);
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
         this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
         this.player.preparePlayerToSpawn();

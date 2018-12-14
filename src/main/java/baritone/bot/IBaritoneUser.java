@@ -18,6 +18,7 @@
 package baritone.bot;
 
 import baritone.api.IBaritone;
+import baritone.api.utils.IPlayerController;
 import baritone.bot.spec.BotPlayerController;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
@@ -48,7 +49,7 @@ public interface IBaritoneUser {
      * @param player The player object
      * @param playerController The player controller
      */
-    void onWorldLoad(BotWorld world, EntityBot player, BotPlayerController playerController);
+    void onWorldLoad(BotWorld world, EntityBot player, IPlayerController playerController);
 
     /**
      * @return The network manager that is responsible for the current connection.
@@ -72,7 +73,7 @@ public interface IBaritoneUser {
     /**
      * @return The bot player controller
      */
-    BotPlayerController getPlayerController();
+    IPlayerController getPlayerController();
 
     /**
      * Returns the user login session. Should never be {@code null}, as this should be set when the

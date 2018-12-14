@@ -19,9 +19,9 @@ package baritone.bot;
 
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.IPlayerController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
@@ -45,7 +45,7 @@ public class BotPlayerContext implements IPlayerContext {
     }
 
     @Override
-    public PlayerControllerMP playerController() {
+    public IPlayerController playerController() {
         if (bot.getEntity() == null) {
             return null;
         }

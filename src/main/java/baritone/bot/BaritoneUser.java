@@ -19,7 +19,7 @@ package baritone.bot;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
-import baritone.bot.spec.BotPlayerController;
+import baritone.api.utils.IPlayerController;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
@@ -44,7 +44,7 @@ class BaritoneUser implements IBaritoneUser {
 
     private BotWorld world;
     private EntityBot player;
-    private BotPlayerController playerController;
+    private IPlayerController playerController;
 
     private final Baritone baritone;
 
@@ -57,14 +57,14 @@ class BaritoneUser implements IBaritoneUser {
     }
 
     @Override
-    public void onWorldLoad(BotWorld world, EntityBot player, BotPlayerController playerController) {
+    public void onWorldLoad(BotWorld world, EntityBot player, IPlayerController playerController) {
         this.world = world;
         this.player = player;
         this.playerController = playerController;
     }
 
     @Override
-    public BotPlayerController getPlayerController() {
+    public IPlayerController getPlayerController() {
         return this.playerController;
     }
 

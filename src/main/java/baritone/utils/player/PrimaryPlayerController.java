@@ -17,48 +17,42 @@
 
 package baritone.utils.player;
 
-import baritone.api.BaritoneAPI;
-import baritone.api.cache.IWorldData;
-import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
 import baritone.utils.Helper;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
 
 /**
- * Implementation of {@link IPlayerContext} that provides information about the local player.
- *
  * @author Brady
- * @since 11/12/2018
+ * @since 12/14/2018
  */
-public enum PrimaryPlayerContext implements IPlayerContext, Helper {
+public enum PrimaryPlayerController implements IPlayerController, Helper {
 
     INSTANCE;
 
     @Override
-    public EntityPlayerSP player() {
-        return mc.player;
+    public boolean clickBlock(BlockPos pos, EnumFacing side) {
+        return mc.playerController.clickBlock(pos, side);
     }
 
     @Override
-    public IPlayerController playerController() {
-        return PrimaryPlayerController.INSTANCE;
+    public boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side) {
+        return mc.playerController.onPlayerDamageBlock(pos, side);
     }
 
     @Override
-    public World world() {
-        return mc.world;
+    public void resetBlockRemoving() {
+        mc.playerController.resetBlockRemoving();
     }
 
     @Override
-    public IWorldData worldData() {
-        return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
+    public void setGameType(GameType type) {
+        mc.playerController.setGameType(type);
     }
 
     @Override
-    public RayTraceResult objectMouseOver() {
-        return mc.objectMouseOver;
+    public GameType getGameType() {
+        return mc.playerController.getCurrentGameType();
     }
 }
