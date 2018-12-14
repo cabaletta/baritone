@@ -20,7 +20,6 @@ package baritone.api.utils;
 import baritone.api.cache.IWorldData;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -37,7 +36,7 @@ public interface IPlayerContext {
 
     EntityPlayerSP player();
 
-    PlayerControllerMP playerController();
+    IPlayerController playerController();
 
     World world();
 
