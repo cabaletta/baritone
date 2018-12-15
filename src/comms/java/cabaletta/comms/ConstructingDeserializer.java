@@ -33,7 +33,7 @@ public enum ConstructingDeserializer implements MessageDeserializer {
         // imagine doing something in reflect but it's actually concise and you don't need to catch 42069 different exceptions. huh.
         for (Method m : IMessageListener.class.getDeclaredMethods()) {
             if (m.getName().equals("handle")) {
-                MSGS.add((Class<? extends iMessage>) m.getParameterTypes()[0]);
+                MSGS.add(0, (Class<? extends iMessage>) m.getParameterTypes()[0]);
             }
         }
     }
