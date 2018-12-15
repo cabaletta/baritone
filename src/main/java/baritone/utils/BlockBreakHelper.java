@@ -55,7 +55,8 @@ public final class BlockBreakHelper implements Helper {
     }
 
     public void stopBreakingBlock() {
-        if (playerContext.playerController() != null) {
+        // The player controller will never be null, but the player can be
+        if (playerContext.player() != null) {
             playerContext.playerController().resetBlockRemoving();
         }
         lastBlock = null;
