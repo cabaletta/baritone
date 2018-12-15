@@ -20,6 +20,7 @@ package baritone.api.cache;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 
 import java.util.List;
 
@@ -42,4 +43,18 @@ public interface IWorldScanner {
      * @return The matching block positions
      */
     List<BlockPos> scanChunkRadius(IPlayerContext ctx, List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius);
+
+    /**
+     * Scans a single chunk for the specified blocks.
+     *
+     * @param ctx             The {@link IPlayerContext} containing player and world info that the
+     *                        scan is based upon
+     * @param blocks          The blocks to scan for
+     * @param pos             The position of the target chunk
+     * @param max             The maximum number of blocks to scan before cutoff
+     * @param yLevelThreshold If a block is found within this Y level, the current result will be
+     *                        returned, if the value is negative, then this condition doesn't apply.
+     * @return The matching block positions
+     */
+    List<BlockPos> scanChunk(IPlayerContext ctx, List<Block> blocks, ChunkPos pos, int max, int yLevelThreshold);
 }

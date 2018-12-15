@@ -23,10 +23,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -106,5 +108,46 @@ public enum WorldScanner implements IWorldScanner {
             }
             searchRadiusSq++;
         }
+    }
+
+    @Override
+    public List<BlockPos> scanChunk(IPlayerContext ctx, List<Block> blocks, ChunkPos pos, int max, int yLevelThreshold) {
+        if (blocks.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
+        Chunk chunk = chunkProvider.getLoadedChunk(pos.x, pos.z);
+        int playerY = ctx.playerFeet().getY();
+
+        if (chunk == null || chunk.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        LinkedList<BlockPos> res = new LinkedList<>();
+        ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+        for (int y0 = 0; y0 < 16; y0++) {
+            ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
+            if (extendedblockstorage == null) {
+                continue;
+            }
+            int yReal = y0 << 4;
+            BlockStateContainer bsc = extendedblockstorage.getData();
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++) {
+                    for (int x = 0; x < 16; x++) {
+                        IBlockState state = bsc.get(x, y, z);
+                        if (blocks.contains(state.getBlock())) {
+                            int yy = yReal | y;
+                            res.add(new BlockPos((pos.x << 4) | x, yy, (pos.z << 4) | z));
+                            if (res.size() >= max || Math.abs(yy - playerY) < yLevelThreshold) {
+                                return res;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return res;
     }
 }
