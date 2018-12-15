@@ -35,6 +35,9 @@ import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,6 +100,9 @@ public class Baritone implements IBaritone {
         if (initialized) {
             return;
         }
+
+        SoundEvent event = new SoundEvent(new ResourceLocation("baritone", "fitmc_intro"));
+        Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(event, 1.0F));
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = PrimaryPlayerContext.INSTANCE;

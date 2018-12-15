@@ -1,0 +1,10 @@
+{
+  "fitmc_intro": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "baritone:fitmc/intro"
+      }
+    ]
+  }
+}
