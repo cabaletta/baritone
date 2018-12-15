@@ -96,13 +96,17 @@ public class Baritone implements IBaritone {
         this.gameEventHandler = new GameEventHandler(this);
     }
 
+    public void fitmc() {
+        SoundEvent event = new SoundEvent(new ResourceLocation("baritone", "fitmc_intro"));
+        Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(event, 0.8F + (float) Math.random() * 0.4F));
+    }
+
     public synchronized void init() {
         if (initialized) {
             return;
         }
 
-        SoundEvent event = new SoundEvent(new ResourceLocation("baritone", "fitmc_intro"));
-        Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(event, 1.0F));
+        fitmc();
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = PrimaryPlayerContext.INSTANCE;
