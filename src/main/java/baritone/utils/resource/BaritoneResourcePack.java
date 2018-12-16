@@ -22,10 +22,7 @@ import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Set;
@@ -34,27 +31,26 @@ import java.util.Set;
  * @author Brady
  * @since 12/15/2018
  */
+@SuppressWarnings("NullableProblems")
 public class BaritoneResourcePack implements IResourcePack {
 
     @Override
-    public InputStream getInputStream(@Nonnull ResourceLocation location) {
+    public InputStream getInputStream(ResourceLocation location) {
         return getResourceStream(location);
     }
 
     @Override
-    public boolean resourceExists(@Nonnull ResourceLocation location) {
+    public boolean resourceExists(ResourceLocation location) {
         return getResourceStream(location) != null;
     }
 
-    @Nonnull
     @Override
     public Set<String> getResourceDomains() {
         return Collections.singleton("baritone");
     }
 
-    @Nullable
     @Override
-    public <T extends IMetadataSection> T getPackMetadata(@Nonnull MetadataSerializer metadataSerializer, @Nonnull String metadataSectionName) throws IOException {
+    public <T extends IMetadataSection> T getPackMetadata(MetadataSerializer metadataSerializer, String metadataSectionName) {
         return null;
     }
 
@@ -63,13 +59,11 @@ public class BaritoneResourcePack implements IResourcePack {
         return null;
     }
 
-    @Nonnull
     @Override
     public String getPackName() {
         return "baritone";
     }
 
-    @Nullable
     private InputStream getResourceStream(ResourceLocation location) {
         return BaritoneResourcePack.class.getResourceAsStream("/assets/" + location.getNamespace() + "/" + location.getPath());
     }
