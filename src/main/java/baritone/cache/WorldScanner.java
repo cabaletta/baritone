@@ -28,6 +28,7 @@ import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,33 +72,7 @@ public enum WorldScanner implements IWorldScanner {
                         continue;
                     }
                     allUnloaded = false;
-                    ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
-                    chunkX = chunkX << 4;
-                    chunkZ = chunkZ << 4;
-                    for (int y0 = 0; y0 < 16; y0++) {
-                        ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
-                        if (extendedblockstorage == null) {
-                            continue;
-                        }
-                        int yReal = y0 << 4;
-                        BlockStateContainer bsc = extendedblockstorage.getData();
-                        // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
-                        // for better cache locality, iterate in that order
-                        for (int y = 0; y < 16; y++) {
-                            for (int z = 0; z < 16; z++) {
-                                for (int x = 0; x < 16; x++) {
-                                    IBlockState state = bsc.get(x, y, z);
-                                    if (blocks.contains(state.getBlock())) {
-                                        int yy = yReal | y;
-                                        res.add(new BlockPos(chunkX | x, yy, chunkZ | z));
-                                        if (Math.abs(yy - playerY) < yLevelThreshold) {
-                                            foundWithinY = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    scanChunkInto(chunkX << 4, chunkZ << 4, chunk, blocks, res, max, yLevelThreshold, playerY);
                 }
             }
             if ((allUnloaded && foundChunks)
@@ -125,6 +100,11 @@ public enum WorldScanner implements IWorldScanner {
         }
 
         LinkedList<BlockPos> res = new LinkedList<>();
+        scanChunkInto(pos.x << 4, pos.z << 4, chunk, blocks, res, max, yLevelThreshold, playerY);
+        return res;
+    }
+
+    public void scanChunkInto(int chunkX, int chunkZ, Chunk chunk, List<Block> search, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY) {
         ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
         for (int y0 = 0; y0 < 16; y0++) {
             ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
@@ -133,21 +113,22 @@ public enum WorldScanner implements IWorldScanner {
             }
             int yReal = y0 << 4;
             BlockStateContainer bsc = extendedblockstorage.getData();
+            // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
+            // for better cache locality, iterate in that order
             for (int y = 0; y < 16; y++) {
                 for (int z = 0; z < 16; z++) {
                     for (int x = 0; x < 16; x++) {
                         IBlockState state = bsc.get(x, y, z);
-                        if (blocks.contains(state.getBlock())) {
+                        if (search.contains(state.getBlock())) {
                             int yy = yReal | y;
-                            res.add(new BlockPos((pos.x << 4) | x, yy, (pos.z << 4) | z));
-                            if (res.size() >= max || Math.abs(yy - playerY) < yLevelThreshold) {
-                                return res;
+                            result.add(new BlockPos(chunkX | x, yy, chunkZ | z));
+                            if (result.size() >= max || Math.abs(yy - playerY) < yLevelThreshold) {
+                                return;
                             }
                         }
                     }
                 }
             }
         }
-        return res;
     }
 }
