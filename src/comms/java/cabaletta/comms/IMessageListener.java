@@ -18,8 +18,10 @@
 package cabaletta.comms;
 
 import cabaletta.comms.downward.MessageChat;
+import cabaletta.comms.downward.MessageClickSlot;
 import cabaletta.comms.downward.MessageComputationRequest;
 import cabaletta.comms.upward.MessageComputationResponse;
+import cabaletta.comms.upward.MessageEchestConfirmed;
 import cabaletta.comms.upward.MessageStatus;
 
 public interface IMessageListener {
@@ -36,6 +38,14 @@ public interface IMessageListener {
     }
 
     default void handle(MessageComputationResponse message) {
+        unhandled(message);
+    }
+
+    default void handle(MessageEchestConfirmed message) {
+        unhandled(message);
+    }
+
+    default void handle(MessageClickSlot message) {
         unhandled(message);
     }
 

@@ -31,10 +31,12 @@ import cabaletta.comms.BufferedConnection;
 import cabaletta.comms.IConnection;
 import cabaletta.comms.IMessageListener;
 import cabaletta.comms.downward.MessageChat;
+import cabaletta.comms.downward.MessageClickSlot;
 import cabaletta.comms.downward.MessageComputationRequest;
 import cabaletta.comms.iMessage;
 import cabaletta.comms.upward.MessageComputationResponse;
 import cabaletta.comms.upward.MessageStatus;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -94,7 +96,9 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
                 baritone.getPathingControlManager().mostRecentInControl().map(IBaritoneProcess::displayName).orElse(""),
                 describeAll(ctx.player().inventory.mainInventory),
                 describeAll(ctx.player().inventory.armorInventory),
-                describe(ctx.player().inventory.offHandInventory.get(0))
+                describe(ctx.player().inventory.offHandInventory.get(0)),
+                ctx.player().openContainer.windowId,
+                baritone.getMemoryBehavior().eChestOpen()
         );
     }
 
@@ -204,6 +208,14 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    public void handle(MessageClickSlot msg) {
+        if (ctx.player().openContainer.windowId != msg.windowId) {
+            return; // stale
+        }
+        ctx.playerController().windowClick(msg.windowId, msg.slotId, msg.mouseButton, ClickType.values()[msg.clickType], ctx.player());
     }
 
     @Override

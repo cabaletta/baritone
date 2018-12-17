@@ -54,6 +54,8 @@ public class MessageStatus implements iMessage {
     public final List<String> mainInventory;
     public final List<String> armor;
     public final String offHand;
+    public final int windowId;
+    public final boolean eChestOpen;
 
     public MessageStatus(DataInputStream in) throws IOException {
         this.playerUUID = in.readUTF();
@@ -82,9 +84,11 @@ public class MessageStatus implements iMessage {
         this.mainInventory = readList(36, in);
         this.armor = readList(4, in);
         this.offHand = in.readUTF();
+        this.windowId = in.readInt();
+        this.eChestOpen = in.readBoolean();
     }
 
-    public MessageStatus(String playerUUID, String serverIP, double x, double y, double z, float yaw, float pitch, boolean onGround, float health, float saturation, int foodLevel, int dimension, int pathStartX, int pathStartY, int pathStartZ, boolean hasCurrentSegment, boolean hasNextSegment, boolean calcInProgress, double ticksRemainingInCurrent, boolean calcFailedLastTick, boolean safeToCancel, String currentGoal, String currentProcess, List<String> mainInventory, List<String> armor, String offHand) {
+    public MessageStatus(String playerUUID, String serverIP, double x, double y, double z, float yaw, float pitch, boolean onGround, float health, float saturation, int foodLevel, int dimension, int pathStartX, int pathStartY, int pathStartZ, boolean hasCurrentSegment, boolean hasNextSegment, boolean calcInProgress, double ticksRemainingInCurrent, boolean calcFailedLastTick, boolean safeToCancel, String currentGoal, String currentProcess, List<String> mainInventory, List<String> armor, String offHand, int windowId, boolean eChestOpen) {
         this.playerUUID = playerUUID;
         this.serverIP = serverIP;
         this.x = x;
@@ -111,6 +115,8 @@ public class MessageStatus implements iMessage {
         this.mainInventory = mainInventory;
         this.armor = armor;
         this.offHand = offHand;
+        this.windowId = windowId;
+        this.eChestOpen = eChestOpen;
         if (mainInventory.size() != 36 || armor.size() != 4) {
             throw new IllegalStateException();
         }
@@ -144,6 +150,8 @@ public class MessageStatus implements iMessage {
         write(mainInventory, out);
         write(armor, out);
         out.writeUTF(offHand);
+        out.writeInt(windowId);
+        out.writeBoolean(eChestOpen);
     }
 
     private static List<String> readList(int length, DataInputStream in) throws IOException {
