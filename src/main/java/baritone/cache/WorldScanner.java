@@ -28,9 +28,9 @@ import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 public enum WorldScanner implements IWorldScanner {
@@ -42,7 +42,7 @@ public enum WorldScanner implements IWorldScanner {
         if (blocks.contains(null)) {
             throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }
-        LinkedList<BlockPos> res = new LinkedList<>();
+        ArrayList<BlockPos> res = new ArrayList<>();
         if (blocks.isEmpty()) {
             return res;
         }
@@ -99,7 +99,7 @@ public enum WorldScanner implements IWorldScanner {
             return Collections.emptyList();
         }
 
-        LinkedList<BlockPos> res = new LinkedList<>();
+        ArrayList<BlockPos> res = new ArrayList<>();
         scanChunkInto(pos.x << 4, pos.z << 4, chunk, blocks, res, max, yLevelThreshold, playerY);
         return res;
     }
