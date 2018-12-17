@@ -201,6 +201,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             } else if (pathingBehavior.isPathing()) {
                 logDirect("Currently executing a path. Please cancel it first.");
             } else {
+                baritone.fitmc();
                 customGoalProcess.setGoalAndPath(pathingBehavior.getGoal());
             }
             return true;

@@ -25,15 +25,18 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.utils.BaritoneAutoTest;
+import baritone.utils.resource.BaritoneResourcePack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.lib.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -42,6 +45,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.List;
+
 /**
  * @author Brady
  * @since 7/31/2018
@@ -49,10 +54,9 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 
-    @Shadow
-    public EntityPlayerSP player;
-    @Shadow
-    public WorldClient world;
+    @Shadow public EntityPlayerSP player;
+    @Shadow public WorldClient world;
+    @Shadow @Final private List<IResourcePack> defaultResourcePacks;
 
     @Inject(
             method = "init",
@@ -71,6 +75,7 @@ public class MixinMinecraft {
     )
     private void preInit(CallbackInfo ci) {
         BaritoneAutoTest.INSTANCE.onPreInit();
+        this.defaultResourcePacks.add(new BaritoneResourcePack());
     }
 
     @Inject(

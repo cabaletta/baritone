@@ -35,6 +35,9 @@ import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +65,8 @@ public class Baritone implements IBaritone {
         if (!Files.exists(dir.toPath())) {
             try {
                 Files.createDirectories(dir.toPath());
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
     }
 
@@ -93,10 +97,17 @@ public class Baritone implements IBaritone {
         this.gameEventHandler = new GameEventHandler(this);
     }
 
+    public void fitmc() {
+        SoundEvent event = new SoundEvent(new ResourceLocation("baritone", "fitmc_intro"));
+        Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(event, 0.8F + (float) Math.random() * 0.4F));
+    }
+
     public synchronized void init() {
         if (initialized) {
             return;
         }
+
+        fitmc();
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = PrimaryPlayerContext.INSTANCE;
