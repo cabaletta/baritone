@@ -157,7 +157,7 @@ public final class MemoryBehavior extends Behavior {
 
             if (p instanceof SPacketSetSlot) {
                 SPacketSetSlot slot = (SPacketSetSlot) p;
-                if (enderChestWindowId != null && slot.getWindowId() == enderChestWindowId) {
+                if (slot.getSlot() < 27 && enderChestWindowId != null && slot.getWindowId() == enderChestWindowId) {
                     baritone.getControllerBehavior().trySend(new MessageEchestConfirmed(slot.getSlot(), ControllerBehavior.describe(slot.getStack())));
                 }
             }
