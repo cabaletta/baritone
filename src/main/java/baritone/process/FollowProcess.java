@@ -79,7 +79,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
         if (entity.equals(ctx.player())) {
             return false;
         }
-        return ctx.world().loadedEntityList.contains(entity) || ctx.world().playerEntities.contains(entity);
+        return ctx.world().loadedEntityList.contains(entity);
     }
 
     private void scanWorld() {
