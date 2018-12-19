@@ -77,12 +77,15 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
         boolean favoring = !favored.isEmpty();
+        int timeCheckInterval = 1 << 6;
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && !cancelRequested) {
-            long now = System.nanoTime() / 1000000L;
-            if (now - failureTimeoutTime >= 0 || (!failing && now - primaryTimeoutTime >= 0)) {
-                break;
+            if ((numNodes & (timeCheckInterval - 1)) == 0) { // only call this once every 64 nodes (about half a millisecond)
+                long now = System.nanoTime() / 1000000L; // since nanoTime is slow on windows (takes many microseconds)
+                if (now - failureTimeoutTime >= 0 || (!failing && now - primaryTimeoutTime >= 0)) {
+                    break;
+                }
             }
             if (slowPath) {
                 try {
