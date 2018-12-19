@@ -69,6 +69,11 @@ public class Settings {
     public Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
 
     /**
+     * Additional penalty for hitting the space bar (ascend, pillar, or parkour) beacuse it uses hunger
+     */
+    public Setting<Double> jumpPenalty = new Setting<>(2D);
+
+    /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
      * Reliability: questionable.
      */

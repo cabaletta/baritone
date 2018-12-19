@@ -112,7 +112,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             return LADDER_UP_ONE_COST + hardness * 5;
         } else {
-            return JUMP_ONE_BLOCK_COST + context.placeBlockCost() + hardness;
+            return JUMP_ONE_BLOCK_COST + context.placeBlockCost() + context.jumpPenalty() + hardness;
         }
     }
 

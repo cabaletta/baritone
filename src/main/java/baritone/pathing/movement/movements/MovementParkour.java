@@ -115,7 +115,7 @@ public class MovementParkour extends Movement {
                 res.x = x + xDiff * i;
                 res.y = y;
                 res.z = z + zDiff * i;
-                res.cost = costFromJumpDistance(i);
+                res.cost = costFromJumpDistance(i) + context.jumpPenalty();
                 return;
             }
         }
@@ -145,7 +145,7 @@ public class MovementParkour extends Movement {
                 res.x = destX;
                 res.y = y;
                 res.z = destZ;
-                res.cost = costFromJumpDistance(4) + context.placeBlockCost();
+                res.cost = costFromJumpDistance(4) + context.placeBlockCost() + context.jumpPenalty();
                 return;
             }
         }

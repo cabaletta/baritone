@@ -115,15 +115,18 @@ public class MovementAscend extends Movement {
         if (jumpingToBottomSlab) {
             if (jumpingFromBottomSlab) {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST); // we hit space immediately on entering this action
+                walk += context.jumpPenalty();
             } else {
                 walk = WALK_ONE_BLOCK_COST; // we don't hit space we just walk into the slab
             }
         } else {
+            // jumpingFromBottomSlab must be false
             if (toPlace.getBlock() == Blocks.SOUL_SAND) {
                 walk = WALK_ONE_OVER_SOUL_SAND_COST;
             } else {
-                walk = WALK_ONE_BLOCK_COST;
+                walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST);
             }
+            walk += context.jumpPenalty();
         }
 
         // cracks knuckles
