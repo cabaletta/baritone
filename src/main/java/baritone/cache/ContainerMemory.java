@@ -123,7 +123,8 @@ public class ContainerMemory implements IContainerMemory {
         return out.array();
     }
 
-    public static PacketBuffer writeItemStacks(List<ItemStack> write, PacketBuffer out) {
+    public static PacketBuffer writeItemStacks(List<ItemStack> write, PacketBuffer out2) {
+        PacketBuffer out = out2; // avoid reassigning an argument LOL
         out = new PacketBuffer(out.writeInt(write.size()));
         for (ItemStack stack : write) {
             out = out.writeItemStack(stack);
