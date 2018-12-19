@@ -19,6 +19,10 @@ package baritone.bot.spec;
 
 import baritone.api.utils.IPlayerController;
 import baritone.bot.IBaritoneUser;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.CPacketClickWindow;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
@@ -49,6 +53,11 @@ public class BotPlayerController implements IPlayerController {
     @Override
     public void resetBlockRemoving() {
 
+    }
+
+    @Override
+    public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, EntityPlayer player) {
+        return null;
     }
 
     @Override

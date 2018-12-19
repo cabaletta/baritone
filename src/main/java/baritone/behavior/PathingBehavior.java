@@ -37,7 +37,7 @@ import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import baritone.utils.pathing.Favoring;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -419,8 +419,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.get();
         }
         CalculationContext context = new CalculationContext(baritone, true); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
-        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context, true);
-        if (!Objects.equals(pathfinder.getGoal(), goal)) {
+        AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
+        if (!Objects.equals(pathfinder.getGoal(), goal)) { // will return the exact same object if simplification didn't happen
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
         }
         inProgress = pathfinder;
@@ -433,7 +433,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             Optional<IPath> path = calcResult.getPath();
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
-                    IPath result = p.cutoffAtLoadedChunks(context.world());
+                    IPath result = p.cutoffAtLoadedChunks(context.bsi());
 
                     if (result instanceof CutoffPath) {
                         logDebug("Cutting off path at edge of loaded chunks");
@@ -495,21 +495,16 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         });
     }
 
-    public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context, boolean allowSimplifyUnloaded) {
+    public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
         Goal transformed = goal;
-        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos && allowSimplifyUnloaded) {
+        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
             if (context.world().getChunk(pos) instanceof EmptyChunk) {
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
-        LongOpenHashSet favoredPositions = null;
-        if (Baritone.settings().backtrackCostFavoringCoefficient.get() != 1D && previous != null) {
-            LongOpenHashSet tmp = new LongOpenHashSet();
-            previous.positions().forEach(pos -> tmp.add(BetterBlockPos.longHash(pos)));
-            favoredPositions = tmp;
-        }
-        return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoredPositions, context);
+        Favoring favoring = new Favoring(context.getBaritone().getPlayerContext(), previous);
+        return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
     }
 
     @Override

@@ -138,7 +138,7 @@ public class ToolSet {
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */
-    private double calculateStrVsBlock(ItemStack item, IBlockState state) {
+    public static double calculateStrVsBlock(ItemStack item, IBlockState state) {
         float hardness = state.getBlockHardness(null, null);
         if (hardness < 0) {
             return -1;

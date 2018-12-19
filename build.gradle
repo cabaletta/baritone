@@ -102,6 +102,11 @@ mixin {
     add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
 
+javadoc {
+    source = sourceSets.api.allJava
+    classpath = sourceSets.api.compileClasspath
+}
+
 jar {
     from sourceSets.comms.output, sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false

@@ -34,7 +34,9 @@ public final class RayTraceUtils {
      * any entity collisions can be ignored, because this method will not recognize if an
      * entity is in the way or not. The local player's block reach distance will be used.
      *
-     * @param rotation The rotation to raytrace towards
+     * @param entity             The entity representing the raytrace source
+     * @param rotation           The rotation to raytrace towards
+     * @param blockReachDistance The block reach distance of the entity
      * @return The calculated raytrace result
      */
     public static RayTraceResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance) {

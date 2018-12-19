@@ -17,7 +17,6 @@
 
 package baritone.pathing.movement.movements;
 
-import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -63,11 +62,6 @@ public class MovementDescend extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
-        Block fromDown = context.get(x, y - 1, z).getBlock();
-        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
-            return;
-        }
-
         double totalCost = 0;
         IBlockState destDown = context.get(destX, y - 1, destZ);
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false);
@@ -80,6 +74,11 @@ public class MovementDescend extends Movement {
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true); // only the top block in the 3 we need to mine needs to consider the falling blocks above
         if (totalCost >= COST_INF) {
+            return;
+        }
+
+        Block fromDown = context.get(x, y - 1, z).getBlock();
+        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
             return;
         }
 
@@ -107,7 +106,7 @@ public class MovementDescend extends Movement {
         double walk = WALK_OFF_BLOCK_COST;
         if (fromDown == Blocks.SOUL_SAND) {
             // use this ratio to apply the soul sand speed penalty to our 0.8 block distance
-            walk = WALK_ONE_OVER_SOUL_SAND_COST;
+            walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
         }
         totalCost += walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
         res.x = destX;
@@ -116,66 +115,84 @@ public class MovementDescend extends Movement {
         res.cost = totalCost;
     }
 
-    public static void dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below, MutableMoveResult res) {
+    public static boolean dynamicFallCost(CalculationContext context, int x, int y, int z, int destX, int destZ, double frontBreak, IBlockState below, MutableMoveResult res) {
         if (frontBreak != 0 && context.get(destX, y + 2, destZ).getBlock() instanceof BlockFalling) {
             // if frontBreak is 0 we can actually get through this without updating the falling block and making it actually fall
             // but if frontBreak is nonzero, we're breaking blocks in front, so don't let anything fall through this column,
             // and potentially replace the water we're going to fall into
-            return;
+            return false;
         }
         if (!MovementHelper.canWalkThrough(context.bsi(), destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
-            return;
+            return false;
         }
+        double costSoFar = 0;
+        int effectiveStartHeight = y;
         for (int fallHeight = 3; true; fallHeight++) {
             int newY = y - fallHeight;
             if (newY < 0) {
                 // when pathing in the end, where you could plausibly fall into the void
                 // this check prevents it from getting the block at y=-1 and crashing
-                return;
+                return false;
             }
             IBlockState ontoBlock = context.get(destX, newY, destZ);
-            double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[fallHeight] + frontBreak;
-            if (ontoBlock.getBlock() == Blocks.WATER && !MovementHelper.isFlowing(ontoBlock) && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) { // TODO flowing check required here?
+            int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
+            double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
+            if (ontoBlock.getBlock() == Blocks.WATER && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) {
                 // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
                 // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
-                if (Baritone.settings().assumeWalkOnWater.get()) {
-                    return; // TODO fix
+                if (context.assumeWalkOnWater()) {
+                    return false; // TODO fix
+                }
+                if (MovementHelper.isFlowing(ontoBlock)) {
+                    return false; // TODO flowing check required here?
+                }
+                if (!MovementHelper.canWalkOn(context.bsi(), destX, newY - 1, destZ)) {
+                    // we could punch right through the water into something else
+                    return false;
                 }
                 // found a fall into water
                 res.x = destX;
                 res.y = newY;
                 res.z = destZ;
                 res.cost = tentativeCost;// TODO incorporate water swim up cost?
-                return;
+                return false;
             }
             if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
-                return;
+                return false;
+            }
+            if (unprotectedFallHeight <= 11 && (ontoBlock.getBlock() == Blocks.VINE || ontoBlock.getBlock() == Blocks.LADDER)) {
+                // if fall height is greater than or equal to 11, we don't actually grab on to vines or ladders. the more you know
+                // this effectively "resets" our falling speed
+                costSoFar += FALL_N_BLOCKS_COST[unprotectedFallHeight - 1];// we fall until the top of this block (not including this block)
+                costSoFar += LADDER_DOWN_ONE_COST;
+                effectiveStartHeight = newY;
+                continue;
             }
             if (MovementHelper.canWalkThrough(context.bsi(), destX, newY, destZ, ontoBlock)) {
                 continue;
             }
             if (!MovementHelper.canWalkOn(context.bsi(), destX, newY, destZ, ontoBlock)) {
-                return;
+                return false;
             }
             if (MovementHelper.isBottomSlab(ontoBlock)) {
-                return; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
+                return false; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
             }
-            if (context.hasWaterBucket() && fallHeight <= context.maxFallHeightBucket() + 1) {
+            if (context.hasWaterBucket() && unprotectedFallHeight <= context.maxFallHeightBucket() + 1) {
                 res.x = destX;
                 res.y = newY + 1;// this is the block we're falling onto, so dest is +1
                 res.z = destZ;
                 res.cost = tentativeCost + context.placeBlockCost();
-                return;
+                return true;
             }
-            if (fallHeight <= context.maxFallHeightNoWater() + 1) {
+            if (unprotectedFallHeight <= context.maxFallHeightNoWater() + 1) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
                 res.x = destX;
                 res.y = newY + 1;
                 res.z = destZ;
                 res.cost = tentativeCost;
-                return;
+                return false;
             } else {
-                return;
+                return false;
             }
         }
     }

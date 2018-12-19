@@ -37,12 +37,12 @@ public interface ICachedRegion extends IBlockTypeAccess {
     boolean isCached(int blockX, int blockZ);
 
     /**
-     * The X coordinate of this region
+     * @return The X coordinate of this region
      */
     int getX();
 
     /**
-     * The Z coordinate of this region
+     * @return The Z coordinate of this region
      */
     int getZ();
 }

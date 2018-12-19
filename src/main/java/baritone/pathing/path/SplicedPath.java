@@ -71,9 +71,6 @@ public class SplicedPath extends PathBase {
         if (second == null || first == null) {
             return Optional.empty();
         }
-        if (!Objects.equals(first.getGoal(), second.getGoal())) {
-            return Optional.empty();
-        }
         if (!first.getDest().equals(second.getSrc())) {
             return Optional.empty();
         }

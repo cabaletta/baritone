@@ -17,7 +17,6 @@
 
 package baritone.pathing.movement.movements;
 
-import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -30,7 +29,6 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
@@ -41,11 +39,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.Objects;
-
 public class MovementParkour extends Movement {
 
-    private static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
 
     private final EnumFacing direction;
@@ -65,24 +60,25 @@ public class MovementParkour extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
-        if (!Baritone.settings().allowParkour.get()) {
+        if (!context.allowParkour()) {
             return;
         }
-        IBlockState standingOn = context.get(x, y - 1, z);
-        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn)) {
-            return;
-        }
-        int xDiff = dir.getXOffset();
-        int zDiff = dir.getZOffset();
-        IBlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
-        if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
-            return;
-        }
-        if (MovementHelper.canWalkOn(context.bsi(), x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+        if (y == 256 && !context.allowJumpAt256()) {
             return;
         }
 
+        int xDiff = dir.getXOffset();
+        int zDiff = dir.getZOffset();
         if (!MovementHelper.fullyPassable(context, x + xDiff, y, z + zDiff)) {
+            // most common case at the top -- the adjacent block isn't air
+            return;
+        }
+        IBlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
+        if (MovementHelper.canWalkOn(context.bsi(), x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+            // second most common case -- we could just traverse not parkour
+            return;
+        }
+        if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
             return;
         }
         if (!MovementHelper.fullyPassable(context, x + xDiff, y + 1, z + zDiff)) {
@@ -92,6 +88,10 @@ public class MovementParkour extends Movement {
             return;
         }
         if (!MovementHelper.fullyPassable(context, x, y + 2, z)) {
+            return;
+        }
+        IBlockState standingOn = context.get(x, y - 1, z);
+        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn)) {
             return;
         }
         int maxJump;
@@ -122,29 +122,26 @@ public class MovementParkour extends Movement {
         if (maxJump != 4) {
             return;
         }
-        if (!Baritone.settings().allowParkourPlace.get()) {
-            return;
-        }
-        if (!Baritone.settings().allowPlace.get()) {
-            Helper.HELPER.logDirect("allowParkourPlace enabled but allowPlace disabled?");
+        if (!context.allowParkourPlace()) {
             return;
         }
         int destX = x + 4 * xDiff;
         int destZ = z + 4 * zDiff;
-        IBlockState toPlace = context.get(destX, y - 1, destZ);
         if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
             return;
         }
-        if (toPlace.getBlock() != Blocks.AIR && !MovementHelper.isWater(toPlace.getBlock()) && !MovementHelper.isReplacable(destX, y - 1, destZ, toPlace, context.world())) {
+        IBlockState toReplace = context.get(destX, y - 1, destZ);
+        if (!MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.bsi())) {
             return;
         }
         for (int i = 0; i < 5; i++) {
             int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
+            int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
             int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
             if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
                 continue;
             }
-            if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, y - 1, againstZ)) {
+            if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, againstY, againstZ)) {
                 res.x = destX;
                 res.y = y;
                 res.z = destZ;
@@ -215,7 +212,7 @@ public class MovementParkour extends Movement {
 
                 if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround) {
                     BlockPos positionToPlace = dest.down();
-                    for (int i = 0; i < 5; i++) {
+                    for (int i = 4; i >= 0; i--) { // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
                         BlockPos against1 = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
                         if (against1.up().equals(src.offset(direction, 3))) { // we can't turn around that fast
                             continue;
@@ -231,15 +228,16 @@ public class MovementParkour extends Movement {
                             RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance());
                             if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
                                 state.setTarget(new MovementState.MovementTarget(place, true));
+                                break;
                             }
-                            ctx.getSelectedBlock().ifPresent(selectedBlock -> {
-                                EnumFacing side = ctx.objectMouseOver().sideHit;
-                                if (Objects.equals(selectedBlock, against1) && selectedBlock.offset(side).equals(dest.down())) {
-                                    state.setInput(Input.CLICK_RIGHT, true);
-                                }
-                            });
                         }
                     }
+                    ctx.getSelectedBlock().ifPresent(selectedBlock -> {
+                        EnumFacing side = ctx.objectMouseOver().sideHit;
+                        if (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.offset(side).equals(dest.down())) {
+                            state.setInput(Input.CLICK_RIGHT, true);
+                        }
+                    });
                 }
                 if (dist == 3) { // this is a 2 block gap, dest = src + direction * 3
                     double xDiff = (src.x + 0.5) - ctx.player().posX;

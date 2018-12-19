@@ -19,6 +19,7 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.Settings;
+import baritone.api.cache.IRememberedInventory;
 import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
@@ -41,6 +42,7 @@ import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.Session;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
@@ -288,6 +290,33 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Baritone settings reset");
             return true;
         }
+        if (msg.equals("echest")) {
+            Optional<List<ItemStack>> contents = baritone.getMemoryBehavior().echest();
+            if (contents.isPresent()) {
+                logDirect("echest contents:");
+                log(contents.get());
+            } else {
+                logDirect("echest contents unknown");
+            }
+            return true;
+        }
+        if (msg.equals("chests")) {
+            System.out.println(baritone.getWorldProvider());
+            System.out.println(baritone.getWorldProvider().getCurrentWorld());
+
+            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory());
+
+            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories());
+
+            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet());
+
+            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet());
+            for (Map.Entry<BlockPos, IRememberedInventory> entry : baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet()) {
+                logDirect(entry.getKey() + "");
+                log(entry.getValue().getContents());
+            }
+            return true;
+        }
         if (msg.startsWith("followplayers")) {
             baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
             logDirect("Following any players");
@@ -520,5 +549,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         return false;
+    }
+
+    private void log(List<ItemStack> stacks) {
+        for (ItemStack stack : stacks) {
+            if (!stack.isEmpty()) {
+                logDirect(stack.getCount() + "x " + stack.getDisplayName() + "@" + stack.getItemDamage());
+            }
+        }
     }
 }

@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior.memory;
+package baritone.api.cache;
 
 import net.minecraft.item.ItemStack;
 

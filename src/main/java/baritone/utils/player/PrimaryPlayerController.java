@@ -19,6 +19,9 @@ package baritone.utils.player;
 
 import baritone.api.utils.IPlayerController;
 import baritone.utils.Helper;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
@@ -44,6 +47,11 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     @Override
     public void resetBlockRemoving() {
         mc.playerController.resetBlockRemoving();
+    }
+
+    @Override
+    public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, EntityPlayer player) {
+        return mc.playerController.windowClick(windowId, slotId, mouseButton, type, player);
     }
 
     @Override
