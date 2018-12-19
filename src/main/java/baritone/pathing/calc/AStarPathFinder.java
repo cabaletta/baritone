@@ -55,7 +55,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         startNode.combinedCost = startNode.estimatedCostToGoal;
         BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
         openSet.insert(startNode);
-        startNode.isOpen = true;
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
         double[] bestHeuristicSoFar = new double[COEFFICIENTS.length];
         for (int i = 0; i < bestHeuristicSoFar.length; i++) {
@@ -94,7 +93,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 }
             }
             PathNode currentNode = openSet.removeLowest();
-            currentNode.isOpen = false;
             mostRecentConsidered = currentNode;
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
@@ -156,10 +154,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     neighbor.previous = currentNode;
                     neighbor.cost = tentativeCost;
                     neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
-                    if (neighbor.isOpen) {
+                    if (neighbor.isOpen()) {
                         openSet.update(neighbor);
                     } else {
-                        neighbor.isOpen = true;
                         openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
                     }
                     for (int i = 0; i < bestSoFar.length; i++) {
