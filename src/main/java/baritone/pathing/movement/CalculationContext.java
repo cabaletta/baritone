@@ -62,6 +62,7 @@ public class CalculationContext {
     private final double waterWalkSpeed;
     private final double breakBlockAdditionalCost;
     private final double jumpPenalty;
+    private final double walkOnWaterOnePenalty;
     private final BetterWorldBorder worldBorder;
 
     public CalculationContext(IBaritone baritone) {
@@ -95,6 +96,7 @@ public class CalculationContext {
         this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - mult) + ActionCosts.WALK_ONE_BLOCK_COST * mult;
         this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.get();
         this.jumpPenalty = Baritone.settings().jumpPenalty.get();
+        this.walkOnWaterOnePenalty = Baritone.settings().walkOnWaterOnePenalty.get();
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
@@ -217,5 +219,9 @@ public class CalculationContext {
 
     public double jumpPenalty() {
         return jumpPenalty;
+    }
+
+    public double walkOnWaterOnePenalty() {
+        return walkOnWaterOnePenalty;
     }
 }

@@ -74,6 +74,11 @@ public class Settings {
     public Setting<Double> jumpPenalty = new Setting<>(2D);
 
     /**
+     * Walking on water uses up hunger really quick, so penalize it
+     */
+    public Setting<Double> walkOnWaterOnePenalty = new Setting<>(5D);
+
+    /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
      * Reliability: questionable.
      */
