@@ -122,7 +122,7 @@ public enum WorldScanner implements IWorldScanner {
                         if (search.contains(state.getBlock())) {
                             int yy = yReal | y;
                             result.add(new BlockPos(chunkX | x, yy, chunkZ | z));
-                            if (result.size() >= max || Math.abs(yy - playerY) < yLevelThreshold) {
+                            if (result.size() >= max && Math.abs(yy - playerY) < yLevelThreshold) {
                                 return;
                             }
                         }
