@@ -26,7 +26,6 @@ import baritone.utils.BlockStateInterface;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -231,7 +230,7 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     public void checkLoadedChunk(CalculationContext context) {
-        calculatedWhileLoaded = !(context.world().getChunk(getDest()) instanceof EmptyChunk);
+        calculatedWhileLoaded = context.bsi.worldContainsLoadedChunk(dest.x, dest.z);
     }
 
     @Override

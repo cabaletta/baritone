@@ -59,11 +59,11 @@ public class MovementAscend extends Movement {
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
         IBlockState toPlace = context.get(destX, y, destZ);
         boolean hasToPlace = false;
-        if (!MovementHelper.canWalkOn(context.bsi(), destX, y, destZ, toPlace)) {
+        if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace)) {
             if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
                 return COST_INF;
             }
-            if (!MovementHelper.isReplacable(destX, y, destZ, toPlace, context.bsi())) {
+            if (!MovementHelper.isReplacable(destX, y, destZ, toPlace, context.bsi)) {
                 return COST_INF;
             }
             for (int i = 0; i < 5; i++) {
@@ -73,7 +73,7 @@ public class MovementAscend extends Movement {
                 if (againstX == x && againstZ == z) { // we might be able to backplace now, but it doesn't matter because it will have been broken by the time we'd need to use it
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, againstY, againstZ)) {
+                if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
                     hasToPlace = true;
                     break;
                 }
@@ -83,7 +83,7 @@ public class MovementAscend extends Movement {
             }
         }
         IBlockState srcUp2 = context.get(x, y + 2, z); // used lower down anyway
-        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context.bsi(), x, y + 1, z) || !(srcUp2.getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
+        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context.bsi, x, y + 1, z) || !(srcUp2.getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
@@ -115,7 +115,7 @@ public class MovementAscend extends Movement {
         if (jumpingToBottomSlab) {
             if (jumpingFromBottomSlab) {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST); // we hit space immediately on entering this action
-                walk += context.jumpPenalty();
+                walk += context.jumpPenalty;
             } else {
                 walk = WALK_ONE_BLOCK_COST; // we don't hit space we just walk into the slab
             }
@@ -126,7 +126,7 @@ public class MovementAscend extends Movement {
             } else {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST);
             }
-            walk += context.jumpPenalty();
+            walk += context.jumpPenalty;
         }
 
         // cracks knuckles
@@ -134,7 +134,7 @@ public class MovementAscend extends Movement {
         double totalCost = 0;
         totalCost += walk;
         if (hasToPlace) {
-            totalCost += context.placeBlockCost();
+            totalCost += context.placeBlockCost;
         }
         // start with srcUp2 since we already have its state
         // includeFalling isn't needed because of the falling check above -- if srcUp3 is falling we will have already exited with COST_INF if we'd actually have to break it

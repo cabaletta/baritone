@@ -63,7 +63,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         }
         MutableMoveResult res = new MutableMoveResult();
         Favoring favored = favoring;
-        BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world().getWorldBorder());
+        BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world.getWorldBorder());
         long startTime = System.nanoTime() / 1000000L;
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {

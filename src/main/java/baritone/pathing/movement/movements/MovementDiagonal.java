@@ -65,14 +65,14 @@ public class MovementDiagonal extends Movement {
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
         IBlockState destInto = context.get(destX, y, destZ);
-        if (!MovementHelper.canWalkThrough(context.bsi(), destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context.bsi(), destX, y + 1, destZ)) {
+        if (!MovementHelper.canWalkThrough(context.bsi, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context.bsi, destX, y + 1, destZ)) {
             return;
         }
         IBlockState destWalkOn = context.get(destX, y - 1, destZ);
         boolean descend = false;
-        if (!MovementHelper.canWalkOn(context.bsi(), destX, y - 1, destZ, destWalkOn)) {
+        if (!MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn)) {
             descend = true;
-            if (!context.allowDiagonalDescend() || !MovementHelper.canWalkOn(context.bsi(), destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi(), destX, y - 1, destZ, destWalkOn)) {
+            if (!context.allowDiagonalDescend || !MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi, destX, y - 1, destZ, destWalkOn)) {
                 return;
             }
         }
@@ -81,7 +81,7 @@ public class MovementDiagonal extends Movement {
         if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
-            multiplier += context.walkOnWaterOnePenalty() * SQRT_2;
+            multiplier += context.walkOnWaterOnePenalty * SQRT_2;
         }
         Block fromDown = context.get(x, y - 1, z).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
@@ -133,7 +133,7 @@ public class MovementDiagonal extends Movement {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
-            multiplier = context.waterWalkSpeed();
+            multiplier = context.waterWalkSpeed;
             water = true;
         }
         if (optionA != 0 || optionB != 0) {
@@ -144,7 +144,7 @@ public class MovementDiagonal extends Movement {
             }
         } else {
             // only can sprint if not edging around
-            if (context.canSprint() && !water) {
+            if (context.canSprint && !water) {
                 // If we aren't edging around anything, and we aren't in water
                 // We can sprint =D
                 // Don't check for soul sand, since we can sprint on that too

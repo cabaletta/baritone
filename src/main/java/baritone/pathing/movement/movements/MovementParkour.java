@@ -60,10 +60,10 @@ public class MovementParkour extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
-        if (!context.allowParkour()) {
+        if (!context.allowParkour) {
             return;
         }
-        if (y == 256 && !context.allowJumpAt256()) {
+        if (y == 256 && !context.allowJumpAt256) {
             return;
         }
 
@@ -74,7 +74,7 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
-        if (MovementHelper.canWalkOn(context.bsi(), x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+        if (MovementHelper.canWalkOn(context.bsi, x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
             // second most common case -- we could just traverse not parkour
             return;
         }
@@ -98,7 +98,7 @@ public class MovementParkour extends Movement {
         if (standingOn.getBlock() == Blocks.SOUL_SAND) {
             maxJump = 2; // 1 block gap
         } else {
-            if (context.canSprint()) {
+            if (context.canSprint) {
                 maxJump = 4;
             } else {
                 maxJump = 3;
@@ -111,18 +111,18 @@ public class MovementParkour extends Movement {
                     return;
                 }
             }
-            if (MovementHelper.canWalkOn(context.bsi(), x + xDiff * i, y - 1, z + zDiff * i)) {
+            if (MovementHelper.canWalkOn(context.bsi, x + xDiff * i, y - 1, z + zDiff * i)) {
                 res.x = x + xDiff * i;
                 res.y = y;
                 res.z = z + zDiff * i;
-                res.cost = costFromJumpDistance(i) + context.jumpPenalty();
+                res.cost = costFromJumpDistance(i) + context.jumpPenalty;
                 return;
             }
         }
         if (maxJump != 4) {
             return;
         }
-        if (!context.allowParkourPlace()) {
+        if (!context.allowParkourPlace) {
             return;
         }
         int destX = x + 4 * xDiff;
@@ -131,7 +131,7 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState toReplace = context.get(destX, y - 1, destZ);
-        if (!MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.bsi())) {
+        if (!MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.bsi)) {
             return;
         }
         for (int i = 0; i < 5; i++) {
@@ -141,11 +141,11 @@ public class MovementParkour extends Movement {
             if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
                 continue;
             }
-            if (MovementHelper.canPlaceAgainst(context.bsi(), againstX, againstY, againstZ)) {
+            if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
                 res.x = destX;
                 res.y = y;
                 res.z = destZ;
-                res.cost = costFromJumpDistance(4) + context.placeBlockCost() + context.jumpPenalty();
+                res.cost = costFromJumpDistance(4) + context.placeBlockCost + context.jumpPenalty;
                 return;
             }
         }

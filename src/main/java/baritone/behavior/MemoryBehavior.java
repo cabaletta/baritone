@@ -175,7 +175,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     private BlockPos neighboringConnectedBlock(BlockPos in) {
-        BlockStateInterface bsi = new CalculationContext(baritone).bsi();
+        BlockStateInterface bsi = new CalculationContext(baritone).bsi;
         Block block = bsi.get0(in).getBlock();
         if (block != Blocks.TRAPPED_CHEST && block != Blocks.CHEST) {
             return null; // other things that have contents, but can be placed adjacent without combining

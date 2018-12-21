@@ -374,7 +374,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private void sprintIfRequested() {
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
-        if (!new CalculationContext(behavior.baritone).canSprint()) {
+        if (!new CalculationContext(behavior.baritone).canSprint) {
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
             ctx.player().setSprinting(false);
             return;

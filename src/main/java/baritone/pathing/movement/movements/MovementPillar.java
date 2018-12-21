@@ -58,7 +58,7 @@ public class MovementPillar extends Movement {
                 return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
-        if (from instanceof BlockVine && !hasAgainst(context, x, y, z)) { // TODO this vine can't be climbed, but we could place a pillar still since vines are replacable, no? perhaps the pillar jump would be impossible because of the slowdown actually.
+        if (from == Blocks.VINE && !hasAgainst(context, x, y, z)) { // TODO this vine can't be climbed, but we could place a pillar still since vines are replacable, no? perhaps the pillar jump would be impossible because of the slowdown actually.
             return COST_INF;
         }
         IBlockState toBreak = context.get(x, y + 2, z);
@@ -76,7 +76,7 @@ public class MovementPillar extends Movement {
         if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) { // we need to place a block where we started to jump on it
             return COST_INF;
         }
-        if (from instanceof BlockLiquid || (fromDown.getBlock() instanceof BlockLiquid && context.assumeWalkOnWater())) {
+        if (from instanceof BlockLiquid || (fromDown.getBlock() instanceof BlockLiquid && context.assumeWalkOnWater)) {
             // otherwise, if we're standing in water, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is true, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
@@ -112,7 +112,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             return LADDER_UP_ONE_COST + hardness * 5;
         } else {
-            return JUMP_ONE_BLOCK_COST + context.placeBlockCost() + context.jumpPenalty() + hardness;
+            return JUMP_ONE_BLOCK_COST + context.placeBlockCost + context.jumpPenalty + hardness;
         }
     }
 
@@ -159,8 +159,8 @@ public class MovementPillar extends Movement {
             }
             return state;
         }
-        boolean ladder = fromDown.getBlock() instanceof BlockLadder || fromDown.getBlock() instanceof BlockVine;
-        boolean vine = fromDown.getBlock() instanceof BlockVine;
+        boolean ladder = fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE;
+        boolean vine = fromDown.getBlock() == Blocks.VINE;
         Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
                 VecUtils.getBlockPosCenter(positionToPlace),
                 new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch));

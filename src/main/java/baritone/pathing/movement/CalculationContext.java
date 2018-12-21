@@ -42,29 +42,29 @@ public class CalculationContext {
 
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
-    private final IBaritone baritone;
-    private final EntityPlayerSP player;
-    private final World world;
-    private final WorldData worldData;
-    private final BlockStateInterface bsi;
-    private final ToolSet toolSet;
-    private final boolean hasWaterBucket;
-    private final boolean hasThrowaway;
-    private final boolean canSprint;
-    private final double placeBlockCost;
-    private final boolean allowBreak;
-    private final boolean allowParkour;
-    private final boolean allowParkourPlace;
-    private final boolean allowJumpAt256;
-    private final boolean assumeWalkOnWater;
-    private final boolean allowDiagonalDescend;
-    private final int maxFallHeightNoWater;
-    private final int maxFallHeightBucket;
-    private final double waterWalkSpeed;
-    private final double breakBlockAdditionalCost;
-    private final double jumpPenalty;
-    private final double walkOnWaterOnePenalty;
-    private final BetterWorldBorder worldBorder;
+    public final IBaritone baritone;
+    public final EntityPlayerSP player;
+    public final World world;
+    public final WorldData worldData;
+    public final BlockStateInterface bsi;
+    public final ToolSet toolSet;
+    public final boolean hasWaterBucket;
+    public final boolean hasThrowaway;
+    public final boolean canSprint;
+    public final double placeBlockCost;
+    public final boolean allowBreak;
+    public final boolean allowParkour;
+    public final boolean allowParkourPlace;
+    public final boolean allowJumpAt256;
+    public final boolean assumeWalkOnWater;
+    public final boolean allowDiagonalDescend;
+    public final int maxFallHeightNoWater;
+    public final int maxFallHeightBucket;
+    public final double waterWalkSpeed;
+    public final double breakBlockAdditionalCost;
+    public final double jumpPenalty;
+    public final double walkOnWaterOnePenalty;
+    public final BetterWorldBorder worldBorder;
 
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
@@ -126,7 +126,7 @@ public class CalculationContext {
     }
 
     public boolean canPlaceThrowawayAt(int x, int y, int z) {
-        if (!hasThrowaway()) { // only true if allowPlace is true, see constructor
+        if (!hasThrowaway) { // only true if allowPlace is true, see constructor
             return false;
         }
         if (isPossiblyProtected(x, y, z)) {
@@ -136,7 +136,7 @@ public class CalculationContext {
     }
 
     public boolean canBreakAt(int x, int y, int z) {
-        if (!allowBreak()) {
+        if (!allowBreak) {
             return false;
         }
         return !isPossiblyProtected(x, y, z);
@@ -145,89 +145,5 @@ public class CalculationContext {
     public boolean isPossiblyProtected(int x, int y, int z) {
         // TODO more protection logic here; see #220
         return false;
-    }
-
-    public World world() {
-        return world;
-    }
-
-    public EntityPlayerSP player() {
-        return player;
-    }
-
-    public BlockStateInterface bsi() {
-        return bsi;
-    }
-
-    public WorldData worldData() {
-        return worldData;
-    }
-
-    public ToolSet getToolSet() {
-        return toolSet;
-    }
-
-    public boolean hasWaterBucket() {
-        return hasWaterBucket;
-    }
-
-    public boolean hasThrowaway() {
-        return hasThrowaway;
-    }
-
-    public boolean canSprint() {
-        return canSprint;
-    }
-
-    public double placeBlockCost() {
-        return placeBlockCost;
-    }
-
-    public boolean allowBreak() {
-        return allowBreak;
-    }
-
-    public boolean allowParkour() {
-        return allowParkour;
-    }
-
-    public boolean allowParkourPlace() {
-        return allowParkourPlace;
-    }
-
-    public boolean allowJumpAt256() {
-        return allowJumpAt256;
-    }
-
-    public boolean assumeWalkOnWater() {
-        return assumeWalkOnWater;
-    }
-
-    public boolean allowDiagonalDescend() {
-        return allowDiagonalDescend;
-    }
-
-    public int maxFallHeightNoWater() {
-        return maxFallHeightNoWater;
-    }
-
-    public int maxFallHeightBucket() {
-        return maxFallHeightBucket;
-    }
-
-    public double waterWalkSpeed() {
-        return waterWalkSpeed;
-    }
-
-    public double breakBlockAdditionalCost() {
-        return breakBlockAdditionalCost;
-    }
-
-    public double jumpPenalty() {
-        return jumpPenalty;
-    }
-
-    public double walkOnWaterOnePenalty() {
-        return walkOnWaterOnePenalty;
     }
 }

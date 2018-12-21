@@ -209,7 +209,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         //long b = System.currentTimeMillis();
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
-                locs.addAll(ctx.worldData().getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
+                locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
             } else {
                 uninteresting.add(m);
             }
@@ -248,17 +248,17 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     public static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, List<Block> mining, int max) {
-        List<BlockPos> dropped = droppedItemsScan(mining, ctx.world());
+        List<BlockPos> dropped = droppedItemsScan(mining, ctx.world);
         List<BlockPos> locs = locs2
                 .stream()
                 .distinct()
 
                 // remove any that are within loaded chunks that aren't actually what we want
 
-                .filter(pos -> !ctx.bsi().worldContainsLoadedChunk(pos.getX(), pos.getZ()) || mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) || dropped.contains(pos))
+                .filter(pos -> !ctx.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ()) || mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) || dropped.contains(pos))
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
-                .filter(pos -> MineProcess.plausibleToBreak(ctx.bsi(), pos))
+                .filter(pos -> MineProcess.plausibleToBreak(ctx.bsi, pos))
 
                 .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().playerFeet()::distanceSq))
                 .collect(Collectors.toList());

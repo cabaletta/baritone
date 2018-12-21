@@ -433,7 +433,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             Optional<IPath> path = calcResult.getPath();
             if (Baritone.settings().cutoffAtLoadBoundary.get()) {
                 path = path.map(p -> {
-                    IPath result = p.cutoffAtLoadedChunks(context.bsi());
+                    IPath result = p.cutoffAtLoadedChunks(context.bsi);
 
                     if (result instanceof CutoffPath) {
                         logDebug("Cutting off path at edge of loaded chunks");
@@ -499,7 +499,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         Goal transformed = goal;
         if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
-            if (context.world().getChunk(pos) instanceof EmptyChunk) {
+            if (context.world.getChunk(pos) instanceof EmptyChunk) {
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
