@@ -112,6 +112,15 @@ public class Settings {
     public Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
     /**
+     * Allow descending diagonally
+     * <p>
+     * Safer than allowParkour yet still slightly unsafe, can make contact with unchecked adjacent blocks, so it's unsafe in the nether.
+     * <p>
+     * For a generic "take some risks" mode I'd turn on this one, parkour, and parkour place.
+     */
+    public Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
+
+    /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
     public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
@@ -163,10 +172,8 @@ public class Settings {
      * metric gets better and better with each block, instead of slightly worse.
      * <p>
      * Finding the optimal path is worth it, so it's the default.
-     * <p>
-     * This value is an expression instead of a literal so that it's exactly equal to SPRINT_ONE_BLOCK_COST defined in ActionCosts.java
      */
-    public Setting<Double> costHeuristic = new Setting<>(20 / 5.612);
+    public Setting<Double> costHeuristic = new Setting<>(3.563);
 
     // a bunch of obscure internal A* settings that you probably don't want to change
     /**

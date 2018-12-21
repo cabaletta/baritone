@@ -72,7 +72,7 @@ public class MovementDiagonal extends Movement {
         boolean descend = false;
         if (!MovementHelper.canWalkOn(context.bsi(), destX, y - 1, destZ, destWalkOn)) {
             descend = true;
-            if (!MovementHelper.canWalkOn(context.bsi(), destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi(), destX, y - 1, destZ, destWalkOn)) {
+            if (!context.allowDiagonalDescend() || !MovementHelper.canWalkOn(context.bsi(), destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi(), destX, y - 1, destZ, destWalkOn)) {
                 return;
             }
         }
