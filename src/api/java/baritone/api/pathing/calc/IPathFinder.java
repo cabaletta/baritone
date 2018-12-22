@@ -36,7 +36,6 @@ public interface IPathFinder {
      *
      * @param primaryTimeout If a path is found, the path finder will stop after this amount of time
      * @param failureTimeout If a path isn't found, the path finder will continue for this amount of time
-     *
      * @return The final path
      */
     PathCalculationResult calculate(long primaryTimeout, long failureTimeout);

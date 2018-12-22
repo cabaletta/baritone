@@ -33,7 +33,6 @@ public interface Goal {
      * @param x The goal X position
      * @param y The goal Y position
      * @param z The goal Z position
-     *
      * @return Whether or not it satisfies this goal
      */
     boolean isInGoal(int x, int y, int z);
@@ -44,7 +43,6 @@ public interface Goal {
      * @param x The goal X position
      * @param y The goal Y position
      * @param z The goal Z position
-     *
      * @return The estimate number of ticks to satisfy the goal
      */
     double heuristic(int x, int y, int z);
