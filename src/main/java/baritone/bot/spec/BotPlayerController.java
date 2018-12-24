@@ -214,26 +214,19 @@ public class BotPlayerController implements IPlayerController {
     }
 
     private boolean canBreak(EntityPlayer player, BlockPos pos) {
+        if (this.gameType.isCreative() || this.gameType == GameType.SPECTATOR) {
+            return false;
+        }
+
         if (!player.world.getWorldBorder().contains(pos)) {
             return false;
         }
 
-        // Get OUTTA HERE
-        if (this.gameType.isCreative()) {
-            return false;
+        if (this.gameType.hasLimitedInteractions() && !player.isAllowEdit()) {
+            ItemStack stack = player.getHeldItemMainhand();
+            return !stack.isEmpty() && stack.canDestroy(player.world.getBlockState(pos).getBlock());
         }
 
-        if (this.gameType.hasLimitedInteractions()) {
-            if (this.gameType == GameType.SPECTATOR) {
-                return false;
-            }
-
-            if (!player.isAllowEdit()) {
-                ItemStack stack = player.getHeldItemMainhand();
-
-                return !stack.isEmpty() && stack.canDestroy(player.world.getBlockState(pos).getBlock());
-            }
-        }
         return true;
     }
 
