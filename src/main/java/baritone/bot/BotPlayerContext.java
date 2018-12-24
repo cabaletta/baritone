@@ -64,10 +64,4 @@ public class BotPlayerContext implements IPlayerContext {
     public IWorldData worldData() {
         return bot.getBaritone().getWorldProvider().getCurrentWorld();
     }
-
-    @Override
-    public RayTraceResult objectMouseOver() {
-        // TODO-yeet lol fix this
-        return Minecraft.getMinecraft().objectMouseOver;
-    }
 }

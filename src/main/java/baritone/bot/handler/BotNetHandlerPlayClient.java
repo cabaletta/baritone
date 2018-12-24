@@ -358,6 +358,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.playerController = new BotPlayerController(this.user);
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
         this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
+        this.user.onWorldLoad(this.world, this.player, this.playerController);
         this.player.preparePlayerToSpawn();
         this.world.spawnEntity(this.player);
         this.player.setEntityId(packetIn.getPlayerId());
@@ -369,8 +370,6 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.networkManager.sendPacket(new CPacketCustomPayload("MC|Brand", new PacketBuffer(Unpooled.buffer()).writeString("vanilla")));
 
         this.world.registerBot(packetIn.getPlayerId(), this.player);
-
-        this.user.onWorldLoad(this.world, this.player, this.playerController);
 
         Helper.HELPER.logDirect("Initialized Player and World");
     }
@@ -479,6 +478,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         EntityBot prev = this.player;
 
         this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this, prev.getStatFileWriter(), prev.getRecipeBook());
+        this.user.onWorldLoad(this.world, this.player, this.playerController);
         // noinspection ConstantConditions
         this.player.getDataManager().setEntryValues(prev.getDataManager().getAll());
         this.player.preparePlayerToSpawn();
@@ -487,8 +487,6 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.player.dimension = packetIn.getDimensionID();
         this.player.setServerBrand(prev.getServerBrand());
         this.playerController.setGameType(packetIn.getGameType());
-
-        this.user.onWorldLoad(this.world, this.player, this.playerController);
     }
 
     @Override

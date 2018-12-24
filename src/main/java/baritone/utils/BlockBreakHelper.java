@@ -31,11 +31,6 @@ import net.minecraft.util.math.RayTraceResult;
  */
 public final class BlockBreakHelper implements Helper {
 
-    /**
-     * The last block that we tried to break, if this value changes
-     * between attempts, then we re-initialize the breaking process.
-     */
-    private BlockPos lastBlock;
     private boolean didBreakLastTick;
 
     private IPlayerContext playerContext;
@@ -45,13 +40,9 @@ public final class BlockBreakHelper implements Helper {
     }
 
     public void tryBreakBlock(BlockPos pos, EnumFacing side) {
-        if (!pos.equals(lastBlock)) {
-            playerContext.playerController().clickBlock(pos, side);
-        }
         if (playerContext.playerController().onPlayerDamageBlock(pos, side)) {
             playerContext.player().swingArm(EnumHand.MAIN_HAND);
         }
-        lastBlock = pos;
     }
 
     public void stopBreakingBlock() {
@@ -59,7 +50,6 @@ public final class BlockBreakHelper implements Helper {
         if (playerContext.player() != null) {
             playerContext.playerController().resetBlockRemoving();
         }
-        lastBlock = null;
     }
 
     private boolean fakeBreak() {

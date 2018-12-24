@@ -24,6 +24,7 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.GameType;
 
 /**
@@ -33,11 +34,6 @@ import net.minecraft.world.GameType;
 public enum PrimaryPlayerController implements IPlayerController, Helper {
 
     INSTANCE;
-
-    @Override
-    public boolean clickBlock(BlockPos pos, EnumFacing side) {
-        return mc.playerController.clickBlock(pos, side);
-    }
 
     @Override
     public boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side) {
@@ -62,5 +58,10 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     @Override
     public GameType getGameType() {
         return mc.playerController.getCurrentGameType();
+    }
+
+    @Override
+    public RayTraceResult objectMouseOver() {
+        return mc.objectMouseOver;
     }
 }

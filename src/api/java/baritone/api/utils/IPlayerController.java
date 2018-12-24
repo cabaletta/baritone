@@ -17,12 +17,12 @@
 
 package baritone.api.utils;
 
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.GameType;
 
 /**
@@ -30,8 +30,6 @@ import net.minecraft.world.GameType;
  * @since 12/14/2018
  */
 public interface IPlayerController {
-
-    boolean clickBlock(BlockPos pos, EnumFacing side);
 
     boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side);
 
@@ -42,6 +40,8 @@ public interface IPlayerController {
     void setGameType(GameType type);
 
     GameType getGameType();
+
+    RayTraceResult objectMouseOver();
 
     default double getBlockReachDistance() {
         return this.getGameType().isCreative() ? 5.0F : 4.5F;
