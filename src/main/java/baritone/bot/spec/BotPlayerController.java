@@ -74,13 +74,6 @@ public class BotPlayerController implements IPlayerController {
             return true;
         }
 
-        if (this.gameType.isCreative() && world.getWorldBorder().contains(pos)) {
-            player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, pos, side));
-            handleCreativeBreak(pos, side);
-            this.blockHitDelay = 5;
-            return true;
-        }
-
         if (!this.isHittingPosition(pos)) {
             return this.clickBlock(pos, side);
         }
@@ -159,11 +152,7 @@ public class BotPlayerController implements IPlayerController {
             return false;
         }
 
-        if (this.gameType.isCreative()) {
-            player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, pos, side));
-            handleCreativeBreak(pos, side);
-            this.blockHitDelay = 5;
-        } else if (!this.hittingBlock || !this.isHittingPosition(pos)) {
+        if (!this.hittingBlock || !this.isHittingPosition(pos)) {
             if (this.hittingBlock) {
                 player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK, this.currentBlock, side));
             }
@@ -194,10 +183,6 @@ public class BotPlayerController implements IPlayerController {
         EntityBot player = this.user.getEntity();
         World world = player.world;
 
-        if (this.gameType.isCreative() && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof ItemSword) {
-            return;
-        }
-
         IBlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
 
@@ -217,28 +202,24 @@ public class BotPlayerController implements IPlayerController {
 
         this.currentBlock = new BlockPos(this.currentBlock.getX(), -1, this.currentBlock.getZ());
 
-        if (!this.gameType.isCreative()) {
-            ItemStack stack = player.getHeldItemMainhand();
+        ItemStack stack = player.getHeldItemMainhand();
 
-            if (!stack.isEmpty()) {
-                stack.onBlockDestroyed(world, state, pos, player);
+        if (!stack.isEmpty()) {
+            stack.onBlockDestroyed(world, state, pos, player);
 
-                if (stack.isEmpty()) {
-                    player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-                }
+            if (stack.isEmpty()) {
+                player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
             }
-        }
-    }
-
-    private void handleCreativeBreak(BlockPos pos, EnumFacing side) {
-        EntityPlayer player = this.user.getEntity();
-        if (!player.world.extinguishFire(player, pos, side)) {
-            this.handleBreak(pos);
         }
     }
 
     private boolean canBreak(EntityPlayer player, BlockPos pos) {
         if (!player.world.getWorldBorder().contains(pos)) {
+            return false;
+        }
+
+        // Get OUTTA HERE
+        if (this.gameType.isCreative()) {
             return false;
         }
 
