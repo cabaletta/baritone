@@ -30,8 +30,6 @@ import net.minecraft.world.GameType;
  */
 public interface IPlayerController {
 
-    boolean clickBlock(BlockPos pos, EnumFacing side);
-
     boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side);
 
     void resetBlockRemoving();

@@ -452,10 +452,6 @@ public class Settings {
 
     /**
      * {@code true}: can mine blocks when in inventory, chat, or tabbed away in ESC menu
-     * <p>
-     * {@code false}: works on cosmic prisons
-     * <p>
-     * LOL
      */
     public Setting<Boolean> leftClickWorkaround = new Setting<>(true);
 

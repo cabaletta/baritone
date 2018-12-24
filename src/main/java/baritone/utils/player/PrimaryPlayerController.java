@@ -35,11 +35,6 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     INSTANCE;
 
     @Override
-    public boolean clickBlock(BlockPos pos, EnumFacing side) {
-        return mc.playerController.clickBlock(pos, side);
-    }
-
-    @Override
     public boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side) {
         return mc.playerController.onPlayerDamageBlock(pos, side);
     }
