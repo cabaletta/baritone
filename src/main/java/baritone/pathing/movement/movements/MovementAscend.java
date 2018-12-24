@@ -129,8 +129,6 @@ public class MovementAscend extends Movement {
             walk += context.jumpPenalty;
         }
 
-        // cracks knuckles
-
         double totalCost = 0;
         totalCost += walk;
         if (hasToPlace) {
