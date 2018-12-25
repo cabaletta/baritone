@@ -129,8 +129,7 @@ public class MovementAscend extends Movement {
             walk += context.jumpPenalty;
         }
 
-        double totalCost = 0;
-        totalCost += walk;
+        double totalCost = walk;
         if (hasToPlace) {
             totalCost += context.placeBlockCost;
         }
