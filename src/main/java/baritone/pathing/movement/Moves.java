@@ -52,54 +52,6 @@ public enum Moves {
         }
     },
 
-    TRAVERSE_NORTH(0, 0, -1) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementTraverse(context.getBaritone(), src, src.north());
-        }
-
-        @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementTraverse.cost(context, x, y, z, x, z - 1);
-        }
-    },
-
-    TRAVERSE_SOUTH(0, 0, +1) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementTraverse(context.getBaritone(), src, src.south());
-        }
-
-        @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementTraverse.cost(context, x, y, z, x, z + 1);
-        }
-    },
-
-    TRAVERSE_EAST(+1, 0, 0) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementTraverse(context.getBaritone(), src, src.east());
-        }
-
-        @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementTraverse.cost(context, x, y, z, x + 1, z);
-        }
-    },
-
-    TRAVERSE_WEST(-1, 0, 0) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementTraverse(context.getBaritone(), src, src.west());
-        }
-
-        @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementTraverse.cost(context, x, y, z, x - 1, z);
-        }
-    },
-
     ASCEND_NORTH(0, +1, -1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
@@ -112,75 +64,27 @@ public enum Moves {
         }
     },
 
-    ASCEND_SOUTH(0, +1, +1) {
+    TRAVERSE_NORTH(0, 0, -1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x, src.y + 1, src.z + 1));
+            return new MovementTraverse(context.getBaritone(), src, src.north());
         }
 
         @Override
         public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementAscend.cost(context, x, y, z, x, z + 1);
+            return MovementTraverse.cost(context, x, y, z, x, z - 1);
         }
     },
 
-    ASCEND_EAST(+1, +1, 0) {
+    PARKOUR_NORTH(0, 0, -4, true, false) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x + 1, src.y + 1, src.z));
-        }
-
-        @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementAscend.cost(context, x, y, z, x + 1, z);
-        }
-    },
-
-    ASCEND_WEST(-1, +1, 0) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x - 1, src.y + 1, src.z));
-        }
-
-        @Override
-        public double cost(CalculationContext context, int x, int y, int z) {
-            return MovementAscend.cost(context, x, y, z, x - 1, z);
-        }
-    },
-
-    DESCEND_EAST(+1, -1, 0, false, true) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            if (res.y == src.y - 1) {
-                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
-            } else {
-                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
-            }
+            return MovementParkour.cost(context, src, EnumFacing.NORTH);
         }
 
         @Override
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementDescend.cost(context, x, y, z, x + 1, z, result);
-        }
-    },
-
-    DESCEND_WEST(-1, -1, 0, false, true) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            if (res.y == src.y - 1) {
-                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
-            } else {
-                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
-            }
-        }
-
-        @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementDescend.cost(context, x, y, z, x - 1, z, result);
+            MovementParkour.cost(context, x, y, z, EnumFacing.NORTH, result);
         }
     },
 
@@ -202,6 +106,126 @@ public enum Moves {
         }
     },
 
+    DIAGONAL_NORTHEAST(+1, 0, -1, false, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.EAST, res.y - src.y);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDiagonal.cost(context, x, y, z, x + 1, z - 1, result);
+        }
+    },
+
+    ASCEND_EAST(+1, +1, 0) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x + 1, src.y + 1, src.z));
+        }
+
+        @Override
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementAscend.cost(context, x, y, z, x + 1, z);
+        }
+    },
+
+    TRAVERSE_EAST(+1, 0, 0) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementTraverse(context.getBaritone(), src, src.east());
+        }
+
+        @Override
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementTraverse.cost(context, x, y, z, x + 1, z);
+        }
+    },
+
+    PARKOUR_EAST(+4, 0, 0, true, false) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return MovementParkour.cost(context, src, EnumFacing.EAST);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkour.cost(context, x, y, z, EnumFacing.EAST, result);
+        }
+    },
+
+    DESCEND_EAST(+1, -1, 0, false, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            if (res.y == src.y - 1) {
+                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+            } else {
+                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+            }
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDescend.cost(context, x, y, z, x + 1, z, result);
+        }
+    },
+
+    DIAGONAL_SOUTHEAST(+1, 0, +1, false, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.EAST, res.y - src.y);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDiagonal.cost(context, x, y, z, x + 1, z + 1, result);
+        }
+    },
+
+    ASCEND_SOUTH(0, +1, +1) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x, src.y + 1, src.z + 1));
+        }
+
+        @Override
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementAscend.cost(context, x, y, z, x, z + 1);
+        }
+    },
+
+
+    TRAVERSE_SOUTH(0, 0, +1) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementTraverse(context.getBaritone(), src, src.south());
+        }
+
+        @Override
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementTraverse.cost(context, x, y, z, x, z + 1);
+        }
+    },
+
+
+    PARKOUR_SOUTH(0, 0, +4, true, false) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return MovementParkour.cost(context, src, EnumFacing.SOUTH);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkour.cost(context, x, y, z, EnumFacing.SOUTH, result);
+        }
+    },
+
     DESCEND_SOUTH(0, -1, +1, false, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
@@ -220,48 +244,6 @@ public enum Moves {
         }
     },
 
-    DIAGONAL_NORTHEAST(+1, 0, -1, false, true) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.EAST, res.y - src.y);
-        }
-
-        @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementDiagonal.cost(context, x, y, z, x + 1, z - 1, result);
-        }
-    },
-
-    DIAGONAL_NORTHWEST(-1, 0, -1, false, true) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.WEST, res.y - src.y);
-        }
-
-        @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementDiagonal.cost(context, x, y, z, x - 1, z - 1, result);
-        }
-    },
-
-    DIAGONAL_SOUTHEAST(+1, 0, +1, false, true) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.EAST, res.y - src.y);
-        }
-
-        @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementDiagonal.cost(context, x, y, z, x + 1, z + 1, result);
-        }
-    },
-
     DIAGONAL_SOUTHWEST(-1, 0, +1, false, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
@@ -276,39 +258,27 @@ public enum Moves {
         }
     },
 
-    PARKOUR_NORTH(0, 0, -4, true, false) {
+    ASCEND_WEST(-1, +1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return MovementParkour.cost(context, src, EnumFacing.NORTH);
+            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x - 1, src.y + 1, src.z));
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementParkour.cost(context, x, y, z, EnumFacing.NORTH, result);
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementAscend.cost(context, x, y, z, x - 1, z);
         }
     },
 
-    PARKOUR_SOUTH(0, 0, +4, true, false) {
+    TRAVERSE_WEST(-1, 0, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return MovementParkour.cost(context, src, EnumFacing.SOUTH);
+            return new MovementTraverse(context.getBaritone(), src, src.west());
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementParkour.cost(context, x, y, z, EnumFacing.SOUTH, result);
-        }
-    },
-
-    PARKOUR_EAST(+4, 0, 0, true, false) {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return MovementParkour.cost(context, src, EnumFacing.EAST);
-        }
-
-        @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementParkour.cost(context, x, y, z, EnumFacing.EAST, result);
+        public double cost(CalculationContext context, int x, int y, int z) {
+            return MovementTraverse.cost(context, x, y, z, x - 1, z);
         }
     },
 
@@ -321,6 +291,38 @@ public enum Moves {
         @Override
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementParkour.cost(context, x, y, z, EnumFacing.WEST, result);
+        }
+    },
+
+    DESCEND_WEST(-1, -1, 0, false, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            if (res.y == src.y - 1) {
+                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+            } else {
+                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+            }
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDescend.cost(context, x, y, z, x - 1, z, result);
+        }
+    },
+
+    DIAGONAL_NORTHWEST(-1, 0, -1, false, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MutableMoveResult res = new MutableMoveResult();
+            apply(context, src.x, src.y, src.z, res);
+            return new MovementDiagonal(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.WEST, res.y - src.y);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementDiagonal.cost(context, x, y, z, x - 1, z - 1, result);
         }
     };
 
