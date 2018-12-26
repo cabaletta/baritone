@@ -125,9 +125,11 @@ public class MovementParkour extends Movement {
         if (!context.allowParkourPlace) {
             return;
         }
+        // time 2 pop off with that dank skynet parkour place
         int destX = x + 4 * xDiff;
         int destZ = z + 4 * zDiff;
-        if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
+        double placeCost = context.costOfPlacingAt(destX, y - 1, destZ);
+        if (placeCost >= COST_INF) {
             return;
         }
         IBlockState toReplace = context.get(destX, y - 1, destZ);
@@ -145,7 +147,7 @@ public class MovementParkour extends Movement {
                 res.x = destX;
                 res.y = y;
                 res.z = destZ;
-                res.cost = costFromJumpDistance(4) + context.placeBlockCost + context.jumpPenalty;
+                res.cost = costFromJumpDistance(4) + placeCost + context.jumpPenalty;
                 return;
             }
         }

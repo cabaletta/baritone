@@ -239,6 +239,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Queued " + count + " chunks for repacking");
             return true;
         }
+        if (msg.startsWith("build")) {
+            String file = msg.substring(5) + ".schematic";
+            logDirect("" + baritone.getBuilderProcess().build(file));
+            return true;
+        }
         if (msg.equals("axis")) {
             customGoalProcess.setGoalAndPath(new GoalAxis());
             return true;

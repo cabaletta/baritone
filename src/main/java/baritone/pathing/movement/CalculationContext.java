@@ -34,6 +34,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import static baritone.api.pathing.movement.ActionCosts.COST_INF;
+
 /**
  * @author Brady
  * @since 8/7/2018
@@ -42,6 +44,7 @@ public class CalculationContext {
 
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
+    public final boolean safeForThreadedUse;
     public final IBaritone baritone;
     public final EntityPlayerSP player;
     public final World world;
@@ -51,7 +54,7 @@ public class CalculationContext {
     public final boolean hasWaterBucket;
     public final boolean hasThrowaway;
     public final boolean canSprint;
-    public final double placeBlockCost;
+    protected final double placeBlockCost; // protected because you should call the function instead
     public final boolean allowBreak;
     public final boolean allowParkour;
     public final boolean allowParkourPlace;
@@ -71,12 +74,12 @@ public class CalculationContext {
     }
 
     public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
+        this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
         this.player = baritone.getPlayerContext().player();
         this.world = baritone.getPlayerContext().world();
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
-        this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
-        // new CalculationContext() needs to happen, can't add an argument (i'll beat you), can we get the world provider from currentlyTicking?
+        this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread);
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(baritone.getPlayerContext(), false);
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.provider.isNether();
@@ -125,14 +128,18 @@ public class CalculationContext {
         return get(x, y, z).getBlock();
     }
 
-    public boolean canPlaceThrowawayAt(int x, int y, int z) {
+    public double costOfPlacingAt(int x, int y, int z) {
         if (!hasThrowaway) { // only true if allowPlace is true, see constructor
-            return false;
+            return COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {
-            return false;
+            return COST_INF;
         }
-        return worldBorder.canPlaceAt(x, z); // TODO perhaps MovementHelper.canPlaceAgainst could also use this?
+        if (!worldBorder.canPlaceAt(x, z)) {
+            // TODO perhaps MovementHelper.canPlaceAgainst could also use this?
+            return COST_INF;
+        }
+        return placeBlockCost;
     }
 
     public boolean canBreakAt(int x, int y, int z) {
@@ -140,6 +147,10 @@ public class CalculationContext {
             return false;
         }
         return !isPossiblyProtected(x, y, z);
+    }
+
+    public double placeBucketCost() {
+        return placeBlockCost; // shrug
     }
 
     public boolean isPossiblyProtected(int x, int y, int z) {

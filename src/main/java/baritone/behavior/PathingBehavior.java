@@ -26,6 +26,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.process.PathingCommand;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.PathCalculationResult;
 import baritone.api.utils.interfaces.IGoalRenderPos;
@@ -37,9 +38,9 @@ import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
+import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -149,7 +150,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         return;
                     }
                     queuePathEvent(PathEvent.CALC_STARTED);
-                    findPathInNewThread(pathStart(), true);
+                    findPathInNewThread(pathStart(), true, new CalculationContext(baritone, true));
                 }
                 return;
             }
@@ -184,7 +185,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // and this path has 5 seconds or less left
                     logDebug("Path almost over. Planning ahead...");
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
-                    findPathInNewThread(current.getPath().getDest(), false);
+                    findPathInNewThread(current.getPath().getDest(), false, new CalculationContext(baritone, true));
                 }
             }
         }
@@ -219,9 +220,15 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         this.goal = goal;
     }
 
-    public boolean secretInternalSetGoalAndPath(Goal goal) {
-        secretInternalSetGoal(goal);
-        return secretInternalPath();
+    public boolean secretInternalSetGoalAndPath(PathingCommand command) {
+        secretInternalSetGoal(command.goal);
+        CalculationContext context;
+        if (command instanceof PathingCommandContext) {
+            context = ((PathingCommandContext) command).desiredCalcContext;
+        } else {
+            context = new CalculationContext(baritone, true);
+        }
+        return secretInternalPath(context);
     }
 
     @Override
@@ -315,7 +322,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      *
      * @return true if this call started path calculation, false if it was already calculating or executing a path
      */
-    public boolean secretInternalPath() {
+    private boolean secretInternalPath(CalculationContext context) {
         if (goal == null) {
             return false;
         }
@@ -331,7 +338,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     return false;
                 }
                 queuePathEvent(PathEvent.CALC_STARTED);
-                findPathInNewThread(pathStart(), true);
+                findPathInNewThread(pathStart(), true, context);
                 return true;
             }
         }
@@ -394,7 +401,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @param start
      * @param talkAboutIt
      */
-    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt) {
+    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt, CalculationContext context) {
         // this must be called with synchronization on pathCalcLock!
         // actually, we can check this, muahaha
         if (!Thread.holdsLock(pathCalcLock)) {
@@ -403,6 +410,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
         if (inProgress != null) {
             throw new IllegalStateException("Already doing it"); // should have been checked by caller
+        }
+        if (!context.safeForThreadedUse) {
+            throw new IllegalStateException("Improper context thread safety level");
         }
         Goal goal = this.goal;
         if (goal == null) {
@@ -418,7 +428,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             primaryTimeout = Baritone.settings().planAheadPrimaryTimeoutMS.get();
             failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.get();
         }
-        CalculationContext context = new CalculationContext(baritone, true); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
         if (!Objects.equals(pathfinder.getGoal(), goal)) { // will return the exact same object if simplification didn't happen
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
@@ -499,7 +508,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         Goal transformed = goal;
         if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
-            if (context.world.getChunk(pos) instanceof EmptyChunk) {
+            if (!context.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ())) {
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }

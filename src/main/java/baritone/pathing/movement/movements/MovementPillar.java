@@ -73,8 +73,13 @@ public class MovementPillar extends Movement {
                 return LADDER_UP_ONE_COST; // allow ascending pillars of water, but only if we're already in one
             }
         }
-        if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) { // we need to place a block where we started to jump on it
-            return COST_INF;
+        double placeCost = 0;
+        if (!ladder) {
+            // we need to place a block where we started to jump on it
+            placeCost = context.costOfPlacingAt(x, y, z);
+            if (placeCost >= COST_INF) {
+                return COST_INF;
+            }
         }
         if (from instanceof BlockLiquid || (fromDown.getBlock() instanceof BlockLiquid && context.assumeWalkOnWater)) {
             // otherwise, if we're standing in water, we cannot pillar
@@ -112,7 +117,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             return LADDER_UP_ONE_COST + hardness * 5;
         } else {
-            return JUMP_ONE_BLOCK_COST + context.placeBlockCost + context.jumpPenalty + hardness;
+            return JUMP_ONE_BLOCK_COST + placeCost + context.jumpPenalty + hardness;
         }
     }
 

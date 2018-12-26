@@ -25,10 +25,7 @@ import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
-import baritone.process.CustomGoalProcess;
-import baritone.process.FollowProcess;
-import baritone.process.GetToBlockProcess;
-import baritone.process.MineProcess;
+import baritone.process.*;
 import baritone.utils.BaritoneAutoTest;
 import baritone.utils.ExampleBaritoneControl;
 import baritone.utils.InputOverrideHandler;
@@ -83,6 +80,7 @@ public class Baritone implements IBaritone {
     private MineProcess mineProcess;
     private GetToBlockProcess getToBlockProcess;
     private CustomGoalProcess customGoalProcess;
+    private BuilderProcess builderProcess;
 
     private PathingControlManager pathingControlManager;
 
@@ -118,6 +116,7 @@ public class Baritone implements IBaritone {
             mineProcess = new MineProcess(this);
             customGoalProcess = new CustomGoalProcess(this); // very high iq
             getToBlockProcess = new GetToBlockProcess(this);
+            builderProcess = new BuilderProcess(this);
         }
 
         this.worldProvider = new WorldProvider();
@@ -169,6 +168,10 @@ public class Baritone implements IBaritone {
     @Override
     public FollowProcess getFollowProcess() {
         return this.followProcess;
+    }
+
+    public BuilderProcess getBuilderProcess() {
+        return this.builderProcess;
     }
 
     @Override
