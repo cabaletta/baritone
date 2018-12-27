@@ -240,7 +240,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.startsWith("build")) {
-            String file = msg.substring(5) + ".schematic";
+            String file = msg.substring(6) + ".schematic";
             logDirect("" + baritone.getBuilderProcess().build(file));
             return true;
         }

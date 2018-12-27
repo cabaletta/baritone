@@ -41,6 +41,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -60,9 +61,11 @@ public class BuilderProcess extends BaritoneProcessHelper {
 
     public boolean build(String schematicFile) {
         File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
+        System.out.println(file + " " + file.exists());
+
         NBTTagCompound tag;
-        try {
-            tag = CompressedStreamTools.read(file);
+        try (FileInputStream fileIn = new FileInputStream(file)) {
+            tag = CompressedStreamTools.readCompressed(fileIn);
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -107,6 +110,7 @@ public class BuilderProcess extends BaritoneProcessHelper {
                         // it's air and it shouldn't be
                         new GoalBlock(pos.up())
                         // it's a block and it shouldn't be
+                        // todo disallow right above
                         : new GoalGetToBlock(pos) // replace with GoalTwoBlocks to mine using pathfinding system only
         ).toArray(Goal[]::new);
     }
