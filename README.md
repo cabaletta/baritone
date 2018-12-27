@@ -25,8 +25,6 @@ Here are some links to help to get started:
 
 - [Installation](INSTALL.md)
 
-There's also some useful information down below
-
 # Setup
 
 ## Command Line
