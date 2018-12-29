@@ -110,7 +110,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return false;
             }
 
-            //System.out.println("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
             if (!Blocks.AIR.equals(BlockStateInterface.getBlock(ctx, whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.positions().get(i))) {
