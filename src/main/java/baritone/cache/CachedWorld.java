@@ -215,7 +215,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
         if (mostRecentlyModified == null) {
             return new BlockPos(0, 0, 0);
         }
-        return new BlockPos(mostRecentlyModified.x * 16 + 8, 0, mostRecentlyModified.z * 16 + 8);
+        return new BlockPos(mostRecentlyModified.x << 4 + 8, 0, mostRecentlyModified.z << 4 + 8);
     }
 
     private synchronized List<CachedRegion> allRegions() {
