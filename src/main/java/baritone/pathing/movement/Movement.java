@@ -125,8 +125,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                         currentState.getTarget().hasToForceRotations()));
 
         // TODO: calculate movement inputs from latestState.getGoal().position
-        // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
-
+        
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);
         });
