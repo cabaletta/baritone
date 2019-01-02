@@ -124,8 +124,6 @@ public abstract class Movement implements IMovement, MovementHelper {
                         rotation,
                         currentState.getTarget().hasToForceRotations()));
 
-        // TODO: calculate movement inputs from latestState.getGoal().position
-        
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);
         });
