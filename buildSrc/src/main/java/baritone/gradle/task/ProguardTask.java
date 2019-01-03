@@ -208,7 +208,7 @@ public class ProguardTask extends BaritoneGradleTask {
         Objects.requireNonNull(extension);
 
         // for some reason cant use Class.forName
-        Class<?> class_baseExtension = extension.getClass().getSuperclass().getSuperclass().getSuperclass();
+        Class<?> class_baseExtension = extension.getClass().getSuperclass().getSuperclass().getSuperclass(); // <-- cursed
         Field f_replacer = class_baseExtension.getDeclaredField("replacer");
         f_replacer.setAccessible(true);
         Object replacer = f_replacer.get(extension);
