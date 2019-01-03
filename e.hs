@@ -1,0 +1,2 @@
+main = putStr $ cycle "e"
+
