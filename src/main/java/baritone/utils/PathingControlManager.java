@@ -174,7 +174,7 @@ public class PathingControlManager implements IPathingControlManager {
         boolean found = false;
         boolean cancelOthers = false;
         PathingCommand exec = null;
-        for (int i = inContention.size() - 1; i >= 0; i--) { // truly a gamer moment
+        for (int i = inContention.size() - 1; i >= 0; --i) { // truly a gamer moment
             IBaritoneProcess proc = inContention.get(i);
             if (found) {
                 if (cancelOthers) {
