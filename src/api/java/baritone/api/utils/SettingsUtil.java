@@ -63,7 +63,7 @@ public class SettingsUtil {
         }
     }
 
-    public void readAndApply(Settings settings) {
+    public static void readAndApply(Settings settings) {
         try {
             forEachLine(settingsFile, line -> {
                 Matcher matcher = SETTING_PATTERN.matcher(line);
