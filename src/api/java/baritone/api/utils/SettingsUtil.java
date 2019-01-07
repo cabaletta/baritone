@@ -23,9 +23,14 @@ import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.*;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,9 +42,9 @@ public class SettingsUtil {
     private static final Map<Class<?>, SettingsIO> map;
 
     public static void readAndApply(Settings settings) {
-        try (Scanner scan = new Scanner(settingsFile)) {
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine();
+        try (BufferedReader scan = new BufferedReader(new FileReader(settingsFile))) {
+            String line;
+            while ((line = scan.readLine()) != null) {
                 if (line.isEmpty()) {
                     continue;
                 }
