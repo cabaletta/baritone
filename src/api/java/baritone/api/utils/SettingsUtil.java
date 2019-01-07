@@ -18,23 +18,23 @@
 package baritone.api.utils;
 
 import baritone.api.Settings;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,11 +42,10 @@ import static net.minecraft.client.Minecraft.getMinecraft;
 
 public class SettingsUtil {
 
-    private static final Path settingsFile = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
-    private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>[^ ]+)");// 2 words separated by spaces
+    private static final Path SETTINGS_PATH = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
+    private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>[^ ]+)"); // 2 words separated by spaces
 
     private static final Map<Class<?>, SettingsIO> map;
-
 
     private static boolean isComment(String line) {
         return line.startsWith("#") || line.startsWith("//");
@@ -56,8 +55,9 @@ public class SettingsUtil {
         try (BufferedReader scan = Files.newBufferedReader(file)) {
             String line;
             while ((line = scan.readLine()) != null) {
-                if (line.isEmpty() || isComment(line)) continue;
-
+                if (line.isEmpty() || isComment(line)) {
+                    continue;
+                }
                 consumer.accept(line);
             }
         }
@@ -65,7 +65,7 @@ public class SettingsUtil {
 
     public static void readAndApply(Settings settings) {
         try {
-            forEachLine(settingsFile, line -> {
+            forEachLine(SETTINGS_PATH, line -> {
                 Matcher matcher = SETTING_PATTERN.matcher(line);
                 if (!matcher.matches()) {
                     System.out.println("Invalid syntax in setting file: " + line);
@@ -88,7 +88,7 @@ public class SettingsUtil {
     }
 
     public static synchronized void save(Settings settings) {
-        try (BufferedWriter out = Files.newBufferedWriter(settingsFile)) {
+        try (BufferedWriter out = Files.newBufferedWriter(SETTINGS_PATH)) {
             for (Settings.Setting setting : settings.allSettings) {
                 if (setting.get() == null) {
                     System.out.println("NULL SETTING?" + setting.getName());
