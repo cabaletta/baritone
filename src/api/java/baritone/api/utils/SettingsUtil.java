@@ -73,7 +73,7 @@ public class SettingsUtil {
                 }
 
                 String settingName = matcher.group("setting").toLowerCase();
-                String settingValue = matcher.group("value").toLowerCase();
+                String settingValue = matcher.group("value");
                 try {
                     parseAndApply(settings, settingName, settingValue);
                 } catch (Exception ex) {
