@@ -18,15 +18,18 @@
 package baritone.api.utils;
 
 import baritone.api.Settings;
-import net.minecraft.client.Minecraft;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 
 import java.awt.*;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,44 +38,57 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.minecraft.client.Minecraft.getMinecraft;
+
 public class SettingsUtil {
 
-    private static final File settingsFile = new File(new File(Minecraft.getMinecraft().gameDir, "baritone"), "settings.txt");
+    private static final Path settingsFile = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
+    private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>[^ ]+)");// 2 words separated by spaces
 
     private static final Map<Class<?>, SettingsIO> map;
 
-    public static void readAndApply(Settings settings) {
-        try (BufferedReader scan = new BufferedReader(new FileReader(settingsFile))) {
+
+    private static boolean isComment(String line) {
+        return line.startsWith("#") || line.startsWith("//");
+    }
+
+    private static void forEachLine(Path file, Consumer<String> consumer) throws IOException {
+        try (BufferedReader scan = Files.newBufferedReader(file)) {
             String line;
             while ((line = scan.readLine()) != null) {
-                if (line.isEmpty()) {
-                    continue;
+                if (line.isEmpty() || isComment(line)) continue;
+
+                consumer.accept(line);
+            }
+        }
+    }
+
+    public static void readAndApply(Settings settings) {
+        try {
+            forEachLine(settingsFile, line -> {
+                Matcher matcher = SETTING_PATTERN.matcher(line);
+                if (!matcher.matches()) {
+                    System.out.println("Invalid syntax in setting file: " + line);
+                    return;
                 }
-                if (line.startsWith("#") || line.startsWith("//")) {
-                    continue;
-                }
-                int space = line.indexOf(" ");
-                if (space == -1) {
-                    System.out.println("Skipping invalid line with no space: " + line);
-                    continue;
-                }
-                String settingName = line.substring(0, space).trim().toLowerCase();
-                String settingValue = line.substring(space).trim();
+
+                String settingName = matcher.group("setting").toLowerCase();
+                String settingValue = matcher.group("value");
                 try {
                     parseAndApply(settings, settingName, settingValue);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     System.out.println("Unable to parse line " + line);
+                    ex.printStackTrace();
                 }
-            }
+            });
         } catch (Exception ex) {
-            ex.printStackTrace();
             System.out.println("Exception while reading Baritone settings, some settings may be reset to default values!");
+            ex.printStackTrace();
         }
     }
 
     public static synchronized void save(Settings settings) {
-        try (FileOutputStream out = new FileOutputStream(settingsFile)) {
+        try (BufferedWriter out = Files.newBufferedWriter(settingsFile)) {
             for (Settings.Setting setting : settings.allSettings) {
                 if (setting.get() == null) {
                     System.out.println("NULL SETTING?" + setting.getName());
@@ -88,11 +104,11 @@ public class SettingsUtil {
                 if (io == null) {
                     throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting + " " + setting.getName());
                 }
-                out.write((setting.getName() + " " + io.toString.apply(setting.get()) + "\n").getBytes());
+                out.write(setting.getName() + " " + io.toString.apply(setting.get()) + "\n");
             }
         } catch (Exception ex) {
+            System.out.println("Exception thrown while saving Baritone settings!");
             ex.printStackTrace();
-            System.out.println("Exception while saving Baritone settings!");
         }
     }
 
