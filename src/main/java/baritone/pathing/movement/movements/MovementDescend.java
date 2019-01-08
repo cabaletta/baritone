@@ -52,7 +52,7 @@ public class MovementDescend extends Movement {
     }
 
     @Override
-    protected double calculateCost(CalculationContext context) {
+    public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
         if (result.y != dest.y) {

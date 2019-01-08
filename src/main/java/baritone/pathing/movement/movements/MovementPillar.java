@@ -42,7 +42,7 @@ public class MovementPillar extends Movement {
     }
 
     @Override
-    protected double calculateCost(CalculationContext context) {
+    public double calculateCost(CalculationContext context) {
         return cost(context, src.x, src.y, src.z);
     }
 

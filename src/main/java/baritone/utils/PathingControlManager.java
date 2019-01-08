@@ -64,8 +64,7 @@ public class PathingControlManager implements IPathingControlManager {
         command = null;
         for (IBaritoneProcess proc : processes) {
             proc.onLostControl();
-            if (proc.isActive() && !proc.isTemporary()) { // it's okay for a temporary thing (like combat pause) to maintain control even if you say to cancel
-                // but not for a non temporary thing
+            if (proc.isActive() && !proc.isTemporary()) { // it's okay only for a temporary thing (like combat pause) to maintain control even if you say to cancel
                 throw new IllegalStateException(proc.displayName());
             }
         }
@@ -175,7 +174,7 @@ public class PathingControlManager implements IPathingControlManager {
         boolean found = false;
         boolean cancelOthers = false;
         PathingCommand exec = null;
-        for (int i = inContention.size() - 1; i >= 0; i--) { // truly a gamer moment
+        for (int i = inContention.size() - 1; i >= 0; --i) { // truly a gamer moment
             IBaritoneProcess proc = inContention.get(i);
             if (found) {
                 if (cancelOthers) {

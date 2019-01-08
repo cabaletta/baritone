@@ -128,6 +128,16 @@ public final class RotationUtils {
     }
 
     /**
+     * @param ctx Context for the viewing entity
+     * @param pos The target block position
+     * @return The optional rotation
+     * @see #reachable(EntityPlayerSP, BlockPos, double)
+     */
+    public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos) {
+        return reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
+    }
+
+    /**
      * Determines if the specified entity is able to reach the center of any of the sides
      * of the specified block. It first checks if the block center is reachable, and if so,
      * that rotation will be returned. If not, it will return the first center of a given

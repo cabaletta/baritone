@@ -34,7 +34,6 @@ import java.util.Optional;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
-    protected static final EnumFacing[] HORIZONTALS = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST};
     protected static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
 
     protected final IBaritone baritone;
@@ -85,7 +84,7 @@ public abstract class Movement implements IMovement, MovementHelper {
         return cost;
     }
 
-    protected abstract double calculateCost(CalculationContext context);
+    public abstract double calculateCost(CalculationContext context);
 
     @Override
     public double recalculateCost() {
@@ -124,9 +123,6 @@ public abstract class Movement implements IMovement, MovementHelper {
                 baritone.getLookBehavior().updateTarget(
                         rotation,
                         currentState.getTarget().hasToForceRotations()));
-
-        // TODO: calculate movement inputs from latestState.getGoal().position
-        // latestState.getTarget().position.ifPresent(null);      NULL CONSUMER REALLY SHOULDN'T BE THE FINAL THING YOU SHOULD REALLY REPLACE THIS WITH ALMOST ACTUALLY ANYTHING ELSE JUST PLEASE DON'T LEAVE IT AS IT IS THANK YOU KANYE
 
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);

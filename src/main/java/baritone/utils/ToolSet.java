@@ -180,7 +180,7 @@ public class ToolSet {
                     speed *= 0.09;
                     break;
                 case 2:
-                    speed *= 0.0027;
+                    speed *= 0.0027; // you might think that 0.09*0.3 = 0.027 so that should be next, that would make too much sense. it's 0.0027.
                     break;
                 default:
                     speed *= 0.00081;
