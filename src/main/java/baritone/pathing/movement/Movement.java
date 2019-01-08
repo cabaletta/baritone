@@ -84,7 +84,7 @@ public abstract class Movement implements IMovement, MovementHelper {
         return cost;
     }
 
-    protected abstract double calculateCost(CalculationContext context);
+    public abstract double calculateCost(CalculationContext context);
 
     @Override
     public double recalculateCost() {

@@ -166,7 +166,7 @@ public class MovementParkour extends Movement {
 
 
     @Override
-    protected double calculateCost(CalculationContext context) {
+    public double calculateCost(CalculationContext context) {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, direction, res);
         if (res.x != dest.x || res.z != dest.z) {
