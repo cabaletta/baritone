@@ -65,6 +65,7 @@ public class CalculationContext {
     public final int maxFallHeightBucket;
     public final double waterWalkSpeed;
     public final double breakBlockAdditionalCost;
+    public double backtrackCostFavoringCoefficient;
     public double jumpPenalty;
     public final double walkOnWaterOnePenalty;
     public final BetterWorldBorder worldBorder;
@@ -100,6 +101,7 @@ public class CalculationContext {
         float mult = depth / 3.0F;
         this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - mult) + ActionCosts.WALK_ONE_BLOCK_COST * mult;
         this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.get();
+        this.backtrackCostFavoringCoefficient = Baritone.settings().backtrackCostFavoringCoefficient.get();
         this.jumpPenalty = Baritone.settings().jumpPenalty.get();
         this.walkOnWaterOnePenalty = Baritone.settings().walkOnWaterOnePenalty.get();
         // why cache these things here, why not let the movements just get directly from settings?

@@ -330,6 +330,7 @@ public class BuilderProcess extends BaritoneProcessHelper {
             this.originZ = schematicOrigin.getZ();
 
             this.jumpPenalty += 10;
+            this.backtrackCostFavoringCoefficient = 1;
         }
 
         private IBlockState getSchematic(int x, int y, int z) {
