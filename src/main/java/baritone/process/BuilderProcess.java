@@ -150,13 +150,13 @@ public class BuilderProcess extends BaritoneProcessHelper {
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
 
-        Goal[] goals = assemble(bcc);
-        if (goals.length == 0) {
+        Goal goal = assemble(bcc);
+        if (goal == null) {
             logDirect("Unable to do it =(");
             onLostControl();
             return null;
         }
-        return new PathingCommandContext(new GoalComposite(goals), PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
+        return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
     }
 
     public boolean recalc(BuilderCalculationContext bcc) {
@@ -211,13 +211,40 @@ public class BuilderProcess extends BaritoneProcessHelper {
         }
     }
 
-    private Goal[] assemble(BuilderCalculationContext bcc) {
+    private Goal assemble(BuilderCalculationContext bcc) {
         List<IBlockState> approxPlacable = placable();
         List<BetterBlockPos> placable = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() == Blocks.AIR && approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))).collect(Collectors.toList());
-        if (!placable.isEmpty()) {
-            return placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(GoalPlace::new).toArray(Goal[]::new);
+        Goal[] toBreak = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() != Blocks.AIR).map(GoalBreak::new).toArray(Goal[]::new);
+        Goal[] toPlace = placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(GoalPlace::new).toArray(Goal[]::new);
+
+        if (toPlace.length != 0) {
+            return new JankyGoalComposite(new GoalComposite(toPlace), new GoalComposite(toBreak));
         }
-        return incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() != Blocks.AIR).map(GoalBreak::new).toArray(Goal[]::new);
+        if (toBreak.length == 0) {
+            return null;
+        }
+        return new GoalComposite(toBreak);
+    }
+
+    public static class JankyGoalComposite implements Goal {
+        private final Goal primary;
+        private final Goal fallback;
+
+        public JankyGoalComposite(Goal primary, Goal fallback) {
+            this.primary = primary;
+            this.fallback = fallback;
+        }
+
+
+        @Override
+        public boolean isInGoal(int x, int y, int z) {
+            return primary.isInGoal(x, y, z) || fallback.isInGoal(x, y, z);
+        }
+
+        @Override
+        public double heuristic(int x, int y, int z) {
+            return primary.heuristic(x, y, z);
+        }
     }
 
     public static class GoalBreak extends GoalGetToBlock {

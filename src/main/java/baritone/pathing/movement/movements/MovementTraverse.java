@@ -279,7 +279,7 @@ public class MovementTraverse extends Movement {
                     state.setTarget(new MovementState.MovementTarget(rot, true));
 
                     EnumFacing side = ctx.objectMouseOver().sideHit;
-                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), against1) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && ctx.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
+                    if ((Objects.equals(ctx.getSelectedBlock(), dest.down()) || (Objects.equals(ctx.getSelectedBlock().orElse(null), against1) && ctx.getSelectedBlock().get().offset(side).equals(positionToPlace))) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get())) {
                         return state.setInput(Input.CLICK_RIGHT, true);
                     }
                     if (ctx.playerRotations().isReallyCloseTo(rot)) {
