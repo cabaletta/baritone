@@ -65,7 +65,7 @@ public class CalculationContext {
     public final int maxFallHeightBucket;
     public final double waterWalkSpeed;
     public final double breakBlockAdditionalCost;
-    public final double jumpPenalty;
+    public double jumpPenalty;
     public final double walkOnWaterOnePenalty;
     public final BetterWorldBorder worldBorder;
 

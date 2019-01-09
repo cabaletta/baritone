@@ -215,7 +215,7 @@ public class BuilderProcess extends BaritoneProcessHelper {
         List<IBlockState> approxPlacable = placable();
         List<BetterBlockPos> placable = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() == Blocks.AIR && approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))).collect(Collectors.toList());
         if (!placable.isEmpty()) {
-            return placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(BetterBlockPos::up).map(GoalBlock::new).toArray(Goal[]::new);
+            return placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(GoalPlace::new).toArray(Goal[]::new);
         }
         return incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() != Blocks.AIR).map(GoalBreak::new).toArray(Goal[]::new);
     }
@@ -229,11 +229,22 @@ public class BuilderProcess extends BaritoneProcessHelper {
         @Override
         public boolean isInGoal(int x, int y, int z) {
             // can't stand right on top of a block, that might not work (what if it's unsupported, can't break then)
-            if (x == this.x && y == this.y + 1 && z == this.z) {
+            if (y > this.y) {
                 return false;
             }
             // but any other adjacent works for breaking, including inside or below
             return super.isInGoal(x, y, z);
+        }
+    }
+
+    public static class GoalPlace extends GoalBlock {
+        public GoalPlace(BlockPos placeAt) {
+            super(placeAt.up());
+        }
+
+        public double heuristic(int x, int y, int z) {
+            // prioritize lower y coordinates
+            return this.y * 100 + super.heuristic(x, y, z);
         }
     }
 
@@ -290,6 +301,8 @@ public class BuilderProcess extends BaritoneProcessHelper {
             this.originX = schematicOrigin.getX();
             this.originY = schematicOrigin.getY();
             this.originZ = schematicOrigin.getZ();
+
+            this.jumpPenalty += 10;
         }
 
         private IBlockState getSchematic(int x, int y, int z) {

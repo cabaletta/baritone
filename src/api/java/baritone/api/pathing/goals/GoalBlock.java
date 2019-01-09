@@ -30,17 +30,17 @@ public class GoalBlock implements Goal, IGoalRenderPos {
     /**
      * The X block position of this goal
      */
-    private final int x;
+    public final int x;
 
     /**
      * The Y block position of this goal
      */
-    private final int y;
+    public final int y;
 
     /**
      * The Z block position of this goal
      */
-    private final int z;
+    public final int z;
 
     public GoalBlock(BlockPos pos) {
         this(pos.getX(), pos.getY(), pos.getZ());

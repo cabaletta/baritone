@@ -275,14 +275,24 @@ public class MovementTraverse extends Movement {
                     double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
                     double faceY = (dest.getY() + against1.getY()) * 0.5D;
                     double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                    state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations()), true));
+                    Rotation rot = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
+                    state.setTarget(new MovementState.MovementTarget(rot, true));
 
                     EnumFacing side = ctx.objectMouseOver().sideHit;
                     if (Objects.equals(ctx.getSelectedBlock().orElse(null), against1) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && ctx.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
                         return state.setInput(Input.CLICK_RIGHT, true);
                     }
+                    if (ctx.playerRotations().isReallyCloseTo(rot)) {
+                        double dist = Math.max(Math.abs(ctx.player().posX - (dest.getX() + 0.5D)), Math.abs(ctx.player().posZ - (dest.getZ() + 0.5D)));
+                        if (dist > 0.83) {
+                            // might need to go forward a bit
+                            return state.setInput(Input.MOVE_FORWARD, true);
+                        }
+                        // don't left click for one tick
+                        return state.setInput(Input.CLICK_LEFT, true);
+                    }
+                    return state;
                     //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
-                    return state.setInput(Input.CLICK_LEFT, true);
                 }
             }
             if (!Baritone.settings().assumeSafeWalk.get()) {
