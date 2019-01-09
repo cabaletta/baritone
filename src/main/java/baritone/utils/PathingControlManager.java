@@ -26,10 +26,10 @@ import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
+import java.util.stream.Stream;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class PathingControlManager implements IPathingControlManager {
     private final Baritone baritone;
@@ -170,30 +170,30 @@ public class PathingControlManager implements IPathingControlManager {
 
 
     public PathingCommand doTheStuff() {
-        List<IBaritoneProcess> inContention = processes.stream().filter(IBaritoneProcess::isActive).sorted(Comparator.comparingDouble(IBaritoneProcess::priority).reversed()).collect(Collectors.toList());
-        boolean found = false;
-        boolean cancelOthers = false;
-        PathingCommand exec = null;
-        for (IBaritoneProcess proc : inContention) {
-            if (found) {
-                if (cancelOthers) {
-                    proc.onLostControl();
+        Stream<IBaritoneProcess> inContention = processes.stream()
+            .filter(IBaritoneProcess::isActive)
+            .sorted(Comparator.comparingDouble(IBaritoneProcess::priority).reversed());
+
+
+        Iterator<IBaritoneProcess> iterator = inContention.iterator();
+        while(iterator.hasNext()) {
+            IBaritoneProcess proc = iterator.next();
+
+            PathingCommand exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
+            if (exec == null) {
+                if (proc.isActive()) {
+                    throw new IllegalStateException(proc.displayName() + " returned null PathingCommand");
                 }
+                proc.onLostControl();
             } else {
-                exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
-                if (exec == null) {
-                    if (proc.isActive()) {
-                        throw new IllegalStateException(proc.displayName());
-                    }
-                    proc.onLostControl();
-                    continue;
-                }
-                //System.out.println("Executing command " + exec.commandType + " " + exec.goal + " from " + proc.displayName());
                 inControlThisTick = proc;
-                found = true;
-                cancelOthers = !proc.isTemporary();
+                if (!proc.isTemporary()) {
+                    iterator.forEachRemaining(IBaritoneProcess::onLostControl);
+                }
+
+                return exec;
             }
         }
-        return exec;
+        return null;
     }
 }
