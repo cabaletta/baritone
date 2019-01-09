@@ -499,7 +499,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         Goal transformed = goal;
         if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
-            if (context.world.getChunk(pos) instanceof EmptyChunk) {
+            if (!context.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ())) {
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
