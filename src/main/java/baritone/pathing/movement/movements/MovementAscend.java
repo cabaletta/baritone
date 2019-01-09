@@ -240,4 +240,10 @@ public class MovementAscend extends Movement {
         }
         return true;
     }
+
+    @Override
+    public boolean safeToCancel(MovementState state) {
+        // if we had to place, don't allow pause
+        return state.getStatus() != MovementStatus.RUNNING || ticksWithoutPlacement == 0;
+    }
 }

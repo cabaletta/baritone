@@ -142,11 +142,14 @@ public class CalculationContext {
         return placeBlockCost;
     }
 
-    public boolean canBreakAt(int x, int y, int z) {
+    public double breakCostMultiplierAt(int x, int y, int z) {
         if (!allowBreak) {
-            return false;
+            return COST_INF;
         }
-        return !isPossiblyProtected(x, y, z);
+        if (isPossiblyProtected(x, y, z)) {
+            return COST_INF;
+        }
+        return 1;
     }
 
     public double placeBucketCost() {

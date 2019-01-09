@@ -341,7 +341,8 @@ public interface MovementHelper extends ActionCosts, Helper {
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(context.bsi, x, y, z, state)) {
-            if (!context.canBreakAt(x, y, z)) {
+            double mult = context.breakCostMultiplierAt(x, y, z);
+            if (mult >= COST_INF) {
                 return COST_INF;
             }
             if (avoidBreaking(context.bsi, x, y, z, state)) {
@@ -358,6 +359,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
             double result = m / strVsBlock;
             result += context.breakBlockAdditionalCost;
+            result *= mult;
             if (includeFalling) {
                 IBlockState above = context.get(x, y + 1, z);
                 if (above.getBlock() instanceof BlockFalling) {

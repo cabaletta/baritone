@@ -36,4 +36,10 @@ public interface ISchematic {
     boolean inSchematic(int x, int y, int z);
 
     IBlockState desiredState(int x, int y, int z);
+
+    int widthX();
+
+    int heightY();
+
+    int lengthZ();
 }

@@ -28,9 +28,9 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GoalGetToBlock implements Goal, IGoalRenderPos {
 
-    private final int x;
-    private final int y;
-    private final int z;
+    public final int x;
+    public final int y;
+    public final int z;
 
     public GoalGetToBlock(BlockPos pos) {
         this.x = pos.getX();
