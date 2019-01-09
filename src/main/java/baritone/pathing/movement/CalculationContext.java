@@ -43,7 +43,6 @@ public class CalculationContext {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
     public final IBaritone baritone;
-    public final EntityPlayerSP player;
     public final World world;
     public final WorldData worldData;
     public final BlockStateInterface bsi;
@@ -72,7 +71,7 @@ public class CalculationContext {
 
     public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
         this.baritone = baritone;
-        this.player = baritone.getPlayerContext().player();
+        EntityPlayerSP player = baritone.getPlayerContext().player();
         this.world = baritone.getPlayerContext().world();
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
         this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
