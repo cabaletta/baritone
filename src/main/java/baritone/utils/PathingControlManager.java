@@ -170,12 +170,11 @@ public class PathingControlManager implements IPathingControlManager {
 
 
     public PathingCommand doTheStuff() {
-        List<IBaritoneProcess> inContention = processes.stream().filter(IBaritoneProcess::isActive).sorted(Comparator.comparingDouble(IBaritoneProcess::priority)).collect(Collectors.toList());
+        List<IBaritoneProcess> inContention = processes.stream().filter(IBaritoneProcess::isActive).sorted(Comparator.comparingDouble(IBaritoneProcess::priority).reversed()).collect(Collectors.toList());
         boolean found = false;
         boolean cancelOthers = false;
         PathingCommand exec = null;
-        for (int i = inContention.size() - 1; i >= 0; --i) { // truly a gamer moment
-            IBaritoneProcess proc = inContention.get(i);
+        for (IBaritoneProcess proc : inContention) {
             if (found) {
                 if (cancelOthers) {
                     proc.onLostControl();
