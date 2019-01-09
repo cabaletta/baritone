@@ -26,10 +26,10 @@ import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
-import java.util.stream.Stream;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class PathingControlManager implements IPathingControlManager {
     private final Baritone baritone;
@@ -82,7 +82,7 @@ public class PathingControlManager implements IPathingControlManager {
 
     public void preTick() {
         inControlLastTick = inControlThisTick;
-        command = doTheStuff();
+        command = executeProcesses();
         if (command == null) {
             return;
         }
@@ -169,14 +169,14 @@ public class PathingControlManager implements IPathingControlManager {
     }
 
 
-    public PathingCommand doTheStuff() {
+    public PathingCommand executeProcesses() {
         Stream<IBaritoneProcess> inContention = processes.stream()
-            .filter(IBaritoneProcess::isActive)
-            .sorted(Comparator.comparingDouble(IBaritoneProcess::priority).reversed());
+                .filter(IBaritoneProcess::isActive)
+                .sorted(Comparator.comparingDouble(IBaritoneProcess::priority).reversed());
 
 
         Iterator<IBaritoneProcess> iterator = inContention.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             IBaritoneProcess proc = iterator.next();
 
             PathingCommand exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
@@ -190,7 +190,6 @@ public class PathingControlManager implements IPathingControlManager {
                 if (!proc.isTemporary()) {
                     iterator.forEachRemaining(IBaritoneProcess::onLostControl);
                 }
-
                 return exec;
             }
         }
