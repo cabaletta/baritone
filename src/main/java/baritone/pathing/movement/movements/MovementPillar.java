@@ -82,6 +82,9 @@ public class MovementPillar extends Movement {
             if (placeCost >= COST_INF) {
                 return COST_INF;
             }
+            if (fromDown.getBlock() == Blocks.AIR) {
+                placeCost += 0.1; // slightly (1/200th of a second) penalize pillaring on what's currently air
+            }
         }
         if (from instanceof BlockLiquid || (fromDown.getBlock() instanceof BlockLiquid && context.assumeWalkOnWater)) {
             // otherwise, if we're standing in water, we cannot pillar
