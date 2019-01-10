@@ -82,11 +82,12 @@ public class PathingControlManager implements IPathingControlManager {
 
     public void preTick() {
         inControlLastTick = inControlThisTick;
+        PathingBehavior p = baritone.getPathingBehavior();
         command = executeProcesses();
         if (command == null) {
+            p.cancelSegmentIfSafe();
             return;
         }
-        PathingBehavior p = baritone.getPathingBehavior();
         switch (command.commandType) {
             case REQUEST_PAUSE:
                 p.requestPause();
