@@ -25,8 +25,8 @@ import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.util.MovementInput;
 import net.minecraft.util.MovementInputFromOptions;
-import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,14 +60,18 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
      * @return Whether or not it is being forced down
      */
     @Override
-    public final boolean isInputForcedDown(KeyBinding key) {
+    public final Boolean isInputForcedDown(KeyBinding key) {
         Input input = Input.getInputForBind(key);
-        if (input == null || (input != Input.CLICK_LEFT && input != Input.CLICK_RIGHT)) {
-            // TODO handle left and right better
-            // ideally we wouldn't force any keybinds and would do everything directly for real
+        if (input == null || !inControl()) {
+            return null;
+        }
+        if (input == Input.CLICK_LEFT) {
             return false;
         }
-        return isInputForcedDown(input);
+        if (input == Input.CLICK_RIGHT) {
+            return isInputForcedDown(Input.CLICK_RIGHT);
+        }
+        return null;
     }
 
     /**
@@ -101,33 +105,24 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     }
 
     @Override
-    public final void onProcessKeyBinds() {
-        // Simulate the key being held down this tick
-        for (Input input : Input.values()) {
-            KeyBinding keyBinding = input.getKeyBinding();
-
-            if (isInputForcedDown(keyBinding) && !keyBinding.isKeyDown()) {
-                int keyCode = keyBinding.getKeyCode();
-
-                if (keyCode < Keyboard.KEYBOARD_SIZE) {
-                    KeyBinding.onTick(keyCode < 0 ? keyCode + 100 : keyCode);
-                }
-            }
-        }
-    }
-
-    @Override
     public final void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        boolean stillClick = blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
-        setInputForceState(Input.CLICK_LEFT, stillClick);
-        if (baritone.getPathingBehavior().isPathing() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone()) {
-            ctx.player().movementInput = new PlayerMovementInput(this);
-        } else {
-            ctx.player().movementInput = new MovementInputFromOptions(Minecraft.getMinecraft().gameSettings);
+        blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
+
+        MovementInput desired = inControl()
+                ? new PlayerMovementInput(this)
+                : new MovementInputFromOptions(Minecraft.getMinecraft().gameSettings);
+
+        if (ctx.player().movementInput.getClass() != desired.getClass()) {
+            ctx.player().movementInput = desired; // only set it if it was previously incorrect
+            // gotta do it this way, or else it constantly thinks you're beginning a double tap W sprint lol
         }
+    }
+
+    private boolean inControl() {
+        return baritone.getPathingBehavior().isPathing() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone();
     }
 
     public BlockBreakHelper getBlockBreakHelper() {
