@@ -54,6 +54,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private PathExecutor next;
 
     private Goal goal;
+    private CalculationContext context;
 
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
@@ -155,7 +156,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         return;
                     }
                     queuePathEvent(PathEvent.CALC_STARTED);
-                    findPathInNewThread(pathStart(), true, new CalculationContext(baritone, true));
+                    findPathInNewThread(pathStart(), true, context);
                 }
                 return;
             }
@@ -190,7 +191,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // and this path has 5 seconds or less left
                     logDebug("Path almost over. Planning ahead...");
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
-                    findPathInNewThread(current.getPath().getDest(), false, new CalculationContext(baritone, true));
+                    findPathInNewThread(current.getPath().getDest(), false, context);
                 }
             }
         }
@@ -227,13 +228,31 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     public boolean secretInternalSetGoalAndPath(PathingCommand command) {
         secretInternalSetGoal(command.goal);
-        CalculationContext context;
         if (command instanceof PathingCommandContext) {
             context = ((PathingCommandContext) command).desiredCalcContext;
         } else {
             context = new CalculationContext(baritone, true);
         }
-        return secretInternalPath(context);
+        if (goal == null) {
+            return false;
+        }
+        BlockPos pathStart = pathStart();
+        if (goal.isInGoal(ctx.playerFeet()) || goal.isInGoal(pathStart)) {
+            return false;
+        }
+        synchronized (pathPlanLock) {
+            if (current != null) {
+                return false;
+            }
+            synchronized (pathCalcLock) {
+                if (inProgress != null) {
+                    return false;
+                }
+                queuePathEvent(PathEvent.CALC_STARTED);
+                findPathInNewThread(pathStart, true, context);
+                return true;
+            }
+        }
     }
 
     @Override
@@ -320,33 +339,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         cancelEverything();
         secretInternalSegmentCancel();
         inProgress = null;
-    }
-
-    /**
-     * Start calculating a path if we aren't already
-     *
-     * @return true if this call started path calculation, false if it was already calculating or executing a path
-     */
-    private boolean secretInternalPath(CalculationContext context) {
-        if (goal == null) {
-            return false;
-        }
-        if (goal.isInGoal(ctx.playerFeet())) {
-            return false;
-        }
-        synchronized (pathPlanLock) {
-            if (current != null) {
-                return false;
-            }
-            synchronized (pathCalcLock) {
-                if (inProgress != null) {
-                    return false;
-                }
-                queuePathEvent(PathEvent.CALC_STARTED);
-                findPathInNewThread(pathStart(), true, context);
-                return true;
-            }
-        }
     }
 
     public void secretCursedFunctionDoNotCall(IPath path) {
