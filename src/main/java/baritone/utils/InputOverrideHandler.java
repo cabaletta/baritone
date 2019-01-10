@@ -18,11 +18,14 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TickEvent;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.util.MovementInputFromOptions;
 import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
@@ -58,7 +61,13 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
      */
     @Override
     public final boolean isInputForcedDown(KeyBinding key) {
-        return isInputForcedDown(Input.getInputForBind(key));
+        Input input = Input.getInputForBind(key);
+        if (input == null || (input != Input.CLICK_LEFT && input != Input.CLICK_RIGHT)) {
+            // TODO handle left and right better
+            // ideally we wouldn't force any keybinds and would do everything directly for real
+            return false;
+        }
+        return isInputForcedDown(input);
     }
 
     /**
@@ -114,6 +123,11 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         }
         boolean stillClick = blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
         setInputForceState(Input.CLICK_LEFT, stillClick);
+        if (baritone.getPathingBehavior().isPathing() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone()) {
+            ctx.player().movementInput = new PlayerMovementInput(this);
+        } else {
+            ctx.player().movementInput = new MovementInputFromOptions(Minecraft.getMinecraft().gameSettings);
+        }
     }
 
     public BlockBreakHelper getBlockBreakHelper() {
