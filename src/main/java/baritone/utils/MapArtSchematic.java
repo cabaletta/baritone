@@ -17,6 +17,8 @@
 
 package baritone.utils;
 
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,21 +29,31 @@ public class MapArtSchematic extends Schematic {
     public MapArtSchematic(NBTTagCompound schematic) {
         super(schematic);
         heightMap = new int[widthX][lengthZ];
+
         for (int x = 0; x < widthX; x++) {
-            https:
             for (int z = 0; z < lengthZ; z++) {
                 IBlockState[] column = states[x][z];
-                for (int y = heightY - 1; y >= 0; y--) {
-                    if (column[y].getBlock() != Blocks.AIR) {
-                        heightMap[x][z] = y;
-                        continue https;
-                    }
+
+                OptionalInt lowestBlockY = getLowest(column, block -> block != Blocks.AIR);
+                if (lowestBlockY.isPresent()) {
+                    heightMap[x][z] = lowestBlockY.getAsInt();
+                } else {
+                    System.out.println("Column " + x + "," + z + " has no blocks, but it's apparently map art? wtf");
+                    System.out.println("Letting it be whatever");
+                    heightMap[x][z] = 256;
                 }
-                System.out.println("Column " + x + "," + z + " has no blocks, but it's apparently map art? wtf");
-                System.out.println("Letting it be whatever");
-                heightMap[x][z] = 256;
+
             }
         }
+    }
+
+    private static <T> OptionalInt getLowest(T[] arr, Predicate<T> predicate) {
+        for (int y = arr.length - 1; y >= 0; y--) {
+            if (predicate.test(arr[y])) {
+                return OptionalInt.of(y);
+            }
+        }
+        return OptionalInt.empty();
     }
 
     @Override
