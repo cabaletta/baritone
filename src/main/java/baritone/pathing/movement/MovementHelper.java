@@ -19,6 +19,7 @@ package baritone.pathing.movement;
 
 import baritone.Baritone;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
@@ -35,6 +36,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
+
+import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP;
 
 /**
  * Static helpers for cost calculation
@@ -486,5 +491,47 @@ public interface MovementHelper extends ActionCosts, Helper {
         // Will be IFluidState in 1.13
         return state.getBlock() instanceof BlockLiquid
                 && state.getValue(BlockLiquid.LEVEL) != 0;
+    }
+
+    static PlaceResult attemptToPlaceABlock(MovementState state, IPlayerContext ctx, BlockPos placeAt, boolean preferDown) {
+        boolean found = false;
+        for (int i = 0; i < 5; i++) {
+            BlockPos against1 = placeAt.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
+            if (MovementHelper.canPlaceAgainst(ctx, against1)) {
+                if (!MovementHelper.throwaway(ctx, true)) { // get ready to place a throwaway block
+                    Helper.HELPER.logDebug("bb pls get me some blocks. dirt or cobble");
+                    state.setStatus(MovementStatus.UNREACHABLE);
+                    return PlaceResult.NO_OPTION;
+                }
+                double faceX = (placeAt.getX() + against1.getX() + 1.0D) * 0.5D;
+                double faceY = (placeAt.getY() + against1.getY() + 1.0D) * 0.5D;
+                double faceZ = (placeAt.getZ() + against1.getZ() + 1.0D) * 0.5D;
+                Rotation place = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
+                RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance());
+                if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(placeAt)) {
+                    state.setTarget(new MovementState.MovementTarget(place, true));
+                    found = true;
+
+                    if (!preferDown) {
+                        // if preferDown is true, we want the last option
+                        // if preferDown is false, we want the first
+                        break;
+                    }
+                }
+            }
+        }
+        if (ctx.getSelectedBlock().isPresent()) {
+            BlockPos selectedBlock = ctx.getSelectedBlock().get();
+            EnumFacing side = ctx.objectMouseOver().sideHit;
+            // only way for selectedBlock.equals(placeAt) to be true is if it's replacable
+            if (selectedBlock.equals(placeAt) || (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.offset(side).equals(placeAt))) {
+                return PlaceResult.READY_TO_PLACE;
+            }
+        }
+        return found ? PlaceResult.ATTEMPTING : PlaceResult.NO_OPTION;
+    }
+
+    enum PlaceResult {
+        READY_TO_PLACE, ATTEMPTING, NO_OPTION;
     }
 }

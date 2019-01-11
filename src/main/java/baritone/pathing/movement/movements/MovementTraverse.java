@@ -36,7 +36,6 @@ import net.minecraft.block.BlockFenceGate;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -248,63 +247,40 @@ public class MovementTraverse extends Movement {
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
-            for (int i = 0; i < 5; i++) {
-                BlockPos against1 = dest.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
-                if (against1.equals(src)) {
-                    continue;
-                }
-                against1 = against1.down();
-                if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                    if (!MovementHelper.throwaway(ctx, true)) { // get ready to place a throwaway block
-                        logDebug("bb pls get me some blocks. dirt or cobble");
-                        return state.setStatus(MovementStatus.UNREACHABLE);
-                    }
-                    if (!Baritone.settings().assumeSafeWalk.get()) {
-                        state.setInput(Input.SNEAK, true);
-                    }
-                    Block standingOn = BlockStateInterface.get(ctx, ctx.playerFeet().down()).getBlock();
-                    if (standingOn.equals(Blocks.SOUL_SAND) || standingOn instanceof BlockSlab) { // see issue #118
-                        double dist = Math.max(Math.abs(dest.getX() + 0.5 - ctx.player().posX), Math.abs(dest.getZ() + 0.5 - ctx.player().posZ));
-                        if (dist < 0.85) { // 0.5 + 0.3 + epsilon
-                            MovementHelper.moveTowards(ctx, state, dest);
-                            return state.setInput(Input.MOVE_FORWARD, false)
-                                    .setInput(Input.MOVE_BACK, true);
-                        }
-                    }
-                    state.setInput(Input.MOVE_BACK, false);
-                    double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
-                    double faceY = (dest.getY() + against1.getY()) * 0.5D;
-                    double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                    Rotation rot = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
-                    state.setTarget(new MovementState.MovementTarget(rot, true));
-
-                    EnumFacing side = ctx.objectMouseOver().sideHit;
-                    if ((Objects.equals(ctx.getSelectedBlock(), dest.down()) || (Objects.equals(ctx.getSelectedBlock().orElse(null), against1) && ctx.getSelectedBlock().get().offset(side).equals(positionToPlace))) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get())) {
-                        return state.setInput(Input.CLICK_RIGHT, true);
-                    }
-                    if (ctx.playerRotations().isReallyCloseTo(rot)) {
-                        double dist = Math.max(Math.abs(ctx.player().posX - (dest.getX() + 0.5D)), Math.abs(ctx.player().posZ - (dest.getZ() + 0.5D)));
-                        if (dist > 0.83) {
-                            // might need to go forward a bit
-                            return state.setInput(Input.MOVE_FORWARD, true);
-                        }
-                        // don't left click for one tick
-                        return state.setInput(Input.CLICK_LEFT, true);
-                    }
-                    return state;
-                    //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
-                }
-            }
             if (!Baritone.settings().assumeSafeWalk.get()) {
                 state.setInput(Input.SNEAK, true);
+            }
+            Block standingOn = BlockStateInterface.get(ctx, ctx.playerFeet().down()).getBlock();
+            if (standingOn.equals(Blocks.SOUL_SAND) || standingOn instanceof BlockSlab) { // see issue #118
+                double dist = Math.max(Math.abs(dest.getX() + 0.5 - ctx.player().posX), Math.abs(dest.getZ() + 0.5 - ctx.player().posZ));
+                if (dist < 0.85) { // 0.5 + 0.3 + epsilon
+                    MovementHelper.moveTowards(ctx, state, dest);
+                    return state.setInput(Input.MOVE_FORWARD, false)
+                            .setInput(Input.MOVE_BACK, true);
+                }
+            }
+            state.setInput(Input.MOVE_BACK, false);
+            switch (MovementHelper.attemptToPlaceABlock(state, ctx, dest.down(), false)) {
+                case READY_TO_PLACE:
+                    if (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) {
+                        state.setInput(Input.CLICK_RIGHT, true);
+                    }
+                    return state;
+                case ATTEMPTING:
+                    double dist = Math.max(Math.abs(ctx.player().posX - (dest.getX() + 0.5D)), Math.abs(ctx.player().posZ - (dest.getZ() + 0.5D)));
+                    if (dist > 0.83) {
+                        // might need to go forward a bit
+                        return state.setInput(Input.MOVE_FORWARD, true);
+                    } else if (ctx.playerRotations().isReallyCloseTo(state.getGoal().rotation)) {
+                        // well i guess theres something in the way
+                        return state.setInput(Input.CLICK_LEFT, true);
+                    }
+                case NO_OPTION:
+                    break;
             }
             if (whereAmI.equals(dest)) {
                 // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
-                if (!MovementHelper.throwaway(ctx, true)) {// get ready to place a throwaway block
-                    logDebug("bb pls get me some blocks. dirt or cobble");
-                    return state.setStatus(MovementStatus.UNREACHABLE);
-                }
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;
                 double faceY = (dest.getY() + src.getY() - 1.0D) * 0.5D;
                 double faceZ = (dest.getZ() + src.getZ() + 1.0D) * 0.5D;
@@ -321,12 +297,14 @@ public class MovementTraverse extends Movement {
                 } else {
                     state.setTarget(new MovementState.MovementTarget(backToFace, true));
                 }
-                state.setInput(Input.SNEAK, true);
                 if (Objects.equals(ctx.getSelectedBlock().orElse(null), goalLook)) {
                     return state.setInput(Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
-                return state.setInput(Input.CLICK_LEFT, true);
+                if (ctx.playerRotations().isReallyCloseTo(state.getGoal().rotation)) {
+                    state.setInput(Input.CLICK_LEFT, true);
+                }
+                return state;
             } else {
                 MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
                 return state;

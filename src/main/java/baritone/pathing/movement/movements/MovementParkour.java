@@ -20,9 +20,6 @@ package baritone.pathing.movement.movements;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.RayTraceUtils;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -35,9 +32,6 @@ import net.minecraft.block.BlockStairs;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 
 public class MovementParkour extends Movement {
 
@@ -211,35 +205,9 @@ public class MovementParkour extends Movement {
             }
         } else if (!ctx.playerFeet().equals(src)) {
             if (ctx.playerFeet().equals(src.offset(direction)) || ctx.player().posY - ctx.playerFeet().getY() > 0.0001) {
-
-                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround) {
-                    BlockPos positionToPlace = dest.down();
-                    for (int i = 4; i >= 0; i--) { // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
-                        BlockPos against1 = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
-                        if (against1.up().equals(src.offset(direction, 3))) { // we can't turn around that fast
-                            continue;
-                        }
-                        if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                            if (!MovementHelper.throwaway(ctx, true)) {//get ready to place a throwaway block
-                                return state.setStatus(MovementStatus.UNREACHABLE);
-                            }
-                            double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
-                            double faceY = (dest.getY() + against1.getY()) * 0.5D;
-                            double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                            Rotation place = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
-                            RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance());
-                            if (res != null && res.typeOfHit == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(dest.down())) {
-                                state.setTarget(new MovementState.MovementTarget(place, true));
-                                break;
-                            }
-                        }
-                    }
-                    ctx.getSelectedBlock().ifPresent(selectedBlock -> {
-                        EnumFacing side = ctx.objectMouseOver().sideHit;
-                        if (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.offset(side).equals(dest.down())) {
-                            state.setInput(Input.CLICK_RIGHT, true);
-                        }
-                    });
+                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, ctx, dest.down(), true) == PlaceResult.READY_TO_PLACE) {
+                    // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
+                    state.setInput(Input.CLICK_RIGHT, true);
                 }
                 if (dist == 3) { // this is a 2 block gap, dest = src + direction * 3
                     double xDiff = (src.x + 0.5) - ctx.player().posX;

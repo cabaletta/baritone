@@ -375,7 +375,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     }
                     if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport) && MovementHelper.canWalkThrough(ctx, possibleSupport.up())) {
                         // this is plausible
-                        logDebug("Faking path start assuming player is standing off the edge of a block");
+                        //logDebug("Faking path start assuming player is standing off the edge of a block");
                         return possibleSupport;
                     }
                 }
@@ -384,7 +384,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 // !onGround
                 // we're in the middle of a jump
                 if (MovementHelper.canWalkOn(ctx, feet.down().down())) {
-                    logDebug("Faking path start assuming player is midair and falling");
+                    //logDebug("Faking path start assuming player is midair and falling");
                     return feet.down();
                 }
             }
