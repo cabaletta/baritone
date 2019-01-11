@@ -17,11 +17,12 @@
 
 package baritone.utils;
 
-import java.util.OptionalInt;
-import java.util.function.Predicate;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
+
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 
 public class MapArtSchematic extends Schematic {
     private final int[][] heightMap;
@@ -34,7 +35,7 @@ public class MapArtSchematic extends Schematic {
             for (int z = 0; z < lengthZ; z++) {
                 IBlockState[] column = states[x][z];
 
-                OptionalInt lowestBlockY = getLowest(column, block -> block != Blocks.AIR);
+                OptionalInt lowestBlockY = lastIndexMatching(column, block -> block != Blocks.AIR);
                 if (lowestBlockY.isPresent()) {
                     heightMap[x][z] = lowestBlockY.getAsInt();
                 } else {
@@ -47,7 +48,7 @@ public class MapArtSchematic extends Schematic {
         }
     }
 
-    private static <T> OptionalInt getLowest(T[] arr, Predicate<T> predicate) {
+    private static <T> OptionalInt lastIndexMatching(T[] arr, Predicate<T> predicate) {
         for (int y = arr.length - 1; y >= 0; y--) {
             if (predicate.test(arr[y])) {
                 return OptionalInt.of(y);
