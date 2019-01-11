@@ -75,7 +75,6 @@ public class CalculationContext {
         this.world = baritone.getPlayerContext().world();
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
         this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
-        // new CalculationContext() needs to happen, can't add an argument (i'll beat you), can we get the world provider from currentlyTicking?
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(baritone.getPlayerContext(), false);
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.provider.isNether();
