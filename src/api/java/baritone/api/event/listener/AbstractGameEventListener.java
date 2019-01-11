@@ -37,9 +37,6 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onPlayerUpdate(PlayerUpdateEvent event) {}
 
     @Override
-    default void onProcessKeyBinds() {}
-
-    @Override
     default void onSendChatMessage(ChatEvent event) {}
 
     @Override

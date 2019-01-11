@@ -50,11 +50,6 @@ public interface IGameEventListener {
     void onPlayerUpdate(PlayerUpdateEvent event);
 
     /**
-     * Run once per game tick from before keybinds are processed.
-     */
-    void onProcessKeyBinds();
-
-    /**
      * Runs whenever the client player sends a message to the server.
      *
      * @param event The event
