@@ -17,8 +17,6 @@
 
 package baritone.utils;
 
-import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -52,26 +50,8 @@ public final class BlockBreakHelper implements Helper {
         }
     }
 
-    private boolean fakeBreak() {
-        if (playerContext != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext()) {
-            // for a non primary player, we need to fake break always, CLICK_LEFT has no effect
-            return true;
-        }
-        if (!Baritone.settings().leftClickWorkaround.get()) {
-            // if this setting is false, we CLICK_LEFT regardless of gui status
-            return false;
-        }
-        return mc.currentScreen != null;
-    }
 
-    public boolean tick(boolean isLeftClick) {
-        if (!fakeBreak()) {
-            if (didBreakLastTick) {
-                stopBreakingBlock();
-            }
-            return isLeftClick;
-        }
-
+    public void tick(boolean isLeftClick) {
         RayTraceResult trace = playerContext.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
 
@@ -82,6 +62,5 @@ public final class BlockBreakHelper implements Helper {
             stopBreakingBlock();
             didBreakLastTick = false;
         }
-        return false; // fakeBreak is true so no matter what we aren't forcing CLICK_LEFT
     }
 }

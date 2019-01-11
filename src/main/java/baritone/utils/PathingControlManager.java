@@ -29,7 +29,7 @@ import baritone.pathing.path.PathExecutor;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PathingControlManager implements IPathingControlManager {
     private final Baritone baritone;
@@ -83,7 +83,7 @@ public class PathingControlManager implements IPathingControlManager {
     public void preTick() {
         inControlLastTick = inControlThisTick;
         PathingBehavior p = baritone.getPathingBehavior();
-        command = doTheStuff();
+        command = executeProcesses();
         if (command == null) {
             p.cancelSegmentIfSafe();
             return;
@@ -170,32 +170,30 @@ public class PathingControlManager implements IPathingControlManager {
     }
 
 
-    public PathingCommand doTheStuff() {
-        List<IBaritoneProcess> inContention = processes.stream().filter(IBaritoneProcess::isActive).sorted(Comparator.comparingDouble(IBaritoneProcess::priority)).collect(Collectors.toList());
-        boolean found = false;
-        boolean cancelOthers = false;
-        PathingCommand exec = null;
-        for (int i = inContention.size() - 1; i >= 0; --i) { // truly a gamer moment
-            IBaritoneProcess proc = inContention.get(i);
-            if (found) {
-                if (cancelOthers) {
-                    proc.onLostControl();
+    public PathingCommand executeProcesses() {
+        Stream<IBaritoneProcess> inContention = processes.stream()
+                .filter(IBaritoneProcess::isActive)
+                .sorted(Comparator.comparingDouble(IBaritoneProcess::priority).reversed());
+
+
+        Iterator<IBaritoneProcess> iterator = inContention.iterator();
+        while (iterator.hasNext()) {
+            IBaritoneProcess proc = iterator.next();
+
+            PathingCommand exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
+            if (exec == null) {
+                if (proc.isActive()) {
+                    throw new IllegalStateException(proc.displayName() + " returned null PathingCommand");
                 }
+                proc.onLostControl();
             } else {
-                exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
-                if (exec == null) {
-                    if (proc.isActive()) {
-                        throw new IllegalStateException(proc.displayName());
-                    }
-                    proc.onLostControl();
-                    continue;
-                }
-                //System.out.println("Executing command " + exec.commandType + " " + exec.goal + " from " + proc.displayName());
                 inControlThisTick = proc;
-                found = true;
-                cancelOthers = !proc.isTemporary();
+                if (!proc.isTemporary()) {
+                    iterator.forEachRemaining(IBaritoneProcess::onLostControl);
+                }
+                return exec;
             }
         }
-        return exec;
+        return null;
     }
 }

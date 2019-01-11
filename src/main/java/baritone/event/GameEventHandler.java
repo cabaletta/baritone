@@ -55,11 +55,6 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
-    public final void onProcessKeyBinds() {
-        listeners.forEach(IGameEventListener::onProcessKeyBinds);
-    }
-
-    @Override
     public final void onSendChatMessage(ChatEvent event) {
         listeners.forEach(l -> l.onSendChatMessage(event));
     }

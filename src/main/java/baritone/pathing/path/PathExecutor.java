@@ -380,7 +380,8 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
 
         // if the movement requested sprinting, then we're done
-        if (behavior.baritone.getInputOverrideHandler().isInputForcedDown(mc.gameSettings.keyBindSprint)) {
+        if (behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT)) {
+            behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
             if (!ctx.player().isSprinting()) {
                 ctx.player().setSprinting(true);
             }
