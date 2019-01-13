@@ -18,6 +18,7 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
@@ -31,10 +32,7 @@ import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemPickaxe;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -403,42 +401,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
     }
 
-    static boolean throwaway(IPlayerContext ctx, boolean select) {
-        EntityPlayerSP p = ctx.player();
-        NonNullList<ItemStack> inv = p.inventory.mainInventory;
-        for (byte i = 0; i < 9; i++) {
-            ItemStack item = inv.get(i);
-            // this usage of settings() is okay because it's only called once during pathing
-            // (while creating the CalculationContext at the very beginning)
-            // and then it's called during execution
-            // since this function is never called during cost calculation, we don't need to migrate
-            // acceptableThrowawayItems to the CalculationContext
-            if (Baritone.settings().acceptableThrowawayItems.get().contains(item.getItem())) {
-                if (select) {
-                    p.inventory.currentItem = i;
-                }
-                return true;
-            }
-        }
-        if (Baritone.settings().acceptableThrowawayItems.get().contains(p.inventory.offHandInventory.get(0).getItem())) {
-            // main hand takes precedence over off hand
-            // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
-            // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
-            // so we need to select in the main hand something that doesn't right click
-            // so not a shovel, not a hoe, not a block, etc
-            for (byte i = 0; i < 9; i++) {
-                ItemStack item = inv.get(i);
-                if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
-                    if (select) {
-                        p.inventory.currentItem = i;
-                    }
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
         EntityPlayerSP player = ctx.player();
         state.setTarget(new MovementTarget(
@@ -493,12 +455,13 @@ public interface MovementHelper extends ActionCosts, Helper {
                 && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 
-    static PlaceResult attemptToPlaceABlock(MovementState state, IPlayerContext ctx, BlockPos placeAt, boolean preferDown) {
+    static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown) {
+        IPlayerContext ctx = baritone.getPlayerContext();
         boolean found = false;
         for (int i = 0; i < 5; i++) {
             BlockPos against1 = placeAt.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                if (!MovementHelper.throwaway(ctx, true)) { // get ready to place a throwaway block
+                if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(placeAt.getX(), placeAt.getY(), placeAt.getZ())) { // get ready to place a throwaway block
                     Helper.HELPER.logDebug("bb pls get me some blocks. dirt or cobble");
                     state.setStatus(MovementStatus.UNREACHABLE);
                     return PlaceResult.NO_OPTION;

@@ -21,8 +21,10 @@ import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
@@ -86,5 +88,63 @@ public class InventoryBehavior extends Behavior {
             }
         }
         return bestInd;
+    }
+
+    public boolean hasGenericThrowaway() {
+        for (Item item : Baritone.settings().acceptableThrowawayItems.get()) {
+            if (throwaway(false, item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean selectThrowawayForLocation(int x, int y, int z) {
+        Item maybe = baritone.getBuilderProcess().placeAt(x, y, z);
+        if (maybe != null && throwaway(true, maybe)) {
+            return true; // gotem
+        }
+        for (Item item : Baritone.settings().acceptableThrowawayItems.get()) {
+            if (throwaway(true, item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean throwaway(boolean select, Item desired) {
+        EntityPlayerSP p = ctx.player();
+        NonNullList<ItemStack> inv = p.inventory.mainInventory;
+        for (byte i = 0; i < 9; i++) {
+            ItemStack item = inv.get(i);
+            // this usage of settings() is okay because it's only called once during pathing
+            // (while creating the CalculationContext at the very beginning)
+            // and then it's called during execution
+            // since this function is never called during cost calculation, we don't need to migrate
+            // acceptableThrowawayItems to the CalculationContext
+            if (desired.equals(item.getItem())) {
+                if (select) {
+                    p.inventory.currentItem = i;
+                }
+                return true;
+            }
+        }
+        if (desired.equals(p.inventory.offHandInventory.get(0).getItem())) {
+            // main hand takes precedence over off hand
+            // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
+            // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
+            // so we need to select in the main hand something that doesn't right click
+            // so not a shovel, not a hoe, not a block, etc
+            for (byte i = 0; i < 9; i++) {
+                ItemStack item = inv.get(i);
+                if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
+                    if (select) {
+                        p.inventory.currentItem = i;
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

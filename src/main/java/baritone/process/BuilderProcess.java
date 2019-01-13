@@ -37,6 +37,7 @@ import baritone.utils.Schematic;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -93,6 +94,21 @@ public class BuilderProcess extends BaritoneProcessHelper {
         return schematic != null;
     }
 
+    public Item placeAt(int x, int y, int z) {
+        if (!isActive()) {
+            return null;
+        }
+        if (!schematic.inSchematic(x - origin.getX(), y - origin.getY(), z - origin.getZ())) {
+            return null;
+        }
+        IBlockState state = schematic.desiredState(x - origin.getX(), y - origin.getY(), z - origin.getZ());
+        if (state.getBlock() == Blocks.AIR) {
+            return null;
+        }
+        return new ItemBlock(state.getBlock());
+    }
+
+
     public Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
         for (int dx = -5; dx <= 5; dx++) {
@@ -129,7 +145,7 @@ public class BuilderProcess extends BaritoneProcessHelper {
         // need to iterate over incorrectPositions and see which ones we can "correct" from our current standing position
 
 
-        BuilderCalculationContext bcc = new BuilderCalculationContext(schematic, origin);
+        BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
             logDirect("Done building");
             onLostControl();
@@ -321,13 +337,13 @@ public class BuilderProcess extends BaritoneProcessHelper {
         private final int originY;
         private final int originZ;
 
-        public BuilderCalculationContext(ISchematic schematic, Vec3i schematicOrigin) {
+        public BuilderCalculationContext() {
             super(BuilderProcess.this.baritone, true); // wew lad
             this.placable = placable();
-            this.schematic = schematic;
-            this.originX = schematicOrigin.getX();
-            this.originY = schematicOrigin.getY();
-            this.originZ = schematicOrigin.getZ();
+            this.schematic = BuilderProcess.this.schematic;
+            this.originX = origin.getX();
+            this.originY = origin.getY();
+            this.originZ = origin.getZ();
 
             this.jumpPenalty += 10;
             this.backtrackCostFavoringCoefficient = 1;

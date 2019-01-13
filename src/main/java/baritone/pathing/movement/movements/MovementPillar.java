@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -202,7 +203,7 @@ public class MovementPillar extends Movement {
             return state;
         } else {
             // Get ready to place a throwaway block
-            if (!MovementHelper.throwaway(ctx, true)) {
+            if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(src.x, src.y, src.z)) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 

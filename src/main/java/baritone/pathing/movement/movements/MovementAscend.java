@@ -157,7 +157,7 @@ public class MovementAscend extends Movement {
         IBlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
         if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
             ticksWithoutPlacement++;
-            if (MovementHelper.attemptToPlaceABlock(state, ctx, dest.down(), false) == PlaceResult.READY_TO_PLACE) {
+            if (MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), false) == PlaceResult.READY_TO_PLACE) {
                 state.setInput(Input.SNEAK, true);
                 if (ctx.player().isSneaking()) {
                     state.setInput(Input.CLICK_RIGHT, true);
