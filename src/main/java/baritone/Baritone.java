@@ -129,6 +129,7 @@ public class Baritone implements IBaritone {
         this.initialized = true;
     }
 
+    @Override
     public PathingControlManager getPathingControlManager() {
         return this.pathingControlManager;
     }

@@ -141,7 +141,7 @@ public class MovementTraverse extends Movement {
                 if (srcDown == Blocks.FLOWING_WATER || srcDown == Blocks.WATER) {
                     return COST_INF; // this is obviously impossible
                 }
-                WC = WC * SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;//since we are sneak backplacing, we are sneaking lol
+                WC = WC * (SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST);//since we are sneak backplacing, we are sneaking lol
                 return WC + placeCost + hardness1 + hardness2;
             }
             return COST_INF;
