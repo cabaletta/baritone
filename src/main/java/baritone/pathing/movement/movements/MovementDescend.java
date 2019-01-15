@@ -52,7 +52,7 @@ public class MovementDescend extends Movement {
     }
 
     @Override
-    protected double calculateCost(CalculationContext context) {
+    public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
         if (result.y != dest.y) {
@@ -93,7 +93,7 @@ public class MovementDescend extends Movement {
         //C, D, etc determine the length of the fall
 
         IBlockState below = context.get(destX, y - 2, destZ);
-        if (!MovementHelper.canWalkOn(context.bsi(), destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ, below)) {
             dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res);
             return;
         }
@@ -122,7 +122,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return false;
         }
-        if (!MovementHelper.canWalkThrough(context.bsi(), destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
+        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
             return false;
         }
         double costSoFar = 0;
@@ -140,13 +140,13 @@ public class MovementDescend extends Movement {
             if (ontoBlock.getBlock() == Blocks.WATER && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) {
                 // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
                 // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
-                if (context.assumeWalkOnWater()) {
+                if (context.assumeWalkOnWater) {
                     return false; // TODO fix
                 }
                 if (MovementHelper.isFlowing(ontoBlock)) {
                     return false; // TODO flowing check required here?
                 }
-                if (!MovementHelper.canWalkOn(context.bsi(), destX, newY - 1, destZ)) {
+                if (!MovementHelper.canWalkOn(context.bsi, destX, newY - 1, destZ)) {
                     // we could punch right through the water into something else
                     return false;
                 }
@@ -168,23 +168,23 @@ public class MovementDescend extends Movement {
                 effectiveStartHeight = newY;
                 continue;
             }
-            if (MovementHelper.canWalkThrough(context.bsi(), destX, newY, destZ, ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
                 continue;
             }
-            if (!MovementHelper.canWalkOn(context.bsi(), destX, newY, destZ, ontoBlock)) {
+            if (!MovementHelper.canWalkOn(context.bsi, destX, newY, destZ, ontoBlock)) {
                 return false;
             }
             if (MovementHelper.isBottomSlab(ontoBlock)) {
                 return false; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
             }
-            if (context.hasWaterBucket() && unprotectedFallHeight <= context.maxFallHeightBucket() + 1) {
+            if (context.hasWaterBucket && unprotectedFallHeight <= context.maxFallHeightBucket + 1) {
                 res.x = destX;
                 res.y = newY + 1;// this is the block we're falling onto, so dest is +1
                 res.z = destZ;
-                res.cost = tentativeCost + context.placeBlockCost();
+                res.cost = tentativeCost + context.placeBlockCost;
                 return true;
             }
-            if (unprotectedFallHeight <= context.maxFallHeightNoWater() + 1) {
+            if (unprotectedFallHeight <= context.maxFallHeightNoWater + 1) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
                 res.x = destX;
                 res.y = newY + 1;

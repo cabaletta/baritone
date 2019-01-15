@@ -55,10 +55,7 @@ public class InventoryBehavior extends Behavior {
     }
 
     private void swapWithHotBar(int inInventory, int inHotbar) {
-        if (inInventory < 9) {
-            inInventory += 36;
-        }
-        ctx.playerController().windowClick(ctx.player().inventoryContainer.windowId, inInventory, inHotbar, ClickType.SWAP, ctx.player());
+        ctx.playerController().windowClick(ctx.player().inventoryContainer.windowId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickType.SWAP, ctx.player());
     }
 
     private int firstValidThrowaway() { // TODO offhand idk
@@ -81,7 +78,7 @@ public class InventoryBehavior extends Behavior {
                 continue;
             }
             if (klass.isInstance(stack.getItem())) {
-                double speed = ToolSet.calculateStrVsBlock(stack, against.getDefaultState()); // takes into account enchants
+                double speed = ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState()); // takes into account enchants
                 if (speed > bestSpeed) {
                     bestSpeed = speed;
                     bestInd = i;

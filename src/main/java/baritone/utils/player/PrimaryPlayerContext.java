@@ -23,7 +23,6 @@ import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
 import baritone.utils.Helper;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 

@@ -340,24 +340,24 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
-        if (!canWalkThrough(context.bsi(), x, y, z, state)) {
+        if (!canWalkThrough(context.bsi, x, y, z, state)) {
             if (!context.canBreakAt(x, y, z)) {
                 return COST_INF;
             }
-            if (avoidBreaking(context.bsi(), x, y, z, state)) {
+            if (avoidBreaking(context.bsi, x, y, z, state)) {
                 return COST_INF;
             }
             if (block instanceof BlockLiquid) {
                 return COST_INF;
             }
             double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
-            double strVsBlock = context.getToolSet().getStrVsBlock(state);
+            double strVsBlock = context.toolSet.getStrVsBlock(state);
             if (strVsBlock <= 0) {
                 return COST_INF;
             }
 
             double result = m / strVsBlock;
-            result += context.breakBlockAdditionalCost();
+            result += context.breakBlockAdditionalCost;
             if (includeFalling) {
                 IBlockState above = context.get(x, y + 1, z);
                 if (above.getBlock() instanceof BlockFalling) {

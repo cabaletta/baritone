@@ -26,7 +26,7 @@ import net.minecraft.util.math.BlockPos;
 
 public abstract class PathBase implements IPath {
     @Override
-    public PathBase cutoffAtLoadedChunks(Object bsi0) {
+    public PathBase cutoffAtLoadedChunks(Object bsi0) { // <-- cursed cursed cursed
         BlockStateInterface bsi = (BlockStateInterface) bsi0;
         for (int i = 0; i < positions().size(); i++) {
             BlockPos pos = positions().get(i);

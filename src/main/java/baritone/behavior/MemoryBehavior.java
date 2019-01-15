@@ -116,12 +116,10 @@ public final class MemoryBehavior extends Behavior {
 
                 System.out.println("Received packet " + packet.getGuiId() + " " + packet.getEntityId() + " " + packet.getSlotCount() + " " + packet.getWindowId());
                 System.out.println(packet.getWindowTitle());
-                if (packet.getWindowTitle() instanceof TextComponentTranslation) {
+                if (packet.getWindowTitle() instanceof TextComponentTranslation && ((TextComponentTranslation) packet.getWindowTitle()).getKey().equals("container.enderchest")) {
                     // title is not customized (i.e. this isn't just a renamed shulker)
-                    if (((TextComponentTranslation) packet.getWindowTitle()).getKey().equals("container.enderchest")) {
-                        enderChestWindowId = packet.getWindowId();
-                        return;
-                    }
+                    enderChestWindowId = packet.getWindowId();
+                    return;
                 }
                 futureInventories.stream()
                         .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
@@ -177,7 +175,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     private BlockPos neighboringConnectedBlock(BlockPos in) {
-        BlockStateInterface bsi = new CalculationContext(baritone).bsi();
+        BlockStateInterface bsi = new CalculationContext(baritone).bsi;
         Block block = bsi.get0(in).getBlock();
         if (block != Blocks.TRAPPED_CHEST && block != Blocks.CHEST) {
             return null; // other things that have contents, but can be placed adjacent without combining

@@ -57,7 +57,6 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     }
 
     private Goal towards(Entity following) {
-        // lol this is trashy but it works
         BlockPos pos;
         if (Baritone.settings().followOffsetDistance.get() == 0) {
             pos = new BlockPos(following);

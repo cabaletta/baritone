@@ -18,8 +18,10 @@
 package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
+import baritone.utils.Helper;
 import net.minecraft.client.settings.KeyBinding;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -31,6 +33,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(KeyBinding.class)
 public class MixinKeyBinding {
 
+    @Shadow
+    public int pressTime;
+
     @Inject(
             method = "isKeyDown",
             at = @At("HEAD"),
@@ -38,8 +43,26 @@ public class MixinKeyBinding {
     )
     private void isKeyDown(CallbackInfoReturnable<Boolean> cir) {
         // only the primary baritone forces keys
-        if (BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this)) {
-            cir.setReturnValue(true);
+        Boolean force = BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this);
+        if (force != null) {
+            cir.setReturnValue(force); // :sunglasses:
+        }
+    }
+
+    @Inject(
+            method = "isPressed",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void isPressed(CallbackInfoReturnable<Boolean> cir) {
+        // only the primary baritone forces keys
+        Boolean force = BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this);
+        if (force != null && force == false) { // <-- cursed
+            if (pressTime > 0) {
+                Helper.HELPER.logDirect("You're trying to press this mouse button but I won't let you");
+                pressTime--;
+            }
+            cir.setReturnValue(force); // :sunglasses:
         }
     }
 }

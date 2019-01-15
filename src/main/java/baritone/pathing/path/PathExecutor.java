@@ -110,7 +110,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return false;
             }
 
-            //System.out.println("Should be at " + whereShouldIBe + " actually am at " + whereAmI);
             if (!Blocks.AIR.equals(BlockStateInterface.getBlock(ctx, whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.positions().get(i))) {
@@ -374,14 +373,15 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private void sprintIfRequested() {
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
-        if (!new CalculationContext(behavior.baritone).canSprint()) {
+        if (!new CalculationContext(behavior.baritone).canSprint) {
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
             ctx.player().setSprinting(false);
             return;
         }
 
         // if the movement requested sprinting, then we're done
-        if (behavior.baritone.getInputOverrideHandler().isInputForcedDown(mc.gameSettings.keyBindSprint)) {
+        if (behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT)) {
+            behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
             if (!ctx.player().isSprinting()) {
                 ctx.player().setSprinting(true);
             }

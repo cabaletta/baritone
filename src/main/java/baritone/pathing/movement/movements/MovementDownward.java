@@ -43,12 +43,12 @@ public class MovementDownward extends Movement {
     }
 
     @Override
-    protected double calculateCost(CalculationContext context) {
+    public double calculateCost(CalculationContext context) {
         return cost(context, src.x, src.y, src.z);
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        if (!MovementHelper.canWalkOn(context.bsi(), x, y - 2, z)) {
+        if (!MovementHelper.canWalkOn(context.bsi, x, y - 2, z)) {
             return COST_INF;
         }
         IBlockState down = context.get(x, y - 1, z);

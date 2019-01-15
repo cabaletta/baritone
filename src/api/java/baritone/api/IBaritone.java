@@ -67,6 +67,8 @@ public interface IBaritone {
      */
     IWorldProvider getWorldProvider();
 
+    IPathingControlManager getPathingControlManager();
+
     IInputOverrideHandler getInputOverrideHandler();
 
     ICustomGoalProcess getCustomGoalProcess();

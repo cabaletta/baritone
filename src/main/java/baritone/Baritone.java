@@ -128,6 +128,11 @@ public class Baritone implements IBaritone {
         this.initialized = true;
     }
 
+    @Override
+    public PathingControlManager getPathingControlManager() {
+        return this.pathingControlManager;
+    }
+
     public List<Behavior> getBehaviors() {
         return this.behaviors;
     }
@@ -135,11 +140,6 @@ public class Baritone implements IBaritone {
     public void registerBehavior(Behavior behavior) {
         this.behaviors.add(behavior);
         this.gameEventHandler.registerEventListener(behavior);
-    }
-
-    @Override
-    public PathingControlManager getPathingControlManager() {
-        return this.pathingControlManager;
     }
 
     @Override
