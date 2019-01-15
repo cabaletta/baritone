@@ -37,7 +37,6 @@ import baritone.utils.Schematic;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -94,7 +93,7 @@ public class BuilderProcess extends BaritoneProcessHelper {
         return schematic != null;
     }
 
-    public Item placeAt(int x, int y, int z) {
+    public IBlockState placeAt(int x, int y, int z) {
         if (!isActive()) {
             return null;
         }
@@ -105,7 +104,7 @@ public class BuilderProcess extends BaritoneProcessHelper {
         if (state.getBlock() == Blocks.AIR) {
             return null;
         }
-        return new ItemBlock(state.getBlock());
+        return state;
     }
 
 

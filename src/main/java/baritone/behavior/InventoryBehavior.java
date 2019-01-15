@@ -21,14 +21,14 @@ import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemPickaxe;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemTool;
+import net.minecraft.item.*;
 import net.minecraft.util.NonNullList;
+
+import java.util.function.Predicate;
 
 public class InventoryBehavior extends Behavior {
     public InventoryBehavior(Baritone baritone) {
@@ -92,7 +92,7 @@ public class InventoryBehavior extends Behavior {
 
     public boolean hasGenericThrowaway() {
         for (Item item : Baritone.settings().acceptableThrowawayItems.get()) {
-            if (throwaway(false, item)) {
+            if (throwaway(false, item::equals)) {
                 return true;
             }
         }
@@ -100,19 +100,19 @@ public class InventoryBehavior extends Behavior {
     }
 
     public boolean selectThrowawayForLocation(int x, int y, int z) {
-        Item maybe = baritone.getBuilderProcess().placeAt(x, y, z);
-        if (maybe != null && throwaway(true, maybe)) {
+        IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z);
+        if (maybe != null && throwaway(true, item -> item instanceof ItemBlock && ((ItemBlock) item).getBlock().equals(maybe.getBlock()))) {
             return true; // gotem
         }
         for (Item item : Baritone.settings().acceptableThrowawayItems.get()) {
-            if (throwaway(true, item)) {
+            if (throwaway(true, item::equals)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean throwaway(boolean select, Item desired) {
+    private boolean throwaway(boolean select, Predicate<? super Item> desired) {
         EntityPlayerSP p = ctx.player();
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
@@ -122,14 +122,14 @@ public class InventoryBehavior extends Behavior {
             // and then it's called during execution
             // since this function is never called during cost calculation, we don't need to migrate
             // acceptableThrowawayItems to the CalculationContext
-            if (desired.equals(item.getItem())) {
+            if (desired.test(item.getItem())) {
                 if (select) {
                     p.inventory.currentItem = i;
                 }
                 return true;
             }
         }
-        if (desired.equals(p.inventory.offHandInventory.get(0).getItem())) {
+        if (desired.test(p.inventory.offHandInventory.get(0).getItem())) {
             // main hand takes precedence over off hand
             // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
             // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
