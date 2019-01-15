@@ -33,7 +33,9 @@ public interface ISchematic {
      * @param z
      * @return
      */
-    boolean inSchematic(int x, int y, int z);
+    default boolean inSchematic(int x, int y, int z) {
+        return x >= 0 && x < widthX() && y >= 0 && y < heightY() && z >= 0 && z < lengthZ();
+    }
 
     IBlockState desiredState(int x, int y, int z);
 

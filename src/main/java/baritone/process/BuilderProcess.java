@@ -78,10 +78,14 @@ public class BuilderProcess extends BaritoneProcessHelper {
         if (tag == null) {
             return false;
         }
-        name = schematicFile;
-        schematic = parse(tag);
-        origin = ctx.playerFeet();
+        build(schematicFile, parse(tag), ctx.playerFeet());
         return true;
+    }
+
+    public void build(String name, ISchematic schematic, Vec3i origin) {
+        this.name = name;
+        this.schematic = schematic;
+        this.origin = origin;
     }
 
     private static ISchematic parse(NBTTagCompound schematic) {

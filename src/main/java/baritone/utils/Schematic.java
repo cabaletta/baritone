@@ -67,11 +67,6 @@ public class Schematic implements ISchematic {
     }
 
     @Override
-    public boolean inSchematic(int x, int y, int z) {
-        return x >= 0 && x < widthX && y >= 0 && y < heightY && z >= 0 && z < lengthZ;
-    }
-
-    @Override
     public IBlockState desiredState(int x, int y, int z) {
         return states[x][z][y];
     }

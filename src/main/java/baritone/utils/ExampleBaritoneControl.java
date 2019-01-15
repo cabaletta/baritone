@@ -284,6 +284,36 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             });
             return true;
         }
+        if (msg.startsWith("cleararea")) {
+            String suffix = msg.substring("cleararea".length());
+            BlockPos corner1;
+            BlockPos corner2;
+            if (suffix.isEmpty()) {
+                // clear the area from the current goal to here
+                Goal goal = baritone.getPathingBehavior().getGoal();
+                if (goal == null || !(goal instanceof GoalBlock)) {
+                    logDirect("Need to specify goal of opposite corner");
+                    return true;
+                }
+                corner1 = ((GoalBlock) goal).getGoalPos();
+                corner2 = ctx.playerFeet();
+            } else {
+                try {
+                    String[] spl = suffix.split(" ");
+                    corner1 = ctx.playerFeet();
+                    corner2 = new BlockPos(Integer.parseInt(spl[0]), Integer.parseInt(spl[1]), Integer.parseInt(spl[2]));
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+                    logDirect("unable to parse");
+                    return true;
+                }
+            }
+            BlockPos origin = new BlockPos(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
+            int widthX = Math.abs(corner1.getX() - corner2.getX()) + 1;
+            int heightY = Math.abs(corner1.getY() - corner2.getY()) + 1;
+            int lengthZ = Math.abs(corner1.getZ() - corner2.getZ()) + 1;
+            baritone.getBuilderProcess().build("clear area", new AirSchematic(widthX, heightY, lengthZ), origin);
+            return true;
+        }
         if (msg.equals("reset")) {
             Baritone.settings().reset();
             logDirect("Baritone settings reset");
