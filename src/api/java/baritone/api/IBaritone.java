@@ -53,8 +53,6 @@ public interface IBaritone {
      */
     IMineProcess getMineProcess();
 
-    IPathingControlManager getPathingControlManager();
-
     /**
      * @return The {@link IPathingBehavior} instance
      * @see IPathingBehavior
