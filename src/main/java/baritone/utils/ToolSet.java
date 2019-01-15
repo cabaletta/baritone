@@ -103,7 +103,7 @@ public class ToolSet {
         IBlockState blockState = b.getDefaultState();
         for (byte i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
-            double v = calculateStrVsBlock(itemStack, blockState);
+            double v = calculateSpeedVsBlock(itemStack, blockState);
             if (v > value) {
                 value = v;
                 best = i;
@@ -128,7 +128,7 @@ public class ToolSet {
      */
     private double getBestDestructionTime(Block b) {
         ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b));
-        return calculateStrVsBlock(stack, b.getDefaultState());
+        return calculateSpeedVsBlock(stack, b.getDefaultState());
     }
 
     /**
@@ -138,7 +138,7 @@ public class ToolSet {
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */
-    public static double calculateStrVsBlock(ItemStack item, IBlockState state) {
+    public static double calculateSpeedVsBlock(ItemStack item, IBlockState state) {
         float hardness = state.getBlockHardness(null, null);
         if (hardness < 0) {
             return -1;

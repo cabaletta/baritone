@@ -78,7 +78,7 @@ public class InventoryBehavior extends Behavior {
                 continue;
             }
             if (klass.isInstance(stack.getItem())) {
-                double speed = ToolSet.calculateStrVsBlock(stack, against.getDefaultState()); // takes into account enchants
+                double speed = ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState()); // takes into account enchants
                 if (speed > bestSpeed) {
                     bestSpeed = speed;
                     bestInd = i;
