@@ -15,11 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.api.utils;
 
 import net.minecraft.block.state.IBlockState;
 
+/**
+ * Basic representation of a schematic. Provides the dimensions and
+ * the desired statefor a given position relative to the origin.
+ *
+ * @author leijurv
+ */
 public interface ISchematic {
+
     /**
      * Does the block at this coordinate matter to the schematic?
      * <p>
@@ -28,20 +35,37 @@ public interface ISchematic {
      * However, in the case of something like a map art, anything that's below the level of the map art doesn't matter,
      * so this function should return false in that case. (i.e. it doesn't really have to be air below the art blocks)
      *
-     * @param x
-     * @param y
-     * @param z
-     * @return
+     * @param x The x position of the block, relative to the origin
+     * @param y The y position of the block, relative to the origin
+     * @param z The z position of the block, relative to the origin
+     * @return Whether or not the specified position is within the bounds of this schematic
      */
     default boolean inSchematic(int x, int y, int z) {
         return x >= 0 && x < widthX() && y >= 0 && y < heightY() && z >= 0 && z < lengthZ();
     }
 
+    /**
+     * Returns the desired block state at a given (X, Y, Z) position relative to the origin (0, 0, 0).
+     *
+     * @param x The x position of the block, relative to the origin
+     * @param y The y position of the block, relative to the origin
+     * @param z The z position of the block, relative to the origin
+     * @return The desired block state at the specified position
+     */
     IBlockState desiredState(int x, int y, int z);
 
+    /**
+     * @return The width (X axis length) of this schematic
+     */
     int widthX();
 
+    /**
+     * @return The height (Y axis length) of this schematic
+     */
     int heightY();
 
+    /**
+     * @return The length (Z axis length) of this schematic
+     */
     int lengthZ();
 }

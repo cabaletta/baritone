@@ -17,6 +17,7 @@
 
 package baritone.utils;
 
+import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 
