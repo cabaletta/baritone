@@ -154,11 +154,10 @@ public class ToolSet {
 
         speed /= hardness;
         if (state.getMaterial().isToolNotRequired() || (!item.isEmpty() && item.canHarvestBlock(state))) {
-            speed /= 30;
+            return speed / 30;
         } else {
-            speed /= 100;
+            return speed / 100;
         }
-        return speed;
     }
 
     /**
