@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.utils.schematic;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -25,6 +25,7 @@ import java.util.OptionalInt;
 import java.util.function.Predicate;
 
 public class MapArtSchematic extends Schematic {
+
     private final int[][] heightMap;
 
     public MapArtSchematic(NBTTagCompound schematic) {

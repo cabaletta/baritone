@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.utils.schematic;
 
 import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
