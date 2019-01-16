@@ -18,6 +18,7 @@
 package baritone.bot.spec;
 
 import baritone.bot.IBaritoneUser;
+import baritone.utils.PlayerMovementInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -66,7 +67,7 @@ public class EntityBot extends EntityPlayerSP {
     public EntityBot(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
         super(mc, world, netHandlerPlayClient, statisticsManager, recipeBook);
         this.user = user;
-        this.movementInput = new BotMovementInput(this.user);
+        this.movementInput = new PlayerMovementInput(this.user.getBaritone().getInputOverrideHandler());
     }
 
     @Override
