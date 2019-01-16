@@ -22,9 +22,20 @@ package baritone.api.process;
  */
 public interface IBuilderProcess extends IBaritoneProcess {
 
+    /**
+     * Build from a schematic file inside of .minecraft/schematics
+     *
+     * @param schematicFile The name of the schematic file
+     * @return Success or failure
+     */
     boolean build(String schematicFile);
 
+    /**
+     * Clear a specified XYZ area
+     */
+    void clearArea(int clearX, int clearY, int clearZ);
+
     default void cancel() {
-        onLostControl();
+        this.onLostControl();
     }
 }

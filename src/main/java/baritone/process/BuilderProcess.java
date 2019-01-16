@@ -31,10 +31,7 @@ import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
-import baritone.utils.BaritoneProcessHelper;
-import baritone.utils.ISchematic;
-import baritone.utils.PathingCommandContext;
-import baritone.utils.Schematic;
+import baritone.utils.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -70,6 +67,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
      * @param schematicFile The name of the schematic file located in .minecraft/schematics
      * @return whether the process started or not.
      */
+    @Override
     public boolean build(String schematicFile) {
         File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
         System.out.println(file + " " + file.exists());
@@ -87,6 +85,13 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         build(schematicFile, parse(tag), ctx.playerFeet());
         return true;
     }
+
+
+    @Override
+    public void clearArea(int clearX, int clearY, int clearZ) {
+        this.build("cleararea", new AirSchematic(clearX, clearY, clearZ), ctx.playerFeet());
+    }
+
 
     public void build(String name, ISchematic schematic, Vec3i origin) {
         this.name = name;
