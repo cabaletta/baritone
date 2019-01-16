@@ -22,6 +22,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalGetToBlock;
+import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.BetterBlockPos;
@@ -54,7 +55,7 @@ import java.util.stream.Collectors;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
-public class BuilderProcess extends BaritoneProcessHelper {
+public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
     public BuilderProcess(Baritone baritone) {
         super(baritone);
     }
@@ -64,6 +65,11 @@ public class BuilderProcess extends BaritoneProcessHelper {
     private ISchematic schematic;
     private Vec3i origin;
 
+    /**
+     * Begin building something from a schematic file
+     * @param schematicFile The name of the schematic file located in .minecraft/schematics
+     * @return whether the process started or not.
+     */
     public boolean build(String schematicFile) {
         File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
         System.out.println(file + " " + file.exists());

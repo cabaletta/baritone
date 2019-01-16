@@ -172,6 +172,7 @@ public class Baritone implements IBaritone {
         return this.followProcess;
     }
 
+    @Override
     public BuilderProcess getBuilderProcess() {
         return this.builderProcess;
     }

@@ -22,10 +22,7 @@ import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.pathing.calc.IPathingControlManager;
-import baritone.api.process.ICustomGoalProcess;
-import baritone.api.process.IFollowProcess;
-import baritone.api.process.IGetToBlockProcess;
-import baritone.api.process.IMineProcess;
+import baritone.api.process.*;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.IPlayerContext;
 
@@ -34,6 +31,13 @@ import baritone.api.utils.IPlayerContext;
  * @since 9/29/2018
  */
 public interface IBaritone {
+
+    /**
+     * @return The {@link IBuilderProcess} instance
+     * @see IBuilderProcess
+     */
+    IBuilderProcess getBuilderProcess();
+
 
     /**
      * @return The {@link IFollowProcess} instance
