@@ -22,9 +22,10 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 
 public class AirSchematic implements ISchematic {
-    public final int widthX;
-    public final int heightY;
-    public final int lengthZ;
+
+    private final int widthX;
+    private final int heightY;
+    private final int lengthZ;
 
     public AirSchematic(int widthX, int heightY, int lengthZ) {
         this.widthX = widthX;
