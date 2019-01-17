@@ -17,8 +17,6 @@
 
 package baritone.utils;
 
-import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -31,11 +29,6 @@ import net.minecraft.util.math.RayTraceResult;
  */
 public final class BlockBreakHelper implements Helper {
 
-    /**
-     * The last block that we tried to break, if this value changes
-     * between attempts, then we re-initialize the breaking process.
-     */
-    private BlockPos lastBlock;
     private boolean didBreakLastTick;
 
     private IPlayerContext playerContext;
@@ -45,42 +38,20 @@ public final class BlockBreakHelper implements Helper {
     }
 
     public void tryBreakBlock(BlockPos pos, EnumFacing side) {
-        if (!pos.equals(lastBlock)) {
-            playerContext.playerController().clickBlock(pos, side);
-        }
         if (playerContext.playerController().onPlayerDamageBlock(pos, side)) {
             playerContext.player().swingArm(EnumHand.MAIN_HAND);
         }
-        lastBlock = pos;
     }
 
     public void stopBreakingBlock() {
-        if (playerContext.playerController() != null) {
+        // The player controller will never be null, but the player can be
+        if (playerContext.player() != null) {
             playerContext.playerController().resetBlockRemoving();
         }
-        lastBlock = null;
     }
 
-    private boolean fakeBreak() {
-        if (playerContext != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext()) {
-            // for a non primary player, we need to fake break always, CLICK_LEFT has no effect
-            return true;
-        }
-        if (!Baritone.settings().leftClickWorkaround.get()) {
-            // if this setting is false, we CLICK_LEFT regardless of gui status
-            return false;
-        }
-        return mc.currentScreen != null;
-    }
 
-    public boolean tick(boolean isLeftClick) {
-        if (!fakeBreak()) {
-            if (didBreakLastTick) {
-                stopBreakingBlock();
-            }
-            return isLeftClick;
-        }
-
+    public void tick(boolean isLeftClick) {
         RayTraceResult trace = playerContext.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
 
@@ -91,6 +62,5 @@ public final class BlockBreakHelper implements Helper {
             stopBreakingBlock();
             didBreakLastTick = false;
         }
-        return false; // fakeBreak is true so no matter what we aren't forcing CLICK_LEFT
     }
 }

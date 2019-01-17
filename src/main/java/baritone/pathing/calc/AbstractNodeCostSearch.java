@@ -136,11 +136,10 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * for the node mapped to the specified pos. If no node is found,
      * a new node is created.
      *
-     * @param x The x position of the node
-     * @param y The y position of the node
-     * @param z The z position of the node
+     * @param x        The x position of the node
+     * @param y        The y position of the node
+     * @param z        The z position of the node
      * @param hashCode The hash code of the node, provided by {@link BetterBlockPos#longHash(int, int, int)}
-     *
      * @return The associated node
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */

@@ -46,6 +46,8 @@ public class BlockStateInterface {
     private Chunk prev = null;
     private CachedRegion prevCached = null;
 
+    private final boolean useTheRealWorld;
+
     private static final IBlockState AIR = Blocks.AIR.getDefaultState();
 
     public BlockStateInterface(IPlayerContext ctx) {
@@ -64,6 +66,7 @@ public class BlockStateInterface {
         } else {
             this.loadedChunks = worldLoaded; // this will only be used on the main thread
         }
+        this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.get();
         if (!Minecraft.getMinecraft().isCallingFromMinecraftThread()) {
             throw new IllegalStateException();
         }
@@ -94,7 +97,7 @@ public class BlockStateInterface {
             return AIR;
         }
 
-        if (!Baritone.settings().pathThroughCachedOnly.get()) {
+        if (useTheRealWorld) {
             Chunk cached = prev;
             // there's great cache locality in block state lookups
             // generally it's within each movement

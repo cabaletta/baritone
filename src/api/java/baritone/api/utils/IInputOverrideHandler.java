@@ -27,9 +27,7 @@ import net.minecraft.client.settings.KeyBinding;
  */
 public interface IInputOverrideHandler extends IBehavior {
 
-    default boolean isInputForcedDown(KeyBinding key) {
-        return isInputForcedDown(Input.getInputForBind(key));
-    }
+    Boolean isInputForcedDown(KeyBinding key);
 
     boolean isInputForcedDown(Input input);
 

@@ -55,7 +55,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         startNode.combinedCost = startNode.estimatedCostToGoal;
         BinaryHeapOpenSet openSet = new BinaryHeapOpenSet();
         openSet.insert(startNode);
-        startNode.isOpen = true;
         bestSoFar = new PathNode[COEFFICIENTS.length];//keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
         double[] bestHeuristicSoFar = new double[COEFFICIENTS.length];
         for (int i = 0; i < bestHeuristicSoFar.length; i++) {
@@ -64,8 +63,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         }
         MutableMoveResult res = new MutableMoveResult();
         Favoring favored = favoring;
-        BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world().getWorldBorder());
-        long startTime = System.nanoTime() / 1000000L;
+        BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world.getWorldBorder());
+        long startTime = System.currentTimeMillis();
         boolean slowPath = Baritone.settings().slowPath.get();
         if (slowPath) {
             logDebug("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + primaryTimeout + "ms");
@@ -77,12 +76,15 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
         boolean favoring = !favored.isEmpty();
+        int timeCheckInterval = 1 << 6;
         int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
         boolean minimumImprovementRepropagation = Baritone.settings().minimumImprovementRepropagation.get();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && !cancelRequested) {
-            long now = System.nanoTime() / 1000000L;
-            if (now - failureTimeoutTime >= 0 || (!failing && now - primaryTimeoutTime >= 0)) {
-                break;
+            if ((numNodes & (timeCheckInterval - 1)) == 0) { // only call this once every 64 nodes (about half a millisecond)
+                long now = System.currentTimeMillis(); // since nanoTime is slow on windows (takes many microseconds)
+                if (now - failureTimeoutTime >= 0 || (!failing && now - primaryTimeoutTime >= 0)) {
+                    break;
+                }
             }
             if (slowPath) {
                 try {
@@ -91,11 +93,10 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 }
             }
             PathNode currentNode = openSet.removeLowest();
-            currentNode.isOpen = false;
             mostRecentConsidered = currentNode;
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
-                logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, " + numMovementsConsidered + " movements considered");
+                logDebug("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal, calcContext));
             }
             for (Moves moves : Moves.values()) {
@@ -124,10 +125,10 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 if (actionCost <= 0 || Double.isNaN(actionCost)) {
                     throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
                 }
+                // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
                 if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
                     continue;
                 }
-                // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
                 if (!moves.dynamicXZ && (res.x != newX || res.z != newZ)) {
                     throw new IllegalStateException(moves + " " + res.x + " " + newX + " " + res.z + " " + newZ);
                 }
@@ -153,10 +154,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                     neighbor.previous = currentNode;
                     neighbor.cost = tentativeCost;
                     neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
-                    if (neighbor.isOpen) {
+                    if (neighbor.isOpen()) {
                         openSet.update(neighbor);
                     } else {
-                        neighbor.isOpen = true;
                         openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
                     }
                     for (int i = 0; i < bestSoFar.length; i++) {
@@ -181,7 +181,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
         System.out.println(numMovementsConsidered + " movements considered");
         System.out.println("Open set size: " + openSet.size());
         System.out.println("PathNode map size: " + mapSize());
-        System.out.println((int) (numNodes * 1.0 / ((System.nanoTime() / 1000000L - startTime) / 1000F)) + " nodes per second");
+        System.out.println((int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)) + " nodes per second");
         double bestDist = 0;
         for (int i = 0; i < bestSoFar.length; i++) {
             if (bestSoFar[i] == null) {
@@ -192,7 +192,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch implements Hel
                 bestDist = dist;
             }
             if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                logDebug("Took " + (System.nanoTime() / 1000000L - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
+                logDebug("Took " + (System.currentTimeMillis() - startTime) + "ms, A* cost coefficient " + COEFFICIENTS[i] + ", " + numMovementsConsidered + " movements considered");
                 if (COEFFICIENTS[i] >= 3) {
                     System.out.println("Warning: cost coefficient is greater than three! Probably means that");
                     System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");

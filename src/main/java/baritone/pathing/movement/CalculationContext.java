@@ -42,26 +42,28 @@ public class CalculationContext {
 
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
-    private final IBaritone baritone;
-    private final EntityPlayerSP player;
-    private final World world;
-    private final WorldData worldData;
-    private final BlockStateInterface bsi;
-    private final ToolSet toolSet;
-    private final boolean hasWaterBucket;
-    private final boolean hasThrowaway;
-    private final boolean canSprint;
-    private final double placeBlockCost;
-    private final boolean allowBreak;
-    private final boolean allowParkour;
-    private final boolean allowParkourPlace;
-    private final boolean allowJumpAt256;
-    private final boolean assumeWalkOnWater;
-    private final int maxFallHeightNoWater;
-    private final int maxFallHeightBucket;
-    private final double waterWalkSpeed;
-    private final double breakBlockAdditionalCost;
-    private final BetterWorldBorder worldBorder;
+    public final IBaritone baritone;
+    public final World world;
+    public final WorldData worldData;
+    public final BlockStateInterface bsi;
+    public final ToolSet toolSet;
+    public final boolean hasWaterBucket;
+    public final boolean hasThrowaway;
+    public final boolean canSprint;
+    public final double placeBlockCost;
+    public final boolean allowBreak;
+    public final boolean allowParkour;
+    public final boolean allowParkourPlace;
+    public final boolean allowJumpAt256;
+    public final boolean assumeWalkOnWater;
+    public final boolean allowDiagonalDescend;
+    public final int maxFallHeightNoWater;
+    public final int maxFallHeightBucket;
+    public final double waterWalkSpeed;
+    public final double breakBlockAdditionalCost;
+    public final double jumpPenalty;
+    public final double walkOnWaterOnePenalty;
+    public final BetterWorldBorder worldBorder;
 
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
@@ -69,11 +71,10 @@ public class CalculationContext {
 
     public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
         this.baritone = baritone;
-        this.player = baritone.getPlayerContext().player();
+        EntityPlayerSP player = baritone.getPlayerContext().player();
         this.world = baritone.getPlayerContext().world();
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
         this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
-        // new CalculationContext() needs to happen, can't add an argument (i'll beat you), can we get the world provider from currentlyTicking?
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(baritone.getPlayerContext(), false);
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.provider.isNether();
@@ -84,6 +85,7 @@ public class CalculationContext {
         this.allowParkourPlace = Baritone.settings().allowParkourPlace.get();
         this.allowJumpAt256 = Baritone.settings().allowJumpAt256.get();
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.get();
+        this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.get();
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
         int depth = EnchantmentHelper.getDepthStriderModifier(player);
@@ -93,6 +95,8 @@ public class CalculationContext {
         float mult = depth / 3.0F;
         this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - mult) + ActionCosts.WALK_ONE_BLOCK_COST * mult;
         this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.get();
+        this.jumpPenalty = Baritone.settings().jumpPenalty.get();
+        this.walkOnWaterOnePenalty = Baritone.settings().walkOnWaterOnePenalty.get();
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
@@ -120,7 +124,7 @@ public class CalculationContext {
     }
 
     public boolean canPlaceThrowawayAt(int x, int y, int z) {
-        if (!hasThrowaway()) { // only true if allowPlace is true, see constructor
+        if (!hasThrowaway) { // only true if allowPlace is true, see constructor
             return false;
         }
         if (isPossiblyProtected(x, y, z)) {
@@ -130,7 +134,7 @@ public class CalculationContext {
     }
 
     public boolean canBreakAt(int x, int y, int z) {
-        if (!allowBreak()) {
+        if (!allowBreak) {
             return false;
         }
         return !isPossiblyProtected(x, y, z);
@@ -139,77 +143,5 @@ public class CalculationContext {
     public boolean isPossiblyProtected(int x, int y, int z) {
         // TODO more protection logic here; see #220
         return false;
-    }
-
-    public World world() {
-        return world;
-    }
-
-    public EntityPlayerSP player() {
-        return player;
-    }
-
-    public BlockStateInterface bsi() {
-        return bsi;
-    }
-
-    public WorldData worldData() {
-        return worldData;
-    }
-
-    public ToolSet getToolSet() {
-        return toolSet;
-    }
-
-    public boolean hasWaterBucket() {
-        return hasWaterBucket;
-    }
-
-    public boolean hasThrowaway() {
-        return hasThrowaway;
-    }
-
-    public boolean canSprint() {
-        return canSprint;
-    }
-
-    public double placeBlockCost() {
-        return placeBlockCost;
-    }
-
-    public boolean allowBreak() {
-        return allowBreak;
-    }
-
-    public boolean allowParkour() {
-        return allowParkour;
-    }
-
-    public boolean allowParkourPlace() {
-        return allowParkourPlace;
-    }
-
-    public boolean allowJumpAt256() {
-        return allowJumpAt256;
-    }
-
-    public boolean assumeWalkOnWater() {
-        return assumeWalkOnWater;
-    }
-
-    public int maxFallHeightNoWater() {
-        return maxFallHeightNoWater;
-    }
-
-    public int maxFallHeightBucket() {
-        return maxFallHeightBucket;
-    }
-
-    public double waterWalkSpeed() {
-        return waterWalkSpeed;
-    }
-
-    public double breakBlockAdditionalCost() {
-        return breakBlockAdditionalCost;
     }
 }

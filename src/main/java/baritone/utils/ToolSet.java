@@ -103,7 +103,7 @@ public class ToolSet {
         IBlockState blockState = b.getDefaultState();
         for (byte i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
-            double v = calculateStrVsBlock(itemStack, blockState);
+            double v = calculateSpeedVsBlock(itemStack, blockState);
             if (v > value) {
                 value = v;
                 best = i;
@@ -128,7 +128,7 @@ public class ToolSet {
      */
     private double getBestDestructionTime(Block b) {
         ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b));
-        return calculateStrVsBlock(stack, b.getDefaultState());
+        return calculateSpeedVsBlock(stack, b.getDefaultState());
     }
 
     /**
@@ -138,7 +138,7 @@ public class ToolSet {
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */
-    public static double calculateStrVsBlock(ItemStack item, IBlockState state) {
+    public static double calculateSpeedVsBlock(ItemStack item, IBlockState state) {
         float hardness = state.getBlockHardness(null, null);
         if (hardness < 0) {
             return -1;
@@ -154,11 +154,10 @@ public class ToolSet {
 
         speed /= hardness;
         if (state.getMaterial().isToolNotRequired() || (!item.isEmpty() && item.canHarvestBlock(state))) {
-            speed /= 30;
+            return speed / 30;
         } else {
-            speed /= 100;
+            return speed / 100;
         }
-        return speed;
     }
 
     /**
@@ -180,7 +179,7 @@ public class ToolSet {
                     speed *= 0.09;
                     break;
                 case 2:
-                    speed *= 0.0027;
+                    speed *= 0.0027; // you might think that 0.09*0.3 = 0.027 so that should be next, that would make too much sense. it's 0.0027.
                     break;
                 default:
                     speed *= 0.00081;

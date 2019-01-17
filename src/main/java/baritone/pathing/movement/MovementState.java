@@ -20,7 +20,6 @@ package baritone.pathing.movement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,6 @@ import java.util.Optional;
 public class MovementState {
 
     private MovementStatus status;
-    private MovementTarget goal = new MovementTarget();
     private MovementTarget target = new MovementTarget();
     private final Map<Input, Boolean> inputState = new HashMap<>();
 
@@ -40,15 +38,6 @@ public class MovementState {
 
     public MovementStatus getStatus() {
         return status;
-    }
-
-    public MovementTarget getGoal() {
-        return this.goal;
-    }
-
-    public MovementState setGoal(MovementTarget goal) {
-        this.goal = goal;
-        return this;
     }
 
     public MovementTarget getTarget() {
@@ -65,22 +54,11 @@ public class MovementState {
         return this;
     }
 
-    public boolean getInput(Input input) {
-        return this.inputState.getOrDefault(input, false);
-    }
-
     public Map<Input, Boolean> getInputStates() {
         return this.inputState;
     }
 
     public static class MovementTarget {
-
-        /**
-         * Necessary movement to achieve
-         * <p>
-         * TODO: Decide desiredMovement type
-         */
-        public Vec3d position;
 
         /**
          * Yaw and pitch angles that must be matched
@@ -95,25 +73,12 @@ public class MovementState {
         private boolean forceRotations;
 
         public MovementTarget() {
-            this(null, null, false);
-        }
-
-        public MovementTarget(Vec3d position) {
-            this(position, null, false);
+            this(null, false);
         }
 
         public MovementTarget(Rotation rotation, boolean forceRotations) {
-            this(null, rotation, forceRotations);
-        }
-
-        public MovementTarget(Vec3d position, Rotation rotation, boolean forceRotations) {
-            this.position = position;
             this.rotation = rotation;
             this.forceRotations = forceRotations;
-        }
-
-        public final Optional<Vec3d> getPosition() {
-            return Optional.ofNullable(this.position);
         }
 
         public final Optional<Rotation> getRotation() {

@@ -17,11 +17,30 @@
 
 package baritone.api.utils;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
+
 /**
  * @author Brady
- * @since 9/23/2018
+ * @since 12/14/2018
  */
-public class Logger {
+public interface IPlayerController {
 
+    boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side);
 
+    void resetBlockRemoving();
+
+    ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, EntityPlayer player);
+
+    void setGameType(GameType type);
+
+    GameType getGameType();
+
+    default double getBlockReachDistance() {
+        return this.getGameType().isCreative() ? 5.0F : 4.5F;
+    }
 }

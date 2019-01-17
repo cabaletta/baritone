@@ -23,16 +23,12 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
-import java.util.List;
-
 public final class Favoring {
-    private List<Avoidance> avoidances;
     private final Long2DoubleOpenHashMap favorings;
 
     public Favoring(IPlayerContext ctx, IPath previous) {
         this(previous);
-        avoidances = Avoidance.create(ctx);
-        for (Avoidance avoid : avoidances) {
+        for (Avoidance avoid : Avoidance.create(ctx)) {
             avoid.applySpherical(favorings);
         }
         System.out.println("Favoring size: " + favorings.size());

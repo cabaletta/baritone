@@ -59,7 +59,7 @@ public final class BinaryHeapOpenSet implements IOpenSet {
     @Override
     public final void insert(PathNode value) {
         if (size >= array.length - 1) {
-            array = Arrays.copyOf(array, array.length * 2);
+            array = Arrays.copyOf(array, array.length << 1);
         }
         size++;
         value.heapPosition = size;

@@ -97,15 +97,6 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "processKeyBinds",
-            at = @At("HEAD")
-    )
-    private void runTickKeyboard(CallbackInfo ci) {
-        // keyboard input is only the primary baritone
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onProcessKeyBinds();
-    }
-
-    @Inject(
             method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V",
             at = @At("HEAD")
     )
