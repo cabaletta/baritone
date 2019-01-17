@@ -98,6 +98,11 @@ mixin {
     add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
 
+javadoc {
+    source = sourceSets.api.allJava
+    classpath = sourceSets.api.compileClasspath
+}
+
 jar {
     from sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
@@ -107,7 +112,6 @@ jar {
 task proguard(type: ProguardTask) {
     url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
     extract 'proguard6.0.3/lib/proguard.jar'
-    versionManifest 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
 }
 
 task createDist(type: CreateDistTask, dependsOn: proguard)

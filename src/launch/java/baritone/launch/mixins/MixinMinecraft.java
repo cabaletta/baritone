@@ -97,15 +97,6 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "processKeyBinds",
-            at = @At("HEAD")
-    )
-    private void runTickKeyboard(CallbackInfo ci) {
-        // keyboard input is only the primary baritone
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onProcessKeyBinds();
-    }
-
-    @Inject(
             method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V",
             at = @At("HEAD")
     )
@@ -164,7 +155,7 @@ public class MixinMinecraft {
     )
     private void onBlockBreak(CallbackInfo ci, BlockPos pos) {
         // clickMouse is only for the main player
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.BREAK));
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.START_BREAK));
     }
 
     @Inject(

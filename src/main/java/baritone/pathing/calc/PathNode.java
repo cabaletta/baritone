@@ -59,12 +59,6 @@ public final class PathNode {
     public PathNode previous;
 
     /**
-     * Is this a member of the open set in A*? (only used during pathfinding)
-     * Instead of doing a costly member check in the open set, cache membership in each node individually too.
-     */
-    public boolean isOpen;
-
-    /**
      * Where is this node in the array flattenization of the binary heap? Needed for decrease-key operations.
      */
     public int heapPosition;
@@ -73,10 +67,17 @@ public final class PathNode {
         this.previous = null;
         this.cost = ActionCosts.COST_INF;
         this.estimatedCostToGoal = goal.heuristic(x, y, z);
-        this.isOpen = false;
+        if (Double.isNaN(estimatedCostToGoal)) {
+            throw new IllegalStateException(goal + " calculated implausible heuristic");
+        }
+        this.heapPosition = -1;
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public boolean isOpen() {
+        return heapPosition != -1;
     }
 
     /**

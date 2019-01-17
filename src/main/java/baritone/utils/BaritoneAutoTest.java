@@ -32,6 +32,15 @@ import net.minecraft.world.GameType;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
 
+/**
+ * Responsible for automatically testing Baritone's pathing algorithm by automatically creating a world with a specific
+ * seed, setting a specified goal, and only allowing a certain amount of ticks to pass before the pathing test is
+ * considered a failure. In order to test locally, docker may be used, or through an IDE: Create a run config which runs
+ * in a separate directory from the primary one (./run), and set the enrivonmental variable {@code BARITONE_AUTO_TEST}
+ * to {@code true}.
+ *
+ * @author leijurv, Brady
+ */
 public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     public static final BaritoneAutoTest INSTANCE = new BaritoneAutoTest();
@@ -39,8 +48,8 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
     public static final boolean ENABLE_AUTO_TEST = "true".equals(System.getenv("BARITONE_AUTO_TEST"));
     private static final long TEST_SEED = -928872506371745L;
     private static final BlockPos STARTING_POSITION = new BlockPos(0, 65, 0);
-    private static final Goal GOAL = new GoalBlock(69, 121, 420);
-    private static final int MAX_TICKS = 3500;
+    private static final Goal GOAL = new GoalBlock(69, 69, 420);
+    private static final int MAX_TICKS = 3300;
 
     /**
      * Called right after the {@link GameSettings} object is created in the {@link Minecraft} instance.

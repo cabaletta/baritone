@@ -36,7 +36,8 @@ public final class VecUtils {
     /**
      * Calculates the center of the block at the specified position's bounding box
      *
-     * @param pos The block position
+     * @param world The world that the block is in, used to provide the bounding box
+     * @param pos   The block position
      * @return The center of the block's bounding box
      * @see #getBlockPosCenter(BlockPos)
      */
@@ -81,10 +82,9 @@ public final class VecUtils {
      * @see #getBlockPosCenter(BlockPos)
      */
     public static double distanceToCenter(BlockPos pos, double x, double y, double z) {
-        Vec3d center = getBlockPosCenter(pos);
-        double xdiff = x - center.x;
-        double ydiff = y - center.y;
-        double zdiff = z - center.z;
+        double xdiff = pos.getX() + 0.5 - x;
+        double ydiff = pos.getY() + 0.5 - y;
+        double zdiff = pos.getZ() + 0.5 - z;
         return Math.sqrt(xdiff * xdiff + ydiff * ydiff + zdiff * zdiff);
     }
 

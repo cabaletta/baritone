@@ -18,10 +18,10 @@
 package baritone.api;
 
 import baritone.api.behavior.ILookBehavior;
-import baritone.api.behavior.IMemoryBehavior;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.event.listener.IEventBus;
+import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IFollowProcess;
 import baritone.api.process.IGetToBlockProcess;
@@ -48,12 +48,6 @@ public interface IBaritone {
     ILookBehavior getLookBehavior();
 
     /**
-     * @return The {@link IMemoryBehavior} instance
-     * @see IMemoryBehavior
-     */
-    IMemoryBehavior getMemoryBehavior();
-
-    /**
      * @return The {@link IMineProcess} instance
      * @see IMineProcess
      */
@@ -70,6 +64,8 @@ public interface IBaritone {
      * @see IWorldProvider
      */
     IWorldProvider getWorldProvider();
+
+    IPathingControlManager getPathingControlManager();
 
     IInputOverrideHandler getInputOverrideHandler();
 

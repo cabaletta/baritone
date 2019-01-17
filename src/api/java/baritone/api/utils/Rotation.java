@@ -111,6 +111,17 @@ public class Rotation {
     }
 
     /**
+     * Is really close to
+     *
+     * @param other another rotation
+     * @return are they really close
+     */
+    public boolean isReallyCloseTo(Rotation other) {
+        float yawDiff = Math.abs(this.yaw - other.yaw); // you cant fool me
+        return (yawDiff < 0.01 || yawDiff > 359.9) && Math.abs(this.pitch - other.pitch) < 0.01;
+    }
+
+    /**
      * Clamps the specified pitch value between -90 and 90.
      *
      * @param pitch The input pitch
@@ -131,7 +142,7 @@ public class Rotation {
         if (newYaw < -180F) {
             newYaw += 360F;
         }
-        if (newYaw >= 180F) {
+        if (newYaw > 180F) {
             newYaw -= 360F;
         }
         return newYaw;

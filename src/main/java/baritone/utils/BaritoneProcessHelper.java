@@ -23,15 +23,9 @@ import baritone.api.utils.IPlayerContext;
 
 public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
 
-    public static final double DEFAULT_PRIORITY = 0;
-
     protected final Baritone baritone;
     protected final IPlayerContext ctx;
     private final double priority;
-
-    public BaritoneProcessHelper(Baritone baritone) {
-        this(baritone, DEFAULT_PRIORITY);
-    }
 
     public BaritoneProcessHelper(Baritone baritone, double priority) {
         this.baritone = baritone;

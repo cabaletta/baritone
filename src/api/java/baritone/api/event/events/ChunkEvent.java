@@ -31,7 +31,9 @@ public final class ChunkEvent {
     private final EventState state;
 
     /**
-     * The type of chunk event that occurred;
+     * The type of chunk event that occurred
+     *
+     * @see Type
      */
     private final Type type;
 

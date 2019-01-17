@@ -47,7 +47,7 @@ public interface Helper {
     /**
      * Send a message to chat only if chatDebug is on
      *
-     * @param message
+     * @param message The message to display in chat
      */
     default void logDebug(String message) {
         if (!Baritone.settings().chatDebug.get()) {
@@ -61,12 +61,12 @@ public interface Helper {
     /**
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a direct response to a chat command)
      *
-     * @param message
+     * @param message The message to display in chat
      */
     default void logDirect(String message) {
         ITextComponent component = MESSAGE_PREFIX.createCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
         component.appendSibling(new TextComponentString(" " + message));
-        Baritone.settings().logger.get().accept(component);
+        Minecraft.getMinecraft().addScheduledTask(() -> Baritone.settings().logger.get().accept(component));
     }
 }

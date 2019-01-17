@@ -21,7 +21,6 @@ import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.world.World;
 
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +51,8 @@ public interface IPath {
     /**
      * This path is actually going to be executed in the world. Do whatever additional processing is required.
      * (as opposed to Path objects that are just constructed every frame for rendering)
+     *
+     * @return The result of path post processing
      */
     default IPath postProcess() {
         throw new UnsupportedOperationException();
@@ -109,8 +110,9 @@ public interface IPath {
     default double ticksRemainingFrom(int pathPosition) {
         double sum = 0;
         //this is fast because we aren't requesting recalculation, it's just cached
-        for (int i = pathPosition; i < movements().size(); i++) {
-            sum += movements().get(i).getCost();
+        List<IMovement> movements = movements();
+        for (int i = pathPosition; i < movements.size(); i++) {
+            sum += movements.get(i).getCost();
         }
         return sum;
     }
@@ -118,10 +120,13 @@ public interface IPath {
     /**
      * Cuts off this path at the loaded chunk border, and returns the resulting path. Default
      * implementation just returns this path, without the intended functionality.
+     * <p>
+     * The argument is supposed to be a BlockStateInterface LOL LOL LOL LOL LOL
      *
+     * @param bsi The block state lookup, highly cursed
      * @return The result of this cut-off operation
      */
-    default IPath cutoffAtLoadedChunks(World world) {
+    default IPath cutoffAtLoadedChunks(Object bsi) {
         throw new UnsupportedOperationException();
     }
 
@@ -129,6 +134,7 @@ public interface IPath {
      * Cuts off this path using the min length and cutoff factor settings, and returns the resulting path.
      * Default implementation just returns this path, without the intended functionality.
      *
+     * @param destination The end goal of this path
      * @return The result of this cut-off operation
      * @see Settings#pathCutoffMinimumLength
      * @see Settings#pathCutoffFactor

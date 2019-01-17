@@ -17,21 +17,30 @@
 
 package baritone.api.utils;
 
-import baritone.api.behavior.IBehavior;
-import baritone.api.utils.input.Input;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
 
 /**
  * @author Brady
- * @since 11/12/2018
+ * @since 12/14/2018
  */
-public interface IInputOverrideHandler extends IBehavior {
+public interface IPlayerController {
 
-    Boolean isInputForcedDown(KeyBinding key);
+    boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side);
 
-    boolean isInputForcedDown(Input input);
+    void resetBlockRemoving();
 
-    void setInputForceState(Input input, boolean forced);
+    ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, EntityPlayer player);
 
-    void clearAllKeys();
+    void setGameType(GameType type);
+
+    GameType getGameType();
+
+    default double getBlockReachDistance() {
+        return this.getGameType().isCreative() ? 5.0F : 4.5F;
+    }
 }

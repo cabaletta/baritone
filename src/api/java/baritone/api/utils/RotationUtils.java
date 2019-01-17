@@ -128,14 +128,25 @@ public final class RotationUtils {
     }
 
     /**
+     * @param ctx Context for the viewing entity
+     * @param pos The target block position
+     * @return The optional rotation
+     * @see #reachable(EntityPlayerSP, BlockPos, double)
+     */
+    public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos) {
+        return reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
+    }
+
+    /**
      * Determines if the specified entity is able to reach the center of any of the sides
      * of the specified block. It first checks if the block center is reachable, and if so,
      * that rotation will be returned. If not, it will return the first center of a given
      * side that is reachable. The return type will be {@link Optional#empty()} if the entity is
      * unable to reach any of the sides of the block.
      *
-     * @param entity The viewing entity
-     * @param pos    The target block position
+     * @param entity             The viewing entity
+     * @param pos                The target block position
+     * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
     public static Optional<Rotation> reachable(EntityPlayerSP entity, BlockPos pos, double blockReachDistance) {
@@ -178,9 +189,10 @@ public final class RotationUtils {
      * the given offsetted position. The return type will be {@link Optional#empty()} if
      * the entity is unable to reach the block with the offset applied.
      *
-     * @param entity    The viewing entity
-     * @param pos       The target block position
-     * @param offsetPos The position of the block with the offset applied.
+     * @param entity             The viewing entity
+     * @param pos                The target block position
+     * @param offsetPos          The position of the block with the offset applied.
+     * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance) {
@@ -202,8 +214,9 @@ public final class RotationUtils {
      * Determines if the specified entity is able to reach the specified block where it is
      * looking at the direct center of it's hitbox.
      *
-     * @param entity The viewing entity
-     * @param pos    The target block position
+     * @param entity             The viewing entity
+     * @param pos                The target block position
+     * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos, double blockReachDistance) {

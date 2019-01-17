@@ -51,6 +51,11 @@ public class Settings {
     public Setting<Boolean> allowPlace = new Setting<>(true);
 
     /**
+     * Allow Baritone to move items in your inventory to your hotbar
+     */
+    public Setting<Boolean> allowInventory = new Setting<>(false);
+
+    /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited
      */
@@ -62,6 +67,16 @@ public class Settings {
      * it will take an otherwise equivalent route that doesn't require it to put out fire.
      */
     public Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
+
+    /**
+     * Additional penalty for hitting the space bar (ascend, pillar, or parkour) beacuse it uses hunger
+     */
+    public Setting<Double> jumpPenalty = new Setting<>(2D);
+
+    /**
+     * Walking on water uses up hunger really quick, so penalize it
+     */
+    public Setting<Double> walkOnWaterOnePenalty = new Setting<>(5D);
 
     /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
@@ -88,6 +103,22 @@ public class Settings {
      * against it. That's why this defaults to off.
      */
     public Setting<Boolean> assumeSafeWalk = new Setting<>(false);
+
+    /**
+     * If true, parkour is allowed to make jumps when standing on blocks at the maximum height, so player feet is y=256
+     * <p>
+     * Defaults to false because this fails on NCP
+     */
+    public Setting<Boolean> allowJumpAt256 = new Setting<>(false);
+
+    /**
+     * Allow descending diagonally
+     * <p>
+     * Safer than allowParkour yet still slightly unsafe, can make contact with unchecked adjacent blocks, so it's unsafe in the nether.
+     * <p>
+     * For a generic "take some risks" mode I'd turn on this one, parkour, and parkour place.
+     */
+    public Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
 
     /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
@@ -142,7 +173,7 @@ public class Settings {
      * <p>
      * Finding the optimal path is worth it, so it's the default.
      */
-    public Setting<Double> costHeuristic = new Setting<>(3.5D);
+    public Setting<Double> costHeuristic = new Setting<>(3.563);
 
     // a bunch of obscure internal A* settings that you probably don't want to change
     /**
@@ -157,6 +188,42 @@ public class Settings {
      * @see <a href="https://github.com/cabaletta/baritone/issues/18">Issue #18</a>
      */
     public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.5);
+
+    /**
+     * Toggle the following 4 settings
+     * <p>
+     * They have a noticable performance impact, so they default off
+     */
+    public Setting<Boolean> avoidance = new Setting<>(false);
+    /**
+     * Set to 1.0 to effectively disable this feature
+     * <p>
+     * Set below 1.0 to go out of your way to walk near mob spawners
+     */
+    public Setting<Double> mobSpawnerAvoidanceCoefficient = new Setting<>(2.0);
+
+    public Setting<Integer> mobSpawnerAvoidanceRadius = new Setting<>(16);
+
+    /**
+     * Set to 1.0 to effectively disable this feature
+     * <p>
+     * Set below 1.0 to go out of your way to walk near mobs
+     */
+    public Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
+
+    public Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
+
+    /**
+     * When running a goto towards a container block (chest, ender chest, furnace, etc),
+     * right click and open it once you arrive.
+     */
+    public Setting<Boolean> rightClickContainerOnArrival = new Setting<>(true);
+
+    /**
+     * When running a goto towards a nether portal block, walk all the way into the portal
+     * instead of stopping one block before.
+     */
+    public Setting<Boolean> enterPortal = new Setting<>(true);
 
     /**
      * Don't repropagate cost improvements below 0.01 ticks. They're all just floating point inaccuracies,
@@ -329,6 +396,12 @@ public class Settings {
     public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
 
     /**
+     * Renders X/Z type Goals with the vanilla beacon beam effect. Combining this with
+     * {@link #renderGoalIgnoreDepth} will cause strange render clipping.
+     */
+    public Setting<Boolean> renderGoalXZBeacon = new Setting<>(false);
+
+    /**
      * Ignore depth when rendering the selection boxes (to break, to place, to walk into)
      */
     public Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(true);
@@ -379,10 +452,6 @@ public class Settings {
 
     /**
      * {@code true}: can mine blocks when in inventory, chat, or tabbed away in ESC menu
-     * <p>
-     * {@code false}: works on cosmic prisons
-     * <p>
-     * LOL
      */
     public Setting<Boolean> leftClickWorkaround = new Setting<>(true);
 
@@ -552,6 +621,12 @@ public class Settings {
      * A list of all settings
      */
     public final List<Setting<?>> allSettings;
+
+    public void reset() {
+        for (Setting setting : allSettings) {
+            setting.value = setting.defaultValue;
+        }
+    }
 
     public class Setting<T> {
         public T value;

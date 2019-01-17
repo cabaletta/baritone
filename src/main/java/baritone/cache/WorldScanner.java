@@ -23,11 +23,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public enum WorldScanner implements IWorldScanner {
@@ -39,7 +42,7 @@ public enum WorldScanner implements IWorldScanner {
         if (blocks.contains(null)) {
             throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
         }
-        LinkedList<BlockPos> res = new LinkedList<>();
+        ArrayList<BlockPos> res = new ArrayList<>();
         if (blocks.isEmpty()) {
             return res;
         }
@@ -69,33 +72,7 @@ public enum WorldScanner implements IWorldScanner {
                         continue;
                     }
                     allUnloaded = false;
-                    ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
-                    chunkX = chunkX << 4;
-                    chunkZ = chunkZ << 4;
-                    for (int y0 = 0; y0 < 16; y0++) {
-                        ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
-                        if (extendedblockstorage == null) {
-                            continue;
-                        }
-                        int yReal = y0 << 4;
-                        BlockStateContainer bsc = extendedblockstorage.getData();
-                        // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
-                        // for better cache locality, iterate in that order
-                        for (int y = 0; y < 16; y++) {
-                            for (int z = 0; z < 16; z++) {
-                                for (int x = 0; x < 16; x++) {
-                                    IBlockState state = bsc.get(x, y, z);
-                                    if (blocks.contains(state.getBlock())) {
-                                        int yy = yReal | y;
-                                        res.add(new BlockPos(chunkX | x, yy, chunkZ | z));
-                                        if (Math.abs(yy - playerY) < yLevelThreshold) {
-                                            foundWithinY = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    scanChunkInto(chunkX << 4, chunkZ << 4, chunk, blocks, res, max, yLevelThreshold, playerY);
                 }
             }
             if ((allUnloaded && foundChunks)
@@ -105,6 +82,53 @@ public enum WorldScanner implements IWorldScanner {
                 return res;
             }
             searchRadiusSq++;
+        }
+    }
+
+    @Override
+    public List<BlockPos> scanChunk(IPlayerContext ctx, List<Block> blocks, ChunkPos pos, int max, int yLevelThreshold) {
+        if (blocks.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
+        Chunk chunk = chunkProvider.getLoadedChunk(pos.x, pos.z);
+        int playerY = ctx.playerFeet().getY();
+
+        if (chunk == null || chunk.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ArrayList<BlockPos> res = new ArrayList<>();
+        scanChunkInto(pos.x << 4, pos.z << 4, chunk, blocks, res, max, yLevelThreshold, playerY);
+        return res;
+    }
+
+    public void scanChunkInto(int chunkX, int chunkZ, Chunk chunk, List<Block> search, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY) {
+        ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+        for (int y0 = 0; y0 < 16; y0++) {
+            ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
+            if (extendedblockstorage == null) {
+                continue;
+            }
+            int yReal = y0 << 4;
+            BlockStateContainer bsc = extendedblockstorage.getData();
+            // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
+            // for better cache locality, iterate in that order
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++) {
+                    for (int x = 0; x < 16; x++) {
+                        IBlockState state = bsc.get(x, y, z);
+                        if (search.contains(state.getBlock())) {
+                            int yy = yReal | y;
+                            result.add(new BlockPos(chunkX | x, yy, chunkZ | z));
+                            if (result.size() >= max && Math.abs(yy - playerY) < yLevelThreshold) {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

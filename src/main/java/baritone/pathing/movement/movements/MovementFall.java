@@ -17,7 +17,6 @@
 
 package baritone.pathing.movement.movements;
 
-import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -31,12 +30,19 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.pathing.MutableMoveResult;
+import net.minecraft.block.BlockLadder;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
+
+import java.util.Optional;
 
 public class MovementFall extends Movement {
 
@@ -48,13 +54,19 @@ public class MovementFall extends Movement {
     }
 
     @Override
-    protected double calculateCost(CalculationContext context) {
+    public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
         MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
         if (result.y != dest.y) {
             return COST_INF; // doesn't apply to us, this position is a descend not a fall
         }
         return result.cost;
+    }
+
+    private boolean willPlaceBucket() {
+        CalculationContext context = new CalculationContext(baritone);
+        MutableMoveResult result = new MutableMoveResult();
+        return MovementDescend.dynamicFallCost(context, src.x, src.y, src.z, dest.x, dest.z, 0, context.get(dest.x, src.y - 2, dest.z), result);
     }
 
     @Override
@@ -67,7 +79,7 @@ public class MovementFall extends Movement {
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest));
         Rotation targetRotation = null;
-        if (!MovementHelper.isWater(ctx, dest) && src.getY() - dest.getY() > Baritone.settings().maxFallHeightNoWater.get() && !playerFeet.equals(dest)) {
+        if (!MovementHelper.isWater(ctx, dest) && willPlaceBucket() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().provider.isNether()) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
@@ -78,7 +90,7 @@ public class MovementFall extends Movement {
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
                 RayTraceResult trace = ctx.objectMouseOver();
-                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && ctx.player().rotationPitch > 89.0F) {
+                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && (trace.getBlockPos().equals(dest) || trace.getBlockPos().equals(dest.down()))) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }
@@ -107,10 +119,38 @@ public class MovementFall extends Movement {
             }
         }
         Vec3d destCenter = VecUtils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
-        if (Math.abs(ctx.player().posX - destCenter.x) > 0.15 || Math.abs(ctx.player().posZ - destCenter.z) > 0.15) {
+        if (Math.abs(ctx.player().posX + ctx.player().motionX - destCenter.x) > 0.1 || Math.abs(ctx.player().posZ + ctx.player().motionZ - destCenter.z) > 0.1) {
+            if (!ctx.player().onGround && Math.abs(ctx.player().motionY) > 0.4) {
+                state.setInput(Input.SNEAK, true);
+            }
             state.setInput(Input.MOVE_FORWARD, true);
         }
+        Vec3i avoid = Optional.ofNullable(avoid()).map(EnumFacing::getDirectionVec).orElse(null);
+        if (avoid == null) {
+            avoid = src.subtract(dest);
+        } else {
+            double dist = Math.abs(avoid.getX() * (destCenter.x - avoid.getX() / 2.0 - ctx.player().posX)) + Math.abs(avoid.getZ() * (destCenter.z - avoid.getZ() / 2.0 - ctx.player().posZ));
+            if (dist < 0.6) {
+                state.setInput(Input.MOVE_FORWARD, true);
+            } else {
+                state.setInput(Input.SNEAK, false);
+            }
+        }
+        if (targetRotation == null) {
+            Vec3d destCenterOffset = new Vec3d(destCenter.x + 0.125 * avoid.getX(), destCenter.y, destCenter.z + 0.125 * avoid.getZ());
+            state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), destCenterOffset), false));
+        }
         return state;
+    }
+
+    private EnumFacing avoid() {
+        for (int i = 0; i < 15; i++) {
+            IBlockState state = ctx.world().getBlockState(ctx.playerFeet().down(i));
+            if (state.getBlock() == Blocks.LADDER) {
+                return state.getValue(BlockLadder.FACING);
+            }
+        }
+        return null;
     }
 
     @Override

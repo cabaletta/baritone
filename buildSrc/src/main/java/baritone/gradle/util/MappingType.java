@@ -15,13 +15,15 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package baritone.gradle.util;
 
 /**
- * @author Brady
- * @since 9/23/2018
+ * All credits go to AsmLibGradle and its contributors.
+ *
+ * @see <a href="https://github.com/pozzed/AsmLibGradle/blob/8f917dbc3939eab7a3d9daf54d9d285fdf34f4b2/src/main/java/net/futureclient/asmlib/forgegradle/MappingType.java">Original Source</a>
  */
-public class Logger {
-
-
+public enum MappingType {
+    SEARGE,
+    NOTCH,
+    CUSTOM // forgegradle
 }

@@ -23,6 +23,7 @@ import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.utils.accessor.IChunkProviderClient;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -46,15 +47,27 @@ public class BlockStateInterface {
     private Chunk prev = null;
     private CachedRegion prevCached = null;
 
+    private final boolean useTheRealWorld;
+
     private static final IBlockState AIR = Blocks.AIR.getDefaultState();
 
     public BlockStateInterface(IPlayerContext ctx) {
-        this(ctx.world(), (WorldData) ctx.worldData());
+        this(ctx, false);
     }
 
-    public BlockStateInterface(World world, WorldData worldData) {
+    public BlockStateInterface(IPlayerContext ctx, boolean copyLoadedChunks) {
+        this(ctx.world(), (WorldData) ctx.worldData(), copyLoadedChunks);
+    }
+
+    public BlockStateInterface(World world, WorldData worldData, boolean copyLoadedChunks) {
         this.worldData = worldData;
-        this.loadedChunks = ((IChunkProviderClient) world.getChunkProvider()).loadedChunks();
+        Long2ObjectMap<Chunk> worldLoaded = ((IChunkProviderClient) world.getChunkProvider()).loadedChunks();
+        if (copyLoadedChunks) {
+            this.loadedChunks = new Long2ObjectOpenHashMap<>(worldLoaded); // make a copy that we can safely access from another thread
+        } else {
+            this.loadedChunks = worldLoaded; // this will only be used on the main thread
+        }
+        this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.get();
         if (!Minecraft.getMinecraft().isCallingFromMinecraftThread()) {
             throw new IllegalStateException();
         }
@@ -85,7 +98,7 @@ public class BlockStateInterface {
             return AIR;
         }
 
-        if (!Baritone.settings().pathThroughCachedOnly.get()) {
+        if (useTheRealWorld) {
             Chunk cached = prev;
             // there's great cache locality in block state lookups
             // generally it's within each movement

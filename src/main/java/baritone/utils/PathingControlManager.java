@@ -29,7 +29,7 @@ import baritone.pathing.path.PathExecutor;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PathingControlManager implements IPathingControlManager {
     private final Baritone baritone;
@@ -64,8 +64,7 @@ public class PathingControlManager implements IPathingControlManager {
         command = null;
         for (IBaritoneProcess proc : processes) {
             proc.onLostControl();
-            if (proc.isActive() && !proc.isTemporary()) { // it's okay for a temporary thing (like combat pause) to maintain control even if you say to cancel
-                // but not for a non temporary thing
+            if (proc.isActive() && !proc.isTemporary()) { // it's okay only for a temporary thing (like combat pause) to maintain control even if you say to cancel
                 throw new IllegalStateException(proc.displayName());
             }
         }
@@ -83,11 +82,12 @@ public class PathingControlManager implements IPathingControlManager {
 
     public void preTick() {
         inControlLastTick = inControlThisTick;
-        command = doTheStuff();
+        PathingBehavior p = baritone.getPathingBehavior();
+        command = executeProcesses();
         if (command == null) {
+            p.cancelSegmentIfSafe();
             return;
         }
-        PathingBehavior p = baritone.getPathingBehavior();
         switch (command.commandType) {
             case REQUEST_PAUSE:
                 p.requestPause();
@@ -170,32 +170,30 @@ public class PathingControlManager implements IPathingControlManager {
     }
 
 
-    public PathingCommand doTheStuff() {
-        List<IBaritoneProcess> inContention = processes.stream().filter(IBaritoneProcess::isActive).sorted(Comparator.comparingDouble(IBaritoneProcess::priority)).collect(Collectors.toList());
-        boolean found = false;
-        boolean cancelOthers = false;
-        PathingCommand exec = null;
-        for (int i = inContention.size() - 1; i >= 0; i--) { // truly a gamer moment
-            IBaritoneProcess proc = inContention.get(i);
-            if (found) {
-                if (cancelOthers) {
-                    proc.onLostControl();
+    public PathingCommand executeProcesses() {
+        Stream<IBaritoneProcess> inContention = processes.stream()
+                .filter(IBaritoneProcess::isActive)
+                .sorted(Comparator.comparingDouble(IBaritoneProcess::priority).reversed());
+
+
+        Iterator<IBaritoneProcess> iterator = inContention.iterator();
+        while (iterator.hasNext()) {
+            IBaritoneProcess proc = iterator.next();
+
+            PathingCommand exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
+            if (exec == null) {
+                if (proc.isActive()) {
+                    throw new IllegalStateException(proc.displayName() + " returned null PathingCommand");
                 }
+                proc.onLostControl();
             } else {
-                exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
-                if (exec == null) {
-                    if (proc.isActive()) {
-                        throw new IllegalStateException(proc.displayName());
-                    }
-                    proc.onLostControl();
-                    continue;
-                }
-                //System.out.println("Executing command " + exec.commandType + " " + exec.goal + " from " + proc.displayName());
                 inControlThisTick = proc;
-                found = true;
-                cancelOthers = !proc.isTemporary();
+                if (!proc.isTemporary()) {
+                    iterator.forEachRemaining(IBaritoneProcess::onLostControl);
+                }
+                return exec;
             }
         }
-        return exec;
+        return null;
     }
 }

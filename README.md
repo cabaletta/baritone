@@ -1,11 +1,16 @@
 # Baritone
 [![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone)
 [![Release](https://img.shields.io/github/release/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/releases)
-[![License](https://img.shields.io/github/license/cabaletta/baritone.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-LGPL--3.0-green.svg)](LICENSE)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
 [![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone)
+[![Known Vulnerabilities](https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle)](https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/cabaletta/baritone/issues)
 [![Minecraft](https://img.shields.io/badge/MC-1.12.2-green.svg)](https://minecraft.gamepedia.com/1.12.2)
+[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.0.0--hotfix--4-brightgreen.svg)](https://impactdevelopment.github.io/)
+[![KAMI integration](https://img.shields.io/badge/KAMI%20integration-v1.0.0-orange.svg)](https://github.com/zeroeightysix/KAMI/)
+[![Asuna integration](https://img.shields.io/badge/Asuna%20integration-v1.0.0-orange.svg)](https://github.com/EmotionalLove/Asuna/)
+[![Future integration](https://img.shields.io/badge/Future%20integration-%3F%3F%3F-red.svg)](https://futureclient.net/)
 
 A Minecraft pathfinder bot. 
 
@@ -19,8 +24,6 @@ Here are some links to help to get started:
 - [Features](FEATURES.md)
 
 - [Installation](INSTALL.md)
-
-There's also some useful information down below
 
 # Setup
 
@@ -38,7 +41,7 @@ Building Baritone:
 $ gradlew build
 ```
 
-For example, to replace out Impact 4.4's Baritone build with a customized one, switch to the `impact4.4-compat` branch, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.0.0/baritone-api-1.0.0.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:1.0.0"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
+To replace out Impact 4.4's Baritone build with a customized one, switch to the `impact4.4-compat` branch, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.0.0/baritone-api-1.0.0.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:1.0.0"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
 
 ## IntelliJ's Gradle UI
 - Open the project in IntelliJ as a Gradle project

@@ -19,6 +19,7 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.Settings;
+import baritone.api.cache.IRememberedInventory;
 import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
@@ -32,10 +33,12 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
+import baritone.utils.pathing.SegmentedCalculator;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
@@ -202,6 +205,23 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             return true;
         }
+        if (msg.equals("fullpath")) {
+            if (pathingBehavior.getGoal() == null) {
+                logDirect("No goal.");
+            } else {
+                logDirect("Started segmented calculator");
+                SegmentedCalculator.calculateSegmentsThreaded(pathingBehavior.pathStart(), pathingBehavior.getGoal(), new CalculationContext(baritone, true), ipath -> {
+                    logDirect("Found a path");
+                    logDirect("Ends at " + ipath.getDest());
+                    logDirect("Length " + ipath.length());
+                    logDirect("Estimated time " + ipath.ticksRemainingFrom(0));
+                    pathingBehavior.secretCursedFunctionDoNotCall(ipath); // it's okay when *I* do it
+                }, () -> {
+                    logDirect("Path calculation failed, no path");
+                });
+            }
+            return true;
+        }
         if (msg.equals("repack") || msg.equals("rescan")) {
             ChunkProviderClient cli = (ChunkProviderClient) ctx.world().getChunkProvider();
             int playerChunkX = ctx.playerFeet().getX() >> 4;
@@ -257,6 +277,38 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return false;
                 }
             });
+            return true;
+        }
+        if (msg.equals("reset")) {
+            Baritone.settings().reset();
+            logDirect("Baritone settings reset");
+            return true;
+        }
+        if (msg.equals("echest")) {
+            Optional<List<ItemStack>> contents = baritone.getMemoryBehavior().echest();
+            if (contents.isPresent()) {
+                logDirect("echest contents:");
+                log(contents.get());
+            } else {
+                logDirect("echest contents unknown");
+            }
+            return true;
+        }
+        if (msg.equals("chests")) {
+            System.out.println(baritone.getWorldProvider());
+            System.out.println(baritone.getWorldProvider().getCurrentWorld());
+
+            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory());
+
+            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories());
+
+            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet());
+
+            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet());
+            for (Map.Entry<BlockPos, IRememberedInventory> entry : baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet()) {
+                logDirect(entry.getKey() + "");
+                log(entry.getValue().getContents());
+            }
             return true;
         }
         if (msg.startsWith("followplayers")) {
@@ -467,5 +519,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("daniel");
         }
         return false;
+    }
+
+    private void log(List<ItemStack> stacks) {
+        for (ItemStack stack : stacks) {
+            if (!stack.isEmpty()) {
+                logDirect(stack.getCount() + "x " + stack.getDisplayName() + "@" + stack.getItemDamage());
+            }
+        }
     }
 }

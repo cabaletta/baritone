@@ -57,7 +57,6 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     }
 
     private Goal towards(Entity following) {
-        // lol this is trashy but it works
         BlockPos pos;
         if (Baritone.settings().followOffsetDistance.get() == 0) {
             pos = new BlockPos(following);
@@ -79,7 +78,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
         if (entity.equals(ctx.player())) {
             return false;
         }
-        return ctx.world().loadedEntityList.contains(entity) || ctx.world().playerEntities.contains(entity);
+        return ctx.world().loadedEntityList.contains(entity);
     }
 
     private void scanWorld() {

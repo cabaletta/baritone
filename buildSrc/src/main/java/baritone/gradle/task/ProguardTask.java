@@ -18,21 +18,26 @@
 package baritone.gradle.task;
 
 import baritone.gradle.util.Determinizer;
-import com.google.gson.*;
+import baritone.gradle.util.MappingType;
+import baritone.gradle.util.ReobfWrapper;
 import org.apache.commons.io.IOUtils;
+import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.internal.plugins.DefaultConvention;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.Pair;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -52,10 +57,6 @@ public class ProguardTask extends BaritoneGradleTask {
     @Input
     private String extract;
 
-    @Input
-    private String versionManifest;
-
-    private Map<String, String> versionDownloadMap;
     private List<String> requiredLibraries;
 
     @TaskAction
@@ -67,7 +68,6 @@ public class ProguardTask extends BaritoneGradleTask {
         downloadProguard();
         extractProguard();
         generateConfigs();
-        downloadVersionManifest();
         acquireDependencies();
         proguardApi();
         proguardStandalone();
@@ -132,20 +132,6 @@ public class ProguardTask extends BaritoneGradleTask {
         });
     }
 
-    private void downloadVersionManifest() throws Exception {
-        Path manifestJson = getTemporaryFile(VERSION_MANIFEST);
-        write(new URL(this.versionManifest).openStream(), manifestJson);
-
-        // Place all the versions in the map with their download URL
-        this.versionDownloadMap = new HashMap<>();
-        JsonObject json = readJson(Files.readAllLines(manifestJson)).getAsJsonObject();
-        JsonArray versions = json.getAsJsonArray("versions");
-        versions.forEach(element -> {
-            JsonObject object = element.getAsJsonObject();
-            this.versionDownloadMap.put(object.get("id").getAsString(), object.get("url").getAsString());
-        });
-    }
-
     private void acquireDependencies() throws Exception {
 
         // Create a map of all of the dependencies that we are able to access in this project
@@ -163,15 +149,13 @@ public class ProguardTask extends BaritoneGradleTask {
 
         // Iterate the required libraries to copy them to tempLibraries
         for (String lib : this.requiredLibraries) {
-            // Download the version jar from the URL acquired from the version manifest
-            if (lib.startsWith("minecraft")) {
-                String version = lib.split("-")[1];
-                Path versionJar = getTemporaryFile("tempLibraries/" + lib + ".jar");
-                if (!Files.exists(versionJar)) {
-                    JsonObject versionJson = PARSER.parse(new InputStreamReader(new URL(this.versionDownloadMap.get(version)).openStream())).getAsJsonObject();
-                    String url = versionJson.getAsJsonObject("downloads").getAsJsonObject("client").getAsJsonPrimitive("url").getAsString();
-                    write(new URL(url).openStream(), versionJar);
-                }
+            // copy from the forgegradle cache
+            if (lib.equals("minecraft")) {
+                Path cachedJar = getMinecraftJar();
+                Path inTempDir = getTemporaryFile("tempLibraries/minecraft.jar");
+                // TODO: maybe try not to copy every time
+                Files.copy(cachedJar, inTempDir, REPLACE_EXISTING);
+
                 continue;
             }
 
@@ -193,6 +177,89 @@ public class ProguardTask extends BaritoneGradleTask {
                 }
             }
         }
+    }
+
+    // a bunch of epic stuff to get the path to the cached jar
+    private Path getMinecraftJar() throws Exception {
+        MappingType mappingType;
+        try {
+            mappingType = getMappingType();
+        } catch (Exception e) {
+            System.err.println("Failed to get mapping type, assuming NOTCH.");
+            mappingType = MappingType.NOTCH;
+        }
+
+        String suffix;
+        switch (mappingType) {
+            case NOTCH:
+                suffix = "";
+                break;
+            case SEARGE:
+                suffix = "-srgBin";
+                break;
+            case CUSTOM:
+                throw new IllegalStateException("Custom mappings not supported!");
+            default:
+                throw new IllegalStateException("Unknown mapping type: " + mappingType);
+        }
+
+        DefaultConvention convention = (DefaultConvention) this.getProject().getConvention();
+        Object extension = convention.getAsMap().get("minecraft");
+        Objects.requireNonNull(extension);
+
+        // for some reason cant use Class.forName
+        Class<?> class_baseExtension = extension.getClass().getSuperclass().getSuperclass().getSuperclass(); // <-- cursed
+        Field f_replacer = class_baseExtension.getDeclaredField("replacer");
+        f_replacer.setAccessible(true);
+        Object replacer = f_replacer.get(extension);
+        Class<?> class_replacementProvider = replacer.getClass();
+        Field replacement_replaceMap = class_replacementProvider.getDeclaredField("replaceMap");
+        replacement_replaceMap.setAccessible(true);
+
+        Map<String, Object> replacements = (Map) replacement_replaceMap.get(replacer);
+        String cacheDir = replacements.get("CACHE_DIR").toString() + "/net/minecraft";
+        String mcVersion = replacements.get("MC_VERSION").toString();
+        String mcpInsert = replacements.get("MAPPING_CHANNEL").toString() + "/" + replacements.get("MAPPING_VERSION").toString();
+        String fullJarName = "minecraft-" + mcVersion + suffix + ".jar";
+
+        String baseDir = String.format("%s/minecraft/%s/", cacheDir, mcVersion);
+
+        String jarPath;
+        if (mappingType == MappingType.SEARGE) {
+            jarPath = String.format("%s/%s/%s", baseDir, mcpInsert, fullJarName);
+        } else {
+            jarPath = baseDir + fullJarName;
+        }
+        jarPath = jarPath
+                .replace("/", File.separator)
+                .replace("\\", File.separator); // hecking regex
+
+        return new File(jarPath).toPath();
+    }
+
+    // throws IllegalStateException if mapping type is ambiguous or it fails to find it
+    private MappingType getMappingType() {
+        // if it fails to find this then its probably a forgegradle version problem
+        Set<Object> reobf = (NamedDomainObjectContainer<Object>) this.getProject().getExtensions().getByName("reobf");
+
+        List<MappingType> mappingTypes = getUsedMappingTypes(reobf);
+        long mappingTypesUsed = mappingTypes.size();
+        if (mappingTypesUsed == 0) {
+            throw new IllegalStateException("Failed to find mapping type (no jar task?)");
+        }
+        if (mappingTypesUsed > 1) {
+            throw new IllegalStateException("Ambiguous mapping type (multiple jars with different mapping types?)");
+        }
+
+        return mappingTypes.get(0);
+    }
+
+    private List<MappingType> getUsedMappingTypes(Set<Object> reobf) {
+        return reobf.stream()
+                .map(ReobfWrapper::new)
+                .map(ReobfWrapper::getMappingType)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private void proguardApi() throws Exception {
@@ -217,10 +284,6 @@ public class ProguardTask extends BaritoneGradleTask {
 
     public void setExtract(String extract) {
         this.extract = extract;
-    }
-
-    public void setVersionManifest(String versionManifest) {
-        this.versionManifest = versionManifest;
     }
 
     private void runProguard(Path config) throws Exception {
@@ -252,7 +315,7 @@ public class ProguardTask extends BaritoneGradleTask {
                 while ((line = reader.readLine()) != null) {
                     System.out.println(line);
                 }
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }).start();

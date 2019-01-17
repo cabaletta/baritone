@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.PathCalculationResult;
 import baritone.pathing.movement.CalculationContext;
 import baritone.utils.Helper;
@@ -86,7 +87,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public synchronized PathCalculationResult calculate(long primaryTimeout, long failureTimeout) {
         if (isFinished) {
-            throw new IllegalStateException("Path Finder is currently in use, and cannot be reused!");
+            throw new IllegalStateException("Path finder cannot be reused!");
         }
         cancelRequested = false;
         try {
@@ -135,9 +136,14 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * for the node mapped to the specified pos. If no node is found,
      * a new node is created.
      *
+     * @param x        The x position of the node
+     * @param y        The y position of the node
+     * @param z        The z position of the node
+     * @param hashCode The hash code of the node, provided by {@link BetterBlockPos#longHash(int, int, int)}
      * @return The associated node
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */
+
     protected PathNode getNodeAtPosition(int x, int y, int z, long hashCode) {
         PathNode node = map.get(hashCode);
         if (node == null) {
