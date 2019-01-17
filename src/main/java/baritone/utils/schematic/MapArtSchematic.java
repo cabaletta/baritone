@@ -49,7 +49,7 @@ public class MapArtSchematic extends Schematic {
         }
     }
 
-    private static <T> OptionalInt lastIndexMatching(T[] arr, Predicate<T> predicate) {
+    private static <T> OptionalInt lastIndexMatching(T[] arr, Predicate<? super T> predicate) {
         for (int y = arr.length - 1; y >= 0; y--) {
             if (predicate.test(arr[y])) {
                 return OptionalInt.of(y);
