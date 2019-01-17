@@ -17,12 +17,11 @@
 
 package baritone.bot;
 
+import baritone.api.bot.IBaritoneUser;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public class BotPlayerContext implements IPlayerContext {

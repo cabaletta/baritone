@@ -19,6 +19,7 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.Settings;
+import baritone.api.bot.connect.IConnectionResult;
 import baritone.api.cache.IRememberedInventory;
 import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
@@ -544,7 +545,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         // TODO: Temporary command to test bots offline
         if (msg.equals("bot")) {
             System.out.println("DOING A BOT");
-            ConnectionResult result = UserManager.INSTANCE.connect(new Session("Bot" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
+            IConnectionResult result = UserManager.INSTANCE.connect(new Session("Bot" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
             System.out.println(result);
             return true;
         }

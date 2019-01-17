@@ -17,31 +17,44 @@
 
 package baritone.bot.connect;
 
-import baritone.bot.IBaritoneUser;
+import baritone.api.bot.IBaritoneUser;
+import baritone.api.bot.connect.ConnectionStatus;
+import baritone.api.bot.connect.IConnectionResult;
 
 import java.util.Objects;
+import java.util.Optional;
 
-import static baritone.bot.connect.ConnectionStatus.SUCCESS;
+import static baritone.api.bot.connect.ConnectionStatus.SUCCESS;
 
 /**
  * @author Brady
  * @since 11/6/2018
  */
-public class ConnectionResult {
+public final class ConnectionResult implements IConnectionResult {
 
     /**
      * The result status
      */
-    public final ConnectionStatus status;
+    private final ConnectionStatus status;
 
     /**
      * The user created, if the status is {@link ConnectionStatus#SUCCESS}
      */
-    public final IBaritoneUser user;
+    private final IBaritoneUser user;
 
     private ConnectionResult(ConnectionStatus status, IBaritoneUser user) {
         this.status = status;
         this.user = user;
+    }
+
+    @Override
+    public ConnectionStatus getStatus() {
+        return this.status;
+    }
+
+    @Override
+    public Optional<IBaritoneUser> getUser() {
+        return Optional.ofNullable(user);
     }
 
     /**

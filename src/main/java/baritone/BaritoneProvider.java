@@ -19,8 +19,9 @@ package baritone;
 
 import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
+import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
-import baritone.bot.IBaritoneUser;
+import baritone.api.bot.IBaritoneUser;
 import baritone.bot.UserManager;
 import baritone.cache.WorldScanner;
 import baritone.utils.player.PrimaryPlayerContext;
@@ -54,5 +55,10 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public IWorldScanner getWorldScanner() {
         return WorldScanner.INSTANCE;
+    }
+
+    @Override
+    public IUserManager getUserManager() {
+        return UserManager.INSTANCE;
     }
 }

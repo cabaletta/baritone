@@ -19,6 +19,8 @@ package baritone.bot;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
+import baritone.api.bot.IBaritoneUser;
+import baritone.api.bot.IUserManager;
 import baritone.api.utils.IPlayerController;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
@@ -33,7 +35,7 @@ import net.minecraft.util.Session;
  * @author Brady
  * @since 11/6/2018
  */
-class BaritoneUser implements IBaritoneUser {
+public class BaritoneUser implements IBaritoneUser {
 
     private final UserManager manager;
     private final NetworkManager networkManager;
@@ -56,22 +58,15 @@ class BaritoneUser implements IBaritoneUser {
         this.baritone.init(); // actually massive iq
     }
 
-    @Override
+    public void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient) {
+        this.profile = profile;
+        this.netHandlerPlayClient = netHandlerPlayClient;
+    }
+
     public void onWorldLoad(BotWorld world, EntityBot player, IPlayerController playerController) {
         this.world = world;
         this.player = player;
         this.playerController = playerController;
-    }
-
-    @Override
-    public IPlayerController getPlayerController() {
-        return this.playerController;
-    }
-
-    @Override
-    public void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient) {
-        this.profile = profile;
-        this.netHandlerPlayClient = netHandlerPlayClient;
     }
 
     @Override
@@ -87,6 +82,11 @@ class BaritoneUser implements IBaritoneUser {
     @Override
     public EntityBot getEntity() {
         return this.player;
+    }
+
+    @Override
+    public IPlayerController getPlayerController() {
+        return this.playerController;
     }
 
     @Override

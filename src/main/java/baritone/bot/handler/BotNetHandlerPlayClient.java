@@ -17,7 +17,7 @@
 
 package baritone.bot.handler;
 
-import baritone.bot.IBaritoneUser;
+import baritone.bot.BaritoneUser;
 import baritone.bot.spec.BotPlayerController;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
@@ -86,7 +86,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     /**
      * The bot of this connection
      */
-    private final IBaritoneUser user;
+    private final BaritoneUser user;
 
     /**
      * The bot entity
@@ -103,7 +103,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
      */
     private BotPlayerController playerController;
 
-    public BotNetHandlerPlayClient(NetworkManager networkManager, IBaritoneUser user, Minecraft client, GameProfile profile) {
+    public BotNetHandlerPlayClient(NetworkManager networkManager, BaritoneUser user, Minecraft client, GameProfile profile) {
         // noinspection ConstantConditions
         super(client, null, networkManager, profile);
         this.networkManager = networkManager;

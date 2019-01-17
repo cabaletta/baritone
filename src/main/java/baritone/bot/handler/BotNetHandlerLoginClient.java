@@ -17,7 +17,8 @@
 
 package baritone.bot.handler;
 
-import baritone.bot.IBaritoneUser;
+import baritone.api.bot.IBaritoneUser;
+import baritone.bot.BaritoneUser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
@@ -59,9 +60,9 @@ public class BotNetHandlerLoginClient extends NetHandlerLoginClient {
     /**
      * The bot of this connection
      */
-    private final IBaritoneUser user;
+    private final BaritoneUser user;
 
-    public BotNetHandlerLoginClient(NetworkManager networkManager, IBaritoneUser user) {
+    public BotNetHandlerLoginClient(NetworkManager networkManager, BaritoneUser user) {
         super(networkManager, Minecraft.getMinecraft(), null);
         this.networkManager = networkManager;
         this.mc = Minecraft.getMinecraft();

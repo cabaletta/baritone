@@ -18,18 +18,18 @@
 package baritone.bot.spec;
 
 import baritone.api.utils.IPlayerController;
-import baritone.bot.IBaritoneUser;
+import baritone.api.bot.IBaritoneUser;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCommandBlock;
 import net.minecraft.block.BlockStructure;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
 import net.minecraft.network.play.client.CPacketClickWindow;
 import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
@@ -66,7 +66,7 @@ public class BotPlayerController implements IPlayerController {
     public boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side) {
         this.syncHeldItem();
 
-        EntityBot player = this.user.getEntity();
+        EntityPlayerSP player = this.user.getEntity();
         World world = player.world;
 
         if (this.blockHitDelay > 0) {
@@ -145,7 +145,7 @@ public class BotPlayerController implements IPlayerController {
     }
 
     private boolean clickBlock(BlockPos pos, EnumFacing side) {
-        EntityBot player = this.user.getEntity();
+        EntityPlayerSP player = this.user.getEntity();
         World world = player.world;
 
         if (!canBreak(player, pos)) {
@@ -180,7 +180,7 @@ public class BotPlayerController implements IPlayerController {
     }
 
     private void handleBreak(BlockPos pos) {
-        EntityBot player = this.user.getEntity();
+        EntityPlayerSP player = this.user.getEntity();
         World world = player.world;
 
         IBlockState state = world.getBlockState(pos);

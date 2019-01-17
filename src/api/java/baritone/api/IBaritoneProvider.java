@@ -17,6 +17,7 @@
 
 package baritone.api;
 
+import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
 import net.minecraft.client.entity.EntityPlayerSP;
 
@@ -62,10 +63,15 @@ public interface IBaritoneProvider {
     }
 
     /**
-     * Returns the {@link IWorldScanner} instance. This is not a type returned by
-     * {@link IBaritone} implementation, because it is not linked with {@link IBaritone}.
+     * Returns the {@link IWorldScanner} instance. This is not a type returned by a
+     * {@link IBaritone} implementation because it is not linked with {@link IBaritone}.
      *
      * @return The {@link IWorldScanner} instance.
      */
     IWorldScanner getWorldScanner();
+
+    /**
+     * @return The {@link IUserManager} instance.
+     */
+    IUserManager getUserManager();
 }

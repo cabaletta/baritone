@@ -18,13 +18,15 @@
 package baritone.bot;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.bot.IBaritoneUser;
+import baritone.api.bot.IUserManager;
+import baritone.api.bot.connect.IConnectionResult;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
 import baritone.utils.Helper;
-import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.ServerAddress;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.EnumConnectionState;
@@ -37,17 +39,15 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static baritone.bot.connect.ConnectionStatus.*;
+import static baritone.api.bot.connect.ConnectionStatus.*;
 
 /**
  * @author Brady
  * @since 11/6/2018
  */
-public final class UserManager implements Helper {
+public final class UserManager implements IUserManager, Helper {
 
     public static final UserManager INSTANCE = new UserManager();
 
@@ -79,24 +79,27 @@ public final class UserManager implements Helper {
      * @param session The user session
      * @return The result of the attempted connection
      */
-    public final ConnectionResult connect(Session session) {
+    @Override
+    public final IConnectionResult connect(Session session) {
         ServerData data = mc.getCurrentServerData();
         if (data == null) {
             return ConnectionResult.failed(NO_CURRENT_CONNECTION);
         }
 
         // Connect to the server from the parsed server data
-        return connect(session, ServerAddress.fromString(data.serverIP));
+        return connect0(session, ServerAddress.fromString(data.serverIP));
     }
 
     /**
      * Connects a new user with the specified {@link Session} to the specified server.
+     * <p>
+     * Hi Mickey :)
      *
      * @param session The user session
      * @param address The address of the server to connect to
      * @return The result of the attempted connection
      */
-    private ConnectionResult connect(Session session, ServerAddress address) {
+    private IConnectionResult connect0(Session session, ServerAddress address) {
         InetAddress inetAddress;
 
         try {
@@ -114,7 +117,7 @@ public final class UserManager implements Helper {
             );
 
             // Create User
-            IBaritoneUser user = new BaritoneUser(this, networkManager, session);
+            BaritoneUser user = new BaritoneUser(this, networkManager, session);
             this.users.add(user);
 
             // Setup login handler and send connection packets
@@ -140,10 +143,13 @@ public final class UserManager implements Helper {
     }
 
     /**
-     * Disconnects the specified {@link IBaritoneUser} from its current server.
-     *
-     * @param user The user to disconnect
+     * @return The bot world provider
      */
+    public final BotWorldProvider getWorldProvider() {
+        return this.worldProvider;
+    }
+
+    @Override
     public final void disconnect(IBaritoneUser user) {
         // It's probably fine to pass null to this, because the handlers aren't doing anything with it
         // noinspection ConstantConditions
@@ -151,33 +157,7 @@ public final class UserManager implements Helper {
         this.users.remove(user);
     }
 
-    /**
-     * Finds the {@link IBaritoneUser} associated with the specified {@link GameProfile}
-     *
-     * @param profile The game profile of the user
-     * @return The user, {@link Optional#empty()} if no match or {@code profile} is {@code null}
-     */
-    public final Optional<IBaritoneUser> getUserByProfile(GameProfile profile) {
-        return profile == null ? Optional.empty() : this.users.stream().filter(user -> user.getProfile().equals(profile)).findFirst();
-    }
-
-    /**
-     * Finds the {@link IBaritoneUser} associated with the specified {@link UUID}
-     *
-     * @param uuid The uuid of the user
-     * @return The user, {@link Optional#empty()} if no match or {@code uuid} is {@code null}
-     */
-    public final Optional<IBaritoneUser> getUserByUUID(UUID uuid) {
-        return uuid == null ? Optional.empty() : this.users.stream().filter(user -> user.getProfile().getId().equals(uuid)).findFirst();
-    }
-
-    /**
-     * @return The bot world provider
-     */
-    public final BotWorldProvider getWorldProvider() {
-        return this.worldProvider;
-    }
-
+    @Override
     public final List<IBaritoneUser> users() {
         return Collections.unmodifiableList(this.users);
     }

@@ -15,31 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.connect;
+package baritone.api.bot.connect;
+
+import baritone.api.bot.IBaritoneUser;
+
+import java.util.Optional;
 
 /**
  * @author Brady
- * @since 11/6/2018
+ * @since 1/17/2019
  */
-public enum ConnectionStatus {
+public interface IConnectionResult {
 
     /**
-     * The local player is not connected to a server, therefore, there is no target server to connect to.
+     * @return The actual status of the connection attempt.
+     * @see ConnectionStatus
      */
-    NO_CURRENT_CONNECTION,
+    ConnectionStatus getStatus();
 
     /**
-     * The IP of the targetted address to connect to could not be resolved.
+     * Returns the user that was created in this connection this result reflects, if
+     * {@link #getStatus()} is {@link ConnectionStatus#SUCCESS}, otherwise it will
+     * return {@link Optional#empty()}.
+     *
+     * @return The user created in the connection
      */
-    CANT_RESOLVE_HOST,
-
-    /**
-     * The connection initialization failed.
-     */
-    CONNECTION_FAILED,
-
-    /**
-     * The connection was a success
-     */
-    SUCCESS
+    Optional<IBaritoneUser> getUser();
 }

@@ -15,14 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot;
+package baritone.api.bot;
 
 import baritone.api.IBaritone;
 import baritone.api.utils.IPlayerController;
-import baritone.bot.spec.BotPlayerController;
-import baritone.bot.spec.BotWorld;
-import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -33,23 +31,6 @@ import net.minecraft.util.Session;
  * @since 10/23/2018
  */
 public interface IBaritoneUser {
-
-    /**
-     * Called when the user successfully logs into a server.
-     *
-     * @param profile              The game profile returned by the server on login
-     * @param netHandlerPlayClient The client play network handler
-     */
-    void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient);
-
-    /**
-     * Called when the user loads into a world.
-     *
-     * @param world The world object
-     * @param player The player object
-     * @param playerController The player controller
-     */
-    void onWorldLoad(BotWorld world, EntityBot player, IPlayerController playerController);
 
     /**
      * @return The network manager that is responsible for the current connection.
@@ -68,7 +49,7 @@ public interface IBaritoneUser {
     /**
      * @return The locally managed entity for this user.
      */
-    EntityBot getEntity();
+    EntityPlayerSP getEntity();
 
     /**
      * @return The bot player controller
@@ -93,7 +74,7 @@ public interface IBaritoneUser {
     /**
      * @return The manager that spawned this {@link IBaritoneUser}.
      */
-    UserManager getManager();
+    IUserManager getManager();
 
     IBaritone getBaritone();
 }

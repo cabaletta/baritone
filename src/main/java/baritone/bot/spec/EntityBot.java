@@ -17,7 +17,7 @@
 
 package baritone.bot.spec;
 
-import baritone.bot.IBaritoneUser;
+import baritone.api.bot.IBaritoneUser;
 import baritone.utils.PlayerMovementInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
