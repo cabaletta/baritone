@@ -31,14 +31,22 @@ import cabaletta.comms.BufferedConnection;
 import cabaletta.comms.IConnection;
 import cabaletta.comms.IMessageListener;
 import cabaletta.comms.downward.MessageChat;
+import cabaletta.comms.downward.MessageClickSlot;
 import cabaletta.comms.downward.MessageComputationRequest;
 import cabaletta.comms.iMessage;
 import cabaletta.comms.upward.MessageComputationResponse;
 import cabaletta.comms.upward.MessageStatus;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ControllerBehavior extends Behavior implements IMessageListener {
 
@@ -60,8 +68,11 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
     public MessageStatus buildStatus() {
         // TODO report inventory and echest contents
         // TODO figure out who should remember echest contents when it isn't open, baritone or tenor?
+
         BlockPos pathStart = baritone.getPathingBehavior().pathStart();
         return new MessageStatus(
+                ctx.player().getUniqueID().toString(),
+                ctx.player().connection.getNetworkManager().getRemoteAddress().toString(),
                 ctx.player().posX,
                 ctx.player().posY,
                 ctx.player().posZ,
@@ -71,6 +82,7 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
                 ctx.player().getHealth(),
                 ctx.player().getFoodStats().getSaturationLevel(),
                 ctx.player().getFoodStats().getFoodLevel(),
+                ctx.world().provider.getDimensionType().getId(),
                 pathStart.getX(),
                 pathStart.getY(),
                 pathStart.getZ(),
@@ -81,7 +93,12 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
                 baritone.getPathingBehavior().calcFailedLastTick(),
                 baritone.getPathingBehavior().isSafeToCancel(),
                 baritone.getPathingBehavior().getGoal() + "",
-                baritone.getPathingControlManager().mostRecentInControl().map(IBaritoneProcess::displayName).orElse("")
+                baritone.getPathingControlManager().mostRecentInControl().map(IBaritoneProcess::displayName).orElse(""),
+                describeAll(ctx.player().inventory.mainInventory),
+                describeAll(ctx.player().inventory.armorInventory),
+                describe(ctx.player().inventory.offHandInventory.get(0)),
+                ctx.player().openContainer.windowId,
+                baritone.getMemoryBehavior().eChestOpen()
         );
     }
 
@@ -123,6 +140,43 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
         conn = null;
     }
 
+    public static List<String> describeAll(List<ItemStack> list) {
+        return list.stream().map(ControllerBehavior::describe).collect(Collectors.toList());
+    }
+
+    public static String describe(ItemStack stack) {
+        return describe(stack, true);
+    }
+
+    public static String describe(ItemStack stack, boolean name) {
+        if (stack.isEmpty()) {
+            return "empty";
+        }
+        String description = "";
+        if (name) {
+            if (!stack.getDisplayName().contains("$")) { // who knows what's in there
+                description += stack.getDisplayName();
+            }
+            description += "$";
+        }
+        description += stack.getTranslationKey() + ";" + stack.getItemDamage() + ";" + stack.getCount() + ";";
+        NBTTagCompound data = stack.getTagCompound();
+        if (data != null && data.hasKey("BlockEntityTag", 10)) {
+            NBTTagCompound blockdata = data.getCompoundTag("BlockEntityTag");
+            if (blockdata.hasKey("Items", 9)) {
+                NonNullList<ItemStack> nonnulllist = NonNullList.withSize(27, ItemStack.EMPTY);
+                ItemStackHelper.loadAllItems(blockdata, nonnulllist);
+
+                description += ";";
+                for (ItemStack itemstack : nonnulllist) {
+                    description += describe(itemstack, false) + ",";
+                }
+                description = description.substring(0, description.length() - 1);
+            }
+        }
+        return description;
+    }
+
     @Override
     public void handle(MessageChat msg) { // big brain
         ChatEvent event = new ChatEvent(ctx.player(), msg.msg);
@@ -154,6 +208,14 @@ public class ControllerBehavior extends Behavior implements IMessageListener {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    public void handle(MessageClickSlot msg) {
+        if (ctx.player().openContainer.windowId != msg.windowId) {
+            return; // stale
+        }
+        ctx.playerController().windowClick(msg.windowId, msg.slotId, msg.mouseButton, ClickType.values()[msg.clickType], ctx.player());
     }
 
     @Override

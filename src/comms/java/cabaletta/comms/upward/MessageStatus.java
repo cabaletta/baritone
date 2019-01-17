@@ -23,9 +23,13 @@ import cabaletta.comms.iMessage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MessageStatus implements iMessage {
 
+    public final String playerUUID;
+    public final String serverIP;
     public final double x;
     public final double y;
     public final double z;
@@ -35,6 +39,7 @@ public class MessageStatus implements iMessage {
     public final float health;
     public final float saturation;
     public final int foodLevel;
+    public final int dimension;
     public final int pathStartX;
     public final int pathStartY;
     public final int pathStartZ;
@@ -46,8 +51,15 @@ public class MessageStatus implements iMessage {
     public final boolean safeToCancel;
     public final String currentGoal;
     public final String currentProcess;
+    public final List<String> mainInventory;
+    public final List<String> armor;
+    public final String offHand;
+    public final int windowId;
+    public final boolean eChestOpen;
 
     public MessageStatus(DataInputStream in) throws IOException {
+        this.playerUUID = in.readUTF();
+        this.serverIP = in.readUTF();
         this.x = in.readDouble();
         this.y = in.readDouble();
         this.z = in.readDouble();
@@ -57,6 +69,7 @@ public class MessageStatus implements iMessage {
         this.health = in.readFloat();
         this.saturation = in.readFloat();
         this.foodLevel = in.readInt();
+        this.dimension = in.readInt();
         this.pathStartX = in.readInt();
         this.pathStartY = in.readInt();
         this.pathStartZ = in.readInt();
@@ -68,9 +81,16 @@ public class MessageStatus implements iMessage {
         this.safeToCancel = in.readBoolean();
         this.currentGoal = in.readUTF();
         this.currentProcess = in.readUTF();
+        this.mainInventory = readList(36, in);
+        this.armor = readList(4, in);
+        this.offHand = in.readUTF();
+        this.windowId = in.readInt();
+        this.eChestOpen = in.readBoolean();
     }
 
-    public MessageStatus(double x, double y, double z, float yaw, float pitch, boolean onGround, float health, float saturation, int foodLevel, int pathStartX, int pathStartY, int pathStartZ, boolean hasCurrentSegment, boolean hasNextSegment, boolean calcInProgress, double ticksRemainingInCurrent, boolean calcFailedLastTick, boolean safeToCancel, String currentGoal, String currentProcess) {
+    public MessageStatus(String playerUUID, String serverIP, double x, double y, double z, float yaw, float pitch, boolean onGround, float health, float saturation, int foodLevel, int dimension, int pathStartX, int pathStartY, int pathStartZ, boolean hasCurrentSegment, boolean hasNextSegment, boolean calcInProgress, double ticksRemainingInCurrent, boolean calcFailedLastTick, boolean safeToCancel, String currentGoal, String currentProcess, List<String> mainInventory, List<String> armor, String offHand, int windowId, boolean eChestOpen) {
+        this.playerUUID = playerUUID;
+        this.serverIP = serverIP;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -80,6 +100,7 @@ public class MessageStatus implements iMessage {
         this.health = health;
         this.saturation = saturation;
         this.foodLevel = foodLevel;
+        this.dimension = dimension;
         this.pathStartX = pathStartX;
         this.pathStartY = pathStartY;
         this.pathStartZ = pathStartZ;
@@ -91,10 +112,20 @@ public class MessageStatus implements iMessage {
         this.safeToCancel = safeToCancel;
         this.currentGoal = currentGoal;
         this.currentProcess = currentProcess;
+        this.mainInventory = mainInventory;
+        this.armor = armor;
+        this.offHand = offHand;
+        this.windowId = windowId;
+        this.eChestOpen = eChestOpen;
+        if (mainInventory.size() != 36 || armor.size() != 4) {
+            throw new IllegalStateException();
+        }
     }
 
     @Override
     public void write(DataOutputStream out) throws IOException {
+        out.writeUTF(playerUUID);
+        out.writeUTF(serverIP);
         out.writeDouble(x);
         out.writeDouble(y);
         out.writeDouble(z);
@@ -104,6 +135,7 @@ public class MessageStatus implements iMessage {
         out.writeFloat(health);
         out.writeFloat(saturation);
         out.writeInt(foodLevel);
+        out.writeInt(dimension);
         out.writeInt(pathStartX);
         out.writeInt(pathStartY);
         out.writeInt(pathStartZ);
@@ -115,6 +147,25 @@ public class MessageStatus implements iMessage {
         out.writeBoolean(safeToCancel);
         out.writeUTF(currentGoal);
         out.writeUTF(currentProcess);
+        write(mainInventory, out);
+        write(armor, out);
+        out.writeUTF(offHand);
+        out.writeInt(windowId);
+        out.writeBoolean(eChestOpen);
+    }
+
+    private static List<String> readList(int length, DataInputStream in) throws IOException {
+        ArrayList<String> result = new ArrayList<>();
+        for (int i = 0; i < length; i++) {
+            result.add(in.readUTF());
+        }
+        return result;
+    }
+
+    private static void write(List<String> list, DataOutputStream out) throws IOException {
+        for (String str : list) {
+            out.writeUTF(str);
+        }
     }
 
     @Override

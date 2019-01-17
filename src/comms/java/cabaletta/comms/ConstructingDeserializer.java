@@ -17,10 +17,16 @@
 
 package cabaletta.comms;
 
+import cabaletta.comms.downward.MessageChat;
+import cabaletta.comms.downward.MessageClickSlot;
+import cabaletta.comms.downward.MessageComputationRequest;
+import cabaletta.comms.upward.MessageComputationResponse;
+import cabaletta.comms.upward.MessageEchestConfirmed;
+import cabaletta.comms.upward.MessageStatus;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,12 +36,12 @@ public enum ConstructingDeserializer implements MessageDeserializer {
 
     ConstructingDeserializer() {
         MSGS = new ArrayList<>();
-        // imagine doing something in reflect but it's actually concise and you don't need to catch 42069 different exceptions. huh.
-        for (Method m : IMessageListener.class.getDeclaredMethods()) {
-            if (m.getName().equals("handle")) {
-                MSGS.add((Class<? extends iMessage>) m.getParameterTypes()[0]);
-            }
-        }
+        MSGS.add(MessageStatus.class);
+        MSGS.add(MessageChat.class);
+        MSGS.add(MessageComputationRequest.class);
+        MSGS.add(MessageComputationResponse.class);
+        MSGS.add(MessageEchestConfirmed.class);
+        MSGS.add(MessageClickSlot.class);
     }
 
     @Override
