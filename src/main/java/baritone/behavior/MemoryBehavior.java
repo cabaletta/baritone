@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.cache.ContainerMemory;
 import baritone.cache.Waypoint;
@@ -58,6 +59,14 @@ public final class MemoryBehavior extends Behavior {
 
     public MemoryBehavior(Baritone baritone) {
         super(baritone);
+    }
+
+    @Override
+    public synchronized void onTick(TickEvent event) {
+        if (event.getType() == TickEvent.Type.OUT) {
+            enderChestWindowId = null;
+            futureInventories.clear();
+        }
     }
 
     @Override
