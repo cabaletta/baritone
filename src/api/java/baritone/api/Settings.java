@@ -534,7 +534,7 @@ public class Settings {
     public Setting<Double> followOffsetDistance = new Setting<>(0D);
 
     /**
-     * The actual GoalNear is set in this direction from the entity you're following
+     * The actual GoalNear is set in this direction from the entity you're following. This value is in degrees.
      */
     public Setting<Float> followOffsetDirection = new Setting<>(0F);
 
