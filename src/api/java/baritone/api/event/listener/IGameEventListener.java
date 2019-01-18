@@ -110,6 +110,14 @@ public interface IGameEventListener {
     void onPlayerRotationMove(RotationMoveEvent event);
 
     /**
+     * Called whenever the sprint keybind state is checked in {@link EntityPlayerSP#onLivingUpdate}
+     *
+     * @param event The event
+     * @see EntityPlayerSP#onLivingUpdate()
+     */
+    void onPlayerSprintState(SprintStateEvent event);
+
+    /**
      * Called when the local player interacts with a block, whether it is breaking or opening/placing.
      *
      * @param event The event

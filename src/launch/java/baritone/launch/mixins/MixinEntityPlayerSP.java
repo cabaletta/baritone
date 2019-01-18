@@ -21,8 +21,10 @@ import baritone.api.BaritoneAPI;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.SprintStateEvent;
 import baritone.api.event.events.type.EventState;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerCapabilities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -86,5 +88,19 @@ public class MixinEntityPlayerSP {
     private boolean isAllowFlying(PlayerCapabilities capabilities) {
         IPathingBehavior pathingBehavior = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getPathingBehavior();
         return !pathingBehavior.isPathing() && capabilities.allowFlying;
+    }
+
+    @Redirect(
+            method = "onLivingUpdate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/settings/KeyBinding.isKeyDown()Z"
+            )
+    )
+    private boolean isKeyDown(KeyBinding keyBinding) {
+        EntityPlayerSP self = (EntityPlayerSP) (Object) this;
+        SprintStateEvent event = new SprintStateEvent(self);
+        BaritoneAPI.getProvider().getBaritoneForPlayer(self).getGameEventHandler().onPlayerSprintState(event);
+        return event.getState() == null ? keyBinding.isKeyDown() : event.getState();
     }
 }

@@ -122,6 +122,11 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
+    public void onPlayerSprintState(SprintStateEvent event) {
+        listeners.forEach(l -> l.onPlayerSprintState(event));
+    }
+
+    @Override
     public void onBlockInteract(BlockInteractEvent event) {
         listeners.forEach(l -> l.onBlockInteract(event));
     }
