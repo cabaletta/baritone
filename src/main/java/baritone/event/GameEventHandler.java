@@ -23,6 +23,7 @@ import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.cache.WorldProvider;
+import baritone.utils.BlockStateInterface;
 import baritone.utils.Helper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -46,6 +47,9 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     @Override
     public final void onTick(TickEvent event) {
+        try {
+            baritone.bsi = new BlockStateInterface(baritone.getPlayerContext(), true);
+        } catch (Exception ex) {}
         listeners.forEach(l -> l.onTick(event));
     }
 

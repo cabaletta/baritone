@@ -29,10 +29,7 @@ import baritone.process.CustomGoalProcess;
 import baritone.process.FollowProcess;
 import baritone.process.GetToBlockProcess;
 import baritone.process.MineProcess;
-import baritone.utils.BaritoneAutoTest;
-import baritone.utils.ExampleBaritoneControl;
-import baritone.utils.InputOverrideHandler;
-import baritone.utils.PathingControlManager;
+import baritone.utils.*;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
@@ -88,6 +85,8 @@ public class Baritone implements IBaritone {
 
     private IPlayerContext playerContext;
     private WorldProvider worldProvider;
+
+    public BlockStateInterface bsi;
 
     Baritone() {
         this.gameEventHandler = new GameEventHandler(this);
