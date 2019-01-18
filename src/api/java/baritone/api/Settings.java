@@ -451,11 +451,6 @@ public class Settings {
     public Setting<Boolean> prefix = new Setting<>(false);
 
     /**
-     * {@code true}: can mine blocks when in inventory, chat, or tabbed away in ESC menu
-     */
-    public Setting<Boolean> leftClickWorkaround = new Setting<>(true);
-
-    /**
      * Don't stop walking forward when you need to break blocks in your way
      */
     public Setting<Boolean> walkWhileBreaking = new Setting<>(true);
@@ -534,7 +529,7 @@ public class Settings {
     public Setting<Double> followOffsetDistance = new Setting<>(0D);
 
     /**
-     * The actual GoalNear is set in this direction from the entity you're following
+     * The actual GoalNear is set in this direction from the entity you're following. This value is in degrees.
      */
     public Setting<Float> followOffsetDirection = new Setting<>(0F);
 

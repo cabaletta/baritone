@@ -58,6 +58,9 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onPlayerRotationMove(RotationMoveEvent event) {}
 
     @Override
+    default void onPlayerSprintState(SprintStateEvent event) {}
+
+    @Override
     default void onBlockInteract(BlockInteractEvent event) {}
 
     @Override

@@ -27,7 +27,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 /**
- * Implementation of {@link IPlayerContext} that provides information about the local player.
+ * Implementation of {@link IPlayerContext} that provides information about the primary player.
  *
  * @author Brady
  * @since 11/12/2018

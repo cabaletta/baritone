@@ -28,6 +28,8 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.GameType;
 
 /**
+ * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
+ *
  * @author Brady
  * @since 12/14/2018
  */

@@ -79,6 +79,8 @@ public class PathExecutor implements IPathExecutor, Helper {
     private PathingBehavior behavior;
     private IPlayerContext ctx;
 
+    private boolean sprintNextTick;
+
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
         this.ctx = behavior.ctx;
@@ -269,7 +271,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             onTick();
             return true;
         } else {
-            sprintIfRequested();
+            sprintNextTick = shouldSprintNextTick();
             ticksOnCurrent++;
             if (ticksOnCurrent > currentMovementOriginalCostEstimate + Baritone.settings().movementTimeoutTicks.get()) {
                 // only cancel if the total time has exceeded the initial estimate
@@ -371,21 +373,17 @@ public class PathExecutor implements IPathExecutor, Helper {
         return true;
     }
 
-    private void sprintIfRequested() {
+    private boolean shouldSprintNextTick() {
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
         if (!new CalculationContext(behavior.baritone).canSprint) {
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
-            ctx.player().setSprinting(false);
-            return;
+            return false;
         }
 
         // if the movement requested sprinting, then we're done
         if (behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT)) {
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
-            if (!ctx.player().isSprinting()) {
-                ctx.player().setSprinting(true);
-            }
-            return;
+            return true;
         }
 
         // we'll take it from here, no need for minecraft to see we're holding down control and sprint for us
@@ -397,30 +395,23 @@ public class PathExecutor implements IPathExecutor, Helper {
 
             if (((MovementDescend) current).safeMode()) {
                 logDebug("Sprinting would be unsafe");
-                ctx.player().setSprinting(false);
-                return;
+                return false;
             }
 
             IMovement next = path.movements().get(pathPosition + 1);
             if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
                 // a descend then an ascend in the same direction
-                if (!ctx.player().isSprinting()) {
-                    ctx.player().setSprinting(true);
-                }
                 pathPosition++;
                 // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't possible to repeat, since it's asymmetric
                 logDebug("Skipping descend to straight ascend");
-                return;
+                return true;
             }
             if (canSprintInto(ctx, current, next)) {
                 if (ctx.playerFeet().equals(current.getDest())) {
                     pathPosition++;
                     onChangeInPathPosition();
                 }
-                if (!ctx.player().isSprinting()) {
-                    ctx.player().setSprinting(true);
-                }
-                return;
+                return true;
             }
             //logDebug("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
         }
@@ -430,14 +421,11 @@ public class PathExecutor implements IPathExecutor, Helper {
                 BlockPos center = current.getSrc().up();
                 if (ctx.player().posY >= center.getY()) { // playerFeet adds 0.1251 to account for soul sand
                     behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
-                    if (!ctx.player().isSprinting()) {
-                        ctx.player().setSprinting(true);
-                    }
-                    return;
+                    return true;
                 }
             }
         }
-        ctx.player().setSprinting(false);
+        return false;
     }
 
     private static boolean canSprintInto(IPlayerContext ctx, IMovement current, IMovement next) {
@@ -531,5 +519,9 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     public Set<BlockPos> toWalkInto() {
         return Collections.unmodifiableSet(toWalkInto);
+    }
+
+    public boolean isSprinting() {
+        return sprintNextTick;
     }
 }
