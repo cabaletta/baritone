@@ -17,7 +17,6 @@
 
 package baritone.api.process;
 
-import baritone.api.IBaritone;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.PathEvent;
 
@@ -25,8 +24,10 @@ import baritone.api.event.events.PathEvent;
  * A process that can control the PathingBehavior.
  * <p>
  * Differences between a baritone process and a behavior:
- * Only one baritone process can be active at a time
- * PathingBehavior can only be controlled by a process
+ * <ul>
+ *   <li>Only one baritone process can be active at a time</li>
+ *   <li>PathingBehavior can only be controlled by a process</li>
+ * </ul>
  * <p>
  * That's it actually
  *
@@ -82,13 +83,6 @@ public interface IBaritoneProcess {
      * @return A double representing the priority
      */
     double priority();
-
-    /**
-     * Returns which bot this process is associated with. (5000000iq forward thinking)
-     *
-     * @return The Bot associated with this process
-     */
-    IBaritone associatedWith();
 
     /**
      * Returns a user-friendly name for this process. Suitable for a HUD.
