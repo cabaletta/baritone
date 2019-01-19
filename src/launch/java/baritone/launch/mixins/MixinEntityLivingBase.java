@@ -55,7 +55,7 @@ public abstract class MixinEntityLivingBase extends Entity {
     private void preMoveRelative(CallbackInfo ci) {
         // noinspection ConstantConditions
         if (EntityPlayerSP.class.isInstance(this)) {
-            this.jumpRotationEvent = new RotationMoveEvent((EntityPlayerSP) (Object) this, RotationMoveEvent.Type.JUMP, this.rotationYaw);
+            this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.rotationYaw);
             BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
         }
     }

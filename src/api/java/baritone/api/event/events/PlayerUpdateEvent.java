@@ -18,22 +18,19 @@
 package baritone.api.event.events;
 
 import baritone.api.event.events.type.EventState;
-import baritone.api.event.events.type.ManagedPlayerEvent;
-import net.minecraft.client.entity.EntityPlayerSP;
 
 /**
  * @author Brady
  * @since 8/21/2018
  */
-public final class PlayerUpdateEvent extends ManagedPlayerEvent {
+public final class PlayerUpdateEvent {
 
     /**
      * The state of the event
      */
     private final EventState state;
 
-    public PlayerUpdateEvent(EntityPlayerSP player, EventState state) {
-        super(player);
+    public PlayerUpdateEvent(EventState state) {
         this.state = state;
     }
 
