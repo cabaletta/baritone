@@ -98,9 +98,8 @@ public class MixinEntityPlayerSP {
             )
     )
     private boolean isKeyDown(KeyBinding keyBinding) {
-        EntityPlayerSP self = (EntityPlayerSP) (Object) this;
-        SprintStateEvent event = new SprintStateEvent(self);
-        BaritoneAPI.getProvider().getBaritoneForPlayer(self).getGameEventHandler().onPlayerSprintState(event);
+        SprintStateEvent event = new SprintStateEvent();
+        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerSprintState(event);
         return event.getState() == null ? keyBinding.isKeyDown() : event.getState();
     }
 }

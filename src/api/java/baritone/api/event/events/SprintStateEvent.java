@@ -17,20 +17,13 @@
 
 package baritone.api.event.events;
 
-import baritone.api.event.events.type.ManagedPlayerEvent;
-import net.minecraft.client.entity.EntityPlayerSP;
-
 /**
  * @author Brady
  * @since 1/18/2019
  */
-public class SprintStateEvent extends ManagedPlayerEvent {
+public class SprintStateEvent {
 
     private Boolean state;
-
-    public SprintStateEvent(EntityPlayerSP player) {
-        super(player);
-    }
 
     public final void setState(boolean state) {
         this.state = state;
