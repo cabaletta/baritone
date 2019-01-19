@@ -48,6 +48,8 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
+ * doesn't work for horse inventories :^)
+ *
  * @author Brady
  * @since 8/6/2018
  */
