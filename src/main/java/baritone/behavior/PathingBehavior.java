@@ -36,7 +36,6 @@ import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
 import baritone.utils.pathing.Favoring;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.EmptyChunk;
 
 import java.util.ArrayList;
 import java.util.Comparator;
