@@ -109,7 +109,6 @@ public final class MemoryBehavior extends Behavior {
             }
 
             if (p instanceof CPacketCloseWindow) {
-                updateInventory();
                 getCurrent().save();
             }
         }
@@ -144,7 +143,6 @@ public final class MemoryBehavior extends Behavior {
             }
 
             if (p instanceof SPacketCloseWindow) {
-                updateInventory();
                 getCurrent().save();
             }
         }
