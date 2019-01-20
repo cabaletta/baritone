@@ -58,7 +58,7 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
 
     public BuilderProcess(Baritone baritone) {
-        super(baritone);
+        super(baritone, 0);
     }
 
     private HashSet<BetterBlockPos> incorrectPositions;
