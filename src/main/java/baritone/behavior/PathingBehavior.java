@@ -19,10 +19,7 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.behavior.IPathingBehavior;
-import baritone.api.event.events.PathEvent;
-import baritone.api.event.events.PlayerUpdateEvent;
-import baritone.api.event.events.RenderEvent;
-import baritone.api.event.events.TickEvent;
+import baritone.api.event.events.*;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
@@ -99,6 +96,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         baritone.getPathingControlManager().preTick();
         tickPath();
         dispatchEvents();
+    }
+
+    @Override
+    public void onPlayerSprintState(SprintStateEvent event) {
+        if (current != null) {
+            event.setState(current.isSprinting());
+        }
     }
 
     private void tickPath() {

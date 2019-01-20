@@ -52,7 +52,7 @@ public class MixinEntity {
     private void preMoveRelative(float strafe, float up, float forward, float friction, CallbackInfo ci) {
         // noinspection ConstantConditions
         if (EntityPlayerSP.class.isInstance(this)) {
-            this.motionUpdateRotationEvent = new RotationMoveEvent((EntityPlayerSP) (Object) this, RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw);
+            this.motionUpdateRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw);
             BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerRotationMove(this.motionUpdateRotationEvent);
         }
     }

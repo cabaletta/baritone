@@ -19,6 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.pathing.calc.IPath;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class PathCalculationResult {
@@ -31,11 +32,9 @@ public class PathCalculationResult {
     }
 
     public PathCalculationResult(Type type, IPath path) {
+        Objects.requireNonNull(type);
         this.path = path;
         this.type = type;
-        if (type == null) {
-            throw new IllegalArgumentException("come on");
-        }
     }
 
     public final Optional<IPath> getPath() {

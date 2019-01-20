@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.cache.ContainerMemory;
 import baritone.cache.Waypoint;
@@ -47,6 +48,8 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
+ * doesn't work for horse inventories :^)
+ *
  * @author Brady
  * @since 8/6/2018
  */
@@ -58,6 +61,14 @@ public final class MemoryBehavior extends Behavior {
 
     public MemoryBehavior(Baritone baritone) {
         super(baritone);
+    }
+
+    @Override
+    public synchronized void onTick(TickEvent event) {
+        if (event.getType() == TickEvent.Type.OUT) {
+            enderChestWindowId = null;
+            futureInventories.clear();
+        }
     }
 
     @Override
@@ -98,7 +109,6 @@ public final class MemoryBehavior extends Behavior {
             }
 
             if (p instanceof CPacketCloseWindow) {
-                updateInventory();
                 getCurrent().save();
             }
         }
@@ -133,7 +143,6 @@ public final class MemoryBehavior extends Behavior {
             }
 
             if (p instanceof SPacketCloseWindow) {
-                updateInventory();
                 getCurrent().save();
             }
         }
