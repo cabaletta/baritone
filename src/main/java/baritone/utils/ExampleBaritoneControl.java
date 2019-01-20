@@ -77,6 +77,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     "costs - (debug) all movement costs from current location\n" +
                     "damn - Daniel ";
 
+    private static final String COMMAND_PREFIX = "#";
+
     public ExampleBaritoneControl(Baritone baritone) {
         super(baritone);
     }
@@ -87,14 +89,17 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         String msg = event.getMessage();
-        if (Baritone.settings().prefix.get()) {
-            if (!msg.startsWith("#")) {
-                return;
+        if (Baritone.settings().prefix.get())  {
+            if (msg.startsWith(COMMAND_PREFIX)) {
+                if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
+                    logDirect("Invalid command");
+                }
+                event.cancel(); // always cancel if using prefix
             }
-            msg = msg.substring(1);
-        }
-        if (runCommand(msg)) {
-            event.cancel();
+        } else {
+            if (runCommand(msg)) {
+                event.cancel();
+            }
         }
     }
 
@@ -121,7 +126,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             for (String line : HELP_MSG.split("\n")) {
                 logDirect(line);
             }
-            return false;
+            return true;
         }
         if (msg.contains(" ")) {
             String[] data = msg.split(" ");
