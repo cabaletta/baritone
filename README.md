@@ -10,7 +10,7 @@
 [![Asuna integration](https://img.shields.io/badge/Asuna%20integration-builder%20branch-brightgreen.svg)](https://github.com/EmotionalLove/Asuna/)
 [![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.0.0--hotfix--4-green.svg)](https://impactdevelopment.github.io/)
 [![KAMI integration](https://img.shields.io/badge/KAMI%20integration-v1.0.0-orange.svg)](https://github.com/zeroeightysix/KAMI/)
-[![WWE integration](https://img.shields.io/badge/WWE%20integration-v1.0.0%3F%3F-orange.svg)](https://wweclient.com/)
+[![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-v1.0.0%3F%3F%20smh%20license%20violations-orange.svg)](https://wweclient.com/)
 [![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
 
 A Minecraft pathfinder bot. 
