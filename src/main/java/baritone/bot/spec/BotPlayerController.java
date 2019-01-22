@@ -17,8 +17,8 @@
 
 package baritone.bot.spec;
 
-import baritone.api.utils.IPlayerController;
 import baritone.api.bot.IBaritoneUser;
+import baritone.api.utils.IPlayerController;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCommandBlock;
 import net.minecraft.block.BlockStructure;

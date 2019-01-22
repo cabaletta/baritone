@@ -17,7 +17,6 @@
 
 package baritone.bot.handler;
 
-import baritone.api.bot.IBaritoneUser;
 import baritone.bot.BaritoneUser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationException;
