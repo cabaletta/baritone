@@ -89,7 +89,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return;
         }
         String msg = event.getMessage();
-        if (Baritone.settings().prefix.get())  {
+        if (Baritone.settings().prefix.get()) {
             if (msg.startsWith(COMMAND_PREFIX)) {
                 if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
                     logDirect("Invalid command");
