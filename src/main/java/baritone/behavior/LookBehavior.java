@@ -95,6 +95,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
+    public void pig() {
+        if (this.target != null) {
+            ctx.player().rotationYaw = this.target.getYaw();
+        }
+    }
+
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null && !this.force) {

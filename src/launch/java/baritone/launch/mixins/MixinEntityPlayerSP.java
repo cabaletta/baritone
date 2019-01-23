@@ -23,6 +23,7 @@ import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.SprintStateEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.behavior.LookBehavior;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerCapabilities;
@@ -101,5 +102,15 @@ public class MixinEntityPlayerSP {
         SprintStateEvent event = new SprintStateEvent();
         BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerSprintState(event);
         return event.getState() == null ? keyBinding.isKeyDown() : event.getState();
+    }
+
+    @Inject(
+            method = "updateRidden",
+            at = @At(
+                    value = "HEAD"
+            )
+    )
+    private void updateRidden(CallbackInfo cb) {
+        ((LookBehavior) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getLookBehavior()).pig();
     }
 }
