@@ -51,6 +51,8 @@ For information on how to build baritone, see [Building Baritone](#building-bari
 
 # Building
 
+Make sure that you have properly [setup](#setup) the environment before trying to build it.
+
 ## Command Line
 
 ```
