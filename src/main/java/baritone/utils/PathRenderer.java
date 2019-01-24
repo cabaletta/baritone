@@ -216,8 +216,9 @@ public final class PathRenderer implements Helper {
         double renderPosX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
+        BlockStateInterface bsi = new BlockStateInterface(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext()); // TODO this assumes same dimension between primary baritone and render view? is this safe?
         positions.forEach(pos -> {
-            IBlockState state = BlockStateInterface.get(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext(), pos);
+            IBlockState state = bsi.get0(pos);
             AxisAlignedBB toDraw;
             if (state.getBlock().equals(Blocks.AIR)) {
                 toDraw = Blocks.DIRT.getDefaultState().getSelectedBoundingBox(player.world, pos);
