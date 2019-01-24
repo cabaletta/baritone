@@ -32,6 +32,13 @@ Here are some links to help to get started:
 ## Command Line
 On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 
+Setting up the Environment:
+
+```
+$ gradlew setupDecompWorkspace
+$ gradlew --refresh-dependencies
+```
+
 Running Baritone:
 
 ```
