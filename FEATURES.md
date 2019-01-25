@@ -11,6 +11,7 @@
 - **Avoiding dangerous blocks** Obviously, it knows not to walk through fire or on magma, not to corner over lava (that deals some damage), not to break any blocks touching a liquid (it might drown), etc.
 - **Parkour** Sprint jumping over 1, 2, or 3 block gaps
 - **Parkour place** Sprint jumping over a 3 block gap and placing the block to land on while executing the jump. It's really cool.
+- **Pigs** It can sort of control pigs. I wouldn't rely on it though.
 
 # Pathing method
 Baritone uses A*, with some modifications: 
@@ -46,7 +47,6 @@ Things it doesn't have yet
 See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
 
 Things it may not ever have, from most likely to least likely =(
-- Pigs
 - Boats
 - Horses (2x3 path instead of 1x2)
 - Elytra

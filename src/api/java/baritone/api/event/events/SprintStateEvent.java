@@ -21,7 +21,7 @@ package baritone.api.event.events;
  * @author Brady
  * @since 1/18/2019
  */
-public class SprintStateEvent {
+public final class SprintStateEvent {
 
     private Boolean state;
 

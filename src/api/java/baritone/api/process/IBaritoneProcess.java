@@ -25,8 +25,8 @@ import baritone.api.event.events.PathEvent;
  * <p>
  * Differences between a baritone process and a behavior:
  * <ul>
- *   <li>Only one baritone process can be active at a time</li>
- *   <li>PathingBehavior can only be controlled by a process</li>
+ * <li>Only one baritone process can be active at a time</li>
+ * <li>PathingBehavior can only be controlled by a process</li>
  * </ul>
  * <p>
  * That's it actually
