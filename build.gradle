@@ -99,6 +99,7 @@ mixin {
 }
 
 javadoc {
+    options.addStringOption('Xwerror', '-quiet')
     source += sourceSets.api.allJava
     classpath += sourceSets.api.compileClasspath
 }
