@@ -103,7 +103,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
     }
 
-    public boolean runCommand(String msg0) {
+    private boolean runCommand(String msg0) {
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
         PathingBehavior pathingBehavior = baritone.getPathingBehavior();
         CustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
