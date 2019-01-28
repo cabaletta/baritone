@@ -123,7 +123,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                 baritone.getLookBehavior().updateTarget(
                         rotation,
                         currentState.getTarget().hasToForceRotations()));
-
+        baritone.getInputOverrideHandler().clearAllKeys();
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);
         });
