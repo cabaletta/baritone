@@ -36,6 +36,8 @@ Here are some links to help to get started:
 
 - [Installation](INSTALL.md)
 
+- [Javadocs](https://baritone.leijurv.com/)
+
 # Chat control
 [Defined Here](src/main/java/baritone/utils/ExampleBaritoneControl.java)
 
