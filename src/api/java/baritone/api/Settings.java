@@ -69,7 +69,7 @@ public final class Settings {
     public final Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
 
     /**
-     * Additional penalty for hitting the space bar (ascend, pillar, or parkour) beacuse it uses hunger
+     * Additional penalty for hitting the space bar (ascend, pillar, or parkour) because it uses hunger
      */
     public final Setting<Double> jumpPenalty = new Setting<>(2D);
 
@@ -107,7 +107,7 @@ public final class Settings {
     /**
      * If true, parkour is allowed to make jumps when standing on blocks at the maximum height, so player feet is y=256
      * <p>
-     * Defaults to false because this fails on NCP
+     * Defaults to false because this fails on constantiam
      */
     public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
@@ -132,6 +132,8 @@ public final class Settings {
     /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
      * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
+     * <p>
+     * Never turn this on lol
      */
     public final Setting<Boolean> allowVines = new Setting<>(false);
 
@@ -145,11 +147,15 @@ public final class Settings {
      * You know what it is
      * <p>
      * But it's very unreliable and falls off when cornering like all the time so.
+     * <p>
+     * It also overshoots the landing pretty much always (making contact with the next block over), so be careful
      */
     public final Setting<Boolean> allowParkour = new Setting<>(false);
 
     /**
-     * Like parkour, but even more unreliable!
+     * Actually pretty reliable.
+     * <p>
+     * Doesn't make it any more dangerous compared to just normal allowParkour th
      */
     public final Setting<Boolean> allowParkourPlace = new Setting<>(false);
 
@@ -192,9 +198,13 @@ public final class Settings {
     /**
      * Toggle the following 4 settings
      * <p>
-     * They have a noticable performance impact, so they default off
+     * They have a noticeable performance impact, so they default off
+     * <p>
+     * Specifically, building up the avoidance map on the main thread before pathing starts actually takes a noticeable
+     * amount of time, especially when there are a lot of mobs around, and your game jitters for like 200ms while doing so
      */
     public final Setting<Boolean> avoidance = new Setting<>(false);
+
     /**
      * Set to 1.0 to effectively disable this feature
      * <p>
@@ -234,8 +244,10 @@ public final class Settings {
     /**
      * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
      * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
+     * <p>
+     * This is much safer to leave off now, and makes pathing more efficient. More explanation in the issue.
      *
-     * @see <a href="https://github.com/cabaletta/baritone/issues/144">Issue #144</a>
+     * @see <a href="https://github.com/cabaletta/baritone/issues/114">Issue #114</a>
      */
     public final Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
 
@@ -360,7 +372,9 @@ public final class Settings {
     /**
      * On save, delete from RAM any cached regions that are more than 1024 blocks away from the player
      * <p>
-     * Temporarily disabled, see issue #248
+     * Temporarily disabled
+     *
+     * @see <a href="https://github.com/cabaletta/baritone/issues/248">Issue #248</a>
      */
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
 
@@ -456,7 +470,7 @@ public final class Settings {
     public final Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
     /**
-     * If we are more than 500 movements into the current path, discard the oldest segments, as they are no longer useful
+     * If we are more than 300 movements into the current path, discard the oldest segments, as they are no longer useful
      */
     public final Setting<Integer> maxPathHistoryLength = new Setting<>(300);
 
@@ -497,9 +511,9 @@ public final class Settings {
     public final Setting<Integer> axisHeight = new Setting<>(120);
 
     /**
-     * Allow MineBehavior to use X-Ray to see where the ores are. Turn this option off to force it to mine "legit"
+     * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
      * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
-     * couldn't. If you don't want it to look like you're X-Raying, turn this off
+     * couldn't. If you don't want it to look like you're X-Raying, turn this on
      */
     public final Setting<Boolean> legitMine = new Setting<>(false);
 
@@ -606,6 +620,7 @@ public final class Settings {
      * The color of the goal box
      */
     public final Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
+
 
     /**
      * A map of lowercase setting field names to their respective setting
