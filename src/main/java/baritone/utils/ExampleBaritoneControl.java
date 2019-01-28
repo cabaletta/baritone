@@ -103,7 +103,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
     }
 
-    private boolean runCommand(String msg0) {
+    public boolean runCommand(String msg0) { // you may think this can be private, but impcat calls it from .b =)
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
         PathingBehavior pathingBehavior = baritone.getPathingBehavior();
         CustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
