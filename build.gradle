@@ -99,8 +99,8 @@ mixin {
 }
 
 javadoc {
-    source = sourceSets.api.allJava
-    classpath = sourceSets.api.compileClasspath
+    source += sourceSets.api.allJava
+    classpath += sourceSets.api.compileClasspath
 }
 
 jar {
