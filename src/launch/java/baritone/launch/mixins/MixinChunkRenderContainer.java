@@ -21,10 +21,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ChunkRenderContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.chunk.RenderChunk;
+import org.lwjgl.opengl.GL14;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static org.lwjgl.opengl.GL11.*;
 
 @Mixin(ChunkRenderContainer.class)
 public class MixinChunkRenderContainer {
@@ -34,7 +37,12 @@ public class MixinChunkRenderContainer {
     )
     private void preRenderChunk(RenderChunk renderChunkIn, CallbackInfo ci) {
         if (Minecraft.getMinecraft().world.getChunk(renderChunkIn.getPosition()).isEmpty()) {
-            GlStateManager.translate(0, Math.sin(System.currentTimeMillis() / 1000D + (renderChunkIn.getPosition().getX() + renderChunkIn.getPosition().getZ()) / 16D) * 4, 0);
+            GlStateManager.enableAlpha();
+            GlStateManager.enableBlend();
+            GL14.glBlendColor(0, 0, 0, 0.5F);
+            GlStateManager.tryBlendFuncSeparate(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA, GL_ONE, GL_ZERO);
+        } else {
+            GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         }
     }
 }
