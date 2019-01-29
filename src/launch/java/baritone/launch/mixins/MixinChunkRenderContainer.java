@@ -31,6 +31,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 @Mixin(ChunkRenderContainer.class)
 public class MixinChunkRenderContainer {
+
     @Inject(
             method = "preRenderChunk",
             at = @At("HEAD")

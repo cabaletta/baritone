@@ -20,36 +20,56 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
-import net.minecraft.client.renderer.chunk.ChunkRenderWorker;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.ChunkCache;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(ChunkRenderWorker.class)
-public abstract class MixinChunkRenderWorker {
-
-    @Shadow protected abstract boolean isChunkExisting(BlockPos pos, World worldIn);
+/**
+ * @author Brady
+ * @since 1/29/2019
+ */
+@Mixin(RenderChunk.class)
+public class MixinRenderChunk {
 
     @Redirect(
-            method = "processTask",
+            method = "rebuildChunk",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/renderer/chunk/ChunkRenderWorker.isChunkExisting(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/World;)Z"
+                    target = "net/minecraft/world/ChunkCache.isEmpty()Z"
             )
     )
-    private boolean isChunkExisting(ChunkRenderWorker worker, BlockPos pos, World world) {
+    private boolean isEmpty(ChunkCache chunkCache) {
         if (Baritone.settings().renderCachedChunks.get()) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {
-                return baritone.bsi.isLoaded(pos.getX(), pos.getZ());
+                return false;
             }
         }
 
-        return this.isChunkExisting(pos, world);
+        return chunkCache.isEmpty();
+    }
+
+    @Redirect(
+            method = "rebuildChunk",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/world/ChunkCache.getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/state/IBlockState;"
+            )
+    )
+    private IBlockState getBlockState(ChunkCache chunkCache, BlockPos pos) {
+        if (Baritone.settings().renderCachedChunks.get()) {
+            Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
+            IPlayerContext ctx = baritone.getPlayerContext();
+            if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {
+                return baritone.bsi.get0(pos);
+            }
+        }
+
+        return chunkCache.getBlockState(pos);
     }
 }
-
