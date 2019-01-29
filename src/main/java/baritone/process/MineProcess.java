@@ -94,14 +94,14 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (Baritone.settings().legitMine.get()) {
             addNearby();
         }
-        Goal goal = updateGoal();
-        if (goal == null) {
+        PathingCommand command = updateGoal();
+        if (command == null) {
             // none in range
             // maybe say something in chat? (ahem impact)
             cancel();
             return null;
         }
-        return new PathingCommand(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+        return command;
     }
 
     @Override
@@ -114,17 +114,18 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return "Mine " + mining;
     }
 
-    private Goal updateGoal() {
+    private PathingCommand updateGoal() {
+        boolean legit = Baritone.settings().legitMine.get();
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
             List<BlockPos> locs2 = prune(new CalculationContext(baritone), new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(ctx, loc, locs2)).toArray(Goal[]::new));
             knownOreLocations = locs2;
-            return goal;
+            return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
         // we don't know any ore locations at the moment
-        if (!Baritone.settings().legitMine.get()) {
+        if (!legit) {
             return null;
         }
         // only in non-Xray mode (aka legit mode) do we do this
@@ -149,7 +150,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 }
             };
         }
-        return branchPointRunaway;
+        return new PathingCommand(branchPointRunaway, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
 
     private void rescan(List<BlockPos> already, CalculationContext context) {

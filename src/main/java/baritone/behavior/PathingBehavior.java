@@ -30,7 +30,6 @@ import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.path.CutoffPath;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
@@ -125,7 +124,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     next = null;
                     return;
                 }
-                if (next != null && !next.getPath().positions().contains(ctx.playerFeet())) {
+                if (next != null && !next.getPath().positions().contains(ctx.playerFeet()) && !next.getPath().positions().contains(pathStart())) { // can contain either one
                     // if the current path failed, we may not actually be on the next one, so make sure
                     logDebug("Discarding next path as it does not contain current position");
                     // for example if we had a nicely planned ahead path that starts where current ends
@@ -141,16 +140,27 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     queuePathEvent(PathEvent.CONTINUING_ONTO_PLANNED_NEXT);
                     current = next;
                     next = null;
-                    current.onTick();
+                    current.onTick(); // don't waste a tick doing nothing, get started right away
                     return;
                 }
                 // at this point, current just ended, but we aren't in the goal and have no plan for the future
                 synchronized (pathCalcLock) {
                     if (inProgress != null) {
-                        queuePathEvent(PathEvent.PATH_FINISHED_NEXT_STILL_CALCULATING);
-                        // if we aren't calculating right now
-                        return;
+                        // we are calculating
+                        // are we calculating the right thing though? 🤔
+                        BetterBlockPos calcFrom = inProgress.getStart();
+                        // if current just succeeded, we should be standing in calcFrom, so that's cool and good
+                        // but if current just failed, we should discard this calculation since it doesn't start from where we're standing
+                        if (calcFrom.equals(ctx.playerFeet()) || calcFrom.equals(pathStart())) {
+                            // cool and good
+                            queuePathEvent(PathEvent.PATH_FINISHED_NEXT_STILL_CALCULATING);
+                            return;
+                        }
+                        // oh noes
+                        inProgress.cancel(); // cancellation doesn't dispatch any events
+                        inProgress = null; // this is safe since we hold both locks
                     }
+                    // we aren't calculating
                     queuePathEvent(PathEvent.CALC_STARTED);
                     findPathInNewThread(pathStart(), true);
                 }
@@ -180,11 +190,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     return;
                 }
                 if (goal == null || goal.isInGoal(current.getPath().getDest())) {
-                    // and this path dosen't get us all the way there
+                    // and this path doesn't get us all the way there
                     return;
                 }
                 if (ticksRemainingInSegment().get() < Baritone.settings().planningTickLookAhead.get()) {
-                    // and this path has 5 seconds or less left
+                    // and this path has 7.5 seconds or less left
                     logDebug("Path almost over. Planning ahead...");
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
                     findPathInNewThread(current.getPath().getDest(), false);
@@ -208,14 +218,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     break;
             }
         }
-    }
-
-    @Override
-    public Optional<Double> ticksRemainingInSegment() {
-        if (current == null) {
-            return Optional.empty();
-        }
-        return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
     }
 
     public void secretInternalSetGoal(Goal goal) {
@@ -247,11 +249,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return Optional.ofNullable(inProgress);
     }
 
-    @Override
-    public boolean isPathing() {
-        return this.current != null;
-    }
-
     public boolean isSafeToCancel() {
         return current == null || safeToCancel;
     }
@@ -274,7 +271,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (doIt) {
             secretInternalSegmentCancel();
         }
-        baritone.getPathingControlManager().cancelEverything();
+        baritone.getPathingControlManager().cancelEverything(); // regardless of if we can stop the current segment, we can still stop the processes
         return doIt;
     }
 
@@ -310,7 +307,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public void forceCancel() { // NOT exposed on public api
         cancelEverything();
         secretInternalSegmentCancel();
-        inProgress = null;
+        synchronized (pathCalcLock) {
+            inProgress = null;
+        }
     }
 
     /**
@@ -433,33 +432,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             }
 
             PathCalculationResult calcResult = pathfinder.calculate(primaryTimeout, failureTimeout);
-            Optional<IPath> path = calcResult.getPath();
-            if (Baritone.settings().cutoffAtLoadBoundary.get()) {
-                path = path.map(p -> {
-                    IPath result = p.cutoffAtLoadedChunks(context.bsi);
-
-                    if (result instanceof CutoffPath) {
-                        logDebug("Cutting off path at edge of loaded chunks");
-                        logDebug("Length decreased by " + (p.length() - result.length()));
-                    } else {
-                        logDebug("Path ends within loaded chunks");
-                    }
-
-                    return result;
-                });
-            }
-
-            Optional<PathExecutor> executor = path.map(p -> {
-                IPath result = p.staticCutoff(goal);
-
-                if (result instanceof CutoffPath) {
-                    logDebug("Static cutoff " + p.length() + " to " + result.length());
-                }
-
-                return result;
-            }).map(p -> new PathExecutor(this, p));
-
             synchronized (pathPlanLock) {
+                Optional<PathExecutor> executor = calcResult.getPath().map(p -> new PathExecutor(PathingBehavior.this, p));
                 if (current == null) {
                     if (executor.isPresent()) {
                         queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);

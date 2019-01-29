@@ -461,6 +461,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         failed = true;
     }
 
+    @Override
     public int getPosition() {
         return pathPosition;
     }
