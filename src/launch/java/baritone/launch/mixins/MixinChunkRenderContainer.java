@@ -17,6 +17,7 @@
 
 package baritone.launch.mixins;
 
+import baritone.Baritone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ChunkRenderContainer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -37,13 +38,15 @@ public class MixinChunkRenderContainer {
             at = @At("HEAD")
     )
     private void preRenderChunk(RenderChunk renderChunkIn, CallbackInfo ci) {
-        if (Minecraft.getMinecraft().world.getChunk(renderChunkIn.getPosition()).isEmpty()) {
-            GlStateManager.enableAlpha();
-            GlStateManager.enableBlend();
-            GL14.glBlendColor(0, 0, 0, 0.5F);
-            GlStateManager.tryBlendFuncSeparate(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA, GL_ONE, GL_ZERO);
-        } else {
-            GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        if (Baritone.settings().renderCachedChunks.get()) {
+            if (Minecraft.getMinecraft().world.getChunk(renderChunkIn.getPosition()).isEmpty()) {
+                GlStateManager.enableAlpha();
+                GlStateManager.enableBlend();
+                GL14.glBlendColor(0, 0, 0, 0.5F);
+                GlStateManager.tryBlendFuncSeparate(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA, GL_ONE, GL_ZERO);
+            } else {
+                GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+            }
         }
     }
 }
