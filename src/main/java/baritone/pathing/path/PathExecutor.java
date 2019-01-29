@@ -414,7 +414,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                     if (ctx.playerFeet().equals(current.getDest())) {
                         pathPosition++;
                         onChangeInPathPosition();
-                        logDirect("skip lol");
                         onTick();
                     }
                     return true;
