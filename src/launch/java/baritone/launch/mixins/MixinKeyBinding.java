@@ -34,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinKeyBinding {
 
     @Shadow
-    public int pressTime;
+    private int pressTime;
 
     @Inject(
             method = "isKeyDown",
@@ -57,7 +57,7 @@ public class MixinKeyBinding {
     private void isPressed(CallbackInfoReturnable<Boolean> cir) {
         // only the primary baritone forces keys
         Boolean force = BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this);
-        if (force != null && force == false) { // <-- cursed
+        if (force != null && !force) { // <-- cursed
             if (pressTime > 0) {
                 Helper.HELPER.logDirect("You're trying to press this mouse button but I won't let you");
                 pressTime--;
