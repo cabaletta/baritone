@@ -147,7 +147,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 synchronized (pathCalcLock) {
                     if (inProgress != null) {
                         // we are calculating
-                        // are we calculating the right thing though? 🤔
+                        // are we calculating the right thing though?
                         BetterBlockPos calcFrom = inProgress.getStart();
                         // if current just succeeded, we should be standing in calcFrom, so that's cool and good
                         // but if current just failed, we should discard this calculation since it doesn't start from where we're standing
