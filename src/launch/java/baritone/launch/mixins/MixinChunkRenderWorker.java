@@ -20,39 +20,27 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.chunk.ChunkRenderWorker;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ChunkCache;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ChunkCache.class)
-public class MixinChunkCache {
+@Mixin(ChunkRenderWorker.class)
+public class MixinChunkRenderWorker {
     @Inject(
-            method = "getBlockState",
+            method = "isChunkExisting",
             at = @At("HEAD"),
             cancellable = true
     )
-    private void getBlockState(BlockPos pos, CallbackInfoReturnable<IBlockState> ci) {
+    private void isChunkExisting(BlockPos pos, World world, CallbackInfoReturnable<Boolean> ci) {
         Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
         IPlayerContext ctx = baritone.getPlayerContext();
         if (ctx.player() != null && ctx.world() != null && baritone.bsi != null && Baritone.settings().renderCachedChunks.get()) {
-            ci.setReturnValue(baritone.bsi.get0(pos));
-        }
-    }
-
-    @Inject(
-            method = "isEmpty",
-            at = @At("HEAD"),
-            cancellable = true
-    )
-    private void isEmpty(CallbackInfoReturnable<Boolean> ci) {
-        Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
-        IPlayerContext ctx = baritone.getPlayerContext();
-        if (ctx.player() != null && ctx.world() != null && baritone.bsi != null && Baritone.settings().renderCachedChunks.get()) {
-            ci.setReturnValue(false);
+            ci.setReturnValue(baritone.bsi.isLoaded(pos.getX(), pos.getZ()));
         }
     }
 }
+

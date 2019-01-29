@@ -24,6 +24,7 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
@@ -35,6 +36,7 @@ import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
 import baritone.utils.pathing.SegmentedCalculator;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -282,6 +284,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         if (msg.equals("reset")) {
             Baritone.settings().reset();
             logDirect("Baritone settings reset");
+            return true;
+        }
+        if (msg.equals("render")) {
+            BetterBlockPos pf = ctx.playerFeet();
+            Minecraft.getMinecraft().renderGlobal.markBlockRangeForRenderUpdate(pf.x - 500, pf.y - 500, pf.z - 500, pf.x + 500, pf.y + 500, pf.z + 500);
+            logDirect("okay");
             return true;
         }
         if (msg.equals("echest")) {
