@@ -13,6 +13,7 @@
     "MixinChunkCache",
     "MixinChunkProviderClient",
     "MixinChunkProviderServer",
+    "MixinChunkRenderContainer",
     "MixinChunkRenderWorker",
     "MixinEntity",
     "MixinEntityLivingBase",
