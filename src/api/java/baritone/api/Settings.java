@@ -33,67 +33,67 @@ import java.util.function.Consumer;
  *
  * @author leijurv
  */
-public class Settings {
+public final class Settings {
 
     /**
      * Allow Baritone to break blocks
      */
-    public Setting<Boolean> allowBreak = new Setting<>(true);
+    public final Setting<Boolean> allowBreak = new Setting<>(true);
 
     /**
      * Allow Baritone to sprint
      */
-    public Setting<Boolean> allowSprint = new Setting<>(true);
+    public final Setting<Boolean> allowSprint = new Setting<>(true);
 
     /**
      * Allow Baritone to place blocks
      */
-    public Setting<Boolean> allowPlace = new Setting<>(true);
+    public final Setting<Boolean> allowPlace = new Setting<>(true);
 
     /**
      * Allow Baritone to move items in your inventory to your hotbar
      */
-    public Setting<Boolean> allowInventory = new Setting<>(false);
+    public final Setting<Boolean> allowInventory = new Setting<>(false);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited
      */
-    public Setting<Double> blockPlacementPenalty = new Setting<>(20D);
+    public final Setting<Double> blockPlacementPenalty = new Setting<>(20D);
 
     /**
      * This is just a tiebreaker to make it less likely to break blocks if it can avoid it.
      * For example, fire has a break cost of 0, this makes it nonzero, so all else being equal
      * it will take an otherwise equivalent route that doesn't require it to put out fire.
      */
-    public Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
+    public final Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
 
     /**
-     * Additional penalty for hitting the space bar (ascend, pillar, or parkour) beacuse it uses hunger
+     * Additional penalty for hitting the space bar (ascend, pillar, or parkour) because it uses hunger
      */
-    public Setting<Double> jumpPenalty = new Setting<>(2D);
+    public final Setting<Double> jumpPenalty = new Setting<>(2D);
 
     /**
      * Walking on water uses up hunger really quick, so penalize it
      */
-    public Setting<Double> walkOnWaterOnePenalty = new Setting<>(5D);
+    public final Setting<Double> walkOnWaterOnePenalty = new Setting<>(5D);
 
     /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
      * Reliability: questionable.
      */
-    public Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
+    public final Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
 
     /**
      * Allow Baritone to assume it can walk on still water just like any other block.
      * This functionality is assumed to be provided by a separate library that might have imported Baritone.
      */
-    public Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
+    public final Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
 
     /**
      * Assume step functionality; don't jump on an Ascend.
      */
-    public Setting<Boolean> assumeStep = new Setting<>(false);
+    public final Setting<Boolean> assumeStep = new Setting<>(false);
 
     /**
      * Assume safe walk functionality; don't sneak on a backplace traverse.
@@ -102,14 +102,14 @@ public class Settings {
      * it won't sneak right click, it'll just right click, which means it'll open the chest instead of placing
      * against it. That's why this defaults to off.
      */
-    public Setting<Boolean> assumeSafeWalk = new Setting<>(false);
+    public final Setting<Boolean> assumeSafeWalk = new Setting<>(false);
 
     /**
      * If true, parkour is allowed to make jumps when standing on blocks at the maximum height, so player feet is y=256
      * <p>
-     * Defaults to false because this fails on NCP
+     * Defaults to false because this fails on constantiam
      */
-    public Setting<Boolean> allowJumpAt256 = new Setting<>(false);
+    public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
     /**
      * Allow descending diagonally
@@ -118,12 +118,12 @@ public class Settings {
      * <p>
      * For a generic "take some risks" mode I'd turn on this one, parkour, and parkour place.
      */
-    public Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
+    public final Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
 
     /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
-    public Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK)
@@ -132,31 +132,37 @@ public class Settings {
     /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
      * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
+     * <p>
+     * Never turn this on lol
      */
-    public Setting<Boolean> allowVines = new Setting<>(false);
+    public final Setting<Boolean> allowVines = new Setting<>(false);
 
     /**
      * Slab behavior is complicated, disable this for higher path reliability. Leave enabled if you have bottom slabs
      * everywhere in your base.
      */
-    public Setting<Boolean> allowWalkOnBottomSlab = new Setting<>(true);
+    public final Setting<Boolean> allowWalkOnBottomSlab = new Setting<>(true);
 
     /**
      * You know what it is
      * <p>
      * But it's very unreliable and falls off when cornering like all the time so.
+     * <p>
+     * It also overshoots the landing pretty much always (making contact with the next block over), so be careful
      */
-    public Setting<Boolean> allowParkour = new Setting<>(false);
+    public final Setting<Boolean> allowParkour = new Setting<>(false);
 
     /**
-     * Like parkour, but even more unreliable!
+     * Actually pretty reliable.
+     * <p>
+     * Doesn't make it any more dangerous compared to just normal allowParkour th
      */
-    public Setting<Boolean> allowParkourPlace = new Setting<>(false);
+    public final Setting<Boolean> allowParkourPlace = new Setting<>(false);
 
     /**
      * For example, if you have Mining Fatigue or Haste, adjust the costs of breaking blocks accordingly.
      */
-    public Setting<Boolean> considerPotionEffects = new Setting<>(true);
+    public final Setting<Boolean> considerPotionEffects = new Setting<>(true);
 
     /**
      * This is the big A* setting.
@@ -173,131 +179,137 @@ public class Settings {
      * <p>
      * Finding the optimal path is worth it, so it's the default.
      */
-    public Setting<Double> costHeuristic = new Setting<>(3.563);
+    public final Setting<Double> costHeuristic = new Setting<>(3.563);
 
     // a bunch of obscure internal A* settings that you probably don't want to change
     /**
      * The maximum number of times it will fetch outside loaded or cached chunks before assuming that
      * pathing has reached the end of the known area, and should therefore stop.
      */
-    public Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
+    public final Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
 
     /**
      * Set to 1.0 to effectively disable this feature
      *
      * @see <a href="https://github.com/cabaletta/baritone/issues/18">Issue #18</a>
      */
-    public Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.5);
+    public final Setting<Double> backtrackCostFavoringCoefficient = new Setting<>(0.5);
 
     /**
      * Toggle the following 4 settings
      * <p>
-     * They have a noticable performance impact, so they default off
+     * They have a noticeable performance impact, so they default off
+     * <p>
+     * Specifically, building up the avoidance map on the main thread before pathing starts actually takes a noticeable
+     * amount of time, especially when there are a lot of mobs around, and your game jitters for like 200ms while doing so
      */
-    public Setting<Boolean> avoidance = new Setting<>(false);
+    public final Setting<Boolean> avoidance = new Setting<>(false);
+
     /**
      * Set to 1.0 to effectively disable this feature
      * <p>
      * Set below 1.0 to go out of your way to walk near mob spawners
      */
-    public Setting<Double> mobSpawnerAvoidanceCoefficient = new Setting<>(2.0);
+    public final Setting<Double> mobSpawnerAvoidanceCoefficient = new Setting<>(2.0);
 
-    public Setting<Integer> mobSpawnerAvoidanceRadius = new Setting<>(16);
+    public final Setting<Integer> mobSpawnerAvoidanceRadius = new Setting<>(16);
 
     /**
      * Set to 1.0 to effectively disable this feature
      * <p>
      * Set below 1.0 to go out of your way to walk near mobs
      */
-    public Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
+    public final Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
 
-    public Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
+    public final Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
 
     /**
      * When running a goto towards a container block (chest, ender chest, furnace, etc),
      * right click and open it once you arrive.
      */
-    public Setting<Boolean> rightClickContainerOnArrival = new Setting<>(true);
+    public final Setting<Boolean> rightClickContainerOnArrival = new Setting<>(true);
 
     /**
      * When running a goto towards a nether portal block, walk all the way into the portal
      * instead of stopping one block before.
      */
-    public Setting<Boolean> enterPortal = new Setting<>(true);
+    public final Setting<Boolean> enterPortal = new Setting<>(true);
 
     /**
      * Don't repropagate cost improvements below 0.01 ticks. They're all just floating point inaccuracies,
      * and there's no point.
      */
-    public Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
+    public final Setting<Boolean> minimumImprovementRepropagation = new Setting<>(true);
 
     /**
      * After calculating a path (potentially through cached chunks), artificially cut it off to just the part that is
      * entirely within currently loaded chunks. Improves path safety because cached chunks are heavily simplified.
+     * <p>
+     * This is much safer to leave off now, and makes pathing more efficient. More explanation in the issue.
      *
-     * @see <a href="https://github.com/cabaletta/baritone/issues/144">Issue #144</a>
+     * @see <a href="https://github.com/cabaletta/baritone/issues/114">Issue #114</a>
      */
-    public Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
+    public final Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
 
     /**
      * If a movement's cost increases by more than this amount between calculation and execution (due to changes
      * in the environment / world), cancel and recalculate
      */
-    public Setting<Double> maxCostIncrease = new Setting<>(10D);
+    public final Setting<Double> maxCostIncrease = new Setting<>(10D);
 
     /**
      * Stop 5 movements before anything that made the path COST_INF.
      * For example, if lava has spread across the path, don't walk right up to it then recalculate, it might
      * still be spreading lol
      */
-    public Setting<Integer> costVerificationLookahead = new Setting<>(5);
+    public final Setting<Integer> costVerificationLookahead = new Setting<>(5);
 
     /**
      * Static cutoff factor. 0.9 means cut off the last 10% of all paths, regardless of chunk load state
      */
-    public Setting<Double> pathCutoffFactor = new Setting<>(0.9);
+    public final Setting<Double> pathCutoffFactor = new Setting<>(0.9);
 
     /**
      * Only apply static cutoff for paths of at least this length (in terms of number of movements)
      */
-    public Setting<Integer> pathCutoffMinimumLength = new Setting<>(30);
+    public final Setting<Integer> pathCutoffMinimumLength = new Setting<>(30);
 
     /**
      * Start planning the next path once the remaining movements tick estimates sum up to less than this value
      */
-    public Setting<Integer> planningTickLookAhead = new Setting<>(150);
+    public final Setting<Integer> planningTickLookAhead = new Setting<>(150);
 
     /**
      * Default size of the Long2ObjectOpenHashMap used in pathing
      */
-    public Setting<Integer> pathingMapDefaultSize = new Setting<>(1024);
+    public final Setting<Integer> pathingMapDefaultSize = new Setting<>(1024);
 
     /**
      * Load factor coefficient for the Long2ObjectOpenHashMap used in pathing
      * <p>
      * Decrease for faster map operations, but higher memory usage
      */
-    public Setting<Float> pathingMapLoadFactor = new Setting<>(0.75f);
+    public final Setting<Float> pathingMapLoadFactor = new Setting<>(0.75f);
 
     /**
      * How far are you allowed to fall onto solid ground (without a water bucket)?
      * 3 won't deal any damage. But if you just want to get down the mountain quickly and you have
      * Feather Falling IV, you might set it a bit higher, like 4 or 5.
      */
-    public Setting<Integer> maxFallHeightNoWater = new Setting<>(3);
+    public final Setting<Integer> maxFallHeightNoWater = new Setting<>(3);
 
     /**
      * How far are you allowed to fall onto solid ground (with a water bucket)?
      * It's not that reliable, so I've set it below what would kill an unarmored player (23)
      */
-    public Setting<Integer> maxFallHeightBucket = new Setting<>(20);
+    public final Setting<Integer> maxFallHeightBucket = new Setting<>(20);
 
     /**
      * Is it okay to sprint through a descend followed by a diagonal?
      * The player overshoots the landing, but not enough to fall off. And the diagonal ensures that there isn't
      * lava or anything that's !canWalkInto in that space, so it's technically safe, just a little sketchy.
      */
-    public Setting<Boolean> allowOvershootDiagonalDescend = new Setting<>(true);
+    public final Setting<Boolean> allowOvershootDiagonalDescend = new Setting<>(true);
 
     /**
      * If your goal is a GoalBlock in an unloaded chunk, assume it's far enough away that the Y coord
@@ -306,131 +318,133 @@ public class Settings {
      * of considering the Y coord. The reasoning is that if your X and Z are 10,000 blocks away,
      * your Y coordinate's accuracy doesn't matter at all until you get much much closer.
      */
-    public Setting<Boolean> simplifyUnloadedYCoord = new Setting<>(true);
+    public final Setting<Boolean> simplifyUnloadedYCoord = new Setting<>(true);
 
     /**
      * If a movement takes this many ticks more than its initial cost estimate, cancel it
      */
-    public Setting<Integer> movementTimeoutTicks = new Setting<>(100);
+    public final Setting<Integer> movementTimeoutTicks = new Setting<>(100);
 
     /**
      * Pathing ends after this amount of time, but only if a path has been found
      * <p>
      * If no valid path (length above the minimum) has been found, pathing continues up until the failure timeout
      */
-    public Setting<Long> primaryTimeoutMS = new Setting<>(500L);
+    public final Setting<Long> primaryTimeoutMS = new Setting<>(500L);
 
     /**
      * Pathing can never take longer than this, even if that means failing to find any path at all
      */
-    public Setting<Long> failureTimeoutMS = new Setting<>(2000L);
+    public final Setting<Long> failureTimeoutMS = new Setting<>(2000L);
 
     /**
      * Planning ahead while executing a segment ends after this amount of time, but only if a path has been found
      * <p>
      * If no valid path (length above the minimum) has been found, pathing continues up until the failure timeout
      */
-    public Setting<Long> planAheadPrimaryTimeoutMS = new Setting<>(4000L);
+    public final Setting<Long> planAheadPrimaryTimeoutMS = new Setting<>(4000L);
 
     /**
      * Planning ahead while executing a segment can never take longer than this, even if that means failing to find any path at all
      */
-    public Setting<Long> planAheadFailureTimeoutMS = new Setting<>(5000L);
+    public final Setting<Long> planAheadFailureTimeoutMS = new Setting<>(5000L);
 
     /**
      * For debugging, consider nodes much much slower
      */
-    public Setting<Boolean> slowPath = new Setting<>(false);
+    public final Setting<Boolean> slowPath = new Setting<>(false);
 
     /**
      * Milliseconds between each node
      */
-    public Setting<Long> slowPathTimeDelayMS = new Setting<>(100L);
+    public final Setting<Long> slowPathTimeDelayMS = new Setting<>(100L);
 
     /**
      * The alternative timeout number when slowPath is on
      */
-    public Setting<Long> slowPathTimeoutMS = new Setting<>(40000L);
+    public final Setting<Long> slowPathTimeoutMS = new Setting<>(40000L);
 
     /**
      * The big one. Download all chunks in simplified 2-bit format and save them for better very-long-distance pathing.
      */
-    public Setting<Boolean> chunkCaching = new Setting<>(true);
+    public final Setting<Boolean> chunkCaching = new Setting<>(true);
 
     /**
      * On save, delete from RAM any cached regions that are more than 1024 blocks away from the player
      * <p>
-     * Temporarily disabled, see issue #248
+     * Temporarily disabled
+     *
+     * @see <a href="https://github.com/cabaletta/baritone/issues/248">Issue #248</a>
      */
-    public Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
+    public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
 
     /**
      * Print all the debug messages to chat
      */
-    public Setting<Boolean> chatDebug = new Setting<>(true);
+    public final Setting<Boolean> chatDebug = new Setting<>(true);
 
     /**
      * Allow chat based control of Baritone. Most likely should be disabled when Baritone is imported for use in
      * something else
      */
-    public Setting<Boolean> chatControl = new Setting<>(true);
+    public final Setting<Boolean> chatControl = new Setting<>(true);
 
     /**
      * A second override over chatControl to force it on
      */
-    public Setting<Boolean> removePrefix = new Setting<>(false);
+    public final Setting<Boolean> removePrefix = new Setting<>(false);
 
     /**
      * Render the path
      */
-    public Setting<Boolean> renderPath = new Setting<>(true);
+    public final Setting<Boolean> renderPath = new Setting<>(true);
 
     /**
      * Render the goal
      */
-    public Setting<Boolean> renderGoal = new Setting<>(true);
+    public final Setting<Boolean> renderGoal = new Setting<>(true);
 
     /**
      * Ignore depth when rendering the goal
      */
-    public Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
+    public final Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
 
     /**
      * Renders X/Z type Goals with the vanilla beacon beam effect. Combining this with
      * {@link #renderGoalIgnoreDepth} will cause strange render clipping.
      */
-    public Setting<Boolean> renderGoalXZBeacon = new Setting<>(false);
+    public final Setting<Boolean> renderGoalXZBeacon = new Setting<>(false);
 
     /**
      * Ignore depth when rendering the selection boxes (to break, to place, to walk into)
      */
-    public Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(true);
+    public final Setting<Boolean> renderSelectionBoxesIgnoreDepth = new Setting<>(true);
 
     /**
      * Ignore depth when rendering the path
      */
-    public Setting<Boolean> renderPathIgnoreDepth = new Setting<>(true);
+    public final Setting<Boolean> renderPathIgnoreDepth = new Setting<>(true);
 
     /**
      * Line width of the path when rendered, in pixels
      */
-    public Setting<Float> pathRenderLineWidthPixels = new Setting<>(5F);
+    public final Setting<Float> pathRenderLineWidthPixels = new Setting<>(5F);
 
     /**
      * Line width of the goal when rendered, in pixels
      */
-    public Setting<Float> goalRenderLineWidthPixels = new Setting<>(3F);
+    public final Setting<Float> goalRenderLineWidthPixels = new Setting<>(3F);
 
     /**
      * Start fading out the path at 20 movements ahead, and stop rendering it entirely 30 movements ahead.
      * Improves FPS.
      */
-    public Setting<Boolean> fadePath = new Setting<>(false);
+    public final Setting<Boolean> fadePath = new Setting<>(false);
 
     /**
      * Move without having to force the client-sided rotations
      */
-    public Setting<Boolean> freeLook = new Setting<>(true);
+    public final Setting<Boolean> freeLook = new Setting<>(true);
 
     /**
      * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
@@ -438,12 +452,12 @@ public class Settings {
      * At the moment this will silently set the player's rotations when using freeLook so you're not sprinting in
      * directions other than forward, which is picken up by more "advanced" anticheats like AAC, but not NCP.
      */
-    public Setting<Boolean> antiCheatCompatibility = new Setting<>(true);
+    public final Setting<Boolean> antiCheatCompatibility = new Setting<>(true);
 
     /**
      * Exclusively use cached chunks for pathing
      */
-    public Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
+    public final Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
     /**
      * 😎
@@ -453,38 +467,33 @@ public class Settings {
     /**
      * Whether or not to use the "#" command prefix
      */
-    public Setting<Boolean> prefix = new Setting<>(false);
-
-    /**
-     * {@code true}: can mine blocks when in inventory, chat, or tabbed away in ESC menu
-     */
-    public Setting<Boolean> leftClickWorkaround = new Setting<>(true);
+    public final Setting<Boolean> prefix = new Setting<>(false);
 
     /**
      * Don't stop walking forward when you need to break blocks in your way
      */
-    public Setting<Boolean> walkWhileBreaking = new Setting<>(true);
+    public final Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
     /**
-     * If we are more than 500 movements into the current path, discard the oldest segments, as they are no longer useful
+     * If we are more than 300 movements into the current path, discard the oldest segments, as they are no longer useful
      */
-    public Setting<Integer> maxPathHistoryLength = new Setting<>(300);
+    public final Setting<Integer> maxPathHistoryLength = new Setting<>(300);
 
     /**
      * If the current path is too long, cut off this many movements from the beginning.
      */
-    public Setting<Integer> pathHistoryCutoffAmount = new Setting<>(50);
+    public final Setting<Integer> pathHistoryCutoffAmount = new Setting<>(50);
 
     /**
      * Rescan for the goal once every 5 ticks.
      * Set to 0 to disable.
      */
-    public Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
+    public final Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
 
     /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
      */
-    public Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
+    public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
 
     /**
      * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.
@@ -499,54 +508,54 @@ public class Settings {
      * <p>
      * Also on cosmic prisons this should be set to true since you don't actually mine the ore it just gets replaced with stone.
      */
-    public Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(true);
+    public final Setting<Boolean> cancelOnGoalInvalidation = new Setting<>(true);
 
     /**
      * The "axis" command (aka GoalAxis) will go to a axis, or diagonal axis, at this Y level.
      */
-    public Setting<Integer> axisHeight = new Setting<>(120);
+    public final Setting<Integer> axisHeight = new Setting<>(120);
 
     /**
-     * Allow MineBehavior to use X-Ray to see where the ores are. Turn this option off to force it to mine "legit"
+     * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
      * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
-     * couldn't. If you don't want it to look like you're X-Raying, turn this off
+     * couldn't. If you don't want it to look like you're X-Raying, turn this on
      */
-    public Setting<Boolean> legitMine = new Setting<>(false);
+    public final Setting<Boolean> legitMine = new Setting<>(false);
 
     /**
      * What Y level to go to for legit strip mining
      */
-    public Setting<Integer> legitMineYLevel = new Setting<>(11);
+    public final Setting<Integer> legitMineYLevel = new Setting<>(11);
 
     /**
      * When mining block of a certain type, try to mine two at once instead of one.
      * If the block above is also a goal block, set GoalBlock instead of GoalTwoBlocks
      * If the block below is also a goal block, set GoalBlock to the position one down instead of GoalTwoBlocks
      */
-    public Setting<Boolean> forceInternalMining = new Setting<>(true);
+    public final Setting<Boolean> forceInternalMining = new Setting<>(true);
 
     /**
      * Modification to the previous setting, only has effect if forceInternalMining is true
      * If true, only apply the previous setting if the block adjacent to the goal isn't air.
      */
-    public Setting<Boolean> internalMiningAirException = new Setting<>(true);
+    public final Setting<Boolean> internalMiningAirException = new Setting<>(true);
 
     /**
      * The actual GoalNear is set this distance away from the entity you're following
      * <p>
      * For example, set followOffsetDistance to 5 and followRadius to 0 to always stay precisely 5 blocks north of your follow target.
      */
-    public Setting<Double> followOffsetDistance = new Setting<>(0D);
+    public final Setting<Double> followOffsetDistance = new Setting<>(0D);
 
     /**
-     * The actual GoalNear is set in this direction from the entity you're following
+     * The actual GoalNear is set in this direction from the entity you're following. This value is in degrees.
      */
-    public Setting<Float> followOffsetDirection = new Setting<>(0F);
+    public final Setting<Float> followOffsetDirection = new Setting<>(0F);
 
     /**
      * The radius (for the GoalNear) of how close to your target position you actually have to be
      */
-    public Setting<Integer> followRadius = new Setting<>(3);
+    public final Setting<Integer> followRadius = new Setting<>(3);
 
     /**
      * Cached chunks (regardless of if they're in RAM or saved to disk) expire and are deleted after this number of seconds
@@ -568,54 +577,55 @@ public class Settings {
      * has to build up that cache from scratch. But after it's gone through an area just once, the next time will have zero
      * backtracking, since the entire area is now known and cached.
      */
-    public Setting<Long> cachedChunksExpirySeconds = new Setting<>(-1L);
+    public final Setting<Long> cachedChunksExpirySeconds = new Setting<>(-1L);
 
     /**
      * The function that is called when Baritone will log to chat. This function can be added to
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getMinecraft().ingameGUI.getChatGUI()::printChatMessage);
+    public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getMinecraft().ingameGUI.getChatGUI()::printChatMessage);
 
     /**
      * The color of the current path
      */
-    public Setting<Color> colorCurrentPath = new Setting<>(Color.RED);
+    public final Setting<Color> colorCurrentPath = new Setting<>(Color.RED);
 
     /**
      * The color of the next path
      */
-    public Setting<Color> colorNextPath = new Setting<>(Color.MAGENTA);
+    public final Setting<Color> colorNextPath = new Setting<>(Color.MAGENTA);
 
     /**
      * The color of the blocks to break
      */
-    public Setting<Color> colorBlocksToBreak = new Setting<>(Color.RED);
+    public final Setting<Color> colorBlocksToBreak = new Setting<>(Color.RED);
 
     /**
      * The color of the blocks to place
      */
-    public Setting<Color> colorBlocksToPlace = new Setting<>(Color.GREEN);
+    public final Setting<Color> colorBlocksToPlace = new Setting<>(Color.GREEN);
 
     /**
      * The color of the blocks to walk into
      */
-    public Setting<Color> colorBlocksToWalkInto = new Setting<>(Color.MAGENTA);
+    public final Setting<Color> colorBlocksToWalkInto = new Setting<>(Color.MAGENTA);
 
     /**
      * The color of the best path so far
      */
-    public Setting<Color> colorBestPathSoFar = new Setting<>(Color.BLUE);
+    public final Setting<Color> colorBestPathSoFar = new Setting<>(Color.BLUE);
 
     /**
      * The color of the path to the most recent considered node
      */
-    public Setting<Color> colorMostRecentConsidered = new Setting<>(Color.CYAN);
+    public final Setting<Color> colorMostRecentConsidered = new Setting<>(Color.CYAN);
 
     /**
      * The color of the goal box
      */
-    public Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
+    public final Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
+
 
     /**
      * A map of lowercase setting field names to their respective setting

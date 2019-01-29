@@ -177,13 +177,6 @@ public class MovementDescend extends Movement {
             if (MovementHelper.isBottomSlab(ontoBlock)) {
                 return false; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
             }
-            if (context.hasWaterBucket && unprotectedFallHeight <= context.maxFallHeightBucket + 1) {
-                res.x = destX;
-                res.y = newY + 1;// this is the block we're falling onto, so dest is +1
-                res.z = destZ;
-                res.cost = tentativeCost + context.placeBlockCost;
-                return true;
-            }
             if (unprotectedFallHeight <= context.maxFallHeightNoWater + 1) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
                 res.x = destX;
@@ -191,6 +184,13 @@ public class MovementDescend extends Movement {
                 res.z = destZ;
                 res.cost = tentativeCost;
                 return false;
+            }
+            if (context.hasWaterBucket && unprotectedFallHeight <= context.maxFallHeightBucket + 1) {
+                res.x = destX;
+                res.y = newY + 1;// this is the block we're falling onto, so dest is +1
+                res.z = destZ;
+                res.cost = tentativeCost + context.placeBlockCost;
+                return true;
             } else {
                 return false;
             }
@@ -235,8 +235,7 @@ public class MovementDescend extends Movement {
             if (numTicks++ < 20) {
                 MovementHelper.moveTowards(ctx, state, fakeDest);
                 if (fromStart > 1.25) {
-                    state.setInput(Input.MOVE_FORWARD, false);
-                    state.setInput(Input.MOVE_BACK, true);
+                    state.getTarget().rotation = new Rotation(state.getTarget().rotation.getYaw() + 180F, state.getTarget().rotation.getPitch());
                 }
             } else {
                 MovementHelper.moveTowards(ctx, state, dest);

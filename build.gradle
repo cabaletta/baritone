@@ -99,8 +99,10 @@ mixin {
 }
 
 javadoc {
-    source = sourceSets.api.allJava
-    classpath = sourceSets.api.compileClasspath
+    options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
+    options.linkSource true
+    source += sourceSets.api.allJava
+    classpath += sourceSets.api.compileClasspath
 }
 
 jar {

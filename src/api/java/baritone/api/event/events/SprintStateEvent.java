@@ -17,27 +17,19 @@
 
 package baritone.api.event.events;
 
-import baritone.api.event.events.type.EventState;
-
 /**
  * @author Brady
- * @since 8/21/2018
+ * @since 1/18/2019
  */
-public final class PlayerUpdateEvent {
+public final class SprintStateEvent {
 
-    /**
-     * The state of the event
-     */
-    private final EventState state;
+    private Boolean state;
 
-    public PlayerUpdateEvent(EventState state) {
+    public final void setState(boolean state) {
         this.state = state;
     }
 
-    /**
-     * @return The state of the event
-     */
-    public final EventState getState() {
+    public final Boolean getState() {
         return this.state;
     }
 }

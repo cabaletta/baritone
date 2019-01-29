@@ -35,11 +35,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
     }
 
     @Override
-    public Baritone associatedWith() {
-        return baritone;
-    }
-
-    @Override
     public boolean isTemporary() {
         return false;
     }

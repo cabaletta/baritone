@@ -24,6 +24,7 @@ import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.WorldServer;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -76,7 +77,11 @@ public class WorldProvider implements IWorldProvider, Helper {
             directory = new File(directory, "baritone");
             readme = directory;
         } else { // Otherwise, the server must be remote...
-            directory = new File(Baritone.getDir(), mc.getCurrentServerData().serverIP);
+            String folderName = mc.getCurrentServerData().serverIP;
+            if (SystemUtils.IS_OS_WINDOWS) {
+                folderName = folderName.replace(":", "_");
+            }
+            directory = new File(Baritone.getDir(), folderName);
             readme = Baritone.getDir();
         }
 

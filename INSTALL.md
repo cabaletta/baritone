@@ -1,10 +1,9 @@
 # Integration between Baritone and Impact
 Impact 4.4 has Baritone included.
 
-These instructions apply to Impact 4.3 (and potentially other hacked clients).
+These instructions apply to Impact 4.3 (and potentially other "hacked clients").
 
 To run Baritone on Vanilla, just follow the instructions in the README (it's `./gradlew runClient`).
-
 
 ## An Introduction
 There are some basic steps to getting Baritone setup with Impact.
@@ -26,14 +25,7 @@ Any official release will be GPG signed by leijurv (44A3EA646EADAC6A) and ZeroMe
 The build is fully deterministic and reproducible, and you can verify Travis did it properly by running `docker build --no-cache -t cabaletta/baritone . && docker run --rm cabaletta/baritone cat /code/dist/checksums.txt` yourself and comparing the shasum. This works identically on Travis, Mac, and Linux (if you have docker on Windows, I'd be grateful if you could let me know if it works there too).
 
 ### Building Baritone yourself
-There are a few steps to this
-- Clone this repository
-- Setup the project as instructed in the README
-- Run the ``build`` gradle task. You can either do this using IntelliJ's gradle UI or through a
-command line
-  - Windows: ``gradlew build``
-  - Mac/Linux: ``./gradlew build``
-- The build should be exported into ``/build/libs/baritone-X.Y.Z.jar``
+You can either build Baritone through a command line or through IntelliJ's UI, information on that can be found [here](SETUP.md#building).
 
 ## Placing Baritone in the libraries directory
 ``/libraries`` is a neat directory in your <a href="https://minecraft.gamepedia.com/.minecraft">Minecraft Installation Directory</a>
