@@ -465,6 +465,12 @@ public final class Settings {
     public Setting<Boolean> renderCachedChunks = new Setting<>(false);
 
     /**
+     * 0.0f = not visible, fully transparent
+     * 1.0f = fully opaque
+     */
+    public Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
+
+    /**
      * Whether or not to use the "#" command prefix
      */
     public final Setting<Boolean> prefix = new Setting<>(false);
