@@ -35,6 +35,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Objects;
+
 public class MovementPillar extends Movement {
 
     public MovementPillar(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
@@ -224,7 +226,7 @@ public class MovementPillar extends Movement {
                 if (!(fr instanceof BlockAir || fr.isReplaceable(ctx.world(), src))) {
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (ctx.player().isSneaking()) { // 1 tick after we're able to place
+                } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos()))) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }
