@@ -31,7 +31,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(ChunkRenderWorker.class)
 public abstract class MixinChunkRenderWorker {
 
-    @Shadow protected abstract boolean isChunkExisting(BlockPos pos, World worldIn);
+    @Shadow
+    protected abstract boolean isChunkExisting(BlockPos pos, World worldIn);
 
     @Redirect(
             method = "processTask",
@@ -45,7 +46,7 @@ public abstract class MixinChunkRenderWorker {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {
-                return baritone.bsi.isLoaded(pos.getX(), pos.getZ());
+                return baritone.bsi.isLoaded(pos.getX(), pos.getZ()) || this.isChunkExisting(pos, world);
             }
         }
 
