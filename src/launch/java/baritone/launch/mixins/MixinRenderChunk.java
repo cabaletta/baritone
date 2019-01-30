@@ -43,15 +43,28 @@ public class MixinRenderChunk {
             )
     )
     private boolean isEmpty(ChunkCache chunkCache) {
+        if (!chunkCache.isEmpty()) {
+            return false;
+        }
         if (Baritone.settings().renderCachedChunks.get()) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {
-                return false;
+                BlockPos position = ((RenderChunk) (Object) this).getPosition();
+                // RenderChunk extends from -1,-1,-1 to +16,+16,+16
+                // then the constructor of ChunkCache extends it one more (presumably to get things like the connected status of fences? idk)
+                // so if ANY of the adjacent chunks are loaded, we are unempty
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (baritone.bsi.isLoaded(16 * dx + position.getX(), 16 * dz + position.getZ())) {
+                            return false;
+                        }
+                    }
+                }
             }
         }
 
-        return chunkCache.isEmpty();
+        return true;
     }
 
     @Redirect(
