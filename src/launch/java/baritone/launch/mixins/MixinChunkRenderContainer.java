@@ -18,11 +18,11 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
+import baritone.utils.LeijurvUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ChunkRenderContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.chunk.RenderChunk;
-import org.lwjgl.opengl.GL14;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -42,7 +42,7 @@ public class MixinChunkRenderContainer {
             if (Minecraft.getMinecraft().world.getChunk(renderChunkIn.getPosition()).isEmpty()) {
                 GlStateManager.enableAlpha();
                 GlStateManager.enableBlend();
-                GL14.glBlendColor(1, 1, 1, Baritone.settings().cachedChunksOpacity.get());
+                LeijurvUtils.updateAndGet().run();
                 GlStateManager.tryBlendFuncSeparate(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA, GL_ONE, GL_ZERO);
             } else {
                 GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
