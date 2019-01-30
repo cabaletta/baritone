@@ -174,6 +174,7 @@ public class MovementAscend extends Movement {
         if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
             return state; // don't jump while walking from a non double slab into a bottom slab
         }
+
         if (Baritone.settings().assumeStep.get() || ctx.playerFeet().equals(src.up())) {
             // no need to hit space if we're already jumping
             return state;
