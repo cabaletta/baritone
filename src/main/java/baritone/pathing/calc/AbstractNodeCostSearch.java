@@ -92,12 +92,24 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         cancelRequested = false;
         try {
             IPath path = calculate0(primaryTimeout, failureTimeout).map(IPath::postProcess).orElse(null);
-            isFinished = true;
             if (cancelRequested) {
-                return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION, path);
+                return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION);
             }
             if (path == null) {
                 return new PathCalculationResult(PathCalculationResult.Type.FAILURE);
+            }
+            int previousLength = path.length();
+            path = path.cutoffAtLoadedChunks(context.bsi);
+            if (path.length() < previousLength) {
+                Helper.HELPER.logDebug("Cutting off path at edge of loaded chunks");
+                Helper.HELPER.logDebug("Length decreased by " + (previousLength - path.length()));
+            } else {
+                Helper.HELPER.logDebug("Path ends within loaded chunks");
+            }
+            previousLength = path.length();
+            path = path.staticCutoff(goal);
+            if (path.length() < previousLength) {
+                Helper.HELPER.logDebug("Static cutoff " + previousLength + " to " + path.length());
             }
             if (goal.isInGoal(path.getDest())) {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_TO_GOAL, path);
@@ -163,7 +175,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     }
 
     @Override
-    public Optional<IPath> bestPathSoFar() {
+    public Optional<IPath> bestPathSoFar() { // TODO cleanup code duplication between here and AStarPathFinder
         if (startNode == null || bestSoFar == null) {
             return Optional.empty();
         }
@@ -188,5 +200,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
     @Override
     public final Goal getGoal() {
         return goal;
+    }
+
+    public BetterBlockPos getStart() {
+        return new BetterBlockPos(startX, startY, startZ);
     }
 }

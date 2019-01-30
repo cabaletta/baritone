@@ -20,9 +20,6 @@
 [![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-v1.0.0%3F%3F%20smh%20license%20violations-orange.svg)](https://wweclient.com/)
 [![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20integration-Soon™-red.svg)](https://github.com/fr1kin/ForgeHax)
-[![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com)
-[![forthebadge](https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg)](http://forthebadge.com)
-
 
 A Minecraft pathfinder bot. 
 
@@ -39,6 +36,8 @@ Here are some links to help to get started:
 
 - [Installation](INSTALL.md)
 
+- [Javadocs](https://baritone.leijurv.com/)
+
 # Chat control
 [Defined Here](src/main/java/baritone/utils/ExampleBaritoneControl.java)
 
@@ -48,7 +47,7 @@ Quick start example: `thisway 1000` or `goal 70` to set the goal, `path` to actu
 
 ```
 BaritoneAPI.getSettings().allowSprint.value = true;
-BaritoneAPI.getSettings().pathTimeoutMS.value = 2000L;
+BaritoneAPI.getSettings().primaryTimeoutMS.value = 2000L;
 
 BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalXZ(10000, 20000));
 ```

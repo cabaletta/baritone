@@ -272,6 +272,9 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         } else {
             sprintNextTick = shouldSprintNextTick();
+            if (!sprintNextTick) {
+                ctx.player().setSprinting(false); // letting go of control doesn't make you stop sprinting actually
+            }
             ticksOnCurrent++;
             if (ticksOnCurrent > currentMovementOriginalCostEstimate + Baritone.settings().movementTimeoutTicks.get()) {
                 // only cancel if the total time has exceeded the initial estimate
@@ -391,29 +394,32 @@ public class PathExecutor implements IPathExecutor, Helper {
 
         // however, descend doesn't request sprinting, beceause it doesn't know the context of what movement comes after it
         IMovement current = path.movements().get(pathPosition);
-        if (current instanceof MovementDescend && pathPosition < path.length() - 2) {
+        if (current instanceof MovementDescend) {
 
             if (((MovementDescend) current).safeMode()) {
                 logDebug("Sprinting would be unsafe");
                 return false;
             }
 
-            IMovement next = path.movements().get(pathPosition + 1);
-            if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
-                // a descend then an ascend in the same direction
-                pathPosition++;
-                // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't possible to repeat, since it's asymmetric
-                logDebug("Skipping descend to straight ascend");
-                return true;
-            }
-            if (canSprintInto(ctx, current, next)) {
-                if (ctx.playerFeet().equals(current.getDest())) {
+            if (pathPosition < path.length() - 2) {
+                IMovement next = path.movements().get(pathPosition + 1);
+                if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
+                    // a descend then an ascend in the same direction
                     pathPosition++;
-                    onChangeInPathPosition();
+                    // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't possible to repeat, since it's asymmetric
+                    logDebug("Skipping descend to straight ascend");
+                    return true;
                 }
-                return true;
+                if (canSprintInto(ctx, current, next)) {
+                    if (ctx.playerFeet().equals(current.getDest())) {
+                        pathPosition++;
+                        onChangeInPathPosition();
+                        onTick();
+                    }
+                    return true;
+                }
+                //logDebug("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
             }
-            //logDebug("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
         }
         if (current instanceof MovementAscend && pathPosition != 0) {
             IMovement prev = path.movements().get(pathPosition - 1);
@@ -455,6 +461,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         failed = true;
     }
 
+    @Override
     public int getPosition() {
         return pathPosition;
     }

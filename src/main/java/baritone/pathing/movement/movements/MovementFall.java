@@ -30,6 +30,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.pathing.MutableMoveResult;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -79,7 +80,9 @@ public class MovementFall extends Movement {
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest));
         Rotation targetRotation = null;
-        if (!MovementHelper.isWater(ctx, dest) && willPlaceBucket() && !playerFeet.equals(dest)) {
+        Block destBlock = ctx.world().getBlockState(dest).getBlock();
+        boolean isWater = destBlock == Blocks.WATER || destBlock == Blocks.FLOWING_WATER;
+        if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().provider.isNether()) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
@@ -100,8 +103,8 @@ public class MovementFall extends Movement {
         } else {
             state.setTarget(new MovementTarget(toDest, false));
         }
-        if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || MovementHelper.isWater(ctx, dest))) { // 0.094 because lilypads
-            if (MovementHelper.isWater(ctx, dest)) {
+        if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || isWater)) { // 0.094 because lilypads
+            if (isWater) { // only match water, not flowing water (which we cannot pick up with a bucket)
                 if (InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                     ctx.player().inventory.currentItem = ctx.player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                     if (ctx.player().motionY >= 0) {
@@ -132,7 +135,7 @@ public class MovementFall extends Movement {
             double dist = Math.abs(avoid.getX() * (destCenter.x - avoid.getX() / 2.0 - ctx.player().posX)) + Math.abs(avoid.getZ() * (destCenter.z - avoid.getZ() / 2.0 - ctx.player().posZ));
             if (dist < 0.6) {
                 state.setInput(Input.MOVE_FORWARD, true);
-            } else {
+            } else if (!ctx.player().onGround) {
                 state.setInput(Input.SNEAK, false);
             }
         }

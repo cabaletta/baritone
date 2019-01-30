@@ -137,7 +137,7 @@ public class MovementDescend extends Movement {
             IBlockState ontoBlock = context.get(destX, newY, destZ);
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
-            if (ontoBlock.getBlock() == Blocks.WATER && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) {
+            if ((ontoBlock.getBlock() == Blocks.WATER || ontoBlock.getBlock() == Blocks.FLOWING_WATER) && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) {
                 // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
                 // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
                 if (context.assumeWalkOnWater) {
@@ -157,9 +157,6 @@ public class MovementDescend extends Movement {
                 res.cost = tentativeCost;// TODO incorporate water swim up cost?
                 return false;
             }
-            if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
-                return false;
-            }
             if (unprotectedFallHeight <= 11 && (ontoBlock.getBlock() == Blocks.VINE || ontoBlock.getBlock() == Blocks.LADDER)) {
                 // if fall height is greater than or equal to 11, we don't actually grab on to vines or ladders. the more you know
                 // this effectively "resets" our falling speed
@@ -177,13 +174,6 @@ public class MovementDescend extends Movement {
             if (MovementHelper.isBottomSlab(ontoBlock)) {
                 return false; // falling onto a half slab is really glitchy, and can cause more fall damage than we'd expect
             }
-            if (context.hasWaterBucket && unprotectedFallHeight <= context.maxFallHeightBucket + 1) {
-                res.x = destX;
-                res.y = newY + 1;// this is the block we're falling onto, so dest is +1
-                res.z = destZ;
-                res.cost = tentativeCost + context.placeBucketCost();
-                return true;
-            }
             if (unprotectedFallHeight <= context.maxFallHeightNoWater + 1) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
                 res.x = destX;
@@ -191,6 +181,13 @@ public class MovementDescend extends Movement {
                 res.z = destZ;
                 res.cost = tentativeCost;
                 return false;
+            }
+            if (context.hasWaterBucket && unprotectedFallHeight <= context.maxFallHeightBucket + 1) {
+                res.x = destX;
+                res.y = newY + 1;// this is the block we're falling onto, so dest is +1
+                res.z = destZ;
+                res.cost = tentativeCost + context.placeBucketCost();
+                return true;
             } else {
                 return false;
             }
@@ -235,8 +232,7 @@ public class MovementDescend extends Movement {
             if (numTicks++ < 20) {
                 MovementHelper.moveTowards(ctx, state, fakeDest);
                 if (fromStart > 1.25) {
-                    state.setInput(Input.MOVE_FORWARD, false);
-                    state.setInput(Input.MOVE_BACK, true);
+                    state.getTarget().rotation = new Rotation(state.getTarget().rotation.getYaw() + 180F, state.getTarget().rotation.getPitch());
                 }
             } else {
                 MovementHelper.moveTowards(ctx, state, dest);

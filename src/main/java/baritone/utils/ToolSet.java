@@ -135,6 +135,7 @@ public class ToolSet {
      * Calculates how long would it take to mine the specified block given the best tool
      * in this toolset is used. A negative value is returned if the specified block is unbreakable.
      *
+     * @param item  the item to mine it with
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */

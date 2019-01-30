@@ -37,7 +37,13 @@ public interface IPathingBehavior extends IBehavior {
      *
      * @return The estimated remaining ticks in the current segment.
      */
-    Optional<Double> ticksRemainingInSegment();
+    default Optional<Double> ticksRemainingInSegment() {
+        IPathExecutor current = getCurrent();
+        if (current == null) {
+            return Optional.empty();
+        }
+        return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
+    }
 
     /**
      * @return The current pathing goal
@@ -47,7 +53,9 @@ public interface IPathingBehavior extends IBehavior {
     /**
      * @return Whether or not a path is currently being executed.
      */
-    boolean isPathing();
+    default boolean isPathing() {
+        return getCurrent() != null;
+    }
 
     /**
      * Cancels the pathing behavior or the current path calculation, and all processes that could be controlling path.

@@ -26,4 +26,6 @@ import baritone.api.pathing.calc.IPath;
 public interface IPathExecutor {
 
     IPath getPath();
+
+    int getPosition();
 }
