@@ -48,6 +48,7 @@ apply plugin: 'org.spongepowered.mixin'
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
+    options.encoding = "UTF-8" // allow emoji in comments :^)
 }
 
 sourceSets {
@@ -101,6 +102,7 @@ mixin {
 javadoc {
     options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
     options.linkSource true
+    options.encoding "UTF-8" // allow emoji in comments :^)
     source += sourceSets.api.allJava
     classpath += sourceSets.api.compileClasspath
 }

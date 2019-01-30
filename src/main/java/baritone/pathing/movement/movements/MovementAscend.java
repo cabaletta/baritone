@@ -21,7 +21,6 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -32,10 +31,6 @@ import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-
-import java.util.Objects;
 
 public class MovementAscend extends Movement {
 
@@ -162,53 +157,28 @@ public class MovementAscend extends Movement {
 
         IBlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
         if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
-            for (int i = 0; i < 5; i++) {
-                BlockPos anAgainst = positionToPlace.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
-                if (anAgainst.equals(src)) {
-                    continue;
-                }
-                if (MovementHelper.canPlaceAgainst(ctx, anAgainst)) {
-                    if (!MovementHelper.throwaway(ctx, true)) {//get ready to place a throwaway block
-                        return state.setStatus(MovementStatus.UNREACHABLE);
-                    }
-                    double faceX = (dest.getX() + anAgainst.getX() + 1.0D) * 0.5D;
-                    double faceY = (dest.getY() + anAgainst.getY()) * 0.5D;
-                    double faceZ = (dest.getZ() + anAgainst.getZ() + 1.0D) * 0.5D;
-                    state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations()), true));
-                    EnumFacing side = ctx.objectMouseOver().sideHit;
-
-                    ctx.getSelectedBlock().ifPresent(selectedBlock -> {
-                        if (Objects.equals(selectedBlock, anAgainst) && selectedBlock.offset(side).equals(positionToPlace)) {
-                            ticksWithoutPlacement++;
-                            state.setInput(Input.SNEAK, true);
-                            if (ctx.player().isSneaking()) {
-                                state.setInput(Input.CLICK_RIGHT, true);
-                            }
-                            if (ticksWithoutPlacement > 10) {
-                                // After 10 ticks without placement, we might be standing in the way, move back
-                                state.setInput(Input.MOVE_BACK, true);
-                            }
-                        } else {
-                            state.setInput(Input.CLICK_LEFT, true); // break whatever replaceable block is in the way
-                        }
-                        //System.out.println("Trying to look at " + anAgainst + ", actually looking at" + selectedBlock);
-                    });
-                    return state;
+            ticksWithoutPlacement++;
+            if (MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), false) == PlaceResult.READY_TO_PLACE) {
+                state.setInput(Input.SNEAK, true);
+                if (ctx.player().isSneaking()) {
+                    state.setInput(Input.CLICK_RIGHT, true);
                 }
             }
-            return state.setStatus(MovementStatus.UNREACHABLE);
+            if (ticksWithoutPlacement > 10) {
+                // After 10 ticks without placement, we might be standing in the way, move back
+                state.setInput(Input.MOVE_BACK, true);
+            }
+
+            return state;
         }
         MovementHelper.moveTowards(ctx, state, dest);
         if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
             return state; // don't jump while walking from a non double slab into a bottom slab
         }
 
-        if (Baritone.settings().assumeStep.get()) {
+        if (Baritone.settings().assumeStep.get() || ctx.playerFeet().equals(src.up())) {
+            // no need to hit space if we're already jumping
             return state;
-        }
-
-        if (ctx.playerFeet().equals(src.up())) {
-            return state; // no need to hit space if we're already jumping
         }
 
         if (headBonkClear()) {

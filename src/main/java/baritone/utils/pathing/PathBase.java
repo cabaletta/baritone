@@ -17,6 +17,7 @@
 
 package baritone.utils.pathing;
 
+import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
@@ -27,6 +28,9 @@ import net.minecraft.util.math.BlockPos;
 public abstract class PathBase implements IPath {
     @Override
     public PathBase cutoffAtLoadedChunks(Object bsi0) { // <-- cursed cursed cursed
+        if (!Baritone.settings().cutoffAtLoadBoundary.get()) {
+            return this;
+        }
         BlockStateInterface bsi = (BlockStateInterface) bsi0;
         for (int i = 0; i < positions().size(); i++) {
             BlockPos pos = positions().get(i);

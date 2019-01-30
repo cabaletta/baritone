@@ -81,7 +81,8 @@ public class MovementFall extends Movement {
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest));
         Rotation targetRotation = null;
         Block destBlock = ctx.world().getBlockState(dest).getBlock();
-        if (destBlock != Blocks.WATER && destBlock != Blocks.FLOWING_WATER && willPlaceBucket() && !playerFeet.equals(dest)) {
+        boolean isWater = destBlock == Blocks.WATER || destBlock == Blocks.FLOWING_WATER;
+        if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().provider.isNether()) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
@@ -102,8 +103,8 @@ public class MovementFall extends Movement {
         } else {
             state.setTarget(new MovementTarget(toDest, false));
         }
-        if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || destBlock == Blocks.WATER)) { // 0.094 because lilypads
-            if (destBlock == Blocks.WATER) { // only match water, not flowing water (which we cannot pick up with a bucket)
+        if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || isWater)) { // 0.094 because lilypads
+            if (isWater) { // only match water, not flowing water (which we cannot pick up with a bucket)
                 if (InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                     ctx.player().inventory.currentItem = ctx.player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                     if (ctx.player().motionY >= 0) {

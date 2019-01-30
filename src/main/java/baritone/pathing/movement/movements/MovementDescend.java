@@ -137,7 +137,7 @@ public class MovementDescend extends Movement {
             IBlockState ontoBlock = context.get(destX, newY, destZ);
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
-            if (ontoBlock.getBlock() == Blocks.WATER && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) {
+            if ((ontoBlock.getBlock() == Blocks.WATER || ontoBlock.getBlock() == Blocks.FLOWING_WATER) && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) {
                 // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
                 // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
                 if (context.assumeWalkOnWater) {
@@ -155,9 +155,6 @@ public class MovementDescend extends Movement {
                 res.y = newY;
                 res.z = destZ;
                 res.cost = tentativeCost;// TODO incorporate water swim up cost?
-                return false;
-            }
-            if (ontoBlock.getBlock() == Blocks.FLOWING_WATER) {
                 return false;
             }
             if (unprotectedFallHeight <= 11 && (ontoBlock.getBlock() == Blocks.VINE || ontoBlock.getBlock() == Blocks.LADDER)) {

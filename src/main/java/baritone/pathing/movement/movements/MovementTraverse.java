@@ -36,7 +36,6 @@ import net.minecraft.block.BlockFenceGate;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -136,7 +135,7 @@ public class MovementTraverse extends Movement {
                 }
                 // now that we've checked all possible directions to side place, we actually need to backplace
                 if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && !((BlockSlab) srcDown).isDouble())) {
-                    return COST_INF; // can't sneak and backplace against soul sand or half slabs =/
+                    return COST_INF; // can't sneak and backplace against soul sand or half slabs (regardless of whether it's top half or bottom half) =/
                 }
                 if (srcDown == Blocks.FLOWING_WATER || srcDown == Blocks.WATER) {
                     return COST_INF; // this is obviously impossible
@@ -247,53 +246,45 @@ public class MovementTraverse extends Movement {
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
-            for (int i = 0; i < 5; i++) {
-                BlockPos against1 = dest.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
-                if (against1.equals(src)) {
-                    continue;
-                }
-                against1 = against1.down();
-                if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                    if (!MovementHelper.throwaway(ctx, true)) { // get ready to place a throwaway block
-                        logDebug("bb pls get me some blocks. dirt or cobble");
-                        return state.setStatus(MovementStatus.UNREACHABLE);
-                    }
-                    if (!Baritone.settings().assumeSafeWalk.get()) {
-                        state.setInput(Input.SNEAK, true);
-                    }
-                    Block standingOn = BlockStateInterface.get(ctx, ctx.playerFeet().down()).getBlock();
-                    if (standingOn.equals(Blocks.SOUL_SAND) || standingOn instanceof BlockSlab) { // see issue #118
-                        double dist = Math.max(Math.abs(dest.getX() + 0.5 - ctx.player().posX), Math.abs(dest.getZ() + 0.5 - ctx.player().posZ));
-                        if (dist < 0.85) { // 0.5 + 0.3 + epsilon
-                            MovementHelper.moveTowards(ctx, state, dest);
-                            return state.setInput(Input.MOVE_FORWARD, false)
-                                    .setInput(Input.MOVE_BACK, true);
-                        }
-                    }
-                    state.setInput(Input.MOVE_BACK, false);
-                    double faceX = (dest.getX() + against1.getX() + 1.0D) * 0.5D;
-                    double faceY = (dest.getY() + against1.getY()) * 0.5D;
-                    double faceZ = (dest.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                    state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations()), true));
-
-                    EnumFacing side = ctx.objectMouseOver().sideHit;
-                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), against1) && (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) && ctx.getSelectedBlock().get().offset(side).equals(positionToPlace)) {
-                        return state.setInput(Input.CLICK_RIGHT, true);
-                    }
-                    //System.out.println("Trying to look at " + against1 + ", actually looking at" + RayTraceUtils.getSelectedBlock());
-                    return state.setInput(Input.CLICK_LEFT, true);
+            Block standingOn = BlockStateInterface.get(ctx, ctx.playerFeet().down()).getBlock();
+            if (standingOn.equals(Blocks.SOUL_SAND) || standingOn instanceof BlockSlab) { // see issue #118
+                double dist = Math.max(Math.abs(dest.getX() + 0.5 - ctx.player().posX), Math.abs(dest.getZ() + 0.5 - ctx.player().posZ));
+                if (dist < 0.85) { // 0.5 + 0.3 + epsilon
+                    MovementHelper.moveTowards(ctx, state, dest);
+                    return state.setInput(Input.MOVE_FORWARD, false)
+                            .setInput(Input.MOVE_BACK, true);
                 }
             }
-            if (!Baritone.settings().assumeSafeWalk.get()) {
+            double dist1 = Math.max(Math.abs(ctx.player().posX - (dest.getX() + 0.5D)), Math.abs(ctx.player().posZ - (dest.getZ() + 0.5D)));
+            PlaceResult p = MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), false);
+            if ((p == PlaceResult.READY_TO_PLACE || dist1 < 0.6) && !Baritone.settings().assumeSafeWalk.get()) {
                 state.setInput(Input.SNEAK, true);
+            }
+            switch (p) {
+                case READY_TO_PLACE: {
+                    if (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) {
+                        state.setInput(Input.CLICK_RIGHT, true);
+                    }
+                    return state;
+                }
+                case ATTEMPTING: {
+                    if (dist1 > 0.83) {
+                        // might need to go forward a bit
+                        float yaw = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations()).getYaw();
+                        if (Math.abs(state.getTarget().rotation.getYaw() - yaw) < 0.1) {
+                            // but only if our attempted place is straight ahead
+                            return state.setInput(Input.MOVE_FORWARD, true);
+                        }
+                    } else if (ctx.playerRotations().isReallyCloseTo(state.getTarget().rotation)) {
+                        // well i guess theres something in the way
+                        return state.setInput(Input.CLICK_LEFT, true);
+                    }
+                    return state;
+                }
             }
             if (whereAmI.equals(dest)) {
                 // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
-                if (!MovementHelper.throwaway(ctx, true)) {// get ready to place a throwaway block
-                    logDebug("bb pls get me some blocks. dirt or cobble");
-                    return state.setStatus(MovementStatus.UNREACHABLE);
-                }
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;
                 double faceY = (dest.getY() + src.getY() - 1.0D) * 0.5D;
                 double faceZ = (dest.getZ() + src.getZ() + 1.0D) * 0.5D;
@@ -302,25 +293,26 @@ public class MovementTraverse extends Movement {
 
                 Rotation backToFace = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
                 float pitch = backToFace.getPitch();
-                double dist = Math.max(Math.abs(ctx.player().posX - faceX), Math.abs(ctx.player().posZ - faceZ));
-                if (dist < 0.29) {
+                double dist2 = Math.max(Math.abs(ctx.player().posX - faceX), Math.abs(ctx.player().posZ - faceZ));
+                if (dist2 < 0.29) { // see issue #208
                     float yaw = RotationUtils.calcRotationFromVec3d(VecUtils.getBlockPosCenter(dest), ctx.playerHead(), ctx.playerRotations()).getYaw();
                     state.setTarget(new MovementState.MovementTarget(new Rotation(yaw, pitch), true));
                     state.setInput(Input.MOVE_BACK, true);
                 } else {
                     state.setTarget(new MovementState.MovementTarget(backToFace, true));
                 }
-                state.setInput(Input.SNEAK, true);
                 if (Objects.equals(ctx.getSelectedBlock().orElse(null), goalLook)) {
                     return state.setInput(Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
-                return state.setInput(Input.CLICK_LEFT, true);
-            } else {
-                MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+                if (ctx.playerRotations().isReallyCloseTo(state.getTarget().rotation)) {
+                    state.setInput(Input.CLICK_LEFT, true);
+                }
                 return state;
-                // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
             }
+            MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+            return state;
+            // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
         }
     }
 
