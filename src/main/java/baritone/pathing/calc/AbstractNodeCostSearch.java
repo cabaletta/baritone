@@ -34,7 +34,7 @@ import java.util.Optional;
  *
  * @author leijurv
  */
-public abstract class AbstractNodeCostSearch implements IPathFinder {
+public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
 
     protected final int startX;
     protected final int startY;
@@ -53,7 +53,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     protected PathNode mostRecentConsidered;
 
-    protected PathNode[] bestSoFar;
+    protected final PathNode[] bestSoFar = new PathNode[COEFFICIENTS.length];
 
     private volatile boolean isFinished;
 
@@ -63,13 +63,23 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
      * This is really complicated and hard to explain. I wrote a comment in the old version of MineBot but it was so
      * long it was easier as a Google Doc (because I could insert charts).
      *
-     * @see <a href="https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit"></a>
+     * @see <a href="https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit">here</a>
      */
-    protected static final double[] COEFFICIENTS = {1.5, 2, 2.5, 3, 4, 5, 10}; // big TODO tune
+    protected static final double[] COEFFICIENTS = {1.5, 2, 2.5, 3, 4, 5, 10};
+
     /**
      * If a path goes less than 5 blocks and doesn't make it to its goal, it's not worth considering.
      */
-    protected final static double MIN_DIST_PATH = 5;
+    protected static final double MIN_DIST_PATH = 5;
+
+    /**
+     * there are floating point errors caused by random combinations of traverse and diagonal over a flat area
+     * that means that sometimes there's a cost improvement of like 10 ^ -16
+     * it's not worth the time to update the costs, decrease-key the heap, potentially repropagate, etc
+     * <p>
+     * who cares about a hundredth of a tick? that's half a millisecond for crying out loud!
+     */
+    protected static final double MIN_IMPROVEMENT = 0.01;
 
     AbstractNodeCostSearch(int startX, int startY, int startZ, Goal goal, CalculationContext context) {
         this.startX = startX;
@@ -170,25 +180,43 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
         return Optional.ofNullable(mostRecentConsidered).map(node -> new Path(startNode, node, 0, goal, context));
     }
 
-    protected int mapSize() {
-        return map.size();
+    @Override
+    public Optional<IPath> bestPathSoFar() {
+        return bestSoFar(false, 0);
     }
 
-    @Override
-    public Optional<IPath> bestPathSoFar() { // TODO cleanup code duplication between here and AStarPathFinder
+    protected Optional<IPath> bestSoFar(boolean logInfo, int numNodes) {
         if (startNode == null || bestSoFar == null) {
             return Optional.empty();
         }
-        for (int i = 0; i < bestSoFar.length; i++) {
+        double bestDist = 0;
+        for (int i = 0; i < COEFFICIENTS.length; i++) {
             if (bestSoFar[i] == null) {
                 continue;
             }
-            if (getDistFromStartSq(bestSoFar[i]) > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
-                return Optional.of(new Path(startNode, bestSoFar[i], 0, goal, context));
+            double dist = getDistFromStartSq(bestSoFar[i]);
+            if (dist > bestDist) {
+                bestDist = dist;
+            }
+            if (dist > MIN_DIST_PATH * MIN_DIST_PATH) { // square the comparison since distFromStartSq is squared
+                if (logInfo) {
+                    if (COEFFICIENTS[i] >= 3) {
+                        System.out.println("Warning: cost coefficient is greater than three! Probably means that");
+                        System.out.println("the path I found is pretty terrible (like sneak-bridging for dozens of blocks)");
+                        System.out.println("But I'm going to do it anyway, because yolo");
+                    }
+                    System.out.println("Path goes for " + Math.sqrt(dist) + " blocks");
+                    logDebug("A* cost coefficient " + COEFFICIENTS[i]);
+                }
+                return Optional.of(new Path(startNode, bestSoFar[i], numNodes, goal, context));
             }
         }
         // instead of returning bestSoFar[0], be less misleading
         // if it actually won't find any path, don't make them think it will by rendering a dark blue that will never actually happen
+        if (logInfo) {
+            logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
+            logDebug("No path found =(");
+        }
         return Optional.empty();
     }
 
@@ -204,5 +232,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder {
 
     public BetterBlockPos getStart() {
         return new BetterBlockPos(startX, startY, startZ);
+    }
+
+    protected int mapSize() {
+        return map.size();
     }
 }
