@@ -36,24 +36,39 @@ public class OpenSetsTest {
         this.size = size;
     }
 
+    private static final ArrayList<Long> insertions = new ArrayList<>();
+    private static final ArrayList<Long> removal1 = new ArrayList<>();
+    private static final ArrayList<Long> removal2 = new ArrayList<>();
+
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         ArrayList<Object[]> testSizes = new ArrayList<>();
-        for (int size = 1; size < 20; size++) {
+        /*for (int size = 1; size < 20; size++) {
             testSizes.add(new Object[]{size});
         }
         for (int size = 100; size <= 1000; size += 100) {
             testSizes.add(new Object[]{size});
         }
         testSizes.add(new Object[]{5000});
-        testSizes.add(new Object[]{10000});
+        testSizes.add(new Object[]{10000});*/
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
+        testSizes.add(new Object[]{100000});
         return testSizes;
     }
 
     private static void removeAndTest(int amount, IOpenSet[] test, Optional<Collection<PathNode>> mustContain) {
         double[][] results = new double[test.length][amount];
         for (int i = 0; i < test.length; i++) {
-            long before = System.nanoTime() / 1000000L;
+            long before = System.nanoTime();
             for (int j = 0; j < amount; j++) {
                 PathNode pn = test[i].removeLowest();
                 if (mustContain.isPresent() && !mustContain.get().contains(pn)) {
@@ -61,7 +76,13 @@ public class OpenSetsTest {
                 }
                 results[i][j] = pn.combinedCost;
             }
-            System.out.println(test[i].getClass() + " " + (System.nanoTime() / 1000000L - before));
+            long time = System.nanoTime() - before;
+            System.out.println(test[i].getClass() + " " + (time));
+            if (mustContain.isPresent()) {
+                removal1.add(time);
+            } else {
+                removal2.add(time);
+            }
         }
         for (int j = 0; j < amount; j++) {
             for (int i = 1; i < test.length; i++) {
@@ -75,10 +96,16 @@ public class OpenSetsTest {
 
     @Test
     public void testSize() {
+        try {
+            System.gc();
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println("Testing size " + size);
         // Include LinkedListOpenSet even though it's not performant because I absolutely trust that it behaves properly
         // I'm really testing the heap implementations against it as the ground truth
-        IOpenSet[] test = new IOpenSet[]{new BinaryHeapOpenSet(), new LinkedListOpenSet()};
+        IOpenSet[] test = new IOpenSet[]{new BinaryHeapOpenSet()/*, new LinkedListOpenSet()*/};
         for (IOpenSet set : test) {
             assertTrue(set.isEmpty());
         }
@@ -116,10 +143,12 @@ public class OpenSetsTest {
 
         System.out.println("Insertion");
         for (IOpenSet set : test) {
-            long before = System.nanoTime() / 1000000L;
+            long before = System.nanoTime();
             for (int i = 0; i < size; i++)
                 set.insert(toInsert[i]);
-            System.out.println(set.getClass() + " " + (System.nanoTime() / 1000000L - before));
+            long time = System.nanoTime() - before;
+            System.out.println(set.getClass() + " " + (time));
+            insertions.add(time);
             //all three take either 0 or 1ms to insert up to 10,000 nodes
             //linkedlist takes 0ms most often (because there's no array resizing or allocation there, just pointer shuffling)
         }
@@ -166,5 +195,18 @@ public class OpenSetsTest {
         for (IOpenSet set : test) {
             assertTrue(set.isEmpty());
         }
+
+
+        printo(insertions);
+        printo(removal1);
+        printo(removal2);
+
+    }
+
+    private static void printo(ArrayList<Long> data) {
+        if (data.size() < 3) {
+            return;
+        }
+        System.out.println(data.subList(2, data.size()).stream().mapToLong(x -> x).average().getAsDouble() / 1000000D);
     }
 }
