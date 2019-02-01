@@ -18,6 +18,7 @@
 package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
@@ -100,8 +101,16 @@ public class MixinEntityPlayerSP {
     )
     private boolean isKeyDown(KeyBinding keyBinding) {
         SprintStateEvent event = new SprintStateEvent();
-        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerSprintState(event);
-        return event.getState() == null ? keyBinding.isKeyDown() : event.getState();
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        baritone.getGameEventHandler().onPlayerSprintState(event);
+        if (event.getState() != null) {
+            return event.getState();
+        }
+        if (baritone == BaritoneAPI.getProvider().getPrimaryBaritone()) {
+            // hitting control shouldn't make all bots sprint
+            return false;
+        }
+        return keyBinding.isKeyDown();
     }
 
     @Inject(
