@@ -106,7 +106,7 @@ public class MixinEntityPlayerSP {
         if (event.getState() != null) {
             return event.getState();
         }
-        if (baritone == BaritoneAPI.getProvider().getPrimaryBaritone()) {
+        if (baritone != BaritoneAPI.getProvider().getPrimaryBaritone()) {
             // hitting control shouldn't make all bots sprint
             return false;
         }
