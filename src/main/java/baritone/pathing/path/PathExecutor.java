@@ -377,20 +377,20 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private boolean shouldSprintNextTick() {
+        boolean requested = behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT);
+
+        // we'll take it from here, no need for minecraft to see we're holding down control and sprint for us
+        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
+
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
         if (!new CalculationContext(behavior.baritone).canSprint) {
-            behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
             return false;
         }
 
         // if the movement requested sprinting, then we're done
-        if (behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT)) {
-            behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
+        if (requested) {
             return true;
         }
-
-        // we'll take it from here, no need for minecraft to see we're holding down control and sprint for us
-        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
 
         // however, descend doesn't request sprinting, beceause it doesn't know the context of what movement comes after it
         IMovement current = path.movements().get(pathPosition);
