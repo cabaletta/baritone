@@ -23,6 +23,8 @@
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
     "MixinRenderChunk",
+    "MixinRenderList",
+    "MixinVboRenderList",
     "MixinWorldClient"
   ]
 }

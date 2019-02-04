@@ -18,11 +18,8 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ChunkRenderContainer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.chunk.RenderChunk;
-import org.lwjgl.opengl.GL14;
+import net.minecraft.client.renderer.VboRenderList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,19 +27,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static org.lwjgl.opengl.GL11.*;
 
-@Mixin(ChunkRenderContainer.class)
-public class MixinChunkRenderContainer {
+@Mixin(VboRenderList.class)
+public class MixinVboRenderList {
 
     @Inject(
-            method = "preRenderChunk",
-            at = @At("HEAD")
+            method = "renderChunkLayer",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/renderer/GlStateManager.popMatrix()V"
+            )
     )
-    private void preRenderChunk(RenderChunk renderChunkIn, CallbackInfo ci) {
-        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getMinecraft().world.getChunk(renderChunkIn.getPosition()).isEmpty()) {
-            GlStateManager.enableAlpha();
-            GlStateManager.enableBlend();
-            GL14.glBlendColor(0, 0, 0, Baritone.settings().cachedChunksOpacity.get());
-            GlStateManager.tryBlendFuncSeparate(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA, GL_ONE, GL_ZERO);
+    private void renderChunkLayer(CallbackInfo info) {
+        if (Baritone.settings().renderCachedChunks.get()) {
+            // reset the blend func to normal (not dependent on constant alpha)
+            GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         }
     }
 }

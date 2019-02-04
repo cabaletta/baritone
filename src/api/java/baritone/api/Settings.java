@@ -460,7 +460,13 @@ public final class Settings {
     public final Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
     /**
-     * 😎
+     * 😎 Render cached chunks as semitransparent.
+     * <p>
+     * Can be very useful on servers with low render distance.
+     * <p>
+     * Note that flowing water is cached as AVOID, which is rendered as lava. As you get closer, you may therefore see lava falls being replaced with water falls.
+     * <p>
+     * SOLID is rendered as stone in the overworld, netherrack in the nether, and end stone in the end
      */
     public Setting<Boolean> renderCachedChunks = new Setting<>(false);
 
