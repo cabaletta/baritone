@@ -298,8 +298,8 @@ public class ProguardTask extends BaritoneGradleTask {
                 .start();
 
         // We can't do output inherit process I/O with gradle for some reason and have it work, so we have to do this
-        this.printOutputLog(p.getInputStream());
-        this.printOutputLog(p.getErrorStream());
+        this.printOutputLog(p.getInputStream(), System.out);
+        this.printOutputLog(p.getErrorStream(), System.err);
 
         // Halt the current thread until the process is complete, if the exit code isn't 0, throw an exception
         int exitCode = p.waitFor();
@@ -308,12 +308,12 @@ public class ProguardTask extends BaritoneGradleTask {
         }
     }
 
-    private void printOutputLog(InputStream stream) {
+    private void printOutputLog(InputStream stream, PrintStream outerr) {
         new Thread(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
+                    outerr.println(line);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
