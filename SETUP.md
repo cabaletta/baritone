@@ -65,7 +65,7 @@ $ gradlew build
 
   ![Image](https://i.imgur.com/PE6r9iN.png)
 
-- Right click on **build** and press **Run**
+- Double click on **build** to run it
 
 ## Artifacts
 
