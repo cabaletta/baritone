@@ -249,6 +249,8 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         }
         if (!movement.calculatedWhileLoaded() && currentCost - currentMovementOriginalCostEstimate > Baritone.settings().maxCostIncrease.get() && canCancel) {
+            // don't do this if the movement was calculated while loaded
+            // that means that this isn't a cache error, it's just part of the path interfering with a later part
             logDebug("Original cost " + currentMovementOriginalCostEstimate + " current cost " + currentCost + ". Cancelling.");
             cancel();
             return true;
