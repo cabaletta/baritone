@@ -462,7 +462,9 @@ public final class Settings {
     /**
      * 😎 Render cached chunks as semitransparent.
      * <p>
-     * Can be very useful on servers with low render distance.
+     * Can be very useful on servers with low render distance. After enabling, you may need to reload the world in order for it to have an effect
+     * (e.g. disconnect and reconnect, enter then exit the nether, die and respawn, etc). This may literally kill your FPS and CPU because
+     * every chunk gets recompiled twice as much as normal, since the cached version comes into range, then the normal one comes from the server for real.
      * <p>
      * Note that flowing water is cached as AVOID, which is rendered as lava. As you get closer, you may therefore see lava falls being replaced with water falls.
      * <p>
