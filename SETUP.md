@@ -1,7 +1,7 @@
 # Setup
 
 ## Prebuilt
-[Releases](https://github.com/cabaletta/baritone/releases)
+Download from the [Releases](https://github.com/cabaletta/baritone/releases)
 
 Not always completely up to date with latest features.
 
