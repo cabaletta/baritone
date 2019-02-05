@@ -460,7 +460,7 @@ public final class Settings {
     public final Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
     /**
-     * 😎 Render cached chunks as semitransparent.
+     * 😎 Render cached chunks as semitransparent. Doesn't work with OptiFine 😭
      * <p>
      * Can be very useful on servers with low render distance. After enabling, you may need to reload the world in order for it to have an effect
      * (e.g. disconnect and reconnect, enter then exit the nether, die and respawn, etc). This may literally kill your FPS and CPU because
