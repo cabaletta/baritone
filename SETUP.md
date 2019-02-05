@@ -1,5 +1,13 @@
 # Setup
 
+## Prebuilt
+[Releases](https://github.com/cabaletta/baritone/releases)
+
+Not always completely up to date with latest features.
+
+The forge release (currently `baritone-forge-1.1.0.jar`) can simply be added as a Forge mod. However, it is not fully compatible with the latest version of Forge. `freeLook` was broken in Forge 14.23.4.2744. You should use Forge 14.23.4.2743 or **older** with Baritone. Newer versions of Forge "work", sort of, but Baritone's movement becomes unreliable and `freeLook` must be off.
+
+## Build it yourself
 - Clone or download Baritone
 
   ![Image](https://i.imgur.com/kbqBtoN.png)
@@ -69,8 +77,9 @@ $ gradlew build
 
 ## Artifacts
 
-Building Baritone will result in 3 artifacts created in the ``dist`` directory.
+Building Baritone will result in 4 artifacts created in the ``dist`` directory.
 
+- **Forge**: Forge mod
 - **API**: Only the non-api packages are obfuscated. This should be used in environments where other mods would like to use Baritone's features.
 - **Standalone**: Everything is obfuscated. This should be used in environments where there are no other mods present that would like to use Baritone's features.
 - **Unoptimized**: Nothing is obfuscated. This shouldn't be used ever in production.
