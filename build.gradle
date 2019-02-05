@@ -113,7 +113,6 @@ jar {
     reproducibleFileOrder = true
 }
 
-
 jar {
     manifest {
         attributes(
