@@ -481,7 +481,7 @@ public final class Settings {
     /**
      * Whether or not to use the "#" command prefix
      */
-    public final Setting<Boolean> prefix = new Setting<>(false);
+    public final Setting<Boolean> prefixControl = new Setting<>(true);
 
     /**
      * Don't stop walking forward when you need to break blocks in your way
