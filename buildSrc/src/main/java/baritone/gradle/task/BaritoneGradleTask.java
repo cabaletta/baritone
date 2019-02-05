@@ -66,7 +66,7 @@ class BaritoneGradleTask extends DefaultTask {
         this.artifactUnoptimizedPath = this.getBuildFile(formatVersion(ARTIFACT_UNOPTIMIZED));
         this.artifactApiPath         = this.getBuildFile(formatVersion(ARTIFACT_API));
         this.artifactStandalonePath  = this.getBuildFile(formatVersion(ARTIFACT_STANDALONE));
-        this.artifactForgePath = this.getBuildFile(formatVersion(ARTIFACT_FORGE));
+        this.artifactForgePath       = this.getBuildFile(formatVersion(ARTIFACT_FORGE));
 
         this.proguardOut = this.getTemporaryFile(PROGUARD_EXPORT_PATH);
 
