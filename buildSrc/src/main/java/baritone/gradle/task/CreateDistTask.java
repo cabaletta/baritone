@@ -57,7 +57,7 @@ public class CreateDistTask extends BaritoneGradleTask {
         Files.copy(this.artifactApiPath,         api,         REPLACE_EXISTING);
         Files.copy(this.artifactStandalonePath,  standalone,  REPLACE_EXISTING);
         Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
-        Files.copy(this.artifactForgePath,       forge, REPLACE_EXISTING);
+        Files.copy(this.artifactForgePath,       forge,       REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
         List<String> shasum = Stream.of(api, standalone, unoptimized, forge)

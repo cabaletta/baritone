@@ -176,9 +176,7 @@ public class ProguardTask extends BaritoneGradleTask {
             // Find the library jar file, and copy it to tempLibraries
             for (File file : pair.getLeft().files(pair.getRight())) {
                 if (file.getName().startsWith(lib)) {
-                    System.out.println(lib);
                     if (lib.contains("mixin")) {
-
                         mixin = file;
                     }
                     Files.copy(file.toPath(), getTemporaryFile("tempLibraries/" + lib + ".jar"), REPLACE_EXISTING);
