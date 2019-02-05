@@ -43,6 +43,8 @@ Here are some links to help to get started:
 # Chat control
 [Defined Here](src/main/java/baritone/utils/ExampleBaritoneControl.java)
 
+`help` for help.
+
 Quick start example: `thisway 1000` or `goal 70` to set the goal, `path` to actually start pathing. Also try `mine diamond_ore`. `cancel` to cancel.
 
 On v1.1.0 and newer: Put a `#` in front so that if you make a typo it doesn't go into public chat (anything beginning with `#` isn't sent).
