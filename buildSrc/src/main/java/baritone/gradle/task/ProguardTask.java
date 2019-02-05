@@ -59,6 +59,8 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private List<String> requiredLibraries;
 
+    private File mixin;
+
     @TaskAction
     protected void exec() throws Exception {
         super.verifyArtifacts();
@@ -71,6 +73,7 @@ public class ProguardTask extends BaritoneGradleTask {
         acquireDependencies();
         proguardApi();
         proguardStandalone();
+        createForge();
         cleanup();
     }
 
@@ -79,7 +82,7 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.artifactUnoptimizedPath);
         }
 
-        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString());
+        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString(), Optional.empty());
     }
 
     private void downloadProguard() throws Exception {
@@ -173,9 +176,17 @@ public class ProguardTask extends BaritoneGradleTask {
             // Find the library jar file, and copy it to tempLibraries
             for (File file : pair.getLeft().files(pair.getRight())) {
                 if (file.getName().startsWith(lib)) {
+                    System.out.println(lib);
+                    if (lib.contains("mixin")) {
+
+                        mixin = file;
+                    }
                     Files.copy(file.toPath(), getTemporaryFile("tempLibraries/" + lib + ".jar"), REPLACE_EXISTING);
                 }
             }
+        }
+        if (mixin == null) {
+            throw new IllegalStateException("Unable to find mixin jar");
         }
     }
 
@@ -264,12 +275,16 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private void proguardApi() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString(), Optional.empty());
     }
 
     private void proguardStandalone() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString(), Optional.empty());
+    }
+
+    private void createForge() throws Exception {
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgePath.toString(), Optional.of(mixin));
     }
 
     private void cleanup() {

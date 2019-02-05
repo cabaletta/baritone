@@ -45,6 +45,7 @@ public class CreateDistTask extends BaritoneGradleTask {
         Path api         = getRelativeFile("dist/" + formatVersion(ARTIFACT_API));
         Path standalone  = getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE));
         Path unoptimized = getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED));
+        Path forge       = getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE));
 
         // NIO will not automatically create directories
         Path dir = getRelativeFile("dist/");
@@ -56,9 +57,10 @@ public class CreateDistTask extends BaritoneGradleTask {
         Files.copy(this.artifactApiPath,         api,         REPLACE_EXISTING);
         Files.copy(this.artifactStandalonePath,  standalone,  REPLACE_EXISTING);
         Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
+        Files.copy(this.artifactForgePath,       forge, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
-        List<String> shasum = Stream.of(api, standalone, unoptimized)
+        List<String> shasum = Stream.of(api, standalone, unoptimized, forge)
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 
