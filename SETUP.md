@@ -5,7 +5,9 @@
 
 Not always completely up to date with latest features.
 
-The forge release (currently `baritone-forge-1.1.0.jar`) can simply be added as a Forge mod. However, it is not fully compatible with the latest version of Forge. `freeLook` was broken in Forge 14.23.4.2744. You should use Forge 14.23.4.2743 or **older** with Baritone. Newer versions of Forge "work", sort of, but Baritone's movement becomes unreliable and `freeLook` must be off.
+The forge release (currently `baritone-forge-1.1.3.jar`) can simply be added as a Forge mod.
+
+Previously (Baritone v1.1.2 and below), it was not fully compatible with the latest version of Forge. `freeLook` was broken in Forge 14.23.4.2744. Forge 14.23.4.2743 or **older** worked with Baritone v1.1.2 and lower. Newer versions of Forge "worked", sort of, but Baritone's movement became unreliable and `freeLook` must be off.
 
 ## Build it yourself
 - Clone or download Baritone
