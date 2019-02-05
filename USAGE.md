@@ -66,7 +66,7 @@ Baritone is trying to right click to place a block there, but it can't since the
 ## Why doesn't Baritone respond to any of my chat commands?
 This could be one of many things.
 
-First, make sure it's actually installed.
+First, make sure it's actually installed. An easy way to check is seeing if it created the folder `baritone` in your Minecraft folder.
 
 Second, make sure that you're using the prefix properly, and that chat control is enabled in the way you expect.
 
