@@ -505,6 +505,11 @@ public final class Settings {
     public final Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
 
     /**
+     * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
+     */
+    public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
+
+    /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);

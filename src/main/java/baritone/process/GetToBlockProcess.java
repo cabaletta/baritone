@@ -18,10 +18,7 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalComposite;
-import baritone.api.pathing.goals.GoalGetToBlock;
-import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.*;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -44,6 +41,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
 
     private Block gettingTo;
     private List<BlockPos> knownLocations;
+    private BlockPos start;
 
     private int tickCount = 0;
 
@@ -55,6 +53,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     public void getToBlock(Block block) {
         onLostControl();
         gettingTo = block;
+        start = ctx.playerFeet();
         rescan(new ArrayList<>(), new CalculationContext(baritone));
     }
 
@@ -69,6 +68,14 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
         if (knownLocations.isEmpty()) {
+            if (Baritone.settings().exploreForBlocks.get()) {
+                return new PathingCommand(new GoalRunAway(1, start) {
+                    @Override
+                    public boolean isInGoal(int x, int y, int z) {
+                        return false;
+                    }
+                }, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+            }
             logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
             if (isSafeToCancel) {
                 onLostControl();
@@ -106,6 +113,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     public void onLostControl() {
         gettingTo = null;
         knownLocations = null;
+        start = null;
         baritone.getInputOverrideHandler().clearAllKeys();
     }
 
