@@ -60,7 +60,6 @@ public class Determinizer {
                 if (entry.getName().equals("META-INF/fml_cache_class_versions.json")) {
                     continue;
                 }
-
                 JarEntry clone = new JarEntry(entry.getName());
                 clone.setTime(42069);
                 jos.putNextEntry(clone);
