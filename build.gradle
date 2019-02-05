@@ -60,7 +60,7 @@ sourceSets {
 minecraft {
     version = '1.12.2'
     mappings = 'stable_39'
-    tweakClass = 'baritone.launch.BaritoneTweaker'
+    tweakClass = 'org.spongepowered.asm.launch.MixinTweaker'
     runDir = 'run'
 
     // The sources jar should use SRG names not MCP to ensure compatibility with all mappings
@@ -111,6 +111,15 @@ jar {
     from sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+
+jar {
+    manifest {
+        attributes(
+                'MixinConfigs': 'mixins.baritone.json'
+        )
+    }
 }
 
 task proguard(type: ProguardTask) {
