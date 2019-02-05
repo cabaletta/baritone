@@ -60,12 +60,22 @@ public class Determinizer {
                 if (entry.getName().equals("META-INF/fml_cache_class_versions.json")) {
                     continue;
                 }
+
                 JarEntry clone = new JarEntry(entry.getName());
                 clone.setTime(42069);
                 jos.putNextEntry(clone);
                 if (entry.getName().endsWith(".refmap.json")) {
                     JsonObject object = new JsonParser().parse(new InputStreamReader(jarFile.getInputStream(entry))).getAsJsonObject();
                     jos.write(writeSorted(object).getBytes());
+                } else if (entry.getName().equals("META-INF/MANIFEST.MF")) {
+                    ByteArrayOutputStream cancer = new ByteArrayOutputStream();
+                    copy(jarFile.getInputStream(entry), cancer);
+                    String manifest = new String(cancer.toByteArray());
+                    if (!manifest.contains("baritone.launch.BaritoneTweaker")) {
+                        throw new IllegalStateException("unable to replace");
+                    }
+                    manifest = manifest.replace("baritone.launch.BaritoneTweaker", "org.spongepowered.asm.launch.MixinTweaker");
+                    jos.write(manifest.getBytes());
                 } else {
                     copy(jarFile.getInputStream(entry), jos);
                 }

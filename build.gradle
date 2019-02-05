@@ -60,7 +60,7 @@ sourceSets {
 minecraft {
     version = '1.12.2'
     mappings = 'stable_39'
-    tweakClass = 'org.spongepowered.asm.launch.MixinTweaker'
+    tweakClass = 'baritone.launch.BaritoneTweaker'
     runDir = 'run'
 
     // The sources jar should use SRG names not MCP to ensure compatibility with all mappings
