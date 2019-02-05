@@ -22,9 +22,9 @@ Baritone uses A*, with some modifications:
 - **Backtrack cost favoring** While calculating the next segment, Baritone favors backtracking its current segment. The cost is decreased heavily, but is still positive (this won't cause it to backtrack if it doesn't need to). This allows it to splice and jump onto the next segment as early as possible, if the next segment begins with a backtrack of the current one. <a href="https://www.youtube.com/watch?v=CGiMcb8-99Y">Example</a>
 - **Backtrack detection and pausing** While path calculation happens on a separate thread, the main game thread has access to the latest node considered, and the best path so far (those are rendered light blue and dark blue respectively). When the current best path (rendered dark blue) passes through the player's current position on the current path segment, path execution is paused (if it's safe to do so), because there's no point continuing forward if we're about to turn around and go back that same way. Note that the current best path as reported by the path calculation thread takes into account the incremental cost backoff system, so it's accurate to what the path calculation thread will actually pick once it finishes.
 
-# Configuring Baritone
-All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>.
-To change a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `pathTimeoutMS 250`). It's case insensitive.
+# Chat control
+
+- [Baritone chat control usage](USAGE.md)
 
 # Goals
 The pathing goal can be set to any of these options:

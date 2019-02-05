@@ -84,5 +84,5 @@ The final step is "registering" the Baritone library with Impact, so that it loa
 - You can now launch Impact 4.3 as normal, and Baritone should start up
  
  ## How to use Baritone
- Instructions on how to use Baritone are limited, and you may have to read a little bit of code (Really nothing much
-  just plain English), you can view that <a href="https://github.com/cabaletta/baritone#chat-control">here</a>.
+
+- [Baritone chat control usage](USAGE.md)
