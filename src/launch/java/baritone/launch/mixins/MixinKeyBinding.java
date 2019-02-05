@@ -18,7 +18,6 @@
 package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
-import baritone.utils.Helper;
 import net.minecraft.client.settings.KeyBinding;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -49,7 +48,7 @@ public class MixinKeyBinding {
         }
     }
 
-    @Inject(
+    /*@Inject(
             method = "isPressed",
             at = @At("HEAD"),
             cancellable = true
@@ -64,5 +63,5 @@ public class MixinKeyBinding {
             }
             cir.setReturnValue(force); // :sunglasses:
         }
-    }
+    }*/
 }
