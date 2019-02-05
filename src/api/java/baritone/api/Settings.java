@@ -479,6 +479,11 @@ public final class Settings {
     public Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
 
     /**
+     * If true, Baritone will not allow you to left or right click while pathing
+     */
+    public Setting<Boolean> suppressClicks = new Setting<>(false);
+
+    /**
      * Whether or not to use the "#" command prefix
      */
     public final Setting<Boolean> prefixControl = new Setting<>(true);
