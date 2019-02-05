@@ -95,7 +95,7 @@ dependencies {
 }
 
 mixin {
-    defaultObfuscationEnv notch
+    defaultObfuscationEnv searge
     add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
 
