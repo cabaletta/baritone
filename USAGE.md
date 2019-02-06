@@ -1,6 +1,6 @@
 (assuming you already have Baritone [set up](SETUP.md))
 
-#Don't speak english?
+# Don't speak english?
 	- Translation of this guide in [french](USAGE.md))
 
 # Prefix
