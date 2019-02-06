@@ -460,9 +460,33 @@ public final class Settings {
     public final Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
     /**
+     * 😎 Render cached chunks as semitransparent. Doesn't work with OptiFine 😭
+     * <p>
+     * Can be very useful on servers with low render distance. After enabling, you may need to reload the world in order for it to have an effect
+     * (e.g. disconnect and reconnect, enter then exit the nether, die and respawn, etc). This may literally kill your FPS and CPU because
+     * every chunk gets recompiled twice as much as normal, since the cached version comes into range, then the normal one comes from the server for real.
+     * <p>
+     * Note that flowing water is cached as AVOID, which is rendered as lava. As you get closer, you may therefore see lava falls being replaced with water falls.
+     * <p>
+     * SOLID is rendered as stone in the overworld, netherrack in the nether, and end stone in the end
+     */
+    public Setting<Boolean> renderCachedChunks = new Setting<>(false);
+
+    /**
+     * 0.0f = not visible, fully transparent
+     * 1.0f = fully opaque
+     */
+    public Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
+
+    /**
+     * If true, Baritone will not allow you to left or right click while pathing
+     */
+    public Setting<Boolean> suppressClicks = new Setting<>(false);
+
+    /**
      * Whether or not to use the "#" command prefix
      */
-    public final Setting<Boolean> prefix = new Setting<>(false);
+    public final Setting<Boolean> prefixControl = new Setting<>(true);
 
     /**
      * Don't stop walking forward when you need to break blocks in your way
@@ -484,6 +508,11 @@ public final class Settings {
      * Set to 0 to disable.
      */
     public final Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
+
+    /**
+     * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
+     */
+    public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
 
     /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
@@ -638,7 +667,7 @@ public final class Settings {
         }
     }
 
-    public class Setting<T> {
+    public final class Setting<T> {
         public T value;
         public final T defaultValue;
         private String name;

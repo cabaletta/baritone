@@ -155,7 +155,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 synchronized (pathCalcLock) {
                     if (inProgress != null) {
                         // we are calculating
-                        // are we calculating the right thing though?
+                        // are we calculating the right thing though? 🤔
                         BetterBlockPos calcFrom = inProgress.getStart();
                         // if current just succeeded, we should be standing in calcFrom, so that's cool and good
                         // but if current just failed, we should discard this calculation since it doesn't start from where we're standing
@@ -201,8 +201,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // and this path doesn't get us all the way there
                     return;
                 }
-                if (ticksRemainingInSegment().get() < Baritone.settings().planningTickLookAhead.get()) {
+                if (ticksRemainingInSegment(false).get() < Baritone.settings().planningTickLookAhead.get()) {
                     // and this path has 7.5 seconds or less left
+                    // don't include the current movement so a very long last movement (e.g. descend) doesn't trip it up
+                    // if we actually included current, it wouldn't start planning ahead until the last movement was done, if the last movement took more than 7.5 seconds on its own
                     logDebug("Path almost over. Planning ahead...");
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
                     findPathInNewThread(current.getPath().getDest(), false, context);

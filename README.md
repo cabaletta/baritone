@@ -28,6 +28,8 @@ Baritone is the pathfinding system used in [Impact](https://impactdevelopment.gi
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
 
+Have committed at least once a day for the last 6 months =D 🦀
+
 Here are some links to help to get started:
 
 - [Features](FEATURES.md)
@@ -39,9 +41,8 @@ Here are some links to help to get started:
 - [Javadocs](https://baritone.leijurv.com/)
 
 # Chat control
-[Defined Here](src/main/java/baritone/utils/ExampleBaritoneControl.java)
 
-Quick start example: `thisway 1000` or `goal 70` to set the goal, `path` to actually start pathing. Also try `mine diamond_ore`. `cancel` to cancel.
+- [Baritone chat control usage](USAGE.md)
 
 # API example
 

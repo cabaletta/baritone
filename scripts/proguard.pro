@@ -12,6 +12,9 @@
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
+# lwjgl is weird
+-dontwarn org.lwjgl.opengl.GL14
+
 -keep class baritone.api.** { *; } # this is the keep api
 
 # service provider needs these class names

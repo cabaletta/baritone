@@ -1,5 +1,32 @@
 # Setup
 
+## Prebuilt
+(not always completely up to date with latest features)
+
+Download from the [Releases](https://github.com/cabaletta/baritone/releases)
+
+The Forge releases can simply be added as a Forge mod.
+
+If another one of your Forge mods has a Baritone integration, you want `baritone-api-forge-VERSION.jar`. Otherwise, you want `baritone-standalone-forge-VERSION.jar`
+
+Previously (Baritone v1.1.2 and below), it was not fully compatible with the latest version of Forge. `freeLook` was broken in Forge 14.23.4.2744. Forge 14.23.4.2743 or **older** worked with Baritone v1.1.2 and lower. Newer versions of Forge "worked", sort of, but Baritone's movement became unreliable and `freeLook` must be off.
+
+## Artifacts
+
+Building Baritone will result in 5 artifacts created in the ``dist`` directory. These are the same as the artifacts created in the [releases](https://github.com/cabaletta/baritone/releases).
+
+- **API**: Only the non-api packages are obfuscated. This should be used in environments where other mods would like to use Baritone's features.
+- **Forge API**: Same as API, but packaged for Forge. This should be used where another mod has a Baritone integration.
+- **Standalone**: Everything is obfuscated. This should be used in environments where there are no other mods present that would like to use Baritone's features.
+- **Forge Standalone**: Same as Standalone, but packaged for Forge. This should be used when Baritone is your only Forge mod, or none of your other Forge mods integrate with Baritone.
+- **Unoptimized**: Nothing is obfuscated. This shouldn't be used ever in production.
+
+## More Info
+To replace out Impact 4.4's Baritone build with a customized one, switch to the `impact4.4-compat` branch, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.0.0/baritone-api-1.0.0.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:1.0.0"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
+
+Impact 4.4 **only** works with builds from the quite outdated `impact4.4-compat` branch. If you must have the latest Baritone features with Impact, and can't wait for 4.5, consider creating a standalone (non forge) build then adding it to Impact 4.**3** via the instructions in [Install](INSTALL.md).
+
+## Build it yourself
 - Clone or download Baritone
 
   ![Image](https://i.imgur.com/kbqBtoN.png)
@@ -65,15 +92,4 @@ $ gradlew build
 
   ![Image](https://i.imgur.com/PE6r9iN.png)
 
-- Right click on **build** and press **Run**
-
-## Artifacts
-
-Building Baritone will result in 3 artifacts created in the ``dist`` directory.
-
-- **API**: Only the non-api packages are obfuscated. This should be used in environments where other mods would like to use Baritone's features.
-- **Standalone**: Everything is obfuscated. This should be used in environments where there are no other mods present that would like to use Baritone's features.
-- **Unoptimized**: Nothing is obfuscated. This shouldn't be used ever in production.
-
-## More Info
-To replace out Impact 4.4's Baritone build with a customized one, switch to the `impact4.4-compat` branch, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.0.0/baritone-api-1.0.0.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:1.0.0"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
+- Double click on **build** to run it

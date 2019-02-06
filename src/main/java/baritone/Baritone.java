@@ -26,10 +26,7 @@ import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
-import baritone.utils.BaritoneAutoTest;
-import baritone.utils.ExampleBaritoneControl;
-import baritone.utils.InputOverrideHandler;
-import baritone.utils.PathingControlManager;
+import baritone.utils.*;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
@@ -87,6 +84,8 @@ public class Baritone implements IBaritone {
 
     private IPlayerContext playerContext;
     private WorldProvider worldProvider;
+
+    public BlockStateInterface bsi;
 
     Baritone() {
         this.gameEventHandler = new GameEventHandler(this);

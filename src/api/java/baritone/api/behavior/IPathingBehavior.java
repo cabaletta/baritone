@@ -38,11 +38,24 @@ public interface IPathingBehavior extends IBehavior {
      * @return The estimated remaining ticks in the current segment.
      */
     default Optional<Double> ticksRemainingInSegment() {
+        return ticksRemainingInSegment(true);
+    }
+
+    /**
+     * Returns the estimated remaining ticks in the current pathing
+     * segment. Given that the return type is an optional, {@link Optional#empty()}
+     * will be returned in the case that there is no current segment being pathed.
+     *
+     * @param includeCurrentMovement whether or not to include the entirety of the cost of the currently executing movement in the total
+     * @return The estimated remaining ticks in the current segment.
+     */
+    default Optional<Double> ticksRemainingInSegment(boolean includeCurrentMovement) {
         IPathExecutor current = getCurrent();
         if (current == null) {
             return Optional.empty();
         }
-        return Optional.of(current.getPath().ticksRemainingFrom(current.getPosition()));
+        int start = includeCurrentMovement ? current.getPosition() : current.getPosition() + 1;
+        return Optional.of(current.getPath().ticksRemainingFrom(start));
     }
 
     /**

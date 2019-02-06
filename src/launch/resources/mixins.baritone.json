@@ -12,7 +12,8 @@
     "MixinBlockPos",
     "MixinChunkProviderClient",
     "MixinChunkProviderServer",
-    "MixinEntity",
+    "MixinChunkRenderContainer",
+    "MixinChunkRenderWorker",
     "MixinEntityLivingBase",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
@@ -20,6 +21,9 @@
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
+    "MixinRenderChunk",
+    "MixinRenderList",
+    "MixinVboRenderList",
     "MixinWorldClient"
   ]
 }

@@ -17,6 +17,7 @@
 
 package baritone.launch.mixins;
 
+import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.utils.Helper;
 import net.minecraft.client.settings.KeyBinding;
@@ -45,6 +46,9 @@ public class MixinKeyBinding {
         // only the primary baritone forces keys
         Boolean force = BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this);
         if (force != null) {
+            if (!force && !Baritone.settings().suppressClicks.get()) {
+                return;
+            }
             cir.setReturnValue(force); // :sunglasses:
         }
     }
@@ -57,9 +61,10 @@ public class MixinKeyBinding {
     private void isPressed(CallbackInfoReturnable<Boolean> cir) {
         // only the primary baritone forces keys
         Boolean force = BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this);
-        if (force != null && !force) { // <-- cursed
+        if (force != null && !force && Baritone.settings().suppressClicks.get()) { // <-- cursed
             if (pressTime > 0) {
-                Helper.HELPER.logDirect("You're trying to press this mouse button but I won't let you");
+                Helper.HELPER.logDirect("You're trying to press this mouse button but I won't let you.");
+                Helper.HELPER.logDirect("Turn off the suppressClicks setting to allow clicking while pathing.");
                 pressTime--;
             }
             cir.setReturnValue(force); // :sunglasses:

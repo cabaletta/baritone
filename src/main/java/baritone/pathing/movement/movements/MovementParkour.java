@@ -189,6 +189,11 @@ public class MovementParkour extends Movement {
             logDebug("Pausing parkour since hand is active");
             return state;
         }
+        if (ctx.playerFeet().y < src.y) {
+            // we have fallen
+            logDebug("sorry");
+            return state.setStatus(MovementStatus.UNREACHABLE);
+        }
         if (dist >= 4) {
             state.setInput(Input.SPRINT, true);
         }

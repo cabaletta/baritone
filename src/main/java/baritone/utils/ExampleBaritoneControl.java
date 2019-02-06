@@ -24,6 +24,7 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
@@ -36,6 +37,7 @@ import baritone.process.CustomGoalProcess;
 import baritone.utils.pathing.SegmentedCalculator;
 import baritone.utils.schematic.AirSchematic;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -86,21 +88,19 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
+        String msg = event.getMessage();
+        if (Baritone.settings().prefixControl.get() && msg.startsWith(COMMAND_PREFIX)) {
+            if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
+                logDirect("Invalid command");
+            }
+            event.cancel(); // always cancel if using prefixControl
+            return;
+        }
         if (!Baritone.settings().chatControl.get() && !Baritone.settings().removePrefix.get()) {
             return;
         }
-        String msg = event.getMessage();
-        if (Baritone.settings().prefix.get()) {
-            if (msg.startsWith(COMMAND_PREFIX)) {
-                if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
-                    logDirect("Invalid command");
-                }
-                event.cancel(); // always cancel if using prefix
-            }
-        } else {
-            if (runCommand(msg)) {
-                event.cancel();
-            }
+        if (runCommand(msg)) {
+            event.cancel();
         }
     }
 
@@ -228,6 +228,15 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             return true;
         }
+        if (msg.equals("version")) {
+            String version = ExampleBaritoneControl.class.getPackage().getImplementationVersion();
+            if (version == null) {
+                logDirect("No version detected. Either dev environment or broken install.");
+            } else {
+                logDirect("You are using Baritone v" + version);
+            }
+            return true;
+        }
         if (msg.equals("repack") || msg.equals("rescan")) {
             ChunkProviderClient cli = (ChunkProviderClient) ctx.world().getChunkProvider();
             int playerChunkX = ctx.playerFeet().getX() >> 4;
@@ -323,6 +332,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         if (msg.equals("reset")) {
             Baritone.settings().reset();
             logDirect("Baritone settings reset");
+            return true;
+        }
+        if (msg.equals("render")) {
+            BetterBlockPos pf = ctx.playerFeet();
+            Minecraft.getMinecraft().renderGlobal.markBlockRangeForRenderUpdate(pf.x - 500, pf.y - 500, pf.z - 500, pf.x + 500, pf.y + 500, pf.z + 500);
+            logDirect("okay");
             return true;
         }
         if (msg.equals("echest")) {

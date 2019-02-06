@@ -282,6 +282,8 @@ public class MovementTraverse extends Movement {
                     }
                     return state;
                 }
+                default:
+                    break;
             }
             if (whereAmI.equals(dest)) {
                 // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
