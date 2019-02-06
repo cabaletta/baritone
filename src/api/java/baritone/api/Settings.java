@@ -667,7 +667,7 @@ public final class Settings {
         }
     }
 
-    public class Setting<T> {
+    public final class Setting<T> {
         public T value;
         public final T defaultValue;
         private String name;
