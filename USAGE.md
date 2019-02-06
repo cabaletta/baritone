@@ -1,5 +1,8 @@
 (assuming you already have Baritone [set up](SETUP.md))
 
+#Don't speak english?
+	- Translation of this guide in [french](USAGE.md))
+
 # Prefix
 
 Baritone commands can by default be typed in the chatbox. However if you make a typo, like typing "gola 10000 10000" instead of goal it goes into public chat, which is bad.
