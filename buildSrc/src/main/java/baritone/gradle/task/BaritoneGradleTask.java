@@ -34,8 +34,6 @@ import java.util.List;
  */
 class BaritoneGradleTask extends DefaultTask {
 
-    protected static final JsonParser PARSER = new JsonParser();
-
     protected static final String
             PROGUARD_ZIP                    = "proguard.zip",
             PROGUARD_JAR                    = "proguard.jar",
@@ -45,28 +43,28 @@ class BaritoneGradleTask extends DefaultTask {
             PROGUARD_STANDALONE_CONFIG      = "standalone.pro",
             PROGUARD_EXPORT_PATH            = "proguard_out.jar",
 
-            VERSION_MANIFEST = "version_manifest.json",
-
             TEMP_LIBRARY_DIR = "tempLibraries/",
 
-            ARTIFACT_STANDARD    = "%s-%s.jar",
-            ARTIFACT_UNOPTIMIZED = "%s-unoptimized-%s.jar",
-            ARTIFACT_API         = "%s-api-%s.jar",
-            ARTIFACT_STANDALONE  = "%s-standalone-%s.jar",
-            ARTIFACT_FORGE       = "%s-forge-%s.jar";
+            ARTIFACT_STANDARD         = "%s-%s.jar",
+            ARTIFACT_UNOPTIMIZED      = "%s-unoptimized-%s.jar",
+            ARTIFACT_API              = "%s-api-%s.jar",
+            ARTIFACT_STANDALONE       = "%s-standalone-%s.jar",
+            ARTIFACT_FORGE_API        = "%s-api-forge-%s.jar",
+            ARTIFACT_FORGE_STANDALONE = "%s-standalone-forge-%s.jar";
 
     protected String artifactName, artifactVersion;
-    protected Path artifactPath, artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, artifactForgePath, proguardOut;
+    protected Path artifactPath, artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, artifactForgeApiPath, artifactForgeStandalonePath, proguardOut;
 
     protected void verifyArtifacts() throws IllegalStateException {
         this.artifactName = getProject().getName();
         this.artifactVersion = getProject().getVersion().toString();
 
-        this.artifactPath            = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
-        this.artifactUnoptimizedPath = this.getBuildFile(formatVersion(ARTIFACT_UNOPTIMIZED));
-        this.artifactApiPath         = this.getBuildFile(formatVersion(ARTIFACT_API));
-        this.artifactStandalonePath  = this.getBuildFile(formatVersion(ARTIFACT_STANDALONE));
-        this.artifactForgePath       = this.getBuildFile(formatVersion(ARTIFACT_FORGE));
+        this.artifactPath                = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
+        this.artifactUnoptimizedPath     = this.getBuildFile(formatVersion(ARTIFACT_UNOPTIMIZED));
+        this.artifactApiPath             = this.getBuildFile(formatVersion(ARTIFACT_API));
+        this.artifactStandalonePath      = this.getBuildFile(formatVersion(ARTIFACT_STANDALONE));
+        this.artifactForgeApiPath        = this.getBuildFile(formatVersion(ARTIFACT_FORGE_API));
+        this.artifactForgeStandalonePath = this.getBuildFile(formatVersion(ARTIFACT_FORGE_STANDALONE));
 
         this.proguardOut = this.getTemporaryFile(PROGUARD_EXPORT_PATH);
 
@@ -96,9 +94,5 @@ class BaritoneGradleTask extends DefaultTask {
 
     protected Path getBuildFile(String file) {
         return getRelativeFile("build/libs/" + file);
-    }
-
-    protected JsonElement readJson(List<String> lines) {
-        return PARSER.parse(String.join("\n", lines));
     }
 }

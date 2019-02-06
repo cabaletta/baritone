@@ -42,10 +42,11 @@ public class CreateDistTask extends BaritoneGradleTask {
         super.verifyArtifacts();
 
         // Define the distribution file paths
-        Path api         = getRelativeFile("dist/" + formatVersion(ARTIFACT_API));
-        Path standalone  = getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE));
-        Path unoptimized = getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED));
-        Path forge       = getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE));
+        Path api             = getRelativeFile("dist/" + formatVersion(ARTIFACT_API));
+        Path standalone      = getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE));
+        Path unoptimized     = getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED));
+        Path forgeApi        = getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API));
+        Path forgeStandalone = getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_STANDALONE));
 
         // NIO will not automatically create directories
         Path dir = getRelativeFile("dist/");
@@ -54,13 +55,14 @@ public class CreateDistTask extends BaritoneGradleTask {
         }
 
         // Copy build jars to dist/
-        Files.copy(this.artifactApiPath,         api,         REPLACE_EXISTING);
-        Files.copy(this.artifactStandalonePath,  standalone,  REPLACE_EXISTING);
-        Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
-        Files.copy(this.artifactForgePath,       forge,       REPLACE_EXISTING);
+        Files.copy(this.artifactApiPath,             api,             REPLACE_EXISTING);
+        Files.copy(this.artifactStandalonePath,      standalone,      REPLACE_EXISTING);
+        Files.copy(this.artifactUnoptimizedPath,     unoptimized,     REPLACE_EXISTING);
+        Files.copy(this.artifactForgeApiPath,        forgeApi,        REPLACE_EXISTING);
+        Files.copy(this.artifactForgeStandalonePath, forgeStandalone, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
-        List<String> shasum = Stream.of(api, standalone, unoptimized, forge)
+        List<String> shasum = Stream.of(api, forgeApi, standalone, forgeStandalone, unoptimized)
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 

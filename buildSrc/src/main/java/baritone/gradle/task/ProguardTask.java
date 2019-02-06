@@ -73,7 +73,6 @@ public class ProguardTask extends BaritoneGradleTask {
         acquireDependencies();
         proguardApi();
         proguardStandalone();
-        createForge();
         cleanup();
     }
 
@@ -274,15 +273,13 @@ public class ProguardTask extends BaritoneGradleTask {
     private void proguardApi() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
         Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString(), Optional.empty());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgeApiPath.toString(), Optional.of(mixin));
     }
 
     private void proguardStandalone() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
         Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString(), Optional.empty());
-    }
-
-    private void createForge() throws Exception {
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgePath.toString(), Optional.of(mixin));
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgeStandalonePath.toString(), Optional.of(mixin));
     }
 
     private void cleanup() {
