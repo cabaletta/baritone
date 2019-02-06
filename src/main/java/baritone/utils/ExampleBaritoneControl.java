@@ -227,6 +227,15 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             return true;
         }
+        if (msg.equals("version")) {
+            String version = ExampleBaritoneControl.class.getPackage().getImplementationVersion();
+            if (version == null) {
+                logDirect("No version detected. Either dev environment or broken install.");
+            } else {
+                logDirect("You are using Baritone v" + version);
+            }
+            return true;
+        }
         if (msg.equals("repack") || msg.equals("rescan")) {
             ChunkProviderClient cli = (ChunkProviderClient) ctx.world().getChunkProvider();
             int playerChunkX = ctx.playerFeet().getX() >> 4;

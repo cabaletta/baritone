@@ -116,7 +116,10 @@ jar {
 jar {
     manifest {
         attributes(
-                'MixinConfigs': 'mixins.baritone.json'
+                'MixinConfigs': 'mixins.baritone.json',
+
+                'Implementation-Title': 'Baritone',
+                'Implementation-Version': version
         )
     }
 }
