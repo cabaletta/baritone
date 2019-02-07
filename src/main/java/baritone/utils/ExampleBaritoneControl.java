@@ -163,36 +163,19 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
 
         if (msg.startsWith("goal")) {
-            String[] params = msg.substring(4).trim().split(" ");
-            if (params[0].equals("")) {
-                params = new String[]{};
-            }
+            String rest = msg.substring(4).trim();
             Goal goal;
-            try {
-                switch (params.length) {
-                    case 0:
-                        goal = new GoalBlock(ctx.playerFeet());
-                        break;
-                    case 1:
-                        if (params[0].equals("clear") || params[0].equals("none")) {
-                            goal = null;
-                        } else {
-                            goal = new GoalYLevel(Integer.parseInt(params[0]));
-                        }
-                        break;
-                    case 2:
-                        goal = new GoalXZ(Integer.parseInt(params[0]), Integer.parseInt(params[1]));
-                        break;
-                    case 3:
-                        goal = new GoalBlock(new BlockPos(Integer.parseInt(params[0]), Integer.parseInt(params[1]), Integer.parseInt(params[2])));
-                        break;
-                    default:
-                        logDirect("unable to understand lol");
-                        return true;
+            if (rest.equals("clear") || rest.equals("none")) {
+                goal = null;
+            } else {
+                String[] params = rest.split(" ");
+                if (params[0].equals("")) {
+                    params = new String[]{};
                 }
-            } catch (NumberFormatException ex) {
-                logDirect("unable to parse integer " + ex);
-                return true;
+                goal = parseGoal(params);
+                if (goal == null) {
+                    return true;
+                }
             }
             customGoalProcess.setGoal(goal);
             logDirect("Goal: " + goal);
@@ -469,7 +452,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 if (block == null) {
                     waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
                     if (waypoint == null) {
-                        logDirect("No locations for " + mining + " known, cancelling");
+                        Goal goal = parseGoal(waypointType.split(" "));
+                        if (goal != null) {
+                            logDirect("Going to " + goal);
+                            customGoalProcess.setGoalAndPath(goal);
+                        }
                         return true;
                     }
                 } else {
@@ -547,5 +534,32 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect(stack.getCount() + "x " + stack.getDisplayName() + "@" + stack.getItemDamage());
             }
         }
+    }
+
+    private Goal parseGoal(String[] params) {
+        Goal goal;
+        try {
+            switch (params.length) {
+                case 0:
+                    goal = new GoalBlock(ctx.playerFeet());
+                    break;
+                case 1:
+                    goal = new GoalYLevel(Integer.parseInt(params[0]));
+                    break;
+                case 2:
+                    goal = new GoalXZ(Integer.parseInt(params[0]), Integer.parseInt(params[1]));
+                    break;
+                case 3:
+                    goal = new GoalBlock(new BlockPos(Integer.parseInt(params[0]), Integer.parseInt(params[1]), Integer.parseInt(params[2])));
+                    break;
+                default:
+                    logDirect("unable to understand lol");
+                    return null;
+            }
+        } catch (NumberFormatException ex) {
+            logDirect("unable to parse integer " + ex);
+            return null;
+        }
+        return goal;
     }
 }

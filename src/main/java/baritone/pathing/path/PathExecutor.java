@@ -398,7 +398,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         IMovement current = path.movements().get(pathPosition);
         if (current instanceof MovementDescend) {
 
-            if (((MovementDescend) current).safeMode()) {
+            if (((MovementDescend) current).safeMode() && !((MovementDescend) current).skipToAscend()) {
                 logDebug("Sprinting would be unsafe");
                 return false;
             }
