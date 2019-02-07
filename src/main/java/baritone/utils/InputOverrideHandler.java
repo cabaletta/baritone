@@ -69,7 +69,9 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
             return false;
         }
         if (input == Input.CLICK_RIGHT) {
-            return isInputForcedDown(Input.CLICK_RIGHT);
+            boolean ret = isInputForcedDown(Input.CLICK_RIGHT);
+            System.out.println("click right ret: " + ret);
+            return ret;
         }
         return null;
     }
@@ -122,7 +124,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     }
 
     private boolean inControl() {
-        return baritone.getPathingBehavior().isPathing() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone();
+        return baritone.getPathingBehavior().isPathing() || baritone.getBuilderProcess().isActive() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone();
     }
 
     public BlockBreakHelper getBlockBreakHelper() {

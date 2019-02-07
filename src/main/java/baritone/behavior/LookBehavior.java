@@ -73,7 +73,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     float desiredPitch = this.target.getPitch();
                     ctx.player().rotationPitch = desiredPitch;
                     if (desiredPitch == oldPitch) {
-                        nudgeToLevel();
+                        //nudgeToLevel();
                     }
                     this.target = null;
                 }

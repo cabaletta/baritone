@@ -34,7 +34,7 @@ import java.util.Optional;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
-    protected static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
+    public static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
 
     protected final IBaritone baritone;
     protected final IPlayerContext ctx;

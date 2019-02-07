@@ -80,6 +80,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             // be opened by just interacting.
             return block != Blocks.IRON_DOOR;
         }
+        if (block == Blocks.CARPET) {
+            return canWalkOn(bsi, x, y - 1, z);
+        }
         boolean snow = block instanceof BlockSnow;
         boolean trapdoor = block instanceof BlockTrapDoor;
         if (snow || trapdoor) {
@@ -321,20 +324,22 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z) {
-        return canPlaceAgainst(bsi.get0(x, y, z));
+        return canPlaceAgainst(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
     static boolean canPlaceAgainst(BlockStateInterface bsi, BlockPos pos) {
-        return canPlaceAgainst(bsi.get0(pos.getX(), pos.getY(), pos.getZ()));
+        return canPlaceAgainst(bsi, pos.getX(), pos.getY(), pos.getZ());
     }
 
     static boolean canPlaceAgainst(IPlayerContext ctx, BlockPos pos) {
         return canPlaceAgainst(new BlockStateInterface(ctx), pos);
     }
 
-    static boolean canPlaceAgainst(IBlockState state) {
-        // TODO isBlockNormalCube isn't the best check for whether or not we can place a block against it. e.g. glass isn't normalCube but we can place against it
-        return state.isBlockNormalCube();
+    static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+        // can we look at the center of a side face of this block and likely be able to place?
+        // (thats how this check is used)
+        // therefore dont include weird things that we technically could place against (like carpet) but practically can't
+        return state.isBlockNormalCube() || state.isFullBlock() || state.getBlock() == Blocks.GLASS || state.getBlock() == Blocks.STAINED_GLASS;
     }
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling) {
