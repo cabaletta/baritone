@@ -158,7 +158,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
     }
 
-    public Optional<Placement> searchForPlacables(BuilderCalculationContext bcc) {
+    public Optional<Placement> searchForPlacables(BuilderCalculationContext bcc, List<IBlockState> desirableOnHotbar) {
         BetterBlockPos center = ctx.playerFeet();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = -5; dy <= 1; dy++) {
@@ -175,6 +175,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                         if (dy == 1 && bcc.bsi.get0(x, y + 1, z).getBlock() == Blocks.AIR) {
                             continue;
                         }
+                        desirableOnHotbar.add(desired);
                         Optional<Placement> opt = possibleToPlace(desired, x, y, z, bcc.bsi);
                         if (opt.isPresent()) {
                             return opt;
@@ -298,7 +299,8 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             }
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
-        Optional<Placement> toPlace = searchForPlacables(bcc);
+        List<IBlockState> desirableOnHotbar = new ArrayList<>();
+        Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
         if (toPlace.isPresent() && isSafeToCancel && ctx.player().onGround && ticks <= 0) {
             Rotation rot = toPlace.get().rot;
             baritone.getLookBehavior().updateTarget(rot, true);
@@ -310,11 +312,41 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
 
-        Goal goal = assemble(bcc);
+        List<IBlockState> approxPlacable = placable(36);
+        if (Baritone.settings().allowInventory.get()) {
+            ArrayList<Integer> usefulSlots = new ArrayList<>();
+            List<IBlockState> noValidHotbarOption = new ArrayList<>();
+            outer:
+            for (IBlockState desired : desirableOnHotbar) {
+                for (int i = 0; i < 9; i++) {
+                    if (valid(approxPlacable.get(i), desired)) {
+                        usefulSlots.add(i);
+                        continue outer;
+                    }
+                }
+                noValidHotbarOption.add(desired);
+            }
+
+            outer:
+            for (int i = 9; i < 36; i++) {
+                for (IBlockState desired : noValidHotbarOption) {
+                    if (valid(approxPlacable.get(i), desired)) {
+                        baritone.getInventoryBehavior().attemptToPutOnHotbar(i, usefulSlots::contains);
+                        break outer;
+                    }
+                }
+            }
+        }
+
+
+        Goal goal = assemble(bcc, approxPlacable.subList(0, 9));
         if (goal == null) {
-            logDirect("Unable to do it =(");
-            onLostControl();
-            return null;
+            goal = assemble(bcc, approxPlacable); // we're far away, so assume that we have our whole inventory to recalculate placable properly
+            if (goal == null) {
+                logDirect("Unable to do it =(");
+                onLostControl();
+                return null;
+            }
         }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
     }
@@ -371,8 +403,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
     }
 
-    private Goal assemble(BuilderCalculationContext bcc) {
-        List<IBlockState> approxPlacable = placable();
+    private Goal assemble(BuilderCalculationContext bcc, List<IBlockState> approxPlacable) {
         List<BetterBlockPos> placable = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() == Blocks.AIR && approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))).collect(Collectors.toList());
         Goal[] toBreak = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() != Blocks.AIR).map(GoalBreak::new).toArray(Goal[]::new);
         Goal[] toPlace = placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(pos -> placementgoal(pos, bcc)).toArray(Goal[]::new);
@@ -484,16 +515,9 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         return "Building " + name;
     }
 
-    /**
-     * Hotbar contents, if they were placed
-     * <p>
-     * Always length nine, empty slots become Blocks.AIR.getDefaultState()
-     *
-     * @return
-     */
-    public List<IBlockState> placable() {
+    public List<IBlockState> placable(int size) {
         List<IBlockState> result = new ArrayList<>();
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < size; i++) {
             ItemStack stack = ctx.player().inventory.mainInventory.get(i);
             if (stack.isEmpty() || !(stack.getItem() instanceof ItemBlock)) {
                 result.add(Blocks.AIR.getDefaultState());
@@ -520,7 +544,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
 
         public BuilderCalculationContext() {
             super(BuilderProcess.this.baritone, true); // wew lad
-            this.placable = placable();
+            this.placable = placable(9);
             this.schematic = BuilderProcess.this.schematic;
             this.originX = origin.getX();
             this.originY = origin.getY();

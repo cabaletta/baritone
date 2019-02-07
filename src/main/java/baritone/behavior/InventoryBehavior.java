@@ -28,6 +28,9 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
 import net.minecraft.util.NonNullList;
 
+import java.util.ArrayList;
+import java.util.OptionalInt;
+import java.util.Random;
 import java.util.function.Predicate;
 
 public class InventoryBehavior extends Behavior {
@@ -54,6 +57,34 @@ public class InventoryBehavior extends Behavior {
         if (pick >= 9) {
             swapWithHotBar(pick, 0);
         }
+    }
+
+    public void attemptToPutOnHotbar(int inMainInvy, Predicate<Integer> disallowedHotbar) {
+        OptionalInt destination = getTempHotbarSlot(disallowedHotbar);
+        if (destination.isPresent()) {
+            swapWithHotBar(inMainInvy, destination.getAsInt());
+        }
+    }
+
+    public OptionalInt getTempHotbarSlot(Predicate<Integer> disallowedHotbar) {
+        // we're using 0 and 8 for pickaxe and throwaway
+        ArrayList<Integer> candidates = new ArrayList<>();
+        for (int i = 1; i < 8; i++) {
+            if (ctx.player().inventory.mainInventory.get(i).isEmpty() && !disallowedHotbar.test(i)) {
+                candidates.add(i);
+            }
+        }
+        if (candidates.isEmpty()) {
+            for (int i = 1; i < 8; i++) {
+                if (!disallowedHotbar.test(i)) {
+                    candidates.add(i);
+                }
+            }
+        }
+        if (candidates.isEmpty()) {
+            return OptionalInt.empty();
+        }
+        return OptionalInt.of(candidates.get(new Random().nextInt(candidates.size())));
     }
 
     private void swapWithHotBar(int inInventory, int inHotbar) {

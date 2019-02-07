@@ -258,7 +258,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             String file;
             BlockPos origin;
             try {
-                String[] coords = msg.substring("build".length()).split(" ");
+                String[] coords = msg.substring("build".length()).trim().split(" ");
                 file = coords[0] + ".schematic";
                 origin = new BlockPos(Integer.parseInt(coords[1]), Integer.parseInt(coords[2]), Integer.parseInt(coords[3]));
             } catch (Exception ex) {
