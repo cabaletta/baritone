@@ -25,7 +25,6 @@ import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.util.MovementInput;
 import net.minecraft.util.MovementInputFromOptions;
 
 import java.util.HashMap;
@@ -111,14 +110,17 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         }
         blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
 
-        MovementInput desired = inControl()
-                ? new PlayerMovementInput(this)
-                : new MovementInputFromOptions(Minecraft.getMinecraft().gameSettings);
-
-        if (ctx.player().movementInput.getClass() != desired.getClass()) {
-            ctx.player().movementInput = desired; // only set it if it was previously incorrect
-            // gotta do it this way, or else it constantly thinks you're beginning a double tap W sprint lol
+        if (inControl()) {
+            if (ctx.player().movementInput.getClass() != PlayerMovementInput.class) {
+                ctx.player().movementInput = new PlayerMovementInput(this);
+            }
+        } else {
+            if (ctx.player().movementInput.getClass() == PlayerMovementInput.class) {
+                ctx.player().movementInput = new MovementInputFromOptions(Minecraft.getMinecraft().gameSettings);
+            }
         }
+        // only set it if it was previously incorrect
+        // gotta do it this way, or else it constantly thinks you're beginning a double tap W sprint lol
     }
 
     private boolean inControl() {
