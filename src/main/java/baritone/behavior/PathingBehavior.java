@@ -61,6 +61,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private boolean lastAutoJump;
 
+    private BlockPos expectedSegmentStart;
+
     private final LinkedBlockingQueue<PathEvent> toDispatch = new LinkedBlockingQueue<>();
 
     public PathingBehavior(Baritone baritone) {
@@ -88,6 +90,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             baritone.getPathingControlManager().cancelEverything();
             return;
         }
+        expectedSegmentStart = pathStart();
         baritone.getPathingControlManager().preTick();
         tickPath();
         dispatchEvents();
@@ -438,8 +441,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 Optional<PathExecutor> executor = calcResult.getPath().map(p -> new PathExecutor(PathingBehavior.this, p));
                 if (current == null) {
                     if (executor.isPresent()) {
-                        queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
-                        current = executor.get();
+                        if (executor.get().getPath().getSrc().equals(expectedSegmentStart)) {
+                            queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
+                            current = executor.get();
+                        } else {
+                            logDebug("Warning: discarding orphan path segment with incorrect start");
+                        }
                     } else {
                         if (calcResult.getType() != PathCalculationResult.Type.CANCELLATION && calcResult.getType() != PathCalculationResult.Type.EXCEPTION) {
                             // don't dispatch CALC_FAILED on cancellation
