@@ -173,11 +173,23 @@ public class MovementDiagonal extends Movement {
             state.setStatus(MovementStatus.SUCCESS);
             return state;
         }
-        if (!MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+        if (sprint()) {
             state.setInput(Input.SPRINT, true);
         }
         MovementHelper.moveTowards(ctx, state, dest);
         return state;
+    }
+
+    public boolean sprint() {
+        if (MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+            return false;
+        }
+        for (int i = 0; i < 4; i++) {
+            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

@@ -210,8 +210,8 @@ public class MovementDescend extends Movement {
             }*/
         }
         if (safeMode()) {
-            double destX = (src.getX() + 0.5) * 0.19 + (dest.getX() + 0.5) * 0.81;
-            double destZ = (src.getZ() + 0.5) * 0.19 + (dest.getZ() + 0.5) * 0.81;
+            double destX = (src.getX() + 0.5) * 0.17 + (dest.getX() + 0.5) * 0.83;
+            double destZ = (src.getZ() + 0.5) * 0.17 + (dest.getZ() + 0.5) * 0.83;
             EntityPlayerSP player = ctx.player();
             state.setTarget(new MovementState.MovementTarget(
                     new Rotation(RotationUtils.calcRotationFromVec3d(player.getPositionEyes(1.0F),
@@ -245,6 +245,10 @@ public class MovementDescend extends Movement {
         // (dest - src) + dest is offset 1 more in the same direction
         // so it's the block we'd need to worry about running into if we decide to sprint straight through this descend
         BlockPos into = dest.subtract(src.down()).add(dest);
+        if (!MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into)) && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).up()) && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).up(2))) {
+            // if dest extends into can't walk through, but the two above are can walk through, then we can overshoot and glitch in that weird way
+            return true;
+        }
         for (int y = 0; y <= 2; y++) { // we could hit any of the three blocks
             if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(ctx, into.up(y)))) {
                 return true;
