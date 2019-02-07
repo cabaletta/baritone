@@ -65,6 +65,9 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onTick(TickEvent event) {
+        if (!Baritone.settings().containerMemory.get()) {
+            return;
+        }
         if (event.getType() == TickEvent.Type.OUT) {
             enderChestWindowId = null;
             futureInventories.clear();
@@ -80,6 +83,9 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onSendPacket(PacketEvent event) {
+        if (!Baritone.settings().containerMemory.get()) {
+            return;
+        }
         Packet p = event.getPacket();
 
         if (event.getState() == EventState.PRE) {
@@ -116,6 +122,9 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onReceivePacket(PacketEvent event) {
+        if (!Baritone.settings().containerMemory.get()) {
+            return;
+        }
         Packet p = event.getPacket();
 
         if (event.getState() == EventState.PRE) {
@@ -162,6 +171,9 @@ public final class MemoryBehavior extends Behavior {
 
 
     private void updateInventory() {
+        if (!Baritone.settings().containerMemory.get()) {
+            return;
+        }
         int windowId = ctx.player().openContainer.windowId;
         if (enderChestWindowId != null) {
             if (windowId == enderChestWindowId) {

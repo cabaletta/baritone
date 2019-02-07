@@ -379,6 +379,13 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
 
     /**
+     * Remember the contents of containers (chests, echests, furnaces)
+     * <p>
+     * Really buggy since the packet stuff is multithreaded badly thanks to brady
+     */
+    public final Setting<Boolean> containerMemory = new Setting<>(false);
+
+    /**
      * Print all the debug messages to chat
      */
     public final Setting<Boolean> chatDebug = new Setting<>(true);
