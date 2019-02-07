@@ -69,9 +69,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
             return false;
         }
         if (input == Input.CLICK_RIGHT) {
-            boolean ret = isInputForcedDown(Input.CLICK_RIGHT);
-            System.out.println("click right ret: " + ret);
-            return ret;
+            return isInputForcedDown(Input.CLICK_RIGHT);
         }
         return null;
     }
