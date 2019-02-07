@@ -17,6 +17,7 @@
 
 package baritone.cache;
 
+import baritone.Baritone;
 import baritone.api.cache.IContainerMemory;
 import baritone.api.cache.IRememberedInventory;
 import baritone.api.utils.IPlayerContext;
@@ -69,6 +70,9 @@ public class ContainerMemory implements IContainerMemory {
     }
 
     public synchronized void save() throws IOException {
+        if (!Baritone.settings().containerMemory.get()) {
+            return;
+        }
         ByteBuf buf = Unpooled.buffer(0, Integer.MAX_VALUE);
         PacketBuffer out = new PacketBuffer(buf);
         out.writeInt(inventories.size());
