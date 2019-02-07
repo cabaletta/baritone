@@ -255,8 +255,19 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.startsWith("build")) {
-            String file = msg.substring(6) + ".schematic";
-            logDirect("" + baritone.getBuilderProcess().build(file));
+            String file;
+            BlockPos origin;
+            try {
+                String[] coords = msg.substring("build".length()).split(" ");
+                file = coords[0] + ".schematic";
+                origin = new BlockPos(Integer.parseInt(coords[1]), Integer.parseInt(coords[2]), Integer.parseInt(coords[3]));
+            } catch (Exception ex) {
+                file = msg.substring(5) + ".schematic";
+                origin = ctx.playerFeet();
+            }
+            logDirect("Loading '" + file + "' to build from origin " + origin);
+            boolean success = baritone.getBuilderProcess().build(file, origin);
+            logDirect(success ? "Loaded" : "Unable to load");
             return true;
         }
         if (msg.equals("axis")) {
