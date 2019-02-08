@@ -250,6 +250,14 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     public static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, List<Block> mining, int max) {
         List<BlockPos> dropped = droppedItemsScan(mining, ctx.world);
+        dropped.removeIf(drop -> {
+            for (BlockPos pos : locs2) {
+                if (mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) && MineProcess.plausibleToBreak(ctx.bsi, pos) && pos.distanceSq(drop) <= 9) { // TODO maybe drop also has to be supported? no lava below?
+                    return true;
+                }
+            }
+            return false;
+        });
         List<BlockPos> locs = locs2
                 .stream()
                 .distinct()
