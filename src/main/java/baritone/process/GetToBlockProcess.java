@@ -82,12 +82,13 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
+        Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (calcFailed) {
             logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
             if (isSafeToCancel) {
                 onLostControl();
             }
-            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
@@ -95,15 +96,16 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             CalculationContext context = new CalculationContext(baritone, true);
             Baritone.getExecutor().execute(() -> rescan(current, context));
         }
-        Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (goal.isInGoal(ctx.playerFeet()) && isSafeToCancel) {
             // we're there
             if (rightClickOnArrival(gettingTo)) {
                 if (rightClick()) {
                     onLostControl();
+                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
             } else {
                 onLostControl();
+                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
         }
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
