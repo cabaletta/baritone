@@ -441,7 +441,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 Optional<PathExecutor> executor = calcResult.getPath().map(p -> new PathExecutor(PathingBehavior.this, p));
                 if (current == null) {
                     if (executor.isPresent()) {
-                        if (executor.get().getPath().getSrc().equals(expectedSegmentStart)) {
+                        if (executor.get().getPath().positions().contains(expectedSegmentStart)) {
                             queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                             current = executor.get();
                         } else {
