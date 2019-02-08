@@ -379,6 +379,11 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
 
     /**
+     * Cancel baritone on left click, as a form of "panic button"
+     */
+    public final Setting<Boolean> clickCancel = new Setting<>(false);
+
+    /**
      * Remember the contents of containers (chests, echests, furnaces)
      * <p>
      * Really buggy since the packet stuff is multithreaded badly thanks to brady
