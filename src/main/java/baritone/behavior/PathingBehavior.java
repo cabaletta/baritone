@@ -196,7 +196,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // and this path doesn't get us all the way there
                     return;
                 }
-                if (ticksRemainingInSegment(false).get() < Baritone.settings().planningTickLookAhead.get()) {
+                if (ticksRemainingInSegment(false).get() < Baritone.settings().planningTickLookahead.get()) {
                     // and this path has 7.5 seconds or less left
                     // don't include the current movement so a very long last movement (e.g. descend) doesn't trip it up
                     // if we actually included current, it wouldn't start planning ahead until the last movement was done, if the last movement took more than 7.5 seconds on its own
