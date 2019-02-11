@@ -308,6 +308,8 @@ public final class Settings {
      * Is it okay to sprint through a descend followed by a diagonal?
      * The player overshoots the landing, but not enough to fall off. And the diagonal ensures that there isn't
      * lava or anything that's !canWalkInto in that space, so it's technically safe, just a little sketchy.
+     * <p>
+     * Note: this is *not* related to the allowDiagonalDescend setting, that is a completely different thing.
      */
     public final Setting<Boolean> allowOvershootDiagonalDescend = new Setting<>(true);
 
