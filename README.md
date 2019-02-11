@@ -40,7 +40,7 @@ Here are some links to help to get started:
 
 - [Javadocs](https://baritone.leijurv.com/)
 
-- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html)
+- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#allowBreak)
 
 # Chat control
 
