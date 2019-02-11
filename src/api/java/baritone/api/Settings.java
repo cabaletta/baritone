@@ -564,6 +564,19 @@ public final class Settings {
     public final Setting<Integer> legitMineYLevel = new Setting<>(11);
 
     /**
+     * Magically see ores that are separated diagonally from existing ores. Basically like mining around the ores that it finds
+     * in case there's one there touching it diagonally, except it checks it un-legit-ly without having the mine blocks to see it.
+     * You can decide whether this looks plausible or not.
+     * <p>
+     * This is disabled because it results in some weird behavior. For example, it can """see""" the top block of a vein of iron_ore
+     * through a lava lake. This isn't an issue normally since it won't consider anything touching lava, so it just ignores it.
+     * However, this setting expands that and allows it to see the entire vein so it'll mine under the lava lake to get the iron that
+     * it can reach without mining blocks adjacent to lava. This really defeats the purpose of legitMine since a player could never
+     * do that lol, so thats one reason why its disabled
+     */
+    public final Setting<Boolean> legitMineIncludeDiagonals = new Setting<>(false);
+
+    /**
      * When mining block of a certain type, try to mine two at once instead of one.
      * If the block above is also a goal block, set GoalBlock instead of GoalTwoBlocks
      * If the block below is also a goal block, set GoalBlock to the position one down instead of GoalTwoBlocks
