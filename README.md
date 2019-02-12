@@ -30,6 +30,8 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2. Baritone 
 
 Have committed at least once a day for the last 6 months =D 🦀
 
+1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
+
 Here are some links to help to get started:
 
 - [Features](FEATURES.md)
