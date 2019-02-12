@@ -11,6 +11,8 @@
 [![Pull Requests](https://img.shields.io/github/issues-pr/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/pulls/)
 ![Code size](https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg)
 ![GitHub repo size](https://img.shields.io/github/repo-size/cabaletta/baritone.svg)
+![](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
+![](https://tokei.rs/b1/github/cabaletta/baritone?category=files)
 [![Minecraft](https://img.shields.io/badge/MC-1.12.2-green.svg)](https://minecraft.gamepedia.com/1.12.2)
 [![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
 [![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
