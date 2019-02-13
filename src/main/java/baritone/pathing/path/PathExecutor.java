@@ -195,17 +195,17 @@ public class PathExecutor implements IPathExecutor, Helper {
                 continue;
             }
             Movement m = (Movement) path.movements().get(i);
-            HashSet<BlockPos> prevBreak = new HashSet<>(m.toBreak(bsi));
-            HashSet<BlockPos> prevPlace = new HashSet<>(m.toPlace(bsi));
-            HashSet<BlockPos> prevWalkInto = new HashSet<>(m.toWalkInto(bsi));
+            List<BlockPos> prevBreak = m.toBreak(bsi);
+            List<BlockPos> prevPlace = m.toPlace(bsi);
+            List<BlockPos> prevWalkInto = m.toWalkInto(bsi);
             m.resetBlockCache();
-            if (!prevBreak.equals(new HashSet<>(m.toBreak(bsi)))) {
+            if (!prevBreak.equals(m.toBreak(bsi))) {
                 recalcBP = true;
             }
-            if (!prevPlace.equals(new HashSet<>(m.toPlace(bsi)))) {
+            if (!prevPlace.equals(m.toPlace(bsi))) {
                 recalcBP = true;
             }
-            if (!prevWalkInto.equals(new HashSet<>(m.toWalkInto(bsi)))) {
+            if (!prevWalkInto.equals(m.toWalkInto(bsi))) {
                 recalcBP = true;
             }
         }
