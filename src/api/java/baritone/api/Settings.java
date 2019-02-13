@@ -395,7 +395,7 @@ public final class Settings {
     /**
      * Print all the debug messages to chat
      */
-    public final Setting<Boolean> chatDebug = new Setting<>(true);
+    public final Setting<Boolean> chatDebug = new Setting<>(false);
 
     /**
      * Allow chat based control of Baritone. Most likely should be disabled when Baritone is imported for use in
