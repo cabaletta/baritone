@@ -301,12 +301,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
         synchronized (pathPlanLock) {
-            current = null;
-            next = null;
+            if (current != null) {
+                current = null;
+                next = null;
+                baritone.getInputOverrideHandler().clearAllKeys();
+                getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
+                baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+            }
         }
-        baritone.getInputOverrideHandler().clearAllKeys();
-        getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
-        baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
     }
 
     public void forceCancel() { // NOT exposed on public api

@@ -62,7 +62,7 @@ public class MixinKeyBinding {
     private void isPressed(CallbackInfoReturnable<Boolean> cir) {
         // only the primary baritone forces keys
         Boolean force = BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this);
-        if (pressTime > 0 && (KeyBinding) (Object) this == Minecraft.getMinecraft().gameSettings.keyBindAttack && Baritone.settings().clickCancel.get()) {
+        if (pressTime > 0 && (KeyBinding) (Object) this == Minecraft.getMinecraft().gameSettings.keyBindAttack && Baritone.settings().clickCancel.get() && BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing()) {
             Helper.HELPER.logDirect("Cancelling path on left click since the clickCancel setting is enabled!");
             BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().cancelEverything();
             return;
