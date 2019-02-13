@@ -78,6 +78,9 @@ public final class RotationUtils {
      * @return The wrapped angles
      */
     public static Rotation wrapAnglesToRelative(Rotation current, Rotation target) {
+        if (current.yawIsReallyClose(target)) {
+            return new Rotation(current.getYaw(), target.getPitch());
+        }
         return target.subtract(current).normalize().add(current);
     }
 
@@ -102,7 +105,7 @@ public final class RotationUtils {
      * @param dest The destination position
      * @return The rotation from the origin to the destination
      */
-    public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
+    private static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
         double[] delta = {orig.x - dest.x, orig.y - dest.y, orig.z - dest.z};
         double yaw = MathHelper.atan2(delta[0], -delta[2]);
         double dist = Math.sqrt(delta[0] * delta[0] + delta[2] * delta[2]);
@@ -196,7 +199,7 @@ public final class RotationUtils {
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance) {
-        Rotation rotation = calcRotationFromVec3d(entity.getPositionEyes(1.0F), offsetPos);
+        Rotation rotation = calcRotationFromVec3d(entity.getPositionEyes(1.0F), offsetPos, new Rotation(entity.rotationYaw, entity.rotationPitch));
         RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance);
         //System.out.println(result);
         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
