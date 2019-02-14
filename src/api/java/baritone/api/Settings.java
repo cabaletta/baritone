@@ -479,6 +479,11 @@ public final class Settings {
     public final Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
     /**
+     * Continue sprinting while in water
+     */
+    public final Setting<Boolean> sprintInWater = new Setting<>(true);
+
+    /**
      * 😎 Render cached chunks as semitransparent. Doesn't work with OptiFine 😭 Rarely randomly crashes, see <a href="https://github.com/cabaletta/baritone/issues/327">this issue</a>.
      * <p>
      * Can be very useful on servers with low render distance. After enabling, you may need to reload the world in order for it to have an effect
