@@ -405,7 +405,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     logDebug("Skipping descend to straight ascend");
                     return true;
                 }
-                if (canSprintInto(ctx, current, next)) {
+                if (canSprintFromDescendInto(ctx, current, next)) {
                     if (ctx.playerFeet().equals(current.getDest())) {
                         pathPosition++;
                         onChangeInPathPosition();
@@ -429,7 +429,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         return false;
     }
 
-    private static boolean canSprintInto(IPlayerContext ctx, IMovement current, IMovement next) {
+    private static boolean canSprintFromDescendInto(IPlayerContext ctx, IMovement current, IMovement next) {
         if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
             return true;
         }
