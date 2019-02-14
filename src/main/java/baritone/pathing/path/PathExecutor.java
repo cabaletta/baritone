@@ -25,6 +25,7 @@ import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.pathing.path.IPathExecutor;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.VecUtils;
 import baritone.api.utils.input.Input;
 import baritone.behavior.PathingBehavior;
@@ -39,6 +40,8 @@ import net.minecraft.block.BlockLiquid;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.*;
 
@@ -114,6 +117,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                             path.movements().get(j).reset();
                         }
                         onChangeInPathPosition();
+                        onTick();
                         return false;
                     }
                 }
@@ -126,6 +130,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                         //System.out.println("Double skip sundae");
                         pathPosition = i - 1;
                         onChangeInPathPosition();
+                        onTick();
                         return false;
                     }
                 }
@@ -447,7 +452,63 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return true;
             }
         }
+        if (current instanceof MovementFall) {
+            Tuple<Vec3d, BlockPos> data = overrideFall((MovementFall) current);
+            if (data != null) {
+                BlockPos fallDest = data.getSecond();
+                if (!path.positions().contains(fallDest)) {
+                    throw new IllegalStateException();
+                }
+                if (ctx.playerFeet().equals(fallDest)) {
+                    pathPosition = path.positions().indexOf(fallDest);
+                    onChangeInPathPosition();
+                    onTick();
+                    return true;
+                }
+                logDebug("Skipping fall to " + fallDest + " " + data.getFirst());
+                clearKeys();
+                behavior.baritone.getLookBehavior().updateTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), data.getFirst(), ctx.playerRotations()), false);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                return true;
+            }
+        }
         return false;
+    }
+
+    private Tuple<Vec3d, BlockPos> overrideFall(MovementFall movement) {
+        Vec3i dir = movement.getDirection();
+        if (dir.getY() < -3) {
+            return null;
+        }
+        Vec3i flatDir = new Vec3i(dir.getX(), 0, dir.getZ());
+        int i;
+        outer:
+        for (i = pathPosition + 1; i < path.length() - 1 && i < pathPosition + 3; i++) {
+            IMovement next = path.movements().get(i);
+            if (!(next instanceof MovementTraverse)) {
+                break;
+            }
+            if (!flatDir.equals(next.getDirection())) {
+                break;
+            }
+            for (int y = next.getDest().y; y <= movement.getSrc().y + 1; y++) {
+                BlockPos chk = new BlockPos(next.getDest().x, y, next.getDest().z);
+                if (!MovementHelper.fullyPassable(ctx.world().getBlockState(chk))) {
+                    break outer;
+                }
+            }
+            if (!MovementHelper.canWalkOn(ctx, next.getDest().down())) {
+                break;
+            }
+        }
+        i--;
+        if (i == pathPosition) {
+            return null; // no valid extension exists
+        }
+        double len = i - pathPosition - 0.4;
+        return new Tuple<>(
+                new Vec3d(flatDir.getX() * len + movement.getDest().x + 0.5, movement.getDest().y, flatDir.getZ() * len + movement.getDest().z + 0.5),
+                movement.getDest().add(flatDir.getX() * (i - pathPosition), 0, flatDir.getZ() * (i - pathPosition)));
     }
 
     private static boolean skipNow(IPlayerContext ctx, IMovement current, IMovement next) {
