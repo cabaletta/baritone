@@ -68,7 +68,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
         if (knownLocations.isEmpty()) {
-            if (Baritone.settings().exploreForBlocks.get()) {
+            if (Baritone.settings().exploreForBlocks.get() && !calcFailed) {
                 return new PathingCommand(new GoalRunAway(1, start) {
                     @Override
                     public boolean isInGoal(int x, int y, int z) {
