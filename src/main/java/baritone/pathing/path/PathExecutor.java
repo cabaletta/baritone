@@ -388,9 +388,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         IMovement current = path.movements().get(pathPosition);
 
         // traverse requests sprinting, so we need to do this check first
-        if (current instanceof MovementTraverse && pathPosition < path.length() - 2) {
+        if (current instanceof MovementTraverse && pathPosition < path.length() - 3) {
             IMovement next = path.movements().get(pathPosition + 1);
-            if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next)) {
+            if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next, path.movements().get(pathPosition + 2))) {
                 if (skipNow(ctx, current, next)) {
                     logDebug("Skipping traverse to straight ascend");
                     pathPosition++;
@@ -448,7 +448,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     return true;
                 }
             }
-            if (prev instanceof MovementTraverse && sprintableAscend(ctx, (MovementTraverse) prev, (MovementAscend) current)) {
+            if (pathPosition < path.length() - 2 && prev instanceof MovementTraverse && sprintableAscend(ctx, (MovementTraverse) prev, (MovementAscend) current, path.movements().get(pathPosition + 1))) {
                 return true;
             }
         }
@@ -526,11 +526,14 @@ public class PathExecutor implements IPathExecutor, Helper {
         return flatDist > 0.8;
     }
 
-    private static boolean sprintableAscend(IPlayerContext ctx, MovementTraverse current, MovementAscend next) {
+    private static boolean sprintableAscend(IPlayerContext ctx, MovementTraverse current, MovementAscend next, IMovement nextnext) {
         if (!Baritone.settings().sprintAscends.get()) {
             return false;
         }
         if (!current.getDirection().equals(next.getDirection().down())) {
+            return false;
+        }
+        if (nextnext.getDirection().getX() != next.getDirection().getX() || nextnext.getDirection().getZ() != next.getDirection().getZ()) {
             return false;
         }
         if (!MovementHelper.canWalkOn(ctx, current.getDest().down())) {
