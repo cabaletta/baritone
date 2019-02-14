@@ -380,14 +380,26 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!new CalculationContext(behavior.baritone).canSprint) {
             return false;
         }
+        IMovement current = path.movements().get(pathPosition);
+
+        // traverse requests sprinting, so we need to do this check first
+        if (current instanceof MovementTraverse && pathPosition < path.length() - 2) {
+            IMovement next = path.movements().get(pathPosition + 1);
+            if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next)) {
+                logDebug("Skipping traverse to straight ascend");
+                pathPosition++;
+                onChangeInPathPosition();
+                onTick();
+                return true;
+            }
+        }
 
         // if the movement requested sprinting, then we're done
         if (requested) {
             return true;
         }
 
-        // however, descend doesn't request sprinting, beceause it doesn't know the context of what movement comes after it
-        IMovement current = path.movements().get(pathPosition);
+        // however, descend and ascend don't request sprinting, because they don't know the context of what movement comes after it
         if (current instanceof MovementDescend) {
 
             if (((MovementDescend) current).safeMode() && !((MovementDescend) current).skipToAscend()) {
@@ -401,6 +413,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     // a descend then an ascend in the same direction
                     pathPosition++;
                     onChangeInPathPosition();
+                    onTick();
                     // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't possible to repeat, since it's asymmetric
                     logDebug("Skipping descend to straight ascend");
                     return true;
@@ -425,8 +438,38 @@ public class PathExecutor implements IPathExecutor, Helper {
                     return true;
                 }
             }
+            if (prev instanceof MovementTraverse && sprintableAscend(ctx, (MovementTraverse) prev, (MovementAscend) current)) {
+                return true;
+            }
         }
         return false;
+    }
+
+    private static boolean sprintableAscend(IPlayerContext ctx, MovementTraverse current, MovementAscend next) {
+        if (!current.getDirection().equals(next.getDirection().down())) {
+            return false;
+        }
+        if (!MovementHelper.canWalkOn(ctx, current.getDest().down())) {
+            return false;
+        }
+        if (!next.headBonkClear()) {
+            return false;
+        }
+        for (int x = 0; x < 2; x++) {
+            for (int y = 0; y < 3; y++) {
+                BlockPos chk = current.getSrc().up(y);
+                if (x == 1) {
+                    chk = chk.add(current.getDirection());
+                }
+                if (!MovementHelper.fullyPassable(ctx.world().getBlockState(chk))) {
+                    return false;
+                }
+            }
+        }
+        if (MovementHelper.avoidWalkingInto(ctx.world().getBlockState(current.getSrc().up(3)).getBlock())) {
+            return false;
+        }
+        return true;
     }
 
     private static boolean canSprintFromDescendInto(IPlayerContext ctx, IMovement current, IMovement next) {
