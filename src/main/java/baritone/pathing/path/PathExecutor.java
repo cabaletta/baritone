@@ -386,11 +386,16 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (current instanceof MovementTraverse && pathPosition < path.length() - 2) {
             IMovement next = path.movements().get(pathPosition + 1);
             if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next)) {
-                logDebug("Skipping traverse to straight ascend");
-                pathPosition++;
-                onChangeInPathPosition();
-                onTick();
-                return true;
+                if (skipNow(ctx, current, next)) {
+                    logDebug("Skipping traverse to straight ascend");
+                    pathPosition++;
+                    onChangeInPathPosition();
+                    onTick();
+                    behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+                    return true;
+                } else {
+                    logDebug("Too far to the side to safely sprint ascend");
+                }
             }
         }
 
@@ -445,14 +450,29 @@ public class PathExecutor implements IPathExecutor, Helper {
         return false;
     }
 
+    private static boolean skipNow(IPlayerContext ctx, IMovement current, IMovement next) {
+        double offTarget = Math.abs(current.getDirection().getX() * (current.getSrc().z + 0.5D - ctx.player().posZ)) + Math.abs(current.getDirection().getZ() * (current.getSrc().x + 0.5D - ctx.player().posX));
+        if (offTarget > 0.1) {
+            return false;
+        }
+        // we are centered
+        BlockPos headBonk = current.getSrc().subtract(current.getDirection()).up(2);
+        if (MovementHelper.fullyPassable(ctx.world().getBlockState(headBonk))) {
+            return true;
+        }
+        // wait 0.3
+        double flatDist = Math.abs(current.getDirection().getX() * (headBonk.getX() + 0.5D - ctx.player().posX)) + Math.abs(current.getDirection().getZ() * (headBonk.getZ() + 0.5 - ctx.player().posZ));
+        return flatDist > 0.8;
+    }
+
     private static boolean sprintableAscend(IPlayerContext ctx, MovementTraverse current, MovementAscend next) {
+        if (!Baritone.settings().sprintAscends.get()) {
+            return false;
+        }
         if (!current.getDirection().equals(next.getDirection().down())) {
             return false;
         }
         if (!MovementHelper.canWalkOn(ctx, current.getDest().down())) {
-            return false;
-        }
-        if (!next.headBonkClear()) {
             return false;
         }
         for (int x = 0; x < 2; x++) {

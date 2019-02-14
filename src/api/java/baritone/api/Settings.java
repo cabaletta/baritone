@@ -165,6 +165,11 @@ public final class Settings {
     public final Setting<Boolean> considerPotionEffects = new Setting<>(true);
 
     /**
+     * Sprint and jump a block early on ascends wherever possible
+     */
+    public final Setting<Boolean> sprintAscends = new Setting<>(true);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.
