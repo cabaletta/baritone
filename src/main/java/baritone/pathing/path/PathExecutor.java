@@ -489,6 +489,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (MovementHelper.avoidWalkingInto(ctx.world().getBlockState(current.getSrc().up(3)).getBlock())) {
             return false;
         }
+        if (MovementHelper.avoidWalkingInto(ctx.world().getBlockState(next.getDest().up(2)).getBlock())) {
+            return false;
+        }
         return true;
     }
 
