@@ -33,7 +33,6 @@ import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
@@ -117,13 +116,15 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
 
+    // blacklist the closest block and its adjacent blocks
     public synchronized void blacklistClosest() {
-        List<BlockPos> newBlacklist = knownLocations.stream().sorted(Comparator.comparingDouble(ctx.player()::getDistanceSq)).collect(Collectors.toList()).subList(0, 1);
+        List<BlockPos> newBlacklist = new ArrayList<>();
+        knownLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(newBlacklist::add);
         outer:
         while (true) {
             for (BlockPos known : knownLocations) {
                 for (BlockPos blacklist : newBlacklist) {
-                    if (known.distanceSq(blacklist) == 1) { // directly adjacent
+                    if (areAdjacent(known, blacklist)) { // directly adjacent
                         newBlacklist.add(known);
                         knownLocations.remove(known);
                         continue outer;
@@ -136,6 +137,14 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         }
         logDebug("Blacklisting unreachable locations " + newBlacklist);
         blacklist.addAll(newBlacklist);
+    }
+
+    // safer than direct double comparison from distanceSq
+    private boolean areAdjacent(BlockPos posA, BlockPos posB) {
+        int diffX = Math.abs(posA.getX() - posB.getX());
+        int diffY = Math.abs(posA.getY() - posB.getY());
+        int diffZ = Math.abs(posA.getZ() - posB.getZ());
+        return (diffX + diffY + diffZ) == 1;
     }
 
     @Override
