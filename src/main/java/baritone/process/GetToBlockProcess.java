@@ -32,15 +32,14 @@ import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
     private Block gettingTo;
     private List<BlockPos> knownLocations;
+    private List<BlockPos> blacklist; // locations we failed to calc to
     private BlockPos start;
 
     private int tickCount = 0;
@@ -54,6 +53,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         onLostControl();
         gettingTo = block;
         start = ctx.playerFeet();
+        blacklist = new ArrayList<>();
         rescan(new ArrayList<>(), new CalculationContext(baritone));
     }
 
@@ -63,7 +63,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     @Override
-    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+    public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (knownLocations == null) {
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
@@ -84,11 +84,17 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         }
         Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (calcFailed) {
-            logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
-            if (isSafeToCancel) {
-                onLostControl();
+            if (Baritone.settings().blacklistOnGetToBlockFailure.get()) {
+                logDirect("Unable to find any path to " + gettingTo + ", blacklisting presumably unreachable closest instances");
+                blacklistClosest();
+                return onTick(false, isSafeToCancel); // gamer moment
+            } else {
+                logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
+                if (isSafeToCancel) {
+                    onLostControl();
+                }
+                return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
-            return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
@@ -111,11 +117,33 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
 
+    public synchronized void blacklistClosest() {
+        List<BlockPos> newBlacklist = knownLocations.stream().sorted(Comparator.comparingDouble(ctx.player()::getDistanceSq)).collect(Collectors.toList()).subList(0, 1);
+        outer:
+        while (true) {
+            for (BlockPos known : knownLocations) {
+                for (BlockPos blacklist : newBlacklist) {
+                    if (known.distanceSq(blacklist) == 1) { // directly adjacent
+                        newBlacklist.add(known);
+                        knownLocations.remove(known);
+                        continue outer;
+                    }
+                }
+            }
+            if (true) {
+                break; // codacy gets mad if i just end on a break LOL
+            }
+        }
+        logDebug("Blacklisting unreachable locations " + newBlacklist);
+        blacklist.addAll(newBlacklist);
+    }
+
     @Override
-    public void onLostControl() {
+    public synchronized void onLostControl() {
         gettingTo = null;
         knownLocations = null;
         start = null;
+        blacklist = null;
         baritone.getInputOverrideHandler().clearAllKeys();
     }
 
@@ -124,8 +152,10 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         return "Get To Block " + gettingTo;
     }
 
-    private void rescan(List<BlockPos> known, CalculationContext context) {
-        knownLocations = MineProcess.searchWorld(context, Collections.singletonList(gettingTo), 64, known);
+    private synchronized void rescan(List<BlockPos> known, CalculationContext context) {
+        List<BlockPos> positions = MineProcess.searchWorld(context, Collections.singletonList(gettingTo), 64, known);
+        positions.removeIf(blacklist::contains);
+        knownLocations = positions;
     }
 
     private Goal createGoal(BlockPos pos) {

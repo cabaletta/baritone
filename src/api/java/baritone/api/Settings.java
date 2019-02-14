@@ -484,6 +484,12 @@ public final class Settings {
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
 
     /**
+     * When GetToBlockProcess fails to calculate a path, instead of just giving up, mark the closest instances
+     * of that block as "unreachable" and go towards the next closest
+     */
+    public final Setting<Boolean> blacklistOnGetToBlockFailure = new Setting<>(true);
+
+    /**
      * 😎 Render cached chunks as semitransparent. Doesn't work with OptiFine 😭 Rarely randomly crashes, see <a href="https://github.com/cabaletta/baritone/issues/327">this issue</a>.
      * <p>
      * Can be very useful on servers with low render distance. After enabling, you may need to reload the world in order for it to have an effect
