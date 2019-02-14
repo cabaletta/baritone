@@ -104,14 +104,6 @@ public class PathExecutor implements IPathExecutor, Helper {
         BetterBlockPos whereShouldIBe = path.positions().get(pathPosition);
         BetterBlockPos whereAmI = ctx.playerFeet();
         if (!whereShouldIBe.equals(whereAmI)) {
-
-            if (pathPosition == 0 && whereAmI.equals(whereShouldIBe.up()) && Math.abs(ctx.player().motionY) < 0.1 && !(path.movements().get(0) instanceof MovementAscend) && !(path.movements().get(0) instanceof MovementPillar)) {
-                // avoid the Wrong Y coordinate bug
-                // TODO add a timer here
-                new MovementDownward(behavior.baritone, whereAmI, whereShouldIBe).update();
-                return false;
-            }
-
             if (!Blocks.AIR.equals(BlockStateInterface.getBlock(ctx, whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
                 for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                     if (whereAmI.equals(path.positions().get(i))) {
@@ -408,6 +400,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
                     // a descend then an ascend in the same direction
                     pathPosition++;
+                    onChangeInPathPosition();
                     // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't possible to repeat, since it's asymmetric
                     logDebug("Skipping descend to straight ascend");
                     return true;
