@@ -463,8 +463,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 } else {
                     if (next == null) {
                         if (executor.isPresent()) {
-                            queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_FINISHED);
-                            next = executor.get();
+                            if (executor.get().getPath().getSrc().equals(current.getPath().getDest())) {
+                                queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_FINISHED);
+                                next = executor.get();
+                            } else {
+                                logDebug("Warning: discarding orphan next segment with incorrect start");
+                            }
                         } else {
                             queuePathEvent(PathEvent.NEXT_CALC_FAILED);
                         }
