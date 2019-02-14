@@ -17,8 +17,6 @@
 
 package baritone.gradle.task;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import org.gradle.api.DefaultTask;
 
 import java.io.File;
@@ -26,7 +24,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 /**
  * @author Brady
