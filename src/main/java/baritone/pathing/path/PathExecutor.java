@@ -465,7 +465,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                     onTick();
                     return true;
                 }
-                logDebug("Skipping fall to " + fallDest + " " + data.getFirst());
                 clearKeys();
                 behavior.baritone.getLookBehavior().updateTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), data.getFirst(), ctx.playerRotations()), false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
