@@ -50,7 +50,9 @@ public final class GameEventHandler implements IEventBus, Helper {
         if (event.getType() == TickEvent.Type.IN) {
             try {
                 baritone.bsi = new BlockStateInterface(baritone.getPlayerContext(), true);
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                baritone.bsi = null;
+            }
         } else {
             baritone.bsi = null;
         }

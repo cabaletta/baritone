@@ -199,7 +199,7 @@ public class MovementAscend extends Movement {
         return state.setInput(Input.JUMP, true);
     }
 
-    private boolean headBonkClear() {
+    public boolean headBonkClear() {
         BetterBlockPos startUp = src.up(2);
         for (int i = 0; i < 4; i++) {
             BetterBlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));

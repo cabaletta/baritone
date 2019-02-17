@@ -122,11 +122,27 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             cancelRequested = false;
             baritone.getInputOverrideHandler().clearAllKeys();
         }
-        if (current == null) {
-            return;
-        }
-        safeToCancel = current.onTick();
         synchronized (pathPlanLock) {
+            synchronized (pathCalcLock) {
+                if (inProgress != null) {
+                    // we are calculating
+                    // are we calculating the right thing though? 🤔
+                    BetterBlockPos calcFrom = inProgress.getStart();
+                    Optional<IPath> currentBest = inProgress.bestPathSoFar();
+                    if ((current == null || !current.getPath().getDest().equals(calcFrom)) // if current ends in inProgress's start, then we're ok
+                            && !calcFrom.equals(ctx.playerFeet()) && !calcFrom.equals(expectedSegmentStart) // if current starts in our playerFeet or pathStart, then we're ok
+                            && (!currentBest.isPresent() || (!currentBest.get().positions().contains(ctx.playerFeet()) && !currentBest.get().positions().contains(expectedSegmentStart))) // if
+                    ) {
+                        // when it was *just* started, currentBest will be empty so we need to also check calcFrom since that's always present
+                        inProgress.cancel(); // cancellation doesn't dispatch any events
+                        inProgress = null; // this is safe since we hold both locks
+                    }
+                }
+            }
+            if (current == null) {
+                return;
+            }
+            safeToCancel = current.onTick();
             if (current.failed() || current.finished()) {
                 current = null;
                 if (goal == null || goal.isInGoal(ctx.playerFeet())) {
@@ -135,7 +151,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     next = null;
                     return;
                 }
-                if (next != null && !next.getPath().positions().contains(ctx.playerFeet()) && !next.getPath().positions().contains(pathStart())) { // can contain either one
+                if (next != null && !next.getPath().positions().contains(ctx.playerFeet()) && !next.getPath().positions().contains(expectedSegmentStart)) { // can contain either one
                     // if the current path failed, we may not actually be on the next one, so make sure
                     logDebug("Discarding next path as it does not contain current position");
                     // for example if we had a nicely planned ahead path that starts where current ends
@@ -157,23 +173,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 // at this point, current just ended, but we aren't in the goal and have no plan for the future
                 synchronized (pathCalcLock) {
                     if (inProgress != null) {
-                        // we are calculating
-                        // are we calculating the right thing though? 🤔
-                        BetterBlockPos calcFrom = inProgress.getStart();
-                        // if current just succeeded, we should be standing in calcFrom, so that's cool and good
-                        // but if current just failed, we should discard this calculation since it doesn't start from where we're standing
-                        if (calcFrom.equals(ctx.playerFeet()) || calcFrom.equals(pathStart())) {
-                            // cool and good
-                            queuePathEvent(PathEvent.PATH_FINISHED_NEXT_STILL_CALCULATING);
-                            return;
-                        }
-                        // oh noes
-                        inProgress.cancel(); // cancellation doesn't dispatch any events
-                        inProgress = null; // this is safe since we hold both locks
+                        queuePathEvent(PathEvent.PATH_FINISHED_NEXT_STILL_CALCULATING);
+                        return;
                     }
                     // we aren't calculating
                     queuePathEvent(PathEvent.CALC_STARTED);
-                    findPathInNewThread(pathStart(), true, context);
+                    findPathInNewThread(expectedSegmentStart, true, context);
                 }
                 return;
             }
@@ -204,7 +209,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // and this path doesn't get us all the way there
                     return;
                 }
-                if (ticksRemainingInSegment(false).get() < Baritone.settings().planningTickLookAhead.get()) {
+                if (ticksRemainingInSegment(false).get() < Baritone.settings().planningTickLookahead.get()) {
                     // and this path has 7.5 seconds or less left
                     // don't include the current movement so a very long last movement (e.g. descend) doesn't trip it up
                     // if we actually included current, it wouldn't start planning ahead until the last movement was done, if the last movement took more than 7.5 seconds on its own
@@ -247,8 +252,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (goal == null) {
             return false;
         }
-        BlockPos pathStart = pathStart();
-        if (goal.isInGoal(ctx.playerFeet()) || goal.isInGoal(pathStart)) {
+        if (goal.isInGoal(ctx.playerFeet()) || goal.isInGoal(expectedSegmentStart)) {
             return false;
         }
         synchronized (pathPlanLock) {
@@ -260,7 +264,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     return false;
                 }
                 queuePathEvent(PathEvent.CALC_STARTED);
-                findPathInNewThread(pathStart, true, context);
+                findPathInNewThread(expectedSegmentStart, true, context);
                 return true;
             }
         }
@@ -333,12 +337,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
         synchronized (pathPlanLock) {
-            current = null;
-            next = null;
+            if (current != null) {
+                current = null;
+                next = null;
+                baritone.getInputOverrideHandler().clearAllKeys();
+                getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
+                baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+            }
         }
-        baritone.getInputOverrideHandler().clearAllKeys();
-        getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
-        baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
     }
 
     public void forceCancel() { // NOT exposed on public api
@@ -448,7 +454,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 Optional<PathExecutor> executor = calcResult.getPath().map(p -> new PathExecutor(PathingBehavior.this, p));
                 if (current == null) {
                     if (executor.isPresent()) {
-                        if (executor.get().getPath().getSrc().equals(expectedSegmentStart)) {
+                        if (executor.get().getPath().positions().contains(expectedSegmentStart)) {
                             queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                             current = executor.get();
                         } else {
@@ -463,8 +469,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 } else {
                     if (next == null) {
                         if (executor.isPresent()) {
-                            queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_FINISHED);
-                            next = executor.get();
+                            if (executor.get().getPath().getSrc().equals(current.getPath().getDest())) {
+                                queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_FINISHED);
+                                next = executor.get();
+                            } else {
+                                logDebug("Warning: discarding orphan next segment with incorrect start");
+                            }
                         } else {
                             queuePathEvent(PathEvent.NEXT_CALC_FAILED);
                         }

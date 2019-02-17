@@ -20,6 +20,7 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.utils.Helper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -61,6 +62,11 @@ public class MixinKeyBinding {
     private void isPressed(CallbackInfoReturnable<Boolean> cir) {
         // only the primary baritone forces keys
         Boolean force = BaritoneAPI.getProvider().getPrimaryBaritone().getInputOverrideHandler().isInputForcedDown((KeyBinding) (Object) this);
+        if (pressTime > 0 && (KeyBinding) (Object) this == Minecraft.getMinecraft().gameSettings.keyBindAttack && Baritone.settings().clickCancel.get() && BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing()) {
+            Helper.HELPER.logDirect("Cancelling path on left click since the clickCancel setting is enabled!");
+            BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().cancelEverything();
+            return;
+        }
         if (force != null && !force && Baritone.settings().suppressClicks.get()) { // <-- cursed
             if (pressTime > 0) {
                 Helper.HELPER.logDirect("You're trying to press this mouse button but I won't let you.");

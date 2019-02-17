@@ -11,6 +11,8 @@
 [![Pull Requests](https://img.shields.io/github/issues-pr/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/pulls/)
 ![Code size](https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg)
 ![GitHub repo size](https://img.shields.io/github/repo-size/cabaletta/baritone.svg)
+![](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
+![](https://tokei.rs/b1/github/cabaletta/baritone?category=files)
 [![Minecraft](https://img.shields.io/badge/MC-1.12.2-green.svg)](https://minecraft.gamepedia.com/1.12.2)
 [![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
 [![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
@@ -30,6 +32,8 @@ the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2. Baritone 
 
 Have committed at least once a day for the last 6 months =D 🦀
 
+1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
+
 Here are some links to help to get started:
 
 - [Features](FEATURES.md)
@@ -39,6 +43,8 @@ Here are some links to help to get started:
 - [Installation](INSTALL.md)
 
 - [Javadocs](https://baritone.leijurv.com/)
+
+- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#allowBreak)
 
 # Chat control
 
@@ -57,7 +63,7 @@ BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAnd
 
 ## Can I use Baritone as a library in my custom utility client?
 
-Sure! (As long as usage is in compliance with the LGPL 3 License)
+That's what it's for, sure! (As long as usage is in compliance with the LGPL 3 License)
 
 ## How is it so fast?
 

@@ -228,7 +228,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return prune(ctx, locs, mining, max);
     }
 
-    public void addNearby() {
+    private void addNearby() {
         knownOreLocations.addAll(droppedItemsScan(mining, ctx.world()));
         BlockPos playerFeet = ctx.playerFeet();
         BlockStateInterface bsi = new BlockStateInterface(ctx);
@@ -239,8 +239,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 for (int z = playerFeet.getZ() - searchDist; z <= playerFeet.getZ() + searchDist; z++) {
                     // crucial to only add blocks we can see because otherwise this
                     // is an x-ray and it'll get caught
-                    if (mining.contains(bsi.get0(x, y, z).getBlock()) && RotationUtils.reachable(ctx.player(), new BlockPos(x, y, z), fakedBlockReachDistance).isPresent()) {
-                        knownOreLocations.add(new BlockPos(x, y, z));
+                    if (mining.contains(bsi.get0(x, y, z).getBlock())) {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if ((Baritone.settings().legitMineIncludeDiagonals.get() && knownOreLocations.stream().anyMatch(ore -> ore.distanceSq(pos) <= 2 /* sq means this is pytha dist <= sqrt(2) */)) || RotationUtils.reachable(ctx.player(), pos, fakedBlockReachDistance).isPresent()) {
+                            knownOreLocations.add(pos);
+                        }
                     }
                 }
             }
@@ -250,12 +253,19 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     public static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, List<Block> mining, int max) {
         List<BlockPos> dropped = droppedItemsScan(mining, ctx.world);
+        dropped.removeIf(drop -> {
+            for (BlockPos pos : locs2) {
+                if (pos.distanceSq(drop) <= 9 && mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) && MineProcess.plausibleToBreak(ctx.bsi, pos)) { // TODO maybe drop also has to be supported? no lava below?
+                    return true;
+                }
+            }
+            return false;
+        });
         List<BlockPos> locs = locs2
                 .stream()
                 .distinct()
 
                 // remove any that are within loaded chunks that aren't actually what we want
-
                 .filter(pos -> !ctx.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ()) || mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) || dropped.contains(pos))
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)

@@ -165,6 +165,11 @@ public final class Settings {
     public final Setting<Boolean> considerPotionEffects = new Setting<>(true);
 
     /**
+     * Sprint and jump a block early on ascends wherever possible
+     */
+    public final Setting<Boolean> sprintAscends = new Setting<>(true);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.
@@ -277,7 +282,7 @@ public final class Settings {
     /**
      * Start planning the next path once the remaining movements tick estimates sum up to less than this value
      */
-    public final Setting<Integer> planningTickLookAhead = new Setting<>(150);
+    public final Setting<Integer> planningTickLookahead = new Setting<>(150);
 
     /**
      * Default size of the Long2ObjectOpenHashMap used in pathing
@@ -308,6 +313,8 @@ public final class Settings {
      * Is it okay to sprint through a descend followed by a diagonal?
      * The player overshoots the landing, but not enough to fall off. And the diagonal ensures that there isn't
      * lava or anything that's !canWalkInto in that space, so it's technically safe, just a little sketchy.
+     * <p>
+     * Note: this is *not* related to the allowDiagonalDescend setting, that is a completely different thing.
      */
     public final Setting<Boolean> allowOvershootDiagonalDescend = new Setting<>(true);
 
@@ -379,6 +386,11 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
 
     /**
+     * Cancel baritone on left click, as a form of "panic button"
+     */
+    public final Setting<Boolean> clickCancel = new Setting<>(false);
+
+    /**
      * Remember the contents of containers (chests, echests, furnaces)
      * <p>
      * Really buggy since the packet stuff is multithreaded badly thanks to brady
@@ -388,7 +400,7 @@ public final class Settings {
     /**
      * Print all the debug messages to chat
      */
-    public final Setting<Boolean> chatDebug = new Setting<>(true);
+    public final Setting<Boolean> chatDebug = new Setting<>(false);
 
     /**
      * Allow chat based control of Baritone. Most likely should be disabled when Baritone is imported for use in
@@ -467,7 +479,18 @@ public final class Settings {
     public final Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
     /**
-     * 😎 Render cached chunks as semitransparent. Doesn't work with OptiFine 😭
+     * Continue sprinting while in water
+     */
+    public final Setting<Boolean> sprintInWater = new Setting<>(true);
+
+    /**
+     * When GetToBlockProcess fails to calculate a path, instead of just giving up, mark the closest instances
+     * of that block as "unreachable" and go towards the next closest
+     */
+    public final Setting<Boolean> blacklistOnGetToBlockFailure = new Setting<>(true);
+
+    /**
+     * 😎 Render cached chunks as semitransparent. Doesn't work with OptiFine 😭 Rarely randomly crashes, see <a href="https://github.com/cabaletta/baritone/issues/327">this issue</a>.
      * <p>
      * Can be very useful on servers with low render distance. After enabling, you may need to reload the world in order for it to have an effect
      * (e.g. disconnect and reconnect, enter then exit the nether, die and respawn, etc). This may literally kill your FPS and CPU because
@@ -557,6 +580,19 @@ public final class Settings {
      * What Y level to go to for legit strip mining
      */
     public final Setting<Integer> legitMineYLevel = new Setting<>(11);
+
+    /**
+     * Magically see ores that are separated diagonally from existing ores. Basically like mining around the ores that it finds
+     * in case there's one there touching it diagonally, except it checks it un-legit-ly without having the mine blocks to see it.
+     * You can decide whether this looks plausible or not.
+     * <p>
+     * This is disabled because it results in some weird behavior. For example, it can """see""" the top block of a vein of iron_ore
+     * through a lava lake. This isn't an issue normally since it won't consider anything touching lava, so it just ignores it.
+     * However, this setting expands that and allows it to see the entire vein so it'll mine under the lava lake to get the iron that
+     * it can reach without mining blocks adjacent to lava. This really defeats the purpose of legitMine since a player could never
+     * do that lol, so thats one reason why its disabled
+     */
+    public final Setting<Boolean> legitMineIncludeDiagonals = new Setting<>(false);
 
     /**
      * When mining block of a certain type, try to mine two at once instead of one.

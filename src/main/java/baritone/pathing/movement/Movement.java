@@ -160,7 +160,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                 //i dont care if theres snow in the way!!!!!!!
                 //you dont own me!!!!
                 state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
-                        VecUtils.getBlockPosCenter(blockPos)), true)
+                        VecUtils.getBlockPosCenter(blockPos), ctx.playerRotations()), true)
                 );
                 // don't check selectedblock on this one, this is a fallback when we can't see any face directly, it's intended to be breaking the "incorrect" block
                 state.setInput(Input.CLICK_LEFT, true);
