@@ -57,8 +57,6 @@ public final class PathRenderer implements Helper {
     private PathRenderer() {}
 
     public static void render(RenderEvent event, PathingBehavior behavior) {
-        // System.out.println("Render passing");
-        // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
 
