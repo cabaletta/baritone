@@ -78,7 +78,7 @@ public final class PathRenderer implements Helper {
         }
 
         if (goal != null && Baritone.settings().renderGoal.value) {
-            drawLitDankGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.get());
+            drawDankLitGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.get());
         }
         if (!Baritone.settings().renderPath.get()) {
             return;
@@ -259,7 +259,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.disableBlend();
     }
 
-    public static void drawLitDankGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
+    public static void drawDankLitGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
         double renderPosX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
@@ -330,7 +330,7 @@ public final class PathRenderer implements Helper {
             maxY = 256 - renderPosY;
         } else if (goal instanceof GoalComposite) {
             for (Goal g : ((GoalComposite) goal).goals()) {
-                drawLitDankGoalBox(player, g, partialTicks, color);
+                drawDankLitGoalBox(player, g, partialTicks, color);
             }
             return;
         } else {
