@@ -76,4 +76,11 @@ public interface IBaritone {
     IPlayerContext getPlayerContext();
 
     IEventBus getGameEventHandler();
+
+    /**
+     * Call as soon as Minecraft is ready.
+     * <p>
+     * Or whenever your overeager utility client wants.
+     */
+    void init();
 }
