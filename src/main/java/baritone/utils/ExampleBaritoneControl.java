@@ -77,7 +77,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     "sethome - Sets \"home\"\n" +
                     "home - Paths towards \"home\" \n" +
                     "costs - (debug) all movement costs from current location\n" +
-                    "damn - Daniel ";
+                    "damn - Daniel\n" +
+                    "Go to https://github.com/cabaletta/baritone/blob/master/USAGE.md for more information";
 
     private static final String COMMAND_PREFIX = "#";
 
