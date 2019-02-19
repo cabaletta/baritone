@@ -103,7 +103,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
-        if (this.target != null && !this.force) {
+        if (this.target != null) {
 
             event.setYaw(this.target.getYaw());
 
