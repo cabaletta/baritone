@@ -181,14 +181,21 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        if (headBonkClear()) {
-            return state.setInput(Input.JUMP, true);
-        }
-
         int xAxis = Math.abs(src.getX() - dest.getX()); // either 0 or 1
         int zAxis = Math.abs(src.getZ() - dest.getZ()); // either 0 or 1
         double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().posX) + zAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().posZ);
         double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().posX) + xAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().posZ);
+
+        double lateralMotion = xAxis * ctx.player().motionZ + zAxis * ctx.player().motionX;
+        if (Math.abs(lateralMotion) > 0.1) {
+            return state;
+        }
+
+        if (headBonkClear()) {
+            return state.setInput(Input.JUMP, true);
+        }
+
+
         // System.out.println(flatDistToNext + " " + sideDist);
         if (flatDistToNext > 1.2 || sideDist > 0.2) {
             return state;
