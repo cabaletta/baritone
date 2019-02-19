@@ -544,6 +544,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!MovementHelper.canWalkOn(ctx, next.getDest().down())) {
             return false;
         }
+        if (!next.toBreakCached.isEmpty()) {
+            return false; // it's breaking
+        }
         for (int x = 0; x < 2; x++) {
             for (int y = 0; y < 3; y++) {
                 BlockPos chk = current.getSrc().up(y);
