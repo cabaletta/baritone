@@ -479,6 +479,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (dir.getY() < -3) {
             return null;
         }
+        if (!movement.toBreakCached.isEmpty()) {
+            return null; // it's breaking
+        }
         Vec3i flatDir = new Vec3i(dir.getX(), 0, dir.getZ());
         int i;
         outer:
