@@ -500,18 +500,18 @@ public final class Settings {
      * <p>
      * SOLID is rendered as stone in the overworld, netherrack in the nether, and end stone in the end
      */
-    public Setting<Boolean> renderCachedChunks = new Setting<>(false);
+    public final Setting<Boolean> renderCachedChunks = new Setting<>(false);
 
     /**
      * 0.0f = not visible, fully transparent
      * 1.0f = fully opaque
      */
-    public Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
+    public final Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
 
     /**
      * If true, Baritone will not allow you to left or right click while pathing
      */
-    public Setting<Boolean> suppressClicks = new Setting<>(false);
+    public final Setting<Boolean> suppressClicks = new Setting<>(false);
 
     /**
      * Whether or not to use the "#" command prefix
