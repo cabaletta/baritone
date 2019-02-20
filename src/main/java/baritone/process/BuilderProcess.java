@@ -465,6 +465,9 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     public Goal placementgoal(BlockPos pos, BuilderCalculationContext bcc) {
+        if (ctx.world().getBlockState(pos).getBlock() != Blocks.AIR) {
+            return new GoalPlace(pos);
+        }
         boolean allowSameLevel = ctx.world().getBlockState(pos.up()).getBlock() != Blocks.AIR;
         for (EnumFacing facing : Movement.HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP) {
             if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && ctx.world().mayPlace(bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ()).getBlock(), pos, false, facing, null)) {

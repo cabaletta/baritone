@@ -558,7 +558,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             while (moves.contains(null)) {
                 moves.remove(null);
             }
-            moves.sort(Comparator.comparingDouble(Movement::getCost));
+            moves.sort(Comparator.comparingDouble(move -> move.getCost(new CalculationContext(baritone))));
             for (Movement move : moves) {
                 String[] parts = move.getClass().toString().split("\\.");
                 double cost = move.getCost();

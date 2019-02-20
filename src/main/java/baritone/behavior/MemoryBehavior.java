@@ -25,7 +25,6 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.cache.ContainerMemory;
 import baritone.cache.Waypoint;
-import baritone.pathing.movement.CalculationContext;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
@@ -196,7 +195,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     private BlockPos neighboringConnectedBlock(BlockPos in) {
-        BlockStateInterface bsi = new CalculationContext(baritone).bsi;
+        BlockStateInterface bsi = baritone.bsi;
         Block block = bsi.get0(in).getBlock();
         if (block != Blocks.TRAPPED_CHEST && block != Blocks.CHEST) {
             return null; // other things that have contents, but can be placed adjacent without combining

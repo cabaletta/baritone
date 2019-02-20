@@ -361,6 +361,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
     }
 
+    public CalculationContext secretInternalGetCalculationContext() {
+        return context;
+    }
+
     /**
      * See issue #209
      *
