@@ -280,6 +280,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             onLostControl();
             return null;
         }
+        trim(bcc);
         if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_LEFT)) {
             ticks = 5;
         } else {
@@ -364,6 +365,14 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             fullRecalc(bcc);
         }
         return !incorrectPositions.isEmpty();
+    }
+
+    public void trim(BuilderCalculationContext bcc) {
+        HashSet<BetterBlockPos> copy = new HashSet<>(incorrectPositions);
+        copy.removeIf(pos -> pos.distanceSq(ctx.player().posX, ctx.player().posY, ctx.player().posZ) > 200);
+        if (!copy.isEmpty()) {
+            incorrectPositions = copy;
+        }
     }
 
     public void recalcNearby(BuilderCalculationContext bcc) {
