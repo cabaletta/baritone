@@ -295,6 +295,8 @@ public final class PathRenderer implements Helper {
             GoalXZ goalPos = (GoalXZ) goal;
 
             if (Baritone.settings().renderGoalXZBeacon.get()) {
+                glPushAttrib(GL_LIGHTING_BIT);
+
                 mc.getTextureManager().bindTexture(TileEntityBeaconRenderer.TEXTURE_BEACON_BEAM);
 
                 if (Baritone.settings().renderGoalIgnoreDepth.get()) {
@@ -316,6 +318,8 @@ public final class PathRenderer implements Helper {
                 if (Baritone.settings().renderGoalIgnoreDepth.get()) {
                     GlStateManager.enableDepth();
                 }
+
+                glPopAttrib();
                 return;
             }
 
