@@ -45,7 +45,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
     /**
      * The maximum number of regions in any direction from (0,0)
      */
-    private static final int REGION_MAX = 58594;
+    private static final int REGION_MAX = 30_000_000 / 512 + 1;
 
     /**
      * A map of all of the cached regions.

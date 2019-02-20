@@ -479,6 +479,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (dir.getY() < -3) {
             return null;
         }
+        if (!movement.toBreakCached.isEmpty()) {
+            return null; // it's breaking
+        }
         Vec3i flatDir = new Vec3i(dir.getX(), 0, dir.getZ());
         int i;
         outer:
@@ -537,6 +540,12 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (!MovementHelper.canWalkOn(ctx, current.getDest().down())) {
             return false;
+        }
+        if (!MovementHelper.canWalkOn(ctx, next.getDest().down())) {
+            return false;
+        }
+        if (!next.toBreakCached.isEmpty()) {
+            return false; // it's breaking
         }
         for (int x = 0; x < 2; x++) {
             for (int y = 0; y < 3; y++) {

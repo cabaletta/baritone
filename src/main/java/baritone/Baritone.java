@@ -91,6 +91,7 @@ public class Baritone implements IBaritone {
         this.gameEventHandler = new GameEventHandler(this);
     }
 
+    @Override
     public synchronized void init() {
         if (initialized) {
             return;

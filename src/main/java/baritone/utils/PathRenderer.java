@@ -57,8 +57,6 @@ public final class PathRenderer implements Helper {
     private PathRenderer() {}
 
     public static void render(RenderEvent event, PathingBehavior behavior) {
-        // System.out.println("Render passing");
-        // System.out.println(event.getPartialTicks());
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
 
@@ -80,7 +78,7 @@ public final class PathRenderer implements Helper {
         }
 
         if (goal != null && Baritone.settings().renderGoal.value) {
-            drawLitDankGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.get());
+            drawDankLitGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.get());
         }
         if (!Baritone.settings().renderPath.get()) {
             return;
@@ -261,7 +259,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.disableBlend();
     }
 
-    public static void drawLitDankGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
+    public static void drawDankLitGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
         double renderPosX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
         double renderPosY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
         double renderPosZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
@@ -297,6 +295,8 @@ public final class PathRenderer implements Helper {
             GoalXZ goalPos = (GoalXZ) goal;
 
             if (Baritone.settings().renderGoalXZBeacon.get()) {
+                glPushAttrib(GL_LIGHTING_BIT);
+
                 mc.getTextureManager().bindTexture(TileEntityBeaconRenderer.TEXTURE_BEACON_BEAM);
 
                 if (Baritone.settings().renderGoalIgnoreDepth.get()) {
@@ -318,6 +318,8 @@ public final class PathRenderer implements Helper {
                 if (Baritone.settings().renderGoalIgnoreDepth.get()) {
                     GlStateManager.enableDepth();
                 }
+
+                glPopAttrib();
                 return;
             }
 
@@ -332,7 +334,7 @@ public final class PathRenderer implements Helper {
             maxY = 256 - renderPosY;
         } else if (goal instanceof GoalComposite) {
             for (Goal g : ((GoalComposite) goal).goals()) {
-                drawLitDankGoalBox(player, g, partialTicks, color);
+                drawDankLitGoalBox(player, g, partialTicks, color);
             }
             return;
         } else {

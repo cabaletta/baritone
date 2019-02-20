@@ -14,15 +14,13 @@
 
 # lwjgl is weird
 -dontwarn org.lwjgl.opengl.GL14
+-dontwarn org.lwjgl.opengl.GL11
 
 -keep class baritone.api.** { *; } # this is the keep api
 
 # service provider needs these class names
 -keep class baritone.BaritoneProvider
 -keep class baritone.api.IBaritoneProvider
-
-# hack
--keep class baritone.utils.ExampleBaritoneControl { *; } # have to include this string to remove this keep in the standalone build: # this is the keep api
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {

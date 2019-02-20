@@ -179,7 +179,7 @@ public class MovementTraverse extends Movement {
             float pitchToBreak = state.getTarget().getRotation().get().getPitch();
 
             state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
-            return state.setInput(Input.MOVE_FORWARD, true);
+            return state.setInput(Input.MOVE_FORWARD, true).setInput(Input.SPRINT, true);
         }
 
         //sneak may have been set to true in the PREPPING state while mining an adjacent block

@@ -82,6 +82,7 @@ public class PathingControlManager implements IPathingControlManager {
 
     public void preTick() {
         inControlLastTick = inControlThisTick;
+        inControlThisTick = null;
         PathingBehavior p = baritone.getPathingBehavior();
         command = executeProcesses();
         if (command == null) {
