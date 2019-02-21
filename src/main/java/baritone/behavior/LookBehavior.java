@@ -109,7 +109,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
             // If we have antiCheatCompatibility on, we're going to use the target value later in onPlayerUpdate()
             // Also the type has to be MOTION_UPDATE because that is called after JUMP
-            if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE) {
+            if (!Baritone.settings().antiCheatCompatibility.get() && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE && !this.force) {
                 this.target = null;
             }
         }
