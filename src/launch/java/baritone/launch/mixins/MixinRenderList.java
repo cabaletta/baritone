@@ -18,6 +18,7 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderList;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,7 +38,7 @@ public class MixinRenderList {
             )
     )
     private void popMatrix() {
-        if (Baritone.settings().renderCachedChunks.get()) {
+        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getMinecraft().getIntegratedServer() == null) {
             // reset the blend func to normal (not dependent on constant alpha)
             GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         }
