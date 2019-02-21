@@ -168,7 +168,13 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     private Goal createGoal(BlockPos pos) {
-        return walkIntoInsteadOfAdjacent(gettingTo) ? new GoalTwoBlocks(pos) : new GoalGetToBlock(pos);
+        if (walkIntoInsteadOfAdjacent(gettingTo)) {
+            return new GoalTwoBlocks(pos);
+        }
+        if (blockOnTopMustBeRemoved(gettingTo) && baritone.bsi.get0(pos.up()).isBlockNormalCube()) {
+            return new GoalBlock(pos.up());
+        }
+        return new GoalGetToBlock(pos);
     }
 
     private boolean rightClick() {
@@ -202,5 +208,13 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             return false;
         }
         return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
+    }
+
+    private boolean blockOnTopMustBeRemoved(Block block) {
+        if (!rightClickOnArrival(block)) { // only if we plan to actually open it on arrival
+            return false;
+        }
+        // only these chests; you can open a crafting table or furnace even with a block on top
+        return block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
     }
 }
