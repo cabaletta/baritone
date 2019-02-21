@@ -249,9 +249,9 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     private static Vec3d[] aabbSideMultipliers(EnumFacing side) {
         switch (side) {
             case UP:
-                return new Vec3d[]{new Vec3d(0.5, 1, 0.5)};
+                return new Vec3d[]{new Vec3d(0.5, 1, 0.5), new Vec3d(0.1, 1, 0.5), new Vec3d(0.9, 1, 0.5), new Vec3d(0.5, 1, 0.1), new Vec3d(0.5, 1, 0.9)};
             case DOWN:
-                return new Vec3d[]{new Vec3d(0.5, 0, 0.5)};
+                return new Vec3d[]{new Vec3d(0.5, 0, 0.5), new Vec3d(0.1, 0, 0.5), new Vec3d(0.9, 0, 0.5), new Vec3d(0.5, 0, 0.1), new Vec3d(0.5, 0, 0.9)};
             case NORTH:
             case SOUTH:
             case EAST:
@@ -295,6 +295,12 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             BetterBlockPos pos = toBreak.get().getFirst();
             baritone.getLookBehavior().updateTarget(rot, true);
             MovementHelper.switchToBestToolFor(ctx, bcc.get(pos));
+            if (ctx.player().isSneaking()) {
+                // really horrible bug where a block is visible for breaking while sneaking but not otherwise
+                // so you can't see it, it goes to place something else, sneaks, then the next tick it tries to break
+                // and is unable since it's unsneaked in the intermediary tick
+                baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
+            }
             if (Objects.equals(ctx.objectMouseOver().getBlockPos(), pos) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
@@ -444,6 +450,11 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         @Override
         public double heuristic(int x, int y, int z) {
             return primary.heuristic(x, y, z);
+        }
+
+        @Override
+        public String toString() {
+            return "JankyComposite Primary: " + primary + " Fallback: " + fallback;
         }
     }
 
