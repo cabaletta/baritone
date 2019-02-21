@@ -67,6 +67,12 @@ minecraft {
     makeObfSourceJar = true
 }
 
+reobf {
+    jar {
+        mappingType = System.getProperty('mapping_type', 'NOTCH')
+    }
+}
+
 repositories {
     mavenCentral()
 
