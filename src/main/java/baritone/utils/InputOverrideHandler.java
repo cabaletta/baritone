@@ -61,16 +61,23 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     @Override
     public final Boolean isInputForcedDown(KeyBinding key) {
         Input input = Input.getInputForBind(key);
-        if (input == null || !inControl()) {
+        if (input == null) {
             return null;
         }
-        if (input == Input.CLICK_LEFT) {
+        if (input == Input.CLICK_LEFT && inControl()) {
+            // only override left click off when pathing
             return false;
         }
         if (input == Input.CLICK_RIGHT) {
-            return isInputForcedDown(Input.CLICK_RIGHT);
+            if (isInputForcedDown(Input.CLICK_RIGHT)) {
+                // gettoblock and builder can right click even when not pathing; allow them to do so
+                return true;
+            } else if (inControl()) {
+                // but when we are pathing for real, force right click off
+                return false;
+            }
         }
-        return null;
+        return null; // dont force any inputs other than left and right click
     }
 
     /**
