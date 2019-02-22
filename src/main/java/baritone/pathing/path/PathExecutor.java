@@ -391,7 +391,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (current instanceof MovementTraverse && pathPosition < path.length() - 3) {
             IMovement next = path.movements().get(pathPosition + 1);
             if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next, path.movements().get(pathPosition + 2))) {
-                if (skipNow(ctx, current, next)) {
+                if (skipNow(ctx, current)) {
                     logDebug("Skipping traverse to straight ascend");
                     pathPosition++;
                     onChangeInPathPosition();
@@ -513,7 +513,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 movement.getDest().add(flatDir.getX() * (i - pathPosition), 0, flatDir.getZ() * (i - pathPosition)));
     }
 
-    private static boolean skipNow(IPlayerContext ctx, IMovement current, IMovement next) {
+    private static boolean skipNow(IPlayerContext ctx, IMovement current) {
         double offTarget = Math.abs(current.getDirection().getX() * (current.getSrc().z + 0.5D - ctx.player().posZ)) + Math.abs(current.getDirection().getZ() * (current.getSrc().x + 0.5D - ctx.player().posX));
         if (offTarget > 0.1) {
             return false;
