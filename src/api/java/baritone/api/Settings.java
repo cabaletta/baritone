@@ -17,6 +17,7 @@
 
 package baritone.api;
 
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -704,12 +705,6 @@ public final class Settings {
      */
     public final List<Setting<?>> allSettings;
 
-    public void reset() {
-        for (Setting setting : allSettings) {
-            setting.value = setting.defaultValue;
-        }
-    }
-
     public final class Setting<T> {
         public T value;
         public final T defaultValue;
@@ -739,8 +734,13 @@ public final class Settings {
             return klass;
         }
 
+        @Override
         public String toString() {
-            return name + ": " + value;
+            return SettingsUtil.settingToString(this);
+        }
+
+        public void reset() {
+            value = defaultValue;
         }
     }
 

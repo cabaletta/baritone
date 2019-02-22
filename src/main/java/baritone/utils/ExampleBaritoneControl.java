@@ -117,9 +117,30 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 return true;
             }
         }
-        if (msg.equals("baritone") || msg.equals("settings")) {
-            for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
+        if (msg.equals("baritone") || msg.equals("modifiedsettings") || msg.startsWith("settings m") || msg.equals("modified")) {
+            logDirect("All settings that have been modified from their default values:");
+            for (Settings.Setting<?> setting : SettingsUtil.modifiedSettings(Baritone.settings())) {
                 logDirect(setting.toString());
+            }
+            return true;
+        }
+        if (msg.startsWith("settings")) {
+            String rest = msg.substring("settings".length());
+            try {
+                int page = Integer.parseInt(rest.trim());
+                int min = page * 10;
+                int max = Math.min(Baritone.settings().allSettings.size(), (page + 1) * 10);
+                logDirect("Settings " + min + " to " + (max - 1) + ":");
+                for (int i = min; i < max; i++) {
+                    logDirect(Baritone.settings().allSettings.get(i).toString());
+                }
+            } catch (Exception ex) { // NumberFormatException | ArrayIndexOutOfBoundsException and probably some others I'm forgetting lol
+                ex.printStackTrace();
+                logDirect("All settings:");
+                for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
+                    logDirect(setting.toString());
+                }
+                logDirect("To get one page of ten settings at a time, do settings <num>");
             }
             return true;
         }
@@ -130,31 +151,24 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.contains(" ")) {
-            String[] data = msg.split(" ");
-            if (data.length == 2) {
-                Settings.Setting setting = Baritone.settings().byLowerName.get(data[0]);
-                if (setting != null) {
+            String settingName = msg.substring(0, msg.indexOf(' '));
+            String settingValue = msg.substring(msg.indexOf(' ') + 1);
+            Settings.Setting setting = Baritone.settings().byLowerName.get(settingName);
+            if (setting != null) {
+                if (settingValue.equals("reset")) {
+                    logDirect("Resetting setting " + settingName + " to default value.");
+                    setting.reset();
+                } else {
                     try {
-                        if (setting.value.getClass() == Long.class) {
-                            setting.value = Long.parseLong(data[1]);
-                        }
-                        if (setting.value.getClass() == Integer.class) {
-                            setting.value = Integer.parseInt(data[1]);
-                        }
-                        if (setting.value.getClass() == Double.class) {
-                            setting.value = Double.parseDouble(data[1]);
-                        }
-                        if (setting.value.getClass() == Float.class) {
-                            setting.value = Float.parseFloat(data[1]);
-                        }
-                    } catch (NumberFormatException e) {
-                        logDirect("Unable to parse " + data[1]);
+                        SettingsUtil.parseAndApply(Baritone.settings(), settingName, settingValue);
+                    } catch (Exception ex) {
+                        logDirect("Unable to parse setting");
                         return true;
                     }
-                    SettingsUtil.save(Baritone.settings());
-                    logDirect(setting.toString());
-                    return true;
                 }
+                SettingsUtil.save(Baritone.settings());
+                logDirect(setting.toString());
+                return true;
             }
         }
         if (Baritone.settings().byLowerName.containsKey(msg)) {
@@ -278,7 +292,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("reset")) {
-            Baritone.settings().reset();
+            for (Settings.Setting setting : Baritone.settings().allSettings) {
+                setting.reset();
+            }
+            SettingsUtil.save(Baritone.settings());
             logDirect("Baritone settings reset");
             return true;
         }

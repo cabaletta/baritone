@@ -27,10 +27,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -89,22 +87,8 @@ public class SettingsUtil {
 
     public static synchronized void save(Settings settings) {
         try (BufferedWriter out = Files.newBufferedWriter(SETTINGS_PATH)) {
-            for (Settings.Setting setting : settings.allSettings) {
-                if (setting.get() == null) {
-                    System.out.println("NULL SETTING?" + setting.getName());
-                    continue;
-                }
-                if (setting.getName().equals("logger")) {
-                    continue; // NO
-                }
-                if (setting.value == setting.defaultValue) {
-                    continue;
-                }
-                SettingsIO io = map.get(setting.getValueClass());
-                if (io == null) {
-                    throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting + " " + setting.getName());
-                }
-                out.write(setting.getName() + " " + io.toString.apply(setting.get()) + "\n");
+            for (Settings.Setting setting : modifiedSettings(settings)) {
+                out.write(settingToString(setting) + "\n");
             }
         } catch (Exception ex) {
             System.out.println("Exception thrown while saving Baritone settings!");
@@ -112,7 +96,36 @@ public class SettingsUtil {
         }
     }
 
-    private static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
+    public static List<Settings.Setting> modifiedSettings(Settings settings) {
+        List<Settings.Setting> modified = new ArrayList<>();
+        for (Settings.Setting setting : settings.allSettings) {
+            if (setting.get() == null) {
+                System.out.println("NULL SETTING?" + setting.getName());
+                continue;
+            }
+            if (setting.getName().equals("logger")) {
+                continue; // NO
+            }
+            if (setting.value == setting.defaultValue) {
+                continue;
+            }
+            modified.add(setting);
+        }
+        return modified;
+    }
+
+    public static String settingToString(Settings.Setting setting) throws IllegalStateException {
+        if (setting.getName().equals("logger")) {
+            return "logger";
+        }
+        SettingsIO io = map.get(setting.getValueClass());
+        if (io == null) {
+            throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting.getName());
+        }
+        return setting.getName() + " " + io.toString.apply(setting.get());
+    }
+
+    public static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
         Settings.Setting setting = settings.byLowerName.get(settingName);
         if (setting == null) {
             throw new IllegalStateException("No setting by that name");
