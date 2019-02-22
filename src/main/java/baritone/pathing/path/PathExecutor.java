@@ -106,33 +106,31 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         BetterBlockPos whereShouldIBe = path.positions().get(pathPosition);
         BetterBlockPos whereAmI = ctx.playerFeet();
-        if (!whereShouldIBe.equals(whereAmI)) {
-            if (!Blocks.AIR.equals(BlockStateInterface.getBlock(ctx, whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
-                for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
-                    if (whereAmI.equals(path.positions().get(i))) {
-                        logDebug("Skipping back " + (pathPosition - i) + " steps, to " + i);
-                        int previousPos = pathPosition;
-                        pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
-                        for (int j = pathPosition; j <= previousPos; j++) {
-                            path.movements().get(j).reset();
-                        }
-                        onChangeInPathPosition();
-                        onTick();
-                        return false;
+        if (!whereShouldIBe.equals(whereAmI) && !Blocks.AIR.equals(BlockStateInterface.getBlock(ctx, whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
+            for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
+                if (whereAmI.equals(path.positions().get(i))) {
+                    logDebug("Skipping back " + (pathPosition - i) + " steps, to " + i);
+                    int previousPos = pathPosition;
+                    pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
+                    for (int j = pathPosition; j <= previousPos; j++) {
+                        path.movements().get(j).reset();
                     }
+                    onChangeInPathPosition();
+                    onTick();
+                    return false;
                 }
-                for (int i = pathPosition + 3; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
-                    // also don't check pathPosition+2 because reasons
-                    if (whereAmI.equals(path.positions().get(i))) {
-                        if (i - pathPosition > 2) {
-                            logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
-                        }
-                        //System.out.println("Double skip sundae");
-                        pathPosition = i - 1;
-                        onChangeInPathPosition();
-                        onTick();
-                        return false;
+            }
+            for (int i = pathPosition + 3; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
+                // also don't check pathPosition+2 because reasons
+                if (whereAmI.equals(path.positions().get(i))) {
+                    if (i - pathPosition > 2) {
+                        logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                     }
+                    //System.out.println("Double skip sundae");
+                    pathPosition = i - 1;
+                    onChangeInPathPosition();
+                    onTick();
+                    return false;
                 }
             }
         }
@@ -561,10 +559,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (MovementHelper.avoidWalkingInto(ctx.world().getBlockState(current.getSrc().up(3)).getBlock())) {
             return false;
         }
-        if (MovementHelper.avoidWalkingInto(ctx.world().getBlockState(next.getDest().up(2)).getBlock())) {
-            return false;
-        }
-        return true;
+        return !MovementHelper.avoidWalkingInto(ctx.world().getBlockState(next.getDest().up(2)).getBlock()); // codacy smh my head
     }
 
     private static boolean canSprintFromDescendInto(IPlayerContext ctx, IMovement current, IMovement next) {
