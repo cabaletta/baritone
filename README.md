@@ -46,7 +46,7 @@ Here are some links to help to get started:
 
 - [Javadocs](https://baritone.leijurv.com/)
 
-- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#allowBreak)
+- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
 
 - [Baritone chat control usage](USAGE.md)
 
