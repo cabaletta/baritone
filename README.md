@@ -34,6 +34,8 @@ Have committed at least once a day for the last 6 months =D 🦀
 
 1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
 
+# Getting Started
+
 Here are some links to help to get started:
 
 - [Features](FEATURES.md)
@@ -46,11 +48,15 @@ Here are some links to help to get started:
 
 - [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#allowBreak)
 
-# Chat control
-
 - [Baritone chat control usage](USAGE.md)
 
-# API example
+# API
+
+The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
+Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
+jar.
+
+Below is an example of basic usage for changing some settings, and then pathing to a X/Z goal.
 
 ```
 BaritoneAPI.getSettings().allowSprint.value = true;

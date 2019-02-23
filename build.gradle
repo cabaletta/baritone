@@ -111,9 +111,7 @@ jar {
     from sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-}
 
-jar {
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.baritone.json',
