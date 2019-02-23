@@ -22,10 +22,7 @@ import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.pathing.calc.IPathingControlManager;
-import baritone.api.process.ICustomGoalProcess;
-import baritone.api.process.IFollowProcess;
-import baritone.api.process.IGetToBlockProcess;
-import baritone.api.process.IMineProcess;
+import baritone.api.process.*;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.IPlayerContext;
 
@@ -36,22 +33,13 @@ import baritone.api.utils.IPlayerContext;
 public interface IBaritone {
 
     /**
-     * @return The {@link IFollowProcess} instance
-     * @see IFollowProcess
+     * Call as soon as Minecraft is ready, initializes all of the processes, behaviors, etc. This will
+     * only effectively be ran once, any additional calls are redundant because the initialization state
+     * is saved.
+     * <p>
+     * Or whenever your overeager utility client wants.
      */
-    IFollowProcess getFollowProcess();
-
-    /**
-     * @return The {@link ILookBehavior} instance
-     * @see ILookBehavior
-     */
-    ILookBehavior getLookBehavior();
-
-    /**
-     * @return The {@link IMineProcess} instance
-     * @see IMineProcess
-     */
-    IMineProcess getMineProcess();
+    void init();
 
     /**
      * @return The {@link IPathingBehavior} instance
@@ -60,27 +48,65 @@ public interface IBaritone {
     IPathingBehavior getPathingBehavior();
 
     /**
+     * @return The {@link ILookBehavior} instance
+     * @see ILookBehavior
+     */
+    ILookBehavior getLookBehavior();
+
+    /**
+     * @return The {@link IFollowProcess} instance
+     * @see IFollowProcess
+     */
+    IFollowProcess getFollowProcess();
+
+    /**
+     * @return The {@link IMineProcess} instance
+     * @see IMineProcess
+     */
+    IMineProcess getMineProcess();
+
+    /**
+     * @return The {@link ICustomGoalProcess} instance
+     * @see ICustomGoalProcess
+     */
+    ICustomGoalProcess getCustomGoalProcess();
+
+    /**
+     * @return The {@link IGetToBlockProcess} instance
+     * @see IGetToBlockProcess
+     */
+    IGetToBlockProcess getGetToBlockProcess();
+
+    /**
      * @return The {@link IWorldProvider} instance
      * @see IWorldProvider
      */
     IWorldProvider getWorldProvider();
 
+    /**
+     * Returns the {@link IPathingControlManager} for this {@link IBaritone} instance, which is responsible
+     * for managing the {@link IBaritoneProcess}es which control the {@link IPathingBehavior} state.
+     *
+     * @return The {@link IPathingControlManager} instance
+     * @see IPathingControlManager
+     */
     IPathingControlManager getPathingControlManager();
 
+    /**
+     * @return The {@link IInputOverrideHandler} instance
+     * @see IInputOverrideHandler
+     */
     IInputOverrideHandler getInputOverrideHandler();
 
-    ICustomGoalProcess getCustomGoalProcess();
-
-    IGetToBlockProcess getGetToBlockProcess();
-
+    /**
+     * @return The {@link IPlayerContext} instance
+     * @see IPlayerContext
+     */
     IPlayerContext getPlayerContext();
 
-    IEventBus getGameEventHandler();
-
     /**
-     * Call as soon as Minecraft is ready.
-     * <p>
-     * Or whenever your overeager utility client wants.
+     * @return The {@link IEventBus} instance
+     * @see IEventBus
      */
-    void init();
+    IEventBus getGameEventHandler();
 }

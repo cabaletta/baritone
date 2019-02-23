@@ -23,9 +23,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 
 /**
- * API exposure for various things implemented in Baritone.
- * <p>
- * W.I.P
+ * Exposes the {@link IBaritoneProvider} instance and the {@link Settings} instance for API usage.
  *
  * @author Brady
  * @since 9/23/2018

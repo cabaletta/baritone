@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Baritone's settings
+ * Baritone's settings. Settings apply to all Baritone instances.
  *
  * @author leijurv
  */
