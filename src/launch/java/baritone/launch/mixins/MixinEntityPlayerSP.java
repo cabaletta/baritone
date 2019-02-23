@@ -40,10 +40,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EntityPlayerSP.class)
 public class MixinEntityPlayerSP {
 
-    private IBaritone baritone() {
-        return
-    }
-
     @Inject(
             method = "sendChatMessage",
             at = @At("HEAD"),
