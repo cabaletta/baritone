@@ -19,7 +19,6 @@ package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
-import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.SprintStateEvent;
@@ -41,6 +40,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EntityPlayerSP.class)
 public class MixinEntityPlayerSP {
 
+    private IBaritone baritone() {
+        return
+    }
+
     @Inject(
             method = "sendChatMessage",
             at = @At("HEAD"),
@@ -48,7 +51,11 @@ public class MixinEntityPlayerSP {
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
         ChatEvent event = new ChatEvent(msg);
-        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onSendChatMessage(event);
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone == null) {
+            return;
+        }
+        baritone.getGameEventHandler().onSendChatMessage(event);
         if (event.isCancelled()) {
             ci.cancel();
         }
@@ -64,7 +71,10 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPreUpdate(CallbackInfo ci) {
-        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone != null) {
+            baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
+        }
     }
 
     @Inject(
@@ -77,7 +87,10 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPostUpdate(CallbackInfo ci) {
-        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone != null) {
+            baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
+        }
     }
 
     @Redirect(
@@ -88,8 +101,11 @@ public class MixinEntityPlayerSP {
             )
     )
     private boolean isAllowFlying(PlayerCapabilities capabilities) {
-        IPathingBehavior pathingBehavior = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getPathingBehavior();
-        return !pathingBehavior.isPathing() && capabilities.allowFlying;
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone == null) {
+            return capabilities.allowFlying;
+        }
+        return !baritone.getPathingBehavior().isPathing() && capabilities.allowFlying;
     }
 
     @Redirect(
@@ -100,8 +116,11 @@ public class MixinEntityPlayerSP {
             )
     )
     private boolean isKeyDown(KeyBinding keyBinding) {
-        SprintStateEvent event = new SprintStateEvent();
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone == null) {
+            return keyBinding.isKeyDown();
+        }
+        SprintStateEvent event = new SprintStateEvent();
         baritone.getGameEventHandler().onPlayerSprintState(event);
         if (event.getState() != null) {
             return event.getState();
@@ -120,6 +139,9 @@ public class MixinEntityPlayerSP {
             )
     )
     private void updateRidden(CallbackInfo cb) {
-        ((LookBehavior) BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getLookBehavior()).pig();
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone != null) {
+            ((LookBehavior) baritone.getLookBehavior()).pig();
+        }
     }
 }

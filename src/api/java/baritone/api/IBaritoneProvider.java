@@ -61,7 +61,7 @@ public interface IBaritoneProvider {
                 return baritone;
             }
         }
-        throw new IllegalStateException("No baritone for player " + player);
+        return null;
     }
 
     /**
