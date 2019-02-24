@@ -74,7 +74,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -157,7 +157,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockSnow
                 || block instanceof BlockLiquid
                 || block instanceof BlockTrapDoor
-                || block instanceof BlockEndPortal) {
+                || block instanceof BlockEndPortal
+                || block instanceof BlockSkull) {
             return false;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
