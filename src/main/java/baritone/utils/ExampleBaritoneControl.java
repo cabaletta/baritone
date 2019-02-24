@@ -251,6 +251,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Queued " + count + " chunks for repacking");
             return true;
         }
+        if (msg.equals("come")) {
+            customGoalProcess.setGoalAndPath(new GoalBlock(new BlockPos(mc.getRenderViewEntity())));
+            logDirect("Coming");
+            return true;
+        }
         if (msg.equals("axis") || msg.equals("highway")) {
             customGoalProcess.setGoalAndPath(new GoalAxis());
             return true;
