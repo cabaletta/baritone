@@ -81,7 +81,7 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
                 }
                 return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             case PATH_REQUESTED:
-                PathingCommand ret = new PathingCommand(this.goal, PathingCommandType.SET_GOAL_AND_PATH);
+                PathingCommand ret = new PathingCommand(this.goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
                 this.state = State.EXECUTING;
                 return ret;
             case EXECUTING:
