@@ -19,10 +19,7 @@ package baritone.cache;
 
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDoublePlant;
-import net.minecraft.block.BlockFlower;
-import net.minecraft.block.BlockTallGrass;
+import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
@@ -73,7 +70,7 @@ public final class ChunkPacker {
                         for (int x = 0; x < 16; x++) {
                             int index = CachedChunk.getPositionIndex(x, y, z);
                             IBlockState state = bsc.get(x, y1, z);
-                            boolean[] bits = getPathingBlockType(state).getBits();
+                            boolean[] bits = getPathingBlockType(state, chunk, x, y, z).getBits();
                             bitSet.set(index, bits[0]);
                             bitSet.set(index + 1, bits[1]);
                             Block block = state.getBlock();
@@ -122,11 +119,17 @@ public final class ChunkPacker {
         return resourceCache.computeIfAbsent(name, n -> Block.getBlockFromName(n.contains(":") ? n : "minecraft:" + n));
     }
 
-    private static PathingBlockType getPathingBlockType(IBlockState state) {
+    private static PathingBlockType getPathingBlockType(IBlockState state, Chunk chunk, int x, int y, int z) {
         Block block = state.getBlock();
-        if ((block == Blocks.WATER || block == Blocks.FLOWING_WATER) && !MovementHelper.isFlowing(state)) {
+        if (block == Blocks.WATER || block == Blocks.FLOWING_WATER) {
             // only water source blocks are plausibly usable, flowing water should be avoid
             // FLOWING_WATER is a waterfall, it doesn't really matter and caching it as AVOID just makes it look wrong
+            if (!MovementHelper.possiblyFlowing(state)) {
+                return PathingBlockType.WATER;
+            }
+            if (BlockLiquid.getSlopeAngle(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4), state.getMaterial(), state) != -1000.0F) {
+                return PathingBlockType.AVOID;
+            }
             return PathingBlockType.WATER;
         }
 

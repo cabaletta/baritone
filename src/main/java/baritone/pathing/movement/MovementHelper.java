@@ -109,7 +109,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             throw new IllegalStateException();
         }
-        if (isFlowing(state)) {
+        if (isFlowing(x, y, z, state, bsi)) {
             return false; // Don't walk through flowing liquids
         }
         if (block instanceof BlockLiquid) {
@@ -288,10 +288,10 @@ public interface MovementHelper extends ActionCosts, Helper {
             // since this is called literally millions of times per second, the benefit of not allocating millions of useless "pos.up()"
             // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
             Block up = bsi.get0(x, y + 1, z).getBlock();
-            if (up == Blocks.WATERLILY) {
+            if (up == Blocks.WATERLILY || up == Blocks.CARPET) {
                 return true;
             }
-            if (isFlowing(state) || block == Blocks.FLOWING_WATER) {
+            if (isFlowing(x, y, z, state, bsi) || block == Blocks.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
                 return isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
             }
@@ -488,11 +488,25 @@ public interface MovementHelper extends ActionCosts, Helper {
         return BlockStateInterface.getBlock(ctx, p) instanceof BlockLiquid;
     }
 
-    static boolean isFlowing(IBlockState state) {
+    static boolean possiblyFlowing(IBlockState state) {
         // Will be IFluidState in 1.13
         return state.getBlock() instanceof BlockLiquid
                 && state.getValue(BlockLiquid.LEVEL) != 0;
     }
+
+    static boolean isFlowing(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
+        if (!(state.getBlock() instanceof BlockLiquid)) {
+            return false;
+        }
+        if (state.getValue(BlockLiquid.LEVEL) != 0) {
+            return true;
+        }
+        return possiblyFlowing(bsi.get0(x + 1, y, z))
+                || possiblyFlowing(bsi.get0(x - 1, y, z))
+                || possiblyFlowing(bsi.get0(x, y, z + 1))
+                || possiblyFlowing(bsi.get0(x, y, z - 1));
+    }
+
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown) {
         IPlayerContext ctx = baritone.getPlayerContext();

@@ -143,7 +143,7 @@ public class MovementDescend extends Movement {
                 if (context.assumeWalkOnWater) {
                     return false; // TODO fix
                 }
-                if (MovementHelper.isFlowing(ontoBlock)) {
+                if (MovementHelper.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
                     return false; // TODO flowing check required here?
                 }
                 if (!MovementHelper.canWalkOn(context.bsi, destX, newY - 1, destZ)) {
