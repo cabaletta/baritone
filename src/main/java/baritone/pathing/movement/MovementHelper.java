@@ -40,6 +40,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Optional;
+
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP;
 
 /**
@@ -494,7 +496,12 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown) {
         IPlayerContext ctx = baritone.getPlayerContext();
+        Optional<Rotation> direct = RotationUtils.reachable(ctx, placeAt); // we assume that if there is a block there, it must be replacable
         boolean found = false;
+        if (direct.isPresent()) {
+            state.setTarget(new MovementState.MovementTarget(direct.get(), true));
+            found = true;
+        }
         for (int i = 0; i < 5; i++) {
             BlockPos against1 = placeAt.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {
