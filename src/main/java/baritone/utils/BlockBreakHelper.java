@@ -31,7 +31,7 @@ public final class BlockBreakHelper implements Helper {
 
     private boolean didBreakLastTick;
 
-    private IPlayerContext playerContext;
+    private final IPlayerContext playerContext;
 
     public BlockBreakHelper(IPlayerContext playerContext) {
         this.playerContext = playerContext;

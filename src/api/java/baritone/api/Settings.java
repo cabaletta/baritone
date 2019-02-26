@@ -171,6 +171,11 @@ public final class Settings {
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
 
     /**
+     * How many ticks between right clicks are allowed. Default in game is 4
+     */
+    public final Setting<Integer> rightClickSpeed = new Setting<>(4);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.
@@ -387,11 +392,6 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
 
     /**
-     * Cancel baritone on left click, as a form of "panic button"
-     */
-    public final Setting<Boolean> clickCancel = new Setting<>(false);
-
-    /**
      * Remember the contents of containers (chests, echests, furnaces)
      * <p>
      * Really buggy since the packet stuff is multithreaded badly thanks to brady
@@ -508,11 +508,6 @@ public final class Settings {
      * 1.0f = fully opaque
      */
     public final Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
-
-    /**
-     * If true, Baritone will not allow you to left or right click while pathing
-     */
-    public final Setting<Boolean> suppressClicks = new Setting<>(false);
 
     /**
      * Whether or not to use the "#" command prefix
