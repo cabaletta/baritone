@@ -40,11 +40,9 @@ Here are some links to help to get started:
 
 - [Features](FEATURES.md)
 
-- [Setup](SETUP.md)
+- [Installation & setup](SETUP.md)
 
-- [Installation](INSTALL.md)
-
-- [Javadocs](https://baritone.leijurv.com/)
+- [API Javadocs](https://baritone.leijurv.com/)
 
 - [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
 

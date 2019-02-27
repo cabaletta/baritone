@@ -1,19 +1,22 @@
-# Setup
+# Installation
 
-## Prebuilt
-(not always completely up to date with latest features)
+## Prebuilt official releases
+These releases are not always completely up to date with latest features, and are only released from `master`. (so if you want `builder` branch for example, you'll have to build it yourself)
 
-Download from the [Releases](https://github.com/cabaletta/baritone/releases)
+Link to the releases page: [Releases](https://github.com/cabaletta/baritone/releases)
 
-The Forge releases can simply be added as a Forge mod.
+Any official release will be GPG signed by leijurv (44A3EA646EADAC6A) and ZeroMemes (73A788379A197567). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by those two public keys of `checksums.txt`. 
 
-If another one of your Forge mods has a Baritone integration, you want `baritone-api-forge-VERSION.jar`. Otherwise, you want `baritone-standalone-forge-VERSION.jar`
+The build is fully deterministic and reproducible, and you can verify Travis did it properly by running `docker build --no-cache -t cabaletta/baritone .` yourself and comparing the shasum. This works identically on Travis, Mac, and Linux (if you have docker on Windows, I'd be grateful if you could let me know if it works there too).
 
-Previously (Baritone v1.1.2 and below), it was not fully compatible with the latest version of Forge. `freeLook` was broken in Forge 14.23.4.2744. Forge 14.23.4.2743 or **older** worked with Baritone v1.1.2 and lower. Newer versions of Forge "worked", sort of, but Baritone's movement became unreliable and `freeLook` must be off.
 
 ## Artifacts
 
 Building Baritone will result in 5 artifacts created in the ``dist`` directory. These are the same as the artifacts created in the [releases](https://github.com/cabaletta/baritone/releases).
+
+**The Forge release can simply be added as a Forge mod.**
+
+If another one of your Forge mods has a Baritone integration, you want `baritone-api-forge-VERSION.jar`. Otherwise, you want `baritone-standalone-forge-VERSION.jar`
 
 - **API**: Only the non-api packages are obfuscated. This should be used in environments where other mods would like to use Baritone's features.
 - **Forge API**: Same as API, but packaged for Forge. This should be used where another mod has a Baritone integration.
@@ -22,9 +25,9 @@ Building Baritone will result in 5 artifacts created in the ``dist`` directory. 
 - **Unoptimized**: Nothing is obfuscated. This shouldn't be used ever in production.
 
 ## More Info
-To replace out Impact 4.4's Baritone build with a customized one, switch to the `impact4.4-compat` branch, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.0.0/baritone-api-1.0.0.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:1.0.0"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
+To replace out Impact 4.5's Baritone build with a customized one, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.2/baritone-api-1.2.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.5/1.12.2-Impact_4.5.json`, find the line `"name": "cabaletta:baritone-api:1.2"`, remove the comma from the end, and **entirely remove the next line** (starts with `"url"`). 
 
-Impact 4.4 **only** works with builds from the quite outdated `impact4.4-compat` branch. If you must have the latest Baritone features with Impact, and can't wait for 4.5, consider creating a standalone (non forge) build then adding it to Impact 4.**3** via the instructions in [Install](INSTALL.md).
+You can verify whether or not it worked by running `.b version` in chat (only valid in Impact). If it says `v1.2.0` then you didn't do it properly, and it's still running the version that came with 4.5.
 
 ## Build it yourself
 - Clone or download Baritone
