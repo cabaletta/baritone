@@ -17,7 +17,6 @@
 
 package baritone.utils;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalTwoBlocks;
@@ -88,19 +87,8 @@ public class GuiClickMeme extends GuiScreen {
 
         if (meme != null) {
             Entity e = mc.getRenderViewEntity();
-            GlStateManager.enableBlend();
-            GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-            GlStateManager.color(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
-            GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
-            GlStateManager.disableTexture2D();
-            GlStateManager.depthMask(false);
-
             // drawSingleSelectionBox WHEN?
-            PathRenderer.drawManySelectionBoxes(e, Collections.singletonList(meme), partialTicks, Color.CYAN);
-
-            GlStateManager.depthMask(true);
-            GlStateManager.enableTexture2D();
-            GlStateManager.disableBlend();
+            PathRenderer.drawManySelectionBoxes(e, Collections.singletonList(meme), Color.CYAN);
         }
     }
 
@@ -108,14 +96,6 @@ public class GuiClickMeme extends GuiScreen {
         boolean result = GLU.gluUnProject((float) x, (float) y, (float) z, MODELVIEW, PROJECTION, VIEWPORT, (FloatBuffer) TO_WORLD_BUFFER.clear());
         if (result) {
             return new Vec3d(TO_WORLD_BUFFER.get(0), TO_WORLD_BUFFER.get(1), TO_WORLD_BUFFER.get(2));
-        }
-        return null;
-    }
-
-    public Vec3d toScreen(double x, double y, double z) {
-        boolean result = GLU.gluProject((float) x, (float) y, (float) z, MODELVIEW, PROJECTION, VIEWPORT, (FloatBuffer) TO_SCREEN_BUFFER.clear());
-        if (result) {
-            return new Vec3d(TO_SCREEN_BUFFER.get(0), Display.getHeight() - TO_SCREEN_BUFFER.get(1), TO_SCREEN_BUFFER.get(2));
         }
         return null;
     }
