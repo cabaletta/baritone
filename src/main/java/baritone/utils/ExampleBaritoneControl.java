@@ -407,6 +407,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
             return true;
         }
+        if (msg.equals("click")) {
+            mc.addScheduledTask(() -> {
+                mc.displayGuiScreen(new GuiClickMeme());
+            });
+            logDirect("click owo");
+            return true;
+        }
         if (msg.startsWith("thisway") || msg.startsWith("forward")) {
             try {
                 Goal goal = GoalXZ.fromDirection(ctx.playerFeetAsVec(), ctx.player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
