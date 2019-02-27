@@ -13,7 +13,7 @@
 -repackageclasses 'baritone'
 
 # lwjgl is weird
--dontwarn org.lwjgl.*
+-dontwarn org.lwjgl.**
 
 -keep class baritone.api.** { *; } # this is the keep api
 
