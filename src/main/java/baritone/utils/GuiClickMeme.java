@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.pathing.goals.GoalTwoBlocks;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
@@ -74,7 +75,9 @@ public class GuiClickMeme extends GuiScreen {
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (mouseButton == 0) {
-            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoal(new GoalBlock(meme));
+            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(meme));
+        } else if (mouseButton == 1) {
+            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(meme.up()));
         }
     }
 
