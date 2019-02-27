@@ -13,8 +13,7 @@
 -repackageclasses 'baritone'
 
 # lwjgl is weird
--dontwarn org.lwjgl.opengl.GL14
--dontwarn org.lwjgl.opengl.GL11
+-dontwarn org.lwjgl.*
 
 -keep class baritone.api.** { *; } # this is the keep api
 
