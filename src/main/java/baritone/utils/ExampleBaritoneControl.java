@@ -408,10 +408,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("click")) {
-            mc.addScheduledTask(() -> {
-                mc.displayGuiScreen(new GuiClickMeme());
-            });
-            logDirect("click owo");
+            new Thread(() -> {
+                try {
+                    Thread.sleep(100);
+                    mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClickMeme()));
+                } catch (Exception ignored) {}
+            }).start();
+            logDirect("aight dude");
             return true;
         }
         if (msg.startsWith("thisway") || msg.startsWith("forward")) {

@@ -18,28 +18,37 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.glu.GLU;
 
 import java.awt.*;
+import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Collections;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class GuiClickMeme extends GuiScreen {
+
+    // My name is Brady and I grant Leijurv permission to use this pasted code
     private final FloatBuffer MODELVIEW = BufferUtils.createFloatBuffer(16);
     private final FloatBuffer PROJECTION = BufferUtils.createFloatBuffer(16);
     private final IntBuffer VIEWPORT = BufferUtils.createIntBuffer(16);
     private final FloatBuffer TO_SCREEN_BUFFER = BufferUtils.createFloatBuffer(3);
     private final FloatBuffer TO_WORLD_BUFFER = BufferUtils.createFloatBuffer(3);
-    private Vec3d meme;
+
+    private BlockPos meme;
 
     @Override
     public boolean doesGuiPauseGame() {
@@ -48,21 +57,32 @@ public class GuiClickMeme extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        System.out.println("Screen " + mouseX + " " + mouseY);
-        System.out.println(toWorld(mouseX, mouseY, 0));
-        System.out.println(toWorld(mouseX, mouseY, 0.1));
-        System.out.println(toWorld(mouseX, mouseY, 1));
-        System.out.println(VIEWPORT.get(3) + " " + Display.getHeight());
-        meme = toWorld(mouseX, Display.getHeight() - mouseY, 0);
-        System.out.println(toScreen(mc.player.posX + 1, mc.player.posY, mc.player.posZ));
-        System.out.println(toScreen(1, 0, 0));
+        int mx = Mouse.getX();
+        int my = Mouse.getY();
+        Vec3d near = toWorld(mx, my, 0);
+        Vec3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - Leijurv
+        if (near != null && far != null) {
+            Vec3d viewerPos = new Vec3d(mc.getRenderManager().viewerPosX, mc.getRenderManager().viewerPosY, mc.getRenderManager().viewerPosZ);
+            RayTraceResult result = mc.world.rayTraceBlocks(near.add(viewerPos), far.add(viewerPos), false, false, true);
+            if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
+                meme = result.getBlockPos();
+            }
+        }
+    }
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+        if (mouseButton == 0) {
+            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoal(new GoalBlock(meme));
+        }
     }
 
     public void onRender(float partialTicks) {
-        System.out.println("on render");
         GlStateManager.getFloat(GL_MODELVIEW_MATRIX, (FloatBuffer) MODELVIEW.clear());
         GlStateManager.getFloat(GL_PROJECTION_MATRIX, (FloatBuffer) PROJECTION.clear());
         GlStateManager.glGetInteger(GL_VIEWPORT, (IntBuffer) VIEWPORT.clear());
+
         if (meme != null) {
             Entity e = mc.getRenderViewEntity();
             GlStateManager.enableBlend();
@@ -71,8 +91,10 @@ public class GuiClickMeme extends GuiScreen {
             GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
             GlStateManager.disableTexture2D();
             GlStateManager.depthMask(false);
-            PathRenderer.drawLine(e, e.posX + 1, e.posY, e.posZ, e.posX + meme.x + 1, e.posY + meme.y, e.posZ + meme.z, partialTicks);
-            Tessellator.getInstance().draw();
+
+            // drawSingleSelectionBox WHEN?
+            PathRenderer.drawManySelectionBoxes(e, Collections.singletonList(meme), partialTicks, Color.CYAN);
+
             GlStateManager.depthMask(true);
             GlStateManager.enableTexture2D();
             GlStateManager.disableBlend();
