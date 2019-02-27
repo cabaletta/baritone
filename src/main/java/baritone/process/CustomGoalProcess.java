@@ -55,6 +55,9 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
         if (this.state == State.NONE) {
             this.state = State.GOAL_SET;
         }
+        if (this.state == State.EXECUTING) {
+            this.state = State.PATH_REQUESTED;
+        }
     }
 
     @Override
