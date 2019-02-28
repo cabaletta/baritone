@@ -33,6 +33,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
+import baritone.utils.schematic.AirSchematic;
 import baritone.utils.schematic.Schematic;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -92,6 +93,14 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
         build(name, parse(tag), origin);
         return true;
+    }
+
+    public void clearArea(BlockPos corner1, BlockPos corner2) {
+        BlockPos origin = new BlockPos(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
+        int widthX = Math.abs(corner1.getX() - corner2.getX()) + 1;
+        int heightY = Math.abs(corner1.getY() - corner2.getY()) + 1;
+        int lengthZ = Math.abs(corner1.getZ() - corner2.getZ()) + 1;
+        build("clear area", new AirSchematic(widthX, heightY, lengthZ), origin);
     }
 
     private static ISchematic parse(NBTTagCompound schematic) {
@@ -273,7 +282,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         // this will work as is, but it'll be trashy
         // need to iterate over incorrectPositions and see which ones we can "correct" from our current standing position
 
-
+        baritone.getInputOverrideHandler().clearAllKeys();
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
             logDirect("Done building");

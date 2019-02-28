@@ -35,7 +35,6 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
 import baritone.utils.pathing.SegmentedCalculator;
-import baritone.utils.schematic.AirSchematic;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
@@ -336,11 +335,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return true;
                 }
             }
-            BlockPos origin = new BlockPos(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
-            int widthX = Math.abs(corner1.getX() - corner2.getX()) + 1;
-            int heightY = Math.abs(corner1.getY() - corner2.getY()) + 1;
-            int lengthZ = Math.abs(corner1.getZ() - corner2.getZ()) + 1;
-            baritone.getBuilderProcess().build("clear area", new AirSchematic(widthX, heightY, lengthZ), origin);
+            baritone.getBuilderProcess().clearArea(corner1, corner2);
             return true;
         }
         if (msg.equals("reset")) {

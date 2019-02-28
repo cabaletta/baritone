@@ -211,7 +211,7 @@ public final class PathRenderer implements Helper {
             GlStateManager.disableDepth();
         }
 
-        float expand = 0.002F;
+
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
         BlockStateInterface bsi = new BlockStateInterface(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext()); // TODO this assumes same dimension between primary baritone and render view? is this safe?
         positions.forEach(pos -> {
@@ -222,31 +222,7 @@ public final class PathRenderer implements Helper {
             } else {
                 toDraw = state.getSelectedBoundingBox(player.world, pos);
             }
-            toDraw = toDraw.expand(expand, expand, expand).offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
-            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            TESSELLATOR.draw();
-            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            TESSELLATOR.draw();
-            BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-            TESSELLATOR.draw();
+            drawAABB(toDraw);
         });
 
         if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
@@ -256,6 +232,35 @@ public final class PathRenderer implements Helper {
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
+    }
+
+    public static void drawAABB(AxisAlignedBB aabb) {
+        float expand = 0.002F;
+        AxisAlignedBB toDraw = aabb.expand(expand, expand, expand).offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
+        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        TESSELLATOR.draw();
+        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        TESSELLATOR.draw();
+        BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+        TESSELLATOR.draw();
     }
 
     public static void drawDankLitGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
