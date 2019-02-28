@@ -21,7 +21,6 @@ import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 
 public class BlockPlaceHelper implements Helper {
@@ -38,13 +37,12 @@ public class BlockPlaceHelper implements Helper {
             return;
         }
         RayTraceResult mouseOver = ctx.objectMouseOver();
-        BlockPos pos = mouseOver.getBlockPos();
-        if (!rightClickRequested || ctx.player().isRowingBoat() || pos == null || mouseOver.typeOfHit != RayTraceResult.Type.BLOCK) {
+        if (!rightClickRequested || ctx.player().isRowingBoat() || mouseOver == null || mouseOver.getBlockPos() == null || mouseOver.typeOfHit != RayTraceResult.Type.BLOCK) {
             return;
         }
         rightClickTimer = Baritone.settings().rightClickSpeed.get();
         for (EnumHand hand : EnumHand.values()) {
-            if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), pos, mouseOver.sideHit, mouseOver.hitVec, hand) == EnumActionResult.SUCCESS) {
+            if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), mouseOver.getBlockPos(), mouseOver.sideHit, mouseOver.hitVec, hand) == EnumActionResult.SUCCESS) {
                 ctx.player().swingArm(hand);
                 return;
             }
