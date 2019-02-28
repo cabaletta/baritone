@@ -37,6 +37,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Optional;
+
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP;
 
 /**
@@ -71,7 +73,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -107,7 +109,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             throw new IllegalStateException();
         }
-        if (isFlowing(state)) {
+        if (isFlowing(x, y, z, state, bsi)) {
             return false; // Don't walk through flowing liquids
         }
         if (block instanceof BlockLiquid) {
@@ -157,7 +159,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockSnow
                 || block instanceof BlockLiquid
                 || block instanceof BlockTrapDoor
-                || block instanceof BlockEndPortal) {
+                || block instanceof BlockEndPortal
+                || block instanceof BlockSkull) {
             return false;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
@@ -285,10 +288,10 @@ public interface MovementHelper extends ActionCosts, Helper {
             // since this is called literally millions of times per second, the benefit of not allocating millions of useless "pos.up()"
             // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
             Block up = bsi.get0(x, y + 1, z).getBlock();
-            if (up == Blocks.WATERLILY) {
+            if (up == Blocks.WATERLILY || up == Blocks.CARPET) {
                 return true;
             }
-            if (isFlowing(state) || block == Blocks.FLOWING_WATER) {
+            if (isFlowing(x, y, z, state, bsi) || block == Blocks.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
                 return isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
             }
@@ -453,15 +456,34 @@ public interface MovementHelper extends ActionCosts, Helper {
         return BlockStateInterface.getBlock(ctx, p) instanceof BlockLiquid;
     }
 
-    static boolean isFlowing(IBlockState state) {
+    static boolean possiblyFlowing(IBlockState state) {
         // Will be IFluidState in 1.13
         return state.getBlock() instanceof BlockLiquid
                 && state.getValue(BlockLiquid.LEVEL) != 0;
     }
 
+    static boolean isFlowing(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
+        if (!(state.getBlock() instanceof BlockLiquid)) {
+            return false;
+        }
+        if (state.getValue(BlockLiquid.LEVEL) != 0) {
+            return true;
+        }
+        return possiblyFlowing(bsi.get0(x + 1, y, z))
+                || possiblyFlowing(bsi.get0(x - 1, y, z))
+                || possiblyFlowing(bsi.get0(x, y, z + 1))
+                || possiblyFlowing(bsi.get0(x, y, z - 1));
+    }
+
+
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown) {
         IPlayerContext ctx = baritone.getPlayerContext();
+        Optional<Rotation> direct = RotationUtils.reachable(ctx, placeAt); // we assume that if there is a block there, it must be replacable
         boolean found = false;
+        if (direct.isPresent()) {
+            state.setTarget(new MovementState.MovementTarget(direct.get(), true));
+            found = true;
+        }
         for (int i = 0; i < 5; i++) {
             BlockPos against1 = placeAt.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {

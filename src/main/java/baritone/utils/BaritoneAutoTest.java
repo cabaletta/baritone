@@ -115,7 +115,9 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             }
 
             // Setup Baritone's pathing goal and (if needed) begin pathing
-            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(GOAL);
+            if (!BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().isActive()) {
+                BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(GOAL);
+            }
 
             // If we have reached our goal, print a message and safely close the game
             if (GOAL.isInGoal(ctx.playerFeet())) {

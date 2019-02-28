@@ -85,6 +85,7 @@ public final class CachedChunk {
         temp.add(Blocks.END_GATEWAY);
         temp.add(Blocks.WEB);
         temp.add(Blocks.NETHER_WART);
+        temp.add(Blocks.LADDER);
         BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(temp);
     }
 

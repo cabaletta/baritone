@@ -143,7 +143,7 @@ public class MovementDescend extends Movement {
                 if (context.assumeWalkOnWater) {
                     return false; // TODO fix
                 }
-                if (MovementHelper.isFlowing(ontoBlock)) {
+                if (MovementHelper.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
                     return false; // TODO flowing check required here?
                 }
                 if (!MovementHelper.canWalkOn(context.bsi, destX, newY - 1, destZ)) {
@@ -202,7 +202,8 @@ public class MovementDescend extends Movement {
         }
 
         BlockPos playerFeet = ctx.playerFeet();
-        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(ctx, dest) || ctx.player().posY - playerFeet.getY() < 0.094)) { // lilypads
+        BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
+        if ((playerFeet.equals(dest) || playerFeet.equals(fakeDest)) && (MovementHelper.isLiquid(ctx, dest) || ctx.player().posY - dest.getY() < 0.5)) { // lilypads
             // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
             return state.setStatus(MovementStatus.SUCCESS);
             /* else {
@@ -228,12 +229,8 @@ public class MovementDescend extends Movement {
         double z = ctx.player().posZ - (src.getZ() + 0.5);
         double fromStart = Math.sqrt(x * x + z * z);
         if (!playerFeet.equals(dest) || ab > 0.25) {
-            BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
-            if (numTicks++ < 20) {
+            if (numTicks++ < 20 && fromStart < 1.25) {
                 MovementHelper.moveTowards(ctx, state, fakeDest);
-                if (fromStart > 1.25) {
-                    state.getTarget().rotation = new Rotation(state.getTarget().rotation.getYaw() + 180F, state.getTarget().rotation.getPitch());
-                }
             } else {
                 MovementHelper.moveTowards(ctx, state, dest);
             }

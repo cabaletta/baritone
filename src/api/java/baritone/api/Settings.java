@@ -17,6 +17,7 @@
 
 package baritone.api;
 
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Baritone's settings
+ * Baritone's settings. Settings apply to all Baritone instances.
  *
  * @author leijurv
  */
@@ -168,6 +169,11 @@ public final class Settings {
      * Sprint and jump a block early on ascends wherever possible
      */
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
+
+    /**
+     * How many ticks between right clicks are allowed. Default in game is 4
+     */
+    public final Setting<Integer> rightClickSpeed = new Setting<>(4);
 
     /**
      * This is the big A* setting.
@@ -386,11 +392,6 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
 
     /**
-     * Cancel baritone on left click, as a form of "panic button"
-     */
-    public final Setting<Boolean> clickCancel = new Setting<>(false);
-
-    /**
      * Remember the contents of containers (chests, echests, furnaces)
      * <p>
      * Really buggy since the packet stuff is multithreaded badly thanks to brady
@@ -507,11 +508,6 @@ public final class Settings {
      * 1.0f = fully opaque
      */
     public final Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
-
-    /**
-     * If true, Baritone will not allow you to left or right click while pathing
-     */
-    public final Setting<Boolean> suppressClicks = new Setting<>(false);
 
     /**
      * Whether or not to use the "#" command prefix
@@ -704,12 +700,6 @@ public final class Settings {
      */
     public final List<Setting<?>> allSettings;
 
-    public void reset() {
-        for (Setting setting : allSettings) {
-            setting.value = setting.defaultValue;
-        }
-    }
-
     public final class Setting<T> {
         public T value;
         public final T defaultValue;
@@ -739,8 +729,13 @@ public final class Settings {
             return klass;
         }
 
+        @Override
         public String toString() {
-            return name + ": " + value;
+            return SettingsUtil.settingToString(this);
+        }
+
+        public void reset() {
+            value = defaultValue;
         }
     }
 

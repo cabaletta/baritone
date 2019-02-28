@@ -1,7 +1,7 @@
 # Baritone
 [![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone)
 [![Release](https://img.shields.io/github/release/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/releases)
-[![License](https://img.shields.io/badge/license-LGPL--3.0-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-LGPL--3.0%20with%20anime%20exception-green.svg)](LICENSE)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
 [![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone)
 [![Known Vulnerabilities](https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle)](https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle)
@@ -34,23 +34,27 @@ Have committed at least once a day for the last 6 months =D 🦀
 
 1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
 
+# Getting Started
+
 Here are some links to help to get started:
 
 - [Features](FEATURES.md)
 
-- [Setup](SETUP.md)
+- [Installation & setup](SETUP.md)
 
-- [Installation](INSTALL.md)
+- [API Javadocs](https://baritone.leijurv.com/)
 
-- [Javadocs](https://baritone.leijurv.com/)
-
-- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#allowBreak)
-
-# Chat control
+- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
 
 - [Baritone chat control usage](USAGE.md)
 
-# API example
+# API
+
+The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
+Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
+jar.
+
+Below is an example of basic usage for changing some settings, and then pathing to a X/Z goal.
 
 ```
 BaritoneAPI.getSettings().allowSprint.value = true;

@@ -9,7 +9,7 @@ Therefore you can use a prefix before your messages.
 On Baritone v1.1.0 and newer: The prefix is `#` by default. Anything beginning with `#` isn't sent, and is only interpreted by Baritone.
 For older than v1.1.0, `#` must be enabled by toggling on the `prefix` setting.
 
-**Only** in Impact 4.4 is `.b` also a valid prefix. In 4.4, `#` does **not** work, neither does saying the commands directly in chat.
+**Only** in Impact is `.b` also a valid prefix. In 4.4, `#` does **not** work, neither does saying the commands directly in chat. `#` works by default in 4.5 (not 4.4).
 
 Other clients like Kami and Asuna have their own custom things (like `-path`), and can disable direct chat control entirely.
 
@@ -21,7 +21,7 @@ Other clients like Kami and Asuna have their own custom things (like `-path`), a
 
 `help` for (rudimentary) help. You can see what it says [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java#L53).
 
-To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive.
+To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
 
 
 
@@ -39,11 +39,12 @@ Some common examples:
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
 - `render` to rerender the world in case `renderCachedChunks` is being glitchy
+- `version` to get the version of Baritone you're running
 - `damn` daniel
 
 For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java).
 
-All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/baritone/api/Settings.html#allowBreak">here</a>.
+All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/baritone/api/Settings.html#field.detail">here</a>.
 
 There are about a hundred settings, but here are some fun / interesting / important ones that you might want to look at changing in normal usage of Baritone. The documentation for each can be found at the above links.
 - `allowBreak`

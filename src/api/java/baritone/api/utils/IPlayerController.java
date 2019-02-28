@@ -17,12 +17,17 @@
 
 package baritone.api.utils;
 
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameType;
+import net.minecraft.world.World;
 
 /**
  * @author Brady
@@ -43,4 +48,6 @@ public interface IPlayerController {
     default double getBlockReachDistance() {
         return this.getGameType().isCreative() ? 5.0F : 4.5F;
     }
+
+    EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand);
 }

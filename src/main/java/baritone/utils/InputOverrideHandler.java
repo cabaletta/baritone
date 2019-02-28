@@ -24,7 +24,6 @@ import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.util.MovementInputFromOptions;
 
 import java.util.HashMap;
@@ -46,38 +45,12 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     private final Map<Input, Boolean> inputForceStateMap = new HashMap<>();
 
     private final BlockBreakHelper blockBreakHelper;
+    private final BlockPlaceHelper blockPlaceHelper;
 
     public InputOverrideHandler(Baritone baritone) {
         super(baritone);
         this.blockBreakHelper = new BlockBreakHelper(baritone.getPlayerContext());
-    }
-
-    /**
-     * Returns whether or not we are forcing down the specified {@link KeyBinding}.
-     *
-     * @param key The KeyBinding object
-     * @return Whether or not it is being forced down
-     */
-    @Override
-    public final Boolean isInputForcedDown(KeyBinding key) {
-        Input input = Input.getInputForBind(key);
-        if (input == null) {
-            return null;
-        }
-        if (input == Input.CLICK_LEFT && inControl()) {
-            // only override left click off when pathing
-            return false;
-        }
-        if (input == Input.CLICK_RIGHT) {
-            if (isInputForcedDown(Input.CLICK_RIGHT)) {
-                // gettoblock and builder can right click even when not pathing; allow them to do so
-                return true;
-            } else if (inControl()) {
-                // but when we are pathing for real, force right click off
-                return false;
-            }
-        }
-        return null; // dont force any inputs other than left and right click
+        this.blockPlaceHelper = new BlockPlaceHelper(baritone.getPlayerContext());
     }
 
     /**
@@ -115,7 +88,11 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
+        if (isInputForcedDown(Input.CLICK_LEFT)) {
+            setInputForceState(Input.CLICK_RIGHT, false);
+        }
         blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
+        blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT));
 
         if (inControl()) {
             if (ctx.player().movementInput.getClass() != PlayerMovementInput.class) {
@@ -131,7 +108,8 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     }
 
     private boolean inControl() {
-        return baritone.getPathingBehavior().isPathing() || baritone.getBuilderProcess().isActive() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone();
+        // if we are not primary (a bot) we should set the movementinput even when idle (not pathing)
+        return baritone.getPathingBehavior().isPathing() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone();
     }
 
     public BlockBreakHelper getBlockBreakHelper() {

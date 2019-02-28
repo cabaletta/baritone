@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.1.6'
+version '1.2.3'
 
 buildscript {
     repositories {
@@ -103,7 +103,7 @@ javadoc {
     options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
     options.linkSource true
     options.encoding "UTF-8" // allow emoji in comments :^)
-    source += sourceSets.api.allJava
+    source = sourceSets.api.allJava
     classpath += sourceSets.api.compileClasspath
 }
 
@@ -111,9 +111,7 @@ jar {
     from sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-}
 
-jar {
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.baritone.json',

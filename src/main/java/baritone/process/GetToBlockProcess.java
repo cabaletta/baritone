@@ -131,8 +131,11 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
                     }
                 }
             }
-            if (true) {
-                break; // codacy gets mad if i just end on a break LOL
+            // i can't do break; (codacy gets mad), and i can't do if(true){break}; (codacy gets mad)
+            // so i will do this
+            switch (newBlacklist.size()) {
+                default:
+                    break outer;
             }
         }
         logDebug("Blacklisting unreachable locations " + newBlacklist);

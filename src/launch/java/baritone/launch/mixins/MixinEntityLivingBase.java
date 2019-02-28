@@ -18,6 +18,7 @@
 package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.event.events.RotationMoveEvent;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
@@ -55,8 +56,11 @@ public abstract class MixinEntityLivingBase extends Entity {
     private void preMoveRelative(CallbackInfo ci) {
         // noinspection ConstantConditions
         if (EntityPlayerSP.class.isInstance(this)) {
-            this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.rotationYaw);
-            BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
+            IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+            if (baritone != null) {
+                this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.rotationYaw);
+                baritone.getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
+            }
         }
     }
 
@@ -69,7 +73,7 @@ public abstract class MixinEntityLivingBase extends Entity {
             )
     )
     private float overrideYaw(EntityLivingBase self) {
-        if (self instanceof EntityPlayerSP) {
+        if (self instanceof EntityPlayerSP && BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this) != null) {
             return this.jumpRotationEvent.getYaw();
         }
         return self.rotationYaw;
@@ -84,7 +88,7 @@ public abstract class MixinEntityLivingBase extends Entity {
     )
     private void travel(EntityLivingBase self, float strafe, float up, float forward, float friction) {
         // noinspection ConstantConditions
-        if (!EntityPlayerSP.class.isInstance(this)) {
+        if (!EntityPlayerSP.class.isInstance(this) || BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this) == null) {
             moveRelative(strafe, up, forward, friction);
             return;
         }
