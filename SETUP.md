@@ -25,7 +25,7 @@ If another one of your Forge mods has a Baritone integration, you want `baritone
 - **Unoptimized**: Nothing is obfuscated. This shouldn't be used ever in production.
 
 ## More Info
-To replace out Impact 4.5's Baritone build with a customized one, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.2/baritone-api-1.2.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.5/1.12.2-Impact_4.5.json`, find the line `"name": "cabaletta:baritone-api:1.2"`, remove the comma from the end, and **entirely remove the next line** (starts with `"url"`). 
+To replace out Impact 4.5's Baritone build with a customized one, build Baritone as above then copy & **rename** `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.2/baritone-api-1.2.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.5/1.12.2-Impact_4.5.json`, find the line `"name": "cabaletta:baritone-api:1.2"`, remove the comma from the end, and **entirely remove the NEXT line** (starts with `"url"`). **Restart your launcher** then load as normal. 
 
 You can verify whether or not it worked by running `.b version` in chat (only valid in Impact). It should print out the version that you downloaded. Note: The version that comes with 4.5 is `v1.2.3`.
 
