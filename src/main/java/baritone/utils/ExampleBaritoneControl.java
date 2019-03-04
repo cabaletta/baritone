@@ -257,7 +257,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             try {
                 String[] coords = msg.substring("build".length()).trim().split(" ");
                 file = coords[0] + ".schematic";
-                origin = new BlockPos(Integer.parseInt(coords[1]), Integer.parseInt(coords[2]), Integer.parseInt(coords[3]));
+                origin = new BlockPos(parseOrDefault(coords[1], ctx.playerFeet().x), parseOrDefault(coords[2], ctx.playerFeet().y), parseOrDefault(coords[3], ctx.playerFeet().z));
             } catch (Exception ex) {
                 file = msg.substring(5).trim() + ".schematic";
                 origin = ctx.playerFeet();
@@ -601,6 +601,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("daniel");
         }
         return false;
+    }
+
+    private int parseOrDefault(String str, int i) {
+        return str.equals("~") ? i : Integer.parseInt(str);
     }
 
     private void log(List<ItemStack> stacks) {
