@@ -28,7 +28,6 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.util.glu.GLU;
 
 import java.awt.*;
@@ -45,7 +44,6 @@ public class GuiClickMeme extends GuiScreen {
     private final FloatBuffer MODELVIEW = BufferUtils.createFloatBuffer(16);
     private final FloatBuffer PROJECTION = BufferUtils.createFloatBuffer(16);
     private final IntBuffer VIEWPORT = BufferUtils.createIntBuffer(16);
-    private final FloatBuffer TO_SCREEN_BUFFER = BufferUtils.createFloatBuffer(3);
     private final FloatBuffer TO_WORLD_BUFFER = BufferUtils.createFloatBuffer(3);
 
     private BlockPos meme;
