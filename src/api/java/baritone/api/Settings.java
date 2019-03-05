@@ -626,6 +626,13 @@ public final class Settings {
     public final Setting<Integer> followRadius = new Setting<>(3);
 
     /**
+     * true = exploration uses pythagorean distance to choose closest uncached chunk
+     * <p>
+     * false = exploration uses manhattan / taxicab distance to choose
+     */
+    public final Setting<Boolean> exploreUsePythagorean = new Setting<>(false);
+
+    /**
      * Cached chunks (regardless of if they're in RAM or saved to disk) expire and are deleted after this number of seconds
      * -1 to disable
      * <p>

@@ -374,6 +374,21 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("ok");
             return true;
         }
+        if (msg.startsWith("explore")) {
+            String rest = msg.substring("explore".length()).trim();
+            int centerX;
+            int centerZ;
+            try {
+                centerX = Integer.parseInt(rest.split(" ")[0]);
+                centerZ = Integer.parseInt(rest.split(" ")[1]);
+            } catch (Exception ex) {
+                centerX = ctx.playerFeet().x;
+                centerZ = ctx.playerFeet().z;
+            }
+            baritone.getExploreProcess().explore(centerX, centerZ);
+            logDirect("Exploring from " + centerX + "," + centerZ);
+            return true;
+        }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
             ArrayList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);

@@ -107,6 +107,10 @@ public final class CachedWorld implements ICachedWorld, Helper {
         return region.isCached(blockX & 511, blockZ & 511);
     }
 
+    public final boolean regionLoaded(int blockX, int blockZ) {
+        return getRegion(blockX >> 9, blockZ >> 9) != null;
+    }
+
     @Override
     public final ArrayList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
         ArrayList<BlockPos> res = new ArrayList<>();
