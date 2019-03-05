@@ -231,6 +231,13 @@ public class MovementTraverse extends Movement {
             if (ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
+            Block low = BlockStateInterface.get(ctx, src).getBlock();
+            Block high = BlockStateInterface.get(ctx, src.up()).getBlock();
+            if (!ctx.player().onGround && (low == Blocks.VINE || low == Blocks.LADDER || high == Blocks.VINE || high == Blocks.LADDER)) {
+                // hitting W could cause us to climb the ladder instead of going forward
+                // wait until we're on the ground
+                return state;
+            }
             BlockPos into = dest.subtract(src).add(dest);
             Block intoBelow = BlockStateInterface.get(ctx, into).getBlock();
             Block intoAbove = BlockStateInterface.get(ctx, into.up()).getBlock();
