@@ -18,6 +18,7 @@
 package baritone.cache;
 
 import baritone.utils.pathing.PathingBlockType;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -119,7 +120,7 @@ public final class CachedChunk {
      */
     private final BitSet data;
 
-    private final BitSet special;
+    private final Int2ObjectOpenHashMap<String> special;
 
     /**
      * The block names of each surface level block for generating an overview
@@ -142,16 +143,15 @@ public final class CachedChunk {
         this.heightMap = new int[256];
         this.specialBlockLocations = specialBlockLocations;
         this.cacheTimestamp = cacheTimestamp;
-        this.special = new BitSet();
+        this.special = new Int2ObjectOpenHashMap<>();
         calculateHeightMap();
         setSpecial();
     }
 
     private final void setSpecial() {
-        for (List<BlockPos> list : specialBlockLocations.values()) {
-            for (BlockPos pos : list) {
-                System.out.println("Turning on bit");
-                special.set(getPositionIndex(pos.getX(), pos.getY(), pos.getZ()) >> 1);
+        for (Map.Entry<String, List<BlockPos>> entry : specialBlockLocations.entrySet()) {
+            for (BlockPos pos : entry.getValue()) {
+                special.put(getPositionIndex(pos.getX(), pos.getY(), pos.getZ()), entry.getKey());
             }
         }
     }
@@ -170,15 +170,9 @@ public final class CachedChunk {
             }*/
             return overview[internalPos];
         }
-        if (special.get(index >> 1)) {
-            // this block is special
-            for (Map.Entry<String, List<BlockPos>> entry : specialBlockLocations.entrySet()) {
-                for (BlockPos pos : entry.getValue()) {
-                    if (pos.getX() == x && pos.getY() == y && pos.getZ() == z) {
-                        return ChunkPacker.stringToBlock(entry.getKey()).getDefaultState();
-                    }
-                }
-            }
+        String str = special.get(index);
+        if (str != null) {
+            return ChunkPacker.stringToBlock(str).getDefaultState();
         }
 
         if (type == PathingBlockType.SOLID && y == 127 && dimension == -1) {
