@@ -143,9 +143,13 @@ public final class CachedChunk {
         this.heightMap = new int[256];
         this.specialBlockLocations = specialBlockLocations;
         this.cacheTimestamp = cacheTimestamp;
-        this.special = new Int2ObjectOpenHashMap<>();
+        if (specialBlockLocations.isEmpty()) {
+            this.special = null;
+        } else {
+            this.special = new Int2ObjectOpenHashMap<>();
+            setSpecial();
+        }
         calculateHeightMap();
-        setSpecial();
     }
 
     private final void setSpecial() {
@@ -170,9 +174,11 @@ public final class CachedChunk {
             }*/
             return overview[internalPos];
         }
-        String str = special.get(index);
-        if (str != null) {
-            return ChunkPacker.stringToBlock(str).getDefaultState();
+        if (special != null) {
+            String str = special.get(index);
+            if (str != null) {
+                return ChunkPacker.stringToBlock(str).getDefaultState();
+            }
         }
 
         if (type == PathingBlockType.SOLID && y == 127 && dimension == -1) {
