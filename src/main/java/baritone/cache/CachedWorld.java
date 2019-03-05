@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -109,8 +108,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     @Override
-    public final LinkedList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
-        LinkedList<BlockPos> res = new LinkedList<>();
+    public final ArrayList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
+        ArrayList<BlockPos> res = new ArrayList<>();
         int centerRegionX = centerX >> 9;
         int centerRegionZ = centerZ >> 9;
 
@@ -127,7 +126,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     CachedRegion region = getOrCreateRegion(regionX, regionZ);
                     if (region != null) {
                         // TODO: 100% verify if this or addAll is faster.
-                        region.getLocationsOf(block).forEach(res::add);
+                        res.addAll(region.getLocationsOf(block));
                     }
                 }
             }

@@ -376,7 +376,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
+            ArrayList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(ctx, pos).getBlock();

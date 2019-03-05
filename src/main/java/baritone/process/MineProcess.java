@@ -210,7 +210,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         //long b = System.currentTimeMillis();
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
-                locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
+                // maxRegionDistanceSq 2 means adjacent directly or adjacent diagonally; nothing further than that
+                locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), Baritone.settings().maxCachedWorldScanCount.get(), ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
             } else {
                 uninteresting.add(m);
             }
@@ -221,7 +222,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         if (!uninteresting.isEmpty()) {
             //long before = System.currentTimeMillis();
-            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx.getBaritone().getPlayerContext(), uninteresting, max, 10, 26));
+            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx.getBaritone().getPlayerContext(), uninteresting, max, 10, 5)); // maxSearchRadius is NOT sq
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
         locs.addAll(alreadyKnown);

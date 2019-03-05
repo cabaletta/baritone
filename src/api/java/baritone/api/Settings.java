@@ -536,6 +536,11 @@ public final class Settings {
     public final Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
 
     /**
+     * After finding this many instances of the target block in the cache, it will stop expanding outward the chunk search.
+     */
+    public final Setting<Integer> maxCachedWorldScanCount = new Setting<>(10);
+
+    /**
      * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);

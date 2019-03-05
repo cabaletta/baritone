@@ -87,19 +87,16 @@ public final class CachedRegion implements ICachedRegion {
         return chunks[x >> 4][z >> 4] != null;
     }
 
-    public final LinkedList<BlockPos> getLocationsOf(String block) {
-        LinkedList<BlockPos> res = new LinkedList<>();
+    public final ArrayList<BlockPos> getLocationsOf(String block) {
+        ArrayList<BlockPos> res = new ArrayList<>();
         for (int chunkX = 0; chunkX < 32; chunkX++) {
             for (int chunkZ = 0; chunkZ < 32; chunkZ++) {
                 if (chunks[chunkX][chunkZ] == null) {
                     continue;
                 }
-                List<BlockPos> locs = chunks[chunkX][chunkZ].getAbsoluteBlocks(block);
-                if (locs == null) {
-                    continue;
-                }
-                for (BlockPos pos : locs) {
-                    res.add(pos);
+                ArrayList<BlockPos> locs = chunks[chunkX][chunkZ].getAbsoluteBlocks(block);
+                if (locs != null) {
+                    res.addAll(locs);
                 }
             }
         }

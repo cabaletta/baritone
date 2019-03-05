@@ -215,11 +215,11 @@ public final class CachedChunk {
         return specialBlockLocations;
     }
 
-    public final LinkedList<BlockPos> getAbsoluteBlocks(String blockType) {
+    public final ArrayList<BlockPos> getAbsoluteBlocks(String blockType) {
         if (specialBlockLocations.get(blockType) == null) {
             return null;
         }
-        LinkedList<BlockPos> res = new LinkedList<>();
+        ArrayList<BlockPos> res = new ArrayList<>();
         for (BlockPos pos : specialBlockLocations.get(blockType)) {
             res.add(new BlockPos(pos.getX() + x * 16, pos.getY(), pos.getZ() + z * 16));
         }
