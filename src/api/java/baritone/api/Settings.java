@@ -721,6 +721,11 @@ public final class Settings {
             this.klass = (Class<T>) value.getClass();
         }
 
+        /**
+         * Deprecated! Please use .value directly instead
+         *
+         * @return the current setting value
+         */
         @Deprecated
         public final T get() {
             return value;
@@ -739,6 +744,9 @@ public final class Settings {
             return SettingsUtil.settingToString(this);
         }
 
+        /**
+         * Reset this setting to its default value
+         */
         public void reset() {
             value = defaultValue;
         }
