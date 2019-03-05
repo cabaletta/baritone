@@ -89,14 +89,14 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     @Override
     public void onSendChatMessage(ChatEvent event) {
         String msg = event.getMessage();
-        if (Baritone.settings().prefixControl.get() && msg.startsWith(COMMAND_PREFIX)) {
+        if (Baritone.settings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
             if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
                 logDirect("Invalid command");
             }
             event.cancel(); // always cancel if using prefixControl
             return;
         }
-        if (!Baritone.settings().chatControl.get() && !Baritone.settings().removePrefix.get()) {
+        if (!Baritone.settings().chatControl.value && !Baritone.settings().removePrefix.value) {
             return;
         }
         if (runCommand(msg)) {

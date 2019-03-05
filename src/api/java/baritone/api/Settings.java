@@ -721,9 +721,9 @@ public final class Settings {
             this.klass = (Class<T>) value.getClass();
         }
 
-        @SuppressWarnings("unchecked")
-        public final <K extends T> K get() {
-            return (K) value;
+        @Deprecated
+        public final T get() {
+            return value;
         }
 
         public final String getName() {

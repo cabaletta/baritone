@@ -80,7 +80,7 @@ public class GoalXZ implements Goal {
             diagonal = z;
         }
         diagonal *= SQRT_2;
-        return (diagonal + straight) * BaritoneAPI.getSettings().costHeuristic.get(); // big TODO tune
+        return (diagonal + straight) * BaritoneAPI.getSettings().costHeuristic.value; // big TODO tune
     }
 
     public static GoalXZ fromDirection(Vec3d origin, float yaw, double distance) {

@@ -70,7 +70,7 @@ public class ContainerMemory implements IContainerMemory {
     }
 
     public synchronized void save() throws IOException {
-        if (!Baritone.settings().containerMemory.get()) {
+        if (!Baritone.settings().containerMemory.value) {
             return;
         }
         ByteBuf buf = Unpooled.buffer(0, Integer.MAX_VALUE);

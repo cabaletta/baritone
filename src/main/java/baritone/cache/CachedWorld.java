@@ -145,7 +145,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     @Override
     public final void save() {
-        if (!Baritone.settings().chunkCaching.get()) {
+        if (!Baritone.settings().chunkCaching.value) {
             System.out.println("Not saving to disk; chunk caching is disabled.");
             allRegions().forEach(region -> {
                 if (region != null) {
@@ -170,7 +170,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * Delete regions that are too far from the player
      */
     private synchronized void prune() {
-        if (!Baritone.settings().pruneRegionsFromRAM.get()) {
+        if (!Baritone.settings().pruneRegionsFromRAM.value) {
             return;
         }
         BlockPos pruneCenter = guessPosition();

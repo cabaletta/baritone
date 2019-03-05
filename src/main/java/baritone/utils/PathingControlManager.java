@@ -136,7 +136,7 @@ public class PathingControlManager implements IPathingControlManager {
                 p.secretInternalSetGoalAndPath(command.goal);
                 break;
             case REVALIDATE_GOAL_AND_PATH:
-                if (Baritone.settings().cancelOnGoalInvalidation.get() && (command.goal == null || revalidateGoal(command.goal))) {
+                if (Baritone.settings().cancelOnGoalInvalidation.value && (command.goal == null || revalidateGoal(command.goal))) {
                     p.softCancelIfSafe();
                 }
                 p.secretInternalSetGoalAndPath(command.goal);

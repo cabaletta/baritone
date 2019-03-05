@@ -201,7 +201,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // and this path doesn't get us all the way there
                     return;
                 }
-                if (ticksRemainingInSegment(false).get() < Baritone.settings().planningTickLookahead.get()) {
+                if (ticksRemainingInSegment(false).get() < Baritone.settings().planningTickLookahead.value) {
                     // and this path has 7.5 seconds or less left
                     // don't include the current movement so a very long last movement (e.g. descend) doesn't trip it up
                     // if we actually included current, it wouldn't start planning ahead until the last movement was done, if the last movement took more than 7.5 seconds on its own
@@ -426,11 +426,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         long primaryTimeout;
         long failureTimeout;
         if (current == null) {
-            primaryTimeout = Baritone.settings().primaryTimeoutMS.get();
-            failureTimeout = Baritone.settings().failureTimeoutMS.get();
+            primaryTimeout = Baritone.settings().primaryTimeoutMS.value;
+            failureTimeout = Baritone.settings().failureTimeoutMS.value;
         } else {
-            primaryTimeout = Baritone.settings().planAheadPrimaryTimeoutMS.get();
-            failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.get();
+            primaryTimeout = Baritone.settings().planAheadPrimaryTimeoutMS.value;
+            failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.value;
         }
         CalculationContext context = new CalculationContext(baritone, true); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
@@ -494,7 +494,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
         Goal transformed = goal;
-        if (Baritone.settings().simplifyUnloadedYCoord.get() && goal instanceof IGoalRenderPos) {
+        if (Baritone.settings().simplifyUnloadedYCoord.value && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
             if (!context.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ())) {
                 transformed = new GoalXZ(pos.getX(), pos.getZ());

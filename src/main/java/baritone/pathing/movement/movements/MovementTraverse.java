@@ -152,7 +152,7 @@ public class MovementTraverse extends Movement {
         super.updateState(state);
         if (state.getStatus() != MovementStatus.RUNNING) {
             // if the setting is enabled
-            if (!Baritone.settings().walkWhileBreaking.get()) {
+            if (!Baritone.settings().walkWhileBreaking.value) {
                 return state;
             }
             // and if we're prepping (aka mining the block in front)
@@ -241,7 +241,7 @@ public class MovementTraverse extends Movement {
             BlockPos into = dest.subtract(src).add(dest);
             Block intoBelow = BlockStateInterface.get(ctx, into).getBlock();
             Block intoAbove = BlockStateInterface.get(ctx, into.up()).getBlock();
-            if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, ctx.playerFeet()) || Baritone.settings().sprintInWater.get()) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
+            if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, ctx.playerFeet()) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
             }
             Block destDown = BlockStateInterface.get(ctx, dest.down()).getBlock();
@@ -264,12 +264,12 @@ public class MovementTraverse extends Movement {
             }
             double dist1 = Math.max(Math.abs(ctx.player().posX - (dest.getX() + 0.5D)), Math.abs(ctx.player().posZ - (dest.getZ() + 0.5D)));
             PlaceResult p = MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), false);
-            if ((p == PlaceResult.READY_TO_PLACE || dist1 < 0.6) && !Baritone.settings().assumeSafeWalk.get()) {
+            if ((p == PlaceResult.READY_TO_PLACE || dist1 < 0.6) && !Baritone.settings().assumeSafeWalk.value) {
                 state.setInput(Input.SNEAK, true);
             }
             switch (p) {
                 case READY_TO_PLACE: {
-                    if (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.get()) {
+                    if (ctx.player().isSneaking() || Baritone.settings().assumeSafeWalk.value) {
                         state.setInput(Input.CLICK_RIGHT, true);
                     }
                     return state;

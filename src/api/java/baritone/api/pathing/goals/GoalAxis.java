@@ -25,7 +25,7 @@ public class GoalAxis implements Goal {
 
     @Override
     public boolean isInGoal(int x, int y, int z) {
-        return y == BaritoneAPI.getSettings().axisHeight.get() && (x == 0 || z == 0 || Math.abs(x) == Math.abs(z));
+        return y == BaritoneAPI.getSettings().axisHeight.value && (x == 0 || z == 0 || Math.abs(x) == Math.abs(z));
     }
 
     @Override
@@ -39,7 +39,7 @@ public class GoalAxis implements Goal {
 
         double flatAxisDistance = Math.min(x, Math.min(z, diff * SQRT_2_OVER_2));
 
-        return flatAxisDistance * BaritoneAPI.getSettings().costHeuristic.get() + GoalYLevel.calculate(BaritoneAPI.getSettings().axisHeight.get(), y);
+        return flatAxisDistance * BaritoneAPI.getSettings().costHeuristic.value + GoalYLevel.calculate(BaritoneAPI.getSettings().axisHeight.value, y);
     }
 
     @Override

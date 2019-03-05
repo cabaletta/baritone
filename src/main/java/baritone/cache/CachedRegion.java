@@ -303,7 +303,7 @@ public final class CachedRegion implements ICachedRegion {
     }
 
     public synchronized final void removeExpired() {
-        long expiry = Baritone.settings().cachedChunksExpirySeconds.get();
+        long expiry = Baritone.settings().cachedChunksExpirySeconds.value;
         if (expiry < 0) {
             return;
         }

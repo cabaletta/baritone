@@ -37,7 +37,7 @@ public final class Favoring {
     public Favoring(IPath previous) { // create one just from previous path, no mob avoidances
         favorings = new Long2DoubleOpenHashMap();
         favorings.defaultReturnValue(1.0D);
-        double coeff = Baritone.settings().backtrackCostFavoringCoefficient.get();
+        double coeff = Baritone.settings().backtrackCostFavoringCoefficient.value;
         if (coeff != 1D && previous != null) {
             previous.positions().forEach(pos -> favorings.put(BetterBlockPos.longHash(pos), coeff));
         }

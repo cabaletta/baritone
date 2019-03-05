@@ -81,9 +81,9 @@ public final class PathRenderer implements Helper {
         }
 
         if (goal != null && Baritone.settings().renderGoal.value) {
-            drawDankLitGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.get());
+            drawDankLitGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.value);
         }
-        if (!Baritone.settings().renderPath.get()) {
+        if (!Baritone.settings().renderPath.value) {
             return;
         }
 
@@ -97,28 +97,28 @@ public final class PathRenderer implements Helper {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(current.getPath(), renderBegin, renderView, partialTicks, Baritone.settings().colorCurrentPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+            drawPath(current.getPath(), renderBegin, renderView, partialTicks, Baritone.settings().colorCurrentPath.value, Baritone.settings().fadePath.value, 10, 20);
         }
         if (next != null && next.getPath() != null) {
-            drawPath(next.getPath(), 0, renderView, partialTicks, Baritone.settings().colorNextPath.get(), Baritone.settings().fadePath.get(), 10, 20);
+            drawPath(next.getPath(), 0, renderView, partialTicks, Baritone.settings().colorNextPath.value, Baritone.settings().fadePath.value, 10, 20);
         }
 
         //long split = System.nanoTime();
         if (current != null) {
-            drawManySelectionBoxes(renderView, current.toBreak(), Baritone.settings().colorBlocksToBreak.get());
-            drawManySelectionBoxes(renderView, current.toPlace(), Baritone.settings().colorBlocksToPlace.get());
-            drawManySelectionBoxes(renderView, current.toWalkInto(), Baritone.settings().colorBlocksToWalkInto.get());
+            drawManySelectionBoxes(renderView, current.toBreak(), Baritone.settings().colorBlocksToBreak.value);
+            drawManySelectionBoxes(renderView, current.toPlace(), Baritone.settings().colorBlocksToPlace.value);
+            drawManySelectionBoxes(renderView, current.toWalkInto(), Baritone.settings().colorBlocksToWalkInto.value);
         }
 
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(p, 0, renderView, partialTicks, Baritone.settings().colorBestPathSoFar.get(), Baritone.settings().fadePath.get(), 10, 20);
+                drawPath(p, 0, renderView, partialTicks, Baritone.settings().colorBestPathSoFar.value, Baritone.settings().fadePath.value, 10, 20);
             });
             currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
 
-                drawPath(mr, 0, renderView, partialTicks, Baritone.settings().colorMostRecentConsidered.get(), Baritone.settings().fadePath.get(), 10, 20);
-                drawManySelectionBoxes(renderView, Collections.singletonList(mr.getDest()), Baritone.settings().colorMostRecentConsidered.get());
+                drawPath(mr, 0, renderView, partialTicks, Baritone.settings().colorMostRecentConsidered.value, Baritone.settings().fadePath.value, 10, 20);
+                drawManySelectionBoxes(renderView, Collections.singletonList(mr.getDest()), Baritone.settings().colorMostRecentConsidered.value);
             });
         });
         //long end = System.nanoTime();
@@ -132,10 +132,10 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
+        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
-        if (Baritone.settings().renderPathIgnoreDepth.get()) {
+        if (Baritone.settings().renderPathIgnoreDepth.value) {
             GlStateManager.disableDepth();
         }
         List<BetterBlockPos> positions = path.positions();
@@ -178,7 +178,7 @@ public final class PathRenderer implements Helper {
             drawLine(player, x1, y1, z1, x2, y2, z2);
             tessellator.draw();
         }
-        if (Baritone.settings().renderPathIgnoreDepth.get()) {
+        if (Baritone.settings().renderPathIgnoreDepth.value) {
             GlStateManager.enableDepth();
         }
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
@@ -203,11 +203,11 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
+        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
 
-        if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
+        if (Baritone.settings().renderSelectionBoxesIgnoreDepth.value) {
             GlStateManager.disableDepth();
         }
 
@@ -249,7 +249,7 @@ public final class PathRenderer implements Helper {
             TESSELLATOR.draw();
         });
 
-        if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
+        if (Baritone.settings().renderSelectionBoxesIgnoreDepth.value) {
             GlStateManager.enableDepth();
         }
 
@@ -292,12 +292,12 @@ public final class PathRenderer implements Helper {
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
 
-            if (Baritone.settings().renderGoalXZBeacon.get()) {
+            if (Baritone.settings().renderGoalXZBeacon.value) {
                 glPushAttrib(GL_LIGHTING_BIT);
 
                 mc.getTextureManager().bindTexture(TileEntityBeaconRenderer.TEXTURE_BEACON_BEAM);
 
-                if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+                if (Baritone.settings().renderGoalIgnoreDepth.value) {
                     GlStateManager.disableDepth();
                 }
 
@@ -313,7 +313,7 @@ public final class PathRenderer implements Helper {
                         color.getColorComponents(null)
                 );
 
-                if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+                if (Baritone.settings().renderGoalIgnoreDepth.value) {
                     GlStateManager.enableDepth();
                 }
 
@@ -342,10 +342,10 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
-        GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidthPixels.get());
+        GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidthPixels.value);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
-        if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+        if (Baritone.settings().renderGoalIgnoreDepth.value) {
             GlStateManager.disableDepth();
         }
 
@@ -363,7 +363,7 @@ public final class PathRenderer implements Helper {
         BUFFER.pos(minX, maxY, maxZ).endVertex();
         TESSELLATOR.draw();
 
-        if (Baritone.settings().renderGoalIgnoreDepth.get()) {
+        if (Baritone.settings().renderGoalIgnoreDepth.value) {
             GlStateManager.enableDepth();
         }
         GlStateManager.depthMask(true);
