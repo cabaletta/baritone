@@ -222,7 +222,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         if (!uninteresting.isEmpty()) {
             //long before = System.currentTimeMillis();
-            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx.getBaritone().getPlayerContext(), uninteresting, max, 10, 5)); // maxSearchRadius is NOT sq
+            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx.getBaritone().getPlayerContext(), uninteresting, max, 10, 32)); // maxSearchRadius is NOT sq
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
         locs.addAll(alreadyKnown);
