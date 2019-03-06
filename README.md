@@ -28,7 +28,7 @@ data and augmentation information to each node.
 * As a bonus (a proof of concept and a test case), this includes the `TreeList`
   class, a `List` implementation backed by a red-black tree augmented by subtree
   size.
-* Tested in Java 6.0, 7.0, and 8.0.
+* Compatible with Java 6.0 and above.
 
 # Limitations
 * The values of the tree must be stored in the non-leaf nodes. `RedBlackNode`

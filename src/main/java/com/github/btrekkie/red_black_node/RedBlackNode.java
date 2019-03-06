@@ -355,10 +355,10 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     }
 
     /** Returns a Comparator that compares instances of N using their natural order, as in N.compareTo. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private Comparator<N> naturalOrder() {
-        @SuppressWarnings("unchecked")
-        Comparator<N> comparator = (Comparator<N>)NATURAL_ORDER;
-        return comparator;
+        Comparator comparator = (Comparator)NATURAL_ORDER;
+        return (Comparator<N>)comparator;
     }
 
     /**
