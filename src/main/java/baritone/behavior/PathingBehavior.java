@@ -141,6 +141,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     logDebug("All done. At " + goal);
                     queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
+                    if (Baritone.settings().disconnectOnArrival.value) {
+                        ctx.world().sendQuittingDisconnectingPacket();
+                    }
                     return;
                 }
                 if (next != null && !next.getPath().positions().contains(ctx.playerFeet()) && !next.getPath().positions().contains(expectedSegmentStart)) { // can contain either one
