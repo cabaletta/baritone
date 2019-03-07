@@ -829,17 +829,22 @@ public class ConnGraph {
             while (levelVertex1 != null) {
                 EulerTourNode root1 = levelVertex1.arbitraryVisit.root();
                 EulerTourNode root2 = levelVertex2.arbitraryVisit.root();
-                EulerTourNode root;
-                if (root1.size < root2.size) {
-                    root = root1;
-                } else {
-                    root = root2;
-                }
 
-                pushForestEdges(root);
-                replacementEdge = findReplacementEdge(root);
-                if (replacementEdge != null) {
-                    break;
+                // Optimization: if hasGraphEdge is false for one of the roots, then there definitely isn't a
+                // replacement edge at this level
+                if (root1.hasGraphEdge && root2.hasGraphEdge) {
+                    EulerTourNode root;
+                    if (root1.size < root2.size) {
+                        root = root1;
+                    } else {
+                        root = root2;
+                    }
+
+                    pushForestEdges(root);
+                    replacementEdge = findReplacementEdge(root);
+                    if (replacementEdge != null) {
+                        break;
+                    }
                 }
 
                 // To save space, get rid of trees with one node
