@@ -89,14 +89,14 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     @Override
     public void onSendChatMessage(ChatEvent event) {
         String msg = event.getMessage();
-        if (Baritone.settings().prefixControl.get() && msg.startsWith(COMMAND_PREFIX)) {
+        if (Baritone.settings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
             if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
                 logDirect("Invalid command");
             }
             event.cancel(); // always cancel if using prefixControl
             return;
         }
-        if (!Baritone.settings().chatControl.get() && !Baritone.settings().removePrefix.get()) {
+        if (!Baritone.settings().chatControl.value && !Baritone.settings().removePrefix.value) {
             return;
         }
         if (runCommand(msg)) {
@@ -374,9 +374,24 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("ok");
             return true;
         }
+        if (msg.startsWith("explore")) {
+            String rest = msg.substring("explore".length()).trim();
+            int centerX;
+            int centerZ;
+            try {
+                centerX = Integer.parseInt(rest.split(" ")[0]);
+                centerZ = Integer.parseInt(rest.split(" ")[1]);
+            } catch (Exception ex) {
+                centerX = ctx.playerFeet().x;
+                centerZ = ctx.playerFeet().z;
+            }
+            baritone.getExploreProcess().explore(centerX, centerZ);
+            logDirect("Exploring from " + centerX + "," + centerZ);
+            return true;
+        }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
+            ArrayList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(ctx, pos).getBlock();
@@ -405,6 +420,16 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             baritone.getMineProcess().mineByName(0, blockTypes);
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
+            return true;
+        }
+        if (msg.equals("click")) {
+            new Thread(() -> {
+                try {
+                    Thread.sleep(100);
+                    mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClickMeme()));
+                } catch (Exception ignored) {}
+            }).start();
+            logDirect("aight dude");
             return true;
         }
         if (msg.startsWith("thisway") || msg.startsWith("forward")) {

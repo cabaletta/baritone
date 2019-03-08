@@ -76,27 +76,27 @@ public class CalculationContext {
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
         this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
         this.toolSet = new ToolSet(player);
-        this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(baritone.getPlayerContext(), false);
-        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.getDimension().isNether();
-        this.canSprint = Baritone.settings().allowSprint.get() && player.getFoodStats().getFoodLevel() > 6;
-        this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
-        this.allowBreak = Baritone.settings().allowBreak.get();
-        this.allowParkour = Baritone.settings().allowParkour.get();
-        this.allowParkourPlace = Baritone.settings().allowParkourPlace.get();
-        this.allowJumpAt256 = Baritone.settings().allowJumpAt256.get();
-        this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.get();
-        this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.get();
-        this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.get();
-        this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.get();
+        this.hasThrowaway = Baritone.settings().allowPlace.value && MovementHelper.throwaway(baritone.getPlayerContext(), false);
+        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.value && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.getDimension().isNether();
+        this.canSprint = Baritone.settings().allowSprint.value && player.getFoodStats().getFoodLevel() > 6;
+        this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
+        this.allowBreak = Baritone.settings().allowBreak.value;
+        this.allowParkour = Baritone.settings().allowParkour.value;
+        this.allowParkourPlace = Baritone.settings().allowParkourPlace.value;
+        this.allowJumpAt256 = Baritone.settings().allowJumpAt256.value;
+        this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
+        this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.value;
+        this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.value;
+        this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.value;
         int depth = EnchantmentHelper.getDepthStriderModifier(player);
         if (depth > 3) {
             depth = 3;
         }
         float mult = depth / 3.0F;
         this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - mult) + ActionCosts.WALK_ONE_BLOCK_COST * mult;
-        this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.get();
-        this.jumpPenalty = Baritone.settings().jumpPenalty.get();
-        this.walkOnWaterOnePenalty = Baritone.settings().walkOnWaterOnePenalty.get();
+        this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.value;
+        this.jumpPenalty = Baritone.settings().jumpPenalty.value;
+        this.walkOnWaterOnePenalty = Baritone.settings().walkOnWaterOnePenalty.value;
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.

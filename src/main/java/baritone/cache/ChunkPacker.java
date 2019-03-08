@@ -126,11 +126,17 @@ public final class ChunkPacker {
         if (MovementHelper.isWater(state)) {
             // only water source blocks are plausibly usable, flowing water should be avoid
             // FLOWING_WATER is a waterfall, it doesn't really matter and caching it as AVOID just makes it look wrong
-            if (!MovementHelper.possiblyFlowing(state)) {
-                return PathingBlockType.WATER;
+            if (MovementHelper.possiblyFlowing(state)) {
+                return PathingBlockType.AVOID;
             }
-            Vec3d flow = state.getFluidState().getFlow(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4));
-            if (flow.x != 0.0 || flow.z != 0.0) {
+            if (x == 0 || x == 15 || z == 0 || z == 15) {
+                Vec3d flow = state.getFluidState().getFlow(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4));
+                if (flow.x != 0.0 || flow.z != 0.0) {
+                    return PathingBlockType.WATER;
+                }
+                return PathingBlockType.AVOID;
+            }
+            if (MovementHelper.possiblyFlowing(chunk.getBlockState(x + 1, y, z)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x - 1, y, z)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z + 1)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z - 1))) {
                 return PathingBlockType.AVOID;
             }
             return PathingBlockType.WATER;

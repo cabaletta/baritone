@@ -54,7 +54,7 @@ public class ToolSet {
         breakStrengthCache = new HashMap<>();
         this.player = player;
 
-        if (Baritone.settings().considerPotionEffects.get()) {
+        if (Baritone.settings().considerPotionEffects.value) {
             double amplifier = potionAmplifier();
             Function<Double, Double> amplify = x -> amplifier * x;
             backendCalculation = amplify.compose(this::getBestDestructionTime);

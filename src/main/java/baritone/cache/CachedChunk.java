@@ -18,6 +18,7 @@
 package baritone.cache;
 
 import baritone.utils.pathing.PathingBlockType;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -119,6 +120,7 @@ public final class CachedChunk {
         temp.add(Blocks.COBWEB);
         temp.add(Blocks.NETHER_WART);
         temp.add(Blocks.LADDER);
+        temp.add(Blocks.VINE);
         BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(temp);
 
         // TODO: Lit Furnaces
@@ -153,6 +155,8 @@ public final class CachedChunk {
      */
     private final BitSet data;
 
+    private final Int2ObjectOpenHashMap<String> special;
+
     /**
      * The block names of each surface level block for generating an overview
      */
@@ -174,12 +178,30 @@ public final class CachedChunk {
         this.heightMap = new int[256];
         this.specialBlockLocations = specialBlockLocations;
         this.cacheTimestamp = cacheTimestamp;
+        if (specialBlockLocations.isEmpty()) {
+            this.special = null;
+        } else {
+            this.special = new Int2ObjectOpenHashMap<>();
+            setSpecial();
+        }
         calculateHeightMap();
     }
 
+    private final void setSpecial() {
+        for (Map.Entry<String, List<BlockPos>> entry : specialBlockLocations.entrySet()) {
+            for (BlockPos pos : entry.getValue()) {
+                special.put(getPositionIndex(pos.getX(), pos.getY(), pos.getZ()), entry.getKey());
+            }
+        }
+    }
+
     public final IBlockState getBlock(int x, int y, int z, int dimension) {
+        int index = getPositionIndex(x, y, z);
+        PathingBlockType type = getType(index);
         int internalPos = z << 4 | x;
-        if (heightMap[internalPos] == y) {
+        if (heightMap[internalPos] == y && type != PathingBlockType.AVOID) {
+            // if the top block in a column is water, we cache it as AVOID but we don't want to just return default state water (which is not flowing) beacuse then it would try to path through it
+
             // we have this exact block, it's a surface block
             /*System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
             if (!Minecraft.getInstance().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock().equals(state.getBlock())) {
@@ -187,15 +209,20 @@ public final class CachedChunk {
             }*/
             return overview[internalPos];
         }
-        PathingBlockType type = getType(x, y, z);
+        if (special != null) {
+            String str = special.get(index);
+            if (str != null) {
+                return ChunkPacker.stringToBlock(str).getDefaultState();
+            }
+        }
+
         if (type == PathingBlockType.SOLID && y == 127 && dimension == -1) {
             return Blocks.BEDROCK.getDefaultState();
         }
         return ChunkPacker.pathingTypeToBlock(type, dimension);
     }
 
-    private PathingBlockType getType(int x, int y, int z) {
-        int index = getPositionIndex(x, y, z);
+    private PathingBlockType getType(int index) {
         return PathingBlockType.fromBits(data.get(index), data.get(index + 1));
     }
 
@@ -223,11 +250,11 @@ public final class CachedChunk {
         return specialBlockLocations;
     }
 
-    public final LinkedList<BlockPos> getAbsoluteBlocks(String blockType) {
+    public final ArrayList<BlockPos> getAbsoluteBlocks(String blockType) {
         if (specialBlockLocations.get(blockType) == null) {
             return null;
         }
-        LinkedList<BlockPos> res = new LinkedList<>();
+        ArrayList<BlockPos> res = new ArrayList<>();
         for (BlockPos pos : specialBlockLocations.get(blockType)) {
             res.add(new BlockPos(pos.getX() + x * 16, pos.getY(), pos.getZ() + z * 16));
         }

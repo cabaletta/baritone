@@ -183,7 +183,7 @@ public class MovementDiagonal extends Movement {
     }
 
     public boolean sprint() {
-        if (MovementHelper.isLiquid(ctx, ctx.playerFeet()) && !Baritone.settings().sprintInWater.get()) {
+        if (MovementHelper.isLiquid(ctx, ctx.playerFeet()) && !Baritone.settings().sprintInWater.value) {
             return false;
         }
         for (int i = 0; i < 4; i++) {

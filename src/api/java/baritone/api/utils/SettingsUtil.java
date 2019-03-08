@@ -99,7 +99,7 @@ public class SettingsUtil {
     public static List<Settings.Setting> modifiedSettings(Settings settings) {
         List<Settings.Setting> modified = new ArrayList<>();
         for (Settings.Setting setting : settings.allSettings) {
-            if (setting.get() == null) {
+            if (setting.value == null) {
                 System.out.println("NULL SETTING?" + setting.getName());
                 continue;
             }
@@ -122,7 +122,7 @@ public class SettingsUtil {
         if (io == null) {
             throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting.getName());
         }
-        return setting.getName() + " " + io.toString.apply(setting.get());
+        return setting.getName() + " " + io.toString.apply(setting.value);
     }
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {

@@ -66,7 +66,7 @@ public class BlockStateInterface {
         } else {
             this.loadedChunks = worldLoaded; // this will only be used on the main thread
         }
-        this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.get();
+        this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.value;
         if (!Minecraft.getInstance().isCallingFromMinecraftThread()) {
             throw new IllegalStateException();
         }

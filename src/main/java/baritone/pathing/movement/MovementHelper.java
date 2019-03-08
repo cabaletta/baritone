@@ -122,7 +122,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         IFluidState fluidState = state.getFluidState();
         if (fluidState.getFluid() instanceof WaterFluid) {
-            if (Baritone.settings().assumeWalkOnWater.get()) {
+            if (Baritone.settings().assumeWalkOnWater.value) {
                 return false;
             }
             IBlockState up = bsi.get0(x, y + 1, z);
@@ -283,7 +283,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (state.isBlockNormalCube()) {
             return true;
         }
-        if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.get())) { // TODO reconsider this
+        if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) { // TODO reconsider this
             return true;
         }
         if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
@@ -302,17 +302,17 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             if (isFlowing(x, y, z, state, bsi) || upState.getFluidState().getFluid() == Fluids.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
-                return isWater(upState) && !Baritone.settings().assumeWalkOnWater.get();
+                return isWater(upState) && !Baritone.settings().assumeWalkOnWater.value;
             }
             // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
-            return isWater(upState) ^ Baritone.settings().assumeWalkOnWater.get();
+            return isWater(upState) ^ Baritone.settings().assumeWalkOnWater.value;
         }
         if (block == Blocks.GLASS || block instanceof BlockStainedGlass) {
             return true;
         }
         if (block instanceof BlockSlab) {
-            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
+            if (!Baritone.settings().allowWalkOnBottomSlab.value) {
                 return state.isTopSolid();
             }
             return true;
@@ -420,14 +420,14 @@ public interface MovementHelper extends ActionCosts, Helper {
             // and then it's called during execution
             // since this function is never called during cost calculation, we don't need to migrate
             // acceptableThrowawayItems to the CalculationContext
-            if (Baritone.settings().acceptableThrowawayItems.get().contains(item.getItem())) {
+            if (Baritone.settings().acceptableThrowawayItems.value.contains(item.getItem())) {
                 if (select) {
                     p.inventory.currentItem = i;
                 }
                 return true;
             }
         }
-        if (Baritone.settings().acceptableThrowawayItems.get().contains(p.inventory.offHandInventory.get(0).getItem())) {
+        if (Baritone.settings().acceptableThrowawayItems.value.contains(p.inventory.offHandInventory.get(0).getItem())) {
             // main hand takes precedence over off hand
             // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
             // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem

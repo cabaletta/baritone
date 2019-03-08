@@ -50,7 +50,7 @@ public class MixinRenderChunk {
         if (!chunkCache.isEmpty()) {
             return false;
         }
-        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getInstance().getIntegratedServer() == null) {
+        if (Baritone.settings().renderCachedChunks.value && Minecraft.getInstance().getIntegratedServer() == null) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {
@@ -80,7 +80,7 @@ public class MixinRenderChunk {
             )
     )
     private IBlockState getBlockState(RenderChunkCache chunkCache, BlockPos pos) {
-        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getInstance().getIntegratedServer() == null) {
+        if (Baritone.settings().renderCachedChunks.value && Minecraft.getInstance().getIntegratedServer() == null) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {

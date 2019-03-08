@@ -536,6 +536,11 @@ public final class Settings {
     public final Setting<Integer> mineGoalUpdateInterval = new Setting<>(5);
 
     /**
+     * After finding this many instances of the target block in the cache, it will stop expanding outward the chunk search.
+     */
+    public final Setting<Integer> maxCachedWorldScanCount = new Setting<>(10);
+
+    /**
      * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
@@ -564,6 +569,11 @@ public final class Settings {
      * The "axis" command (aka GoalAxis) will go to a axis, or diagonal axis, at this Y level.
      */
     public final Setting<Integer> axisHeight = new Setting<>(120);
+
+    /**
+     * Disconnect from the server upon arriving at your goal
+     */
+    public final Setting<Boolean> disconnectOnArrival = new Setting<>(false);
 
     /**
      * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
@@ -619,6 +629,13 @@ public final class Settings {
      * The radius (for the GoalNear) of how close to your target position you actually have to be
      */
     public final Setting<Integer> followRadius = new Setting<>(3);
+
+    /**
+     * true = exploration uses pythagorean distance to choose closest uncached chunk
+     * <p>
+     * false = exploration uses manhattan / taxicab distance to choose
+     */
+    public final Setting<Boolean> exploreUsePythagorean = new Setting<>(false);
 
     /**
      * Cached chunks (regardless of if they're in RAM or saved to disk) expire and are deleted after this number of seconds
@@ -716,9 +733,14 @@ public final class Settings {
             this.klass = (Class<T>) value.getClass();
         }
 
-        @SuppressWarnings("unchecked")
-        public final <K extends T> K get() {
-            return (K) value;
+        /**
+         * Deprecated! Please use .value directly instead
+         *
+         * @return the current setting value
+         */
+        @Deprecated
+        public final T get() {
+            return value;
         }
 
         public final String getName() {
@@ -734,6 +756,9 @@ public final class Settings {
             return SettingsUtil.settingToString(this);
         }
 
+        /**
+         * Reset this setting to its default value
+         */
         public void reset() {
             value = defaultValue;
         }
