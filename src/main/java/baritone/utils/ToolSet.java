@@ -24,7 +24,6 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
-import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 
@@ -75,19 +74,13 @@ public class ToolSet {
     }
 
     /**
-     * Evaluate the material cost of a possible tool. The priority matches the
-     * listed order in the Item.ToolMaterial enum.
+     * Evaluate the material cost of a possible tool. Will return 1 for tools, -1 for other
      *
      * @param itemStack a possibly empty ItemStack
-     * @return values range from -1 to 4
+     * @return Either 1 or -1
      */
     private int getMaterialCost(ItemStack itemStack) {
-        if (itemStack.getItem() instanceof ItemTool) {
-            ItemTool tool = (ItemTool) itemStack.getItem();
-            return ToolMaterial.valueOf(tool.getToolMaterialName()).ordinal();
-        } else {
-            return -1;
-        }
+        return itemStack.getItem() instanceof ItemTool ? 1 : -1;
     }
 
     /**

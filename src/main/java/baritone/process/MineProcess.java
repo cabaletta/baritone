@@ -37,6 +37,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IItemProvider;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -71,11 +72,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (desiredQuantity > 0) {
-            Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
+            Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), ctx.world(), null, 0).asItem();
             int curr = ctx.player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
             System.out.println("Currently have " + curr + " " + item);
             if (curr >= desiredQuantity) {
-                logDirect("Have " + curr + " " + item.getItemStackDisplayName(new ItemStack(item, 1)));
+                logDirect("Have " + curr + " " + item.getDisplayName(new ItemStack(item, 1)));
                 cancel();
                 return null;
             }
@@ -187,7 +188,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         Set<Item> searchingFor = new HashSet<>();
         for (Block block : mining) {
-            Item drop = block.getItemDropped(block.getDefaultState(), new Random(), 0);
+            Item drop = block.getItemDropped(block.getDefaultState(), world, null, 0).asItem();
             Item ore = Item.getItemFromBlock(block);
             searchingFor.add(drop);
             searchingFor.add(ore);

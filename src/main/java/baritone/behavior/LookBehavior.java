@@ -28,9 +28,6 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     /**
      * Target's values are as follows:
-     * <p>
-     * getFirst() -> yaw
-     * getSecond() -> pitch
      */
     private Rotation target;
 

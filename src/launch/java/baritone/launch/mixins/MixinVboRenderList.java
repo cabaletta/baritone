@@ -38,9 +38,9 @@ public class MixinVboRenderList {
             )
     )
     private void popMatrix() {
-        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getMinecraft().getIntegratedServer() == null) {
+        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getInstance().getIntegratedServer() == null) {
             // reset the blend func to normal (not dependent on constant alpha)
-            GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+            GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         }
         GlStateManager.popMatrix();
     }

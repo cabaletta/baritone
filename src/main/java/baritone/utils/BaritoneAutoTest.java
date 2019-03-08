@@ -23,14 +23,17 @@ import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.IPlayerContext;
+import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.tutorial.TutorialSteps;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.util.HttpUtil;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
+import net.minecraft.world.dimension.DimensionType;
 
 /**
  * Responsible for automatically testing Baritone's pathing algorithm by automatically creating a world with a specific
@@ -88,11 +91,13 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
         }
 
+        IntegratedServer server = mc.getIntegratedServer();
+
         // If the integrated server is launched and the world has initialized, set the spawn point
         // to our defined starting position
-        if (mc.getIntegratedServer() != null && mc.getIntegratedServer().worlds[0] != null) {
-            mc.getIntegratedServer().worlds[0].setSpawnPoint(STARTING_POSITION);
-            mc.getIntegratedServer().worlds[0].getGameRules().setOrCreateGameRule("spawnRadius", "0");
+        if (server != null && server.getWorld(DimensionType.OVERWORLD) != null) {
+            server.getWorld(DimensionType.OVERWORLD).setSpawnPoint(STARTING_POSITION);
+            server.getWorld(DimensionType.OVERWORLD).getGameRules().setOrCreateGameRule("spawnRadius", "0", server);
         }
 
         if (event.getType() == TickEvent.Type.IN) { // If we're in-game
@@ -100,7 +105,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             // Force the integrated server to share the world to LAN so that
             // the ingame pause menu gui doesn't actually pause our game
             if (mc.isSingleplayer() && !mc.getIntegratedServer().getPublic()) {
-                mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false);
+                mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false, HttpUtil.getSuitableLanPort());
             }
 
             // For the first 200 ticks, wait for the world to generate

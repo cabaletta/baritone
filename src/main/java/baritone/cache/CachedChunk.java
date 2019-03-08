@@ -52,9 +52,10 @@ public final class CachedChunk {
         temp.add(Blocks.TRAPPED_CHEST);
         temp.add(Blocks.END_PORTAL);
         temp.add(Blocks.END_PORTAL_FRAME);
-        temp.add(Blocks.MOB_SPAWNER);
+        temp.add(Blocks.SPAWNER);
         temp.add(Blocks.BARRIER);
         temp.add(Blocks.OBSERVER);
+
         temp.add(Blocks.WHITE_SHULKER_BOX);
         temp.add(Blocks.ORANGE_SHULKER_BOX);
         temp.add(Blocks.MAGENTA_SHULKER_BOX);
@@ -63,7 +64,7 @@ public final class CachedChunk {
         temp.add(Blocks.LIME_SHULKER_BOX);
         temp.add(Blocks.PINK_SHULKER_BOX);
         temp.add(Blocks.GRAY_SHULKER_BOX);
-        temp.add(Blocks.SILVER_SHULKER_BOX);
+        temp.add(Blocks.LIGHT_GRAY_SHULKER_BOX);
         temp.add(Blocks.CYAN_SHULKER_BOX);
         temp.add(Blocks.PURPLE_SHULKER_BOX);
         temp.add(Blocks.BLUE_SHULKER_BOX);
@@ -71,22 +72,56 @@ public final class CachedChunk {
         temp.add(Blocks.GREEN_SHULKER_BOX);
         temp.add(Blocks.RED_SHULKER_BOX);
         temp.add(Blocks.BLACK_SHULKER_BOX);
-        temp.add(Blocks.PORTAL);
+
+        temp.add(Blocks.NETHER_PORTAL);
         temp.add(Blocks.HOPPER);
         temp.add(Blocks.BEACON);
         temp.add(Blocks.BREWING_STAND);
-        temp.add(Blocks.SKULL);
+
+        // TODO: Maybe add a predicate for blocks to keep track of?
+        // This should really not need to happen
+        temp.add(Blocks.CREEPER_HEAD);
+        temp.add(Blocks.CREEPER_WALL_HEAD);
+        temp.add(Blocks.DRAGON_HEAD);
+        temp.add(Blocks.DRAGON_WALL_HEAD);
+        temp.add(Blocks.PLAYER_HEAD);
+        temp.add(Blocks.PLAYER_WALL_HEAD);
+        temp.add(Blocks.ZOMBIE_HEAD);
+        temp.add(Blocks.ZOMBIE_WALL_HEAD);
+        temp.add(Blocks.SKELETON_SKULL);
+        temp.add(Blocks.SKELETON_WALL_SKULL);
+        temp.add(Blocks.WITHER_SKELETON_SKULL);
+        temp.add(Blocks.WITHER_SKELETON_WALL_SKULL);
+
         temp.add(Blocks.ENCHANTING_TABLE);
         temp.add(Blocks.ANVIL);
-        temp.add(Blocks.LIT_FURNACE);
-        temp.add(Blocks.BED);
+
+        temp.add(Blocks.WHITE_BED);
+        temp.add(Blocks.ORANGE_BED);
+        temp.add(Blocks.MAGENTA_BED);
+        temp.add(Blocks.LIGHT_BLUE_BED);
+        temp.add(Blocks.YELLOW_BED);
+        temp.add(Blocks.LIME_BED);
+        temp.add(Blocks.PINK_BED);
+        temp.add(Blocks.GRAY_BED);
+        temp.add(Blocks.LIGHT_GRAY_BED);
+        temp.add(Blocks.CYAN_BED);
+        temp.add(Blocks.PURPLE_BED);
+        temp.add(Blocks.BLUE_BED);
+        temp.add(Blocks.BROWN_BED);
+        temp.add(Blocks.GREEN_BED);
+        temp.add(Blocks.RED_BED);
+        temp.add(Blocks.BLACK_BED);
+        
         temp.add(Blocks.DRAGON_EGG);
         temp.add(Blocks.JUKEBOX);
         temp.add(Blocks.END_GATEWAY);
-        temp.add(Blocks.WEB);
+        temp.add(Blocks.COBWEB);
         temp.add(Blocks.NETHER_WART);
         temp.add(Blocks.LADDER);
         BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(temp);
+
+        // TODO: Lit Furnaces
     }
 
     /**
@@ -147,8 +182,8 @@ public final class CachedChunk {
         if (heightMap[internalPos] == y) {
             // we have this exact block, it's a surface block
             /*System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
-            if (!Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock().equals(state.getBlock())) {
-                throw new IllegalStateException("failed " + Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock() + " " + state.getBlock() + " " + (x + this.x * 16) + " " + y + " " + (z + this.z * 16));
+            if (!Minecraft.getInstance().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock().equals(state.getBlock())) {
+                throw new IllegalStateException("failed " + Minecraft.getInstance().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock() + " " + state.getBlock() + " " + (x + this.x * 16) + " " + y + " " + (z + this.z * 16));
             }*/
             return overview[internalPos];
         }

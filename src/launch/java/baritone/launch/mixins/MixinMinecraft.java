@@ -97,10 +97,10 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V",
+            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Lnet/minecraft/client/gui/GuiScreen;)V",
             at = @At("HEAD")
     )
-    private void preLoadWorld(WorldClient world, String loadingMessage, CallbackInfo ci) {
+    private void preLoadWorld(WorldClient world, GuiScreen loadingScreen, CallbackInfo ci) {
         // If we're unloading the world but one doesn't exist, ignore it
         if (this.world == null && world == null) {
             return;
@@ -117,10 +117,10 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V",
+            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Lnet/minecraft/client/gui/GuiScreen;)V",
             at = @At("RETURN")
     )
-    private void postLoadWorld(WorldClient world, String loadingMessage, CallbackInfo ci) {
+    private void postLoadWorld(WorldClient world, GuiScreen loadingScreen, CallbackInfo ci) {
         // still fire event for both null, as that means we've just finished exiting a world
 
         // mc.world changing is only the primary baritone

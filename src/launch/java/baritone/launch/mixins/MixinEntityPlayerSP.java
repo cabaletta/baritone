@@ -58,10 +58,10 @@ public class MixinEntityPlayerSP {
     }
 
     @Inject(
-            method = "onUpdate",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/EntityPlayerSP.isRiding()Z",
+                    target = "net/minecraft/client/entity/EntityPlayerSP.isPassenger()Z",
                     shift = At.Shift.BY,
                     by = -3
             )
@@ -74,7 +74,7 @@ public class MixinEntityPlayerSP {
     }
 
     @Inject(
-            method = "onUpdate",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/client/entity/EntityPlayerSP.onUpdateWalkingPlayer()V",
@@ -90,7 +90,7 @@ public class MixinEntityPlayerSP {
     }
 
     @Redirect(
-            method = "onLivingUpdate",
+            method = "livingTick",
             at = @At(
                     value = "FIELD",
                     target = "net/minecraft/entity/player/PlayerCapabilities.allowFlying:Z"
@@ -105,7 +105,7 @@ public class MixinEntityPlayerSP {
     }
 
     @Redirect(
-            method = "onLivingUpdate",
+            method = "livingTick",
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/client/settings/KeyBinding.isKeyDown()Z"

@@ -23,7 +23,9 @@ import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.*;
+import net.minecraft.util.math.shapes.VoxelShape;
 
 import java.util.Optional;
 
@@ -174,11 +176,11 @@ public final class RotationUtils {
         }
 
         IBlockState state = entity.world.getBlockState(pos);
-        AxisAlignedBB aabb = state.getBoundingBox(entity.world, pos);
+        VoxelShape shape = state.getCollisionShape(entity.world, pos);
         for (Vec3d sideOffset : BLOCK_SIDE_MULTIPLIERS) {
-            double xDiff = aabb.minX * sideOffset.x + aabb.maxX * (1 - sideOffset.x);
-            double yDiff = aabb.minY * sideOffset.y + aabb.maxY * (1 - sideOffset.y);
-            double zDiff = aabb.minZ * sideOffset.z + aabb.maxZ * (1 - sideOffset.z);
+            double xDiff = shape.getStart(EnumFacing.Axis.X) * sideOffset.x + shape.getEnd(EnumFacing.Axis.X) * (1 - sideOffset.x);
+            double yDiff = shape.getStart(EnumFacing.Axis.Y) * sideOffset.y + shape.getEnd(EnumFacing.Axis.Y) * (1 - sideOffset.y);
+            double zDiff = shape.getStart(EnumFacing.Axis.Z) * sideOffset.z + shape.getEnd(EnumFacing.Axis.Z) * (1 - sideOffset.z);
             possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff), blockReachDistance);
             if (possibleRotation.isPresent()) {
                 return possibleRotation;
@@ -199,10 +201,10 @@ public final class RotationUtils {
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance) {
-        Rotation rotation = calcRotationFromVec3d(entity.getPositionEyes(1.0F), offsetPos, new Rotation(entity.rotationYaw, entity.rotationPitch));
+        Rotation rotation = calcRotationFromVec3d(entity.getEyePosition(1.0F), offsetPos, new Rotation(entity.rotationYaw, entity.rotationPitch));
         RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance);
         //System.out.println(result);
-        if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
+        if (result != null && result.type == RayTraceResult.Type.BLOCK) {
             if (result.getBlockPos().equals(pos)) {
                 return Optional.of(rotation);
             }

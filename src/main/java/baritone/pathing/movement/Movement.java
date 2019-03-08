@@ -23,7 +23,7 @@ import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.utils.BlockStateInterface;
-import net.minecraft.block.BlockLiquid;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -109,7 +109,7 @@ public abstract class Movement implements IMovement, MovementHelper {
      */
     @Override
     public MovementStatus update() {
-        ctx.player().capabilities.isFlying = false;
+        ctx.player().abilities.isFlying = false;
         currentState = updateState(currentState);
         if (MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             currentState.setInput(Input.JUMP, true);
@@ -143,7 +143,7 @@ public abstract class Movement implements IMovement, MovementHelper {
         }
         boolean somethingInTheWay = false;
         for (BetterBlockPos blockPos : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(ctx, blockPos) && !(BlockStateInterface.getBlock(ctx, blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
+            if (!MovementHelper.canWalkThrough(ctx, blockPos) && BlockStateInterface.getBlock(ctx, blockPos) != Blocks.AIR) { // can't break air, so don't try
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
@@ -159,7 +159,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                 //i'm doing it anyway
                 //i dont care if theres snow in the way!!!!!!!
                 //you dont own me!!!!
-                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
+                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.player().getEyePosition(1.0F),
                         VecUtils.getBlockPosCenter(blockPos), ctx.playerRotations()), true)
                 );
                 // don't check selectedblock on this one, this is a fallback when we can't see any face directly, it's intended to be breaking the "incorrect" block

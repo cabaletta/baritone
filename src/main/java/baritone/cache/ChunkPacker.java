@@ -24,9 +24,11 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.IRegistry;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.chunk.ChunkSection;
 
 import java.util.*;
 
@@ -46,9 +48,9 @@ public final class ChunkPacker {
         Map<String, List<BlockPos>> specialBlocks = new HashMap<>();
         BitSet bitSet = new BitSet(CachedChunk.SIZE);
         try {
-            ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+            ChunkSection[] chunkInternalStorageArray = chunk.getSections();
             for (int y0 = 0; y0 < 16; y0++) {
-                ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
+                ChunkSection extendedblockstorage = chunkInternalStorageArray[y0];
                 if (extendedblockstorage == null) {
                     // any 16x16x16 area that's all air will have null storage
                     // for example, in an ocean biome, with air from y=64 to y=256
@@ -60,7 +62,7 @@ public final class ChunkPacker {
                     // since a bitset is initialized to all zero, and air is saved as zeros
                     continue;
                 }
-                BlockStateContainer bsc = extendedblockstorage.getData();
+                BlockStateContainer<IBlockState> bsc = extendedblockstorage.getData();
                 int yReal = y0 << 4;
                 // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
                 // for better cache locality, iterate in that order
@@ -106,7 +108,7 @@ public final class ChunkPacker {
     }
 
     public static String blockToString(Block block) {
-        ResourceLocation loc = Block.REGISTRY.getNameForObject(block);
+        ResourceLocation loc = IRegistry.BLOCK.getKey(block);
         String name = loc.getPath(); // normally, only write the part after the minecraft:
         if (!loc.getNamespace().equals("minecraft")) {
             // Baritone is running on top of forge with mods installed, perhaps?
@@ -116,24 +118,25 @@ public final class ChunkPacker {
     }
 
     public static Block stringToBlock(String name) {
-        return resourceCache.computeIfAbsent(name, n -> Block.getBlockFromName(n.contains(":") ? n : "minecraft:" + n));
+        return resourceCache.computeIfAbsent(name, n -> IRegistry.BLOCK.get(new ResourceLocation(n.contains(":") ? n : "minecraft:" + n)));
     }
 
     private static PathingBlockType getPathingBlockType(IBlockState state, Chunk chunk, int x, int y, int z) {
         Block block = state.getBlock();
-        if (block == Blocks.WATER || block == Blocks.FLOWING_WATER) {
+        if (MovementHelper.isWater(state)) {
             // only water source blocks are plausibly usable, flowing water should be avoid
             // FLOWING_WATER is a waterfall, it doesn't really matter and caching it as AVOID just makes it look wrong
             if (!MovementHelper.possiblyFlowing(state)) {
                 return PathingBlockType.WATER;
             }
-            if (BlockLiquid.getSlopeAngle(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4), state.getMaterial(), state) != -1000.0F) {
+            Vec3d flow = state.getFluidState().getFlow(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4));
+            if (flow.x != 0.0 || flow.z != 0.0) {
                 return PathingBlockType.AVOID;
             }
             return PathingBlockType.WATER;
         }
 
-        if (MovementHelper.avoidWalkingInto(block) || MovementHelper.isBottomSlab(state)) {
+        if (MovementHelper.avoidWalkingInto(state) || MovementHelper.isBottomSlab(state)) {
             return PathingBlockType.AVOID;
         }
         // We used to do an AABB check here

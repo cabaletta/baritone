@@ -77,7 +77,7 @@ public class CalculationContext {
         this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.get() && MovementHelper.throwaway(baritone.getPlayerContext(), false);
-        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.provider.isNether();
+        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.get() && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.getDimension().isNether();
         this.canSprint = Baritone.settings().allowSprint.get() && player.getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.get();
         this.allowBreak = Baritone.settings().allowBreak.get();

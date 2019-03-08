@@ -29,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL14.*;
 
 @Mixin(ChunkRenderContainer.class)
 public class MixinChunkRenderContainer {
@@ -41,11 +42,11 @@ public class MixinChunkRenderContainer {
             )
     )
     private BlockPos getPosition(RenderChunk renderChunkIn) {
-        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getMinecraft().getIntegratedServer() == null && Minecraft.getMinecraft().world.getChunk(renderChunkIn.getPosition()).isEmpty()) {
-            GlStateManager.enableAlpha();
+        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getInstance().getIntegratedServer() == null && Minecraft.getInstance().world.getChunk(renderChunkIn.getPosition()).isEmpty()) {
+            GlStateManager.enableAlphaTest();
             GlStateManager.enableBlend();
             GL14.glBlendColor(0, 0, 0, Baritone.settings().cachedChunksOpacity.get());
-            GlStateManager.tryBlendFuncSeparate(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA, GL_ONE, GL_ZERO);
+            GlStateManager.blendFuncSeparate(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA, GL_ONE, GL_ZERO);
         }
         return renderChunkIn.getPosition();
     }

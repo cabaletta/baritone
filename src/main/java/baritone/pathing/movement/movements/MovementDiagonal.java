@@ -91,12 +91,12 @@ public class MovementDiagonal extends Movement {
         if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        Block cuttingOver1 = context.get(x, y - 1, destZ).getBlock();
-        if (cuttingOver1 == Blocks.MAGMA || MovementHelper.isLava(cuttingOver1)) {
+        IBlockState cuttingOver1 = context.get(x, y - 1, destZ);
+        if (cuttingOver1.getBlock() == Blocks.MAGMA_BLOCK || MovementHelper.isLava(cuttingOver1)) {
             return;
         }
-        Block cuttingOver2 = context.get(destX, y - 1, z).getBlock();
-        if (cuttingOver2 == Blocks.MAGMA || MovementHelper.isLava(cuttingOver2)) {
+        IBlockState cuttingOver2 = context.get(destX, y - 1, z);
+        if (cuttingOver2.getBlock() == Blocks.MAGMA_BLOCK || MovementHelper.isLava(cuttingOver2)) {
             return;
         }
         IBlockState pb0 = context.get(x, y, destZ);
@@ -115,7 +115,7 @@ public class MovementDiagonal extends Movement {
             return;
         }
         IBlockState pb3 = context.get(destX, y + 1, z);
-        if (optionA == 0 && ((MovementHelper.avoidWalkingInto(pb2.getBlock()) && pb2.getBlock() != Blocks.WATER) || MovementHelper.avoidWalkingInto(pb3.getBlock()))) {
+        if (optionA == 0 && ((MovementHelper.avoidWalkingInto(pb2) && pb2.getBlock() != Blocks.WATER) || MovementHelper.avoidWalkingInto(pb3))) {
             // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
             return;
         }
@@ -124,13 +124,14 @@ public class MovementDiagonal extends Movement {
             // and finally, if the cost is nonzero for both ways to approach this diagonal, it's not possible
             return;
         }
-        if (optionB == 0 && ((MovementHelper.avoidWalkingInto(pb0.getBlock()) && pb0.getBlock() != Blocks.WATER) || MovementHelper.avoidWalkingInto(pb1.getBlock()))) {
+        if (optionB == 0 && ((MovementHelper.avoidWalkingInto(pb0) && pb0.getBlock() != Blocks.WATER) || MovementHelper.avoidWalkingInto(pb1))) {
             // and now that option B is fully calculated, see if we can edge around that way
             return;
         }
         boolean water = false;
-        Block startIn = context.getBlock(x, y, z);
-        if (MovementHelper.isWater(startIn) || MovementHelper.isWater(destInto.getBlock())) {
+        IBlockState startState = context.get(x, y, z);
+        Block startIn = startState.getBlock();
+        if (MovementHelper.isWater(startState) || MovementHelper.isWater(destInto)) {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below

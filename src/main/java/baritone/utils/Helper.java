@@ -42,7 +42,7 @@ public interface Helper {
             TextFormatting.GRAY
     ));
 
-    Minecraft mc = Minecraft.getMinecraft();
+    Minecraft mc = Minecraft.getInstance();
 
     /**
      * Send a message to chat only if chatDebug is on
@@ -64,9 +64,9 @@ public interface Helper {
      * @param message The message to display in chat
      */
     default void logDirect(String message) {
-        ITextComponent component = MESSAGE_PREFIX.createCopy();
+        ITextComponent component = MESSAGE_PREFIX.shallowCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
         component.appendSibling(new TextComponentString(" " + message));
-        Minecraft.getMinecraft().addScheduledTask(() -> Baritone.settings().logger.get().accept(component));
+        Minecraft.getInstance().addScheduledTask(() -> Baritone.settings().logger.get().accept(component));
     }
 }

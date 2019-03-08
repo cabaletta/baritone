@@ -16,13 +16,12 @@
     "MixinChunkRenderWorker",
     "MixinEntityLivingBase",
     "MixinEntityPlayerSP",
-    "MixinEntityRenderer",
+    "MixinGameRenderer",
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
     "MixinRenderChunk",
     "MixinRenderList",
-    "MixinVboRenderList",
-    "MixinWorldClient"
+    "MixinVboRenderList"
   ]
 }

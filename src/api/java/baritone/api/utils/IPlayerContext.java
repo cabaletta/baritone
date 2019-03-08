@@ -71,7 +71,7 @@ public interface IPlayerContext {
      * @return The position of the highlighted block
      */
     default Optional<BlockPos> getSelectedBlock() {
-        if (objectMouseOver() != null && objectMouseOver().typeOfHit == RayTraceResult.Type.BLOCK) {
+        if (objectMouseOver() != null && objectMouseOver().type == RayTraceResult.Type.BLOCK) {
             return Optional.of(objectMouseOver().getBlockPos());
         }
         return Optional.empty();
@@ -83,8 +83,8 @@ public interface IPlayerContext {
      * @return The entity
      */
     default Optional<Entity> getSelectedEntity() {
-        if (objectMouseOver() != null && objectMouseOver().typeOfHit == RayTraceResult.Type.ENTITY) {
-            return Optional.of(objectMouseOver().entityHit);
+        if (objectMouseOver() != null && objectMouseOver().type == RayTraceResult.Type.ENTITY) {
+            return Optional.of(objectMouseOver().entity);
         }
         return Optional.empty();
     }

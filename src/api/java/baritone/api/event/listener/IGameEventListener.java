@@ -18,12 +18,12 @@
 package baritone.api.event.listener;
 
 import baritone.api.event.events.*;
-import io.netty.util.concurrent.GenericFutureListener;
+import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiGameOver;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.Packet;
 
@@ -45,7 +45,7 @@ public interface IGameEventListener {
      * Run once per game tick from before and after the player rotation is sent to the server.
      *
      * @param event The event
-     * @see EntityPlayerSP#onUpdate()
+     * @see EntityPlayerSP#tick()
      */
     void onPlayerUpdate(PlayerUpdateEvent event);
 
@@ -66,9 +66,7 @@ public interface IGameEventListener {
     void onChunkEvent(ChunkEvent event);
 
     /**
-     * Runs once per world render pass. Two passes are made when {@link GameSettings#anaglyph} is on.
-     * <p>
-     * <b>Note:</b> {@link GameSettings#anaglyph} has been removed in Minecraft 1.13
+     * Runs once per world render pass.
      *
      * @param event The event
      */
@@ -78,7 +76,7 @@ public interface IGameEventListener {
      * Runs before and after whenever a new world is loaded
      *
      * @param event The event
-     * @see Minecraft#loadWorld(WorldClient, String)
+     * @see Minecraft#loadWorld(WorldClient, GuiScreen)
      */
     void onWorldEvent(WorldEvent event);
 
@@ -87,7 +85,6 @@ public interface IGameEventListener {
      *
      * @param event The event
      * @see Packet
-     * @see GenericFutureListener
      */
     void onSendPacket(PacketEvent event);
 
@@ -96,7 +93,6 @@ public interface IGameEventListener {
      *
      * @param event The event
      * @see Packet
-     * @see GenericFutureListener
      */
     void onReceivePacket(PacketEvent event);
 
@@ -110,10 +106,10 @@ public interface IGameEventListener {
     void onPlayerRotationMove(RotationMoveEvent event);
 
     /**
-     * Called whenever the sprint keybind state is checked in {@link EntityPlayerSP#onLivingUpdate}
+     * Called whenever the sprint keybind state is checked in {@link EntityPlayerSP#livingTick}
      *
      * @param event The event
-     * @see EntityPlayerSP#onLivingUpdate()
+     * @see EntityPlayerSP#livingTick()
      */
     void onPlayerSprintState(SprintStateEvent event);
 

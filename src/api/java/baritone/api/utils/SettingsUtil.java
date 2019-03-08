@@ -18,8 +18,10 @@
 package baritone.api.utils;
 
 import baritone.api.Settings;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.IRegistry;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -36,11 +38,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static net.minecraft.client.Minecraft.getMinecraft;
-
 public class SettingsUtil {
 
-    private static final Path SETTINGS_PATH = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
+    private static final Path SETTINGS_PATH = Minecraft.getInstance().gameDir.toPath().resolve("baritone").resolve("settings.txt");
     private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>[^ ]+)"); // 2 words separated by spaces
 
     private static final Map<Class<?>, SettingsIO> map;
@@ -146,7 +146,7 @@ public class SettingsUtil {
         FLOAT(Float.class, Float::parseFloat),
         LONG(Long.class, Long::parseLong),
 
-        ITEM_LIST(ArrayList.class, str -> Stream.of(str.split(",")).map(Item::getByNameOrId).collect(Collectors.toCollection(ArrayList::new)), list -> ((ArrayList<Item>) list).stream().map(Item.REGISTRY::getNameForObject).map(ResourceLocation::toString).collect(Collectors.joining(","))),
+        ITEM_LIST(ArrayList.class, str -> Stream.of(str.split(",")).map(ResourceLocation::new).map(IRegistry.ITEM::get).collect(Collectors.toCollection(ArrayList::new)), list -> ((ArrayList<Item>) list).stream().map(IRegistry.ITEM::getKey).map(ResourceLocation::toString).collect(Collectors.joining(","))),
         COLOR(Color.class, str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])), color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue());
 
 

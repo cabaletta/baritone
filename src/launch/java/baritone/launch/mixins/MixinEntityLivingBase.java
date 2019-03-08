@@ -23,6 +23,7 @@ import baritone.api.event.events.RotationMoveEvent;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntityType;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -44,9 +45,8 @@ public abstract class MixinEntityLivingBase extends Entity {
      */
     private RotationMoveEvent jumpRotationEvent;
 
-    public MixinEntityLivingBase(World worldIn, RotationMoveEvent jumpRotationEvent) {
-        super(worldIn);
-        this.jumpRotationEvent = jumpRotationEvent;
+    public MixinEntityLivingBase(EntityType<?> entityTypeIn, World worldIn) {
+        super(entityTypeIn, worldIn);
     }
 
     @Inject(

@@ -53,7 +53,7 @@ public class MixinNetworkManager {
             method = "dispatchPacket",
             at = @At("HEAD")
     )
-    private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
+    private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>> futureListeners, CallbackInfo ci) {
         if (this.direction != EnumPacketDirection.CLIENTBOUND) {
             return;
         }
@@ -69,7 +69,7 @@ public class MixinNetworkManager {
             method = "dispatchPacket",
             at = @At("RETURN")
     )
-    private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
+    private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>> futureListeners, CallbackInfo ci) {
         if (this.direction != EnumPacketDirection.CLIENTBOUND) {
             return;
         }
@@ -85,7 +85,7 @@ public class MixinNetworkManager {
             method = "channelRead0",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/network/Packet.processPacket(Lnet/minecraft/network/INetHandler;)V"
+                    target = "net/minecraft/network/NetworkManager.processPacket(Lnet/minecraft/network/Packet;Lnet/minecraft/network/INetHandler;)V"
             )
     )
     private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {

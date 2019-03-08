@@ -23,8 +23,8 @@ import baritone.api.utils.IPlayerContext;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.RenderChunk;
+import net.minecraft.client.renderer.chunk.RenderChunkCache;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ChunkCache;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -36,6 +36,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(RenderChunk.class)
 public class MixinRenderChunk {
 
+    // TODO: Resolve this issue
+    // Looks like generateCache will return null if the chunk is empty, so we're probably going to want to hook that method
+    /*
     @Redirect(
             method = "rebuildChunk",
             at = @At(
@@ -47,7 +50,7 @@ public class MixinRenderChunk {
         if (!chunkCache.isEmpty()) {
             return false;
         }
-        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getMinecraft().getIntegratedServer() == null) {
+        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getInstance().getIntegratedServer() == null) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {
@@ -67,16 +70,17 @@ public class MixinRenderChunk {
 
         return true;
     }
+    */
 
     @Redirect(
             method = "rebuildChunk",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/world/ChunkCache.getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/state/IBlockState;"
+                    target = "net/minecraft/client/renderer/chunk/RenderChunkCache.getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/state/IBlockState;"
             )
     )
-    private IBlockState getBlockState(ChunkCache chunkCache, BlockPos pos) {
-        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getMinecraft().getIntegratedServer() == null) {
+    private IBlockState getBlockState(RenderChunkCache chunkCache, BlockPos pos) {
+        if (Baritone.settings().renderCachedChunks.get() && Minecraft.getInstance().getIntegratedServer() == null) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {

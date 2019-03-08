@@ -24,6 +24,7 @@ import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
@@ -55,7 +56,7 @@ public class WorldProvider implements IWorldProvider, Helper {
      *
      * @param dimension The ID of the world's dimension
      */
-    public final void initWorld(int dimension) {
+    public final void initWorld(DimensionType dimension) {
         File directory;
         File readme;
 
@@ -101,7 +102,7 @@ public class WorldProvider implements IWorldProvider, Helper {
 
         System.out.println("Baritone world data dir: " + dir);
         synchronized (worldCache) {
-            this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension));
+            this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension.getId()));
         }
     }
 

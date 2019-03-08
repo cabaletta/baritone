@@ -35,7 +35,9 @@ import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockFenceGate;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.fluid.WaterFluid;
 import net.minecraft.init.Blocks;
+import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -67,11 +69,12 @@ public class MovementTraverse extends Movement {
         IBlockState pb0 = context.get(destX, y + 1, destZ);
         IBlockState pb1 = context.get(destX, y, destZ);
         IBlockState destOn = context.get(destX, y - 1, destZ);
-        Block srcDown = context.getBlock(x, y - 1, z);
+        IBlockState down = context.get(x, y - 1, z);
+        Block srcDown = down.getBlock();
         if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
-            if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {
+            if (MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1)) {
                 WC = context.waterWalkSpeed;
                 water = true;
             } else {
@@ -108,8 +111,8 @@ public class MovementTraverse extends Movement {
                 return COST_INF;
             }
             if (MovementHelper.isReplacable(destX, y - 1, destZ, destOn, context.bsi)) {
-                boolean throughWater = MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock());
-                if (MovementHelper.isWater(destOn.getBlock()) && throughWater) {
+                boolean throughWater = MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1);
+                if (MovementHelper.isWater(destOn) && throughWater) {
                     // this happens when assume walk on water is true and this is a traverse in water, which isn't allowed
                     return COST_INF;
                 }
@@ -134,10 +137,10 @@ public class MovementTraverse extends Movement {
                     }
                 }
                 // now that we've checked all possible directions to side place, we actually need to backplace
-                if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && !((BlockSlab) srcDown).isDouble())) {
+                if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && down.get(BlockSlab.TYPE) != SlabType.DOUBLE)) {
                     return COST_INF; // can't sneak and backplace against soul sand or half slabs (regardless of whether it's top half or bottom half) =/
                 }
-                if (srcDown == Blocks.FLOWING_WATER || srcDown == Blocks.WATER) {
+                if (down.getFluidState() instanceof WaterFluid) {
                     return COST_INF; // this is obviously impossible
                 }
                 WC = WC * (SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST);//since we are sneak backplacing, we are sneaking lol
@@ -160,10 +163,10 @@ public class MovementTraverse extends Movement {
                 return state;
             }
             // and if it's fine to walk into the blocks in front
-            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, positionsToBreak[0]).getBlock())) {
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, positionsToBreak[0]))) {
                 return state;
             }
-            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, positionsToBreak[1]).getBlock())) {
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, positionsToBreak[1]))) {
                 return state;
             }
             // and we aren't already pressed up against the block
@@ -232,8 +235,8 @@ public class MovementTraverse extends Movement {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             BlockPos into = dest.subtract(src).add(dest);
-            Block intoBelow = BlockStateInterface.get(ctx, into).getBlock();
-            Block intoAbove = BlockStateInterface.get(ctx, into.up()).getBlock();
+            IBlockState intoBelow = BlockStateInterface.get(ctx, into);
+            IBlockState intoAbove = BlockStateInterface.get(ctx, into.up());
             if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, ctx.playerFeet()) || Baritone.settings().sprintInWater.get()) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
             }

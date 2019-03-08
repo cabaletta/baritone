@@ -20,20 +20,15 @@ version '1.2.1'
 
 buildscript {
     repositories {
+        jcenter()
         maven {
             name = 'forge'
             url = 'http://files.minecraftforge.net/maven'
         }
-        maven {
-            name = 'SpongePowered'
-            url = 'http://repo.spongepowered.org/maven'
-        }
-        jcenter()
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
 
@@ -42,8 +37,9 @@ import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 apply plugin: 'java'
-apply plugin: 'net.minecraftforge.gradle.tweaker-client'
-apply plugin: 'org.spongepowered.mixin'
+//apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+//apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'net.minecraftforge.gradle'
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
@@ -52,11 +48,21 @@ compileJava {
 }
 
 sourceSets {
+    api {
+        compileClasspath += main.compileClasspath
+    }
+    main {
+        compileClasspath += api.output
+    }
+    test {
+        compileClasspath += api.output
+    }
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
 }
 
+/*
 minecraft {
     version = '1.12.2'
     mappings = 'stable_39'
@@ -65,6 +71,18 @@ minecraft {
 
     // The sources jar should use SRG names not MCP to ensure compatibility with all mappings
     makeObfSourceJar = true
+}
+*/
+
+minecraft {
+    mappings channel: 'snapshot', version: '20190307-1.13.1'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            source sourceSets.main
+        }
+    }
 }
 
 repositories {
@@ -82,6 +100,9 @@ repositories {
 }
 
 dependencies {
+    minecraft 'com.github.ImpactDevelopment:Vanilla:1.13.2'
+
+    runtime launchCompile('net.minecraft:launchwrapper:1.12')
     runtime launchCompile('com.github.ImpactDevelopment:SimpleTweaker:1.2')
     runtime launchCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
         // Mixin includes a lot of dependencies that are too up-to-date
@@ -91,13 +112,16 @@ dependencies {
         exclude module: 'commons-io'
         exclude module: 'log4j-core'
     }
+
     testImplementation 'junit:junit:4.12'
 }
 
+/*
 mixin {
     defaultObfuscationEnv searge
     add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
+*/
 
 javadoc {
     options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error

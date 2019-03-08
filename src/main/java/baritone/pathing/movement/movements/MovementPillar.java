@@ -49,14 +49,15 @@ public class MovementPillar extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        Block from = context.get(x, y, z).getBlock();
+        IBlockState fromState = context.get(x, y, z);
+        Block from = fromState.getBlock();
         boolean ladder = from == Blocks.LADDER || from == Blocks.VINE;
         IBlockState fromDown = context.get(x, y - 1, z);
         if (!ladder) {
             if (fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE) {
                 return COST_INF; // can't pillar from a ladder or vine onto something that isn't also climbable
             }
-            if (fromDown.getBlock() instanceof BlockSlab && !((BlockSlab) fromDown.getBlock()).isDouble() && fromDown.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
+            if (fromDown.getBlock() instanceof BlockSlab && !fromDown.isTopSolid()) {
                 return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
@@ -68,9 +69,9 @@ public class MovementPillar extends Movement {
         if (toBreakBlock instanceof BlockFenceGate) { // see issue #172
             return COST_INF;
         }
-        Block srcUp = null;
-        if (MovementHelper.isWater(toBreakBlock) && MovementHelper.isWater(from)) { // TODO should this also be allowed if toBreakBlock is air?
-            srcUp = context.get(x, y + 1, z).getBlock();
+        IBlockState srcUp = null;
+        if (MovementHelper.isWater(toBreak) && MovementHelper.isWater(fromState)) { // TODO should this also be allowed if toBreakBlock is air?
+            srcUp = context.get(x, y + 1, z);
             if (MovementHelper.isWater(srcUp)) {
                 return LADDER_UP_ONE_COST; // allow ascending pillars of water, but only if we're already in one
             }
@@ -78,7 +79,7 @@ public class MovementPillar extends Movement {
         if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) { // we need to place a block where we started to jump on it
             return COST_INF;
         }
-        if (from instanceof BlockLiquid || (fromDown.getBlock() instanceof BlockLiquid && context.assumeWalkOnWater)) {
+        if (MovementHelper.isLiquid(fromState) || (MovementHelper.isLiquid(fromDown) && context.assumeWalkOnWater)) {
             // otherwise, if we're standing in water, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is true, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
@@ -96,9 +97,9 @@ public class MovementPillar extends Movement {
                 if (check.getBlock() instanceof BlockFalling) {
                     // see MovementAscend's identical check for breaking a falling block above our head
                     if (srcUp == null) {
-                        srcUp = context.get(x, y + 1, z).getBlock();
+                        srcUp = context.get(x, y + 1, z);
                     }
-                    if (!(toBreakBlock instanceof BlockFalling) || !(srcUp instanceof BlockFalling)) {
+                    if (!(toBreakBlock instanceof BlockFalling) || !(srcUp.getBlock() instanceof BlockFalling)) {
                         return COST_INF;
                     }
                 }
@@ -149,7 +150,7 @@ public class MovementPillar extends Movement {
         }
 
         IBlockState fromDown = BlockStateInterface.get(ctx, src);
-        if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(ctx, dest)) {
+        if (MovementHelper.isWater(fromDown) && MovementHelper.isWater(ctx, dest)) {
             // stay centered while swimming up a water column
             state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations()), false));
             Vec3d destCenter = VecUtils.getBlockPosCenter(dest);
@@ -163,7 +164,7 @@ public class MovementPillar extends Movement {
         }
         boolean ladder = fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE;
         boolean vine = fromDown.getBlock() == Blocks.VINE;
-        Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
+        Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.player().getEyePosition(1.0F),
                 VecUtils.getBlockPosCenter(positionToPlace),
                 new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch));
         if (!ladder) {
@@ -172,7 +173,7 @@ public class MovementPillar extends Movement {
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
         if (ladder) {
-            BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
+            BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.offset(fromDown.get(BlockLadder.FACING).getOpposite());
             if (against == null) {
                 logDebug("Unable to climb vines");
                 return state.setStatus(MovementStatus.UNREACHABLE);
@@ -222,8 +223,10 @@ public class MovementPillar extends Movement {
 
 
             if (!blockIsThere) {
-                Block fr = BlockStateInterface.get(ctx, src).getBlock();
-                if (!(fr instanceof BlockAir || fr.isReplaceable(ctx.world(), src))) {
+                IBlockState frState = BlockStateInterface.get(ctx, src);
+                Block fr = frState.getBlock();
+                // TODO: Evaluate usage of getMaterial().isReplaceable()
+                if (!(fr instanceof BlockAir || frState.getMaterial().isReplaceable())) {
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
                 } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos())) && ctx.player().posY > dest.getY() + 0.1) {

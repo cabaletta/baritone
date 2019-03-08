@@ -203,7 +203,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         if (!Baritone.settings().enterPortal.get()) {
             return false;
         }
-        return block == Blocks.PORTAL;
+        return block == Blocks.NETHER_PORTAL;
     }
 
     private boolean rightClickOnArrival(Block block) {

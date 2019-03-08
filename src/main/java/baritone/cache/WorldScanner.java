@@ -26,7 +26,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.chunk.ChunkSection;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +67,7 @@ public enum WorldScanner implements IWorldScanner {
                     foundChunks = true;
                     int chunkX = xoff + playerChunkX;
                     int chunkZ = zoff + playerChunkZ;
-                    Chunk chunk = chunkProvider.getLoadedChunk(chunkX, chunkZ);
+                    Chunk chunk = chunkProvider.getChunk(chunkX, chunkZ, false, false);
                     if (chunk == null) {
                         continue;
                     }
@@ -92,7 +92,7 @@ public enum WorldScanner implements IWorldScanner {
         }
 
         ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
-        Chunk chunk = chunkProvider.getLoadedChunk(pos.x, pos.z);
+        Chunk chunk = chunkProvider.getChunk(pos.x, pos.z, false, false);
         int playerY = ctx.playerFeet().getY();
 
         if (chunk == null || chunk.isEmpty()) {
@@ -105,14 +105,14 @@ public enum WorldScanner implements IWorldScanner {
     }
 
     public void scanChunkInto(int chunkX, int chunkZ, Chunk chunk, List<Block> search, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY) {
-        ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+        ChunkSection[] chunkInternalStorageArray = chunk.getSections();
         for (int y0 = 0; y0 < 16; y0++) {
-            ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
+            ChunkSection extendedblockstorage = chunkInternalStorageArray[y0];
             if (extendedblockstorage == null) {
                 continue;
             }
             int yReal = y0 << 4;
-            BlockStateContainer bsc = extendedblockstorage.getData();
+            BlockStateContainer<IBlockState> bsc = extendedblockstorage.getData();
             // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
             // for better cache locality, iterate in that order
             for (int y = 0; y < 16; y++) {

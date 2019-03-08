@@ -53,7 +53,7 @@ public final class BlockBreakHelper implements Helper {
 
     public void tick(boolean isLeftClick) {
         RayTraceResult trace = playerContext.objectMouseOver();
-        boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
+        boolean isBlockTrace = trace != null && trace.type == RayTraceResult.Type.BLOCK;
 
         if (isLeftClick && isBlockTrace) {
             tryBreakBlock(trace.getBlockPos(), trace.sideHit);

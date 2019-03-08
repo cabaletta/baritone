@@ -241,7 +241,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             int count = 0;
             for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
                 for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
-                    Chunk chunk = cli.getLoadedChunk(x, z);
+                    Chunk chunk = cli.getChunk(x, z, false, false);
                     if (chunk != null) {
                         count++;
                         baritone.getWorldProvider().getCurrentWorld().getCachedWorld().queueForPacking(chunk);
@@ -306,7 +306,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
         if (msg.equals("render")) {
             BetterBlockPos pf = ctx.playerFeet();
-            Minecraft.getMinecraft().renderGlobal.markBlockRangeForRenderUpdate(pf.x - 500, pf.y - 500, pf.z - 500, pf.x + 500, pf.y + 500, pf.z + 500);
+            Minecraft.getInstance().worldRenderer.markBlockRangeForRenderUpdate(pf.x - 500, pf.y - 500, pf.z - 500, pf.x + 500, pf.y + 500, pf.z + 500);
             logDirect("okay");
             return true;
         }
@@ -349,8 +349,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 toFollow = ctx.getSelectedEntity();
             } else {
                 for (EntityPlayer pl : ctx.world().playerEntities) {
-                    String theirName = pl.getName().trim().toLowerCase();
-                    if (!theirName.equals(ctx.player().getName().trim().toLowerCase()) && (theirName.contains(name) || name.contains(theirName))) { // don't follow ourselves lol
+                    String theirName = pl.getName().getString().trim().toLowerCase();
+                    if (!theirName.equals(ctx.player().getName().getString().trim().toLowerCase()) && (theirName.contains(name) || name.contains(theirName))) { // don't follow ourselves lol
                         toFollow = Optional.of(pl);
                     }
                 }
@@ -554,7 +554,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     private void log(List<ItemStack> stacks) {
         for (ItemStack stack : stacks) {
             if (!stack.isEmpty()) {
-                logDirect(stack.getCount() + "x " + stack.getDisplayName() + "@" + stack.getItemDamage());
+                logDirect(stack.getCount() + "x " + stack.getDisplayName() + "@" + stack.getDamage());
             }
         }
     }

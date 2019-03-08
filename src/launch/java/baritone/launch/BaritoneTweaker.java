@@ -31,6 +31,7 @@ import java.util.List;
  * @author Brady
  * @since 7/31/2018
  */
+@Deprecated
 public class BaritoneTweaker extends SimpleTweaker {
 
     @Override

@@ -17,8 +17,8 @@
 
 package baritone.api.utils.input;
 
+import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 
 import java.util.Arrays;
@@ -97,7 +97,7 @@ public enum Input {
         an interface with a game instance field just to not have to do this.
 
          */
-        this.keyBinding = keyBindingMapper.apply(Minecraft.getMinecraft().gameSettings);
+        this.keyBinding = keyBindingMapper.apply(Minecraft.getInstance().gameSettings);
     }
 
     /**

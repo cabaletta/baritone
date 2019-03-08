@@ -24,6 +24,7 @@ import baritone.api.event.events.type.EventState;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.play.server.SPacketChunkData;
 import net.minecraft.network.play.server.SPacketCombatEvent;
+import net.minecraft.network.play.server.SPacketUnloadChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -40,7 +41,7 @@ public class MixinNetHandlerPlayClient {
             method = "handleChunkData",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/world/chunk/Chunk.read(Lnet/minecraft/network/PacketBuffer;IZ)V"
+                    target = "net/minecraft/client/multiplayer/ChunkProviderClient.func_212474_a(IILnet/minecraft/network/PacketBuffer;IZ)Lnet/minecraft/world/chunk/Chunk;"
             )
     )
     private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
@@ -72,6 +73,34 @@ public class MixinNetHandlerPlayClient {
                                 packetIn.getChunkX(),
                                 packetIn.getChunkZ()
                         )
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "processChunkUnload",
+            at = @At("HEAD")
+    )
+    private void preChunkUnload(SPacketUnloadChunk packet, CallbackInfo ci) {
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(EventState.PRE, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "processChunkUnload",
+            at = @At("RETURN")
+    )
+    private void postChunkUnload(SPacketUnloadChunk packet, CallbackInfo ci) {
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(EventState.POST, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
                 );
             }
         }

@@ -18,6 +18,7 @@
 package baritone.api.utils;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.RayTraceFluidMode;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
@@ -40,13 +41,13 @@ public final class RayTraceUtils {
      * @return The calculated raytrace result
      */
     public static RayTraceResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance) {
-        Vec3d start = entity.getPositionEyes(1.0F);
+        Vec3d start = entity.getEyePosition(1.0F);
         Vec3d direction = RotationUtils.calcVec3dFromRotation(rotation);
         Vec3d end = start.add(
                 direction.x * blockReachDistance,
                 direction.y * blockReachDistance,
                 direction.z * blockReachDistance
         );
-        return entity.world.rayTraceBlocks(start, end, false, false, true);
+        return entity.world.rayTraceBlocks(start, end, RayTraceFluidMode.NEVER, false, true);
     }
 }

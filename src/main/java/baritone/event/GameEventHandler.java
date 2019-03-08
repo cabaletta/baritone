@@ -84,7 +84,7 @@ public final class GameEventHandler implements IEventBus, Helper {
         // to make sure the chunk being unloaded is already loaded.
         boolean isPreUnload = state == EventState.PRE
                 && type == ChunkEvent.Type.UNLOAD
-                && world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
+                && world.getChunkProvider().getChunk(event.getX(), event.getZ(), false, false) != null;
 
         if (isPostPopulate || isPreUnload) {
             baritone.getWorldProvider().ifWorldLoaded(worldData -> {
@@ -109,7 +109,7 @@ public final class GameEventHandler implements IEventBus, Helper {
         if (event.getState() == EventState.POST) {
             cache.closeWorld();
             if (event.getWorld() != null) {
-                cache.initWorld(event.getWorld().provider.getDimensionType().getId());
+                cache.initWorld(event.getWorld().getDimension().getType());
             }
         }
 

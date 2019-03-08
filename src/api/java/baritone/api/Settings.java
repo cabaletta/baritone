@@ -647,7 +647,7 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getMinecraft().ingameGUI.getChatGUI()::printChatMessage);
+    public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getInstance().ingameGUI.getChatGUI()::printChatMessage);
 
     /**
      * The color of the current path

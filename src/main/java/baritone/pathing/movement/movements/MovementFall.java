@@ -34,6 +34,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.fluid.WaterFluid;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -80,10 +81,11 @@ public class MovementFall extends Movement {
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
         Rotation targetRotation = null;
-        Block destBlock = ctx.world().getBlockState(dest).getBlock();
-        boolean isWater = destBlock == Blocks.WATER || destBlock == Blocks.FLOWING_WATER;
+        IBlockState destState = ctx.world().getBlockState(dest);
+        Block destBlock = destState.getBlock();
+        boolean isWater = destState.getFluidState().getFluid() instanceof WaterFluid;
         if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
-            if (!InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().provider.isNether()) {
+            if (!InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().getDimension().isNether()) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
@@ -93,7 +95,7 @@ public class MovementFall extends Movement {
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
                 RayTraceResult trace = ctx.objectMouseOver();
-                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && (trace.getBlockPos().equals(dest) || trace.getBlockPos().equals(dest.down()))) {
+                if (trace != null && trace.type == RayTraceResult.Type.BLOCK && (trace.getBlockPos().equals(dest) || trace.getBlockPos().equals(dest.down()))) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }
@@ -150,7 +152,7 @@ public class MovementFall extends Movement {
         for (int i = 0; i < 15; i++) {
             IBlockState state = ctx.world().getBlockState(ctx.playerFeet().down(i));
             if (state.getBlock() == Blocks.LADDER) {
-                return state.getValue(BlockLadder.FACING);
+                return state.get(BlockLadder.FACING);
             }
         }
         return null;

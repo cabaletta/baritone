@@ -34,6 +34,7 @@ import net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -51,6 +52,7 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public final class PathRenderer implements Helper {
 
+    private static final ResourceLocation TEXTURE_BEACON_BEAM = new ResourceLocation("textures/entity/beacon_beam.png");
     private static final Tessellator TESSELLATOR = Tessellator.getInstance();
     private static final BufferBuilder BUFFER = TESSELLATOR.getBuffer();
 
@@ -60,8 +62,8 @@ public final class PathRenderer implements Helper {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
 
-        int thisPlayerDimension = behavior.baritone.getPlayerContext().world().provider.getDimensionType().getId();
-        int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().provider.getDimensionType().getId();
+        int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getId();
+        int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getDimension().getType().getId();
 
         if (thisPlayerDimension != currentRenderViewDimension) {
             // this is a path for a bot in a different dimension, don't render it
@@ -127,13 +129,13 @@ public final class PathRenderer implements Helper {
 
     public static void drawPath(IPath path, int startIndex, Entity player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
+        GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
+        GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         if (Baritone.settings().renderPathIgnoreDepth.get()) {
-            GlStateManager.disableDepth();
+            GlStateManager.disableDepthTest();
         }
         List<BetterBlockPos> positions = path.positions();
         int next;
@@ -170,13 +172,13 @@ public final class PathRenderer implements Helper {
                     }
                     alpha = 0.4F * (1.0F - (float) (i - fadeStart) / (float) (fadeEnd - fadeStart));
                 }
-                GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], alpha);
+                GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], alpha);
             }
             drawLine(player, x1, y1, z1, x2, y2, z2, partialTicks);
             tessellator.draw();
         }
         if (Baritone.settings().renderPathIgnoreDepth.get()) {
-            GlStateManager.enableDepth();
+            GlStateManager.enableDepthTest();
         }
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
         GlStateManager.depthMask(true);
@@ -198,14 +200,14 @@ public final class PathRenderer implements Helper {
 
     public static void drawManySelectionBoxes(Entity player, Collection<BlockPos> positions, float partialTicks, Color color) {
         GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
+        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
+        GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
 
         if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
-            GlStateManager.disableDepth();
+            GlStateManager.disableDepthTest();
         }
 
         float expand = 0.002F;
@@ -219,9 +221,9 @@ public final class PathRenderer implements Helper {
             IBlockState state = bsi.get0(pos);
             AxisAlignedBB toDraw;
             if (state.getBlock().equals(Blocks.AIR)) {
-                toDraw = Blocks.DIRT.getDefaultState().getSelectedBoundingBox(player.world, pos);
+                toDraw = Blocks.DIRT.getDefaultState().getShape(player.world, pos).getBoundingBox();
             } else {
-                toDraw = state.getSelectedBoundingBox(player.world, pos);
+                toDraw = state.getShape(player.world, pos).getBoundingBox();
             }
             toDraw = toDraw.expand(expand, expand, expand).offset(-renderPosX, -renderPosY, -renderPosZ);
             BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
@@ -251,7 +253,7 @@ public final class PathRenderer implements Helper {
         });
 
         if (Baritone.settings().renderSelectionBoxesIgnoreDepth.get()) {
-            GlStateManager.enableDepth();
+            GlStateManager.enableDepthTest();
         }
 
         GlStateManager.depthMask(true);
@@ -297,10 +299,10 @@ public final class PathRenderer implements Helper {
             if (Baritone.settings().renderGoalXZBeacon.get()) {
                 glPushAttrib(GL_LIGHTING_BIT);
 
-                mc.getTextureManager().bindTexture(TileEntityBeaconRenderer.TEXTURE_BEACON_BEAM);
+                mc.getTextureManager().bindTexture(TEXTURE_BEACON_BEAM);
 
                 if (Baritone.settings().renderGoalIgnoreDepth.get()) {
-                    GlStateManager.disableDepth();
+                    GlStateManager.disableDepthTest();
                 }
 
                 TileEntityBeaconRenderer.renderBeamSegment(
@@ -309,14 +311,18 @@ public final class PathRenderer implements Helper {
                         goalPos.getZ() - renderPosZ,
                         partialTicks,
                         1.0,
-                        player.world.getTotalWorldTime(),
+                        player.world.getGameTime(),
                         0,
                         256,
-                        color.getColorComponents(null)
+                        color.getColorComponents(null),
+
+                        // Arguments filled by the private method lol
+                        0.2D,
+                        0.25D
                 );
 
                 if (Baritone.settings().renderGoalIgnoreDepth.get()) {
-                    GlStateManager.enableDepth();
+                    GlStateManager.enableDepthTest();
                 }
 
                 glPopAttrib();
@@ -342,13 +348,13 @@ public final class PathRenderer implements Helper {
         }
 
         GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
-        GlStateManager.glLineWidth(Baritone.settings().goalRenderLineWidthPixels.get());
+        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
+        GlStateManager.lineWidth(Baritone.settings().goalRenderLineWidthPixels.get());
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         if (Baritone.settings().renderGoalIgnoreDepth.get()) {
-            GlStateManager.disableDepth();
+            GlStateManager.disableDepthTest();
         }
 
         renderHorizontalQuad(minX, maxX, minZ, maxZ, y1);
@@ -366,7 +372,7 @@ public final class PathRenderer implements Helper {
         TESSELLATOR.draw();
 
         if (Baritone.settings().renderGoalIgnoreDepth.get()) {
-            GlStateManager.enableDepth();
+            GlStateManager.enableDepthTest();
         }
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
