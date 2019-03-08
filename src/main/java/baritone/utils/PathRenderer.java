@@ -134,7 +134,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
-        GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
+        GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         if (Baritone.settings().renderPathIgnoreDepth.value) {
@@ -348,7 +348,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.enableBlend();
         GlStateManager.blendFuncSeparate(770, 771, 1, 0);
         GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
-        GlStateManager.lineWidth(Baritone.settings().goalRenderLineWidthPixels.get());
+        GlStateManager.lineWidth(Baritone.settings().goalRenderLineWidthPixels.value);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
         if (Baritone.settings().renderGoalIgnoreDepth.value) {
