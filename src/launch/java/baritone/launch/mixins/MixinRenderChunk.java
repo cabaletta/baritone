@@ -36,7 +36,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(RenderChunk.class)
 public class MixinRenderChunk {
 
-    // TODO: Resolve this issue
+    // TODO: (1.13.2) Resolve this issue
     // Looks like generateCache will return null if the chunk is empty, so we're probably going to want to hook that method
     /*
     @Redirect(
