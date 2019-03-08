@@ -34,6 +34,7 @@ Some common examples:
 - `cancel` or `stop` to stop everything
 - `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
 - `mine diamond_ore` to mine diamond ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.)
+- `click` to click your destination on the screen. left click to path into it, right click to path on top of it.
 - `follow playerName` to follow a player. `follow` to follow the entity you're looking at (only works if it hitting range). `followplayers` to follow any players in range (combine with Kill Aura for a fun time).
 - `save waypointName` to save a waypoint. `goto waypointName` to go to it.
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
