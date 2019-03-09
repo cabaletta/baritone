@@ -125,9 +125,9 @@ public final class Settings {
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
     public final Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
-            Item.getItemFromBlock(Blocks.DIRT),
-            Item.getItemFromBlock(Blocks.COBBLESTONE),
-            Item.getItemFromBlock(Blocks.NETHERRACK)
+            Blocks.DIRT.asItem(),
+            Blocks.COBBLESTONE.asItem(),
+            Blocks.NETHERRACK.asItem()
     )));
 
     /**

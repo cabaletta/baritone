@@ -189,7 +189,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         Set<Item> searchingFor = new HashSet<>();
         for (Block block : mining) {
             Item drop = block.getItemDropped(block.getDefaultState(), world, null, 0).asItem();
-            Item ore = Item.getItemFromBlock(block);
+            Item ore = block.asItem();
             searchingFor.add(drop);
             searchingFor.add(ore);
         }

@@ -25,13 +25,16 @@ buildscript {
             name = 'forge'
             url = 'http://files.minecraftforge.net/maven'
         }
+        maven {
+            name = 'impactdevelopment-repo'
+            url = 'https://impactdevelopment.github.io/maven/'
+        }
     }
 
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'com.github.ImpactDevelopment', name: 'ForgeGradle', version: '3.0.111'
     }
 }
-
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
@@ -76,6 +79,7 @@ minecraft {
 
 minecraft {
     mappings channel: 'snapshot', version: '20190307-1.13.1'
+    reobfMappings 'notch'
 
     runs {
         client {
