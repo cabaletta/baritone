@@ -49,7 +49,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
 
     @Override
     protected Optional<IPath> calculate0(final long primaryTimeout, final long failureTimeout) {
-        this.cawcuwate0(primaryTimeout, failureTimeout);
+        return this.cawcuwate0(primaryTimeout, failureTimeout);
     }
 
     private Optional<IPath> cawcuwate0(long primaryTimeout, long failureTimeout) {
