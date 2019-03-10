@@ -1,165 +1,165 @@
-                   GNU LESSER GENERAL PUBLIC LICENSE
-                       Version 3, 29 June 2007
+                   GNyU WESSEW GENyEWAW PUBWIC WICENSE
+                       Vewsion 3, 29 Junye 2007
 
- Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- Everyone is permitted to copy and distribute verbatim copies
- of this license document, but changing it is not allowed.
+ Copywight (C) 2007 Fwee Softwawe Foundation, Inc. <https://fsf.owg/>
+ Evewyonye is pewmitted to copy and distwibute vewbatim copies
+ of this wicense document, but changing it is nyot awwowed.
 
 
-  This version of the GNU Lesser General Public License incorporates
-the terms and conditions of version 3 of the GNU General Public
-License, supplemented by the additional permissions listed below.
+  This vewsion of the GNyU Wessew Genyewaw Pubwic Wicense incowpowates
+the tewms and conditions of vewsion 3 of the GNyU Genyewaw Pubwic
+Wicense, suppwemented by the additionyaw pewmissions wisted bewow.
 
-  0. Additional Definitions.
+  0. Additionyaw Definyitions.
 
-  As used herein, "this License" refers to version 3 of the GNU Lesser
-General Public License, and the "GNU GPL" refers to version 3 of the GNU
-General Public License.
+  As used hewein, "this Wicense" wefews to vewsion 3 of the GNyU Wessew
+Genyewaw Pubwic Wicense, and the "GNyU GPW" wefews to vewsion 3 of the GNyU
+Genyewaw Pubwic Wicense.
 
-  "The Library" refers to a covered work governed by this License,
-other than an Application or a Combined Work as defined below.
+  "The Wibwawy" wefews to a cuvwed wowk guvwnyed by this Wicense,
+othew than an Appwication ow a Combinyed Wowk as definyed bewow.
 
-  An "Application" is any work that makes use of an interface provided
-by the Library, but which is not otherwise based on the Library.
-Defining a subclass of a class defined by the Library is deemed a mode
-of using an interface provided by the Library.
+  An "Appwication" is any wowk that makes use of an intewface pwovided
+by the Wibwawy, but which is nyot othewwise based on the Wibwawy.
+Definying a subcwass of a cwass definyed by the Wibwawy is deemed a mode
+of using an intewface pwovided by the Wibwawy.
 
-  A "Combined Work" is a work produced by combining or linking an
-Application with the Library.  The particular version of the Library
-with which the Combined Work was made is also called the "Linked
-Version".
+  A "Combinyed Wowk" is a wowk pwoduced by combinying ow winking an
+Appwication with the Wibwawy.  The pawticuwaw vewsion of the Wibwawy
+with which the Combinyed Wowk was made is awso cawwed the "Winked
+Vewsion".
 
-  The "Minimal Corresponding Source" for a Combined Work means the
-Corresponding Source for the Combined Work, excluding any source code
-for portions of the Combined Work that, considered in isolation, are
-based on the Application, and not on the Linked Version.
+  The "Minyimaw Cowwesponding Souwce" fow a Combinyed Wowk means the
+Cowwesponding Souwce fow the Combinyed Wowk, excwuding any souwce code
+fow powtions of the Combinyed Wowk that, considewed in isowation, awe
+based on the Appwication, and nyot on the Winked Vewsion.
 
-  The "Corresponding Application Code" for a Combined Work means the
-object code and/or source code for the Application, including any data
-and utility programs needed for reproducing the Combined Work from the
-Application, but excluding the System Libraries of the Combined Work.
+  The "Cowwesponding Appwication Code" fow a Combinyed Wowk means the
+object code and/ow souwce code fow the Appwication, incwuding any data
+and utiwity pwogwams nyeeded fow wepwoducing the Combinyed Wowk fwom the
+Appwication, but excwuding the System Wibwawies of the Combinyed Wowk.
 
-  1. Exception to Section 3 of the GNU GPL.
+  1. Exception to Section 3 of the GNyU GPW.
 
-  You may convey a covered work under sections 3 and 4 of this License
-without being bound by section 3 of the GNU GPL.
+  You may convey a cuvwed wowk undew sections 3 and 4 of this Wicense
+without being bound by section 3 of the GNyU GPW.
 
-  2. Conveying Modified Versions.
+  2. Conveying Modified Vewsions.
 
-  If you modify a copy of the Library, and, in your modifications, a
-facility refers to a function or data to be supplied by an Application
-that uses the facility (other than as an argument passed when the
-facility is invoked), then you may convey a copy of the modified
-version:
+  If you modify a copy of the Wibwawy, and, in youw modifications, a
+faciwity wefews to a function ow data to be suppwied by an Appwication
+that uses the faciwity (othew than as an awgument passed when the
+faciwity is invoked), then you may convey a copy of the modified
+vewsion:
 
-   a) under this License, provided that you make a good faith effort to
-   ensure that, in the event an Application does not supply the
-   function or data, the facility still operates, and performs
-   whatever part of its purpose remains meaningful, or
+   a) undew this Wicense, pwovided that you make a good faith effowt to
+   ensuwe that, in the event an Appwication does nyot suppwy the
+   function ow data, the faciwity stiww opewates, and pewfowms
+   whatevew pawt of its puwpose wemains meanyingfuw, ow
 
-   b) under the GNU GPL, with none of the additional permissions of
-   this License applicable to that copy.
+   b) undew the GNyU GPW, with nyonye of the additionyaw pewmissions of
+   this Wicense appwicabwe to that copy.
 
-  3. Object Code Incorporating Material from Library Header Files.
+  3. Object Code Incowpowating Matewiaw fwom Wibwawy Headew Fiwes.
 
-  The object code form of an Application may incorporate material from
-a header file that is part of the Library.  You may convey such object
-code under terms of your choice, provided that, if the incorporated
-material is not limited to numerical parameters, data structure
-layouts and accessors, or small macros, inline functions and templates
-(ten or fewer lines in length), you do both of the following:
+  The object code fowm of an Appwication may incowpowate matewiaw fwom
+a headew fiwe that is pawt of the Wibwawy.  You may convey such object
+code undew tewms of youw choice, pwovided that, if the incowpowated
+matewiaw is nyot wimited to nyumewicaw pawametews, data stwuctuwe
+wayouts and accessows, ow smaww macwos, inwinye functions and tempwates
+(ten ow fewew winyes in wength), you do both of the fowwowing:
 
-   a) Give prominent notice with each copy of the object code that the
-   Library is used in it and that the Library and its use are
-   covered by this License.
+   a) Give pwominyent nyotice with each copy of the object code that the
+   Wibwawy is used in it and that the Wibwawy and its use awe
+   cuvwed by this Wicense.
 
-   b) Accompany the object code with a copy of the GNU GPL and this license
+   b) Accompany the object code with a copy of the GNyU GPW and this wicense
    document.
 
-  4. Combined Works.
+  4. Combinyed Wowks.
 
-  You may convey a Combined Work under terms of your choice that,
-taken together, effectively do not restrict modification of the
-portions of the Library contained in the Combined Work and reverse
-engineering for debugging such modifications, if you also do each of
-the following:
+  You may convey a Combinyed Wowk undew tewms of youw choice that,
+taken togethew, effectivewy do nyot westwict modification of the
+powtions of the Wibwawy containyed in the Combinyed Wowk and wevewse
+enginyeewing fow debugging such modifications, if you awso do each of
+the fowwowing:
 
-   a) Give prominent notice with each copy of the Combined Work that
-   the Library is used in it and that the Library and its use are
-   covered by this License.
+   a) Give pwominyent nyotice with each copy of the Combinyed Wowk that
+   the Wibwawy is used in it and that the Wibwawy and its use awe
+   cuvwed by this Wicense.
 
-   b) Accompany the Combined Work with a copy of the GNU GPL and this license
+   b) Accompany the Combinyed Wowk with a copy of the GNyU GPW and this wicense
    document.
 
-   c) For a Combined Work that displays copyright notices during
-   execution, include the copyright notice for the Library among
-   these notices, as well as a reference directing the user to the
-   copies of the GNU GPL and this license document.
+   c) Fow a Combinyed Wowk that dispways copywight nyotices duwing
+   execution, incwude the copywight nyotice fow the Wibwawy among
+   these nyotices, as weww as a wefewence diwecting the usew to the
+   copies of the GNyU GPW and this wicense document.
 
-   d) Do one of the following:
+   d) Do onye of the fowwowing:
 
-       0) Convey the Minimal Corresponding Source under the terms of this
-       License, and the Corresponding Application Code in a form
-       suitable for, and under terms that permit, the user to
-       recombine or relink the Application with a modified version of
-       the Linked Version to produce a modified Combined Work, in the
-       manner specified by section 6 of the GNU GPL for conveying
-       Corresponding Source.
+       0) Convey the Minyimaw Cowwesponding Souwce undew the tewms of this
+       Wicense, and the Cowwesponding Appwication Code in a fowm
+       suitabwe fow, and undew tewms that pewmit, the usew to
+       wecombinye ow wewink the Appwication with a modified vewsion of
+       the Winked Vewsion to pwoduce a modified Combinyed Wowk, in the
+       mannyew specified by section 6 of the GNyU GPW fow conveying
+       Cowwesponding Souwce.
 
-       1) Use a suitable shared library mechanism for linking with the
-       Library.  A suitable mechanism is one that (a) uses at run time
-       a copy of the Library already present on the user's computer
-       system, and (b) will operate properly with a modified version
-       of the Library that is interface-compatible with the Linked
-       Version.
+       1) Use a suitabwe shawed wibwawy mechanyism fow winking with the
+       Wibwawy.  A suitabwe mechanyism is onye that (a) uses at wun time
+       a copy of the Wibwawy awweady pwesent on the usew's computew
+       system, and (b) wiww opewate pwopewwy with a modified vewsion
+       of the Wibwawy that is intewface-compatibwe with the Winked
+       Vewsion.
 
-   e) Provide Installation Information, but only if you would otherwise
-   be required to provide such information under section 6 of the
-   GNU GPL, and only to the extent that such information is
-   necessary to install and execute a modified version of the
-   Combined Work produced by recombining or relinking the
-   Application with a modified version of the Linked Version. (If
-   you use option 4d0, the Installation Information must accompany
-   the Minimal Corresponding Source and Corresponding Application
-   Code. If you use option 4d1, you must provide the Installation
-   Information in the manner specified by section 6 of the GNU GPL
-   for conveying Corresponding Source.)
+   e) Pwovide Instawwation Infowmation, but onwy if you wouwd othewwise
+   be wequiwed to pwovide such infowmation undew section 6 of the
+   GNyU GPW, and onwy to the extent that such infowmation is
+   nyecessawy to instaww and execute a modified vewsion of the
+   Combinyed Wowk pwoduced by wecombinying ow wewinking the
+   Appwication with a modified vewsion of the Winked Vewsion. (If
+   you use option 4d0, the Instawwation Infowmation must accompany
+   the Minyimaw Cowwesponding Souwce and Cowwesponding Appwication
+   Code. If you use option 4d1, you must pwovide the Instawwation
+   Infowmation in the mannyew specified by section 6 of the GNyU GPW
+   fow conveying Cowwesponding Souwce.)
 
-  5. Combined Libraries.
+  5. Combinyed Wibwawies.
 
-  You may place library facilities that are a work based on the
-Library side by side in a single library together with other library
-facilities that are not Applications and are not covered by this
-License, and convey such a combined library under terms of your
-choice, if you do both of the following:
+  You may pwace wibwawy faciwities that awe a wowk based on the
+Wibwawy side by side in a singwe wibwawy togethew with othew wibwawy
+faciwities that awe nyot Appwications and awe nyot cuvwed by this
+Wicense, and convey such a combinyed wibwawy undew tewms of youw
+choice, if you do both of the fowwowing:
 
-   a) Accompany the combined library with a copy of the same work based
-   on the Library, uncombined with any other library facilities,
-   conveyed under the terms of this License.
+   a) Accompany the combinyed wibwawy with a copy of the same wowk based
+   on the Wibwawy, uncombinyed with any othew wibwawy faciwities,
+   conveyed undew the tewms of this Wicense.
 
-   b) Give prominent notice with the combined library that part of it
-   is a work based on the Library, and explaining where to find the
-   accompanying uncombined form of the same work.
+   b) Give pwominyent nyotice with the combinyed wibwawy that pawt of it
+   is a wowk based on the Wibwawy, and expwainying whewe to find the
+   accompanying uncombinyed fowm of the same wowk.
 
-  6. Revised Versions of the GNU Lesser General Public License.
+  6. Wevised Vewsions of the GNyU Wessew Genyewaw Pubwic Wicense.
 
-  The Free Software Foundation may publish revised and/or new versions
-of the GNU Lesser General Public License from time to time. Such new
-versions will be similar in spirit to the present version, but may
-differ in detail to address new problems or concerns.
+  The Fwee Softwawe Foundation may pubwish wevised and/ow nyew vewsions
+of the GNyU Wessew Genyewaw Pubwic Wicense fwom time to time. Such nyew
+vewsions wiww be simiwaw in spiwit to the pwesent vewsion, but may
+diffew in detaiw to addwess nyew pwobwems ow concewns.
 
-  Each version is given a distinguishing version number. If the
-Library as you received it specifies that a certain numbered version
-of the GNU Lesser General Public License "or any later version"
-applies to it, you have the option of following the terms and
-conditions either of that published version or of any later version
-published by the Free Software Foundation. If the Library as you
-received it does not specify a version number of the GNU Lesser
-General Public License, you may choose any version of the GNU Lesser
-General Public License ever published by the Free Software Foundation.
+  Each vewsion is given a distinguishing vewsion nyumbew. If the
+Wibwawy as you weceived it specifies that a cewtain nyumbewed vewsion
+of the GNyU Wessew Genyewaw Pubwic Wicense "ow any watew vewsion"
+appwies to it, you have the option of fowwowing the tewms and
+conditions eithew of that pubwished vewsion ow of any watew vewsion
+pubwished by the Fwee Softwawe Foundation. If the Wibwawy as you
+weceived it does nyot specify a vewsion nyumbew of the GNyU Wessew
+Genyewaw Pubwic Wicense, you may choose any vewsion of the GNyU Wessew
+Genyewaw Pubwic Wicense evew pubwished by the Fwee Softwawe Foundation.
 
-  If the Library as you received it specifies that a proxy can decide
-whether future versions of the GNU Lesser General Public License shall
-apply, that proxy's public statement of acceptance of any version is
-permanent authorization for you to choose that version for the
-Library.
+  If the Wibwawy as you weceived it specifies that a pwoxy can decide
+whethew futuwe vewsions of the GNyU Wessew Genyewaw Pubwic Wicense shaww
+appwy, that pwoxy's pubwic statement of acceptance of any vewsion is
+pewmanyent authowization fow you to choose that vewsion fow the
+Wibwawy.
