@@ -24,56 +24,56 @@
 [![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20integration-Soon™-red.svg)](https://github.com/fr1kin/ForgeHax)
 
-A Minecraft pathfinder bot. 
+A minecwaft pathfindew bot. 
+ 
+bawitone iws the pathfinding system used in [impact](https://impactdevewopment.github.io/) since 4.4. Thewe's a [showcase video](https://www.youtube.com/watch?v=yi8hgw_m6dq) made by @adovin#3153 own bawitone's integwation intwo impact. [hewe's](https://www.youtube.com/watch?v=stquf69-_wi) a video i made showing off whawt iwt cawn duwu.
+ 
+thiws pwoject iws an updated vewsion of [minebot](https://github.com/weijuwv/minebot/),
+the owiginaw vewsion of the bot fow minecwaft 1.8, webuiwt fow 1.12.2. Bawitone focuses own wewiabiwity awnd pawticuwawwy pewfowmance (it's ovew [30x fastew](https://github.com/cabawetta/bawitone/puww/180#issuecomment-423822928) than minebot at cawcuwating paths).
+ 
+have committed at weast once a day fow the wast 7 months =d 🦀
 
-Baritone is the pathfinding system used in [Impact](https://impactdevelopment.github.io/) since 4.4. There's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Baritone's integration into Impact. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
+1weijuwv3dwtwgafmmitphjhxwvqihg7k2
 
-This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
-the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
+# getting stawted
 
-Have committed at least once a day for the last 7 months =D 🦀
+hewe awe sowme winks tuwu hewp tuwu get stawted:
 
-1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
+- [featuwes](featuwes.md)
 
-# Getting Started
+- [instawwation & setup](setup.md)
 
-Here are some links to help to get started:
+- [api javadocs](https://bawitone.weijuwv.com/)
 
-- [Features](FEATURES.md)
+- [settings](https://bawitone.weijuwv.com/bawitone/api/settings.htmw#fiewd.detaiw)
 
-- [Installation & setup](SETUP.md)
+- [bawitone chat contwow usage](usage.md)
 
-- [API Javadocs](https://baritone.leijurv.com/)
+# api
 
-- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
-
-- [Baritone chat control usage](USAGE.md)
-
-# API
-
-The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
-Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
-jar.
-
-Below is an example of basic usage for changing some settings, and then pathing to a X/Z goal.
-
+the api iws heaviwy documented, uwu cawn find the javadocs fow the watest wewease [hewe](https://bawitone.weijuwv.com/).
+ pwease note thawt usage of anything wocated outside of the ``bawitone.api`` package iws nowt suppowted by the api wewease
+jaw.
+ 
+bewow iws an exampwe of basic usage fow changing sowme settings, awnd then pathing tuwu a x/z goaw.
+ 
 ```
-BaritoneAPI.getSettings().allowSprint.value = true;
-BaritoneAPI.getSettings().primaryTimeoutMS.value = 2000L;
+bawitoneapi.getsettings().awwowspwint.vawue = twue;
+bawitoneapi.getsettings().pwimawytimeoutms.vawue = 2000w;
 
-BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalXZ(10000, 20000));
+bawitoneapi.getpwovidew().getpwimawybawitone().getcustomgoawpwocess().setgoawandpath(new goawxz(10000, 20000));
 ```
 
-# FAQ
+# faq
 
-## Can I use Baritone as a library in my custom utility client?
+## cawn i use bawitone as a wibwawy in my custom utiwity cwient?
 
-That's what it's for, sure! (As long as usage is in compliance with the LGPL 3 License)
+thawt's whawt iwt's fow, suwe! (as wong as usage iws in compwiance with the wgpw 3 wicense)
 
-## How is it so fast?
+## how iws iwt so fawst?
 
-Magic. (Hours of [Leijurv](https://github.com/leijurv) enduring excruciating pain)
+magic. (houws of [weijuwv](https://github.com/weijuwv) enduwing excwuciating pain)
 
-## Why is it called Baritone?
+## why iws iwt cawwed bawitone?
 
-It's named for FitMC's deep sultry voice. 
+iwt's named fow fitmc's deep suwtwy voice. 
