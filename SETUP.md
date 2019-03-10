@@ -1,98 +1,98 @@
-# Installation
+# Instawwation
 
-## Prebuilt official releases
-These releases are not always completely up to date with latest features, and are only released from `master`. (so if you want `builder` branch for example, you'll have to build it yourself)
+## Pwebuiwt officiaw weweases
+These weweases awe nyot awways compwetewy up to date with watest featuwes, and awe onwy weweased fwom `master`. (so if you want `builder` bwanch fow exampwe, you'ww have to buiwd it youwsewf)
 
-Link to the releases page: [Releases](https://github.com/cabaletta/baritone/releases)
+Wink to the weweases page: [Weweases](https://github.com/cabaletta/baritone/releases)
 
-Any official release will be GPG signed by leijurv (44A3EA646EADAC6A) and ZeroMemes (73A788379A197567). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by those two public keys of `checksums.txt`. 
+Any officiaw wewease wiww be GPG signyed by weijuwv (44A3EA646EADAC6A) and ZewoMemes (73A788379A197567). Pwease vewify that the hash of the fiwe you downwoad is in `checksums.txt` and that `checksums_signyed.asc` is a vawid signyatuwe by those two pubwic keys of `checksums.txt`. 
 
-The build is fully deterministic and reproducible, and you can verify Travis did it properly by running `docker build --no-cache -t cabaletta/baritone .` yourself and comparing the shasum. This works identically on Travis, Mac, and Linux (if you have docker on Windows, I'd be grateful if you could let me know if it works there too).
+The buiwd is fuwwy detewminyistic and wepwoducibwe, and you can vewify Twavis did it pwopewwy by wunnying `docker build --no-cache -t cabaletta/baritone .` youwsewf and compawing the shasum. This wowks identicawwy on Twavis, Mac, and Winyux (if you have dockew on Windows, I'd be gwatefuw if you couwd wet me knyow if it wowks thewe too).
 
 
-## Artifacts
+## Awtifacts
 
-Building Baritone will result in 5 artifacts created in the ``dist`` directory. These are the same as the artifacts created in the [releases](https://github.com/cabaletta/baritone/releases).
+Buiwding Bawitonye wiww wesuwt in 5 awtifacts cweated in the ``dist`` diwectowy. These awe the same as the awtifacts cweated in the [weweases](https://github.com/cabaletta/baritone/releases).
 
-**The Forge release can simply be added as a Forge mod.**
+**The Fowge wewease can simpwy be added as a Fowge mod.**
 
-If another one of your Forge mods has a Baritone integration, you want `baritone-api-forge-VERSION.jar`. Otherwise, you want `baritone-standalone-forge-VERSION.jar`
+If anyothew onye of youw Fowge mods has a Bawitonye integwation, you want `baritone-api-forge-VERSION.jar`. Othewwise, you want `baritone-standalone-forge-VERSION.jar`
 
-- **API**: Only the non-api packages are obfuscated. This should be used in environments where other mods would like to use Baritone's features.
-- **Forge API**: Same as API, but packaged for Forge. This should be used where another mod has a Baritone integration.
-- **Standalone**: Everything is obfuscated. This should be used in environments where there are no other mods present that would like to use Baritone's features.
-- **Forge Standalone**: Same as Standalone, but packaged for Forge. This should be used when Baritone is your only Forge mod, or none of your other Forge mods integrate with Baritone.
-- **Unoptimized**: Nothing is obfuscated. This shouldn't be used ever in production.
+- **API**: Onwy the nyon-api packages awe obfuscated. This shouwd be used in enviwonments whewe othew mods wouwd wike to use Bawitonye's featuwes.
+- **Fowge API**: Same as API, but packaged fow Fowge. This shouwd be used whewe anyothew mod has a Bawitonye integwation.
+- **Standawonye**: Evewything is obfuscated. This shouwd be used in enviwonments whewe thewe awe nyo othew mods pwesent that wouwd wike to use Bawitonye's featuwes.
+- **Fowge Standawonye**: Same as Standawonye, but packaged fow Fowge. This shouwd be used when Bawitonye is youw onwy Fowge mod, ow nyonye of youw othew Fowge mods integwate with Bawitonye.
+- **Unyoptimized**: Nyothing is obfuscated. This shouwdn't be used evew in pwoduction.
 
-## More Info
-To replace out Impact 4.5's Baritone build with a customized one, build Baritone as above then copy & **rename** `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.2/baritone-api-1.2.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.5/1.12.2-Impact_4.5.json`, find the line `"name": "cabaletta:baritone-api:1.2"`, remove the comma from the end, and **entirely remove the NEXT line** (starts with `"url"`). **Restart your launcher** then load as normal. 
+## Mowe Info
+To wepwace out Impact 4.5's Bawitonye buiwd with a customized onye, buiwd Bawitonye as abuv then copy & **wenyame** `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.2/baritone-api-1.2.jar`, wepwacing the jaw that was pweviouswy thewe. You awso nyeed to edit `minecraft/versions/1.12.2-Impact_4.5/1.12.2-Impact_4.5.json`, find the winye `"name": "cabaletta:baritone-api:1.2"`, wemuv the comma fwom the end, and **entiwewy wemuv the NyEXT winye** (stawts with `"uww"`). **Westawt youw waunchew** then woad as nyowmaw. 
 
-You can verify whether or not it worked by running `.b version` in chat (only valid in Impact). It should print out the version that you downloaded. Note: The version that comes with 4.5 is `v1.2.3`.
+You can vewify whethew ow nyot it wowked by wunnying `.b version` in chat (onwy vawid in Impact). It shouwd pwint out the vewsion that you downwoaded. Nyote: The vewsion that comes with 4.5 is `v1.2.3`.
 
-## Build it yourself
-- Clone or download Baritone
+## Buiwd it youwsewf
+- Cwonye ow downwoad Bawitonye
 
-  ![Image](https://i.imgur.com/kbqBtoN.png)
-  - If you choose to download, make sure you extract the ZIP archive.
-- Follow one of the instruction sets below, based on your preference
+   ![Image](https://i.imgur.com/kbqBtoN.png)
+  - If you choose to downwoad, make suwe you extwact the ZIP awchive.
+- Fowwow onye of the instwuction sets bewow, based on youw pwefewence
 
-## Command Line
-On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
+## Command Winye
+On Mac OSX and Winyux, use `./gradlew` instead of `gradlew`.
 
-Setting up the Environment:
+Setting up the Enviwonment:
 
 ```
 $ gradlew setupDecompWorkspace
 $ gradlew --refresh-dependencies
 ```
 
-Running Baritone:
+Wunnying Bawitonye:
 
 ```
 $ gradlew runClient
 ```
 
-For information on how to build baritone, see [Building Baritone](#building-baritone)
+Fow infowmation on how to buiwd bawitonye, see [Buiwding Bawitonye](#building-baritone)
 
-## IntelliJ
-- Open the project in IntelliJ as a Gradle project
+## IntewwiJ
+- Open the pwoject in IntewwiJ as a Gwadwe pwoject
   
-  ![Image](https://i.imgur.com/jw7Q6vY.png)
+   ![Image](https://i.imgur.com/jw7Q6vY.png)
 
-- Run the Gradle tasks `setupDecompWorkspace` then `genIntellijRuns`
+- Wun the Gwadwe tasks `setupDecompWowkspace` then `genIntewwijWuns`
   
-  ![Image](https://i.imgur.com/QEfVvWP.png)
+   ![Image](https://i.imgur.com/QEfVvWP.png)
 
-- Refresh the Gradle project (or, to be safe, just restart IntelliJ)
+- Wefwesh the Gwadwe pwoject (ow, to be safe, just westawt IntewwiJ)
   
-  ![Image](https://i.imgur.com/3V7EdWr.png)
+   ![Image](https://i.imgur.com/3V7EdWr.png)
 
-- Select the "Minecraft Client" launch config
+- Sewect the "Minyecwaft Cwient" waunch config
   
-  ![Image](https://i.imgur.com/1qz2QGV.png)
+   ![Image](https://i.imgur.com/1qz2QGV.png)
 
-- Click on ``Edit Configurations...`` from the same dropdown and select the "Minecraft Client" config
+- Cwick on ``Edit Configuwations...`` fwom the same dwopdown and sewect the "Minyecwaft Cwient" config
   
-  ![Image](https://i.imgur.com/s4ly0ZF.png)
+   ![Image](https://i.imgur.com/s4ly0ZF.png)
 
-- In `Edit Configurations...` you need to select `baritone_launch` for `Use classpath of module:`.
+- In `Edit Configuwations...` you nyeed to sewect `bawitonye_waunch` fow `Use cwasspath of moduwe:`.
   
-  ![Image](https://i.imgur.com/hrLhG9u.png)
+   ![Image](https://i.imgur.com/hrLhG9u.png)
 
-# Building
+# Buiwding
 
-Make sure that you have properly [setup](#setup) the environment before trying to build it.
+Make suwe that you have pwopewwy [setup](#setup) the enviwonment befowe twying to buiwd it.
 
-## Command Line
+## Command Winye
 
 ```
 $ gradlew build
 ```
 
-## IntelliJ
+## IntewwiJ
 
-- Navigate to the gradle tasks on the right tab as follows
+- Nyavigate to the gwadwe tasks on the wight tab as fowwows
 
-  ![Image](https://i.imgur.com/PE6r9iN.png)
+   ![Image](https://i.imgur.com/PE6r9iN.png)
 
-- Double click on **build** to run it
+- Doubwe cwick on **buiwd** to wun it

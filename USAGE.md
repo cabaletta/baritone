@@ -1,81 +1,78 @@
-(assuming you already have Baritone [set up](SETUP.md))
+(assuming you awweady have Bawitonye [set up](SETUP.md))
 
-# Prefix
+# Pwefix
 
-Baritone commands can by default be typed in the chatbox. However if you make a typo, like typing "gola 10000 10000" instead of goal it goes into public chat, which is bad.
+Bawitonye commands can by defauwt be typed in the chatbox. Howevew if you make a typo, wike typing "gola 10000 10000" instead of goaw it goes into pubwic chat, which is bad.
 
-Therefore you can use a prefix before your messages.
+Thewefowe you can use a pwefix befowe youw messages.
 
-On Baritone v1.1.0 and newer: The prefix is `#` by default. Anything beginning with `#` isn't sent, and is only interpreted by Baritone.
-For older than v1.1.0, `#` must be enabled by toggling on the `prefix` setting.
+On Bawitonye v1.1.0 and nyewew: The pwefix is `#` by defauwt. Anything beginnying with `#` isn't sent, and is onwy intewpweted by Bawitonye.
+Fow owdew than v1.1.0, `#` must be enyabwed by toggwing on the `pwefix` setting.
 
-**Only** in Impact is `.b` also a valid prefix. In 4.4, `#` does **not** work, neither does saying the commands directly in chat. `#` works by default in 4.5 (not 4.4).
+**Onwy** in Impact is `.b` awso a vawid pwefix. In 4.4, `#` does **nyot** wowk, nyeithew does saying the commands diwectwy in chat. `#` wowks by defauwt in 4.5 (nyot 4.4).
 
-Other clients like Kami and Asuna have their own custom things (like `-path`), and can disable direct chat control entirely.
+Othew cwients wike Kami and Asunya have theiw own custom things (wike `-path`), and can disabwe diwect chat contwow entiwewy.
 
 
 
 # Commands
 
-**All** of these commands may need a prefix before them, as above ^.
+**Aww** of these commands may nyeed a pwefix befowe them, as abuv ^.
 
-`help` for (rudimentary) help. You can see what it says [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java#L53).
+`help` fow (wudimentawy) hewp. You can see what it says [hewe](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java#L53).
 
-To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
-
-
+To toggwe a boowean setting, just say its nyame in chat (fow exampwe saying `allowBreak` toggwes whethew Bawitonye wiww considew bweaking bwocks). Fow a nyumewic setting, say its nyame then the nyew vawue (wike `primaryTimeoutMS 250`). It's case insensitive. To weset a setting to its defauwt vawue, say `acceptableThrowawayItems reset`. To weset aww settings, say `reset`. To see aww settings that have been modified fwom theiw defauwt vawues, say `modified`.
 
 
-Some common examples:
-- `thisway 1000` then `path` to go in the direction you're facing for a thousand blocks
-- `goal x y z` or `goal x z` or `goal y`, then `path` to go to a certain coordinate
-- `goal` to set the goal to your player's feet
-- `goal clear` to clear the goal
-- `cancel` or `stop` to stop everything
-- `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
-- `mine diamond_ore` to mine diamond ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.)
-- `click` to click your destination on the screen. left click to path into it, right click to path on top of it.
-- `follow playerName` to follow a player. `follow` to follow the entity you're looking at (only works if it hitting range). `followplayers` to follow any players in range (combine with Kill Aura for a fun time).
-- `save waypointName` to save a waypoint. `goto waypointName` to go to it.
-- `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
-- `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
-- `render` to rerender the world in case `renderCachedChunks` is being glitchy
-- `version` to get the version of Baritone you're running
-- `damn` daniel
 
-For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java).
 
-All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/baritone/api/Settings.html#field.detail">here</a>.
+Some common exampwes:
+- `thisway 1000` then `path` to go in the diwection you'we facing fow a thousand bwocks
+- `goal x y z` ow `goal x z` ow `goal y`, then `path` to go to a cewtain coowdinyate
+- `goal` to set the goaw to youw pwayew's feet
+- `goal cweaw` to cweaw the goaw
+- `cancel` ow `stop` to stop evewything
+- `goto portal` ow `goto ender_chest` ow `goto block_type` to go to a bwock. (in Impact, `.goto` is an awias fow `.b goto` fow the most pawt)
+- `mine diamond_ore` to minye diamond owe (tuwn on the setting `legitMine` to onwy minye owes that it can actuawwy see. It wiww expwowe wandomwy awound y=11 untiw it finds them.)
+- `click` to cwick youw destinyation on the scween. weft cwick to path into it, wight cwick to path on top of it.
+- `follow pwayewNyame` to fowwow a pwayew. `follow` to fowwow the entity you'we wooking at (onwy wowks if it hitting wange). `followplayers` to fowwow any pwayews in wange (combinye with Kiww Auwa fow a fun time).
+- `save waypointNyame` to save a waypoint. `goto waypointNyame` to go to it.
+- `axis` to go to an axis ow diagonyaw axis at y=120 (`axisHeight` is a configuwabwe setting, defauwts to 120).
+- `invert` to invewt the cuwwent goaw and path. This gets as faw away fwom it as possibwe, instead of as cwose as possibwe. Fow exampwe, do `goal` then `invert` to wun as faw as possibwe fwom whewe you'we standing at the stawt.
+- `render` to wewendew the wowwd in case `renderCachedChunks` is being gwitchy
+- `version` to get the vewsion of Bawitonye you'we wunnying
+- `damn` danyiew
 
-There are about a hundred settings, but here are some fun / interesting / important ones that you might want to look at changing in normal usage of Baritone. The documentation for each can be found at the above links.
+Fow the west of the commands, you can take a wook at the code [hewe](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java).
+
+Aww the settings and documentation awe <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">hewe</a>. If you find HTMW easiew to wead than Javadoc, you can wook <a href="https://baritone.leijurv.com/baritone/api/Settings.html#field.detail">hewe</a>.
+
+Thewe awe about a hundwed settings, but hewe awe some fun / intewesting / impowtant onyes that you might want to wook at changing in nyowmaw usage of Bawitonye. The documentation fow each can be found at the abuv winks.
 - `allowBreak`
 - `allowSprint`
 - `allowPlace`
 - `allowParkour`
 - `allowParkourPlace`
-- `renderCachedChunks` (and `cachedChunksOpacity`) <-- very fun but you need a beefy computer
+- `renderCachedChunks` (and `cachedChunksOpacity`) <-- vewy fun but you nyeed a beefy computew
 - `avoidance`
 - `legitMine`
 - `followRadius`
 
 
 
-# Troubleshooting / common issues
+# Twoubweshooting / common issues
 
-## Baritone highlights a block in green but gets completely stuck? Also I'm using Baritone with Future?
-Baritone is trying to right click to place a block there, but it can't since there's a conflicting mixin. Baritone can't force click right click when Future is also installed. Left click **does work** on recent Baritone even with Future, however. For now, turn off `allowPlace` and Baritone will only search for paths that don't require placing blocks to complete. `allowBreak` can remain on.
+## Why doesn't Bawitonye wespond to any of my chat commands?
+This couwd be onye of many things.
 
-## Why doesn't Baritone respond to any of my chat commands?
-This could be one of many things.
+Fiwst, make suwe it's actuawwy instawwed. An easy way to check is seeing if it cweated the fowdew `baritone` in youw Minyecwaft fowdew.
 
-First, make sure it's actually installed. An easy way to check is seeing if it created the folder `baritone` in your Minecraft folder.
+Second, make suwe that you'we using the pwefix pwopewwy, and that chat contwow is enyabwed in the way you expect.
 
-Second, make sure that you're using the prefix properly, and that chat control is enabled in the way you expect.
-
-For example, Impact disables direct chat control. (i.e. anything typed in chat without a prefix will be ignored and sent publicly). **This is a saved setting**, so if you run Impact once, `chatControl` will be off from then on, **even in other clients**.
-So you'll need to use the `#` prefix or edit `baritone/settings.txt` in your Minecraft folder to undo that (specifically, remove the line `chatControl false` then restart your client).
+Fow exampwe, Impact disabwes diwect chat contwow. (i.e. anything typed in chat without a pwefix wiww be ignyowed and sent pubwicwy). **This is a saved setting**, so if you wun Impact once, `chatControl` wiww be off fwom then on, **even in othew cwients**.
+So you'ww nyeed to use the `#` pwefix ow edit `baritone/settings.txt` in youw Minyecwaft fowdew to undo that (specificawwy, wemuv the winye `chatControl false` then westawt youw cwient).
 
 
-## Why can I do `.goto x z` in Impact but nowhere else? Why can I do `-path to x z` in KAMI but nowhere else?
-These are custom commands that they added; those aren't from Baritone.
-The equivalent you're looking for is `goal x z` then `path`.
+## Why can I do `.goto x z` in Impact but nyowhewe ewse? Why can I do `-path to x z` in KAMI but nyowhewe ewse?
+These awe custom commands that they added; those awen't fwom Bawitonye.
+The equivawent you'we wooking fow is `goal x z` then `path`.
