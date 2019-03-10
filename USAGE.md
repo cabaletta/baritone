@@ -75,4 +75,4 @@ So you'ww nyeed to use the `#` pwefix ow edit `baritone/settings.txt` in youw Mi
 
 ## Why can I do `.goto x z` in Impact but nyowhewe ewse? Why can I do `-path to x z` in KAMI but nyowhewe ewse?
 These awe custom commands that they added; those awen't fwom Bawitonye.
-The equivawent you'we wooking fow is `goaw x z` then `path`.
+The equivawent you'we wooking fow is `goal x z` then `path`.
