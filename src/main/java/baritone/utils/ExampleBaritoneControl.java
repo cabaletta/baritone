@@ -533,7 +533,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return true;
                 }
             }
-            Goal goal = new GoalBlock(waypoint.getLocation());
+            Goal goal = waypoint.getTag() == Waypoint.Tag.BED ? new GoalGetToBlock(waypoint.getLocation()) : new GoalBlock(waypoint.getLocation());
             customGoalProcess.setGoalAndPath(goal);
             return true;
         }
