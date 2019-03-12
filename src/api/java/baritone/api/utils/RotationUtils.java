@@ -179,7 +179,7 @@ public final class RotationUtils {
         }
 
         IBlockState state = entity.world.getBlockState(pos);
-        VoxelShape shape = state.getRaytraceShape(entity.world, pos);
+        VoxelShape shape = state.getShape(entity.world, pos);
         for (Vec3d sideOffset : BLOCK_SIDE_MULTIPLIERS) {
             double xDiff = shape.getStart(EnumFacing.Axis.X) * sideOffset.x + shape.getEnd(EnumFacing.Axis.X) * (1 - sideOffset.x);
             double yDiff = shape.getStart(EnumFacing.Axis.Y) * sideOffset.y + shape.getEnd(EnumFacing.Axis.Y) * (1 - sideOffset.y);

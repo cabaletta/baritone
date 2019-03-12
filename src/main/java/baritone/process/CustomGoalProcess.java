@@ -88,7 +88,7 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
                     onLostControl();
                     return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
-                if (this.goal == null || (this.goal.isInGoal(ctx.playerFeet()) && ctx.player().onGround)) {
+                if (this.goal == null || (this.goal.isInGoal(ctx.playerFeet()) && this.goal.isInGoal(baritone.getPathingBehavior().pathStart()))) {
                     onLostControl(); // we're there xd
                     return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }

@@ -83,7 +83,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block == Blocks.BUBBLE_COLUMN) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -258,7 +258,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block == Blocks.CACTUS
                 || block == Blocks.FIRE
                 || block == Blocks.END_PORTAL
-                || block == Blocks.COBWEB;
+                || block == Blocks.COBWEB
+                || block == Blocks.BUBBLE_COLUMN;
     }
 
     /**
@@ -275,7 +276,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR || block == Blocks.MAGMA_BLOCK) {
+        if (block == Blocks.AIR || block == Blocks.MAGMA_BLOCK || block == Blocks.BUBBLE_COLUMN) {
             // early return for most common case (air)
             // plus magma, which is a normal cube but it hurts you
             return false;

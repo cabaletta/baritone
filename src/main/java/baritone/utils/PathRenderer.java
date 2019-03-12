@@ -23,7 +23,6 @@ import baritone.api.event.events.RenderEvent;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
@@ -34,7 +33,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -224,6 +222,8 @@ public final class PathRenderer implements Helper {
 
             VoxelShape shape = state.getShape(player.world, pos);
             AxisAlignedBB toDraw = shape.isEmpty() ? VoxelShapes.fullCube().getBoundingBox() : shape.getBoundingBox();
+            System.out.println("Shape is " + shape);
+            System.out.println("Drawing " + toDraw);
 
             toDraw = toDraw.expand(expand, expand, expand).offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
             BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
