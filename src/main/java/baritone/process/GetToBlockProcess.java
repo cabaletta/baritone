@@ -101,7 +101,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             CalculationContext context = new CalculationContext(baritone, true);
             Baritone.getExecutor().execute(() -> rescan(current, context));
         }
-        if (goal.isInGoal(ctx.playerFeet()) && isSafeToCancel) {
+        if (goal.isInGoal(ctx.playerFeet()) && ctx.player().onGround && isSafeToCancel) {
             // we're there
             if (rightClickOnArrival(gettingTo)) {
                 if (rightClick()) {

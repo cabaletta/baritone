@@ -24,7 +24,10 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.VoxelShape;
 
 import java.util.Optional;
@@ -176,7 +179,7 @@ public final class RotationUtils {
         }
 
         IBlockState state = entity.world.getBlockState(pos);
-        VoxelShape shape = state.getCollisionShape(entity.world, pos);
+        VoxelShape shape = state.getRaytraceShape(entity.world, pos);
         for (Vec3d sideOffset : BLOCK_SIDE_MULTIPLIERS) {
             double xDiff = shape.getStart(EnumFacing.Axis.X) * sideOffset.x + shape.getEnd(EnumFacing.Axis.X) * (1 - sideOffset.x);
             double yDiff = shape.getStart(EnumFacing.Axis.Y) * sideOffset.y + shape.getEnd(EnumFacing.Axis.Y) * (1 - sideOffset.y);

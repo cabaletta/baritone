@@ -188,7 +188,7 @@ public interface MovementHelper extends ActionCosts, Helper {
          *     }
          */
         Block block = state.getBlock();
-        if (block == Blocks.AIR || isWater(state)) {
+        if (block == Blocks.AIR) {
             // early return for common cases hehe
             return true;
         }
@@ -500,7 +500,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean possiblyFlowing(IBlockState state) {
-        IFluidState fluidState  = state.getFluidState();
+        IFluidState fluidState = state.getFluidState();
         return fluidState.getFluid() instanceof FlowingFluid
                 && fluidState.getFluid().getLevel(fluidState) != 8;
     }

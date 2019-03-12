@@ -36,6 +36,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class MovementPillar extends Movement {
 
@@ -79,7 +80,7 @@ public class MovementPillar extends Movement {
         if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) { // we need to place a block where we started to jump on it
             return COST_INF;
         }
-        if (MovementHelper.isLiquid(fromState) || (MovementHelper.isLiquid(fromDown) && context.assumeWalkOnWater)) {
+        if ((MovementHelper.isLiquid(fromState) && !MovementHelper.canPlaceAgainst(fromDown)) || (MovementHelper.isLiquid(fromDown) && context.assumeWalkOnWater)) {
             // otherwise, if we're standing in water, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is true, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
@@ -162,6 +163,7 @@ public class MovementPillar extends Movement {
                 state.setInput(Input.MOVE_FORWARD, true);
             }
             if (ctx.playerFeet().equals(dest)) {
+                logDebug("wtf2");
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
@@ -184,6 +186,7 @@ public class MovementPillar extends Movement {
             }
 
             if (ctx.playerFeet().equals(against.up()) || ctx.playerFeet().equals(dest)) {
+                logDebug("wtf3");
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
@@ -231,6 +234,10 @@ public class MovementPillar extends Movement {
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
                 if (!(fr instanceof BlockAir || frState.getMaterial().isReplaceable())) {
+                    Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance());
+                    if (reachable.isPresent()) {
+                        state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
+                    }
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
                 } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos())) && ctx.player().posY > dest.getY() + 0.1) {
