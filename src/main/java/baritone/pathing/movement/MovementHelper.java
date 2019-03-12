@@ -502,7 +502,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean possiblyFlowing(IBlockState state) {
         IFluidState fluidState  = state.getFluidState();
         return fluidState.getFluid() instanceof FlowingFluid
-                && state.get(FlowingFluid.LEVEL_1_8) != 0;
+                && fluidState.getFluid().getLevel(fluidState) != 8;
     }
 
     static boolean isFlowing(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
@@ -510,7 +510,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (!(fluidState.getFluid() instanceof FlowingFluid)) {
             return false;
         }
-        if (fluidState.get(FlowingFluid.LEVEL_1_8) != 0) {
+        if (fluidState.getFluid().getLevel(fluidState) != 8) {
             return true;
         }
         return possiblyFlowing(bsi.get0(x + 1, y, z))

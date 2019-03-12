@@ -23,6 +23,7 @@ import baritone.api.event.events.RenderEvent;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
@@ -38,6 +39,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 
 import java.awt.*;
 import java.util.Collection;
@@ -218,12 +221,10 @@ public final class PathRenderer implements Helper {
         BlockStateInterface bsi = new BlockStateInterface(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext()); // TODO this assumes same dimension between primary baritone and render view? is this safe?
         positions.forEach(pos -> {
             IBlockState state = bsi.get0(pos);
-            AxisAlignedBB toDraw;
-            if (state.getBlock().equals(Blocks.AIR)) {
-                toDraw = Blocks.DIRT.getDefaultState().getShape(player.world, pos).getBoundingBox();
-            } else {
-                toDraw = state.getShape(player.world, pos).getBoundingBox();
-            }
+
+            VoxelShape shape = state.getShape(player.world, pos);
+            AxisAlignedBB toDraw = shape.isEmpty() ? VoxelShapes.fullCube().getBoundingBox() : shape.getBoundingBox();
+
             toDraw = toDraw.expand(expand, expand, expand).offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
             BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
             BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();

@@ -93,7 +93,7 @@ public class WorldProvider implements IWorldProvider, Helper {
         } catch (IOException ignored) {}
 
         // We will actually store the world data in a subfolder: "DIM<id>"
-        Path dir = new File(directory, "DIM" + dimension).toPath();
+        Path dir = new File(directory, "DIM" + dimension.getId()).toPath();
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);
