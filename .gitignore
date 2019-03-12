@@ -11,6 +11,8 @@ build/
 classes/
 *.class
 
+/out
+
 # IntelliJ Files
 .idea/
 *.iml
