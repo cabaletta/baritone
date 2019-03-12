@@ -24,6 +24,7 @@ import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
+import baritone.api.process.PathingCommandType;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.util.math.BlockPos;
@@ -90,6 +91,11 @@ public class PathingControlManager implements IPathingControlManager {
             p.cancelSegmentIfSafe();
             p.secretInternalSetGoal(null);
             return;
+        }
+        if (inControlThisTick != inControlLastTick && command.commandType != PathingCommandType.REQUEST_PAUSE) {
+            // if control has changed, and the new process wants to do something
+            p.cancelSegmentIfSafe();
+            // get rid of the in progress stuff from the last process
         }
         switch (command.commandType) {
             case REQUEST_PAUSE:
