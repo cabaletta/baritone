@@ -115,7 +115,7 @@ public class GuiClickMeme extends GuiScreen {
                 GlStateManager.enableBlend();
                 GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
                 GlStateManager.color(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
-                GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.get());
+                GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
                 GlStateManager.disableTexture2D();
                 GlStateManager.depthMask(false);
                 GlStateManager.disableDepth();

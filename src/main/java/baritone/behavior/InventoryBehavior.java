@@ -122,7 +122,7 @@ public class InventoryBehavior extends Behavior {
     }
 
     public boolean hasGenericThrowaway() {
-        for (Item item : Baritone.settings().acceptableThrowawayItems.get()) {
+        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
             if (throwaway(false, item::equals)) {
                 return true;
             }
@@ -135,7 +135,7 @@ public class InventoryBehavior extends Behavior {
         if (maybe != null && throwaway(true, item -> item instanceof ItemBlock && ((ItemBlock) item).getBlock().equals(maybe.getBlock()))) {
             return true; // gotem
         }
-        for (Item item : Baritone.settings().acceptableThrowawayItems.get()) {
+        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
             if (throwaway(true, item::equals)) {
                 return true;
             }

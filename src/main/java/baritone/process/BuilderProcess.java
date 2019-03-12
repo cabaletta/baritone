@@ -57,7 +57,7 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
 
     public BuilderProcess(Baritone baritone) {
-        super(baritone, 0);
+        super(baritone);
     }
 
     private HashSet<BetterBlockPos> incorrectPositions;
@@ -329,7 +329,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
 
         List<IBlockState> approxPlacable = placable(36);
-        if (Baritone.settings().allowInventory.get()) {
+        if (Baritone.settings().allowInventory.value) {
             ArrayList<Integer> usefulSlots = new ArrayList<>();
             List<IBlockState> noValidHotbarOption = new ArrayList<>();
             outer:
