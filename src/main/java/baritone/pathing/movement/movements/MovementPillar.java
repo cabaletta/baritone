@@ -162,7 +162,6 @@ public class MovementPillar extends Movement {
                 state.setInput(Input.MOVE_FORWARD, true);
             }
             if (ctx.playerFeet().equals(dest)) {
-                logDebug("wtf2");
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
@@ -185,7 +184,6 @@ public class MovementPillar extends Movement {
             }
 
             if (ctx.playerFeet().equals(against.up()) || ctx.playerFeet().equals(dest)) {
-                logDebug("wtf3");
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
