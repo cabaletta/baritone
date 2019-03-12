@@ -25,22 +25,15 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
 
     protected final Baritone baritone;
     protected final IPlayerContext ctx;
-    private final double priority;
 
-    public BaritoneProcessHelper(Baritone baritone, double priority) {
+    public BaritoneProcessHelper(Baritone baritone) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
-        this.priority = priority;
         baritone.getPathingControlManager().registerProcess(this);
     }
 
     @Override
     public boolean isTemporary() {
         return false;
-    }
-
-    @Override
-    public double priority() {
-        return priority;
     }
 }

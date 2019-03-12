@@ -24,8 +24,6 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
 
-import java.util.Objects;
-
 /**
  * As set by ExampleBaritoneControl or something idk
  *
@@ -46,7 +44,7 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
     private State state;
 
     public CustomGoalProcess(Baritone baritone) {
-        super(baritone, 3);
+        super(baritone);
     }
 
     @Override
@@ -79,20 +77,20 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         switch (this.state) {
             case GOAL_SET:
-                if (!baritone.getPathingBehavior().isPathing() && Objects.equals(baritone.getPathingBehavior().getGoal() + "", this.goal + "")) {
-                    this.state = State.NONE;
-                }
                 return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             case PATH_REQUESTED:
+                // return FORCE_REVALIDATE_GOAL_AND_PATH just once
                 PathingCommand ret = new PathingCommand(this.goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
                 this.state = State.EXECUTING;
                 return ret;
             case EXECUTING:
                 if (calcFailed) {
                     onLostControl();
+                    return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
                 if (this.goal == null || this.goal.isInGoal(ctx.playerFeet())) {
                     onLostControl(); // we're there xd
+                    return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
                 return new PathingCommand(this.goal, PathingCommandType.SET_GOAL_AND_PATH);
             default:

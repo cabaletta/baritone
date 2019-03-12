@@ -60,7 +60,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private int tickCount;
 
     public MineProcess(Baritone baritone) {
-        super(baritone, 0);
+        super(baritone);
     }
 
     @Override

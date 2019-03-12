@@ -29,11 +29,11 @@ import baritone.pathing.path.PathExecutor;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class PathingControlManager implements IPathingControlManager {
     private final Baritone baritone;
     private final HashSet<IBaritoneProcess> processes; // unGh
+    private final List<IBaritoneProcess> active;
     private IBaritoneProcess inControlLastTick;
     private IBaritoneProcess inControlThisTick;
     private PathingCommand command;
@@ -41,13 +41,13 @@ public class PathingControlManager implements IPathingControlManager {
     public PathingControlManager(Baritone baritone) {
         this.baritone = baritone;
         this.processes = new HashSet<>();
+        this.active = new ArrayList<>();
         baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() { // needs to be after all behavior ticks
             @Override
             public void onTick(TickEvent event) {
-                if (event.getType() == TickEvent.Type.OUT) {
-                    return;
+                if (event.getType() == TickEvent.Type.IN) {
+                    postTick();
                 }
-                postTick();
             }
         });
     }
@@ -62,6 +62,7 @@ public class PathingControlManager implements IPathingControlManager {
         inControlLastTick = null;
         inControlThisTick = null;
         command = null;
+        active.clear();
         for (IBaritoneProcess proc : processes) {
             proc.onLostControl();
             if (proc.isActive() && !proc.isTemporary()) { // it's okay only for a temporary thing (like combat pause) to maintain control even if you say to cancel
@@ -87,6 +88,7 @@ public class PathingControlManager implements IPathingControlManager {
         command = executeProcesses();
         if (command == null) {
             p.cancelSegmentIfSafe();
+            p.secretInternalSetGoal(null);
             return;
         }
         switch (command.commandType) {
@@ -172,12 +174,20 @@ public class PathingControlManager implements IPathingControlManager {
 
 
     public PathingCommand executeProcesses() {
-        Stream<IBaritoneProcess> inContention = processes.stream()
-                .filter(IBaritoneProcess::isActive)
-                .sorted(Comparator.comparingDouble(IBaritoneProcess::priority).reversed());
+        for (IBaritoneProcess process : processes) {
+            if (process.isActive()) {
+                if (!active.contains(process)) {
+                    // put a newly active process at the very front of the queue
+                    active.add(0, process);
+                }
+            } else {
+                active.remove(process);
+            }
+        }
+        // ties are broken by which was added to the beginning of the list first
+        active.sort(Comparator.comparingDouble(IBaritoneProcess::priority).reversed());
 
-
-        Iterator<IBaritoneProcess> iterator = inContention.iterator();
+        Iterator<IBaritoneProcess> iterator = active.iterator();
         while (iterator.hasNext()) {
             IBaritoneProcess proc = iterator.next();
 

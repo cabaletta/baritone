@@ -148,6 +148,10 @@ public class MovementPillar extends Movement {
             return state;
         }
 
+        if (ctx.playerFeet().y < src.y) {
+            return state.setStatus(MovementStatus.UNREACHABLE);
+        }
+
         IBlockState fromDown = BlockStateInterface.get(ctx, src);
         if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(ctx, dest)) {
             // stay centered while swimming up a water column

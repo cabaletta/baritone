@@ -44,7 +44,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     private int tickCount = 0;
 
     public GetToBlockProcess(Baritone baritone) {
-        super(baritone, 2);
+        super(baritone);
     }
 
     @Override
@@ -161,7 +161,10 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
 
     @Override
     public String displayName() {
-        return "Get To Block " + gettingTo;
+        if (knownLocations.isEmpty()) {
+            return "Exploring randomly to find " + gettingTo + ", no known locations";
+        }
+        return "Get To Block " + gettingTo + ", " + knownLocations.size() + " known locations";
     }
 
     private synchronized void rescan(List<BlockPos> known, CalculationContext context) {

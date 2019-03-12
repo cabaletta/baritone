@@ -31,7 +31,7 @@ public class ExploreProcess extends BaritoneProcessHelper {
     private BlockPos explorationOrigin;
 
     public ExploreProcess(Baritone baritone) {
-        super(baritone, 0);
+        super(baritone);
     }
 
     @Override
