@@ -36,6 +36,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class MovementPillar extends Movement {
 
@@ -161,6 +162,7 @@ public class MovementPillar extends Movement {
                 state.setInput(Input.MOVE_FORWARD, true);
             }
             if (ctx.playerFeet().equals(dest)) {
+                logDebug("wtf2");
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
@@ -183,6 +185,7 @@ public class MovementPillar extends Movement {
             }
 
             if (ctx.playerFeet().equals(against.up()) || ctx.playerFeet().equals(dest)) {
+                logDebug("wtf3");
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
@@ -226,8 +229,14 @@ public class MovementPillar extends Movement {
 
 
             if (!blockIsThere) {
-                Block fr = BlockStateInterface.get(ctx, src).getBlock();
-                if (!(fr instanceof BlockAir || fr.isReplaceable(ctx.world(), src))) {
+                IBlockState frState = BlockStateInterface.get(ctx, src);
+                Block fr = frState.getBlock();
+                // TODO: Evaluate usage of getMaterial().isReplaceable()
+                if (!(fr instanceof BlockAir || frState.getMaterial().isReplaceable())) {
+                    Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance());
+                    if (reachable.isPresent()) {
+                        state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
+                    }
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
                 } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos())) && ctx.player().posY > dest.getY() + 0.1) {
