@@ -485,10 +485,12 @@ public final class Settings {
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
 
     /**
-     * When GetToBlockProcess fails to calculate a path, instead of just giving up, mark the closest instances
-     * of that block as "unreachable" and go towards the next closest
+     * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
+     * of that block as "unreachable" and go towards the next closest. GetToBlock expands this seaarch to the whole "vein"; MineProcess does not.
+     * This is because MineProcess finds individual impossible blocks (like one block in a vein that has gravel on top then lava, so it can't break)
+     * Whereas GetToBlock should blacklist the whole "vein" if it can't get to any of them.
      */
-    public final Setting<Boolean> blacklistOnGetToBlockFailure = new Setting<>(true);
+    public final Setting<Boolean> blacklistClosestOnFailure = new Setting<>(true);
 
     /**
      * 😎 Render cached chunks as semitransparent. Doesn't work with OptiFine 😭 Rarely randomly crashes, see <a href="https://github.com/cabaletta/baritone/issues/327">this issue</a>.

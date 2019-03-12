@@ -155,6 +155,10 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
+        if (ctx.playerFeet().y < src.y) {
+            return state.setStatus(MovementStatus.UNREACHABLE);
+        }
+
         IBlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
         if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
             ticksWithoutPlacement++;

@@ -46,7 +46,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     private List<Entity> cache;
 
     public FollowProcess(Baritone baritone) {
-        super(baritone, 1);
+        super(baritone);
     }
 
     @Override

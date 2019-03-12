@@ -24,6 +24,7 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.process.IBaritoneProcess;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
@@ -223,6 +224,20 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     logDirect("Path calculation failed, no path");
                 });
             }
+            return true;
+        }
+        if (msg.equals("proc")) {
+            Optional<IBaritoneProcess> proc = baritone.getPathingControlManager().mostRecentInControl();
+            if (!proc.isPresent()) {
+                logDirect("No process is in control");
+                return true;
+            }
+            IBaritoneProcess p = proc.get();
+            logDirect("Class: " + p.getClass());
+            logDirect("Priority: " + p.priority());
+            logDirect("Temporary: " + p.isTemporary());
+            logDirect("Display name: " + p.displayName());
+            logDirect("Command: " + baritone.getPathingControlManager().mostRecentCommand());
             return true;
         }
         if (msg.equals("version")) {
@@ -518,7 +533,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return true;
                 }
             }
-            Goal goal = new GoalBlock(waypoint.getLocation());
+            Goal goal = waypoint.getTag() == Waypoint.Tag.BED ? new GoalGetToBlock(waypoint.getLocation()) : new GoalBlock(waypoint.getLocation());
             customGoalProcess.setGoalAndPath(goal);
             return true;
         }

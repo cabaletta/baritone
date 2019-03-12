@@ -55,13 +55,14 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     private List<Block> mining;
     private List<BlockPos> knownOreLocations;
+    private List<BlockPos> blacklist; // inaccessible
     private BlockPos branchPoint;
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
 
     public MineProcess(Baritone baritone) {
-        super(baritone, 0);
+        super(baritone);
     }
 
     @Override
@@ -80,6 +81,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 cancel();
                 return null;
             }
+        }
+        if (calcFailed && !knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
+            logDirect("Unable to find any path to " + mining + ", blacklisting presumably unreachable closest instance...");
+            knownOreLocations.stream().sorted(Comparator.comparingDouble(ctx.player()::getDistanceSq)).findFirst().ifPresent(blacklist::add);
+            knownOreLocations.removeIf(blacklist::contains);
+            calcFailed = false; // 😎
         }
         if (calcFailed) {
             logDirect("Unable to find any path to " + mining + ", canceling Mine");
@@ -119,7 +126,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         boolean legit = Baritone.settings().legitMine.value;
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
-            List<BlockPos> locs2 = prune(new CalculationContext(baritone), new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
+            List<BlockPos> locs2 = prune(new CalculationContext(baritone), new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT, blacklist);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(ctx, loc, locs2)).toArray(Goal[]::new));
             knownOreLocations = locs2;
@@ -161,10 +168,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (Baritone.settings().legitMine.value) {
             return;
         }
-        List<BlockPos> locs = searchWorld(context, mining, ORE_LOCATIONS_COUNT, already);
+        List<BlockPos> locs = searchWorld(context, mining, ORE_LOCATIONS_COUNT, already, blacklist);
         locs.addAll(droppedItemsScan(mining, ctx.world()));
         if (locs.isEmpty()) {
-            logDebug("No locations for " + mining + " known, cancelling");
+            logDirect("No locations for " + mining + " known, cancelling");
             cancel();
             return;
         }
@@ -205,7 +212,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return ret;
     }
 
-    public static List<BlockPos> searchWorld(CalculationContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown) {
+    public static List<BlockPos> searchWorld(CalculationContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
@@ -217,6 +224,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 uninteresting.add(m);
             }
         }
+        locs = prune(ctx, locs, mining, max, blacklist);
         //System.out.println("Scan of cached chunks took " + (System.currentTimeMillis() - b) + "ms");
         if (locs.isEmpty()) {
             uninteresting = mining;
@@ -227,7 +235,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
         locs.addAll(alreadyKnown);
-        return prune(ctx, locs, mining, max);
+        return prune(ctx, locs, mining, max, blacklist);
     }
 
     private void addNearby() {
@@ -250,10 +258,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 }
             }
         }
-        knownOreLocations = prune(new CalculationContext(baritone), knownOreLocations, mining, ORE_LOCATIONS_COUNT);
+        knownOreLocations = prune(new CalculationContext(baritone), knownOreLocations, mining, ORE_LOCATIONS_COUNT, blacklist);
     }
 
-    public static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, List<Block> mining, int max) {
+    private static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, List<Block> mining, int max, List<BlockPos> blacklist) {
         List<BlockPos> dropped = droppedItemsScan(mining, ctx.world);
         dropped.removeIf(drop -> {
             for (BlockPos pos : locs2) {
@@ -272,6 +280,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(pos -> MineProcess.plausibleToBreak(ctx.bsi, pos))
+
+                .filter(pos -> !blacklist.contains(pos))
 
                 .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().playerFeet()::distanceSq))
                 .collect(Collectors.toList());
@@ -301,6 +311,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
+        this.blacklist = new ArrayList<>();
         this.branchPoint = null;
         this.branchPointRunaway = null;
         if (mining != null) {
