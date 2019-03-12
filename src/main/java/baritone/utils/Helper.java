@@ -50,7 +50,7 @@ public interface Helper {
      * @param message The message to display in chat
      */
     default void logDebug(String message) {
-        if (!Baritone.settings().chatDebug.get()) {
+        if (!Baritone.settings().chatDebug.value) {
             //System.out.println("Suppressed debug message:");
             //System.out.println(message);
             return;
@@ -67,6 +67,6 @@ public interface Helper {
         ITextComponent component = MESSAGE_PREFIX.createCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
         component.appendSibling(new TextComponentString(" " + message));
-        Minecraft.getMinecraft().addScheduledTask(() -> Baritone.settings().logger.get().accept(component));
+        Minecraft.getMinecraft().addScheduledTask(() -> Baritone.settings().logger.value.accept(component));
     }
 }

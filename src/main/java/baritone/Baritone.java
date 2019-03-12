@@ -79,6 +79,7 @@ public class Baritone implements IBaritone {
     private GetToBlockProcess getToBlockProcess;
     private CustomGoalProcess customGoalProcess;
     private BuilderProcess builderProcess;
+    private ExploreProcess exploreProcess;
 
     private PathingControlManager pathingControlManager;
 
@@ -118,6 +119,7 @@ public class Baritone implements IBaritone {
             customGoalProcess = new CustomGoalProcess(this); // very high iq
             getToBlockProcess = new GetToBlockProcess(this);
             builderProcess = new BuilderProcess(this);
+            exploreProcess = new ExploreProcess(this);
         }
 
         this.worldProvider = new WorldProvider();
@@ -184,6 +186,10 @@ public class Baritone implements IBaritone {
     @Override
     public LookBehavior getLookBehavior() {
         return this.lookBehavior;
+    }
+
+    public ExploreProcess getExploreProcess() {
+        return this.exploreProcess;
     }
 
     @Override

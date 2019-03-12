@@ -36,6 +36,16 @@ import baritone.api.event.events.PathEvent;
 public interface IBaritoneProcess {
 
     /**
+     * Default priority. Most normal processes should have this value.
+     * <p>
+     * Some examples of processes that should have different values might include some kind of automated mob avoidance
+     * that would be temporary and would forcefully take control. Same for something that pauses pathing for auto eat, etc.
+     * <p>
+     * The value is -1 beacuse that's what Impact 4.5's beta auto walk returns and I want to tie with it.
+     */
+    double DEFAULT_PRIORITY = -1;
+
+    /**
      * Would this process like to be in control?
      *
      * @return Whether or not this process would like to be in contorl.
@@ -82,7 +92,9 @@ public interface IBaritoneProcess {
      *
      * @return A double representing the priority
      */
-    double priority();
+    default double priority() {
+        return DEFAULT_PRIORITY;
+    }
 
     /**
      * Returns a user-friendly name for this process. Suitable for a HUD.

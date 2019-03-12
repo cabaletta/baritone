@@ -90,7 +90,8 @@ public final class ChunkPacker {
         IBlockState[] blocks = new IBlockState[256];
 
         for (int z = 0; z < 16; z++) {
-            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            https:
+//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
@@ -124,10 +125,16 @@ public final class ChunkPacker {
         if (block == Blocks.WATER || block == Blocks.FLOWING_WATER) {
             // only water source blocks are plausibly usable, flowing water should be avoid
             // FLOWING_WATER is a waterfall, it doesn't really matter and caching it as AVOID just makes it look wrong
-            if (!MovementHelper.possiblyFlowing(state)) {
-                return PathingBlockType.WATER;
+            if (MovementHelper.possiblyFlowing(state)) {
+                return PathingBlockType.AVOID;
             }
-            if (BlockLiquid.getSlopeAngle(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4), state.getMaterial(), state) != -1000.0F) {
+            if (x == 0 || x == 15 || z == 0 || z == 15) {
+                if (BlockLiquid.getSlopeAngle(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4), state.getMaterial(), state) == -1000.0F) {
+                    return PathingBlockType.WATER;
+                }
+                return PathingBlockType.AVOID;
+            }
+            if (MovementHelper.possiblyFlowing(chunk.getBlockState(x + 1, y, z)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x - 1, y, z)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z + 1)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z - 1))) {
                 return PathingBlockType.AVOID;
             }
             return PathingBlockType.WATER;

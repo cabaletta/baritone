@@ -40,7 +40,7 @@ public class BlockPlaceHelper implements Helper {
         if (!rightClickRequested || ctx.player().isRowingBoat() || mouseOver == null || mouseOver.getBlockPos() == null || mouseOver.typeOfHit != RayTraceResult.Type.BLOCK) {
             return;
         }
-        rightClickTimer = Baritone.settings().rightClickSpeed.get();
+        rightClickTimer = Baritone.settings().rightClickSpeed.value;
         for (EnumHand hand : EnumHand.values()) {
             if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), mouseOver.getBlockPos(), mouseOver.sideHit, mouseOver.hitVec, hand) == EnumActionResult.SUCCESS) {
                 ctx.player().swingArm(hand);

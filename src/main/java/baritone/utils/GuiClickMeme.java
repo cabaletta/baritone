@@ -42,11 +42,10 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class GuiClickMeme extends GuiScreen {
 
-    // My name is Brady and I grant Leijurv permission to use this pasted code
+    // My name is Brady and I grant leijurv permission to use this pasted code
     private final FloatBuffer MODELVIEW = BufferUtils.createFloatBuffer(16);
     private final FloatBuffer PROJECTION = BufferUtils.createFloatBuffer(16);
     private final IntBuffer VIEWPORT = BufferUtils.createIntBuffer(16);
-    private final FloatBuffer TO_SCREEN_BUFFER = BufferUtils.createFloatBuffer(3);
     private final FloatBuffer TO_WORLD_BUFFER = BufferUtils.createFloatBuffer(3);
 
     private BlockPos clickStart;
@@ -62,7 +61,7 @@ public class GuiClickMeme extends GuiScreen {
         int mx = Mouse.getX();
         int my = Mouse.getY();
         Vec3d near = toWorld(mx, my, 0);
-        Vec3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - Leijurv
+        Vec3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
         if (near != null && far != null) {
             Vec3d viewerPos = new Vec3d(mc.getRenderManager().viewerPosX, mc.getRenderManager().viewerPosY, mc.getRenderManager().viewerPosZ);
             RayTraceResult result = mc.world.rayTraceBlocks(near.add(viewerPos), far.add(viewerPos), false, false, true);

@@ -54,13 +54,14 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     private List<Block> mining;
     private List<BlockPos> knownOreLocations;
+    private List<BlockPos> blacklist; // inaccessible
     private BlockPos branchPoint;
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
 
     public MineProcess(Baritone baritone) {
-        super(baritone, 0);
+        super(baritone);
     }
 
     @Override
@@ -80,18 +81,24 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
+        if (calcFailed && !knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
+            logDirect("Unable to find any path to " + mining + ", blacklisting presumably unreachable closest instance...");
+            knownOreLocations.stream().sorted(Comparator.comparingDouble(ctx.player()::getDistanceSq)).findFirst().ifPresent(blacklist::add);
+            knownOreLocations.removeIf(blacklist::contains);
+            calcFailed = false; // 😎
+        }
         if (calcFailed) {
             logDirect("Unable to find any path to " + mining + ", canceling Mine");
             cancel();
             return null;
         }
-        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
+        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             List<BlockPos> curr = new ArrayList<>(knownOreLocations);
             CalculationContext context = new CalculationContext(baritone, true);
             Baritone.getExecutor().execute(() -> rescan(curr, context));
         }
-        if (Baritone.settings().legitMine.get()) {
+        if (Baritone.settings().legitMine.value) {
             addNearby();
         }
         PathingCommand command = updateGoal();
@@ -115,10 +122,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     private PathingCommand updateGoal() {
-        boolean legit = Baritone.settings().legitMine.get();
+        boolean legit = Baritone.settings().legitMine.value;
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
-            List<BlockPos> locs2 = prune(new CalculationContext(baritone), new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT);
+            List<BlockPos> locs2 = prune(new CalculationContext(baritone), new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT, blacklist);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(ctx, loc, locs2)).toArray(Goal[]::new));
             knownOreLocations = locs2;
@@ -129,7 +136,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             return null;
         }
         // only in non-Xray mode (aka legit mode) do we do this
-        int y = Baritone.settings().legitMineYLevel.get();
+        int y = Baritone.settings().legitMineYLevel.value;
         if (branchPoint == null) {
             /*if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
                 // cool, path is over and we are at desired y
@@ -157,13 +164,13 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (mining == null) {
             return;
         }
-        if (Baritone.settings().legitMine.get()) {
+        if (Baritone.settings().legitMine.value) {
             return;
         }
-        List<BlockPos> locs = searchWorld(context, mining, ORE_LOCATIONS_COUNT, already);
+        List<BlockPos> locs = searchWorld(context, mining, ORE_LOCATIONS_COUNT, already, blacklist);
         locs.addAll(droppedItemsScan(mining, ctx.world()));
         if (locs.isEmpty()) {
-            logDebug("No locations for " + mining + " known, cancelling");
+            logDirect("No locations for " + mining + " known, cancelling");
             cancel();
             return;
         }
@@ -171,18 +178,18 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     private static Goal coalesce(IPlayerContext ctx, BlockPos loc, List<BlockPos> locs) {
-        if (!Baritone.settings().forceInternalMining.get()) {
+        if (!Baritone.settings().forceInternalMining.value) {
             return new GoalTwoBlocks(loc);
         }
 
         // Here, BlockStateInterface is used because the position may be in a cached chunk (the targeted block is one that is kept track of)
-        boolean upwardGoal = locs.contains(loc.up()) || (Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(ctx, loc.up()) == Blocks.AIR);
-        boolean downwardGoal = locs.contains(loc.down()) || (Baritone.settings().internalMiningAirException.get() && BlockStateInterface.getBlock(ctx, loc.down()) == Blocks.AIR);
+        boolean upwardGoal = locs.contains(loc.up()) || (Baritone.settings().internalMiningAirException.value && BlockStateInterface.getBlock(ctx, loc.up()) == Blocks.AIR);
+        boolean downwardGoal = locs.contains(loc.down()) || (Baritone.settings().internalMiningAirException.value && BlockStateInterface.getBlock(ctx, loc.down()) == Blocks.AIR);
         return upwardGoal == downwardGoal ? new GoalTwoBlocks(loc) : upwardGoal ? new GoalBlock(loc) : new GoalBlock(loc.down());
     }
 
     public static List<BlockPos> droppedItemsScan(List<Block> mining, World world) {
-        if (!Baritone.settings().mineScanDroppedItems.get()) {
+        if (!Baritone.settings().mineScanDroppedItems.value) {
             return new ArrayList<>();
         }
         Set<Item> searchingFor = new HashSet<>();
@@ -204,28 +211,30 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return ret;
     }
 
-    public static List<BlockPos> searchWorld(CalculationContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown) {
+    public static List<BlockPos> searchWorld(CalculationContext ctx, List<Block> mining, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> uninteresting = new ArrayList<>();
         //long b = System.currentTimeMillis();
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
-                locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), 1, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
+                // maxRegionDistanceSq 2 means adjacent directly or adjacent diagonally; nothing further than that
+                locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), Baritone.settings().maxCachedWorldScanCount.value, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
             } else {
                 uninteresting.add(m);
             }
         }
+        locs = prune(ctx, locs, mining, max, blacklist);
         //System.out.println("Scan of cached chunks took " + (System.currentTimeMillis() - b) + "ms");
         if (locs.isEmpty()) {
             uninteresting = mining;
         }
         if (!uninteresting.isEmpty()) {
             //long before = System.currentTimeMillis();
-            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx.getBaritone().getPlayerContext(), uninteresting, max, 10, 26));
+            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx.getBaritone().getPlayerContext(), uninteresting, max, 10, 32)); // maxSearchRadius is NOT sq
             //System.out.println("Scan of loaded chunks took " + (System.currentTimeMillis() - before) + "ms");
         }
         locs.addAll(alreadyKnown);
-        return prune(ctx, locs, mining, max);
+        return prune(ctx, locs, mining, max, blacklist);
     }
 
     private void addNearby() {
@@ -241,17 +250,17 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     // is an x-ray and it'll get caught
                     if (mining.contains(bsi.get0(x, y, z).getBlock())) {
                         BlockPos pos = new BlockPos(x, y, z);
-                        if ((Baritone.settings().legitMineIncludeDiagonals.get() && knownOreLocations.stream().anyMatch(ore -> ore.distanceSq(pos) <= 2 /* sq means this is pytha dist <= sqrt(2) */)) || RotationUtils.reachable(ctx.player(), pos, fakedBlockReachDistance).isPresent()) {
+                        if ((Baritone.settings().legitMineIncludeDiagonals.value && knownOreLocations.stream().anyMatch(ore -> ore.distanceSq(pos) <= 2 /* sq means this is pytha dist <= sqrt(2) */)) || RotationUtils.reachable(ctx.player(), pos, fakedBlockReachDistance).isPresent()) {
                             knownOreLocations.add(pos);
                         }
                     }
                 }
             }
         }
-        knownOreLocations = prune(new CalculationContext(baritone), knownOreLocations, mining, ORE_LOCATIONS_COUNT);
+        knownOreLocations = prune(new CalculationContext(baritone), knownOreLocations, mining, ORE_LOCATIONS_COUNT, blacklist);
     }
 
-    public static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, List<Block> mining, int max) {
+    private static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, List<Block> mining, int max, List<BlockPos> blacklist) {
         List<BlockPos> dropped = droppedItemsScan(mining, ctx.world);
         dropped.removeIf(drop -> {
             for (BlockPos pos : locs2) {
@@ -270,6 +279,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(pos -> MineProcess.plausibleToBreak(ctx.bsi, pos))
+
+                .filter(pos -> !blacklist.contains(pos))
 
                 .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().playerFeet()::distanceSq))
                 .collect(Collectors.toList());
@@ -299,6 +310,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
+        this.blacklist = new ArrayList<>();
         this.branchPoint = null;
         this.branchPointRunaway = null;
         if (mining != null) {

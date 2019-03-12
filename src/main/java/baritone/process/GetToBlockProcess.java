@@ -44,7 +44,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     private int tickCount = 0;
 
     public GetToBlockProcess(Baritone baritone) {
-        super(baritone, 2);
+        super(baritone);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
         if (knownLocations.isEmpty()) {
-            if (Baritone.settings().exploreForBlocks.get() && !calcFailed) {
+            if (Baritone.settings().exploreForBlocks.value && !calcFailed) {
                 return new PathingCommand(new GoalRunAway(1, start) {
                     @Override
                     public boolean isInGoal(int x, int y, int z) {
@@ -83,8 +83,8 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         }
         Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (calcFailed) {
-            if (Baritone.settings().blacklistOnGetToBlockFailure.get()) {
-                logDirect("Unable to find any path to " + gettingTo + ", blacklisting presumably unreachable closest instances");
+            if (Baritone.settings().blacklistClosestOnFailure.value) {
+                logDirect("Unable to find any path to " + gettingTo + ", blacklisting presumably unreachable closest instances...");
                 blacklistClosest();
                 return onTick(false, isSafeToCancel); // gamer moment
             } else {
@@ -95,7 +95,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
                 return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
         }
-        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
+        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             List<BlockPos> current = new ArrayList<>(knownLocations);
             CalculationContext context = new CalculationContext(baritone, true);
@@ -161,11 +161,14 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
 
     @Override
     public String displayName() {
-        return "Get To Block " + gettingTo;
+        if (knownLocations.isEmpty()) {
+            return "Exploring randomly to find " + gettingTo + ", no known locations";
+        }
+        return "Get To Block " + gettingTo + ", " + knownLocations.size() + " known locations";
     }
 
     private synchronized void rescan(List<BlockPos> known, CalculationContext context) {
-        List<BlockPos> positions = MineProcess.searchWorld(context, Collections.singletonList(gettingTo), 64, known);
+        List<BlockPos> positions = MineProcess.searchWorld(context, Collections.singletonList(gettingTo), 64, known, blacklist);
         positions.removeIf(blacklist::contains);
         knownLocations = positions;
     }
@@ -200,14 +203,14 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     private boolean walkIntoInsteadOfAdjacent(Block block) {
-        if (!Baritone.settings().enterPortal.get()) {
+        if (!Baritone.settings().enterPortal.value) {
             return false;
         }
         return block == Blocks.PORTAL;
     }
 
     private boolean rightClickOnArrival(Block block) {
-        if (!Baritone.settings().rightClickContainerOnArrival.get()) {
+        if (!Baritone.settings().rightClickContainerOnArrival.value) {
             return false;
         }
         return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;

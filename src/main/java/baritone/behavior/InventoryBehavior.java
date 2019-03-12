@@ -40,7 +40,7 @@ public class InventoryBehavior extends Behavior {
 
     @Override
     public void onTick(TickEvent event) {
-        if (!Baritone.settings().allowInventory.get()) {
+        if (!Baritone.settings().allowInventory.value) {
             return;
         }
         if (event.getType() == TickEvent.Type.OUT) {
@@ -94,7 +94,7 @@ public class InventoryBehavior extends Behavior {
     private int firstValidThrowaway() { // TODO offhand idk
         NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
         for (int i = 0; i < invy.size(); i++) {
-            if (Baritone.settings().acceptableThrowawayItems.get().contains(invy.get(i).getItem())) {
+            if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
                 return i;
             }
         }

@@ -154,6 +154,10 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
+        if (ctx.playerFeet().y < src.y) {
+            return state.setStatus(MovementStatus.UNREACHABLE);
+        }
+
         IBlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
         if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
             ticksWithoutPlacement++;
@@ -175,7 +179,7 @@ public class MovementAscend extends Movement {
             return state; // don't jump while walking from a non double slab into a bottom slab
         }
 
-        if (Baritone.settings().assumeStep.get() || ctx.playerFeet().equals(src.up())) {
+        if (Baritone.settings().assumeStep.value || ctx.playerFeet().equals(src.up())) {
             // no need to hit space if we're already jumping
             return state;
         }

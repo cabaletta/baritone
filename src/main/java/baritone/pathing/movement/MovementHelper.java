@@ -30,7 +30,6 @@ import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -113,7 +112,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false; // Don't walk through flowing liquids
         }
         if (block instanceof BlockLiquid) {
-            if (Baritone.settings().assumeWalkOnWater.get()) {
+            if (Baritone.settings().assumeWalkOnWater.value) {
                 return false;
             }
             IBlockState up = bsi.get0(x, y + 1, z);
@@ -275,7 +274,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (state.isBlockNormalCube()) {
             return true;
         }
-        if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.get())) { // TODO reconsider this
+        if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) { // TODO reconsider this
             return true;
         }
         if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
@@ -293,17 +292,17 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             if (isFlowing(x, y, z, state, bsi) || block == Blocks.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
-                return isWater(up) && !Baritone.settings().assumeWalkOnWater.get();
+                return isWater(up) && !Baritone.settings().assumeWalkOnWater.value;
             }
             // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
-            return isWater(up) ^ Baritone.settings().assumeWalkOnWater.get();
+            return isWater(up) ^ Baritone.settings().assumeWalkOnWater.value;
         }
         if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
             return true;
         }
         if (block instanceof BlockSlab) {
-            if (!Baritone.settings().allowWalkOnBottomSlab.get()) {
+            if (!Baritone.settings().allowWalkOnBottomSlab.value) {
                 if (((BlockSlab) block).isDouble()) {
                     return true;
                 }

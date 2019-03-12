@@ -24,6 +24,7 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.pathing.goals.*;
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.process.IBaritoneProcess;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.SettingsUtil;
 import baritone.behavior.Behavior;
@@ -89,14 +90,14 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     @Override
     public void onSendChatMessage(ChatEvent event) {
         String msg = event.getMessage();
-        if (Baritone.settings().prefixControl.get() && msg.startsWith(COMMAND_PREFIX)) {
+        if (Baritone.settings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
             if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
                 logDirect("Invalid command");
             }
             event.cancel(); // always cancel if using prefixControl
             return;
         }
-        if (!Baritone.settings().chatControl.get() && !Baritone.settings().removePrefix.get()) {
+        if (!Baritone.settings().chatControl.value && !Baritone.settings().removePrefix.value) {
             return;
         }
         if (runCommand(msg)) {
@@ -223,6 +224,20 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     logDirect("Path calculation failed, no path");
                 });
             }
+            return true;
+        }
+        if (msg.equals("proc")) {
+            Optional<IBaritoneProcess> proc = baritone.getPathingControlManager().mostRecentInControl();
+            if (!proc.isPresent()) {
+                logDirect("No process is in control");
+                return true;
+            }
+            IBaritoneProcess p = proc.get();
+            logDirect("Class: " + p.getClass());
+            logDirect("Priority: " + p.priority());
+            logDirect("Temporary: " + p.isTemporary());
+            logDirect("Display name: " + p.displayName());
+            logDirect("Command: " + baritone.getPathingControlManager().mostRecentCommand());
             return true;
         }
         if (msg.equals("version")) {
@@ -416,9 +431,24 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("ok");
             return true;
         }
+        if (msg.startsWith("explore")) {
+            String rest = msg.substring("explore".length()).trim();
+            int centerX;
+            int centerZ;
+            try {
+                centerX = Integer.parseInt(rest.split(" ")[0]);
+                centerZ = Integer.parseInt(rest.split(" ")[1]);
+            } catch (Exception ex) {
+                centerX = ctx.playerFeet().x;
+                centerZ = ctx.playerFeet().z;
+            }
+            baritone.getExploreProcess().explore(centerX, centerZ);
+            logDirect("Exploring from " + centerX + "," + centerZ);
+            return true;
+        }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
+            ArrayList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
                 Block actually = BlockStateInterface.get(ctx, pos).getBlock();
@@ -545,7 +575,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return true;
                 }
             }
-            Goal goal = new GoalBlock(waypoint.getLocation());
+            Goal goal = waypoint.getTag() == Waypoint.Tag.BED ? new GoalGetToBlock(waypoint.getLocation()) : new GoalBlock(waypoint.getLocation());
             customGoalProcess.setGoalAndPath(goal);
             return true;
         }

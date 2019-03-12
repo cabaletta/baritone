@@ -64,7 +64,7 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onTick(TickEvent event) {
-        if (!Baritone.settings().containerMemory.get()) {
+        if (!Baritone.settings().containerMemory.value) {
             return;
         }
         if (event.getType() == TickEvent.Type.OUT) {
@@ -82,7 +82,7 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onSendPacket(PacketEvent event) {
-        if (!Baritone.settings().containerMemory.get()) {
+        if (!Baritone.settings().containerMemory.value) {
             return;
         }
         Packet p = event.getPacket();
@@ -121,7 +121,7 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onReceivePacket(PacketEvent event) {
-        if (!Baritone.settings().containerMemory.get()) {
+        if (!Baritone.settings().containerMemory.value) {
             return;
         }
         Packet p = event.getPacket();
@@ -170,7 +170,7 @@ public final class MemoryBehavior extends Behavior {
 
 
     private void updateInventory() {
-        if (!Baritone.settings().containerMemory.get()) {
+        if (!Baritone.settings().containerMemory.value) {
             return;
         }
         int windowId = ctx.player().openContainer.windowId;
