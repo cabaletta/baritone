@@ -33,7 +33,7 @@ buildscript {
 
     dependencies {
         classpath group: 'com.github.ImpactDevelopment', name: 'ForgeGradle', version: '3.0.115'
-        classpath group: 'com.github.ImpactDevelopment', name: 'MixinGradle', version: '0.6.1'
+        classpath group: 'com.github.ImpactDevelopment', name: 'MixinGradle', version: '0.6.2'
     }
 }
 
