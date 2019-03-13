@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(RenderChunkCache.class)
 public class MixinRenderChunkCache {
+
     @Redirect(
             method = "generateCache",
             at = @At(
