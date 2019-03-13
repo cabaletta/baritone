@@ -543,7 +543,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     @Override
-    public String displayName() {
+    public String displayName0() {
         return "Building " + name;
     }
 

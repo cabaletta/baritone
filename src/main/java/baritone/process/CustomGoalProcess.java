@@ -105,7 +105,7 @@ public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomG
     }
 
     @Override
-    public String displayName() {
+    public String displayName0() {
         return "Custom Goal " + this.goal;
     }
 
