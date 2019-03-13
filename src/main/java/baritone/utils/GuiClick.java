@@ -74,14 +74,11 @@ public class GuiClick extends GuiScreen {
 
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
-        System.out.println("Mouse released");
         if (mouseButton == 0) {
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getBuilderProcess().clearArea(clickStart, currentMouseOver);
                 clickStart = null;
             } else {
-
-
                 BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(currentMouseOver));
             }
         } else if (mouseButton == 1) {
@@ -93,16 +90,10 @@ public class GuiClick extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        System.out.println("Mouse clicked");
         clickStart = currentMouseOver;
     }
 
-    @Override
-    protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-        System.out.println("Click move");
-    }
-
-    public void onRender(float partialTicks) {
+    public void onRender() {
         GlStateManager.getFloat(GL_MODELVIEW_MATRIX, (FloatBuffer) MODELVIEW.clear());
         GlStateManager.getFloat(GL_PROJECTION_MATRIX, (FloatBuffer) PROJECTION.clear());
         GlStateManager.glGetInteger(GL_VIEWPORT, (IntBuffer) VIEWPORT.clear());
