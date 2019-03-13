@@ -14,7 +14,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/cabaletta/baritone.svg)
 ![](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
 ![](https://tokei.rs/b1/github/cabaletta/baritone?category=files)
-[![Minecraft](https://img.shields.io/badge/MC-1.12.2-green.svg)](https://minecraft.gamepedia.com/1.12.2)
+[![Minecraft](https://img.shields.io/badge/MC-1.13.2-brightgreen.svg)](https://minecraft.gamepedia.com/1.13.2)
 [![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
 [![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
 [![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.3-brightgreen.svg)](https://impactdevelopment.github.io/)
