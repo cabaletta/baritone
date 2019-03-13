@@ -107,18 +107,18 @@ public class PathingControlManager implements IPathingControlManager {
                 break;
             case FORCE_REVALIDATE_GOAL_AND_PATH:
                 if (!p.isPathing() && !p.getInProgress().isPresent()) {
-                    p.secretInternalSetGoalAndPath(command.goal);
+                    p.secretInternalSetGoalAndPath(command);
                 }
                 break;
             case REVALIDATE_GOAL_AND_PATH:
                 if (!p.isPathing() && !p.getInProgress().isPresent()) {
-                    p.secretInternalSetGoalAndPath(command.goal);
+                    p.secretInternalSetGoalAndPath(command);
                 }
                 break;
             case SET_GOAL_AND_PATH:
                 // now this i can do
                 if (command.goal != null) {
-                    baritone.getPathingBehavior().secretInternalSetGoalAndPath(command.goal);
+                    baritone.getPathingBehavior().secretInternalSetGoalAndPath(command);
                 }
                 break;
             default:
@@ -141,13 +141,13 @@ public class PathingControlManager implements IPathingControlManager {
                     // pwnage
                     p.softCancelIfSafe();
                 }
-                p.secretInternalSetGoalAndPath(command.goal);
+                p.secretInternalSetGoalAndPath(command);
                 break;
             case REVALIDATE_GOAL_AND_PATH:
                 if (Baritone.settings().cancelOnGoalInvalidation.value && (command.goal == null || revalidateGoal(command.goal))) {
                     p.softCancelIfSafe();
                 }
-                p.secretInternalSetGoalAndPath(command.goal);
+                p.secretInternalSetGoalAndPath(command);
                 break;
             default:
         }

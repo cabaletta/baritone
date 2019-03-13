@@ -45,10 +45,6 @@ public interface IMovement {
      */
     boolean safeToCancel();
 
-    double recalculateCost();
-
-    double calculateCostWithoutCaching();
-
     boolean calculatedWhileLoaded();
 
     BetterBlockPos getSrc();

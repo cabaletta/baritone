@@ -87,7 +87,7 @@ public class SegmentedCalculator {
 
     private PathCalculationResult segment(Optional<IPath> previous) {
         BetterBlockPos segmentStart = previous.map(IPath::getDest).orElse(start); // <-- e p i c
-        AbstractNodeCostSearch search = new AStarPathFinder(segmentStart.x, segmentStart.y, segmentStart.z, goal, new Favoring(previous.orElse(null)), context); // this is on another thread, so cannot include mob avoidances.
+        AbstractNodeCostSearch search = new AStarPathFinder(segmentStart.x, segmentStart.y, segmentStart.z, goal, new Favoring(previous.orElse(null), context), context); // this is on another thread, so cannot include mob avoidances.
         return search.calculate(Baritone.settings().primaryTimeoutMS.value, Baritone.settings().failureTimeoutMS.value); // use normal time settings, not the plan ahead settings, so as to not overwhelm the computer
     }
 

@@ -17,12 +17,15 @@
 
 package baritone.utils;
 
+import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -31,7 +34,6 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.util.glu.GLU;
 
 import java.awt.*;
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Collections;
@@ -46,7 +48,8 @@ public class GuiClickMeme extends GuiScreen {
     private final IntBuffer VIEWPORT = BufferUtils.createIntBuffer(16);
     private final FloatBuffer TO_WORLD_BUFFER = BufferUtils.createFloatBuffer(3);
 
-    private BlockPos meme;
+    private BlockPos clickStart;
+    private BlockPos currentMouseOver;
 
     @Override
     public boolean doesGuiPauseGame() {
@@ -63,19 +66,40 @@ public class GuiClickMeme extends GuiScreen {
             Vec3d viewerPos = new Vec3d(mc.getRenderManager().viewerPosX, mc.getRenderManager().viewerPosY, mc.getRenderManager().viewerPosZ);
             RayTraceResult result = mc.world.rayTraceBlocks(near.add(viewerPos), far.add(viewerPos), false, false, true);
             if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
-                meme = result.getBlockPos();
+                currentMouseOver = result.getBlockPos();
             }
         }
+
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
+        System.out.println("Mouse released");
         if (mouseButton == 0) {
-            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(meme));
+            if (clickStart != null && !clickStart.equals(currentMouseOver)) {
+                ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getBuilderProcess().clearArea(clickStart, currentMouseOver);
+                clickStart = null;
+            } else {
+
+
+                BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(currentMouseOver));
+            }
         } else if (mouseButton == 1) {
-            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(meme.up()));
+            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
         }
+        clickStart = null;
+    }
+
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+        System.out.println("Mouse clicked");
+        clickStart = currentMouseOver;
+    }
+
+    @Override
+    protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
+        System.out.println("Click move");
     }
 
     public void onRender(float partialTicks) {
@@ -83,11 +107,30 @@ public class GuiClickMeme extends GuiScreen {
         GlStateManager.getFloat(GL_PROJECTION_MATRIX, (FloatBuffer) PROJECTION.clear());
         GlStateManager.glGetInteger(GL_VIEWPORT, (IntBuffer) VIEWPORT.clear());
 
-        if (meme != null) {
+        if (currentMouseOver != null) {
             Entity e = mc.getRenderViewEntity();
             // drawSingleSelectionBox WHEN?
-            PathRenderer.drawManySelectionBoxes(e, Collections.singletonList(meme), Color.CYAN);
+            PathRenderer.drawManySelectionBoxes(e, Collections.singletonList(currentMouseOver), Color.CYAN);
+            if (clickStart != null && !clickStart.equals(currentMouseOver)) {
+                GlStateManager.enableBlend();
+                GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+                GlStateManager.color(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
+                GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
+                GlStateManager.disableTexture2D();
+                GlStateManager.depthMask(false);
+                GlStateManager.disableDepth();
+                BetterBlockPos a = new BetterBlockPos(currentMouseOver);
+                BetterBlockPos b = new BetterBlockPos(clickStart);
+                PathRenderer.drawAABB(new AxisAlignedBB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
+                GlStateManager.enableDepth();
+
+                GlStateManager.depthMask(true);
+                GlStateManager.enableTexture2D();
+                GlStateManager.disableBlend();
+            }
         }
+
+
     }
 
     public Vec3d toWorld(double x, double y, double z) {

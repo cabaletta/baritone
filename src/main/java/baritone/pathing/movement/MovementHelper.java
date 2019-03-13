@@ -30,12 +30,8 @@ import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemPickaxe;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -84,6 +80,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
             // be opened by just interacting.
             return block != Blocks.IRON_DOOR;
+        }
+        if (block == Blocks.CARPET) {
+            return canWalkOn(bsi, x, y - 1, z);
         }
         boolean snow = block instanceof BlockSnow;
         boolean trapdoor = block instanceof BlockTrapDoor;
@@ -327,20 +326,22 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z) {
-        return canPlaceAgainst(bsi.get0(x, y, z));
+        return canPlaceAgainst(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
     static boolean canPlaceAgainst(BlockStateInterface bsi, BlockPos pos) {
-        return canPlaceAgainst(bsi.get0(pos.getX(), pos.getY(), pos.getZ()));
+        return canPlaceAgainst(bsi, pos.getX(), pos.getY(), pos.getZ());
     }
 
     static boolean canPlaceAgainst(IPlayerContext ctx, BlockPos pos) {
         return canPlaceAgainst(new BlockStateInterface(ctx), pos);
     }
 
-    static boolean canPlaceAgainst(IBlockState state) {
-        // TODO isBlockNormalCube isn't the best check for whether or not we can place a block against it. e.g. glass isn't normalCube but we can place against it
-        return state.isBlockNormalCube();
+    static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+        // can we look at the center of a side face of this block and likely be able to place?
+        // (thats how this check is used)
+        // therefore dont include weird things that we technically could place against (like carpet) but practically can't
+        return state.isBlockNormalCube() || state.isFullBlock() || state.getBlock() == Blocks.GLASS || state.getBlock() == Blocks.STAINED_GLASS;
     }
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling) {
@@ -350,7 +351,8 @@ public interface MovementHelper extends ActionCosts, Helper {
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(context.bsi, x, y, z, state)) {
-            if (!context.canBreakAt(x, y, z)) {
+            double mult = context.breakCostMultiplierAt(x, y, z);
+            if (mult >= COST_INF) {
                 return COST_INF;
             }
             if (avoidBreaking(context.bsi, x, y, z, state)) {
@@ -367,6 +369,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
             double result = m / strVsBlock;
             result += context.breakBlockAdditionalCost;
+            result *= mult;
             if (includeFalling) {
                 IBlockState above = context.get(x, y + 1, z);
                 if (above.getBlock() instanceof BlockFalling) {
@@ -403,42 +406,6 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts) {
         ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
-    }
-
-    static boolean throwaway(IPlayerContext ctx, boolean select) {
-        EntityPlayerSP p = ctx.player();
-        NonNullList<ItemStack> inv = p.inventory.mainInventory;
-        for (byte i = 0; i < 9; i++) {
-            ItemStack item = inv.get(i);
-            // this usage of settings() is okay because it's only called once during pathing
-            // (while creating the CalculationContext at the very beginning)
-            // and then it's called during execution
-            // since this function is never called during cost calculation, we don't need to migrate
-            // acceptableThrowawayItems to the CalculationContext
-            if (Baritone.settings().acceptableThrowawayItems.value.contains(item.getItem())) {
-                if (select) {
-                    p.inventory.currentItem = i;
-                }
-                return true;
-            }
-        }
-        if (Baritone.settings().acceptableThrowawayItems.value.contains(p.inventory.offHandInventory.get(0).getItem())) {
-            // main hand takes precedence over off hand
-            // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
-            // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
-            // so we need to select in the main hand something that doesn't right click
-            // so not a shovel, not a hoe, not a block, etc
-            for (byte i = 0; i < 9; i++) {
-                ItemStack item = inv.get(i);
-                if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
-                    if (select) {
-                        p.inventory.currentItem = i;
-                    }
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
@@ -519,8 +486,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         for (int i = 0; i < 5; i++) {
             BlockPos against1 = placeAt.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                //if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(placeAt.getX(), placeAt.getY(), placeAt.getZ())) { // get ready to place a throwaway block
-                if (!throwaway(ctx, true)) {
+                if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(placeAt.getX(), placeAt.getY(), placeAt.getZ())) { // get ready to place a throwaway block
                     Helper.HELPER.logDebug("bb pls get me some blocks. dirt or cobble");
                     state.setStatus(MovementStatus.UNREACHABLE);
                     return PlaceResult.NO_OPTION;

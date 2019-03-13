@@ -23,6 +23,7 @@ import baritone.api.event.events.*;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.process.PathingCommand;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.PathCalculationResult;
 import baritone.api.utils.interfaces.IGoalRenderPos;
@@ -33,6 +34,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
+import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
 import net.minecraft.util.math.BlockPos;
 
@@ -48,9 +50,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private PathExecutor next;
 
     private Goal goal;
+    private CalculationContext context;
 
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
+    private boolean unpausedLastTick;
     private boolean cancelRequested;
     private boolean calcFailedLastTick;
 
@@ -106,10 +110,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private void tickPath() {
         if (pauseRequestedLastTick && safeToCancel) {
             pauseRequestedLastTick = false;
-            baritone.getInputOverrideHandler().clearAllKeys();
-            baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+            if (unpausedLastTick) {
+                baritone.getInputOverrideHandler().clearAllKeys();
+                baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+            }
+            unpausedLastTick = false;
             return;
         }
+        unpausedLastTick = true;
         if (cancelRequested) {
             cancelRequested = false;
             baritone.getInputOverrideHandler().clearAllKeys();
@@ -173,7 +181,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     }
                     // we aren't calculating
                     queuePathEvent(PathEvent.CALC_STARTED);
-                    findPathInNewThread(expectedSegmentStart, true);
+                    findPathInNewThread(expectedSegmentStart, true, context);
                 }
                 return;
             }
@@ -210,7 +218,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // if we actually included current, it wouldn't start planning ahead until the last movement was done, if the last movement took more than 7.5 seconds on its own
                     logDebug("Path almost over. Planning ahead...");
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
-                    findPathInNewThread(current.getPath().getDest(), false);
+                    findPathInNewThread(current.getPath().getDest(), false, context);
                 }
             }
         }
@@ -237,9 +245,32 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         this.goal = goal;
     }
 
-    public boolean secretInternalSetGoalAndPath(Goal goal) {
-        secretInternalSetGoal(goal);
-        return secretInternalPath();
+    public boolean secretInternalSetGoalAndPath(PathingCommand command) {
+        secretInternalSetGoal(command.goal);
+        if (command instanceof PathingCommandContext) {
+            context = ((PathingCommandContext) command).desiredCalcContext;
+        } else {
+            context = new CalculationContext(baritone, true);
+        }
+        if (goal == null) {
+            return false;
+        }
+        if (goal.isInGoal(ctx.playerFeet()) || goal.isInGoal(expectedSegmentStart)) {
+            return false;
+        }
+        synchronized (pathPlanLock) {
+            if (current != null) {
+                return false;
+            }
+            synchronized (pathCalcLock) {
+                if (inProgress != null) {
+                    return false;
+                }
+                queuePathEvent(PathEvent.CALC_STARTED);
+                findPathInNewThread(expectedSegmentStart, true, context);
+                return true;
+            }
+        }
     }
 
     @Override
@@ -327,37 +358,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
     }
 
-    /**
-     * Start calculating a path if we aren't already
-     *
-     * @return true if this call started path calculation, false if it was already calculating or executing a path
-     */
-    public boolean secretInternalPath() {
-        if (goal == null) {
-            return false;
-        }
-        if (goal.isInGoal(ctx.playerFeet())) {
-            return false;
-        }
-        synchronized (pathPlanLock) {
-            if (current != null) {
-                return false;
-            }
-            synchronized (pathCalcLock) {
-                if (inProgress != null) {
-                    return false;
-                }
-                queuePathEvent(PathEvent.CALC_STARTED);
-                findPathInNewThread(expectedSegmentStart, true);
-                return true;
-            }
-        }
-    }
-
     public void secretCursedFunctionDoNotCall(IPath path) {
         synchronized (pathPlanLock) {
             current = new PathExecutor(this, path);
         }
+    }
+
+    public CalculationContext secretInternalGetCalculationContext() {
+        return context;
     }
 
     /**
@@ -411,7 +419,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @param start
      * @param talkAboutIt
      */
-    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt) {
+    private void findPathInNewThread(final BlockPos start, final boolean talkAboutIt, CalculationContext context) {
         // this must be called with synchronization on pathCalcLock!
         // actually, we can check this, muahaha
         if (!Thread.holdsLock(pathCalcLock)) {
@@ -420,6 +428,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
         if (inProgress != null) {
             throw new IllegalStateException("Already doing it"); // should have been checked by caller
+        }
+        if (!context.safeForThreadedUse) {
+            throw new IllegalStateException("Improper context thread safety level");
         }
         Goal goal = this.goal;
         if (goal == null) {
@@ -435,7 +446,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             primaryTimeout = Baritone.settings().planAheadPrimaryTimeoutMS.value;
             failureTimeout = Baritone.settings().planAheadFailureTimeoutMS.value;
         }
-        CalculationContext context = new CalculationContext(baritone, true); // not safe to create on the other thread, it looks up a lot of stuff in minecraft
         AbstractNodeCostSearch pathfinder = createPathfinder(start, goal, current == null ? null : current.getPath(), context);
         if (!Objects.equals(pathfinder.getGoal(), goal)) { // will return the exact same object if simplification didn't happen
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
@@ -503,7 +513,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
             }
         }
-        Favoring favoring = new Favoring(context.getBaritone().getPlayerContext(), previous);
+        Favoring favoring = new Favoring(context.getBaritone().getPlayerContext(), previous, context);
         return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
     }
 

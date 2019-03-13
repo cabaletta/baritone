@@ -34,7 +34,7 @@ import java.util.Optional;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
-    protected static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
+    public static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
 
     protected final IBaritone baritone;
     protected final IPlayerContext ctx;
@@ -76,29 +76,26 @@ public abstract class Movement implements IMovement, MovementHelper {
         this(baritone, src, dest, toBreak, null);
     }
 
-    @Override
-    public double getCost() {
+    public double getCost() throws NullPointerException {
+        return cost;
+    }
+
+    public double getCost(CalculationContext context) {
         if (cost == null) {
-            cost = calculateCost(new CalculationContext(baritone));
+            cost = calculateCost(context);
         }
         return cost;
     }
 
     public abstract double calculateCost(CalculationContext context);
 
-    @Override
-    public double recalculateCost() {
+    public double recalculateCost(CalculationContext context) {
         cost = null;
-        return getCost();
+        return getCost(context);
     }
 
     public void override(double cost) {
         this.cost = cost;
-    }
-
-    @Override
-    public double calculateCostWithoutCaching() {
-        return calculateCost(new CalculationContext(baritone));
     }
 
     /**
