@@ -235,6 +235,7 @@ public class MovementPillar extends Movement {
                     if (reachable.isPresent()) {
                         state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
                     }
+                    state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
                 } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos())) && ctx.player().posY > dest.getY() + 0.1) {
