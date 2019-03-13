@@ -83,7 +83,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block == Blocks.BUBBLE_COLUMN) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block == Blocks.BUBBLE_COLUMN || block instanceof BlockShulkerBox || block instanceof BlockSlab) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -169,7 +169,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || !state.getFluidState().isEmpty()
                 || block instanceof BlockTrapDoor
                 || block instanceof BlockEndPortal
-                || block instanceof BlockSkull) {
+                || block instanceof BlockSkull
+                || block instanceof BlockShulkerBox) {
             return false;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
