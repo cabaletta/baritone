@@ -634,7 +634,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     }
 
     private int parseOrDefault(String str, int i) {
-        return str.equals("~") ? i : Integer.parseInt(str);
+        return str.equals("~") ? i : str.startsWith("~") ? Integer.parseInt(str.substring(1)) + i : Integer.parseInt(str);
     }
 
     private void log(List<ItemStack> stacks) {
