@@ -122,7 +122,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return false;
         }
-        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
+        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below)) {
             return false;
         }
         double costSoFar = 0;
@@ -137,9 +137,10 @@ public class MovementDescend extends Movement {
             IBlockState ontoBlock = context.get(destX, newY, destZ);
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
-            if ((ontoBlock.getBlock() == Blocks.WATER || ontoBlock.getBlock() == Blocks.FLOWING_WATER) && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) {
-                // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
-                // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
+            if (MovementHelper.isWater(ontoBlock.getBlock())) {
+                if (!MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
+                    return false;
+                }
                 if (context.assumeWalkOnWater) {
                     return false; // TODO fix
                 }
