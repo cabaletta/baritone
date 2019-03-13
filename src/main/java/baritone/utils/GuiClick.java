@@ -40,7 +40,7 @@ import java.util.Collections;
 
 import static org.lwjgl.opengl.GL11.*;
 
-public class GuiClickMeme extends GuiScreen {
+public class GuiClick extends GuiScreen {
 
     // My name is Brady and I grant leijurv permission to use this pasted code
     private final FloatBuffer MODELVIEW = BufferUtils.createFloatBuffer(16);

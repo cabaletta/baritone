@@ -483,7 +483,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             new Thread(() -> {
                 try {
                     Thread.sleep(100);
-                    mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClickMeme()));
+                    mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClick()));
                 } catch (Exception ignored) {}
             }).start();
             logDirect("aight dude");

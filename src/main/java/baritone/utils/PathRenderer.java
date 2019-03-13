@@ -59,8 +59,8 @@ public final class PathRenderer implements Helper {
     public static void render(RenderEvent event, PathingBehavior behavior) {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
-        if (mc.currentScreen instanceof GuiClickMeme) {
-            ((GuiClickMeme) mc.currentScreen).onRender(partialTicks);
+        if (mc.currentScreen instanceof GuiClick) {
+            ((GuiClick) mc.currentScreen).onRender(partialTicks);
         }
 
         int thisPlayerDimension = behavior.baritone.getPlayerContext().world().provider.getDimensionType().getId();
