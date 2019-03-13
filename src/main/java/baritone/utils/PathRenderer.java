@@ -222,9 +222,7 @@ public final class PathRenderer implements Helper {
 
             VoxelShape shape = state.getShape(player.world, pos);
             AxisAlignedBB toDraw = shape.isEmpty() ? VoxelShapes.fullCube().getBoundingBox() : shape.getBoundingBox();
-            System.out.println("Shape is " + shape);
-            System.out.println("Drawing " + toDraw);
-
+            toDraw = toDraw.offset(pos);
             toDraw = toDraw.expand(expand, expand, expand).offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
             BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
             BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
