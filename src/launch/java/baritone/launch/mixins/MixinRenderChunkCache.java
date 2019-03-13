@@ -18,40 +18,29 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
-import baritone.api.BaritoneAPI;
-import baritone.api.utils.IPlayerContext;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.chunk.RenderChunkCache;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/**
- * @author Brady
- * @since 1/29/2019
- */
-@Mixin(RenderChunk.class)
-public class MixinRenderChunk {
-
+@Mixin(RenderChunkCache.class)
+public class MixinRenderChunkCache {
     @Redirect(
-            method = "rebuildChunk",
+            method = "generateCache",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/renderer/chunk/RenderChunkCache.getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/state/IBlockState;"
+                    target = "net/minecraft/world/chunk/Chunk.isEmptyBetween(II)Z"
             )
     )
-    private IBlockState getBlockState(RenderChunkCache chunkCache, BlockPos pos) {
-        if (Baritone.settings().renderCachedChunks.value && Minecraft.getInstance().getIntegratedServer() == null) {
-            Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
-            IPlayerContext ctx = baritone.getPlayerContext();
-            if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {
-                return baritone.bsi.get0(pos);
-            }
+    private static boolean isEmpty(Chunk chunk, int yStart, int yEnd) {
+        if (!chunk.isEmptyBetween(yStart, yEnd)) {
+            return false;
         }
-
-        return chunkCache.getBlockState(pos);
+        if (chunk.isEmpty() && Baritone.settings().renderCachedChunks.value && Minecraft.getInstance().getIntegratedServer() == null) {
+            return false;
+        }
+        return true;
     }
 }

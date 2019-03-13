@@ -21,6 +21,7 @@
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
     "MixinRenderChunk",
+    "MixinRenderChunkCache",
     "MixinRenderList",
     "MixinVboRenderList"
   ]
