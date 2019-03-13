@@ -18,10 +18,17 @@
 package baritone.launch;
 
 import com.google.common.base.Strings;
+import com.google.gson.GsonBuilder;
+import com.mojang.authlib.Agent;
+import com.mojang.authlib.exceptions.AuthenticationException;
+import com.mojang.authlib.properties.PropertyMap;
+import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
 import net.minecraft.launchwrapper.Launch;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +52,10 @@ public class LaunchTesting {
         arguments.put("accessToken", "FML");
         arguments.put("userProperties", "{}");
         arguments.put("tweakClass", System.getenv("tweakClass"));
+        String password = System.getenv("password");
+        if (password != null && !password.isEmpty()) {
+            attemptLogin(arguments, System.getenv("username"), System.getenv("password"));
+        }
 
         List<String> argsArray = new ArrayList<>();
         arguments.forEach((k, v) -> {
@@ -67,11 +78,28 @@ public class LaunchTesting {
         System.setProperty("java.library.path", paths);
 
         // hack the classloader now.
-        try
-        {
+        try {
             final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
             sysPathsField.setAccessible(true);
             sysPathsField.set(null, null);
-        } catch(Throwable ignored) {}
+        } catch (Throwable ignored) {}
+    }
+
+    private static void attemptLogin(Map<String, String> argMap, String username, String password) {
+        YggdrasilUserAuthentication auth = (YggdrasilUserAuthentication) (new YggdrasilAuthenticationService(Proxy.NO_PROXY, "1")).createUserAuthentication(Agent.MINECRAFT);
+        auth.setUsername(username);
+        auth.setPassword(password);
+
+        try {
+            auth.logIn();
+        } catch (AuthenticationException var4) {
+            throw new RuntimeException(var4);
+        }
+
+        argMap.put("accessToken", auth.getAuthenticatedToken());
+        argMap.put("uuid", auth.getSelectedProfile().getId().toString().replace("-", ""));
+        argMap.put("username", auth.getSelectedProfile().getName());
+        argMap.put("userType", auth.getUserType().getName());
+        argMap.put("userProperties", (new GsonBuilder()).registerTypeAdapter(PropertyMap.class, new PropertyMap.Serializer()).create().toJson(auth.getUserProperties()));
     }
 }
