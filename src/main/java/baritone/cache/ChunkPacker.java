@@ -90,8 +90,7 @@ public final class ChunkPacker {
         IBlockState[] blocks = new IBlockState[256];
 
         for (int z = 0; z < 16; z++) {
-            https:
-//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
