@@ -34,6 +34,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import static baritone.api.pathing.movement.ActionCosts.COST_INF;
+
 /**
  * @author Brady
  * @since 8/7/2018
@@ -42,6 +44,7 @@ public class CalculationContext {
 
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
+    public final boolean safeForThreadedUse;
     public final IBaritone baritone;
     public final World world;
     public final WorldData worldData;
@@ -50,7 +53,7 @@ public class CalculationContext {
     public final boolean hasWaterBucket;
     public final boolean hasThrowaway;
     public final boolean canSprint;
-    public final double placeBlockCost;
+    protected final double placeBlockCost; // protected because you should call the function instead
     public final boolean allowBreak;
     public final boolean allowParkour;
     public final boolean allowParkourPlace;
@@ -61,7 +64,8 @@ public class CalculationContext {
     public final int maxFallHeightBucket;
     public final double waterWalkSpeed;
     public final double breakBlockAdditionalCost;
-    public final double jumpPenalty;
+    public double backtrackCostFavoringCoefficient;
+    public double jumpPenalty;
     public final double walkOnWaterOnePenalty;
     public final BetterWorldBorder worldBorder;
 
@@ -70,13 +74,14 @@ public class CalculationContext {
     }
 
     public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
+        this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
         EntityPlayerSP player = baritone.getPlayerContext().player();
         this.world = baritone.getPlayerContext().world();
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
-        this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread); // TODO TODO TODO
+        this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread);
         this.toolSet = new ToolSet(player);
-        this.hasThrowaway = Baritone.settings().allowPlace.value && MovementHelper.throwaway(baritone.getPlayerContext(), false);
+        this.hasThrowaway = Baritone.settings().allowPlace.value && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway();
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.value && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.getDimension().isNether();
         this.canSprint = Baritone.settings().allowSprint.value && player.getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
@@ -95,6 +100,7 @@ public class CalculationContext {
         float mult = depth / 3.0F;
         this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - mult) + ActionCosts.WALK_ONE_BLOCK_COST * mult;
         this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.value;
+        this.backtrackCostFavoringCoefficient = Baritone.settings().backtrackCostFavoringCoefficient.value;
         this.jumpPenalty = Baritone.settings().jumpPenalty.value;
         this.walkOnWaterOnePenalty = Baritone.settings().walkOnWaterOnePenalty.value;
         // why cache these things here, why not let the movements just get directly from settings?
@@ -123,21 +129,32 @@ public class CalculationContext {
         return get(x, y, z).getBlock();
     }
 
-    public boolean canPlaceThrowawayAt(int x, int y, int z) {
+    public double costOfPlacingAt(int x, int y, int z) {
         if (!hasThrowaway) { // only true if allowPlace is true, see constructor
-            return false;
+            return COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {
-            return false;
+            return COST_INF;
         }
-        return worldBorder.canPlaceAt(x, z); // TODO perhaps MovementHelper.canPlaceAgainst could also use this?
+        if (!worldBorder.canPlaceAt(x, z)) {
+            // TODO perhaps MovementHelper.canPlaceAgainst could also use this?
+            return COST_INF;
+        }
+        return placeBlockCost;
     }
 
-    public boolean canBreakAt(int x, int y, int z) {
+    public double breakCostMultiplierAt(int x, int y, int z) {
         if (!allowBreak) {
-            return false;
+            return COST_INF;
         }
-        return !isPossiblyProtected(x, y, z);
+        if (isPossiblyProtected(x, y, z)) {
+            return COST_INF;
+        }
+        return 1;
+    }
+
+    public double placeBucketCost() {
+        return placeBlockCost; // shrug
     }
 
     public boolean isPossiblyProtected(int x, int y, int z) {

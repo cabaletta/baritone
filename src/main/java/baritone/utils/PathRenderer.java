@@ -62,8 +62,8 @@ public final class PathRenderer implements Helper {
     public static void render(RenderEvent event, PathingBehavior behavior) {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
-        if (mc.currentScreen instanceof GuiClickMeme) {
-            ((GuiClickMeme) mc.currentScreen).onRender();
+        if (mc.currentScreen instanceof GuiClick) {
+            ((GuiClick) mc.currentScreen).onRender();
         }
 
         int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getId();
@@ -204,7 +204,7 @@ public final class PathRenderer implements Helper {
 
     public static void drawManySelectionBoxes(Entity player, Collection<BlockPos> positions, Color color) {
         GlStateManager.enableBlend();
-        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
         GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
         GlStateManager.disableTexture2D();
@@ -214,40 +214,15 @@ public final class PathRenderer implements Helper {
             GlStateManager.disableDepthTest();
         }
 
-        float expand = 0.002F;
+
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
         BlockStateInterface bsi = new BlockStateInterface(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext()); // TODO this assumes same dimension between primary baritone and render view? is this safe?
         positions.forEach(pos -> {
             IBlockState state = bsi.get0(pos);
-
             VoxelShape shape = state.getShape(player.world, pos);
             AxisAlignedBB toDraw = shape.isEmpty() ? VoxelShapes.fullCube().getBoundingBox() : shape.getBoundingBox();
             toDraw = toDraw.offset(pos);
-            toDraw = toDraw.expand(expand, expand, expand).offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
-            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            TESSELLATOR.draw();
-            BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            TESSELLATOR.draw();
-            BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-            BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-            TESSELLATOR.draw();
+            drawAABB(toDraw);
         });
 
         if (Baritone.settings().renderSelectionBoxesIgnoreDepth.value) {
@@ -257,6 +232,35 @@ public final class PathRenderer implements Helper {
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
+    }
+
+    public static void drawAABB(AxisAlignedBB aabb) {
+        float expand = 0.002F;
+        AxisAlignedBB toDraw = aabb.expand(expand, expand, expand).offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
+        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        TESSELLATOR.draw();
+        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        TESSELLATOR.draw();
+        BUFFER.begin(GL_LINES, DefaultVertexFormats.POSITION);
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+        BUFFER.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+        TESSELLATOR.draw();
     }
 
     public static void drawDankLitGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
@@ -345,7 +349,7 @@ public final class PathRenderer implements Helper {
         }
 
         GlStateManager.enableBlend();
-        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
         GlStateManager.lineWidth(Baritone.settings().goalRenderLineWidthPixels.value);
         GlStateManager.disableTexture2D();

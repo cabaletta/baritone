@@ -266,6 +266,22 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Queued " + count + " chunks for repacking");
             return true;
         }
+        if (msg.startsWith("build")) {
+            String file;
+            BlockPos origin;
+            try {
+                String[] coords = msg.substring("build".length()).trim().split(" ");
+                file = coords[0] + ".schematic";
+                origin = new BlockPos(parseOrDefault(coords[1], ctx.playerFeet().x), parseOrDefault(coords[2], ctx.playerFeet().y), parseOrDefault(coords[3], ctx.playerFeet().z));
+            } catch (Exception ex) {
+                file = msg.substring(5).trim() + ".schematic";
+                origin = ctx.playerFeet();
+            }
+            logDirect("Loading '" + file + "' to build from origin " + origin);
+            boolean success = baritone.getBuilderProcess().build(file, origin);
+            logDirect(success ? "Loaded" : "Unable to load");
+            return true;
+        }
         if (msg.equals("come")) {
             customGoalProcess.setGoalAndPath(new GoalBlock(new BlockPos(mc.getRenderViewEntity())));
             logDirect("Coming");
@@ -309,6 +325,32 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return false;
                 }
             });
+            return true;
+        }
+        if (msg.startsWith("cleararea")) {
+            String suffix = msg.substring("cleararea".length());
+            BlockPos corner1;
+            BlockPos corner2;
+            if (suffix.isEmpty()) {
+                // clear the area from the current goal to here
+                Goal goal = baritone.getPathingBehavior().getGoal();
+                if (goal == null || !(goal instanceof GoalBlock)) {
+                    logDirect("Need to specify goal of opposite corner");
+                    return true;
+                }
+                corner1 = ((GoalBlock) goal).getGoalPos();
+                corner2 = ctx.playerFeet();
+            } else {
+                try {
+                    String[] spl = suffix.split(" ");
+                    corner1 = ctx.playerFeet();
+                    corner2 = new BlockPos(Integer.parseInt(spl[0]), Integer.parseInt(spl[1]), Integer.parseInt(spl[2]));
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+                    logDirect("unable to parse");
+                    return true;
+                }
+            }
+            baritone.getBuilderProcess().clearArea(corner1, corner2);
             return true;
         }
         if (msg.equals("reset")) {
@@ -441,7 +483,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             new Thread(() -> {
                 try {
                     Thread.sleep(100);
-                    mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClickMeme()));
+                    mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClick()));
                 } catch (Exception ignored) {}
             }).start();
             logDirect("aight dude");
@@ -573,7 +615,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             while (moves.contains(null)) {
                 moves.remove(null);
             }
-            moves.sort(Comparator.comparingDouble(Movement::getCost));
+            moves.sort(Comparator.comparingDouble(move -> move.getCost(new CalculationContext(baritone))));
             for (Movement move : moves) {
                 String[] parts = move.getClass().toString().split("\\.");
                 double cost = move.getCost();
@@ -589,6 +631,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("daniel");
         }
         return false;
+    }
+
+    private int parseOrDefault(String str, int i) {
+        return str.equals("~") ? i : str.startsWith("~") ? Integer.parseInt(str.substring(1)) + i : Integer.parseInt(str);
     }
 
     private void log(List<ItemStack> stacks) {

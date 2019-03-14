@@ -187,7 +187,7 @@ public class MovementDescend extends Movement {
                 res.x = destX;
                 res.y = newY + 1;// this is the block we're falling onto, so dest is +1
                 res.z = destZ;
-                res.cost = tentativeCost + context.placeBlockCost;
+                res.cost = tentativeCost + context.placeBucketCost();
                 return true;
             } else {
                 return false;

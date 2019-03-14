@@ -101,5 +101,14 @@ public interface IBaritoneProcess {
      *
      * @return A display name that's suitable for a HUD
      */
-    String displayName();
+    default String displayName() {
+        if (!isActive()) {
+            // i love it when impcat's scuffed HUD calls displayName for inactive processes for 1 tick too long
+            // causing NPEs when the displayname relies on fields that become null when inactive
+            return "INACTIVE";
+        }
+        return displayName0();
+    }
+
+    String displayName0();
 }

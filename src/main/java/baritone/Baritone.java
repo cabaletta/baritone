@@ -71,12 +71,14 @@ public class Baritone implements IBaritone {
     private PathingBehavior pathingBehavior;
     private LookBehavior lookBehavior;
     private MemoryBehavior memoryBehavior;
+    private InventoryBehavior inventoryBehavior;
     private InputOverrideHandler inputOverrideHandler;
 
     private FollowProcess followProcess;
     private MineProcess mineProcess;
     private GetToBlockProcess getToBlockProcess;
     private CustomGoalProcess customGoalProcess;
+    private BuilderProcess builderProcess;
     private ExploreProcess exploreProcess;
 
     private PathingControlManager pathingControlManager;
@@ -105,7 +107,7 @@ public class Baritone implements IBaritone {
             pathingBehavior = new PathingBehavior(this);
             lookBehavior = new LookBehavior(this);
             memoryBehavior = new MemoryBehavior(this);
-            new InventoryBehavior(this);
+            inventoryBehavior = new InventoryBehavior(this);
             inputOverrideHandler = new InputOverrideHandler(this);
             new ExampleBaritoneControl(this);
         }
@@ -116,6 +118,7 @@ public class Baritone implements IBaritone {
             mineProcess = new MineProcess(this);
             customGoalProcess = new CustomGoalProcess(this); // very high iq
             getToBlockProcess = new GetToBlockProcess(this);
+            builderProcess = new BuilderProcess(this);
             exploreProcess = new ExploreProcess(this);
         }
 
@@ -169,6 +172,15 @@ public class Baritone implements IBaritone {
     @Override
     public FollowProcess getFollowProcess() {
         return this.followProcess;
+    }
+
+    @Override
+    public BuilderProcess getBuilderProcess() {
+        return this.builderProcess;
+    }
+
+    public InventoryBehavior getInventoryBehavior() {
+        return this.inventoryBehavior;
     }
 
     @Override

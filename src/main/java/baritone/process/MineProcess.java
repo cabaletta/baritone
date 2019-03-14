@@ -117,7 +117,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     @Override
-    public String displayName() {
+    public String displayName0() {
         return "Mine " + mining;
     }
 

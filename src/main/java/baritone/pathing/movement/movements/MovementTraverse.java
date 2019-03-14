@@ -116,7 +116,8 @@ public class MovementTraverse extends Movement {
                     // this happens when assume walk on water is true and this is a traverse in water, which isn't allowed
                     return COST_INF;
                 }
-                if (!context.canPlaceThrowawayAt(destX, y - 1, destZ)) {
+                double placeCost = context.costOfPlacingAt(destX, y - 1, destZ);
+                if (placeCost >= COST_INF) {
                     return COST_INF;
                 }
                 double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
@@ -133,7 +134,7 @@ public class MovementTraverse extends Movement {
                         continue;
                     }
                     if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) { // found a side place option
-                        return WC + context.placeBlockCost + hardness1 + hardness2;
+                        return WC + placeCost + hardness1 + hardness2;
                     }
                 }
                 // now that we've checked all possible directions to side place, we actually need to backplace
@@ -144,7 +145,7 @@ public class MovementTraverse extends Movement {
                     return COST_INF; // this is obviously impossible
                 }
                 WC = WC * (SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST);//since we are sneak backplacing, we are sneaking lol
-                return WC + context.placeBlockCost + hardness1 + hardness2;
+                return WC + placeCost + hardness1 + hardness2;
             }
             return COST_INF;
         }

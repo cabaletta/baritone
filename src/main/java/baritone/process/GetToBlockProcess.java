@@ -160,11 +160,11 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     @Override
-    public String displayName() {
+    public String displayName0() {
         if (knownLocations.isEmpty()) {
             return "Exploring randomly to find " + gettingTo + ", no known locations";
         }
-        return "Get To Block " + gettingTo + ", " + knownLocations.size() + " known locations";
+        return "Get To " + gettingTo + ", " + knownLocations.size() + " known locations";
     }
 
     private synchronized void rescan(List<BlockPos> known, CalculationContext context) {

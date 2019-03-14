@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -77,10 +78,18 @@ public class MovementPillar extends Movement {
                 return LADDER_UP_ONE_COST; // allow ascending pillars of water, but only if we're already in one
             }
         }
-        if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) { // we need to place a block where we started to jump on it
-            return COST_INF;
+        double placeCost = 0;
+        if (!ladder) {
+            // we need to place a block where we started to jump on it
+            placeCost = context.costOfPlacingAt(x, y, z);
+            if (placeCost >= COST_INF) {
+                return COST_INF;
+            }
+            if (fromDown.getBlock() == Blocks.AIR) {
+                placeCost += 0.1; // slightly (1/200th of a second) penalize pillaring on what's currently air
+            }
         }
-        if ((MovementHelper.isLiquid(fromState) && !MovementHelper.canPlaceAgainst(fromDown)) || (MovementHelper.isLiquid(fromDown) && context.assumeWalkOnWater)) {
+        if ((MovementHelper.isLiquid(fromState) && !MovementHelper.canPlaceAgainst(context.bsi, x, y - 1, z, fromDown)) || (MovementHelper.isLiquid(fromDown) && context.assumeWalkOnWater)) {
             // otherwise, if we're standing in water, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is true, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
@@ -116,7 +125,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             return LADDER_UP_ONE_COST + hardness * 5;
         } else {
-            return JUMP_ONE_BLOCK_COST + context.placeBlockCost + context.jumpPenalty + hardness;
+            return JUMP_ONE_BLOCK_COST + placeCost + context.jumpPenalty + hardness;
         }
     }
 
@@ -200,7 +209,7 @@ public class MovementPillar extends Movement {
             return state;
         } else {
             // Get ready to place a throwaway block
-            if (!MovementHelper.throwaway(ctx, true)) {
+            if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(src.x, src.y, src.z)) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
@@ -236,6 +245,7 @@ public class MovementPillar extends Movement {
                     if (reachable.isPresent()) {
                         state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
                     }
+                    state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
                 } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos())) && ctx.player().posY > dest.getY() + 0.1) {

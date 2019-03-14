@@ -94,7 +94,7 @@ public class ExploreProcess extends BaritoneProcessHelper {
     }
 
     @Override
-    public String displayName() {
+    public String displayName0() {
         return "Exploring around " + explorationOrigin + ", currently going to " + closestUncachedChunk(explorationOrigin);
     }
 }

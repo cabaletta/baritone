@@ -53,14 +53,16 @@ public class MovementAscend extends Movement {
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
         IBlockState toPlace = context.get(destX, y, destZ);
-        boolean hasToPlace = false;
+        double additionalPlacementCost = 0;
         if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace)) {
-            if (!context.canPlaceThrowawayAt(destX, y, destZ)) {
+            additionalPlacementCost = context.costOfPlacingAt(destX, y, destZ);
+            if (additionalPlacementCost >= COST_INF) {
                 return COST_INF;
             }
             if (!MovementHelper.isReplacable(destX, y, destZ, toPlace, context.bsi)) {
                 return COST_INF;
             }
+            boolean foundPlaceOption = false;
             for (int i = 0; i < 5; i++) {
                 int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
                 int againstY = y + HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
@@ -69,11 +71,11 @@ public class MovementAscend extends Movement {
                     continue;
                 }
                 if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
-                    hasToPlace = true;
+                    foundPlaceOption = true;
                     break;
                 }
             }
-            if (!hasToPlace) { // didn't find a valid place =(
+            if (!foundPlaceOption) { // didn't find a valid place =(
                 return COST_INF;
             }
         }
@@ -124,10 +126,7 @@ public class MovementAscend extends Movement {
             walk += context.jumpPenalty;
         }
 
-        double totalCost = walk;
-        if (hasToPlace) {
-            totalCost += context.placeBlockCost;
-        }
+        double totalCost = walk + additionalPlacementCost;
         // start with srcUp2 since we already have its state
         // includeFalling isn't needed because of the falling check above -- if srcUp3 is falling we will have already exited with COST_INF if we'd actually have to break it
         totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false);
@@ -221,5 +220,11 @@ public class MovementAscend extends Movement {
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean safeToCancel(MovementState state) {
+        // if we had to place, don't allow pause
+        return state.getStatus() != MovementStatus.RUNNING || ticksWithoutPlacement == 0;
     }
 }
