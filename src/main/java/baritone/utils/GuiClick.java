@@ -53,7 +53,6 @@ public class GuiClick extends GuiScreen {
     }
 
     @Override
-
     public void render(int mouseX, int mouseY, float partialTicks) {
         double mx = mc.mouseHelper.getMouseX();
         double my = mc.mouseHelper.getMouseY();
