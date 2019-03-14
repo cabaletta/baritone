@@ -17,8 +17,8 @@
 
 package baritone.utils.schematic;
 
+import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.OptionalInt;
@@ -36,7 +36,7 @@ public class MapArtSchematic extends Schematic {
             for (int z = 0; z < lengthZ; z++) {
                 IBlockState[] column = states[x][z];
 
-                OptionalInt lowestBlockY = lastIndexMatching(column, block -> block != Blocks.AIR);
+                OptionalInt lowestBlockY = lastIndexMatching(column, block -> !(block instanceof BlockAir));
                 if (lowestBlockY.isPresent()) {
                     heightMap[x][z] = lowestBlockY.getAsInt();
                 } else {

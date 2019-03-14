@@ -35,6 +35,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.AirSchematic;
 import baritone.utils.schematic.Schematic;
+import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -123,7 +124,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             return null;
         }
         IBlockState state = schematic.desiredState(x - origin.getX(), y - origin.getY(), z - origin.getZ());
-        if (state.getBlock() == Blocks.AIR) {
+        if (state.getBlock() instanceof BlockAir) {
             return null;
         }
         return state;
@@ -143,7 +144,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                         continue; // irrelevant
                     }
                     IBlockState curr = bcc.bsi.get0(x, y, z);
-                    if (curr.getBlock() != Blocks.AIR && !valid(curr, desired)) {
+                    if (!(curr.getBlock() instanceof BlockAir) && !valid(curr, desired)) {
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
                         Optional<Rotation> rot = RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
                         if (rot.isPresent()) {
@@ -184,7 +185,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                     }
                     IBlockState curr = bcc.bsi.get0(x, y, z);
                     if (MovementHelper.isReplacable(x, y, z, curr, bcc.bsi) && !valid(curr, desired)) {
-                        if (dy == 1 && bcc.bsi.get0(x, y + 1, z).getBlock() == Blocks.AIR) {
+                        if (dy == 1 && bcc.bsi.get0(x, y + 1, z).getBlock() instanceof BlockAir) {
                             continue;
                         }
                         desirableOnHotbar.add(desired);
@@ -445,8 +446,8 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     private Goal assemble(BuilderCalculationContext bcc, List<IBlockState> approxPlacable) {
-        List<BetterBlockPos> placable = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() == Blocks.AIR && approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))).collect(Collectors.toList());
-        Goal[] toBreak = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() != Blocks.AIR).map(GoalBreak::new).toArray(Goal[]::new);
+        List<BetterBlockPos> placable = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() instanceof BlockAir && approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))).collect(Collectors.toList());
+        Goal[] toBreak = incorrectPositions.stream().filter(pos -> !(bcc.bsi.get0(pos).getBlock() instanceof BlockAir)).map(GoalBreak::new).toArray(Goal[]::new);
         Goal[] toPlace = placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(pos -> placementgoal(pos, bcc)).toArray(Goal[]::new);
 
         if (toPlace.length != 0) {
@@ -502,10 +503,10 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     public Goal placementgoal(BlockPos pos, BuilderCalculationContext bcc) {
-        if (ctx.world().getBlockState(pos).getBlock() != Blocks.AIR) {
+        if (!(ctx.world().getBlockState(pos).getBlock() instanceof BlockAir)) {
             return new GoalPlace(pos);
         }
-        boolean allowSameLevel = ctx.world().getBlockState(pos.up()).getBlock() != Blocks.AIR;
+        boolean allowSameLevel = !(ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir);
         for (EnumFacing facing : Movement.HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP) {
             if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && placementPlausible(pos, bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ()))) {
                 return new GoalAdjacent(pos, allowSameLevel);
@@ -580,8 +581,14 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     public boolean valid(IBlockState current, IBlockState desired) {
+        if (desired == null) {
+            return true;
+        }
+        if (current.getBlock() instanceof BlockAir && desired.getBlock() instanceof BlockAir) {
+            return true;
+        }
         // TODO more complicated comparison logic I guess
-        return desired == null || current.equals(desired);
+        return current.equals(desired);
     }
 
     public class BuilderCalculationContext extends CalculationContext {
@@ -619,7 +626,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             IBlockState sch = getSchematic(x, y, z);
             if (sch != null) {
                 // TODO this can return true even when allowPlace is off.... is that an issue?
-                if (sch.getBlock() == Blocks.AIR) {
+                if (sch.getBlock() instanceof BlockAir) {
                     // we want this to be air, but they're asking if they can place here
                     // this won't be a schematic block, this will be a throwaway
                     return placeBlockCost * 2; // we're going to have to break it eventually
@@ -652,7 +659,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             }
             IBlockState sch = getSchematic(x, y, z);
             if (sch != null) {
-                if (sch.getBlock() == Blocks.AIR) {
+                if (sch.getBlock() instanceof BlockAir) {
                     // it should be air
                     // regardless of current contents, we can break it
                     return 1;

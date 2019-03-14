@@ -85,7 +85,7 @@ public class MovementPillar extends Movement {
             if (placeCost >= COST_INF) {
                 return COST_INF;
             }
-            if (fromDown.getBlock() == Blocks.AIR) {
+            if (fromDown.getBlock() instanceof BlockAir) {
                 placeCost += 0.1; // slightly (1/200th of a second) penalize pillaring on what's currently air
             }
         }

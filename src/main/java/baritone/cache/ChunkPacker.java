@@ -19,10 +19,7 @@ package baritone.cache;
 
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDoublePlant;
-import net.minecraft.block.BlockFlower;
-import net.minecraft.block.BlockTallGrass;
+import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
@@ -95,7 +92,8 @@ public final class ChunkPacker {
         IBlockState[] blocks = new IBlockState[256];
 
         for (int z = 0; z < 16; z++) {
-            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            https:
+//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
@@ -152,7 +150,7 @@ public final class ChunkPacker {
         // however, this failed in the nether when you were near a nether fortress
         // because fences check their adjacent blocks in the world for their fence connection status to determine AABB shape
         // this caused a nullpointerexception when we saved chunks on unload, because they were unable to check their neighbors
-        if (MovementHelper.isAir(block) || block instanceof BlockTallGrass || block instanceof BlockDoublePlant || block instanceof BlockFlower) {
+        if (block instanceof BlockAir || block instanceof BlockTallGrass || block instanceof BlockDoublePlant || block instanceof BlockFlower) {
             return PathingBlockType.AIR;
         }
 
