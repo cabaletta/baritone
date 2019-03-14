@@ -80,7 +80,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR) { // early return for most common case
+        if (isAir(block)) { // early return for most common case
             return true;
         }
         if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block == Blocks.BUBBLE_COLUMN || block instanceof BlockShulkerBox || block instanceof BlockSlab) {
@@ -153,7 +153,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean fullyPassable(IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR) { // early return for most common case
+        if (isAir(block)) { // early return for most common case
             return true;
         }
         // exceptions - blocks that are isPassable true, but we can't actually jump through
@@ -189,7 +189,7 @@ public interface MovementHelper extends ActionCosts, Helper {
          *     }
          */
         Block block = state.getBlock();
-        if (block == Blocks.AIR) {
+        if (isAir(block)) {
             // early return for common cases hehe
             return true;
         }
@@ -277,7 +277,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR || block == Blocks.MAGMA_BLOCK || block == Blocks.BUBBLE_COLUMN) {
+        if (isAir(block) || block == Blocks.MAGMA_BLOCK || block == Blocks.BUBBLE_COLUMN) {
             // early return for most common case (air)
             // plus magma, which is a normal cube but it hurts you
             return false;
@@ -384,6 +384,10 @@ public interface MovementHelper extends ActionCosts, Helper {
             return result;
         }
         return 0; // we won't actually mine it, so don't check fallings above
+    }
+
+    static boolean isAir(Block block) {
+        return block == Blocks.AIR || block == Blocks.CAVE_AIR || block == Blocks.VOID_AIR;
     }
 
     static boolean isBottomSlab(IBlockState state) {

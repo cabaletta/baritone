@@ -37,7 +37,6 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IItemProvider;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -184,8 +183,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
 
         // Here, BlockStateInterface is used because the position may be in a cached chunk (the targeted block is one that is kept track of)
-        boolean upwardGoal = locs.contains(loc.up()) || (Baritone.settings().internalMiningAirException.value && BlockStateInterface.getBlock(ctx, loc.up()) == Blocks.AIR);
-        boolean downwardGoal = locs.contains(loc.down()) || (Baritone.settings().internalMiningAirException.value && BlockStateInterface.getBlock(ctx, loc.down()) == Blocks.AIR);
+        boolean upwardGoal = locs.contains(loc.up()) || (Baritone.settings().internalMiningAirException.value && MovementHelper.isAir(BlockStateInterface.getBlock(ctx, loc.up())));
+        boolean downwardGoal = locs.contains(loc.down()) || (Baritone.settings().internalMiningAirException.value && MovementHelper.isAir(BlockStateInterface.getBlock(ctx, loc.down())));
         return upwardGoal == downwardGoal ? new GoalTwoBlocks(loc) : upwardGoal ? new GoalBlock(loc) : new GoalBlock(loc.down());
     }
 
