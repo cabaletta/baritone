@@ -19,12 +19,17 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.cache.ICachedWorld;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.cache.CachedWorld;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExploreProcess extends BaritoneProcessHelper {
 
@@ -50,23 +55,24 @@ public class ExploreProcess extends BaritoneProcessHelper {
             onLostControl();
             return null;
         }
-        BlockPos closestUncached = closestUncachedChunk(explorationOrigin);
+        Goal[] closestUncached = closestUncachedChunks(explorationOrigin);
         if (closestUncached == null) {
             logDebug("awaiting region load from disk");
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
         System.out.println("Closest uncached: " + closestUncached);
-        return new PathingCommand(new GoalXZ(closestUncached.getX(), closestUncached.getZ()), PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+        return new PathingCommand(new GoalComposite(closestUncached), PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
     }
 
-    private BlockPos closestUncachedChunk(BlockPos pos) {
-        int chunkX = pos.getX() >> 4;
-        int chunkZ = pos.getZ() >> 4;
+    private Goal[] closestUncachedChunks(BlockPos center) {
+        int chunkX = center.getX() >> 4;
+        int chunkZ = center.getZ() >> 4;
         ICachedWorld cache = baritone.getWorldProvider().getCurrentWorld().getCachedWorld();
         for (int dist = 0; ; dist++) {
+            List<BlockPos> centers = new ArrayList<>();
             for (int dx = -dist; dx <= dist; dx++) {
                 for (int dz = -dist; dz <= dist; dz++) {
-                    int trueDist = Baritone.settings().exploreUsePythagorean.value ? dx * dx + dz + dz : Math.abs(dx) + Math.abs(dz);
+                    int trueDist = Baritone.settings().exploreUsePythagorean.value ? dx * dx + dz * dz : Math.abs(dx) + Math.abs(dz);
                     if (trueDist != dist) {
                         continue; // not considering this one just yet in our expanding search
                     }
@@ -82,8 +88,11 @@ public class ExploreProcess extends BaritoneProcessHelper {
                         });
                         return null; // we still need to load regions from disk in order to decide properly
                     }
-                    return new BlockPos(centerX, 0, centerZ);
+                    centers.add(new BlockPos(centerX, 0, centerZ));
                 }
+            }
+            if (!centers.isEmpty()) {
+                return centers.stream().map(pos -> new GoalXZ(pos.getX(), pos.getZ())).toArray(Goal[]::new);
             }
         }
     }
@@ -95,6 +104,6 @@ public class ExploreProcess extends BaritoneProcessHelper {
 
     @Override
     public String displayName0() {
-        return "Exploring around " + explorationOrigin + ", currently going to " + closestUncachedChunk(explorationOrigin);
+        return "Exploring around " + explorationOrigin + ", currently going to " + new GoalComposite(closestUncachedChunks(explorationOrigin));
     }
 }

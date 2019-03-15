@@ -72,4 +72,9 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
         // primaryplayercontroller is always in a WorldClient so this is ok
         return mc.playerController.processRightClickBlock(player, (WorldClient) world, pos, direction, vec, hand);
     }
+
+    @Override
+    public EnumActionResult processRightClick(EntityPlayerSP player, World world, EnumHand hand) {
+        return mc.playerController.processRightClick(player, world, hand);
+    }
 }
