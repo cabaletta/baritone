@@ -78,7 +78,7 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
-            source sourceSets.main
+            source sourceSets.launch
 
             main 'baritone.launch.LaunchTesting'
 
@@ -91,7 +91,7 @@ minecraft {
 
         autoTest {
             workingDirectory project.file('autotest')
-            source sourceSets.main
+            source sourceSets.launch
 
             main 'baritone.launch.LaunchTesting'
 
