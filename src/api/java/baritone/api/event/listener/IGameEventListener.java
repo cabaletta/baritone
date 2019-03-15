@@ -18,7 +18,6 @@
 package baritone.api.event.listener;
 
 import baritone.api.event.events.*;
-import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiGameOver;
@@ -61,7 +60,6 @@ public interface IGameEventListener {
      * Runs before and after whenever a chunk is either loaded, unloaded, or populated.
      *
      * @param event The event
-     * @see WorldClient#doPreChunk(int, int, boolean)
      */
     void onChunkEvent(ChunkEvent event);
 
