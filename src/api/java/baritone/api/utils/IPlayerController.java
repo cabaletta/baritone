@@ -50,4 +50,6 @@ public interface IPlayerController {
     }
 
     EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand);
+
+    EnumActionResult processRightClick(EntityPlayerSP player, World world, EnumHand hand);
 }

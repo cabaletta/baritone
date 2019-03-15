@@ -46,6 +46,9 @@ public class BlockPlaceHelper implements Helper {
                 ctx.player().swingArm(hand);
                 return;
             }
+            if (!ctx.player().getHeldItem(hand).isEmpty() && ctx.playerController().processRightClick(ctx.player(), ctx.world(), hand) == EnumActionResult.SUCCESS) {
+                return;
+            }
         }
     }
 }
