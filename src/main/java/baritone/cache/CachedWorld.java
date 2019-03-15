@@ -70,8 +70,6 @@ public final class CachedWorld implements ICachedWorld, Helper {
         this.directory = directory.toString();
         this.dimension = dimension;
         System.out.println("Cached world directory: " + directory);
-        // Insert an invalid region element
-        cachedRegions.put(0, null);
         Baritone.getExecutor().execute(new PackerThread());
         Baritone.getExecutor().execute(() -> {
             try {
