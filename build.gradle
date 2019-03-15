@@ -63,6 +63,7 @@ sourceSets {
     }
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
 }
 
@@ -87,6 +88,8 @@ minecraft {
             environment 'nativesDirectory', extractNatives.output
 
             environment 'tweakClass', 'baritone.launch.BaritoneTweaker'
+
+            jvmArgs "-XstartOnFirstThread"
         }
 
         autoTest {
