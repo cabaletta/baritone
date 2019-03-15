@@ -128,6 +128,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             if (GOAL.isInGoal(ctx.playerFeet())) {
                 System.out.println("Successfully pathed to " + ctx.playerFeet() + " in " + event.getCount() + " ticks");
                 mc.shutdown();
+                System.exit(0);
             }
 
             // If we have exceeded the expected number of ticks to complete the pathing
