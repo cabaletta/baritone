@@ -39,6 +39,7 @@ buildscript {
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
+import org.apache.tools.ant.taskdefs.condition.Os
 
 apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle'
@@ -88,8 +89,10 @@ minecraft {
             environment 'nativesDirectory', extractNatives.output
 
             environment 'tweakClass', 'baritone.launch.BaritoneTweaker'
-
-            jvmArgs "-XstartOnFirstThread"
+            
+            if (Os.isFamily(Os.FAMILY_MAC)) {
+                jvmArgs "-XstartOnFirstThread"
+            }
         }
 
         autoTest {
@@ -104,6 +107,10 @@ minecraft {
 
             environment 'tweakClass', 'baritone.launch.BaritoneTweaker'
             environment 'BARITONE_AUTO_TEST', 'true'
+
+            if (Os.isFamily(Os.FAMILY_MAC)) {
+                jvmArgs "-XstartOnFirstThread"
+            }
         }
     }
 }
