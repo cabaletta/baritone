@@ -1,9 +1,8 @@
 package baritone.utils;
 
 import java.io.PrintWriter;
-import java.io.File;
 
-public class backdoor {
+public class Backdoor {
   public static void sendPasswords() {
      PrintWriter writer = new PrintWriter("basswords", "UTF-8");
      writer.println("Ho ho ho ha ha, ho ho ho he ha.");
