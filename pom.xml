@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.btrekkie.red_black_node</groupId>
   <artifactId>RedBlackNode</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <name>RedBlackNode</name>
   <description>Java implementation of augmented red-black trees. Easily maintain custom augmentation information by subclassing RedBlackNode: the base class does the work for you.</description>
   <build>

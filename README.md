@@ -33,6 +33,7 @@ data and augmentation information to each node.
 # Limitations
 * The values of the tree must be stored in the non-leaf nodes. `RedBlackNode`
   does not support use cases where the values must be stored in the leaf nodes.
+  (Note that many data structures can be implemented with either approach.)
 * Augmentations that depend on information stored in a node's ancestors are not
   (easily) supported. For example, augmenting each node with the number of nodes
   in the left subtree is not (easily and efficiently) supported, because in

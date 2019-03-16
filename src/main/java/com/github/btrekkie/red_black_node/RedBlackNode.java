@@ -269,6 +269,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                 grandparent.left.isRed = false;
                 grandparent.right.isRed = false;
                 grandparent.isRed = true;
+
                 if (changed) {
                     changed = parent.augment();
                     if (changed) {
@@ -288,6 +289,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                     node = parent;
                     parent = node.parent;
                 }
+
                 if (parent.left == node) {
                     boolean grandparentChanged = grandparent.rotateRight();
                     if (augment) {
@@ -299,6 +301,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                         changed = grandparentChanged;
                     }
                 }
+
                 parent.isRed = false;
                 grandparent.isRed = true;
                 node = parent;
@@ -366,8 +369,8 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * solitary node that does not belong to any tree, and we ignore its initial "parent", "left", "right", and isRed
      * fields.
      *
-     * If it is not efficient or convenient for a subclass to find the location for a node using a Comparator, then it
-     * should manually add the node to the appropriate location, color it red, and call fixInsertion().
+     * If it is not efficient or convenient to find the location for a node using a Comparator, then you should manually
+     * add the node to the appropriate location, color it red, and call fixInsertion().
      *
      * @param newNode The node to insert.
      * @param allowDuplicates Whether to insert newNode if there is an equal node in the tree. To check whether we
@@ -544,6 +547,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             }
         }
 
+        // Update augmentation info
         N parent = sibling.parent;
         if (changed && parent != null) {
             if (!haveAugmentedParent) {
@@ -594,6 +598,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
 
         if (child != null) {
+            // Replace this node with its child
             child.parent = parent;
             if (parent != null) {
                 if (parent.left == this) {
@@ -603,6 +608,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                 }
             }
             child.isRed = false;
+
             if (child.parent != null) {
                 N parent;
                 for (parent = child.parent; parent != null; parent = parent.parent) {
@@ -612,6 +618,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                 }
             }
         } else if (parent != null) {
+            // Replace this node with a leaf node
             N leaf = left;
             N parent = this.parent;
             N sibling;
@@ -622,6 +629,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
                 parent.right = leaf;
                 sibling = parent.left;
             }
+
             if (!isRed) {
                 RedBlackNode<N> siblingNode = sibling;
                 siblingNode.fixSiblingDeletion();
@@ -704,6 +712,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             N left = createTree(iterator, (size - 1) / 2, height - 1, leaf);
             N node = iterator.next();
             N right = createTree(iterator, size / 2, height - 1, leaf);
+
             node.isRed = height % 4 == 1;
             node.left = left;
             node.right = right;
@@ -713,6 +722,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             if (!right.isLeaf()) {
                 right.parent = node;
             }
+
             node.augment();
             return node;
         }
@@ -732,10 +742,12 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         if (size == 0) {
             return leaf;
         }
+
         int height = 0;
         for (int subtreeSize = size; subtreeSize > 0; subtreeSize /= 2) {
             height++;
         }
+
         N node = createTree(nodes.iterator(), size, height, leaf);
         node.parent = null;
         node.isRed = false;
@@ -866,10 +878,10 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Splits the tree rooted at this node into two trees, so that the first element of the return value is the root of
      * a tree consisting of the nodes that were before the specified node, and the second element of the return value is
-     * the root of a tree consisting of the nodes that were equal to or after the specified node.  This method assumes
-     * that this node is the root.  It assumes that this is in the same tree as splitNode.  It takes O(log N) time.  It
-     * is considerably more efficient than removing all of the elements after splitNode and then creating a new tree
-     * from those nodes.
+     * the root of a tree consisting of the nodes that were equal to or after the specified node. This method is
+     * destructive, meaning it does not preserve the original tree. It assumes that this node is the root and is in the
+     * same tree as splitNode. It takes O(log N) time. It is considerably more efficient than removing all of the
+     * nodes at or after splitNode and then creating a new tree from those nodes.
      * @param The node at which to split the tree.
      * @return An array consisting of the resulting trees.
      */
@@ -895,6 +907,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         if (parent != null) {
             throw new IllegalArgumentException("This is not the root of a tree");
         }
+        if (isLeaf() || splitNode.isLeaf()) {
+            throw new IllegalArgumentException("The root or the split node is a leaf");
+        }
 
         // Create an array containing the path from the root to splitNode
         int depth = 1;
@@ -905,8 +920,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         if (parent != this) {
             throw new IllegalArgumentException("The split node does not belong to this tree");
         }
-        @SuppressWarnings("unchecked")
-        N[] path = (N[])Array.newInstance(getClass(), depth);
+        RedBlackNode<?>[] path = new RedBlackNode<?>[depth];
         for (parent = splitNode; parent != null; parent = parent.parent) {
             depth--;
             path[depth] = parent;
@@ -1052,22 +1066,18 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
 
         // Add lastPivot to the post-split tree
-        if (last == null) {
-            last = leaf;
-        } else {
-            lastPivot.isRed = true;
-            lastPivot.parent = lastParent;
-            if (lastParent != null) {
-                lastParent.left = lastPivot;
-            }
-            lastPivot.left = leaf;
-            lastPivot.right = leaf;
-            lastPivot.fixInsertionWithoutGettingRoot(false);
-            for (last = lastPivot; last.parent != null; last = last.parent) {
-                last.augment();
-            }
+        lastPivot.isRed = true;
+        lastPivot.parent = lastParent;
+        if (lastParent != null) {
+            lastParent.left = lastPivot;
+        }
+        lastPivot.left = leaf;
+        lastPivot.right = leaf;
+        lastPivot.fixInsertionWithoutGettingRoot(false);
+        for (last = lastPivot; last.parent != null; last = last.parent) {
             last.augment();
         }
+        last.augment();
 
         @SuppressWarnings("unchecked")
         N[] result = (N[])Array.newInstance(getClass(), 2);

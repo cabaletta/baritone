@@ -140,9 +140,8 @@ public class TreeList<T> extends AbstractList<T> {
     public T remove(int index) {
         TreeListNode<T> node = getNode(index);
         modCount++;
-        T value = node.value;
         root = node.remove();
-        return value;
+        return node.value;
     }
 
     @Override
@@ -151,6 +150,7 @@ public class TreeList<T> extends AbstractList<T> {
             throw new IndexOutOfBoundsException("Index " + index + " is not in the range [0, " + root.size + "]");
         }
         modCount++;
+
         if (values.isEmpty()) {
             return false;
         } else {
@@ -325,6 +325,7 @@ public class TreeList<T> extends AbstractList<T> {
             } else if (modCount != TreeList.this.modCount) {
                 throw new ConcurrentModificationException();
             }
+
             haveCalledNextOrPrevious = true;
             justCalledNext = true;
             haveModified = false;
@@ -357,6 +358,7 @@ public class TreeList<T> extends AbstractList<T> {
             } else if (modCount != TreeList.this.modCount) {
                 throw new ConcurrentModificationException();
             }
+
             haveCalledNextOrPrevious = true;
             justCalledNext = false;
             haveModified = false;
@@ -380,6 +382,7 @@ public class TreeList<T> extends AbstractList<T> {
             } else if (modCount != TreeList.this.modCount) {
                 throw new ConcurrentModificationException();
             }
+
             if (justCalledNext) {
                 prevNode.value = value;
             } else {
