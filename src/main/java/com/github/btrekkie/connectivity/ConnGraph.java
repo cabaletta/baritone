@@ -75,8 +75,8 @@ import java.util.Map;
  * reason they are probabilistic is that they involve hash lookups, using the vertexInfo and VertexInfo.edges hash maps.
  * Given that each ConnVertex has a random hash code, it is easy to demonstrate that lookups take O(1) expected time.
  * Furthermore, I claim that they take O(log N / log log N) time with high probability. This claim is sufficient to
- * establish that all time bounds that are at least O(log N / log log N) if we exclude the hash lookup can be sustained
- * if we add the qualifier "with high probability."
+ * establish that all time bounds that are at least O(log N / log log N) if we exclude hash lookups can be sustained if
+ * we add the qualifier "with high probability."
  *
  * This claim is based on information presented in
  * https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-851-advanced-data-structures-spring-2012/lecture-videos/session-10-dictionaries/ .
@@ -258,7 +258,7 @@ public class ConnGraph {
     /**
      * Equivalent implementation is contractual.
      *
-     * This method is useful for when a node's lists (graphListHead or forestListHead) or a vertex's arbitrary visit
+     * This method is useful for when an EulerTourVertex's lists (graphListHead or forestListHead) or arbitrary visit
      * change, as these affect the hasGraphEdge and hasForestEdge augmentations.
      */
     private void augmentAncestorFlags(EulerTourNode node) {
@@ -503,6 +503,33 @@ public class ConnGraph {
         EulerTourNode newNode = new EulerTourNode(vertex1, root.augmentationFunc);
         before.concatenate(root, newNode).concatenate(after);
         return new EulerTourEdge(newNode, max);
+    }
+
+    /** Removes the specified edge from the Euler tour forest F_i. */
+    private void removeForestEdge(EulerTourEdge edge) {
+        EulerTourNode firstNode;
+        EulerTourNode secondNode;
+        if (edge.visit1.compareTo(edge.visit2) < 0) {
+            firstNode = edge.visit1;
+            secondNode = edge.visit2;
+        } else {
+            firstNode = edge.visit2;
+            secondNode = edge.visit1;
+        }
+
+        if (firstNode.vertex.arbitraryVisit == firstNode) {
+            EulerTourNode successor = secondNode.successor();
+            firstNode.vertex.arbitraryVisit = successor;
+            augmentAncestorFlags(firstNode);
+            augmentAncestorFlags(successor);
+        }
+
+        EulerTourNode root = firstNode.root();
+        EulerTourNode[] firstSplitRoots = root.split(firstNode);
+        EulerTourNode before = firstSplitRoots[0];
+        EulerTourNode[] secondSplitRoots = firstSplitRoots[1].split(secondNode.successor());
+        before.concatenate(secondSplitRoots[1]);
+        firstNode.removeWithoutGettingRoot();
     }
 
     /**
@@ -794,31 +821,8 @@ public class ConnGraph {
         augmentAncestorFlags(edge.vertex2.arbitraryVisit);
 
         if (edge.eulerTourEdge != null) {
-            // Remove the edge from all of the Euler tour trees that contain it
             for (EulerTourEdge levelEdge = edge.eulerTourEdge; levelEdge != null; levelEdge = levelEdge.higherEdge) {
-                EulerTourNode firstNode;
-                EulerTourNode secondNode;
-                if (levelEdge.visit1.compareTo(levelEdge.visit2) < 0) {
-                    firstNode = levelEdge.visit1;
-                    secondNode = levelEdge.visit2;
-                } else {
-                    firstNode = levelEdge.visit2;
-                    secondNode = levelEdge.visit1;
-                }
-
-                if (firstNode.vertex.arbitraryVisit == firstNode) {
-                    EulerTourNode successor = secondNode.successor();
-                    firstNode.vertex.arbitraryVisit = successor;
-                    augmentAncestorFlags(firstNode);
-                    augmentAncestorFlags(successor);
-                }
-
-                EulerTourNode root = firstNode.root();
-                EulerTourNode[] firstSplitRoots = root.split(firstNode);
-                EulerTourNode before = firstSplitRoots[0];
-                EulerTourNode[] secondSplitRoots = firstSplitRoots[1].split(secondNode.successor());
-                before.concatenate(secondSplitRoots[1]);
-                firstNode.removeWithoutGettingRoot();
+                removeForestEdge(levelEdge);
             }
             edge.eulerTourEdge = null;
 
@@ -1044,18 +1048,10 @@ public class ConnGraph {
     }
 
     /**
-     * Attempts to optimize the internal representation of the graph so that future updates will take less time. This
-     * method does not affect how long queries such as "connected" will take. You may find it beneficial to call
-     * optimize() when there is some downtime. Note that this method generally increases the amount of space the
-     * ConnGraph uses, but not beyond the bound of O(V log V + E).
+     * Pushes all forest edges as far down as possible, so that any further pushes would violate the constraint on the
+     * size of connected components. The current implementation of this method takes O(V log^2 V) time.
      */
-    public void optimize() {
-        // The current implementation of optimize() takes O(V log^2 V + E log V log log V) time
-
-        rebuild();
-
-        // Greedily push each forest edge as far down as possible - to the lowest level where the constraint on the
-        // size of connected components isn't violated
+    private void optimizeForestEdges() {
         for (VertexInfo info : vertexInfo.values()) {
             int level = maxLogVertexCountSinceRebuild;
             EulerTourVertex vertex;
@@ -1121,8 +1117,13 @@ public class ConnGraph {
                 level++;
             }
         }
+    }
 
-        // Push each non-forest edge down to the lowest level where the endpoints are in the same connected component
+    /**
+     * Pushes each non-forest edge down to the lowest level where the endpoints are in the same connected component. The
+     * current implementation of this method takes O(V log V + E log V log log V) time.
+     */
+    private void optimizeGraphEdges() {
         for (VertexInfo info : vertexInfo.values()) {
             EulerTourVertex vertex;
             for (vertex = info.vertex; vertex.lowerVertex != null; vertex = vertex.lowerVertex);
@@ -1184,5 +1185,18 @@ public class ConnGraph {
                 vertex = vertex.higherVertex;
             }
         }
+    }
+
+    /**
+     * Attempts to optimize the internal representation of the graph so that future updates will take less time. This
+     * method does not affect how long queries such as "connected" will take. You may find it beneficial to call
+     * optimize() when there is some downtime. Note that this method generally increases the amount of space the
+     * ConnGraph uses, but not beyond the bound of O(V log V + E).
+     */
+    public void optimize() {
+        // The current implementation of optimize() takes O(V log^2 V + E log V log log V) time
+        rebuild();
+        optimizeForestEdges();
+        optimizeGraphEdges();
     }
 }
