@@ -1073,20 +1073,21 @@ public class ConnGraph {
                     EulerTourVertex lowerVertex1 = vertex;
                     EulerTourVertex lowerVertex2 = edge.vertex2;
                     for (int lowerLevel = level - 1; lowerLevel > 0; lowerLevel--) {
-                        int size = 0;
+                        // Compute the total size if we combine the Euler tour trees
+                        int combinedSize = 1;
                         if (lowerVertex1.lowerVertex != null) {
-                            size = lowerVertex1.lowerVertex.arbitraryVisit.root().size;
+                            combinedSize += lowerVertex1.lowerVertex.arbitraryVisit.root().size;
                         } else {
-                            size = 1;
+                            combinedSize++;
                         }
                         if (lowerVertex2.lowerVertex != null) {
-                            size += lowerVertex2.lowerVertex.arbitraryVisit.root().size;
+                            combinedSize += lowerVertex2.lowerVertex.arbitraryVisit.root().size;
                         } else {
-                            size++;
+                            combinedSize++;
                         }
 
                         // X EulerTourVertices = (2 * X - 1) EulerTourNodes
-                        if (size > 2 * (1 << lowerLevel) - 1) {
+                        if (combinedSize > 2 * (1 << lowerLevel) - 1) {
                             break;
                         }
 

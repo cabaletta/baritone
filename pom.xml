@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.btrekkie.connectivity</groupId>
   <artifactId>dynamic-connectivity</artifactId>
-  <version>0.1.2</version>
+  <version>0.1.3</version>
   <name>dynamic-connectivity</name>
   <description>Data structure for dynamic connectivity in undirected graphs</description>
   <build>
