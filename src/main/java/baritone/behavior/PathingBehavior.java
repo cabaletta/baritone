@@ -325,6 +325,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     public void softCancelIfSafe() {
         synchronized (pathPlanLock) {
+            getInProgress().ifPresent(AbstractNodeCostSearch::cancel); // only cancel ours
             if (!isSafeToCancel()) {
                 return;
             }
@@ -332,7 +333,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             next = null;
         }
         cancelRequested = true;
-        getInProgress().ifPresent(AbstractNodeCostSearch::cancel); // only cancel ours
         // do everything BUT clear keys
     }
 
@@ -340,11 +340,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
         synchronized (pathPlanLock) {
+            getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
             if (current != null) {
                 current = null;
                 next = null;
                 baritone.getInputOverrideHandler().clearAllKeys();
-                getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
                 baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
             }
         }

@@ -118,7 +118,13 @@ public final class ChunkPacker {
         return name;
     }
 
-    public static Block stringToBlock(String name) {
+    public static Block stringToBlockRequired(String name) {
+        Block block = stringToBlockNullable(name);
+        Objects.requireNonNull(block);
+        return block;
+    }
+
+    public static Block stringToBlockNullable(String name) {
         return resourceCache.computeIfAbsent(name, n -> IRegistry.BLOCK.get(new ResourceLocation(n.contains(":") ? n : "minecraft:" + n)));
     }
 

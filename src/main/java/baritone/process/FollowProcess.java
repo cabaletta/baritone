@@ -102,7 +102,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     @Override
     public String displayName0() {
-        return "Follow " + cache;
+        return "Following " + cache;
     }
 
     @Override

@@ -79,7 +79,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof BlockAir) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block == Blocks.BUBBLE_COLUMN || block instanceof BlockShulkerBox || block instanceof BlockSlab) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block == Blocks.BUBBLE_COLUMN || block instanceof BlockShulkerBox || block instanceof BlockSlab || block instanceof BlockTrapDoor) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -91,9 +91,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof BlockCarpet) {
             return canWalkOn(bsi, x, y - 1, z);
         }
-        boolean snow = block instanceof BlockSnowLayer;
-        boolean trapdoor = block instanceof BlockTrapDoor;
-        if (snow || trapdoor) {
+        if (block instanceof BlockSnowLayer) {
             // we've already checked doors and fence gates
             // so the only remaining dynamic isPassables are snow and trapdoor
             // if they're cached as a top block, we don't know their metadata
@@ -101,20 +99,13 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (!bsi.worldContainsLoadedChunk(x, z)) {
                 return true;
             }
-            if (snow) {
-                // the check in BlockSnow.isPassable is layers < 5
-                // while actually, we want < 3 because 3 or greater makes it impassable in a 2 high ceiling
-                if (state.get(BlockSnowLayer.LAYERS) >= 3) {
-                    return false;
-                }
-                // ok, it's low enough we could walk through it, but is it supported?
-                return canWalkOn(bsi, x, y - 1, z);
+            // the check in BlockSnow.isPassable is layers < 5
+            // while actually, we want < 3 because 3 or greater makes it impassable in a 2 high ceiling
+            if (state.get(BlockSnowLayer.LAYERS) >= 3) {
+                return false;
             }
-            if (trapdoor) {
-                return !state.get(BlockTrapDoor.OPEN); // see BlockTrapDoor.isPassable
-            }
-            // The previous condition should always be true, so this exception will never be thrown
-            throw new IllegalStateException();
+            // ok, it's low enough we could walk through it, but is it supported?
+            return canWalkOn(bsi, x, y - 1, z);
         }
         if (isFlowing(x, y, z, state, bsi)) {
             return false; // Don't walk through flowing liquids
