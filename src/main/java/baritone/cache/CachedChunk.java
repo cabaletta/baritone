@@ -177,7 +177,7 @@ public final class CachedChunk {
         if (special != null) {
             String str = special.get(index);
             if (str != null) {
-                return ChunkPacker.stringToBlock(str).getDefaultState();
+                return ChunkPacker.stringToBlockRequired(str).getDefaultState();
             }
         }
 

@@ -302,7 +302,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public void mineByName(int quantity, String... blocks) {
-        mine(quantity, blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlock).toArray(Block[]::new));
+        mine(quantity, blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlockRequired).toArray(Block[]::new));
     }
 
     @Override

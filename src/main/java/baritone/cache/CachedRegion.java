@@ -240,7 +240,7 @@ public final class CachedRegion implements ICachedRegion {
                     for (int z = 0; z < 32; z++) {
                         if (present[x][z]) {
                             for (int i = 0; i < 256; i++) {
-                                overview[x][z][i] = ChunkPacker.stringToBlock(in.readUTF()).getDefaultState();
+                                overview[x][z][i] = ChunkPacker.stringToBlockRequired(in.readUTF()).getDefaultState();
                             }
                         }
                     }
@@ -255,6 +255,7 @@ public final class CachedRegion implements ICachedRegion {
                             int numSpecialBlockTypes = in.readShort() & 0xffff;
                             for (int i = 0; i < numSpecialBlockTypes; i++) {
                                 String blockName = in.readUTF();
+                                ChunkPacker.stringToBlockRequired(blockName);
                                 List<BlockPos> locs = new ArrayList<>();
                                 location[x][z].put(blockName, locs);
                                 int numLocations = in.readShort() & 0xffff;

@@ -462,14 +462,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             String[] blockTypes = msg.substring(4).trim().split(" ");
             try {
                 int quantity = Integer.parseInt(blockTypes[1]);
-                Block block = ChunkPacker.stringToBlock(blockTypes[0]);
-                Objects.requireNonNull(block);
+                Block block = ChunkPacker.stringToBlockRequired(blockTypes[0]);
                 baritone.getMineProcess().mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
             for (String s : blockTypes) {
-                if (ChunkPacker.stringToBlock(s) == null) {
+                if (ChunkPacker.stringToBlockNullable(s) == null) {
                     logDirect(s + " isn't a valid block name");
                     return true;
                 }
@@ -552,7 +551,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             IWaypoint waypoint;
             if (tag == null) {
                 String mining = waypointType;
-                Block block = ChunkPacker.stringToBlock(mining);
+                Block block = ChunkPacker.stringToBlockNullable(mining);
                 //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 if (block == null) {
                     waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
