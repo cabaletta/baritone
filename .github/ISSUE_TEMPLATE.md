@@ -1,1 +1,1 @@
-<!-- No UwU's allowed -->
+<!-- No UwU's or OwO's allowed -->
