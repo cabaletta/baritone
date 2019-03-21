@@ -119,8 +119,6 @@ public class GuiClick extends GuiScreen {
                 GlStateManager.disableBlend();
             }
         }
-
-
     }
 
     public Vec3d toWorld(double x, double y, double z) {
