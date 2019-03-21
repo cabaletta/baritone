@@ -22,6 +22,8 @@
 [![KAMI integration](https://img.shields.io/badge/KAMI%20integration-v1.0.0-red.svg)](https://github.com/zeroeightysix/KAMI/)
 [![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20integration-Soon™-red.svg)](https://github.com/fr1kin/ForgeHax)
+[![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg)](http://forthebadge.com)
 
 A Minecraft pathfinder bot. 
 
