@@ -87,7 +87,6 @@ public class GuiClick extends GuiScreen {
         return super.mouseReleased(mouseX, mouseY, mouseButton);
     }
 
-
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         clickStart = currentMouseOver;
@@ -121,8 +120,6 @@ public class GuiClick extends GuiScreen {
                 GlStateManager.disableBlend();
             }
         }
-
-
     }
 
     public Vec3d toWorld(double x, double y, double z) {

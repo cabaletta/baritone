@@ -178,7 +178,7 @@ public final class PathRenderer implements Helper {
                 }
                 GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], alpha);
             }
-            drawLine(player, x1, y1, z1, x2, y2, z2);
+            drawLine(x1, y1, z1, x2, y2, z2);
             tessellator.draw();
         }
         if (Baritone.settings().renderPathIgnoreDepth.value) {
@@ -190,7 +190,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.disableBlend();
     }
 
-    public static void drawLine(Entity player, double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z) {
+    public static void drawLine(double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z) {
         double d0 = mc.getRenderManager().viewerPosX;
         double d1 = mc.getRenderManager().viewerPosY;
         double d2 = mc.getRenderManager().viewerPosZ;

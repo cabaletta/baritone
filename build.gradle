@@ -89,7 +89,7 @@ minecraft {
             environment 'nativesDirectory', extractNatives.output
 
             environment 'tweakClass', 'baritone.launch.BaritoneTweaker'
-            
+
             if (Os.isFamily(Os.FAMILY_MAC)) {
                 jvmArgs "-XstartOnFirstThread"
             }
