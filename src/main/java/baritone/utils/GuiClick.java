@@ -87,7 +87,6 @@ public class GuiClick extends GuiScreen {
         clickStart = null;
     }
 
-
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         clickStart = currentMouseOver;
