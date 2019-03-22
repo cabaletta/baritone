@@ -35,6 +35,10 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.dimension.DimensionType;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 /**
  * Responsible for automatically testing Baritone's pathing algorithm by automatically creating a world with a specific
  * seed, setting a specified goal, and only allowing a certain amount of ticks to pass before the pathing test is
@@ -127,6 +131,11 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             // If we have reached our goal, print a message and safely close the game
             if (GOAL.isInGoal(ctx.playerFeet())) {
                 System.out.println("Successfully pathed to " + ctx.playerFeet() + " in " + event.getCount() + " ticks");
+                try {
+                    Files.write(Paths.get(Minecraft.getInstance().gameDir.toString()), "Success!".getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 mc.shutdown();
                 mc.shutdownMinecraftApplet();
                 System.exit(0);
