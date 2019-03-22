@@ -478,8 +478,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         for (int i = 0; i < 5; i++) {
             BlockPos against1 = placeAt.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(placeAt.getX(), placeAt.getY(), placeAt.getZ())) { // get ready to place a throwaway block
-                    Helper.HELPER.logDebug("bb pls get me some blocks. dirt or cobble");
+                if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(false, placeAt.getX(), placeAt.getY(), placeAt.getZ())) { // get ready to place a throwaway block
+                    Helper.HELPER.logDebug("bb pls get me some blocks. dirt, netherrack, cobble");
                     state.setStatus(MovementStatus.UNREACHABLE);
                     return PlaceResult.NO_OPTION;
                 }
@@ -505,10 +505,15 @@ public interface MovementHelper extends ActionCosts, Helper {
             EnumFacing side = ctx.objectMouseOver().sideHit;
             // only way for selectedBlock.equals(placeAt) to be true is if it's replacable
             if (selectedBlock.equals(placeAt) || (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.offset(side).equals(placeAt))) {
+                ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
                 return PlaceResult.READY_TO_PLACE;
             }
         }
-        return found ? PlaceResult.ATTEMPTING : PlaceResult.NO_OPTION;
+        if (found) {
+            ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
+            return PlaceResult.ATTEMPTING;
+        }
+        return PlaceResult.NO_OPTION;
     }
 
     enum PlaceResult {

@@ -130,13 +130,13 @@ public class InventoryBehavior extends Behavior {
         return false;
     }
 
-    public boolean selectThrowawayForLocation(int x, int y, int z) {
+    public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
         IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z);
-        if (maybe != null && throwaway(true, item -> item instanceof ItemBlock && ((ItemBlock) item).getBlock().equals(maybe.getBlock()))) {
+        if (maybe != null && throwaway(select, item -> item instanceof ItemBlock && ((ItemBlock) item).getBlock().equals(maybe.getBlock()))) {
             return true; // gotem
         }
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(true, item::equals)) {
+            if (throwaway(select, item::equals)) {
                 return true;
             }
         }

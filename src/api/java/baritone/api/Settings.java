@@ -399,6 +399,11 @@ public final class Settings {
     public final Setting<Boolean> containerMemory = new Setting<>(false);
 
     /**
+     * Fill in blocks behind you
+     */
+    public final Setting<Boolean> backfill = new Setting<>(false);
+
+    /**
      * Print all the debug messages to chat
      */
     public final Setting<Boolean> chatDebug = new Setting<>(false);

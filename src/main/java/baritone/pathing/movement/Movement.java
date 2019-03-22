@@ -270,4 +270,8 @@ public abstract class Movement implements IMovement, MovementHelper {
         }
         return toWalkIntoCached;
     }
+
+    public BlockPos[] toBreakAll() {
+        return positionsToBreak;
+    }
 }

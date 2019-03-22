@@ -92,8 +92,8 @@ public class PathingControlManager implements IPathingControlManager {
             p.secretInternalSetGoal(null);
             return;
         }
-        if (inControlThisTick != inControlLastTick && command.commandType != PathingCommandType.REQUEST_PAUSE) {
-            // if control has changed, and the new process wants to do something
+        if (inControlThisTick != inControlLastTick && command.commandType != PathingCommandType.REQUEST_PAUSE && inControlLastTick != null && !inControlLastTick.isTemporary()) {
+            // if control has changed from a real process to another real process, and the new process wants to do something
             p.cancelSegmentIfSafe();
             // get rid of the in progress stuff from the last process
         }
@@ -199,10 +199,10 @@ public class PathingControlManager implements IPathingControlManager {
 
             PathingCommand exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
             if (exec == null) {
-                if (proc.isActive()) {
+                /*if (proc.isActive()) {
                     throw new IllegalStateException(proc.displayName() + " returned null PathingCommand");
                 }
-                proc.onLostControl();
+                proc.onLostControl();*/
             } else {
                 inControlThisTick = proc;
                 if (!proc.isTemporary()) {
