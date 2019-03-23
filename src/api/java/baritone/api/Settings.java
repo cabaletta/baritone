@@ -122,6 +122,13 @@ public final class Settings {
     public final Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
 
     /**
+     * Allow mining the block directly beneath its feet
+     * <p>
+     * Turn this off to force it to make more staircases and less shafts
+     */
+    public final Setting<Boolean> allowDownward = new Setting<>(true);
+
+    /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
     public final Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(

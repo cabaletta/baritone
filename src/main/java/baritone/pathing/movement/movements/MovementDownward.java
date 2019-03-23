@@ -48,6 +48,9 @@ public class MovementDownward extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
+        if (!context.allowDownward) {
+            return COST_INF;
+        }
         if (!MovementHelper.canWalkOn(context.bsi, x, y - 2, z)) {
             return COST_INF;
         }

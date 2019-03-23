@@ -60,6 +60,7 @@ public class CalculationContext {
     public final boolean allowJumpAt256;
     public final boolean assumeWalkOnWater;
     public final boolean allowDiagonalDescend;
+    public final boolean allowDownward;
     public final int maxFallHeightNoWater;
     public final int maxFallHeightBucket;
     public final double waterWalkSpeed;
@@ -91,6 +92,7 @@ public class CalculationContext {
         this.allowJumpAt256 = Baritone.settings().allowJumpAt256.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
         this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.value;
+        this.allowDownward = Baritone.settings().allowDownward.value;
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.value;
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.value;
         int depth = EnchantmentHelper.getDepthStriderModifier(player);
