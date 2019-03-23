@@ -190,7 +190,7 @@ public class MovementAscend extends Movement {
         double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().posX) + xAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().posZ);
 
         double lateralMotion = xAxis * ctx.player().motionZ + zAxis * ctx.player().motionX;
-        if (Math.abs(lateralMotion) > 0.1 || true) {
+        if (Math.abs(lateralMotion) > 0.1) {
             return state;
         }
 
