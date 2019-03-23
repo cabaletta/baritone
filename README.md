@@ -34,6 +34,8 @@ Javadoc documentation.
   assign an augmentation to each vertex.
 * Careful attention has been paid to the asymptotic running time of each method.
   However, beyond this, no special effort has been made to optimize performance.
+  (A big obstacle to optimizing `ConnGraph` is a lack of access to samples from
+  real-world usage.)
 
 # Example usage
 ```java

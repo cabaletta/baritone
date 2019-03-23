@@ -1,0 +1,114 @@
+Thoughts concerning optimization:
+
+- I should not optimize until I have access to real-world input samples. Any
+  optimizations are bound to result in increased code complexity, which is not
+  worth it unless I can demonstrate a non-trivial reduction in running time in a
+  real-world setting.
+- I should profile the program and see if there are any quick wins.
+- Most obviously, I could implement the optimization of using a B-tree in the
+  top level, and see what effect this has on performance. It would definitely
+  improve the query time, and hopefully it wouldn't affect the update time too
+  much.
+- If I do implement the B-tree optimization, I should also store a binary search
+  tree representation of the same forest in the top level, for the user-defined
+  augmentation. That way, updates will require O(log N) calls to
+  Augmentation.combine, rather than O(log^2 N / log log N) calls. We have no
+  control over how long Augmentation.combine takes, so we should minimize calls
+  to that method. It will take a bit of care to ensure that fetching the
+  augmentation for a connected component takes O(log N / log log N) time,
+  however.
+- Alternatively, in each B-tree node, we could store a binary search tree that
+  combines the augmentation information for the items in that node. This might
+  even benefit ConnGraphs that do not have user-supplied augmentation.
+- If I don't implement the B-tree optimization, there are a couple of small
+  optimizations I could try. First, I could move the field
+  EulerTourNode.augmentationFunc to EulerTourVertex, in order to save a little
+  bit of space. Second, I could create EulerTourNode and EulerTourVertex
+  subclasses specifically for the top level, and offload the fields related to
+  user augmentation to those subclasses. These changes seem inelegant, but it
+  might be worth checking the effect they have on performance.
+- I looked at the heuristics recommended in
+  http://people.csail.mit.edu/karger/Papers/impconn.pdf (Iyer, et al. (2001): An
+  Experimental Study of Poly-Logarithmic Fully-Dynamic Connectivity Algorithms).
+  The first heuristic is: before pushing down all of the same-level forest
+  edges, which is an expensive operation, sample O(log N) same-level non-forest
+  edges to see if we can get lucky and find a replacement edge without pushing
+  anything. The second heuristic is to refrain from pushing edges in
+  sufficiently small components.
+
+  The first heuristic seems reasonable. However, I don't get the second
+  heuristic. The concept seems to be basically the same as the first - don't
+  push down any edges if we can cheaply find a replacement edge. However, the
+  execution is cruder. Rather than limiting the number of edges to search, which
+  is closely related to the cost of the search, the second heuristic is based on
+  the number of vertices, which is not as closely related.
+- I have a few ideas for implementing this first heuristic, which could be
+  attempted and their effects on performance measured. The first is that to
+  sample the graph edges in a semi-random order, I could augment each Euler tour
+  node with the sum across all canonical visits to vertices of the number of
+  adjacent same-level graph edges. Then, to obtain a sample, we select each
+  vertex with a probability proportional to this adjacency number. This is
+  fairly straightforward: at each node, we decide to go left, go right, or use
+  the current vertex in proportion to the augmentation.
+
+  This is not exactly random, because after we select a vertex, we choose an
+  arbitrary adjacent edge. However, it seems close enough, and it's not easy to
+  do better.
+- After sampling an edge, we should remove it from the adjacency list, to avoid
+  repeatedly sampling the same edge. We should then store it in an array of
+  edges we sampled, so that later, we can either re-add the edges to the
+  adjacency lists or push all of them down as necessary.
+- If the sampling budget (i.e. the number of edges we intend to sample) is at
+  least the number of same-level graph edges, then we should forgo pushing down
+  any edges, regardless of whether we find a replacement edge.
+- We don't need to sample edges from the smaller of the two post-cut trees. We
+  can sample them from the larger one if it has fewer same-level graph edges.
+  This increases our chances of finding a replacement edge if there is one. As
+  long as we don't push down any forest edges in the larger tree, we're safe.
+- With an extra augmentation, we can determine whether there is probably a
+  replacement edge. This helps us because if there is probably no replacement
+  edge, then we can save some time by skipping edge sampling entirely. (If the
+  sampling budget is at least the number of same-level graph edges, then we
+  should also refrain from pushing down any edges, as in a previously mentioned
+  optimization.)
+
+  Assign each ConnEdge a random integer ID. Store the XOR of the IDs of all
+  adjacent same-level graph edges in each of the vertices. Augment the Euler
+  tour trees with the XOR of those values for all canonical visits to vertices.
+  The XOR stored in a post-cut tree's root node is equal to the XOR of all of
+  the replacement edges' IDs, because each non-replacement edge is in two
+  adjacency lists and cancels itself out, while each replacement edge is in one
+  adjacency list. Thus, the XOR is 0 if there is no replacement edge, and it is
+  non-zero with probability 1 - 1 / 2^32 if there is at least one replacement
+  edge.
+- If one of the post-cut trees has a same-level forest edge and the other does
+  not, and the difference in the number of same-level graph edges is not that
+  large, we should favor the one that does not, because it's expensive to push
+  forest edges. Also, there's no need to sample if we pick a tree that has no
+  same-level forest edges.
+- I wonder if there's a good way to estimate the cost of pushing down a given
+  set of forest edges. For example, is there a strong correlation between the
+  number of forest edges and the cost of pushing them? We could use a larger
+  sampling budget the greater this cost is.
+- During sampling, it might help to push down edges whose endpoints are
+  connected in the next-lower level, and to not count them against the sampling
+  budget. By paying for some of the edges, we're able to sample more edges, so
+  we're less likely to have to push down the forest edges.
+
+  The downside is that checking whether the endpoints are in the same connected
+  component takes O(log N) time. To mitigate this, we should refrain from
+  attempting to push down edges until necessary. That is, we should spend the
+  entire sampling budget first, then search the edges we sampled for an edge
+  that we can push down. After finding one such edge, we should sample another
+  edge, then search for another edge to push down, etc.
+- When we are done sampling edges, it might still be beneficial to iterate over
+  the rest of the same-level graph edges in a (semi-)random order. This does
+  increase the amount of time that iteration takes. However, using a random
+  order could be helpful if the sequence of updates has some sort of pattern
+  affecting the location of replacement edges. For example, if there is a
+  tendency to put replacement edges near the end of the Euler tour, or to
+  cluster replacement edges so that they are close to each other in the Euler
+  tour, then random iteration should tend to locate a replacement edge faster
+  than in-order iteration. (If we know from a previously mentioned optimization
+  that there is probably no replacement edge, the we shouldn't bother to iterate
+  over the edges in random order.)
