@@ -35,9 +35,9 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.dimension.DimensionType;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Responsible for automatically testing Baritone's pathing algorithm by automatically creating a world with a specific
@@ -132,7 +132,9 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             if (GOAL.isInGoal(ctx.playerFeet())) {
                 System.out.println("Successfully pathed to " + ctx.playerFeet() + " in " + event.getCount() + " ticks");
                 try {
-                    Files.write(Paths.get("success"), "Success!".getBytes());
+                    File file = new File("success");
+                    System.out.println("Writing success to " + file.getAbsolutePath());
+                    Files.write(file.getAbsoluteFile().toPath(), "Success!".getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
