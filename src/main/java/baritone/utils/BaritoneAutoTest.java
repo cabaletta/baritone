@@ -132,7 +132,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             if (GOAL.isInGoal(ctx.playerFeet())) {
                 System.out.println("Successfully pathed to " + ctx.playerFeet() + " in " + event.getCount() + " ticks");
                 try {
-                    Files.write(Paths.get(Minecraft.getInstance().gameDir.toString()), "Success!".getBytes());
+                    Files.write(Paths.get(Minecraft.getInstance().gameDir.toString(), "success"), "Success!".getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
