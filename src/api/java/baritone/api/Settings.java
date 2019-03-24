@@ -92,6 +92,11 @@ public final class Settings {
     public final Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
 
     /**
+     * If you have Fire Resistance and Jesus then I guess you could turn this on lol
+     */
+    public final Setting<Boolean> assumeWalkOnLava = new Setting<>(false);
+
+    /**
      * Assume step functionality; don't jump on an Ascend.
      */
     public final Setting<Boolean> assumeStep = new Setting<>(false);
