@@ -290,7 +290,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
             return isWater(up) ^ Baritone.settings().assumeWalkOnWater.value;
         }
-        if (Baritone.settings().assumeWalkOnLava.value && isLava(block)) {
+        if (Baritone.settings().assumeWalkOnLava.value && isLava(block) && !isFlowing(x, y, z, state, bsi)) {
             return true;
         }
         if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
