@@ -275,13 +275,6 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        // TODO somehow tell inventorybehavior what we'd like to have on the hotbar
-        // perhaps take the 16 closest positions in incorrectPositions to ctx.playerFeet that aren't desired to be air, and then snag the top 4 most common block states, then request those on the hotbar
-
-
-        // this will work as is, but it'll be trashy
-        // need to iterate over incorrectPositions and see which ones we can "correct" from our current standing position
-
         baritone.getInputOverrideHandler().clearAllKeys();
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
