@@ -65,6 +65,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     private ISchematic schematic;
     private Vec3i origin;
     private int ticks;
+    private boolean paused;
 
     public boolean build(String schematicFile, BlockPos origin) {
         File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
@@ -77,6 +78,11 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         this.name = name;
         this.schematic = schematic;
         this.origin = origin;
+        this.paused = false;
+    }
+
+    public void resume() {
+        paused = false;
     }
 
     @Override
@@ -276,6 +282,9 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         baritone.getInputOverrideHandler().clearAllKeys();
+        if (paused) {
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
             logDirect("Done building");
@@ -352,9 +361,9 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         if (goal == null) {
             goal = assemble(bcc, approxPlacable); // we're far away, so assume that we have our whole inventory to recalculate placable properly
             if (goal == null) {
-                logDirect("Unable to do it =(");
-                onLostControl();
-                return null;
+                logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
+                paused = true;
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
@@ -533,11 +542,12 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         incorrectPositions = null;
         name = null;
         schematic = null;
+        paused = false;
     }
 
     @Override
     public String displayName0() {
-        return "Building " + name;
+        return paused ? "Builder Paused" : "Building " + name;
     }
 
     public List<IBlockState> placable(int size) {
