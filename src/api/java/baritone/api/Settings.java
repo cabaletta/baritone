@@ -58,7 +58,9 @@ public final class Settings {
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
-     * because we want to generally conserve blocks which might be limited
+     * because we want to generally conserve blocks which might be limited.
+     * <p>
+     * Decrease to make Baritone more often consider paths that would require placing blocks
      */
     public final Setting<Double> blockPlacementPenalty = new Setting<>(20D);
 
