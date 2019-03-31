@@ -115,7 +115,7 @@ public final class Settings {
     /**
      * If true, parkour is allowed to make jumps when standing on blocks at the maximum height, so player feet is y=256
      * <p>
-     * Defaults to false because this fails on constantiam
+     * Defaults to false because this fails on constantiam. Please let me know if this is ever disabled. Please.
      */
     public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
