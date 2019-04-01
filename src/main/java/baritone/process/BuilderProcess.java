@@ -419,10 +419,8 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         for (int y = 0; y < schematic.heightY(); y++) {
             for (int z = 0; z < schematic.lengthZ(); z++) {
                 for (int x = 0; x < schematic.widthX(); x++) {
-                    if (schematic.inSchematic(x, y, z)) {
-                        if (!valid(bcc.bsi.get0(x + origin.getX(), y + origin.getY(), z + origin.getZ()), schematic.desiredState(x, y, z))) {
-                            incorrectPositions.add(new BetterBlockPos(x + origin.getX(), y + origin.getY(), z + origin.getZ()));
-                        }
+                    if (schematic.inSchematic(x, y, z) && !valid(bcc.bsi.get0(x + origin.getX(), y + origin.getY(), z + origin.getZ()), schematic.desiredState(x, y, z))) {
+                        incorrectPositions.add(new BetterBlockPos(x + origin.getX(), y + origin.getY(), z + origin.getZ()));
                     }
                 }
             }
