@@ -55,17 +55,17 @@ import java.util.stream.Collectors;
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
-
-    public BuilderProcess(Baritone baritone) {
-        super(baritone);
-    }
-
+    
     private HashSet<BetterBlockPos> incorrectPositions;
     private String name;
     private ISchematic schematic;
     private Vec3i origin;
     private int ticks;
     private boolean paused;
+
+    public BuilderProcess(Baritone baritone) {
+        super(baritone);
+    }
 
     public boolean build(String schematicFile, BlockPos origin) {
         File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
