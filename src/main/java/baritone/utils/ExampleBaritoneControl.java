@@ -271,10 +271,20 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             BlockPos origin;
             try {
                 String[] coords = msg.substring("build".length()).trim().split(" ");
-                file = coords[0] + ".schematic";
+                if (coords[0].contains(".schematic")) {
+                    file=coords[0];
+                }
+                else {
+                    file = coords[0] + ".schematic";
+                }
                 origin = new BlockPos(parseOrDefault(coords[1], ctx.playerFeet().x), parseOrDefault(coords[2], ctx.playerFeet().y), parseOrDefault(coords[3], ctx.playerFeet().z));
             } catch (Exception ex) {
-                file = msg.substring(5).trim() + ".schematic";
+                if (coords[0].contains(".schematic")) {
+                    file=coords[0];
+                }
+                else {
+                    file = coords[0] + ".schematic";
+                }
                 origin = ctx.playerFeet();
             }
             logDirect("Loading '" + file + "' to build from origin " + origin);
