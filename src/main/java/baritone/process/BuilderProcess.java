@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
-    
+
     private HashSet<BetterBlockPos> incorrectPositions;
     private String name;
     private ISchematic schematic;
@@ -275,7 +275,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                 double z = side.getZOffset() == 0 ? 0.5 : (1 + side.getZOffset()) / 2D;
                 return new Vec3d[]{new Vec3d(x, 0.25, z), new Vec3d(x, 0.75, z)};
             default: // null
-                throw new NullPointerException();
+                throw new IllegalStateException();
         }
     }
 
