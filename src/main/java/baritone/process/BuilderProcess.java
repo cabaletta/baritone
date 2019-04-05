@@ -160,10 +160,10 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     public class Placement {
-        final int hotbarSelection;
-        final BlockPos placeAgainst;
-        final EnumFacing side;
-        final Rotation rot;
+        private final int hotbarSelection;
+        private final BlockPos placeAgainst;
+        private final EnumFacing side;
+        private final Rotation rot;
 
         public Placement(int hotbarSelection, BlockPos placeAgainst, EnumFacing side, Rotation rot) {
             this.hotbarSelection = hotbarSelection;
