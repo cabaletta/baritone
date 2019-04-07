@@ -84,7 +84,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         boolean shouldCancel = calcFailed;
         if (calcFailed && !knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
             logDirect("Unable to find any path to " + mining + ", blacklisting presumably unreachable closest instance...");
-            knownOreLocations.stream().sorted(Comparator.comparingDouble(ctx.player()::getDistanceSq)).findFirst().ifPresent(blacklist::add);
+            knownOreLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(blacklist::add);
             knownOreLocations.removeIf(blacklist::contains);
             shouldCancel = false; // 😎
         }
