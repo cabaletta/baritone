@@ -498,7 +498,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     public static class GoalAdjacent extends GoalGetToBlock {
-        boolean allowSameLevel;
+        private boolean allowSameLevel;
 
         public GoalAdjacent(BlockPos pos, boolean allowSameLevel) {
             super(pos);
