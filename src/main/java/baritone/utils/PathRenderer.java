@@ -83,16 +83,16 @@ public final class PathRenderer implements Helper {
         if (goal != null && Baritone.settings().renderGoal.value) {
             drawDankLitGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.value);
         }
+
+        if (!Baritone.settings().renderPath.value) {
+            return;
+        }
         PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
         PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
-
         if (current != null && Baritone.settings().renderSelectionBoxes.value) {
             drawManySelectionBoxes(renderView, current.toBreak(), Baritone.settings().colorBlocksToBreak.value);
             drawManySelectionBoxes(renderView, current.toPlace(), Baritone.settings().colorBlocksToPlace.value);
             drawManySelectionBoxes(renderView, current.toWalkInto(), Baritone.settings().colorBlocksToWalkInto.value);
-        }
-        if (!Baritone.settings().renderPath.value) {
-            return;
         }
 
         //drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()), partialTicks, Color.WHITE);
