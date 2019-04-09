@@ -83,6 +83,14 @@ public final class PathRenderer implements Helper {
         if (goal != null && Baritone.settings().renderGoal.value) {
             drawDankLitGoalBox(renderView, goal, partialTicks, Baritone.settings().colorGoalBox.value);
         }
+        PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
+        PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
+
+        if (current != null && Baritone.settings().renderSelectionBoxes.value) {
+            drawManySelectionBoxes(renderView, current.toBreak(), Baritone.settings().colorBlocksToBreak.value);
+            drawManySelectionBoxes(renderView, current.toPlace(), Baritone.settings().colorBlocksToPlace.value);
+            drawManySelectionBoxes(renderView, current.toWalkInto(), Baritone.settings().colorBlocksToWalkInto.value);
+        }
         if (!Baritone.settings().renderPath.value) {
             return;
         }
@@ -90,9 +98,6 @@ public final class PathRenderer implements Helper {
         //drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()), partialTicks, Color.WHITE);
         //long start = System.nanoTime();
 
-
-        PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
-        PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
 
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
@@ -104,11 +109,6 @@ public final class PathRenderer implements Helper {
         }
 
         //long split = System.nanoTime();
-        if (current != null) {
-            drawManySelectionBoxes(renderView, current.toBreak(), Baritone.settings().colorBlocksToBreak.value);
-            drawManySelectionBoxes(renderView, current.toPlace(), Baritone.settings().colorBlocksToPlace.value);
-            drawManySelectionBoxes(renderView, current.toWalkInto(), Baritone.settings().colorBlocksToWalkInto.value);
-        }
 
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {

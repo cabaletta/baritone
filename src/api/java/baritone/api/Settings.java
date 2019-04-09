@@ -439,6 +439,11 @@ public final class Settings {
     public final Setting<Boolean> renderGoal = new Setting<>(true);
 
     /**
+     * Render selection boxes
+     */
+    public final Setting<Boolean> renderSelectionBoxes = new Setting<>(true);
+
+    /**
      * Ignore depth when rendering the goal
      */
     public final Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
