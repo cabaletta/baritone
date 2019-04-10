@@ -60,15 +60,16 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
 
-    public BuilderProcess(Baritone baritone) {
-        super(baritone);
-    }
-
     private HashSet<BetterBlockPos> incorrectPositions;
     private String name;
     private ISchematic schematic;
     private Vec3i origin;
     private int ticks;
+    private boolean paused;
+
+    public BuilderProcess(Baritone baritone) {
+        super(baritone);
+    }
 
     public boolean build(String schematicFile, BlockPos origin) {
         File file = new File(new File(Minecraft.getInstance().gameDir, "schematics"), schematicFile);
@@ -81,6 +82,11 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         this.name = name;
         this.schematic = schematic;
         this.origin = origin;
+        this.paused = false;
+    }
+
+    public void resume() {
+        paused = false;
     }
 
     @Override
@@ -158,10 +164,10 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     public class Placement {
-        final int hotbarSelection;
-        final BlockPos placeAgainst;
-        final EnumFacing side;
-        final Rotation rot;
+        private final int hotbarSelection;
+        private final BlockPos placeAgainst;
+        private final EnumFacing side;
+        private final Rotation rot;
 
         public Placement(int hotbarSelection, BlockPos placeAgainst, EnumFacing side, Rotation rot) {
             this.hotbarSelection = hotbarSelection;
@@ -287,20 +293,16 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                 double z = side.getZOffset() == 0 ? 0.5 : (1 + side.getZOffset()) / 2D;
                 return new Vec3d[]{new Vec3d(x, 0.25, z), new Vec3d(x, 0.75, z)};
             default: // null
-                throw new NullPointerException();
+                throw new IllegalStateException();
         }
     }
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        // TODO somehow tell inventorybehavior what we'd like to have on the hotbar
-        // perhaps take the 16 closest positions in incorrectPositions to ctx.playerFeet that aren't desired to be air, and then snag the top 4 most common block states, then request those on the hotbar
-
-
-        // this will work as is, but it'll be trashy
-        // need to iterate over incorrectPositions and see which ones we can "correct" from our current standing position
-
         baritone.getInputOverrideHandler().clearAllKeys();
+        if (paused) {
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
             logDirect("Done building");
@@ -377,9 +379,9 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         if (goal == null) {
             goal = assemble(bcc, approxPlacable); // we're far away, so assume that we have our whole inventory to recalculate placable properly
             if (goal == null) {
-                logDirect("Unable to do it =(");
-                onLostControl();
-                return null;
+                logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
+                paused = true;
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
@@ -435,10 +437,8 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         for (int y = 0; y < schematic.heightY(); y++) {
             for (int z = 0; z < schematic.lengthZ(); z++) {
                 for (int x = 0; x < schematic.widthX(); x++) {
-                    if (schematic.inSchematic(x, y, z)) {
-                        if (!valid(bcc.bsi.get0(x + origin.getX(), y + origin.getY(), z + origin.getZ()), schematic.desiredState(x, y, z))) {
-                            incorrectPositions.add(new BetterBlockPos(x + origin.getX(), y + origin.getY(), z + origin.getZ()));
-                        }
+                    if (schematic.inSchematic(x, y, z) && !valid(bcc.bsi.get0(x + origin.getX(), y + origin.getY(), z + origin.getZ()), schematic.desiredState(x, y, z))) {
+                        incorrectPositions.add(new BetterBlockPos(x + origin.getX(), y + origin.getY(), z + origin.getZ()));
                     }
                 }
             }
@@ -516,7 +516,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     public static class GoalAdjacent extends GoalGetToBlock {
-        boolean allowSameLevel;
+        private boolean allowSameLevel;
 
         public GoalAdjacent(BlockPos pos, boolean allowSameLevel) {
             super(pos);
@@ -558,11 +558,12 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         incorrectPositions = null;
         name = null;
         schematic = null;
+        paused = false;
     }
 
     @Override
     public String displayName0() {
-        return "Building " + name;
+        return paused ? "Builder Paused" : "Building " + name;
     }
 
     public List<IBlockState> placable(int size) {

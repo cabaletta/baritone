@@ -58,7 +58,9 @@ public final class Settings {
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
-     * because we want to generally conserve blocks which might be limited
+     * because we want to generally conserve blocks which might be limited.
+     * <p>
+     * Decrease to make Baritone more often consider paths that would require placing blocks
      */
     public final Setting<Double> blockPlacementPenalty = new Setting<>(20D);
 
@@ -92,6 +94,11 @@ public final class Settings {
     public final Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
 
     /**
+     * If you have Fire Resistance and Jesus then I guess you could turn this on lol
+     */
+    public final Setting<Boolean> assumeWalkOnLava = new Setting<>(false);
+
+    /**
      * Assume step functionality; don't jump on an Ascend.
      */
     public final Setting<Boolean> assumeStep = new Setting<>(false);
@@ -108,7 +115,7 @@ public final class Settings {
     /**
      * If true, parkour is allowed to make jumps when standing on blocks at the maximum height, so player feet is y=256
      * <p>
-     * Defaults to false because this fails on constantiam
+     * Defaults to false because this fails on constantiam. Please let me know if this is ever disabled. Please.
      */
     public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
@@ -430,6 +437,11 @@ public final class Settings {
      * Render the goal
      */
     public final Setting<Boolean> renderGoal = new Setting<>(true);
+
+    /**
+     * Render selection boxes
+     */
+    public final Setting<Boolean> renderSelectionBoxes = new Setting<>(true);
 
     /**
      * Ignore depth when rendering the goal

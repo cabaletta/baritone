@@ -13,11 +13,10 @@
 ![Code size](https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg)
 ![GitHub repo size](https://img.shields.io/github/repo-size/cabaletta/baritone.svg)
 ![](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
-![](https://tokei.rs/b1/github/cabaletta/baritone?category=files)
 [![Minecraft](https://img.shields.io/badge/MC-1.13.2-brightgreen.svg)](https://minecraft.gamepedia.com/1.13.2)
 [![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
 [![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
-[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.3-brightgreen.svg)](https://impactdevelopment.github.io/)
+[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.5%20/%20v1.3.0-brightgreen.svg)](https://impactdevelopment.github.io/)
 [![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-master%3F-green.svg)](https://wweclient.com/)
 [![KAMI integration](https://img.shields.io/badge/KAMI%20integration-v1.0.0-red.svg)](https://github.com/zeroeightysix/KAMI/)
 [![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
@@ -32,7 +31,7 @@ Baritone is the pathfinding system used in [Impact](https://impactdevelopment.gi
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
 
-Have committed at least once a day for the last 7 months =D 🦀
+Have committed at least once a day for the last 8 months =D 🦀
 
 1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
 
