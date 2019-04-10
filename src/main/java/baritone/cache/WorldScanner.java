@@ -28,14 +28,14 @@ import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public enum WorldScanner implements IWorldScanner {
 
     INSTANCE;
+
+    private static final int[] DEFAULT_COORDINATE_ITERATION_ORDER = IntStream.range(0, 16).toArray();
 
     @Override
     public List<BlockPos> scanChunkRadius(IPlayerContext ctx, List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
@@ -52,6 +52,9 @@ public enum WorldScanner implements IWorldScanner {
         int playerChunkX = ctx.playerFeet().getX() >> 4;
         int playerChunkZ = ctx.playerFeet().getZ() >> 4;
         int playerY = ctx.playerFeet().getY();
+
+        int playerYBlockStateContainerIndex = playerY >> 4;
+        int[] coordinateIterationOrder = IntStream.range(0, 16).boxed().sorted(Comparator.comparingInt(y -> Math.abs(y - playerYBlockStateContainerIndex))).mapToInt(x -> x).toArray();
 
         int searchRadiusSq = 0;
         boolean foundWithinY = false;
@@ -72,7 +75,9 @@ public enum WorldScanner implements IWorldScanner {
                         continue;
                     }
                     allUnloaded = false;
-                    scanChunkInto(chunkX << 4, chunkZ << 4, chunk, blocks, res, max, yLevelThreshold, playerY);
+                    if (scanChunkInto(chunkX << 4, chunkZ << 4, chunk, blocks, res, max, yLevelThreshold, playerY, coordinateIterationOrder)) {
+                        foundWithinY = true;
+                    }
                 }
             }
             if ((allUnloaded && foundChunks)
@@ -100,13 +105,15 @@ public enum WorldScanner implements IWorldScanner {
         }
 
         ArrayList<BlockPos> res = new ArrayList<>();
-        scanChunkInto(pos.x << 4, pos.z << 4, chunk, blocks, res, max, yLevelThreshold, playerY);
+        scanChunkInto(pos.x << 4, pos.z << 4, chunk, blocks, res, max, yLevelThreshold, playerY, DEFAULT_COORDINATE_ITERATION_ORDER);
         return res;
     }
 
-    public void scanChunkInto(int chunkX, int chunkZ, Chunk chunk, List<Block> search, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY) {
+    private boolean scanChunkInto(int chunkX, int chunkZ, Chunk chunk, List<Block> search, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY, int[] coordinateIterationOrder) {
         ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
-        for (int y0 = 0; y0 < 16; y0++) {
+        boolean foundWithinY = false;
+        for (int yIndex = 0; yIndex < 16; yIndex++) {
+            int y0 = coordinateIterationOrder[yIndex];
             ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
             if (extendedblockstorage == null) {
                 continue;
@@ -121,14 +128,22 @@ public enum WorldScanner implements IWorldScanner {
                         IBlockState state = bsc.get(x, y, z);
                         if (search.contains(state.getBlock())) {
                             int yy = yReal | y;
-                            result.add(new BlockPos(chunkX | x, yy, chunkZ | z));
-                            if (result.size() >= max && Math.abs(yy - playerY) < yLevelThreshold) {
-                                return;
+                            if (result.size() >= max) {
+                                if (Math.abs(yy - playerY) < yLevelThreshold) {
+                                    foundWithinY = true;
+                                } else {
+                                    if (foundWithinY) {
+                                        // have found within Y in this chunk, so don't need to consider outside Y
+                                        return true;
+                                    }
+                                }
                             }
+                            result.add(new BlockPos(chunkX | x, yy, chunkZ | z));
                         }
                     }
                 }
             }
         }
+        return foundWithinY;
     }
 }
