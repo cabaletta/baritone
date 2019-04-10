@@ -21,7 +21,6 @@ import net.minecraft.block.BlockFire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.VoxelShape;
@@ -46,9 +45,15 @@ public final class VecUtils {
     public static Vec3d calculateBlockCenter(World world, BlockPos pos) {
         IBlockState b = world.getBlockState(pos);
         VoxelShape shape = b.getCollisionShape(world, pos);
+        if (shape.isEmpty()) {
+            return getBlockPosCenter(pos);
+        }
         double xDiff = (shape.getStart(EnumFacing.Axis.X) + shape.getEnd(EnumFacing.Axis.X)) / 2;
         double yDiff = (shape.getStart(EnumFacing.Axis.Y) + shape.getEnd(EnumFacing.Axis.Y)) / 2;
         double zDiff = (shape.getStart(EnumFacing.Axis.Z) + shape.getEnd(EnumFacing.Axis.Z)) / 2;
+        if (Double.isNaN(xDiff) || Double.isNaN(yDiff) || Double.isNaN(zDiff)) {
+            throw new IllegalStateException(b + " " + pos + " " + shape);
+        }
         if (b.getBlock() instanceof BlockFire) {//look at bottom of fire when putting it out
             yDiff = 0;
         }

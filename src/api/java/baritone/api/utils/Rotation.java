@@ -36,6 +36,9 @@ public class Rotation {
     public Rotation(float yaw, float pitch) {
         this.yaw = yaw;
         this.pitch = pitch;
+        if (Float.isInfinite(yaw) || Float.isNaN(yaw) || Float.isInfinite(pitch) || Float.isNaN(pitch)) {
+            throw new IllegalStateException(yaw + " " + pitch);
+        }
     }
 
     /**
