@@ -58,10 +58,12 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
 
     private HashSet<BetterBlockPos> incorrectPositions;
     private String name;
+    private ISchematic realSchematic;
     private ISchematic schematic;
     private Vec3i origin;
     private int ticks;
     private boolean paused;
+    private int layer;
 
     public BuilderProcess(Baritone baritone) {
         super(baritone);
@@ -77,8 +79,10 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     public void build(String name, ISchematic schematic, Vec3i origin) {
         this.name = name;
         this.schematic = schematic;
+        this.realSchematic = null;
         this.origin = origin;
         this.paused = false;
+        this.layer = 0;
     }
 
     public void resume() {
@@ -285,8 +289,39 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         if (paused) {
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
+        if (Baritone.settings().buildInLayers.value) {
+            if (realSchematic == null) {
+                realSchematic = schematic;
+            }
+            schematic = new ISchematic() {
+                @Override
+                public IBlockState desiredState(int x, int y, int z) {
+                    return realSchematic.desiredState(x, y, z);
+                }
+
+                @Override
+                public int widthX() {
+                    return realSchematic.widthX();
+                }
+
+                @Override
+                public int heightY() {
+                    return layer;
+                }
+
+                @Override
+                public int lengthZ() {
+                    return realSchematic.lengthZ();
+                }
+            };
+        }
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
+            if (Baritone.settings().buildInLayers.value && layer < realSchematic.heightY()) {
+                logDirect("Starting layer " + layer);
+                layer++;
+                return onTick(calcFailed, isSafeToCancel);
+            }
             logDirect("Done building");
             onLostControl();
             return null;
@@ -540,6 +575,8 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         incorrectPositions = null;
         name = null;
         schematic = null;
+        realSchematic = null;
+        layer = 0;
         paused = false;
     }
 

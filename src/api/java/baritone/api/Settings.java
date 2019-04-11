@@ -567,6 +567,11 @@ public final class Settings {
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
 
     /**
+     * Don't consider the next layer in builder until the current one is done
+     */
+    public final Setting<Boolean> buildInLayers = new Setting<>(false);
+
+    /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
