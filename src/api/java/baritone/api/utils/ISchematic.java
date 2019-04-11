@@ -18,6 +18,7 @@
 package baritone.api.utils;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
 
 /**
  * Basic representation of a schematic. Provides the dimensions and
@@ -42,6 +43,19 @@ public interface ISchematic {
      */
     default boolean inSchematic(int x, int y, int z) {
         return x >= 0 && x < widthX() && y >= 0 && y < heightY() && z >= 0 && z < lengthZ();
+    }
+
+    default int size(EnumFacing.Axis axis) {
+        switch (axis) {
+            case X:
+                return widthX();
+            case Y:
+                return heightY();
+            case Z:
+                return lengthZ();
+            default:
+                throw new UnsupportedOperationException(axis + "");
+        }
     }
 
     /**

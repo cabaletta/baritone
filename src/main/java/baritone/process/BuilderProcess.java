@@ -285,6 +285,11 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_LEFT)) {
+            ticks = 5;
+        } else {
+            ticks--;
+        }
         baritone.getInputOverrideHandler().clearAllKeys();
         if (paused) {
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
@@ -322,18 +327,24 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                 layer++;
                 return onTick(calcFailed, isSafeToCancel);
             }
-            logDirect("Done building");
-            onLostControl();
-            return null;
+            int distance = Baritone.settings().buildRepeatDistance.value;
+            EnumFacing direction = Baritone.settings().buildRepeatDirection.value;
+            if (distance == 0) {
+                logDirect("Done building");
+                onLostControl();
+                return null;
+            }
+            // build repeat time
+            if (distance == -1) {
+                distance = schematic.size(direction.getAxis());
+            }
+            layer = 0;
+            origin = new BlockPos(origin).offset(direction, distance);
+            logDirect("Repeating build " + distance + " blocks to the " + direction + ", new origin is " + origin);
         }
         trim(bcc);
-        if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_LEFT)) {
-            ticks = 5;
-        } else {
-            ticks--;
-        }
+
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
-        baritone.getInputOverrideHandler().clearAllKeys();
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround) {
             // we'd like to pause to break this block
             // only change look direction if it's safe (don't want to fuck up an in progress parkour for example
