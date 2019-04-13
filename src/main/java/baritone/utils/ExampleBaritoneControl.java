@@ -353,12 +353,22 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             baritone.getBuilderProcess().clearArea(corner1, corner2);
             return true;
         }
+        if (msg.equals("resume")) {
+            baritone.getBuilderProcess().resume();
+            logDirect("resumed");
+            return true;
+        }
         if (msg.equals("reset")) {
             for (Settings.Setting setting : Baritone.settings().allSettings) {
                 setting.reset();
             }
             SettingsUtil.save(Baritone.settings());
             logDirect("Baritone settings reset");
+            return true;
+        }
+        if (msg.equals("tunnel")) {
+            customGoalProcess.setGoalAndPath(new GoalStrictDirection(ctx.playerFeet(), ctx.player().getHorizontalFacing()));
+            logDirect("tunneling");
             return true;
         }
         if (msg.equals("render")) {

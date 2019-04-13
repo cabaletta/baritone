@@ -21,6 +21,7 @@ import baritone.api.utils.SettingsUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
@@ -58,7 +59,9 @@ public final class Settings {
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
-     * because we want to generally conserve blocks which might be limited
+     * because we want to generally conserve blocks which might be limited.
+     * <p>
+     * Decrease to make Baritone more often consider paths that would require placing blocks
      */
     public final Setting<Double> blockPlacementPenalty = new Setting<>(20D);
 
@@ -92,6 +95,11 @@ public final class Settings {
     public final Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
 
     /**
+     * If you have Fire Resistance and Jesus then I guess you could turn this on lol
+     */
+    public final Setting<Boolean> assumeWalkOnLava = new Setting<>(false);
+
+    /**
      * Assume step functionality; don't jump on an Ascend.
      */
     public final Setting<Boolean> assumeStep = new Setting<>(false);
@@ -108,7 +116,7 @@ public final class Settings {
     /**
      * If true, parkour is allowed to make jumps when standing on blocks at the maximum height, so player feet is y=256
      * <p>
-     * Defaults to false because this fails on constantiam
+     * Defaults to false because this fails on constantiam. Please let me know if this is ever disabled. Please.
      */
     public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
@@ -120,6 +128,13 @@ public final class Settings {
      * For a generic "take some risks" mode I'd turn on this one, parkour, and parkour place.
      */
     public final Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
+
+    /**
+     * Allow mining the block directly beneath its feet
+     * <p>
+     * Turn this off to force it to make more staircases and less shafts
+     */
+    public final Setting<Boolean> allowDownward = new Setting<>(true);
 
     /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
@@ -430,6 +445,11 @@ public final class Settings {
     public final Setting<Boolean> renderGoal = new Setting<>(true);
 
     /**
+     * Render selection boxes
+     */
+    public final Setting<Boolean> renderSelectionBoxes = new Setting<>(true);
+
+    /**
      * Ignore depth when rendering the goal
      */
     public final Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
@@ -551,6 +571,21 @@ public final class Settings {
      * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
+
+    /**
+     * Don't consider the next layer in builder until the current one is done
+     */
+    public final Setting<Boolean> buildInLayers = new Setting<>(false);
+
+    /**
+     * How far to move before repeating the build. -1 for the size of the build in that axis. 0 to disable
+     */
+    public final Setting<Integer> buildRepeatDistance=new Setting<>(0);
+
+    /**
+     * What direction te repeat the build in
+     */
+    public final Setting<EnumFacing> buildRepeatDirection = new Setting<>(EnumFacing.NORTH);
 
     /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?

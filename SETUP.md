@@ -1,7 +1,7 @@
 # Installation
 
 ## Prebuilt official releases
-These releases are not always completely up to date with latest features, and are only released from `master`. (so if you want `builder` branch for example, you'll have to build it yourself)
+These releases are not always completely up to date with latest features, and are only released from `master`. (so if you want `backfill-2` branch for example, you'll have to build it yourself)
 
 Link to the releases page: [Releases](https://github.com/cabaletta/baritone/releases)
 
