@@ -89,6 +89,10 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         paused = false;
     }
 
+    public void pause() {
+        paused = true;
+    }
+
     @Override
     public boolean build(String name, File schematic, Vec3i origin) {
         NBTTagCompound tag;

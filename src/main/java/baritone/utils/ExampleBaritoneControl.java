@@ -358,6 +358,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("resumed");
             return true;
         }
+        if (msg.equals("pause")) {
+            baritone.getBuilderProcess().pause();
+            logDirect("paused");
+            return true;
+        }
         if (msg.equals("reset")) {
             for (Settings.Setting setting : Baritone.settings().allSettings) {
                 setting.reset();
