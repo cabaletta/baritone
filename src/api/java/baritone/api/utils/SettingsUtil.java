@@ -20,6 +20,7 @@ package baritone.api.utils;
 import baritone.api.Settings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 
@@ -147,7 +148,8 @@ public class SettingsUtil {
         LONG(Long.class, Long::parseLong),
 
         ITEM_LIST(ArrayList.class, str -> Stream.of(str.split(",")).map(ResourceLocation::new).map(IRegistry.ITEM::get).collect(Collectors.toCollection(ArrayList::new)), list -> ((ArrayList<Item>) list).stream().map(IRegistry.ITEM::getKey).map(ResourceLocation::toString).collect(Collectors.joining(","))),
-        COLOR(Color.class, str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])), color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue());
+        COLOR(Color.class, str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])), color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue()),
+        ENUMFACING(EnumFacing.class, EnumFacing::byName);
 
 
         Class<?> klass;

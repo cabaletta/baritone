@@ -30,10 +30,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDoor;
-import net.minecraft.block.BlockFenceGate;
-import net.minecraft.block.BlockSlab;
+import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.fluid.WaterFluid;
 import net.minecraft.init.Blocks;
@@ -154,6 +151,8 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
+        IBlockState pb0 = BlockStateInterface.get(ctx, positionsToBreak[0]);
+        IBlockState pb1 = BlockStateInterface.get(ctx, positionsToBreak[1]);
         if (state.getStatus() != MovementStatus.RUNNING) {
             // if the setting is enabled
             if (!Baritone.settings().walkWhileBreaking.value) {
@@ -164,10 +163,10 @@ public class MovementTraverse extends Movement {
                 return state;
             }
             // and if it's fine to walk into the blocks in front
-            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, positionsToBreak[0]))) {
+            if (MovementHelper.avoidWalkingInto(pb0)) {
                 return state;
             }
-            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, positionsToBreak[1]))) {
+            if (MovementHelper.avoidWalkingInto(pb1)) {
                 return state;
             }
             // and we aren't already pressed up against the block
@@ -180,6 +179,10 @@ public class MovementTraverse extends Movement {
             // it's safe to do this since the two blocks we break (in a traverse) are right on top of each other and so will have the same yaw
             float yawToDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), dest), ctx.playerRotations()).getYaw();
             float pitchToBreak = state.getTarget().getRotation().get().getPitch();
+            if ((pb0.isFullCube() || pb0.getBlock() instanceof BlockAir && (pb1.isFullCube() || pb1.getBlock() instanceof BlockAir))) {
+                // in the meantime, before we're right up against the block, we can break efficiently at this angle
+                pitchToBreak = 26;
+            }
 
             state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
             return state.setInput(Input.MOVE_FORWARD, true).setInput(Input.SPRINT, true);
@@ -190,8 +193,6 @@ public class MovementTraverse extends Movement {
 
         Block fd = BlockStateInterface.get(ctx, src.down()).getBlock();
         boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
-        IBlockState pb0 = BlockStateInterface.get(ctx, positionsToBreak[0]);
-        IBlockState pb1 = BlockStateInterface.get(ctx, positionsToBreak[1]);
 
         boolean door = pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor;
         if (door) {

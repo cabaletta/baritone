@@ -134,6 +134,7 @@ public enum WorldScanner implements IWorldScanner {
                                 } else {
                                     if (foundWithinY) {
                                         // have found within Y in this chunk, so don't need to consider outside Y
+                                        // TODO continue iteration to one more sorted Y coordinate block
                                         return true;
                                     }
                                 }

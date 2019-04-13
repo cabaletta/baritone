@@ -21,6 +21,7 @@ import baritone.api.utils.SettingsUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
@@ -565,6 +566,21 @@ public final class Settings {
      * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
+
+    /**
+     * Don't consider the next layer in builder until the current one is done
+     */
+    public final Setting<Boolean> buildInLayers = new Setting<>(false);
+
+    /**
+     * How far to move before repeating the build. -1 for the size of the build in that axis. 0 to disable
+     */
+    public final Setting<Integer> buildRepeatDistance=new Setting<>(0);
+
+    /**
+     * What direction te repeat the build in
+     */
+    public final Setting<EnumFacing> buildRepeatDirection = new Setting<>(EnumFacing.NORTH);
 
     /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?

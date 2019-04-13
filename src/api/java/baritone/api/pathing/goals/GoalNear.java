@@ -61,6 +61,6 @@ public class GoalNear implements Goal, IGoalRenderPos {
                 ", y=" + y +
                 ", z=" + z +
                 ", rangeSq=" + rangeSq +
-                '}';
+                "}";
     }
 }
