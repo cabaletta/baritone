@@ -366,6 +366,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Baritone settings reset");
             return true;
         }
+        if (msg.equals("tunnel")) {
+            customGoalProcess.setGoalAndPath(new GoalStrictDirection(ctx.playerFeet(), ctx.player().getHorizontalFacing()));
+            logDirect("tunneling");
+            return true;
+        }
         if (msg.equals("render")) {
             BetterBlockPos pf = ctx.playerFeet();
             Minecraft.getMinecraft().renderGlobal.markBlockRangeForRenderUpdate(pf.x - 500, pf.y - 500, pf.z - 500, pf.x + 500, pf.y + 500, pf.z + 500);
