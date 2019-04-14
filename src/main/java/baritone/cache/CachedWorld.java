@@ -180,8 +180,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
             if (region == null) {
                 continue;
             }
-            int distX = (region.getX() << 9 + 256) - pruneCenter.getX();
-            int distZ = (region.getZ() << 9 + 256) - pruneCenter.getZ();
+            int distX = ((region.getX() << 9) + 256) - pruneCenter.getX();
+            int distZ = ((region.getZ() << 9) + 256) - pruneCenter.getZ();
             double dist = Math.sqrt(distX * distX + distZ * distZ);
             if (dist > 1024) {
                 logDebug("Deleting cached region " + region.getX() + "," + region.getZ() + " from ram");
@@ -216,7 +216,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
         if (mostRecentlyModified == null) {
             return new BlockPos(0, 0, 0);
         }
-        return new BlockPos(mostRecentlyModified.x << 4 + 8, 0, mostRecentlyModified.z << 4 + 8);
+        return new BlockPos((mostRecentlyModified.x << 4) + 8, 0, (mostRecentlyModified.z << 4) + 8);
     }
 
     private synchronized List<CachedRegion> allRegions() {
