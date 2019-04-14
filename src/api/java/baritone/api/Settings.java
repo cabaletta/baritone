@@ -401,10 +401,12 @@ public final class Settings {
      * On save, delete from RAM any cached regions that are more than 1024 blocks away from the player
      * <p>
      * Temporarily disabled
+     * <p>
+     * Temporarily reenabled
      *
      * @see <a href="https://github.com/cabaletta/baritone/issues/248">Issue #248</a>
      */
-    public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(false);
+    public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(true);
 
     /**
      * Remember the contents of containers (chests, echests, furnaces)
@@ -575,7 +577,7 @@ public final class Settings {
     /**
      * How far to move before repeating the build. -1 for the size of the build in that axis. 0 to disable
      */
-    public final Setting<Integer> buildRepeatDistance=new Setting<>(0);
+    public final Setting<Integer> buildRepeatDistance = new Setting<>(0);
 
     /**
      * What direction te repeat the build in
