@@ -382,6 +382,11 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("okay");
             return true;
         }
+        if (msg.equals("farm")) {
+            baritone.getFarmProcess().doit();
+            logDirect("farming");
+            return true;
+        }
         if (msg.equals("echest")) {
             Optional<List<ItemStack>> contents = baritone.getMemoryBehavior().echest();
             if (contents.isPresent()) {
