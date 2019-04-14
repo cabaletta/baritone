@@ -119,6 +119,9 @@ public final class ChunkPacker {
     }
 
     public static Block stringToBlockRequired(String name) {
+        if (name.equals("lit_redstone_ore")) {
+            return stringToBlockRequired("redstone_ore");
+        }
         Block block = stringToBlockNullable(name);
         Objects.requireNonNull(block);
         return block;
