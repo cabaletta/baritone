@@ -63,9 +63,6 @@ There are about a hundred settings, but here are some fun / interesting / import
 
 # Troubleshooting / common issues
 
-## Baritone highlights a block in green but gets completely stuck? Also I'm using Baritone with Future?
-Baritone is trying to right click to place a block there, but it can't since there's a conflicting mixin. Baritone can't force click right click when Future is also installed. Left click **does work** on recent Baritone even with Future, however. For now, turn off `allowPlace` and Baritone will only search for paths that don't require placing blocks to complete. `allowBreak` can remain on.
-
 ## Why doesn't Baritone respond to any of my chat commands?
 This could be one of many things.
 
