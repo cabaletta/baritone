@@ -142,7 +142,8 @@ public final class Settings {
     public final Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
-            Item.getItemFromBlock(Blocks.NETHERRACK)
+            Item.getItemFromBlock(Blocks.NETHERRACK),
+            Item.getItemFromBlock(Blocks.STONE)
     )));
 
     /**
@@ -575,7 +576,7 @@ public final class Settings {
     /**
      * How far to move before repeating the build. -1 for the size of the build in that axis. 0 to disable
      */
-    public final Setting<Integer> buildRepeatDistance=new Setting<>(0);
+    public final Setting<Integer> buildRepeatDistance = new Setting<>(0);
 
     /**
      * What direction te repeat the build in
