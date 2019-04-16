@@ -80,6 +80,7 @@ public class Baritone implements IBaritone {
     private CustomGoalProcess customGoalProcess;
     private BuilderProcess builderProcess;
     private ExploreProcess exploreProcess;
+    private FarmProcess farmProcess;
 
     private PathingControlManager pathingControlManager;
 
@@ -120,6 +121,7 @@ public class Baritone implements IBaritone {
             getToBlockProcess = new GetToBlockProcess(this);
             builderProcess = new BuilderProcess(this);
             exploreProcess = new ExploreProcess(this);
+            farmProcess = new FarmProcess(this);
         }
 
         this.worldProvider = new WorldProvider();
@@ -195,6 +197,10 @@ public class Baritone implements IBaritone {
     @Override
     public MineProcess getMineProcess() {
         return this.mineProcess;
+    }
+
+    public FarmProcess getFarmProcess() {
+        return this.farmProcess;
     }
 
     @Override

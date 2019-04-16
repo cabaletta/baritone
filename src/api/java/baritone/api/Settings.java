@@ -142,7 +142,8 @@ public final class Settings {
     public final Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
-            Item.getItemFromBlock(Blocks.NETHERRACK)
+            Item.getItemFromBlock(Blocks.NETHERRACK),
+            Item.getItemFromBlock(Blocks.STONE)
     )));
 
     /**

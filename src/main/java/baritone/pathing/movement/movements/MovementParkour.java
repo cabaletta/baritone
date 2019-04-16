@@ -106,7 +106,9 @@ public class MovementParkour extends Movement {
                     return;
                 }
             }
-            if (MovementHelper.canWalkOn(context.bsi, x + xDiff * i, y - 1, z + zDiff * i)) {
+            IBlockState landingOn = context.bsi.get0(x + xDiff * i, y - 1, z + zDiff * i);
+            // farmland needs to be canwalkon otherwise farm can never work at all, but we want to specifically disallow ending a jumy on farmland haha
+            if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, x + xDiff * i, y - 1, z + zDiff * i, landingOn)) {
                 res.x = x + xDiff * i;
                 res.y = y;
                 res.z = z + zDiff * i;

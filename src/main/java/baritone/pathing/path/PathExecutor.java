@@ -441,7 +441,10 @@ public class PathExecutor implements IPathExecutor, Helper {
             IMovement prev = path.movements().get(pathPosition - 1);
             if (prev instanceof MovementDescend && prev.getDirection().up().equals(current.getDirection().down())) {
                 BlockPos center = current.getSrc().up();
-                if (ctx.player().posY >= center.getY()) { // playerFeet adds 0.1251 to account for soul sand
+                // playerFeet adds 0.1251 to account for soul sand
+                // farmland is 0.9375
+                // 0.07 is to account for farmland
+                if (ctx.player().posY >= center.getY() - 0.07) {
                     behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
                     return true;
                 }
