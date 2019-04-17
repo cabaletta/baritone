@@ -117,7 +117,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     // blacklist the closest block and its adjacent blocks
-    public synchronized void blacklistClosest() {
+    public synchronized boolean blacklistClosest() {
         List<BlockPos> newBlacklist = new ArrayList<>();
         knownLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(newBlacklist::add);
         outer:
@@ -140,6 +140,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         }
         logDebug("Blacklisting unreachable locations " + newBlacklist);
         blacklist.addAll(newBlacklist);
+        return !newBlacklist.isEmpty();
     }
 
     // safer than direct double comparison from distanceSq

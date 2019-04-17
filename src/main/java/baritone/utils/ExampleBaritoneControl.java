@@ -35,6 +35,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.process.CustomGoalProcess;
+import baritone.process.GetToBlockProcess;
 import baritone.utils.pathing.SegmentedCalculator;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -464,6 +465,19 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             baritone.getExploreProcess().explore(centerX, centerZ);
             logDirect("Exploring from " + centerX + "," + centerZ);
+            return true;
+        }
+        if (msg.equals("blacklist")) {
+            GetToBlockProcess proc = baritone.getGetToBlockProcess();
+            if (!proc.isActive()) {
+                logDirect("GetToBlockProcess is not currently active");
+                return true;
+            }
+            if (proc.blacklistClosest()) {
+                logDirect("Blacklisted closest instances");
+            } else {
+                logDirect("No known locations, unable to blacklist");
+            }
             return true;
         }
         if (msg.startsWith("find")) {
