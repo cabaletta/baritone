@@ -128,7 +128,7 @@ public final class ChunkPacker {
     }
 
     public static Block stringToBlockNullable(String name) {
-        return resourceCache.computeIfAbsent(name, n -> IRegistry.BLOCK.get(new ResourceLocation(n.contains(":") ? n : "minecraft:" + n)));
+        return resourceCache.computeIfAbsent(name, n -> IRegistry.BLOCK.get(ResourceLocation.tryCreate(n.contains(":") ? n : "minecraft:" + n)));
     }
 
     private static PathingBlockType getPathingBlockType(IBlockState state, Chunk chunk, int x, int y, int z) {
