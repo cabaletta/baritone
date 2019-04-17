@@ -296,7 +296,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
         baritone.getInputOverrideHandler().clearAllKeys();
         if (paused) {
-            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         if (Baritone.settings().buildInLayers.value) {
             if (realSchematic == null) {
