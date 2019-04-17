@@ -365,7 +365,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
-            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         List<IBlockState> desirableOnHotbar = new ArrayList<>();
         Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
@@ -377,7 +377,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             if ((ctx.isLookingAt(toPlace.get().placeAgainst) && ctx.objectMouseOver().sideHit.equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             }
-            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
         List<IBlockState> approxPlacable = placable(36);
