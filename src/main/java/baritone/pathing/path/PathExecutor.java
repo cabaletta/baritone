@@ -23,10 +23,7 @@ import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.pathing.path.IPathExecutor;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.RotationUtils;
-import baritone.api.utils.VecUtils;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.calc.AbstractNodeCostSearch;
@@ -35,7 +32,6 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
-import baritone.api.utils.Helper;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
@@ -569,7 +565,10 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
             return true;
         }
-        if (next instanceof MovementTraverse && next.getDirection().down().equals(current.getDirection()) && MovementHelper.canWalkOn(ctx, next.getDest().down())) {
+        if (!MovementHelper.canWalkOn(ctx, current.getDest().add(current.getDirection()))) {
+            return false;
+        }
+        if (next instanceof MovementTraverse && next.getDirection().down().equals(current.getDirection())) {
             return true;
         }
         return next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.value;
