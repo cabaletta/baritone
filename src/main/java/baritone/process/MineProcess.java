@@ -204,6 +204,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     private static boolean internalMiningGoal(BlockPos pos, IPlayerContext ctx, List<BlockPos> locs) {
+        // Here, BlockStateInterface is used because the position may be in a cached chunk (the targeted block is one that is kept track of)
         return locs.contains(pos) || (Baritone.settings().internalMiningAirException.value && BlockStateInterface.getBlock(ctx, pos) instanceof BlockAir);
     }
 
@@ -211,14 +212,34 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (!Baritone.settings().forceInternalMining.value) {
             return new GoalThreeBlocks(loc);
         }
-
-        //if upwardGoal is false, and downward is true
-
-        // Here, BlockStateInterface is used because the position may be in a cached chunk (the targeted block is one that is kept track of)
         boolean upwardGoal = internalMiningGoal(loc.up(), ctx, locs);
         boolean downwardGoal = internalMiningGoal(loc.down(), ctx, locs);
         boolean doubleDownwardGoal = internalMiningGoal(loc.down(2), ctx, locs);
-        return upwardGoal == downwardGoal ? doubleDownwardGoal ? new GoalThreeBlocks(loc) : new GoalTwoBlocks(loc) : upwardGoal ? new GoalBlock(loc) : doubleDownwardGoal ? new GoalTwoBlocks(loc.down()) : new GoalBlock(loc.down());
+        if (upwardGoal == downwardGoal) { // symmetric
+            if (doubleDownwardGoal) {
+                // we have a checkerboard like pattern
+                // this one, and the one two below it
+                // therefore it's fine to path to immediately below this one, since your feet will be in the doubleDownwardGoal
+                return new GoalThreeBlocks(loc);
+            } else {
+                // this block has nothing interesting two below, but is symmetric vertically so we can get either feet or head into it
+                return new GoalTwoBlocks(loc);
+            }
+        }
+        if (upwardGoal) {
+            // downwardGoal known to be false
+            // ignore the gap then potential doubleDownward, because we want to path feet into this one and head into upwardGoal
+            return new GoalBlock(loc);
+        }
+        // upwardGoal known to be false, downwardGoal known to be true
+        if (doubleDownwardGoal) {
+            // this block and two below it are goals
+            // path into the center of the one below, because that includes directly below this one
+            return new GoalTwoBlocks(loc.down());
+        }
+        // upwardGoal false, downwardGoal true, doubleDownwardGoal false
+        // just this block and the one immediately below, no others
+        return new GoalBlock(loc.down());
     }
 
     private static class GoalThreeBlocks extends GoalTwoBlocks {
