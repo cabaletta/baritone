@@ -112,13 +112,18 @@ public final class ChunkPacker {
             if (MovementHelper.possiblyFlowing(state)) {
                 return PathingBlockType.AVOID;
             }
+            if (
+                    (x != 15 && MovementHelper.possiblyFlowing(chunk.getBlockState(x + 1, y, z)))
+                            || (x != 0 && MovementHelper.possiblyFlowing(chunk.getBlockState(x - 1, y, z)))
+                            || (z != 15 && MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z + 1)))
+                            || (z != 0 && MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z - 1)))
+            ) {
+                return PathingBlockType.AVOID;
+            }
             if (x == 0 || x == 15 || z == 0 || z == 15) {
                 if (BlockLiquid.getSlopeAngle(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4), state.getMaterial(), state) == -1000.0F) {
                     return PathingBlockType.WATER;
                 }
-                return PathingBlockType.AVOID;
-            }
-            if (MovementHelper.possiblyFlowing(chunk.getBlockState(x + 1, y, z)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x - 1, y, z)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z + 1)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z - 1))) {
                 return PathingBlockType.AVOID;
             }
             return PathingBlockType.WATER;
