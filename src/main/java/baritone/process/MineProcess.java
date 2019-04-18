@@ -26,7 +26,6 @@ import baritone.api.utils.BlockUtils;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RotationUtils;
 import baritone.cache.CachedChunk;
-import baritone.cache.ChunkPacker;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;

@@ -21,11 +21,11 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.path.CutoffPath;
-import baritone.api.utils.Helper;
 import baritone.utils.pathing.PathBase;
 
 import java.util.ArrayList;

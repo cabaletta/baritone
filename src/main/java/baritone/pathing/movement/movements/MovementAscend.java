@@ -197,7 +197,7 @@ public class MovementAscend extends Movement {
         if (headBonkClear()) {
             return state.setInput(Input.JUMP, true);
         }
-        
+
         if (flatDistToNext > 1.2 || sideDist > 0.2) {
             return state;
         }

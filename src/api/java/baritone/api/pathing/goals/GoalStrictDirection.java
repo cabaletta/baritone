@@ -17,7 +17,6 @@
 
 package baritone.api.pathing.goals;
 
-import baritone.api.BaritoneAPI;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 

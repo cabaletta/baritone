@@ -22,9 +22,9 @@ import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.utils.Helper;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
-import baritone.api.utils.Helper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
