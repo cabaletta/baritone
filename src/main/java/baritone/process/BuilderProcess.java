@@ -69,12 +69,6 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         super(baritone);
     }
 
-    public boolean build(String schematicFile, BlockPos origin) {
-        File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
-        System.out.println(file + " " + file.exists());
-        return build(schematicFile, file, origin);
-    }
-
     @Override
     public void build(String name, ISchematic schematic, Vec3i origin) {
         this.name = name;

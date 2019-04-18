@@ -24,7 +24,7 @@ import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
+import baritone.api.utils.Helper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 

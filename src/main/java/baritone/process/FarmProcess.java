@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalComposite;
+import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.Rotation;
@@ -50,7 +51,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public class FarmProcess extends BaritoneProcessHelper {
+public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
 
     private boolean active;
 
@@ -90,7 +91,8 @@ public class FarmProcess extends BaritoneProcessHelper {
         return active;
     }
 
-    public void doit() {
+    @Override
+    public void farm() {
         active = true;
     }
 

@@ -22,6 +22,7 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BlockUtils;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RotationUtils;
 import baritone.cache.CachedChunk;
@@ -219,7 +220,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         for (Block m : mining) {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(m)) {
                 // maxRegionDistanceSq 2 means adjacent directly or adjacent diagonally; nothing further than that
-                locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(ChunkPacker.blockToString(m), Baritone.settings().maxCachedWorldScanCount.value, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
+                locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(BlockUtils.blockToString(m), Baritone.settings().maxCachedWorldScanCount.value, ctx.getBaritone().getPlayerContext().playerFeet().getX(), ctx.getBaritone().getPlayerContext().playerFeet().getZ(), 2));
             } else {
                 uninteresting.add(m);
             }
@@ -303,7 +304,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public void mineByName(int quantity, String... blocks) {
-        mine(quantity, blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(ChunkPacker::stringToBlockRequired).toArray(Block[]::new));
+        mine(quantity, blocks == null || blocks.length == 0 ? null : Arrays.stream(blocks).map(BlockUtils::stringToBlockRequired).toArray(Block[]::new));
     }
 
     @Override

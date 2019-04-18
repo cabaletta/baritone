@@ -24,7 +24,7 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.cache.ContainerMemory;
-import baritone.cache.Waypoint;
+import baritone.api.cache.Waypoint;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;

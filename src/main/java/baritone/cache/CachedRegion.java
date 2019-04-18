@@ -19,6 +19,7 @@ package baritone.cache;
 
 import baritone.Baritone;
 import baritone.api.cache.ICachedRegion;
+import baritone.api.utils.BlockUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
@@ -149,7 +150,7 @@ public final class CachedRegion implements ICachedRegion {
                     for (int z = 0; z < 32; z++) {
                         if (chunks[x][z] != null) {
                             for (int i = 0; i < 256; i++) {
-                                out.writeUTF(ChunkPacker.blockToString(chunks[x][z].getOverview()[i].getBlock()));
+                                out.writeUTF(BlockUtils.blockToString(chunks[x][z].getOverview()[i].getBlock()));
                             }
                         }
                     }
@@ -240,7 +241,7 @@ public final class CachedRegion implements ICachedRegion {
                     for (int z = 0; z < 32; z++) {
                         if (present[x][z]) {
                             for (int i = 0; i < 256; i++) {
-                                overview[x][z][i] = ChunkPacker.stringToBlockRequired(in.readUTF()).getDefaultState();
+                                overview[x][z][i] = BlockUtils.stringToBlockRequired(in.readUTF()).getDefaultState();
                             }
                         }
                     }
@@ -255,7 +256,7 @@ public final class CachedRegion implements ICachedRegion {
                             int numSpecialBlockTypes = in.readShort() & 0xffff;
                             for (int i = 0; i < numSpecialBlockTypes; i++) {
                                 String blockName = in.readUTF();
-                                ChunkPacker.stringToBlockRequired(blockName);
+                                BlockUtils.stringToBlockRequired(blockName);
                                 List<BlockPos> locs = new ArrayList<>();
                                 location[x][z].put(blockName, locs);
                                 int numLocations = in.readShort() & 0xffff;

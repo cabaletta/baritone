@@ -17,6 +17,7 @@
 
 package baritone.utils;
 
+import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;

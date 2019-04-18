@@ -81,6 +81,13 @@ public interface IPathingBehavior extends IBehavior {
     boolean cancelEverything();
 
     /**
+     * PLEASE never call this
+     * <p>
+     * If cancelEverything was like "kill" this is "sudo kill -9". Or shutting off your computer.
+     */
+    void forceCancel();
+
+    /**
      * Returns the current path, from the current path executor, if there is one.
      *
      * @return The current path

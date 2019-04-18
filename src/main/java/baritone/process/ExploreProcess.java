@@ -22,6 +22,7 @@ import baritone.api.cache.ICachedWorld;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.process.IExploreProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.cache.CachedWorld;
@@ -31,7 +32,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExploreProcess extends BaritoneProcessHelper {
+public class ExploreProcess extends BaritoneProcessHelper implements IExploreProcess {
 
     private BlockPos explorationOrigin;
 
@@ -44,6 +45,7 @@ public class ExploreProcess extends BaritoneProcessHelper {
         return explorationOrigin != null;
     }
 
+    @Override
     public void explore(int centerX, int centerZ) {
         explorationOrigin = new BlockPos(centerX, 0, centerZ);
     }

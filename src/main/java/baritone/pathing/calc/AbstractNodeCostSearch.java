@@ -24,7 +24,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.PathCalculationResult;
 import baritone.pathing.movement.CalculationContext;
-import baritone.utils.Helper;
+import baritone.api.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.Optional;

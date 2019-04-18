@@ -18,7 +18,7 @@
 package baritone.utils.player;
 
 import baritone.api.utils.IPlayerController;
-import baritone.utils.Helper;
+import baritone.api.utils.Helper;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;

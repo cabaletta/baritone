@@ -72,6 +72,18 @@ public interface IBaritone {
     IBuilderProcess getBuilderProcess();
 
     /**
+     * @return The {@link IExploreProcess} instance
+     * @see IExploreProcess
+     */
+    IExploreProcess getExploreProcess();
+
+    /**
+     * @return The {@link IFarmProcess} instance
+     * @see IFarmProcess
+     */
+    IFarmProcess getFarmProcess();
+
+    /**
      * @return The {@link ICustomGoalProcess} instance
      * @see ICustomGoalProcess
      */
@@ -115,4 +127,6 @@ public interface IBaritone {
      * @see IEventBus
      */
     IEventBus getGameEventHandler();
+
+    void openClick();
 }

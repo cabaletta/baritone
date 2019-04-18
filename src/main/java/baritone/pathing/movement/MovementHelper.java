@@ -25,7 +25,7 @@ import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
+import baritone.api.utils.Helper;
 import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
