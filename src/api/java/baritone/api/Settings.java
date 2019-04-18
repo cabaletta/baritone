@@ -571,6 +571,13 @@ public final class Settings {
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
 
     /**
+     * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.
+     * <p>
+     * Only if you have a beefy CPU and automatically mine blocks that are in cache
+     */
+    public final Setting<Boolean> extendCacheOnThreshold = new Setting<>(false);
+
+    /**
      * Don't consider the next layer in builder until the current one is done
      */
     public final Setting<Boolean> buildInLayers = new Setting<>(false);
