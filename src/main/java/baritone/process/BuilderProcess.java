@@ -36,7 +36,6 @@ import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.AirSchematic;
 import baritone.utils.schematic.Schematic;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -69,12 +68,6 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         super(baritone);
     }
 
-    public boolean build(String schematicFile, BlockPos origin) {
-        File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
-        System.out.println(file + " " + file.exists());
-        return build(schematicFile, file, origin);
-    }
-
     @Override
     public void build(String name, ISchematic schematic, Vec3i origin) {
         this.name = name;
@@ -87,6 +80,10 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
 
     public void resume() {
         paused = false;
+    }
+
+    public void pause() {
+        paused = true;
     }
 
     @Override
@@ -292,7 +289,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
         baritone.getInputOverrideHandler().clearAllKeys();
         if (paused) {
-            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         if (Baritone.settings().buildInLayers.value) {
             if (realSchematic == null) {
@@ -358,10 +355,10 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                 // and is unable since it's unsneaked in the intermediary tick
                 baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
-            if (Objects.equals(ctx.objectMouseOver().getBlockPos(), pos) || ctx.playerRotations().isReallyCloseTo(rot)) {
+            if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
-            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         List<IBlockState> desirableOnHotbar = new ArrayList<>();
         Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
@@ -370,10 +367,10 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             baritone.getLookBehavior().updateTarget(rot, true);
             ctx.player().inventory.currentItem = toPlace.get().hotbarSelection;
             baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
-            if ((Objects.equals(ctx.objectMouseOver().getBlockPos(), toPlace.get().placeAgainst) && ctx.objectMouseOver().sideHit.equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
+            if ((ctx.isLookingAt(toPlace.get().placeAgainst) && ctx.objectMouseOver().sideHit.equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             }
-            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
         List<IBlockState> approxPlacable = placable(36);

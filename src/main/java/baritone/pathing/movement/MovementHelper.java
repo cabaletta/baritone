@@ -25,7 +25,6 @@ import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
@@ -310,6 +309,10 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos, IBlockState state) {
         return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z, state);
+    }
+
+    static boolean canWalkOn(IPlayerContext ctx, BlockPos pos) {
+        return canWalkOn(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ());
     }
 
     static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos) {

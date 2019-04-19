@@ -18,6 +18,8 @@
 package baritone.api.process;
 
 import baritone.api.utils.ISchematic;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
 import java.io.File;
@@ -46,4 +48,15 @@ public interface IBuilderProcess extends IBaritoneProcess {
      * @return Whether or not the schematic was able to load from file
      */
     boolean build(String name, File schematic, Vec3i origin);
+
+    default boolean build(String schematicFile, BlockPos origin) {
+        File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
+        return build(schematicFile, file, origin);
+    }
+
+    void pause();
+
+    void resume();
+
+    void clearArea(BlockPos corner1, BlockPos corner2);
 }

@@ -1,0 +1,285 @@
+/*
+ * This file is part of Baritone.
+ *
+ * Baritone is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Baritone is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package baritone.process;
+
+import baritone.Baritone;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.pathing.goals.GoalComposite;
+import baritone.api.process.IFarmProcess;
+import baritone.api.process.PathingCommand;
+import baritone.api.process.PathingCommandType;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.input.Input;
+import baritone.cache.WorldScanner;
+import baritone.pathing.movement.MovementHelper;
+import baritone.utils.BaritoneProcessHelper;
+import net.minecraft.block.*;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemDye;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+
+public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
+
+    private boolean active;
+
+    private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
+            Items.BEETROOT_SEEDS,
+            Items.MELON_SEEDS,
+            Items.WHEAT_SEEDS,
+            Items.PUMPKIN_SEEDS,
+            Items.POTATO,
+            Items.CARROT
+    );
+
+    private static final List<Item> PICKUP_DROPPED = Arrays.asList(
+            Items.BEETROOT_SEEDS,
+            Items.WHEAT,
+            Items.MELON_SEEDS,
+            Items.MELON,
+            Items.WHEAT_SEEDS,
+            Items.WHEAT,
+            Items.PUMPKIN_SEEDS,
+            Items.POTATO,
+            Items.CARROT,
+            Items.BEETROOT,
+            Item.getItemFromBlock(Blocks.PUMPKIN),
+            Item.getItemFromBlock(Blocks.MELON_BLOCK),
+            Items.NETHER_WART,
+            Items.REEDS,
+            Item.getItemFromBlock(Blocks.CACTUS)
+    );
+
+    public FarmProcess(Baritone baritone) {
+        super(baritone);
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
+    }
+
+    @Override
+    public void farm() {
+        active = true;
+    }
+
+    private enum Harvest {
+        WHEAT((BlockCrops) Blocks.WHEAT),
+        CARROTS((BlockCrops) Blocks.CARROTS),
+        POTATOES((BlockCrops) Blocks.POTATOES),
+        BEETROOT((BlockCrops) Blocks.BEETROOTS),
+        PUMPKIN(Blocks.PUMPKIN, state -> true),
+        MELON(Blocks.MELON_BLOCK, state -> true),
+        NETHERWART(Blocks.NETHER_WART, state -> state.getValue(BlockNetherWart.AGE) >= 3),
+        SUGARCANE(Blocks.REEDS, null) {
+            @Override
+            public boolean readyToHarvest(World world, BlockPos pos, IBlockState state) {
+                return world.getBlockState(pos.down()).getBlock() instanceof BlockReed;
+            }
+        },
+        CACTUS(Blocks.CACTUS, null) {
+            @Override
+            public boolean readyToHarvest(World world, BlockPos pos, IBlockState state) {
+                return world.getBlockState(pos.down()).getBlock() instanceof BlockCactus;
+            }
+        };
+        public final Block block;
+        public final Predicate<IBlockState> readyToHarvest;
+
+        Harvest(BlockCrops blockCrops) {
+            this(blockCrops, blockCrops::isMaxAge);
+            // max age is 7 for wheat, carrots, and potatoes, but 3 for beetroot
+        }
+
+        Harvest(Block block, Predicate<IBlockState> readyToHarvest) {
+            this.block = block;
+            this.readyToHarvest = readyToHarvest;
+        }
+
+        public boolean readyToHarvest(World world, BlockPos pos, IBlockState state) {
+            return readyToHarvest.test(state);
+        }
+    }
+
+    private boolean readyForHarvest(World world, BlockPos pos, IBlockState state) {
+        for (Harvest harvest : Harvest.values()) {
+            if (harvest.block == state.getBlock()) {
+                return harvest.readyToHarvest(world, pos, state);
+            }
+        }
+        return false;
+    }
+
+    private boolean selectFarmlandPlantable(boolean doSelect) {//EnumDyeColor.WHITE == EnumDyeColor.byDyeDamage(stack.getMetadata())
+        NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
+        for (int i = 0; i < 9; i++) {
+            if (FARMLAND_PLANTABLE.contains(invy.get(i).getItem())) {
+                if (doSelect) {
+                    ctx.player().inventory.currentItem = i;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean selectBoneMeal(boolean doSelect) {
+        if (isBoneMeal(ctx.player().inventory.offHandInventory.get(0))) {
+            return true;
+        }
+        NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
+        for (int i = 0; i < 9; i++) {
+            if (isBoneMeal(invy.get(i))) {
+                if (doSelect) {
+                    ctx.player().inventory.currentItem = i;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isBoneMeal(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem() instanceof ItemDye && EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.WHITE;
+    }
+
+    @Override
+    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        ArrayList<Block> scan = new ArrayList<>();
+        for (Harvest harvest : Harvest.values()) {
+            scan.add(harvest.block);
+        }
+        scan.add(Blocks.FARMLAND);
+
+        List<BlockPos> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 4);
+
+        List<BlockPos> toBreak = new ArrayList<>();
+        List<BlockPos> openFarmland = new ArrayList<>();
+        List<BlockPos> bonemealable = new ArrayList<>();
+        for (BlockPos pos : locations) {
+            IBlockState state = ctx.world().getBlockState(pos);
+            if (state.getBlock() == Blocks.FARMLAND) {
+                if (ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir) {
+                    openFarmland.add(pos);
+                }
+                continue;
+            }
+            if (readyForHarvest(ctx.world(), pos, state)) {
+                toBreak.add(pos);
+                continue;
+            }
+            if (state.getBlock() instanceof IGrowable) {
+                IGrowable ig = (IGrowable) state.getBlock();
+                if (ig.canGrow(ctx.world(), pos, state, true) && ig.canUseBonemeal(ctx.world(), ctx.world().rand, pos, state)) {
+                    bonemealable.add(pos);
+                }
+            }
+        }
+
+        baritone.getInputOverrideHandler().clearAllKeys();
+        for (BlockPos pos : toBreak) {
+            Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
+            if (rot.isPresent() && isSafeToCancel) {
+                baritone.getLookBehavior().updateTarget(rot.get(), true);
+                MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(pos));
+                if (ctx.isLookingAt(pos)) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+                }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            }
+        }
+        for (BlockPos pos : openFarmland) {
+            Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance());
+            if (rot.isPresent() && isSafeToCancel && selectFarmlandPlantable(true)) {
+                baritone.getLookBehavior().updateTarget(rot.get(), true);
+                if (ctx.isLookingAt(pos)) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            }
+        }
+        for (BlockPos pos : bonemealable) {
+            Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
+            if (rot.isPresent() && isSafeToCancel && selectBoneMeal(true)) {
+                baritone.getLookBehavior().updateTarget(rot.get(), true);
+                if (ctx.isLookingAt(pos)) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            }
+        }
+
+        if (calcFailed) {
+            logDirect("Farm failed");
+            onLostControl();
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
+
+        List<Goal> goalz = new ArrayList<>();
+        for (BlockPos pos : toBreak) {
+            goalz.add(new BuilderProcess.GoalBreak(pos));
+        }
+        if (selectFarmlandPlantable(false)) {
+            for (BlockPos pos : openFarmland) {
+                goalz.add(new GoalBlock(pos.up()));
+            }
+        }
+        if (selectBoneMeal(false)) {
+            for (BlockPos pos : bonemealable) {
+                goalz.add(new GoalBlock(pos));
+            }
+        }
+        for (Entity entity : ctx.world().loadedEntityList) {
+            if (entity instanceof EntityItem && entity.onGround) {
+                EntityItem ei = (EntityItem) entity;
+                if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {
+                    goalz.add(new GoalBlock(new BlockPos(entity.posX, entity.posY + 0.1, entity.posZ)));
+                }
+            }
+        }
+        return new PathingCommand(new GoalComposite(goalz.toArray(new Goal[0])), PathingCommandType.SET_GOAL_AND_PATH);
+    }
+
+    @Override
+    public void onLostControl() {
+        active = false;
+    }
+
+    @Override
+    public String displayName0() {
+        return "Farming";
+    }
+}

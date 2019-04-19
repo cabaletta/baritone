@@ -19,6 +19,7 @@ package baritone.utils.pathing;
 
 import baritone.api.pathing.calc.IPath;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.pathing.movement.CalculationContext;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
@@ -31,7 +32,7 @@ public final class Favoring {
         for (Avoidance avoid : Avoidance.create(ctx)) {
             avoid.applySpherical(favorings);
         }
-        System.out.println("Favoring size: " + favorings.size());
+        Helper.HELPER.logDebug("Favoring size: " + favorings.size());
     }
 
     public Favoring(IPath previous, CalculationContext context) { // create one just from previous path, no mob avoidances

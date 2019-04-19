@@ -15,9 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.cache;
+package baritone.api.cache;
 
-import baritone.api.cache.IWaypoint;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Date;
@@ -47,7 +46,7 @@ public class Waypoint implements IWaypoint {
      * @param location          The waypoint location
      * @param creationTimestamp When the waypoint was created
      */
-    Waypoint(String name, Tag tag, BlockPos location, long creationTimestamp) {
+    public Waypoint(String name, Tag tag, BlockPos location, long creationTimestamp) {
         this.name = name;
         this.tag = tag;
         this.location = location;

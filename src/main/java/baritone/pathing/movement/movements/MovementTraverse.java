@@ -246,12 +246,13 @@ public class MovementTraverse extends Movement {
             if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, ctx.playerFeet()) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
             }
-            Block destDown = BlockStateInterface.get(ctx, dest.down()).getBlock();
-            if (whereAmI.getY() != dest.getY() && ladder && (destDown == Blocks.VINE || destDown == Blocks.LADDER)) {
-                new MovementPillar(baritone, dest.down(), dest).updateState(state); // i'm sorry
-                return state;
+
+            IBlockState destDown = BlockStateInterface.get(ctx, dest.down());
+            BlockPos against = positionsToBreak[0];
+            if (whereAmI.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
+                against = destDown.getBlock() == Blocks.VINE ? MovementPillar.getAgainst(new CalculationContext(baritone), dest.down()) : dest.offset(destDown.getValue(BlockLadder.FACING).getOpposite());
             }
-            MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+            MovementHelper.moveTowards(ctx, state, against);
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;

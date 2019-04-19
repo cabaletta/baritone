@@ -22,9 +22,9 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
 import baritone.api.utils.PathCalculationResult;
 import baritone.pathing.movement.CalculationContext;
-import baritone.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.Optional;
@@ -186,7 +186,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
     }
 
     protected Optional<IPath> bestSoFar(boolean logInfo, int numNodes) {
-        if (startNode == null || bestSoFar == null) {
+        if (startNode == null) {
             return Optional.empty();
         }
         double bestDist = 0;

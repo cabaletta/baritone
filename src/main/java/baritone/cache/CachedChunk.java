@@ -17,6 +17,7 @@
 
 package baritone.cache;
 
+import baritone.api.utils.BlockUtils;
 import baritone.utils.pathing.PathingBlockType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
@@ -177,7 +178,7 @@ public final class CachedChunk {
         if (special != null) {
             String str = special.get(index);
             if (str != null) {
-                return ChunkPacker.stringToBlockRequired(str).getDefaultState();
+                return BlockUtils.stringToBlockRequired(str).getDefaultState();
             }
         }
 

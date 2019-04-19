@@ -15,27 +15,21 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.api.utils;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.Settings;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IRememberedInventory;
 import baritone.api.cache.IWaypoint;
+import baritone.api.cache.Waypoint;
 import baritone.api.event.events.ChatEvent;
+import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.*;
-import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.process.IBaritoneProcess;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.SettingsUtil;
-import baritone.behavior.Behavior;
-import baritone.behavior.PathingBehavior;
-import baritone.cache.ChunkPacker;
-import baritone.cache.Waypoint;
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.Moves;
-import baritone.process.CustomGoalProcess;
-import baritone.utils.pathing.SegmentedCalculator;
+import baritone.api.process.ICustomGoalProcess;
+import baritone.api.process.IGetToBlockProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
@@ -46,10 +40,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class ExampleBaritoneControl extends Behavior implements Helper {
+public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
 
     private static final String HELP_MSG =
             "baritone - Output settings into chat\n" +
@@ -83,21 +75,26 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
 
     private static final String COMMAND_PREFIX = "#";
 
-    public ExampleBaritoneControl(Baritone baritone) {
-        super(baritone);
+    public final IBaritone baritone;
+    public final IPlayerContext ctx;
+
+    public ExampleBaritoneControl(IBaritone baritone) {
+        this.baritone = baritone;
+        this.ctx = baritone.getPlayerContext();
+        baritone.getGameEventHandler().registerEventListener(this);
     }
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
         String msg = event.getMessage();
-        if (Baritone.settings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
+        if (BaritoneAPI.getSettings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
             if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
                 logDirect("Invalid command");
             }
             event.cancel(); // always cancel if using prefixControl
             return;
         }
-        if (!Baritone.settings().chatControl.value && !Baritone.settings().removePrefix.value) {
+        if (!BaritoneAPI.getSettings().chatControl.value && !BaritoneAPI.getSettings().removePrefix.value) {
             return;
         }
         if (runCommand(msg)) {
@@ -107,20 +104,20 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
 
     public boolean runCommand(String msg0) { // you may think this can be private, but impcat calls it from .b =)
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
-        PathingBehavior pathingBehavior = baritone.getPathingBehavior();
-        CustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
-        List<Settings.Setting<Boolean>> toggleable = Baritone.settings().getAllValuesByType(Boolean.class);
+        IPathingBehavior pathingBehavior = baritone.getPathingBehavior();
+        ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
+        List<Settings.Setting<Boolean>> toggleable = BaritoneAPI.getSettings().getAllValuesByType(Boolean.class);
         for (Settings.Setting<Boolean> setting : toggleable) {
             if (msg.equalsIgnoreCase(setting.getName())) {
                 setting.value ^= true;
                 logDirect("Toggled " + setting.getName() + " to " + setting.value);
-                SettingsUtil.save(Baritone.settings());
+                SettingsUtil.save(BaritoneAPI.getSettings());
                 return true;
             }
         }
         if (msg.equals("baritone") || msg.equals("modifiedsettings") || msg.startsWith("settings m") || msg.equals("modified")) {
             logDirect("All settings that have been modified from their default values:");
-            for (Settings.Setting<?> setting : SettingsUtil.modifiedSettings(Baritone.settings())) {
+            for (Settings.Setting<?> setting : SettingsUtil.modifiedSettings(BaritoneAPI.getSettings())) {
                 logDirect(setting.toString());
             }
             return true;
@@ -130,15 +127,15 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             try {
                 int page = Integer.parseInt(rest.trim());
                 int min = page * 10;
-                int max = Math.min(Baritone.settings().allSettings.size(), (page + 1) * 10);
+                int max = Math.min(BaritoneAPI.getSettings().allSettings.size(), (page + 1) * 10);
                 logDirect("Settings " + min + " to " + (max - 1) + ":");
                 for (int i = min; i < max; i++) {
-                    logDirect(Baritone.settings().allSettings.get(i).toString());
+                    logDirect(BaritoneAPI.getSettings().allSettings.get(i).toString());
                 }
             } catch (Exception ex) { // NumberFormatException | ArrayIndexOutOfBoundsException and probably some others I'm forgetting lol
                 ex.printStackTrace();
                 logDirect("All settings:");
-                for (Settings.Setting<?> setting : Baritone.settings().allSettings) {
+                for (Settings.Setting<?> setting : BaritoneAPI.getSettings().allSettings) {
                     logDirect(setting.toString());
                 }
                 logDirect("To get one page of ten settings at a time, do settings <num>");
@@ -154,26 +151,26 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         if (msg.contains(" ")) {
             String settingName = msg.substring(0, msg.indexOf(' '));
             String settingValue = msg.substring(msg.indexOf(' ') + 1);
-            Settings.Setting setting = Baritone.settings().byLowerName.get(settingName);
+            Settings.Setting setting = BaritoneAPI.getSettings().byLowerName.get(settingName);
             if (setting != null) {
                 if (settingValue.equals("reset")) {
                     logDirect("Resetting setting " + settingName + " to default value.");
                     setting.reset();
                 } else {
                     try {
-                        SettingsUtil.parseAndApply(Baritone.settings(), settingName, settingValue);
+                        SettingsUtil.parseAndApply(BaritoneAPI.getSettings(), settingName, settingValue);
                     } catch (Exception ex) {
                         logDirect("Unable to parse setting");
                         return true;
                     }
                 }
-                SettingsUtil.save(Baritone.settings());
+                SettingsUtil.save(BaritoneAPI.getSettings());
                 logDirect(setting.toString());
                 return true;
             }
         }
-        if (Baritone.settings().byLowerName.containsKey(msg)) {
-            Settings.Setting<?> setting = Baritone.settings().byLowerName.get(msg);
+        if (BaritoneAPI.getSettings().byLowerName.containsKey(msg)) {
+            Settings.Setting<?> setting = BaritoneAPI.getSettings().byLowerName.get(msg);
             logDirect(setting.toString());
             return true;
         }
@@ -209,7 +206,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             return true;
         }
-        if (msg.equals("fullpath")) {
+        /*if (msg.equals("fullpath")) {
             if (pathingBehavior.getGoal() == null) {
                 logDirect("No goal.");
             } else {
@@ -225,7 +222,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 });
             }
             return true;
-        }
+        }*/
         if (msg.equals("proc")) {
             Optional<IBaritoneProcess> proc = baritone.getPathingControlManager().mostRecentInControl();
             if (!proc.isPresent()) {
@@ -283,7 +280,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("come")) {
-            customGoalProcess.setGoalAndPath(new GoalBlock(new BlockPos(mc.getRenderViewEntity())));
+            customGoalProcess.setGoalAndPath(new GoalBlock(new BlockPos(Helper.mc.getRenderViewEntity())));
             logDirect("Coming");
             return true;
         }
@@ -358,11 +355,16 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("resumed");
             return true;
         }
+        if (msg.equals("pause")) {
+            baritone.getBuilderProcess().pause();
+            logDirect("paused");
+            return true;
+        }
         if (msg.equals("reset")) {
-            for (Settings.Setting setting : Baritone.settings().allSettings) {
+            for (Settings.Setting setting : BaritoneAPI.getSettings().allSettings) {
                 setting.reset();
             }
-            SettingsUtil.save(Baritone.settings());
+            SettingsUtil.save(BaritoneAPI.getSettings());
             logDirect("Baritone settings reset");
             return true;
         }
@@ -377,7 +379,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("okay");
             return true;
         }
-        if (msg.equals("echest")) {
+        if (msg.equals("farm")) {
+            baritone.getFarmProcess().farm();
+            logDirect("farming");
+            return true;
+        }
+        // this literally doesn't work, memory is disabled lol
+        /*if (msg.equals("echest")) {
             Optional<List<ItemStack>> contents = baritone.getMemoryBehavior().echest();
             if (contents.isPresent()) {
                 logDirect("echest contents:");
@@ -386,18 +394,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect("echest contents unknown");
             }
             return true;
-        }
+        }*/
         if (msg.equals("chests")) {
-            System.out.println(baritone.getWorldProvider());
-            System.out.println(baritone.getWorldProvider().getCurrentWorld());
-
-            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory());
-
-            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories());
-
-            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet());
-
-            System.out.println(baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet());
             for (Map.Entry<BlockPos, IRememberedInventory> entry : baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet()) {
                 logDirect(entry.getKey() + "");
                 log(entry.getValue().getContents());
@@ -456,14 +454,27 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Exploring from " + centerX + "," + centerZ);
             return true;
         }
+        if (msg.equals("blacklist")) {
+            IGetToBlockProcess proc = baritone.getGetToBlockProcess();
+            if (!proc.isActive()) {
+                logDirect("GetToBlockProcess is not currently active");
+                return true;
+            }
+            if (proc.blacklistClosest()) {
+                logDirect("Blacklisted closest instances");
+            } else {
+                logDirect("No known locations, unable to blacklist");
+            }
+            return true;
+        }
         if (msg.startsWith("find")) {
             String blockType = msg.substring(4).trim();
             ArrayList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
             logDirect("Have " + locs.size() + " locations");
             for (BlockPos pos : locs) {
-                Block actually = BlockStateInterface.get(ctx, pos).getBlock();
-                if (!ChunkPacker.blockToString(actually).equalsIgnoreCase(blockType)) {
-                    System.out.println("Was looking for " + blockType + " but actually found " + actually + " " + ChunkPacker.blockToString(actually));
+                Block actually = ctx.world().getBlockState(pos).getBlock();
+                if (!BlockUtils.blockToString(actually).equalsIgnoreCase(blockType)) {
+                    logDebug("Was looking for " + blockType + " but actually found " + actually + " " + BlockUtils.blockToString(actually));
                 }
             }
             return true;
@@ -472,13 +483,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             String[] blockTypes = msg.substring(4).trim().split(" ");
             try {
                 int quantity = Integer.parseInt(blockTypes[1]);
-                Block block = ChunkPacker.stringToBlockRequired(blockTypes[0]);
+                Block block = BlockUtils.stringToBlockRequired(blockTypes[0]);
                 baritone.getMineProcess().mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
             for (String s : blockTypes) {
-                if (ChunkPacker.stringToBlockNullable(s) == null) {
+                if (BlockUtils.stringToBlockNullable(s) == null) {
                     logDirect(s + " isn't a valid block name");
                     return true;
                 }
@@ -489,12 +500,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("click")) {
-            new Thread(() -> {
-                try {
-                    Thread.sleep(100);
-                    mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClick()));
-                } catch (Exception ignored) {}
-            }).start();
+            baritone.openClick();
             logDirect("aight dude");
             return true;
         }
@@ -514,9 +520,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
-            Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
+            IWaypoint.Tag tag = IWaypoint.Tag.fromString(waypointType);
             if (tag == null) {
-                logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
+                logDirect("Not a valid tag. Tags are: " + Arrays.asList(IWaypoint.Tag.values()).toString().toLowerCase());
                 return true;
             }
             Set<IWaypoint> waypoints = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getByTag(tag);
@@ -547,21 +553,21 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
                 name = parts[0];
             }
-            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, Waypoint.Tag.USER, pos));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, IWaypoint.Tag.USER, pos));
             logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto " + name + "' to set goal, say 'list user' to list custom waypoints.");
             return true;
         }
         if (msg.startsWith("goto")) {
             String waypointType = msg.substring(4).trim();
-            if (waypointType.endsWith("s") && Waypoint.Tag.fromString(waypointType.substring(0, waypointType.length() - 1)) != null) {
+            if (waypointType.endsWith("s") && IWaypoint.Tag.fromString(waypointType.substring(0, waypointType.length() - 1)) != null) {
                 // for example, "show deaths"
                 waypointType = waypointType.substring(0, waypointType.length() - 1);
             }
-            Waypoint.Tag tag = Waypoint.Tag.fromString(waypointType);
+            IWaypoint.Tag tag = IWaypoint.Tag.fromString(waypointType);
             IWaypoint waypoint;
             if (tag == null) {
                 String mining = waypointType;
-                Block block = ChunkPacker.stringToBlockNullable(mining);
+                Block block = BlockUtils.stringToBlockNullable(mining);
                 //logDirect("Not a valid tag. Tags are: " + Arrays.asList(Waypoint.Tag.values()).toString().toLowerCase());
                 if (block == null) {
                     waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getName().equalsIgnoreCase(mining)).max(Comparator.comparingLong(IWaypoint::getCreationTimestamp)).orElse(null);
@@ -584,12 +590,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                     return true;
                 }
             }
-            Goal goal = waypoint.getTag() == Waypoint.Tag.BED ? new GoalGetToBlock(waypoint.getLocation()) : new GoalBlock(waypoint.getLocation());
+            Goal goal = waypoint.getTag() == IWaypoint.Tag.BED ? new GoalGetToBlock(waypoint.getLocation()) : new GoalBlock(waypoint.getLocation());
             customGoalProcess.setGoalAndPath(goal);
             return true;
         }
         if (msg.equals("spawn") || msg.equals("bed")) {
-            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.BED);
             if (waypoint == null) {
                 BlockPos spawnPoint = ctx.player().getBedLocation();
                 // for some reason the default spawnpoint is underground sometimes
@@ -604,12 +610,12 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("sethome")) {
-            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, ctx.playerFeet()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.HOME, ctx.playerFeet()));
             logDirect("Saved. Say home to set goal.");
             return true;
         }
         if (msg.equals("home")) {
-            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
             if (waypoint == null) {
                 logDirect("home not saved");
             } else {
@@ -619,7 +625,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             return true;
         }
-        if (msg.equals("costs")) {
+        // this is completely impossible from api
+        /*if (msg.equals("costs")) {
             List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(new CalculationContext(baritone), ctx.playerFeet())).collect(Collectors.toCollection(ArrayList::new));
             while (moves.contains(null)) {
                 moves.remove(null);
@@ -635,7 +642,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
             }
             return true;
-        }
+        }*/
         if (msg.equals("damn")) {
             logDirect("daniel");
         }
