@@ -199,11 +199,11 @@ public class PathingControlManager implements IPathingControlManager {
 
             PathingCommand exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
             if (exec == null) {
-                /*if (proc.isActive()) {
-                    throw new IllegalStateException(proc.displayName() + " returned null PathingCommand");
+                if (proc.isActive()) {
+                    throw new IllegalStateException(proc.displayName() + " actively returned null PathingCommand");
                 }
-                proc.onLostControl();*/
-            } else {
+                // no need to call onLostControl; they are reporting inactive.
+            } else if (exec.commandType != PathingCommandType.DEFER) {
                 inControlThisTick = proc;
                 if (!proc.isTemporary()) {
                     iterator.forEachRemaining(IBaritoneProcess::onLostControl);

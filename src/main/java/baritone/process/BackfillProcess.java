@@ -87,7 +87,7 @@ public class BackfillProcess extends BaritoneProcessHelper {
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
-        return null; // cede to other process
+        return new PathingCommand(null, PathingCommandType.DEFER); // cede to other process
     }
 
     public void amIBreakingABlockHMMMMMMM() {
@@ -119,7 +119,7 @@ public class BackfillProcess extends BaritoneProcessHelper {
 
     @Override
     public void onLostControl() {
-        blocksToReplace = new HashMap<>();
+        blocksToReplace.clear();
     }
 
     @Override
