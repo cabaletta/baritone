@@ -571,6 +571,13 @@ public final class Settings {
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
 
     /**
+     * While exploring the world, offset the closest unloaded chunk by this much in both axes.
+     * <p>
+     * This can result in more efficient loading, if you set this to the render distance.
+     */
+    public final Setting<Integer> worldExploringChunkOffset = new Setting<>(0);
+
+    /**
      * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.
      * <p>
      * Only if you have a beefy CPU and automatically mine blocks that are in cache

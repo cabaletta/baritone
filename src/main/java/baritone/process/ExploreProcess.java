@@ -62,7 +62,6 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
             logDebug("awaiting region load from disk");
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
-        System.out.println("Closest uncached: " + closestUncached);
         return new PathingCommand(new GoalComposite(closestUncached), PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
     }
 
@@ -90,7 +89,20 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
                         });
                         return null; // we still need to load regions from disk in order to decide properly
                     }
-                    centers.add(new BlockPos(centerX, 0, centerZ));
+                    int offsetCenterX = centerX;
+                    int offsetCenterZ = centerZ;
+                    int offset = 16 * Baritone.settings().worldExploringChunkOffset.value;
+                    if (dx < 0) {
+                        offsetCenterX -= offset;
+                    } else {
+                        offsetCenterX += offset;
+                    }
+                    if (dz < 0) {
+                        offsetCenterZ -= offset;
+                    } else {
+                        offsetCenterZ += offset;
+                    }
+                    centers.add(new BlockPos(offsetCenterX, 0, offsetCenterZ));
                 }
             }
             if (!centers.isEmpty()) {
