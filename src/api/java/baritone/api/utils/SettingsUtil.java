@@ -43,7 +43,7 @@ import static net.minecraft.client.Minecraft.getMinecraft;
 public class SettingsUtil {
 
     private static final Path SETTINGS_PATH = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
-    private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>[^ ]+)"); // 2 words separated by spaces
+    private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>.+)"); // key and value split by the first space
 
     private static boolean isComment(String line) {
         return line.startsWith("#") || line.startsWith("//");
@@ -176,12 +176,12 @@ public class SettingsUtil {
         ),
         BLOCK(
                 Block.class,
-                str -> BlockUtils.stringToBlockRequired(str.trim()),
+                BlockUtils::stringToBlockRequired,
                 BlockUtils::blockToString
         ),
         ITEM(
                 Item.class,
-                str -> Item.getByNameOrId(str.trim()),
+                Item::getByNameOrId,
                 item -> Item.REGISTRY.getNameForObject(item).toString()
         ),
         LIST() {
