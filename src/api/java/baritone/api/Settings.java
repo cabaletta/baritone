@@ -150,7 +150,7 @@ public final class Settings {
     /**
      * Blocks that Baritone will attempt to avoid (Used in avoidance)
      */
-    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<LinkedList<Block>> blocksToAvoid = new Setting<>(new LinkedList<>(Arrays.asList(
             // Leave Empty by Default
     )));
 
@@ -257,7 +257,7 @@ public final class Settings {
     public final Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
 
     public final Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
-    
+
     /**
      * When running a goto towards a container block (chest, ender chest, furnace, etc),
      * right click and open it once you arrive.
