@@ -578,6 +578,11 @@ public final class Settings {
     public final Setting<Integer> worldExploringChunkOffset = new Setting<>(0);
 
     /**
+     * Take the 10 closest chunks, even if they aren't strictly tied for distance metric from origin.
+     */
+    public final Setting<Integer> exploreChunkSetMinimumSize = new Setting<>(10);
+
+    /**
      * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.
      * <p>
      * Only if you have a beefy CPU and automatically mine blocks that are in cache
@@ -595,7 +600,7 @@ public final class Settings {
     public final Setting<Integer> buildRepeatDistance = new Setting<>(0);
 
     /**
-     * What direction te repeat the build in
+     * What direction to repeat the build in
      */
     public final Setting<EnumFacing> buildRepeatDirection = new Setting<>(EnumFacing.NORTH);
 
