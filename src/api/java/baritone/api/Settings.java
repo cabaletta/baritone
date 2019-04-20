@@ -257,16 +257,7 @@ public final class Settings {
     public final Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
 
     public final Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
-
-    /**
-     * Set to 1.0 to effectively disable this feature
-     * <p>
-     * Set below 1.0 to go out of your way to walk near blocks
-     */
-    public final Setting<Double> blockAvoidanceCoefficient = new Setting<>(1.5);
-
-    public final Setting<Integer> blockAvoidanceRadius = new Setting<>(8);
-
+    
     /**
      * When running a goto towards a container block (chest, ender chest, furnace, etc),
      * right click and open it once you arrive.
