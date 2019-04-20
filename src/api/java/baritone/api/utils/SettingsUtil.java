@@ -30,7 +30,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -131,7 +132,7 @@ public class SettingsUtil {
             throw new IllegalStateException("No setting by that name");
         }
         Class intendedType = setting.getValueClass();
-        Parser ioMethod = Parser.getParser(setting.getType());
+        ISettingParser ioMethod = Parser.getParser(setting.getType());
         Object parsed = ioMethod.parse(new ParserContext(setting), settingValue);
         if (!intendedType.isInstance(parsed)) {
             throw new IllegalStateException(ioMethod + " parser returned incorrect type, expected " + intendedType + " got " + parsed + " which is " + parsed.getClass());
@@ -166,7 +167,7 @@ public class SettingsUtil {
         DOUBLE(Double.class, Double::parseDouble),
         BOOLEAN(Boolean.class, Boolean::parseBoolean),
         INTEGER(Integer.class, Integer::parseInt),
-        FLOAT(Float.class,Float::parseFloat),
+        FLOAT(Float.class, Float::parseFloat),
         LONG(Long.class, Long::parseLong),
         ENUMFACING(EnumFacing.class, EnumFacing::byName),
         COLOR(
@@ -176,16 +177,15 @@ public class SettingsUtil {
         ),
         BLOCK(
                 Block.class,
-                BlockUtils::stringToBlockRequired,
+                str -> BlockUtils.stringToBlockRequired(str.trim()),
                 BlockUtils::blockToString
         ),
         ITEM(
                 Item.class,
-                Item::getByNameOrId,
+                str -> Item.getByNameOrId(str.trim()),
                 item -> Item.REGISTRY.getNameForObject(item).toString()
         ),
         LIST() {
-
             @Override
             public Object parse(ParserContext context, String raw) {
                 Type type = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];

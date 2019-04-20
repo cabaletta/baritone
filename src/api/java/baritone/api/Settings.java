@@ -28,7 +28,6 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -850,9 +849,9 @@ public final class Settings {
     Settings() {
         Field[] temp = getClass().getFields();
 
-        Map<String, Setting<?>> tmpByName       = new HashMap<>();
-        List<Setting<?>>        tmpAll          = new ArrayList<>();
-        Map<Setting<?>, Type>   tmpSettingTypes = new HashMap<>();
+        Map<String, Setting<?>> tmpByName = new HashMap<>();
+        List<Setting<?>> tmpAll = new ArrayList<>();
+        Map<Setting<?>, Type> tmpSettingTypes = new HashMap<>();
 
         try {
             for (Field field : temp) {
@@ -872,8 +871,8 @@ public final class Settings {
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
         }
-        byLowerName  = Collections.unmodifiableMap(tmpByName);
-        allSettings  = Collections.unmodifiableList(tmpAll);
+        byLowerName = Collections.unmodifiableMap(tmpByName);
+        allSettings = Collections.unmodifiableList(tmpAll);
         settingTypes = Collections.unmodifiableMap(tmpSettingTypes);
     }
 
