@@ -18,6 +18,7 @@
 package baritone.api.utils;
 
 import baritone.api.Settings;
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -147,6 +148,7 @@ public class SettingsUtil {
         FLOAT(Float.class, Float::parseFloat),
         LONG(Long.class, Long::parseLong),
 
+        BLOCK_LIST(LinkedList.class, str -> Stream.of(str.split(",")).map(String::trim).map(BlockUtils::stringToBlockRequired).collect(Collectors.toCollection(LinkedList::new)), list -> ((LinkedList<Block>) list).stream().map(BlockUtils::blockToString).collect(Collectors.joining(","))),
         ITEM_LIST(ArrayList.class, str -> Stream.of(str.split(",")).map(String::trim).map(Item::getByNameOrId).collect(Collectors.toCollection(ArrayList::new)), list -> ((ArrayList<Item>) list).stream().map(Item.REGISTRY::getNameForObject).map(ResourceLocation::toString).collect(Collectors.joining(","))),
         COLOR(Color.class, str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])), color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue()),
         ENUMFACING(EnumFacing.class, EnumFacing::byName);

@@ -18,6 +18,7 @@
 package baritone.api;
 
 import baritone.api.utils.SettingsUtil;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -144,6 +145,13 @@ public final class Settings {
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK),
             Item.getItemFromBlock(Blocks.STONE)
+    )));
+
+    /**
+     * Blocks that Baritone will attempt to avoid (Used in avoidance)
+     */
+    public final Setting<LinkedList<Block>> blocksToAvoid = new Setting<>(new LinkedList<>(Arrays.asList(
+            // Leave Empty by Default
     )));
 
     /**
