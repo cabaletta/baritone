@@ -18,6 +18,7 @@
 package baritone.api;
 
 import baritone.api.utils.SettingsUtil;
+import baritone.api.utils.TypeUtils;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -27,6 +28,9 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
@@ -150,7 +154,7 @@ public final class Settings {
     /**
      * Blocks that Baritone will attempt to avoid (Used in avoidance)
      */
-    public final Setting<LinkedList<Block>> blocksToAvoid = new Setting<>(new LinkedList<>(Arrays.asList(
+    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(Arrays.asList(
             // Leave Empty by Default
     )));
 
@@ -789,11 +793,12 @@ public final class Settings {
      */
     public final List<Setting<?>> allSettings;
 
+    public final Map<Setting<?>, Type> settingTypes;
+
     public final class Setting<T> {
         public T value;
         public final T defaultValue;
         private String name;
-        private final Class<T> klass;
 
         @SuppressWarnings("unchecked")
         private Setting(T value) {
@@ -802,7 +807,6 @@ public final class Settings {
             }
             this.value = value;
             this.defaultValue = value;
-            this.klass = (Class<T>) value.getClass();
         }
 
         /**
@@ -820,7 +824,8 @@ public final class Settings {
         }
 
         public Class<T> getValueClass() {
-            return klass;
+            // noinspection unchecked
+            return (Class<T>) TypeUtils.resolveBaseClass(getType());
         }
 
         @Override
@@ -834,14 +839,21 @@ public final class Settings {
         public void reset() {
             value = defaultValue;
         }
+
+        public final Type getType() {
+            return settingTypes.get(this);
+        }
     }
 
     // here be dragons
 
     Settings() {
         Field[] temp = getClass().getFields();
-        HashMap<String, Setting<?>> tmpByName = new HashMap<>();
-        List<Setting<?>> tmpAll = new ArrayList<>();
+
+        Map<String, Setting<?>> tmpByName       = new HashMap<>();
+        List<Setting<?>>        tmpAll          = new ArrayList<>();
+        Map<Setting<?>, Type>   tmpSettingTypes = new HashMap<>();
+
         try {
             for (Field field : temp) {
                 if (field.getType().equals(Setting.class)) {
@@ -854,13 +866,15 @@ public final class Settings {
                     }
                     tmpByName.put(name, setting);
                     tmpAll.add(setting);
+                    tmpSettingTypes.put(setting, ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0]);
                 }
             }
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
         }
-        byLowerName = Collections.unmodifiableMap(tmpByName);
-        allSettings = Collections.unmodifiableList(tmpAll);
+        byLowerName  = Collections.unmodifiableMap(tmpByName);
+        allSettings  = Collections.unmodifiableList(tmpAll);
+        settingTypes = Collections.unmodifiableMap(tmpSettingTypes);
     }
 
     @SuppressWarnings("unchecked")

@@ -21,12 +21,13 @@ import baritone.api.Settings;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -36,7 +37,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static net.minecraft.client.Minecraft.getMinecraft;
 
@@ -44,8 +44,6 @@ public class SettingsUtil {
 
     private static final Path SETTINGS_PATH = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
     private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>[^ ]+)"); // 2 words separated by spaces
-
-    private static final Map<Class<?>, SettingsIO> map;
 
     private static boolean isComment(String line) {
         return line.startsWith("#") || line.startsWith("//");
@@ -120,11 +118,11 @@ public class SettingsUtil {
         if (setting.getName().equals("logger")) {
             return "logger";
         }
-        SettingsIO io = map.get(setting.getValueClass());
+        Parser io = Parser.getParser(setting.getType());
         if (io == null) {
             throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting.getName());
         }
-        return setting.getName() + " " + io.toString.apply(setting.value);
+        return setting.getName() + " " + io.toString(new ParserContext(setting), setting.value);
     }
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
@@ -133,47 +131,126 @@ public class SettingsUtil {
             throw new IllegalStateException("No setting by that name");
         }
         Class intendedType = setting.getValueClass();
-        SettingsIO ioMethod = map.get(intendedType);
-        Object parsed = ioMethod.parser.apply(settingValue);
+        Parser ioMethod = Parser.getParser(setting.getType());
+        Object parsed = ioMethod.parse(new ParserContext(setting), settingValue);
         if (!intendedType.isInstance(parsed)) {
             throw new IllegalStateException(ioMethod + " parser returned incorrect type, expected " + intendedType + " got " + parsed + " which is " + parsed.getClass());
         }
         setting.value = parsed;
     }
 
-    private enum SettingsIO {
+    private interface ISettingParser<T> {
+
+        T parse(ParserContext context, String raw);
+
+        String toString(ParserContext context, T value);
+
+        boolean accepts(Type type);
+    }
+
+    private static class ParserContext {
+
+        private final Settings.Setting<?> setting;
+
+        public ParserContext(Settings.Setting<?> setting) {
+            this.setting = setting;
+        }
+
+        final Settings.Setting<?> getSetting() {
+            return this.setting;
+        }
+    }
+
+    private enum Parser implements ISettingParser {
+
         DOUBLE(Double.class, Double::parseDouble),
         BOOLEAN(Boolean.class, Boolean::parseBoolean),
         INTEGER(Integer.class, Integer::parseInt),
-        FLOAT(Float.class, Float::parseFloat),
+        FLOAT(Float.class,Float::parseFloat),
         LONG(Long.class, Long::parseLong),
+        ENUMFACING(EnumFacing.class, EnumFacing::byName),
+        COLOR(
+                Color.class,
+                str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
+                color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue()
+        ),
+        BLOCK(
+                Block.class,
+                str -> BlockUtils.stringToBlockRequired(str.trim()),
+                BlockUtils::blockToString
+        ),
+        ITEM(
+                Item.class,
+                str -> Item.getByNameOrId(str.trim()),
+                item -> Item.REGISTRY.getNameForObject(item).toString()
+        ),
+        LIST() {
 
-        BLOCK_LIST(LinkedList.class, str -> Stream.of(str.split(",")).map(String::trim).map(BlockUtils::stringToBlockRequired).collect(Collectors.toCollection(LinkedList::new)), list -> ((LinkedList<Block>) list).stream().map(BlockUtils::blockToString).collect(Collectors.joining(","))),
-        ITEM_LIST(ArrayList.class, str -> Stream.of(str.split(",")).map(String::trim).map(Item::getByNameOrId).collect(Collectors.toCollection(ArrayList::new)), list -> ((ArrayList<Item>) list).stream().map(Item.REGISTRY::getNameForObject).map(ResourceLocation::toString).collect(Collectors.joining(","))),
-        COLOR(Color.class, str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])), color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue()),
-        ENUMFACING(EnumFacing.class, EnumFacing::byName);
+            @Override
+            public Object parse(ParserContext context, String raw) {
+                Type type = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
+                Parser parser = Parser.getParser(type);
 
+                return Arrays.stream(raw.split(","))
+                        .map(s -> parser.parse(context, s))
+                        .collect(Collectors.toList());
+            }
 
-        Class<?> klass;
-        Function<String, Object> parser;
-        Function<Object, String> toString;
+            @Override
+            public String toString(ParserContext context, Object value) {
+                Type type = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
+                Parser parser = Parser.getParser(type);
 
-        <T> SettingsIO(Class<T> klass, Function<String, T> parser) {
+                return ((List<?>) value).stream()
+                        .map(o -> parser.toString(context, o))
+                        .collect(Collectors.joining(","));
+            }
+
+            @Override
+            public boolean accepts(Type type) {
+                return List.class.isAssignableFrom(TypeUtils.resolveBaseClass(type));
+            }
+        };
+
+        private final Class<?> klass;
+        private final Function<String, Object> parser;
+        private final Function<Object, String> toString;
+
+        Parser() {
+            this.klass = null;
+            this.parser = null;
+            this.toString = null;
+        }
+
+        <T> Parser(Class<T> klass, Function<String, T> parser) {
             this(klass, parser, Object::toString);
         }
 
-        <T> SettingsIO(Class<T> klass, Function<String, T> parser, Function<T, String> toString) {
+        <T> Parser(Class<T> klass, Function<String, T> parser, Function<T, String> toString) {
             this.klass = klass;
             this.parser = parser::apply;
             this.toString = x -> toString.apply((T) x);
         }
-    }
 
-    static {
-        HashMap<Class<?>, SettingsIO> tempMap = new HashMap<>();
-        for (SettingsIO type : SettingsIO.values()) {
-            tempMap.put(type.klass, type);
+        @Override
+        public Object parse(ParserContext context, String raw) {
+            return this.parser.apply(raw);
         }
-        map = Collections.unmodifiableMap(tempMap);
+
+        @Override
+        public String toString(ParserContext context, Object value) {
+            return this.toString.apply(value);
+        }
+
+        @Override
+        public boolean accepts(Type type) {
+            return type instanceof Class && this.klass.isAssignableFrom((Class) type);
+        }
+
+        public static Parser getParser(Type type) {
+            return Arrays.stream(values())
+                    .filter(parser -> parser.accepts(type))
+                    .findFirst().orElse(null);
+        }
     }
 }
