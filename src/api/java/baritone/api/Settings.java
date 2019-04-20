@@ -151,7 +151,7 @@ public final class Settings {
      * Blocks that Baritone will attempt to avoid (Used in avoidance)
      */
     public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(Arrays.asList(
-            Blocks.VINE
+            // Leave Empty by Default
     )));
 
     /**
