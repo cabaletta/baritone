@@ -591,6 +591,11 @@ public final class Settings {
     public final Setting<Integer> exploreChunkSetMinimumSize = new Setting<>(10);
 
     /**
+     * Replant nether wart
+     */
+    public final Setting<Boolean> replantNetherWart = new Setting<>(false);
+
+    /**
      * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.
      * <p>
      * Only if you have a beefy CPU and automatically mine blocks that are in cache

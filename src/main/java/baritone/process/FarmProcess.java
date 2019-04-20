@@ -40,7 +40,6 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -143,37 +142,16 @@ public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
         return false;
     }
 
-    private boolean selectFarmlandPlantable(boolean doSelect) {//EnumDyeColor.WHITE == EnumDyeColor.byDyeDamage(stack.getMetadata())
-        NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-        for (int i = 0; i < 9; i++) {
-            if (FARMLAND_PLANTABLE.contains(invy.get(i).getItem())) {
-                if (doSelect) {
-                    ctx.player().inventory.currentItem = i;
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean selectBoneMeal(boolean doSelect) {
-        if (isBoneMeal(ctx.player().inventory.offHandInventory.get(0))) {
-            return true;
-        }
-        NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-        for (int i = 0; i < 9; i++) {
-            if (isBoneMeal(invy.get(i))) {
-                if (doSelect) {
-                    ctx.player().inventory.currentItem = i;
-                }
-                return true;
-            }
-        }
-        return false;
+    private boolean isPlantable(ItemStack stack) {
+        return FARMLAND_PLANTABLE.contains(stack.getItem());
     }
 
     private boolean isBoneMeal(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() instanceof ItemDye && EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.WHITE;
+    }
+
+    private boolean isNetherWart(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem().equals(Items.NETHER_WART);
     }
 
     @Override
@@ -183,17 +161,28 @@ public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
             scan.add(harvest.block);
         }
         scan.add(Blocks.FARMLAND);
+        if (Baritone.settings().replantNetherWart.value) {
+            scan.add(Blocks.SOUL_SAND);
+        }
 
         List<BlockPos> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 4);
 
         List<BlockPos> toBreak = new ArrayList<>();
         List<BlockPos> openFarmland = new ArrayList<>();
         List<BlockPos> bonemealable = new ArrayList<>();
+        List<BlockPos> openSoulsand = new ArrayList<>();
         for (BlockPos pos : locations) {
             IBlockState state = ctx.world().getBlockState(pos);
+            boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir;
             if (state.getBlock() == Blocks.FARMLAND) {
-                if (ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir) {
+                if (airAbove) {
                     openFarmland.add(pos);
+                }
+                continue;
+            }
+            if (state.getBlock() == Blocks.SOUL_SAND) {
+                if (airAbove) {
+                    openSoulsand.add(pos);
                 }
                 continue;
             }
@@ -221,9 +210,12 @@ public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
-        for (BlockPos pos : openFarmland) {
+        ArrayList<BlockPos> both = new ArrayList<>(openFarmland);
+        both.addAll(openSoulsand);
+        for (BlockPos pos : both) {
+            boolean soulsand = openSoulsand.contains(pos);
             Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance());
-            if (rot.isPresent() && isSafeToCancel && selectFarmlandPlantable(true)) {
+            if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, soulsand ? this::isNetherWart : this::isPlantable)) {
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
@@ -233,7 +225,7 @@ public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
         }
         for (BlockPos pos : bonemealable) {
             Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
-            if (rot.isPresent() && isSafeToCancel && selectBoneMeal(true)) {
+            if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isBoneMeal)) {
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
@@ -252,12 +244,17 @@ public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
         for (BlockPos pos : toBreak) {
             goalz.add(new BuilderProcess.GoalBreak(pos));
         }
-        if (selectFarmlandPlantable(false)) {
+        if (baritone.getInventoryBehavior().throwaway(false, this::isPlantable)) {
             for (BlockPos pos : openFarmland) {
                 goalz.add(new GoalBlock(pos.up()));
             }
         }
-        if (selectBoneMeal(false)) {
+        if (baritone.getInventoryBehavior().throwaway(false, this::isNetherWart)) {
+            for (BlockPos pos : openSoulsand) {
+                goalz.add(new GoalBlock(pos.up()));
+            }
+        }
+        if (baritone.getInventoryBehavior().throwaway(false, this::isBoneMeal)) {
             for (BlockPos pos : bonemealable) {
                 goalz.add(new GoalBlock(pos));
             }
@@ -266,6 +263,7 @@ public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
             if (entity instanceof EntityItem && entity.onGround) {
                 EntityItem ei = (EntityItem) entity;
                 if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {
+                    // +0.1 because of farmland's 0.9375 dummy height lol
                     goalz.add(new GoalBlock(new BlockPos(entity.posX, entity.posY + 0.1, entity.posZ)));
                 }
             }
