@@ -18,6 +18,7 @@
 package baritone.api;
 
 import baritone.api.utils.SettingsUtil;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -147,6 +148,13 @@ public final class Settings {
     )));
 
     /**
+     * Blocks that Baritone will attempt to avoid (Used in avoidance)
+     */
+    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(Arrays.asList(
+            Blocks.VINE
+    )));
+
+    /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
      * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
      * <p>
@@ -249,6 +257,15 @@ public final class Settings {
     public final Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
 
     public final Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
+
+    /**
+     * Set to 1.0 to effectively disable this feature
+     * <p>
+     * Set below 1.0 to go out of your way to walk near blocks
+     */
+    public final Setting<Double> blockAvoidanceCoefficient = new Setting<>(1.5);
+
+    public final Setting<Integer> blockAvoidanceRadius = new Setting<>(8);
 
     /**
      * When running a goto towards a container block (chest, ender chest, furnace, etc),

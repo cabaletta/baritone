@@ -74,6 +74,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block instanceof BlockTrapDoor) {
             return false;
         }
+        if (Baritone.settings().blocksToAvoid.value.contains(block)) {
+            return false;
+        }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
             // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
             // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't

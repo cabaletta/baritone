@@ -19,8 +19,10 @@ package baritone.utils.pathing;
 
 import baritone.Baritone;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.BlockUtils;
 import baritone.api.utils.IPlayerContext;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import net.minecraft.block.Block;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.util.math.BlockPos;
 
@@ -63,11 +65,17 @@ public class Avoidance {
         List<Avoidance> res = new ArrayList<>();
         double mobSpawnerCoeff = Baritone.settings().mobSpawnerAvoidanceCoefficient.value;
         double mobCoeff = Baritone.settings().mobAvoidanceCoefficient.value;
+        double blockCoeff = Baritone.settings().blockAvoidanceCoefficient.value;
         if (mobSpawnerCoeff != 1.0D) {
             ctx.worldData().getCachedWorld().getLocationsOf("mob_spawner", 1, ctx.playerFeet().x, ctx.playerFeet().z, 2).forEach(mobspawner -> res.add(new Avoidance(mobspawner, mobSpawnerCoeff, Baritone.settings().mobSpawnerAvoidanceRadius.value)));
         }
         if (mobCoeff != 1.0D) {
             ctx.world().loadedEntityList.stream().filter(entity -> entity instanceof EntityMob).forEach(entity -> res.add(new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
+        }
+        if (blockCoeff != 1.0D) {
+            for (Block block : Baritone.settings().blocksToAvoid.value) {
+                ctx.worldData().getCachedWorld().getLocationsOf(BlockUtils.blockToString(block), 1, ctx.playerFeet().x, ctx.playerFeet().z, 2).forEach(blockPos -> res.add(new Avoidance(blockPos, blockCoeff, Baritone.settings().blockAvoidanceRadius.value)));
+            }
         }
         return res;
     }
