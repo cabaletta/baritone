@@ -153,9 +153,9 @@ public final class Settings {
     /**
      * Blocks that Baritone will attempt to avoid (Used in avoidance)
      */
-    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(
             // Leave Empty by Default
-    )));
+    ));
 
     /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
