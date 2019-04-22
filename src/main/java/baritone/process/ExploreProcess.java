@@ -83,7 +83,7 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
             return null;
         }
         IChunkFilter filter = calcFilter();
-        if (filter.finished()) {
+        if (!Baritone.settings().disableCompletionCheck.value && filter.finished()) {
             logDirect("Explored all chunks");
             onLostControl();
             return null;

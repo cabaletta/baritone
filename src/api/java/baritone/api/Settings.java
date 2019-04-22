@@ -718,6 +718,12 @@ public final class Settings {
     public final Setting<Boolean> exploreUsePythagorean = new Setting<>(false);
 
     /**
+     * Turn this on if your exploration filter is enormous, you don't want it to check if it's done,
+     * and you are just fine with it just hanging on completion
+     */
+    public final Setting<Boolean> disableCompletionCheck = new Setting<>(false);
+
+    /**
      * Cached chunks (regardless of if they're in RAM or saved to disk) expire and are deleted after this number of seconds
      * -1 to disable
      * <p>
