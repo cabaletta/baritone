@@ -39,6 +39,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
+import java.nio.file.Path;
 import java.util.*;
 
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
@@ -427,6 +428,23 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             Entity effectivelyFinal = toFollow.get();
             baritone.getFollowProcess().follow(x -> effectivelyFinal.equals(x));
             logDirect("Following " + toFollow.get());
+            return true;
+        }
+        if (msg.startsWith("explorefilter")) {
+            // explorefilter blah.json
+            // means that entries in blah.json are already explored
+            // explorefilter blah.json invert
+            // means that entries in blah.json are NOT already explored
+            String path = msg.substring("explorefilter".length()).trim();
+            String[] parts = path.split(" ");
+            Path path1 = Minecraft.getMinecraft().gameDir.toPath().resolve(parts[0]);
+            try {
+                baritone.getExploreProcess().applyJsonFilter(path1, parts.length > 1);
+                logDirect("Loaded filter");
+            } catch (Exception e) {
+                e.printStackTrace();
+                logDirect("Unable to load " + path1);
+            }
             return true;
         }
         if (msg.equals("reloadall")) {

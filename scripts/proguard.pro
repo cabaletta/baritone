@@ -21,6 +21,8 @@
 -keep class baritone.BaritoneProvider
 -keep class baritone.api.IBaritoneProvider
 
+-keep class baritone.api.utils.MyChunkPos { *; } # even in standalone we need to keep this for gson reflect
+
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
     public <fields>;    

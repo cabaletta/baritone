@@ -15,12 +15,17 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.process;
+package baritone.api.utils;
 
-import java.nio.file.Path;
+/**
+ * Need a non obfed chunkpos that we can load using GSON
+ */
+public class MyChunkPos {
+    public int x;
+    public int z;
 
-public interface IExploreProcess extends IBaritoneProcess {
-    void explore(int centerX, int centerZ);
-
-    void applyJsonFilter(Path path, boolean invert) throws Exception;
+    @Override
+    public String toString() {
+        return x + ", " + z;
+    }
 }

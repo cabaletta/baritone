@@ -123,7 +123,7 @@ public class BackfillProcess extends BaritoneProcessHelper {
             blocksToReplace.clear();
         }
     }
-    
+
     @Override
     public String displayName0() {
         return "Backfill";
