@@ -79,6 +79,7 @@ public class Baritone implements IBaritone {
     private CustomGoalProcess customGoalProcess;
     private BuilderProcess builderProcess;
     private ExploreProcess exploreProcess;
+    private BackfillProcess backfillProcess;
     private FarmProcess farmProcess;
 
     private PathingControlManager pathingControlManager;
@@ -119,6 +120,7 @@ public class Baritone implements IBaritone {
             getToBlockProcess = new GetToBlockProcess(this);
             builderProcess = new BuilderProcess(this);
             exploreProcess = new ExploreProcess(this);
+            backfillProcess = new BackfillProcess(this);
             farmProcess = new FarmProcess(this);
         }
 
