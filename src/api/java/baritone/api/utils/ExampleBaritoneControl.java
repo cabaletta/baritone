@@ -442,6 +442,11 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             try {
                 baritone.getExploreProcess().applyJsonFilter(path1, invert);
                 logDirect("Loaded filter. Inverted: " + invert);
+                if (invert) {
+                    logDirect("Chunks on this list will be treated as possibly unexplored, all others will be treated as certainly explored");
+                } else {
+                    logDirect("Chunks on this list will be treated as certainly explored, all others will be treated as possibly unexplored");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 logDirect("Unable to load " + path1);
