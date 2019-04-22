@@ -438,9 +438,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             String path = msg.substring("explorefilter".length()).trim();
             String[] parts = path.split(" ");
             Path path1 = Minecraft.getMinecraft().gameDir.toPath().resolve(parts[0]);
+            boolean invert = parts.length > 1;
             try {
-                baritone.getExploreProcess().applyJsonFilter(path1, parts.length > 1);
-                logDirect("Loaded filter");
+                baritone.getExploreProcess().applyJsonFilter(path1, invert);
+                logDirect("Loaded filter. Inverted: " + invert);
             } catch (Exception e) {
                 e.printStackTrace();
                 logDirect("Unable to load " + path1);
