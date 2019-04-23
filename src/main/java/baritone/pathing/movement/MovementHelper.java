@@ -55,7 +55,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || bsi.get0(x + 1, y, z).getBlock() instanceof BlockLiquid
                 || bsi.get0(x - 1, y, z).getBlock() instanceof BlockLiquid
                 || bsi.get0(x, y, z + 1).getBlock() instanceof BlockLiquid
-                || bsi.get0(x, y, z - 1).getBlock() instanceof BlockLiquid;
+                || bsi.get0(x, y, z - 1).getBlock() instanceof BlockLiquid
+                || Baritone.settings().blocksToAvoidBreaking.value.contains(b);
     }
 
     static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {

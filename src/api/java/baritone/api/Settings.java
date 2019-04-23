@@ -158,6 +158,13 @@ public final class Settings {
     ));
 
     /**
+     * Blocks that Baritone is not allowed to break
+     */
+    public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(
+            // e.g. crafting table, beds
+    ));
+
+    /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
      * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
      * <p>
