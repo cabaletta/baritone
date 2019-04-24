@@ -338,6 +338,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             layer = 0;
             origin = new BlockPos(origin).offset(direction, distance);
             logDirect("Repeating build " + distance + " blocks to the " + direction + ", new origin is " + origin);
+            return onTick(calcFailed, isSafeToCancel);
         }
         trim(bcc);
 
