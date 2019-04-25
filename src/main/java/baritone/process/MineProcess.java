@@ -47,6 +47,8 @@ import net.minecraft.world.World;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static baritone.api.pathing.movement.ActionCosts.COST_INF;
+
 /**
  * Mine blocks of a certain type
  *
@@ -334,7 +336,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         List<BlockPos> dropped = droppedItemsScan(mining, ctx.world);
         dropped.removeIf(drop -> {
             for (BlockPos pos : locs2) {
-                if (pos.distanceSq(drop) <= 9 && mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) && MineProcess.plausibleToBreak(ctx.bsi, pos)) { // TODO maybe drop also has to be supported? no lava below?
+                if (pos.distanceSq(drop) <= 9 && mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) && MineProcess.plausibleToBreak(ctx, pos)) { // TODO maybe drop also has to be supported? no lava below?
                     return true;
                 }
             }
@@ -348,7 +350,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 .filter(pos -> !ctx.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ()) || mining.contains(ctx.getBlock(pos.getX(), pos.getY(), pos.getZ())) || dropped.contains(pos))
 
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
-                .filter(pos -> MineProcess.plausibleToBreak(ctx.bsi, pos))
+                .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
 
                 .filter(pos -> !blacklist.contains(pos))
 
@@ -361,13 +363,13 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return locs;
     }
 
-    public static boolean plausibleToBreak(BlockStateInterface bsi, BlockPos pos) {
-        if (MovementHelper.avoidBreaking(bsi, pos.getX(), pos.getY(), pos.getZ(), bsi.get0(pos))) {
+    public static boolean plausibleToBreak(CalculationContext ctx, BlockPos pos) {
+        if (MovementHelper.getMiningDurationTicks(ctx, pos.getX(), pos.getY(), pos.getZ(), ctx.bsi.get0(pos), true) >= COST_INF) {
             return false;
         }
 
         // bedrock above and below makes it implausible, otherwise we're good
-        return !(bsi.get0(pos.up()).getBlock() == Blocks.BEDROCK && bsi.get0(pos.down()).getBlock() == Blocks.BEDROCK);
+        return !(ctx.bsi.get0(pos.up()).getBlock() == Blocks.BEDROCK && ctx.bsi.get0(pos.down()).getBlock() == Blocks.BEDROCK);
     }
 
     @Override
