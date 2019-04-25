@@ -153,7 +153,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                     Rotation rotTowardsBlock = reachable.get();
                     MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
-                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
+                    if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
                     return false;

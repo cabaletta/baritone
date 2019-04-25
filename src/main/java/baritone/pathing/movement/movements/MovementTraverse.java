@@ -313,7 +313,7 @@ public class MovementTraverse extends Movement {
                 } else {
                     state.setTarget(new MovementState.MovementTarget(backToFace, true));
                 }
-                if (Objects.equals(ctx.getSelectedBlock().orElse(null), goalLook)) {
+                if (ctx.isLookingAt(goalLook)) {
                     return state.setInput(Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
