@@ -35,6 +35,7 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
+import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -155,7 +156,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (!locs.isEmpty()) {
             List<BlockPos> locs2 = prune(new CalculationContext(baritone), new ArrayList<>(locs), mining, ORE_LOCATIONS_COUNT, blacklist);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
-            Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(ctx, loc, locs2)).toArray(Goal[]::new));
+            Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2)).toArray(Goal[]::new));
             knownOreLocations = locs2;
             return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
@@ -210,18 +211,26 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return locs.contains(pos) || (Baritone.settings().internalMiningAirException.value && BlockStateInterface.getBlock(ctx, pos) instanceof BlockAir);
     }
 
-    private static Goal coalesce(IPlayerContext ctx, BlockPos loc, List<BlockPos> locs) {
+    private Goal coalesce(BlockPos loc, List<BlockPos> locs) {
+        boolean assumeVerticalShaftMine = !(baritone.bsi.get0(loc.up()).getBlock() instanceof BlockFalling);
         if (!Baritone.settings().forceInternalMining.value) {
-            return new GoalThreeBlocks(loc);
+            if (assumeVerticalShaftMine) {
+                // we can get directly below the block
+                return new GoalThreeBlocks(loc);
+            } else {
+                // we need to get feet or head into the block
+                return new GoalTwoBlocks(loc);
+            }
         }
         boolean upwardGoal = internalMiningGoal(loc.up(), ctx, locs);
         boolean downwardGoal = internalMiningGoal(loc.down(), ctx, locs);
         boolean doubleDownwardGoal = internalMiningGoal(loc.down(2), ctx, locs);
         if (upwardGoal == downwardGoal) { // symmetric
-            if (doubleDownwardGoal) {
+            if (doubleDownwardGoal && assumeVerticalShaftMine) {
                 // we have a checkerboard like pattern
                 // this one, and the one two below it
                 // therefore it's fine to path to immediately below this one, since your feet will be in the doubleDownwardGoal
+                // but only if assumeVerticalShaftMine
                 return new GoalThreeBlocks(loc);
             } else {
                 // this block has nothing interesting two below, but is symmetric vertically so we can get either feet or head into it
@@ -234,7 +243,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             return new GoalBlock(loc);
         }
         // upwardGoal known to be false, downwardGoal known to be true
-        if (doubleDownwardGoal) {
+        if (doubleDownwardGoal && assumeVerticalShaftMine) {
             // this block and two below it are goals
             // path into the center of the one below, because that includes directly below this one
             return new GoalTwoBlocks(loc.down());
