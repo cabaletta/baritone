@@ -22,6 +22,7 @@ import baritone.api.cache.ICachedWorld;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.process.IExploreProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -133,9 +134,23 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
                 }
             }
             if (centers.size() >= count) {
-                return centers.stream().map(pos -> new GoalXZ(pos.getX(), pos.getZ())).toArray(Goal[]::new);
+                return centers.stream().map(pos -> createGoal(pos.getX(), pos.getZ())).toArray(Goal[]::new);
             }
         }
+    }
+
+    private static Goal createGoal(int x, int z) {
+        if (Baritone.settings().exploreMaintainY.value == -1) {
+            return new GoalXZ(x, z);
+        }
+        // don't use a goalblock because we still want isInGoal to return true if X and Z are correct
+        // we just want to try and maintain Y on the way there, not necessarily end at that specific Y
+        return new GoalXZ(x, z) {
+            @Override
+            public double heuristic(int x, int y, int z) {
+                return super.heuristic(x, y, z) + GoalYLevel.calculate(Baritone.settings().exploreMaintainY.value, y);
+            }
+        };
     }
 
     private enum Status {

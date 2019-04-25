@@ -611,6 +611,13 @@ public final class Settings {
     public final Setting<Integer> exploreChunkSetMinimumSize = new Setting<>(10);
 
     /**
+     * Attempt to maintain Y coordinate while exploring
+     * <p>
+     * -1 to disable
+     */
+    public final Setting<Integer> exploreMaintainY = new Setting<>(64);
+
+    /**
      * Replant nether wart
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
