@@ -116,9 +116,9 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
                         case EXPLORED:
                             continue; // note: this continues the for
                     }
-                    int centerX = (chunkX + dx) * 16 + 8;
-                    int centerZ = (chunkZ + dz) * 18 + 8;
-                    int offset = 16 * Baritone.settings().worldExploringChunkOffset.value;
+                    int centerX = ((chunkX + dx) << 4) + 8;
+                    int centerZ = ((chunkZ + dz) << 4) + 8;
+                    int offset = Baritone.settings().worldExploringChunkOffset.value << 4;
                     if (dx < 0) {
                         centerX -= offset;
                     } else {
