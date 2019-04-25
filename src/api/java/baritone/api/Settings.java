@@ -205,6 +205,11 @@ public final class Settings {
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
 
     /**
+     * When breaking blocks for a movement, wait until all falling blocks have settled before continuing
+     */
+    public final Setting<Boolean> pauseMiningForFallingBlocks = new Setting<>(true);
+
+    /**
      * How many ticks between right clicks are allowed. Default in game is 4
      */
     public final Setting<Integer> rightClickSpeed = new Setting<>(4);
