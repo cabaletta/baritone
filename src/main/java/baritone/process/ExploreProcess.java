@@ -83,7 +83,7 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
             return null;
         }
         IChunkFilter filter = calcFilter();
-        if (!Baritone.settings().disableCompletionCheck.value && filter.finished()) {
+        if (!Baritone.settings().disableCompletionCheck.value && filter.countRemain() == 0) {
             logDirect("Explored all chunks");
             onLostControl();
             return null;
@@ -99,6 +99,7 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
     private Goal[] closestUncachedChunks(BlockPos center, IChunkFilter filter) {
         int chunkX = center.getX() >> 4;
         int chunkZ = center.getZ() >> 4;
+        int count = Math.min(filter.countRemain(), Baritone.settings().exploreChunkSetMinimumSize.value);
         for (int dist = 0; ; dist++) {
             List<BlockPos> centers = new ArrayList<>();
             for (int dx = -dist; dx <= dist; dx++) {
@@ -131,7 +132,7 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
                     centers.add(new BlockPos(centerX, 0, centerZ));
                 }
             }
-            if (centers.size() > Baritone.settings().exploreChunkSetMinimumSize.value) {
+            if (centers.size() >= count) {
                 return centers.stream().map(pos -> new GoalXZ(pos.getX(), pos.getZ())).toArray(Goal[]::new);
             }
         }
@@ -144,7 +145,7 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
     private interface IChunkFilter {
         Status isAlreadyExplored(int chunkX, int chunkZ);
 
-        boolean finished();
+        int countRemain();
     }
 
     private class BaritoneChunkCache implements IChunkFilter {
@@ -168,8 +169,8 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
         }
 
         @Override
-        public boolean finished() {
-            return false;
+        public int countRemain() {
+            return Integer.MAX_VALUE;
         }
     }
 
@@ -203,21 +204,25 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
         }
 
         @Override
-        public boolean finished() {
+        public int countRemain() {
             if (!invert) {
                 // if invert is false, anything not on the list is uncached
-                return false;
+                return Integer.MAX_VALUE;
             }
             // but if invert is true, anything not on the list IS assumed cached
             // so we are done if everything on our list is cached!
+            int countRemain = 0;
             BaritoneChunkCache bcc = new BaritoneChunkCache();
             for (MyChunkPos pos : positions) {
                 if (bcc.isAlreadyExplored(pos.x, pos.z) != Status.EXPLORED) {
                     // either waiting for it or dont have it at all
-                    return false;
+                    countRemain++;
+                    if (countRemain >= Baritone.settings().exploreChunkSetMinimumSize.value) {
+                        return countRemain;
+                    }
                 }
             }
-            return true; // we have everything cached
+            return countRemain;
         }
     }
 
@@ -239,8 +244,8 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
         }
 
         @Override
-        public boolean finished() {
-            return a.finished() || b.finished();
+        public int countRemain() {
+            return Math.min(a.countRemain(), b.countRemain());
         }
     }
 
