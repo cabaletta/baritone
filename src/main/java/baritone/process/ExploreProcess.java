@@ -105,7 +105,7 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
             List<BlockPos> centers = new ArrayList<>();
             for (int dx = -dist; dx <= dist; dx++) {
                 for (int dz = -dist; dz <= dist; dz++) {
-                    int trueDist = Baritone.settings().exploreUsePythagorean.value ? dx * dx + dz * dz : Math.abs(dx) + Math.abs(dz);
+                    int trueDist = Math.abs(dx) + Math.abs(dz);
                     if (trueDist != dist) {
                         continue; // not considering this one just yet in our expanding search
                     }

@@ -730,13 +730,6 @@ public final class Settings {
     public final Setting<Integer> followRadius = new Setting<>(3);
 
     /**
-     * true = exploration uses pythagorean distance to choose closest uncached chunk
-     * <p>
-     * false = exploration uses manhattan / taxicab distance to choose
-     */
-    public final Setting<Boolean> exploreUsePythagorean = new Setting<>(false);
-
-    /**
      * Turn this on if your exploration filter is enormous, you don't want it to check if it's done,
      * and you are just fine with it just hanging on completion
      */
