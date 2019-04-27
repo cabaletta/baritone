@@ -47,6 +47,8 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
 
     private IChunkFilter filter;
 
+    private int distanceCompleted;
+
     public ExploreProcess(Baritone baritone) {
         super(baritone);
     }
@@ -59,6 +61,7 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
     @Override
     public void explore(int centerX, int centerZ) {
         explorationOrigin = new BlockPos(centerX, 0, centerZ);
+        distanceCompleted = 0;
     }
 
     @Override
@@ -102,12 +105,15 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
         int chunkZ = center.getZ() >> 4;
         int count = Math.min(filter.countRemain(), Baritone.settings().exploreChunkSetMinimumSize.value);
         List<BlockPos> centers = new ArrayList<>();
-        for (int dist = 0; ; dist++) {
+        int renderDistance = Baritone.settings().worldExploringChunkOffset.value;
+        for (int dist = distanceCompleted; ; dist++) {
             for (int dx = -dist; dx <= dist; dx++) {
-                for (int dz = -dist; dz <= dist; dz++) {
+                int zval = dist - Math.abs(dx);
+                for (int mult = 0; mult < 2; mult++) {
+                    int dz = (mult * 2 - 1) * zval; // dz can be either -zval or zval
                     int trueDist = Math.abs(dx) + Math.abs(dz);
                     if (trueDist != dist) {
-                        continue; // not considering this one just yet in our expanding search
+                        throw new IllegalStateException();
                     }
                     switch (filter.isAlreadyExplored(chunkX + dx, chunkZ + dz)) {
                         case UNKNOWN:
@@ -119,7 +125,7 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
                     }
                     int centerX = ((chunkX + dx) << 4) + 8;
                     int centerZ = ((chunkZ + dz) << 4) + 8;
-                    int offset = Baritone.settings().worldExploringChunkOffset.value << 4;
+                    int offset = renderDistance << 4;
                     if (dx < 0) {
                         centerX -= offset;
                     } else {
@@ -135,6 +141,11 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
             }
             if (centers.size() >= count) {
                 return centers.stream().map(pos -> createGoal(pos.getX(), pos.getZ())).toArray(Goal[]::new);
+            }
+            if (centers.isEmpty()) {
+                // we have explored everything from 0 to dist inclusive
+                // next time we should start our check at dist+1
+                distanceCompleted = dist + 1;
             }
         }
     }
@@ -271,6 +282,6 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
 
     @Override
     public String displayName0() {
-        return "Exploring around " + explorationOrigin + ", currently going to " + new GoalComposite(closestUncachedChunks(explorationOrigin, calcFilter()));
+        return "Exploring around " + explorationOrigin + ", distance completed " + distanceCompleted + ", currently going to " + new GoalComposite(closestUncachedChunks(explorationOrigin, calcFilter()));
     }
 }
