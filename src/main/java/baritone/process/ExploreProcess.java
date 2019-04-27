@@ -101,8 +101,8 @@ public class ExploreProcess extends BaritoneProcessHelper implements IExplorePro
         int chunkX = center.getX() >> 4;
         int chunkZ = center.getZ() >> 4;
         int count = Math.min(filter.countRemain(), Baritone.settings().exploreChunkSetMinimumSize.value);
+        List<BlockPos> centers = new ArrayList<>();
         for (int dist = 0; ; dist++) {
-            List<BlockPos> centers = new ArrayList<>();
             for (int dx = -dist; dx <= dist; dx++) {
                 for (int dz = -dist; dz <= dist; dz++) {
                     int trueDist = Math.abs(dx) + Math.abs(dz);
