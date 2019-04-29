@@ -19,6 +19,7 @@ package baritone.cache;
 
 import baritone.api.utils.BlockUtils;
 import baritone.utils.pathing.PathingBlockType;
+import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -33,64 +34,60 @@ import java.util.*;
  */
 public final class CachedChunk {
 
-    public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF;
+    public static final ImmutableSet<Block> BLOCKS_TO_KEEP_TRACK_OF = ImmutableSet.of(
+        Blocks.DIAMOND_BLOCK,
+        //Blocks.COAL_ORE,
+        Blocks.COAL_BLOCK,
+        //Blocks.IRON_ORE,
+        Blocks.IRON_BLOCK,
+        //Blocks.GOLD_ORE,
+        Blocks.GOLD_BLOCK,
+        Blocks.EMERALD_ORE,
+        Blocks.EMERALD_BLOCK,
 
-    static {
-        HashSet<Block> temp = new HashSet<>();
-        //temp.add(Blocks.DIAMOND_ORE);
-        temp.add(Blocks.DIAMOND_BLOCK);
-        //temp.add(Blocks.COAL_ORE);
-        temp.add(Blocks.COAL_BLOCK);
-        //temp.add(Blocks.IRON_ORE);
-        temp.add(Blocks.IRON_BLOCK);
-        //temp.add(Blocks.GOLD_ORE);
-        temp.add(Blocks.GOLD_BLOCK);
-        temp.add(Blocks.EMERALD_ORE);
-        temp.add(Blocks.EMERALD_BLOCK);
+        Blocks.ENDER_CHEST,
+        Blocks.FURNACE,
+        Blocks.CHEST,
+        Blocks.TRAPPED_CHEST,
+        Blocks.END_PORTAL,
+        Blocks.END_PORTAL_FRAME,
+        Blocks.MOB_SPAWNER,
+        Blocks.BARRIER,
+        Blocks.OBSERVER,
+        Blocks.WHITE_SHULKER_BOX,
+        Blocks.ORANGE_SHULKER_BOX,
+        Blocks.MAGENTA_SHULKER_BOX,
+        Blocks.LIGHT_BLUE_SHULKER_BOX,
+        Blocks.YELLOW_SHULKER_BOX,
+        Blocks.LIME_SHULKER_BOX,
+        Blocks.PINK_SHULKER_BOX,
+        Blocks.GRAY_SHULKER_BOX,
+        Blocks.SILVER_SHULKER_BOX,
+        Blocks.CYAN_SHULKER_BOX,
+        Blocks.PURPLE_SHULKER_BOX,
+        Blocks.BLUE_SHULKER_BOX,
+        Blocks.BROWN_SHULKER_BOX,
+        Blocks.GREEN_SHULKER_BOX,
+        Blocks.RED_SHULKER_BOX,
+        Blocks.BLACK_SHULKER_BOX,
+        Blocks.PORTAL,
+        Blocks.HOPPER,
+        Blocks.BEACON,
+        Blocks.BREWING_STAND,
+        Blocks.SKULL,
+        Blocks.ENCHANTING_TABLE,
+        Blocks.ANVIL,
+        Blocks.LIT_FURNACE,
+        Blocks.BED,
+        Blocks.DRAGON_EGG,
+        Blocks.JUKEBOX,
+        Blocks.END_GATEWAY,
+        Blocks.WEB,
+        Blocks.NETHER_WART,
+        Blocks.LADDER,
+        Blocks.VINE
+    );
 
-        temp.add(Blocks.ENDER_CHEST);
-        temp.add(Blocks.FURNACE);
-        temp.add(Blocks.CHEST);
-        temp.add(Blocks.TRAPPED_CHEST);
-        temp.add(Blocks.END_PORTAL);
-        temp.add(Blocks.END_PORTAL_FRAME);
-        temp.add(Blocks.MOB_SPAWNER);
-        temp.add(Blocks.BARRIER);
-        temp.add(Blocks.OBSERVER);
-        temp.add(Blocks.WHITE_SHULKER_BOX);
-        temp.add(Blocks.ORANGE_SHULKER_BOX);
-        temp.add(Blocks.MAGENTA_SHULKER_BOX);
-        temp.add(Blocks.LIGHT_BLUE_SHULKER_BOX);
-        temp.add(Blocks.YELLOW_SHULKER_BOX);
-        temp.add(Blocks.LIME_SHULKER_BOX);
-        temp.add(Blocks.PINK_SHULKER_BOX);
-        temp.add(Blocks.GRAY_SHULKER_BOX);
-        temp.add(Blocks.SILVER_SHULKER_BOX);
-        temp.add(Blocks.CYAN_SHULKER_BOX);
-        temp.add(Blocks.PURPLE_SHULKER_BOX);
-        temp.add(Blocks.BLUE_SHULKER_BOX);
-        temp.add(Blocks.BROWN_SHULKER_BOX);
-        temp.add(Blocks.GREEN_SHULKER_BOX);
-        temp.add(Blocks.RED_SHULKER_BOX);
-        temp.add(Blocks.BLACK_SHULKER_BOX);
-        temp.add(Blocks.PORTAL);
-        temp.add(Blocks.HOPPER);
-        temp.add(Blocks.BEACON);
-        temp.add(Blocks.BREWING_STAND);
-        temp.add(Blocks.SKULL);
-        temp.add(Blocks.ENCHANTING_TABLE);
-        temp.add(Blocks.ANVIL);
-        temp.add(Blocks.LIT_FURNACE);
-        temp.add(Blocks.BED);
-        temp.add(Blocks.DRAGON_EGG);
-        temp.add(Blocks.JUKEBOX);
-        temp.add(Blocks.END_GATEWAY);
-        temp.add(Blocks.WEB);
-        temp.add(Blocks.NETHER_WART);
-        temp.add(Blocks.LADDER);
-        temp.add(Blocks.VINE);
-        BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(temp);
-    }
 
     /**
      * The size of the chunk data in bits. Equal to 16 KiB.
