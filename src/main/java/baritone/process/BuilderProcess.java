@@ -36,6 +36,7 @@ import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.AirSchematic;
 import baritone.utils.schematic.Schematic;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
@@ -135,15 +136,19 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
         return state;
     }
-    
+
     private Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
+        BetterBlockPos pathStart = baritone.getPathingBehavior().pathStart();
         for (int dx = -5; dx <= 5; dx++) {
-            for (int dy = 0; dy <= 5; dy++) {
+            for (int dy = Baritone.settings().breakFromAbove.value ? -1 : 0; dy <= 5; dy++) {
                 for (int dz = -5; dz <= 5; dz++) {
                     int x = center.x + dx;
                     int y = center.y + dy;
                     int z = center.z + dz;
+                    if (dy == -1 && x == pathStart.x && z == pathStart.z) {
+                        continue; // dont mine what we're supported by, but not directly standing on
+                    }
                     IBlockState desired = bcc.getSchematic(x, y, z);
                     if (desired == null) {
                         continue; // irrelevant
@@ -496,8 +501,8 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
 
     private Goal assemble(BuilderCalculationContext bcc, List<IBlockState> approxPlacable) {
         List<BetterBlockPos> placable = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() == Blocks.AIR && approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))).collect(Collectors.toList());
-        Goal[] toBreak = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() != Blocks.AIR).map(GoalBreak::new).toArray(Goal[]::new);
-        Goal[] toPlace = placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(pos -> placementgoal(pos, bcc)).toArray(Goal[]::new);
+        Goal[] toBreak = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() != Blocks.AIR).map(pos -> breakGoal(pos, bcc)).toArray(Goal[]::new);
+        Goal[] toPlace = placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(pos -> placementGoal(pos, bcc)).toArray(Goal[]::new);
 
         if (toPlace.length != 0) {
             return new JankyGoalComposite(new GoalComposite(toPlace), new GoalComposite(toBreak));
@@ -551,8 +556,8 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
     }
 
-    private Goal placementgoal(BlockPos pos, BuilderCalculationContext bcc) {
-        if (ctx.world().getBlockState(pos).getBlock() != Blocks.AIR) {
+    private Goal placementGoal(BlockPos pos, BuilderCalculationContext bcc) {
+        if (ctx.world().getBlockState(pos).getBlock() != Blocks.AIR) { // TODO can this even happen?
             return new GoalPlace(pos);
         }
         boolean allowSameLevel = ctx.world().getBlockState(pos.up()).getBlock() != Blocks.AIR;
@@ -562,6 +567,21 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             }
         }
         return new GoalPlace(pos);
+    }
+
+    private Goal breakGoal(BlockPos pos, BuilderCalculationContext bcc) {
+        if (Baritone.settings().goalBreakFromAbove.value && bcc.bsi.get0(pos.up()).getBlock() instanceof BlockAir && bcc.bsi.get0(pos.up(2)).getBlock() instanceof BlockAir) { // TODO maybe possible without the up(2) check?
+            return new JankyGoalComposite(new GoalBreak(pos), new GoalGetToBlock(pos.up()) {
+                @Override
+                public boolean isInGoal(int x, int y, int z) {
+                    if (y > this.y || (x == this.x && y == this.y && z == this.z)) {
+                        return false;
+                    }
+                    return super.isInGoal(x, y, z);
+                }
+            });
+        }
+        return new GoalBreak(pos);
     }
 
     public static class GoalAdjacent extends GoalGetToBlock {

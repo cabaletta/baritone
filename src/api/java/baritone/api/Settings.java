@@ -655,6 +655,20 @@ public final class Settings {
     public final Setting<EnumFacing> buildRepeatDirection = new Setting<>(EnumFacing.NORTH);
 
     /**
+     * Allow standing above a block while mining it, in BuilderProcess
+     * <p>
+     * Experimental
+     */
+    public final Setting<Boolean> breakFromAbove = new Setting<>(false);
+
+    /**
+     * As well as breaking from above, set a goal to up and to the side of all blocks to break.
+     * <p>
+     * Never turn this on without also turning on breakFromAbove.
+     */
+    public final Setting<Boolean> goalBreakFromAbove = new Setting<>(false);
+
+    /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
