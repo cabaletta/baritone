@@ -610,7 +610,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             ret.costEstimateIndex = costEstimateIndex;
             ret.ticksOnCurrent = ticksOnCurrent;
             return ret;
-        }).orElse(cutIfTooLong());
+        }).orElseGet(this::cutIfTooLong); // dont actually call cutIfTooLong every tick if we won't actually use it, use a method reference
     }
 
     private PathExecutor cutIfTooLong() {

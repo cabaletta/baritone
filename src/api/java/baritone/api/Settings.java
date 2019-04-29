@@ -573,6 +573,16 @@ public final class Settings {
     public final Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
     /**
+     * When a new segment is calculated that doesn't overlap with the current one, but simply begins where the current segment ends,
+     * splice it on and make a longer combined path. If this setting is off, any planned segment will not be spliced and will instead
+     * be the "next path" in PathingBehavior, and will only start after this one ends. Turning this off hurts planning ahead,
+     * because the next segment will exist even if it's very short.
+     *
+     * @see #planningTickLookahead
+     */
+    public final Setting<Boolean> splicePath = new Setting<>(true);
+
+    /**
      * If we are more than 300 movements into the current path, discard the oldest segments, as they are no longer useful
      */
     public final Setting<Integer> maxPathHistoryLength = new Setting<>(300);
