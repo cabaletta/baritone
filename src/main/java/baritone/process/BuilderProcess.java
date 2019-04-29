@@ -135,9 +135,8 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
         return state;
     }
-
-
-    public Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
+    
+    private Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = 0; dy <= 5; dy++) {
@@ -177,7 +176,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
     }
 
-    public Optional<Placement> searchForPlacables(BuilderCalculationContext bcc, List<IBlockState> desirableOnHotbar) {
+    private Optional<Placement> searchForPlacables(BuilderCalculationContext bcc, List<IBlockState> desirableOnHotbar) {
         BetterBlockPos center = ctx.playerFeet();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = -5; dy <= 1; dy++) {
@@ -206,7 +205,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         return Optional.empty();
     }
 
-    public Optional<Placement> possibleToPlace(IBlockState toPlace, int x, int y, int z, BlockStateInterface bsi) {
+    private Optional<Placement> possibleToPlace(IBlockState toPlace, int x, int y, int z, BlockStateInterface bsi) {
         for (EnumFacing against : EnumFacing.values()) {
             BetterBlockPos placeAgainstPos = new BetterBlockPos(x, y, z).offset(against);
             IBlockState placeAgainstState = bsi.get0(placeAgainstPos);
@@ -234,8 +233,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         return Optional.empty();
     }
 
-
-    public OptionalInt hasAnyItemThatWouldPlace(IBlockState desired, RayTraceResult result, Rotation rot) {
+    private OptionalInt hasAnyItemThatWouldPlace(IBlockState desired, RayTraceResult result, Rotation rot) {
         for (int i = 0; i < 9; i++) {
             ItemStack stack = ctx.player().inventory.mainInventory.get(i);
             if (stack.isEmpty() || !(stack.getItem() instanceof ItemBlock)) {
@@ -416,7 +414,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
     }
 
-    public boolean recalc(BuilderCalculationContext bcc) {
+    private boolean recalc(BuilderCalculationContext bcc) {
         if (incorrectPositions == null) {
             incorrectPositions = new HashSet<>();
             fullRecalc(bcc);
@@ -431,7 +429,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         return !incorrectPositions.isEmpty();
     }
 
-    public void trim(BuilderCalculationContext bcc) {
+    private void trim(BuilderCalculationContext bcc) {
         HashSet<BetterBlockPos> copy = new HashSet<>(incorrectPositions);
         copy.removeIf(pos -> pos.distanceSq(ctx.player().posX, ctx.player().posY, ctx.player().posZ) > 200);
         if (!copy.isEmpty()) {
@@ -439,7 +437,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
     }
 
-    public void recalcNearby(BuilderCalculationContext bcc) {
+    private void recalcNearby(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = -5; dy <= 5; dy++) {
@@ -464,7 +462,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
     }
 
-    public void fullRecalc(BuilderCalculationContext bcc) {
+    private void fullRecalc(BuilderCalculationContext bcc) {
         incorrectPositions = new HashSet<>();
         for (int y = 0; y < schematic.heightY(); y++) {
             for (int z = 0; z < schematic.lengthZ(); z++) {
@@ -553,7 +551,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         }
     }
 
-    public Goal placementgoal(BlockPos pos, BuilderCalculationContext bcc) {
+    private Goal placementgoal(BlockPos pos, BuilderCalculationContext bcc) {
         if (ctx.world().getBlockState(pos).getBlock() != Blocks.AIR) {
             return new GoalPlace(pos);
         }
@@ -620,7 +618,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         return paused ? "Builder Paused" : "Building " + name;
     }
 
-    public List<IBlockState> placable(int size) {
+    private List<IBlockState> placable(int size) {
         List<IBlockState> result = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             ItemStack stack = ctx.player().inventory.mainInventory.get(i);
@@ -635,7 +633,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         return result;
     }
 
-    public boolean valid(IBlockState current, IBlockState desired) {
+    private boolean valid(IBlockState current, IBlockState desired) {
         // TODO more complicated comparison logic I guess
         return desired == null || current.equals(desired);
     }
