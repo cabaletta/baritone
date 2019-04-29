@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +81,8 @@ public class SettingsUtil {
                     ex.printStackTrace();
                 }
             });
+        } catch (NoSuchFileException ignored) {
+            System.out.println("Baritone settings file not found, resetting.");
         } catch (Exception ex) {
             System.out.println("Exception while reading Baritone settings, some settings may be reset to default values!");
             ex.printStackTrace();
