@@ -35,6 +35,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.AirSchematic;
 import baritone.utils.schematic.Schematic;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
@@ -56,6 +57,7 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
 
     private HashSet<BetterBlockPos> incorrectPositions;
+    private LongOpenHashSet observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now
     private String name;
     private ISchematic realSchematic;
     private ISchematic schematic;
@@ -76,6 +78,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         this.origin = origin;
         this.paused = false;
         this.layer = 0;
+        this.observedCompleted = new LongOpenHashSet();
     }
 
     public void resume() {
@@ -447,10 +450,13 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                     IBlockState desired = bcc.getSchematic(x, y, z);
                     if (desired != null) {
                         // we care about this position
+                        BetterBlockPos pos = new BetterBlockPos(x, y, z);
                         if (valid(bcc.bsi.get0(x, y, z), desired)) {
-                            incorrectPositions.remove(new BetterBlockPos(x, y, z));
+                            incorrectPositions.remove(pos);
+                            observedCompleted.add(BetterBlockPos.longHash(pos));
                         } else {
-                            incorrectPositions.add(new BetterBlockPos(x, y, z));
+                            incorrectPositions.add(pos);
+                            observedCompleted.rem(BetterBlockPos.longHash(pos));
                         }
                     }
                 }
@@ -463,8 +469,27 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         for (int y = 0; y < schematic.heightY(); y++) {
             for (int z = 0; z < schematic.lengthZ(); z++) {
                 for (int x = 0; x < schematic.widthX(); x++) {
-                    if (schematic.inSchematic(x, y, z) && !valid(bcc.bsi.get0(x + origin.getX(), y + origin.getY(), z + origin.getZ()), schematic.desiredState(x, y, z))) {
-                        incorrectPositions.add(new BetterBlockPos(x + origin.getX(), y + origin.getY(), z + origin.getZ()));
+                    if (!schematic.inSchematic(x, y, z)) {
+                        continue;
+                    }
+                    int blockX = x + origin.getX();
+                    int blockY = y + origin.getY();
+                    int blockZ = z + origin.getZ();
+                    if (bcc.bsi.worldContainsLoadedChunk(blockX, blockZ)) { // check if its in render distance, not if its in cache
+                        // we can directly observe this block, it is in render distance
+                        if (valid(bcc.bsi.get0(blockX, blockY, blockZ), schematic.desiredState(x, y, z))) {
+                            observedCompleted.add(BetterBlockPos.longHash(blockX, blockY, blockZ));
+                        } else {
+                            incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
+                            observedCompleted.rem(BetterBlockPos.longHash(blockX, blockY, blockZ));
+                        }
+                        continue;
+                    }
+                    // this is not in render distance
+                    if (!observedCompleted.contains(BetterBlockPos.longHash(blockX, blockY, blockZ))) {
+                        // and we've never seen this position be correct
+                        // therefore mark as incorrect
+                        incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
                     }
                 }
             }
@@ -587,6 +612,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         realSchematic = null;
         layer = 0;
         paused = false;
+        observedCompleted = null;
     }
 
     @Override
