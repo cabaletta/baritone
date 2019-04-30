@@ -18,6 +18,7 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.MovementStatus;
@@ -55,8 +56,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || bsi.get0(x + 1, y, z).getBlock() instanceof BlockLiquid
                 || bsi.get0(x - 1, y, z).getBlock() instanceof BlockLiquid
                 || bsi.get0(x, y, z + 1).getBlock() instanceof BlockLiquid
-                || bsi.get0(x, y, z - 1).getBlock() instanceof BlockLiquid
-                || Baritone.settings().blocksToAvoidBreaking.value.contains(b);
+                || bsi.get0(x, y, z - 1).getBlock() instanceof BlockLiquid;
     }
 
     static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {
@@ -363,7 +363,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (block instanceof BlockLiquid) {
                 return COST_INF;
             }
-            double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
+            double m = Baritone.settings().blocksToAvoidBreaking.value.contains(block) ? 10 : 1;
             double strVsBlock = context.toolSet.getStrVsBlock(state);
             if (strVsBlock <= 0) {
                 return COST_INF;

@@ -160,9 +160,12 @@ public final class Settings {
     /**
      * Blocks that Baritone is not allowed to break
      */
-    public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(
-            // e.g. crafting table, beds
-    ));
+    public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList(
+            Blocks.CRAFTING_TABLE,
+            Blocks.FURNACE,
+            Blocks.LIT_FURNACE,
+            Blocks.CHEST
+    )));
 
     /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
