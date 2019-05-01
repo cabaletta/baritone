@@ -17,18 +17,20 @@
 
 package baritone.pathing.movement;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.utils.BlockStateInterface;
+import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public abstract class Movement implements IMovement, MovementHelper {
@@ -139,6 +141,9 @@ public abstract class Movement implements IMovement, MovementHelper {
         }
         boolean somethingInTheWay = false;
         for (BetterBlockPos blockPos : positionsToBreak) {
+            if (!ctx.world().getEntitiesWithinAABB(EntityFallingBlock.class, new AxisAlignedBB(0, 0, 0, 1, 1.1, 1).offset(blockPos)).isEmpty() && Baritone.settings().pauseMiningForFallingBlocks.value) {
+                return false;
+            }
             if (!MovementHelper.canWalkThrough(ctx, blockPos)) { // can't break air, so don't try
                 somethingInTheWay = true;
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), blockPos, ctx.playerController().getBlockReachDistance());
@@ -146,7 +151,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                     Rotation rotTowardsBlock = reachable.get();
                     MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
-                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
+                    if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
                     return false;
@@ -268,5 +273,9 @@ public abstract class Movement implements IMovement, MovementHelper {
             toWalkIntoCached = new ArrayList<>();
         }
         return toWalkIntoCached;
+    }
+
+    public BlockPos[] toBreakAll() {
+        return positionsToBreak;
     }
 }

@@ -25,7 +25,6 @@ import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
@@ -59,11 +58,27 @@ public interface MovementHelper extends ActionCosts, Helper {
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no reason
-                || !bsi.get0(x, y + 1, z).getFluidState().isEmpty()//don't break anything touching liquid on any side
-                || !bsi.get0(x + 1, y, z).getFluidState().isEmpty()
-                || !bsi.get0(x - 1, y, z).getFluidState().isEmpty()
-                || !bsi.get0(x, y, z + 1).getFluidState().isEmpty()
-                || !bsi.get0(x, y, z - 1).getFluidState().isEmpty();
+                || avoidAdjacentBreaking(bsi, x, y + 1, z, true)
+                || avoidAdjacentBreaking(bsi, x + 1, y, z, false)
+                || avoidAdjacentBreaking(bsi, x - 1, y, z, false)
+                || avoidAdjacentBreaking(bsi, x, y, z + 1, false)
+                || avoidAdjacentBreaking(bsi, x, y, z - 1, false);
+    }
+
+    static boolean avoidAdjacentBreaking(BlockStateInterface bsi, int x, int y, int z, boolean directlyAbove) {
+        // returns true if you should avoid breaking a block that's adjacent to this one (e.g. lava that will start flowing if you give it a path)
+        // this is only called for north, south, east, west, and up. this is NOT called for down.
+        // we assume that it's ALWAYS okay to break the block thats ABOVE liquid
+        IBlockState state = bsi.get0(x, y, z);
+        Block block = state.getBlock();
+        if (!directlyAbove // it is fine to mine a block that has a falling block directly above, this (the cost of breaking the stacked fallings) is included in cost calculations
+                // therefore if directlyAbove is true, we will actually ignore if this is falling
+                && block instanceof BlockFalling // obviously, this check is only valid for falling blocks
+                && Baritone.settings().avoidUpdatingFallingBlocks.value // and if the setting is enabled
+                && BlockFalling.canFallThrough(bsi.get0(x, y - 1, z))) { // and if it would fall (i.e. it's unsupported)
+            return true; // dont break a block that is adjacent to unsupported gravel because it can cause really weird stuff
+        }
+        return state.getFluidState().isEmpty();
     }
 
     static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {
@@ -80,6 +95,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
         if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block == Blocks.BUBBLE_COLUMN || block instanceof BlockShulkerBox || block instanceof BlockSlab || block instanceof BlockTrapDoor) {
+            return false;
+        }
+        if (Baritone.settings().blocksToAvoid.value.contains(block)) {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -319,6 +337,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z, state);
     }
 
+    static boolean canWalkOn(IPlayerContext ctx, BlockPos pos) {
+        return canWalkOn(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ());
+    }
+
     static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos) {
         return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
     }
@@ -353,6 +375,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(context.bsi, x, y, z, state)) {
+            if (!state.getFluidState().isEmpty()) {
+                return COST_INF;
+            }
             double mult = context.breakCostMultiplierAt(x, y, z);
             if (mult >= COST_INF) {
                 return COST_INF;
@@ -360,16 +385,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (avoidBreaking(context.bsi, x, y, z, state)) {
                 return COST_INF;
             }
-            if (!state.getFluidState().isEmpty()) {
-                return COST_INF;
-            }
-            double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
             double strVsBlock = context.toolSet.getStrVsBlock(state);
             if (strVsBlock <= 0) {
                 return COST_INF;
             }
-
-            double result = m / strVsBlock;
+            double result = 1 / strVsBlock;
             result += context.breakBlockAdditionalCost;
             result *= mult;
             if (includeFalling) {
@@ -494,8 +514,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         for (int i = 0; i < 5; i++) {
             BlockPos against1 = placeAt.offset(HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(placeAt.getX(), placeAt.getY(), placeAt.getZ())) { // get ready to place a throwaway block
-                    Helper.HELPER.logDebug("bb pls get me some blocks. dirt or cobble");
+                if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(false, placeAt.getX(), placeAt.getY(), placeAt.getZ())) { // get ready to place a throwaway block
+                    Helper.HELPER.logDebug("bb pls get me some blocks. dirt, netherrack, cobble");
                     state.setStatus(MovementStatus.UNREACHABLE);
                     return PlaceResult.NO_OPTION;
                 }
@@ -521,10 +541,15 @@ public interface MovementHelper extends ActionCosts, Helper {
             EnumFacing side = ctx.objectMouseOver().sideHit;
             // only way for selectedBlock.equals(placeAt) to be true is if it's replacable
             if (selectedBlock.equals(placeAt) || (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.offset(side).equals(placeAt))) {
+                ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
                 return PlaceResult.READY_TO_PLACE;
             }
         }
-        return found ? PlaceResult.ATTEMPTING : PlaceResult.NO_OPTION;
+        if (found) {
+            ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
+            return PlaceResult.ATTEMPTING;
+        }
+        return PlaceResult.NO_OPTION;
     }
 
     enum PlaceResult {

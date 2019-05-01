@@ -38,8 +38,6 @@ import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.Objects;
-
 public class MovementTraverse extends Movement {
 
     /**
@@ -249,12 +247,13 @@ public class MovementTraverse extends Movement {
             if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, ctx.playerFeet()) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
             }
-            Block destDown = BlockStateInterface.get(ctx, dest.down()).getBlock();
-            if (whereAmI.getY() != dest.getY() && ladder && (destDown == Blocks.VINE || destDown == Blocks.LADDER)) {
-                new MovementPillar(baritone, dest.down(), dest).updateState(state); // i'm sorry
-                return state;
+
+            IBlockState destDown = BlockStateInterface.get(ctx, dest.down());
+            BlockPos against = positionsToBreak[0];
+            if (whereAmI.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
+                against = destDown.getBlock() == Blocks.VINE ? MovementPillar.getAgainst(new CalculationContext(baritone), dest.down()) : dest.offset(destDown.get(BlockLadder.FACING).getOpposite());
             }
-            MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+            MovementHelper.moveTowards(ctx, state, against);
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
@@ -315,7 +314,7 @@ public class MovementTraverse extends Movement {
                 } else {
                     state.setTarget(new MovementState.MovementTarget(backToFace, true));
                 }
-                if (Objects.equals(ctx.getSelectedBlock().orElse(null), goalLook)) {
+                if (ctx.isLookingAt(goalLook)) {
                     return state.setInput(Input.CLICK_RIGHT, true); // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());

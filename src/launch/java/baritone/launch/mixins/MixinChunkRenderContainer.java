@@ -28,8 +28,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL11.GL_ONE;
+import static org.lwjgl.opengl.GL11.GL_ZERO;
+import static org.lwjgl.opengl.GL14.GL_CONSTANT_ALPHA;
+import static org.lwjgl.opengl.GL14.GL_ONE_MINUS_CONSTANT_ALPHA;
 
 @Mixin(ChunkRenderContainer.class)
 public class MixinChunkRenderContainer {

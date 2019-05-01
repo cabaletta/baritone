@@ -17,15 +17,14 @@
 
 package baritone.cache;
 
+import baritone.api.utils.BlockUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.IRegistry;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
@@ -37,8 +36,6 @@ import java.util.*;
  * @since 8/3/2018
  */
 public final class ChunkPacker {
-
-    private static final Map<String, Block> resourceCache = new HashMap<>();
 
     private ChunkPacker() {}
 
@@ -77,7 +74,7 @@ public final class ChunkPacker {
                             bitSet.set(index + 1, bits[1]);
                             Block block = state.getBlock();
                             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
-                                String name = blockToString(block);
+                                String name = BlockUtils.blockToString(block);
                                 specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
                             }
                         }
@@ -92,8 +89,7 @@ public final class ChunkPacker {
         IBlockState[] blocks = new IBlockState[256];
 
         for (int z = 0; z < 16; z++) {
-            https:
-//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
@@ -108,29 +104,6 @@ public final class ChunkPacker {
         return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
     }
 
-    public static String blockToString(Block block) {
-        ResourceLocation loc = IRegistry.BLOCK.getKey(block);
-        String name = loc.getPath(); // normally, only write the part after the minecraft:
-        if (!loc.getNamespace().equals("minecraft")) {
-            // Baritone is running on top of forge with mods installed, perhaps?
-            name = loc.toString(); // include the namespace with the colon
-        }
-        return name;
-    }
-
-    public static Block stringToBlockRequired(String name) {
-        if (name.equals("lit_redstone_ore")) {
-            return stringToBlockRequired("redstone_ore");
-        }
-        Block block = stringToBlockNullable(name);
-        Objects.requireNonNull(block);
-        return block;
-    }
-
-    public static Block stringToBlockNullable(String name) {
-        return resourceCache.computeIfAbsent(name, n -> IRegistry.BLOCK.get(ResourceLocation.tryCreate(n.contains(":") ? n : "minecraft:" + n)));
-    }
-
     private static PathingBlockType getPathingBlockType(IBlockState state, Chunk chunk, int x, int y, int z) {
         Block block = state.getBlock();
         if (MovementHelper.isWater(state)) {
@@ -139,14 +112,19 @@ public final class ChunkPacker {
             if (MovementHelper.possiblyFlowing(state)) {
                 return PathingBlockType.AVOID;
             }
+            if (
+                    (x != 15 && MovementHelper.possiblyFlowing(chunk.getBlockState(x + 1, y, z)))
+                            || (x != 0 && MovementHelper.possiblyFlowing(chunk.getBlockState(x - 1, y, z)))
+                            || (z != 15 && MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z + 1)))
+                            || (z != 0 && MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z - 1)))
+            ) {
+                return PathingBlockType.AVOID;
+            }
             if (x == 0 || x == 15 || z == 0 || z == 15) {
                 Vec3d flow = state.getFluidState().getFlow(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4));
                 if (flow.x != 0.0 || flow.z != 0.0) {
                     return PathingBlockType.WATER;
                 }
-                return PathingBlockType.AVOID;
-            }
-            if (MovementHelper.possiblyFlowing(chunk.getBlockState(x + 1, y, z)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x - 1, y, z)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z + 1)) || MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z - 1))) {
                 return PathingBlockType.AVOID;
             }
             return PathingBlockType.WATER;

@@ -25,6 +25,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.process.PathingCommand;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
 import baritone.api.utils.PathCalculationResult;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
@@ -32,7 +33,6 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
-import baritone.utils.Helper;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
@@ -195,7 +195,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 current.onTick();
                 return;
             }
-            current = current.trySplice(next);
+            if (Baritone.settings().splicePath.value) {
+                current = current.trySplice(next);
+            }
             if (next != null && current.getPath().getDest().equals(next.getPath().getDest())) {
                 next = null;
             }
@@ -350,7 +352,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
     }
 
-    public void forceCancel() { // NOT exposed on public api
+    @Override
+    public void forceCancel() { // exposed on public api because :sob:
         cancelEverything();
         secretInternalSegmentCancel();
         synchronized (pathCalcLock) {
@@ -358,11 +361,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
     }
 
-    public void secretCursedFunctionDoNotCall(IPath path) {
+    /*public void secretCursedFunctionDoNotCall(IPath path) {
         synchronized (pathPlanLock) {
             current = new PathExecutor(this, path);
         }
-    }
+    }*/
 
     public CalculationContext secretInternalGetCalculationContext() {
         return context;

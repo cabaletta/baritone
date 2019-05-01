@@ -15,9 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.api.utils;
 
-import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -50,7 +50,7 @@ public interface Helper {
      * @param message The message to display in chat
      */
     default void logDebug(String message) {
-        if (!Baritone.settings().chatDebug.value) {
+        if (!BaritoneAPI.getSettings().chatDebug.value) {
             //System.out.println("Suppressed debug message:");
             //System.out.println(message);
             return;
@@ -67,6 +67,6 @@ public interface Helper {
         ITextComponent component = MESSAGE_PREFIX.shallowCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
         component.appendSibling(new TextComponentString(" " + message));
-        Minecraft.getInstance().addScheduledTask(() -> Baritone.settings().logger.value.accept(component));
+        Minecraft.getInstance().addScheduledTask(() -> BaritoneAPI.getSettings().logger.value.accept(component));
     }
 }

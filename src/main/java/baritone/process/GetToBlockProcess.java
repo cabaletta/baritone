@@ -42,6 +42,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     private BlockPos start;
 
     private int tickCount = 0;
+    private int arrivalTickCount = 0;
 
     public GetToBlockProcess(Baritone baritone) {
         super(baritone);
@@ -53,6 +54,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         gettingTo = block;
         start = ctx.playerFeet();
         blacklist = new ArrayList<>();
+        arrivalTickCount = 0;
         rescan(new ArrayList<>(), new CalculationContext(baritone));
     }
 
@@ -117,7 +119,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     // blacklist the closest block and its adjacent blocks
-    public synchronized void blacklistClosest() {
+    public synchronized boolean blacklistClosest() {
         List<BlockPos> newBlacklist = new ArrayList<>();
         knownLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(newBlacklist::add);
         outer:
@@ -140,6 +142,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         }
         logDebug("Blacklisting unreachable locations " + newBlacklist);
         blacklist.addAll(newBlacklist);
+        return !newBlacklist.isEmpty();
     }
 
     // safer than direct double comparison from distanceSq
@@ -194,6 +197,10 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
                     if (!(ctx.player().openContainer instanceof ContainerPlayer)) {
                         return true;
                     }
+                }
+                if (arrivalTickCount++ > 20) {
+                    logDirect("Right click timed out");
+                    return true;
                 }
                 return false; // trying to right click, will do it next tick or so
             }

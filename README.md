@@ -43,7 +43,7 @@ Here are some links to help to get started:
 
 - [Installation & setup](SETUP.md)
 
-- [API Javadocs](https://baritone.leijurv.com/)
+- [API Javadocs](https://baritone.leijurv.com)
 
 - [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
 

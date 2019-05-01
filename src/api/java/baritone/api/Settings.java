@@ -18,6 +18,8 @@
 package baritone.api;
 
 import baritone.api.utils.SettingsUtil;
+import baritone.api.utils.TypeUtils;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -26,6 +28,8 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
@@ -80,7 +84,7 @@ public final class Settings {
     /**
      * Walking on water uses up hunger really quick, so penalize it
      */
-    public final Setting<Double> walkOnWaterOnePenalty = new Setting<>(5D);
+    public final Setting<Double> walkOnWaterOnePenalty = new Setting<>(3D);
 
     /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
@@ -142,8 +146,33 @@ public final class Settings {
     public final Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
             Blocks.DIRT.asItem(),
             Blocks.COBBLESTONE.asItem(),
-            Blocks.NETHERRACK.asItem()
+            Blocks.NETHERRACK.asItem(),
+            Blocks.STONE.asItem()
     )));
+
+    /**
+     * Blocks that Baritone will attempt to avoid (Used in avoidance)
+     */
+    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(
+            // Leave Empty by Default
+    ));
+
+    /**
+     * Blocks that Baritone is not allowed to break
+     */
+    public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList( // TODO can this be a HashSet or ImmutableSet?
+            Blocks.CRAFTING_TABLE,
+            Blocks.FURNACE,
+            Blocks.CHEST,
+            Blocks.TRAPPED_CHEST
+    )));
+
+    /**
+     * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
+     * <p>
+     * I.E. it will never trigger cascading sand / gravel falls
+     */
+    public final Setting<Boolean> avoidUpdatingFallingBlocks = new Setting<>(true);
 
     /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
@@ -184,6 +213,11 @@ public final class Settings {
      * Sprint and jump a block early on ascends wherever possible
      */
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
+
+    /**
+     * When breaking blocks for a movement, wait until all falling blocks have settled before continuing
+     */
+    public final Setting<Boolean> pauseMiningForFallingBlocks = new Setting<>(true);
 
     /**
      * How many ticks between right clicks are allowed. Default in game is 4
@@ -416,6 +450,11 @@ public final class Settings {
     public final Setting<Boolean> containerMemory = new Setting<>(false);
 
     /**
+     * Fill in blocks behind you
+     */
+    public final Setting<Boolean> backfill = new Setting<>(false);
+
+    /**
      * Print all the debug messages to chat
      */
     public final Setting<Boolean> chatDebug = new Setting<>(false);
@@ -544,6 +583,16 @@ public final class Settings {
     public final Setting<Boolean> walkWhileBreaking = new Setting<>(true);
 
     /**
+     * When a new segment is calculated that doesn't overlap with the current one, but simply begins where the current segment ends,
+     * splice it on and make a longer combined path. If this setting is off, any planned segment will not be spliced and will instead
+     * be the "next path" in PathingBehavior, and will only start after this one ends. Turning this off hurts planning ahead,
+     * because the next segment will exist even if it's very short.
+     *
+     * @see #planningTickLookahead
+     */
+    public final Setting<Boolean> splicePath = new Setting<>(true);
+
+    /**
      * If we are more than 300 movements into the current path, discard the oldest segments, as they are no longer useful
      */
     public final Setting<Integer> maxPathHistoryLength = new Setting<>(300);
@@ -570,6 +619,37 @@ public final class Settings {
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
 
     /**
+     * While exploring the world, offset the closest unloaded chunk by this much in both axes.
+     * <p>
+     * This can result in more efficient loading, if you set this to the render distance.
+     */
+    public final Setting<Integer> worldExploringChunkOffset = new Setting<>(0);
+
+    /**
+     * Take the 10 closest chunks, even if they aren't strictly tied for distance metric from origin.
+     */
+    public final Setting<Integer> exploreChunkSetMinimumSize = new Setting<>(10);
+
+    /**
+     * Attempt to maintain Y coordinate while exploring
+     * <p>
+     * -1 to disable
+     */
+    public final Setting<Integer> exploreMaintainY = new Setting<>(64);
+
+    /**
+     * Replant nether wart
+     */
+    public final Setting<Boolean> replantNetherWart = new Setting<>(false);
+
+    /**
+     * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.
+     * <p>
+     * Only if you have a beefy CPU and automatically mine blocks that are in cache
+     */
+    public final Setting<Boolean> extendCacheOnThreshold = new Setting<>(false);
+
+    /**
      * Don't consider the next layer in builder until the current one is done
      */
     public final Setting<Boolean> buildInLayers = new Setting<>(false);
@@ -580,9 +660,23 @@ public final class Settings {
     public final Setting<Integer> buildRepeatDistance = new Setting<>(0);
 
     /**
-     * What direction te repeat the build in
+     * What direction to repeat the build in
      */
     public final Setting<EnumFacing> buildRepeatDirection = new Setting<>(EnumFacing.NORTH);
+
+    /**
+     * Allow standing above a block while mining it, in BuilderProcess
+     * <p>
+     * Experimental
+     */
+    public final Setting<Boolean> breakFromAbove = new Setting<>(false);
+
+    /**
+     * As well as breaking from above, set a goal to up and to the side of all blocks to break.
+     * <p>
+     * Never turn this on without also turning on breakFromAbove.
+     */
+    public final Setting<Boolean> goalBreakFromAbove = new Setting<>(false);
 
     /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
@@ -670,11 +764,10 @@ public final class Settings {
     public final Setting<Integer> followRadius = new Setting<>(3);
 
     /**
-     * true = exploration uses pythagorean distance to choose closest uncached chunk
-     * <p>
-     * false = exploration uses manhattan / taxicab distance to choose
+     * Turn this on if your exploration filter is enormous, you don't want it to check if it's done,
+     * and you are just fine with it just hanging on completion
      */
-    public final Setting<Boolean> exploreUsePythagorean = new Setting<>(false);
+    public final Setting<Boolean> disableCompletionCheck = new Setting<>(false);
 
     /**
      * Cached chunks (regardless of if they're in RAM or saved to disk) expire and are deleted after this number of seconds
@@ -756,11 +849,12 @@ public final class Settings {
      */
     public final List<Setting<?>> allSettings;
 
+    public final Map<Setting<?>, Type> settingTypes;
+
     public final class Setting<T> {
         public T value;
         public final T defaultValue;
         private String name;
-        private final Class<T> klass;
 
         @SuppressWarnings("unchecked")
         private Setting(T value) {
@@ -769,7 +863,6 @@ public final class Settings {
             }
             this.value = value;
             this.defaultValue = value;
-            this.klass = (Class<T>) value.getClass();
         }
 
         /**
@@ -787,7 +880,8 @@ public final class Settings {
         }
 
         public Class<T> getValueClass() {
-            return klass;
+            // noinspection unchecked
+            return (Class<T>) TypeUtils.resolveBaseClass(getType());
         }
 
         @Override
@@ -801,14 +895,21 @@ public final class Settings {
         public void reset() {
             value = defaultValue;
         }
+
+        public final Type getType() {
+            return settingTypes.get(this);
+        }
     }
 
     // here be dragons
 
     Settings() {
         Field[] temp = getClass().getFields();
-        HashMap<String, Setting<?>> tmpByName = new HashMap<>();
+
+        Map<String, Setting<?>> tmpByName = new HashMap<>();
         List<Setting<?>> tmpAll = new ArrayList<>();
+        Map<Setting<?>, Type> tmpSettingTypes = new HashMap<>();
+
         try {
             for (Field field : temp) {
                 if (field.getType().equals(Setting.class)) {
@@ -821,6 +922,7 @@ public final class Settings {
                     }
                     tmpByName.put(name, setting);
                     tmpAll.add(setting);
+                    tmpSettingTypes.put(setting, ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0]);
                 }
             }
         } catch (IllegalAccessException e) {
@@ -828,6 +930,7 @@ public final class Settings {
         }
         byLowerName = Collections.unmodifiableMap(tmpByName);
         allSettings = Collections.unmodifiableList(tmpAll);
+        settingTypes = Collections.unmodifiableMap(tmpSettingTypes);
     }
 
     @SuppressWarnings("unchecked")

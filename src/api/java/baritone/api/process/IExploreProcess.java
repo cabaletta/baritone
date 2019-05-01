@@ -15,26 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone.api.process;
 
-import baritone.Baritone;
-import baritone.api.process.IBaritoneProcess;
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerContext;
+import java.nio.file.Path;
 
-public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
+public interface IExploreProcess extends IBaritoneProcess {
+    void explore(int centerX, int centerZ);
 
-    protected final Baritone baritone;
-    protected final IPlayerContext ctx;
-
-    public BaritoneProcessHelper(Baritone baritone) {
-        this.baritone = baritone;
-        this.ctx = baritone.getPlayerContext();
-        baritone.getPathingControlManager().registerProcess(this);
-    }
-
-    @Override
-    public boolean isTemporary() {
-        return false;
-    }
+    void applyJsonFilter(Path path, boolean invert) throws Exception;
 }

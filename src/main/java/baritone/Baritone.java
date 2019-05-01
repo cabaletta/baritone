@@ -21,6 +21,8 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
+import baritone.api.utils.ExampleBaritoneControl;
+import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
@@ -33,8 +35,6 @@ import net.minecraft.client.Minecraft;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -67,7 +67,6 @@ public class Baritone implements IBaritone {
 
     private GameEventHandler gameEventHandler;
 
-    private List<Behavior> behaviors;
     private PathingBehavior pathingBehavior;
     private LookBehavior lookBehavior;
     private MemoryBehavior memoryBehavior;
@@ -80,6 +79,8 @@ public class Baritone implements IBaritone {
     private CustomGoalProcess customGoalProcess;
     private BuilderProcess builderProcess;
     private ExploreProcess exploreProcess;
+    private BackfillProcess backfillProcess;
+    private FarmProcess farmProcess;
 
     private PathingControlManager pathingControlManager;
 
@@ -101,7 +102,6 @@ public class Baritone implements IBaritone {
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = PrimaryPlayerContext.INSTANCE;
 
-        this.behaviors = new ArrayList<>();
         {
             // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
             pathingBehavior = new PathingBehavior(this);
@@ -120,6 +120,8 @@ public class Baritone implements IBaritone {
             getToBlockProcess = new GetToBlockProcess(this);
             builderProcess = new BuilderProcess(this);
             exploreProcess = new ExploreProcess(this);
+            backfillProcess = new BackfillProcess(this);
+            farmProcess = new FarmProcess(this);
         }
 
         this.worldProvider = new WorldProvider();
@@ -136,12 +138,7 @@ public class Baritone implements IBaritone {
         return this.pathingControlManager;
     }
 
-    public List<Behavior> getBehaviors() {
-        return this.behaviors;
-    }
-
     public void registerBehavior(Behavior behavior) {
-        this.behaviors.add(behavior);
         this.gameEventHandler.registerEventListener(behavior);
     }
 
@@ -197,6 +194,10 @@ public class Baritone implements IBaritone {
         return this.mineProcess;
     }
 
+    public FarmProcess getFarmProcess() {
+        return this.farmProcess;
+    }
+
     @Override
     public PathingBehavior getPathingBehavior() {
         return this.pathingBehavior;
@@ -210,6 +211,16 @@ public class Baritone implements IBaritone {
     @Override
     public IEventBus getGameEventHandler() {
         return this.gameEventHandler;
+    }
+
+    @Override
+    public void openClick() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(100);
+                Helper.mc.addScheduledTask(() -> Helper.mc.displayGuiScreen(new GuiClick()));
+            } catch (Exception ignored) {}
+        }).start();
     }
 
     public static Settings settings() {

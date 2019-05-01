@@ -25,4 +25,6 @@ import net.minecraft.block.Block;
 public interface IGetToBlockProcess extends IBaritoneProcess {
 
     void getToBlock(Block block);
+
+    boolean blacklistClosest();
 }

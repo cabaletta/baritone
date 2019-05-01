@@ -34,15 +34,18 @@ Some common examples:
 - `cancel` or `stop` to stop everything
 - `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
 - `mine diamond_ore` to mine diamond ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.)
-- `click` to click your destination on the screen. left click to path into it, right click to path on top of it. left click and drag to clear an area.
+- `click` to click your destination on the screen. Right click path to on top of the block, left click to path into it (either at foot level or eye level), and left click and drag to clear all blocks from an area.
 - `follow playerName` to follow a player. `follow` to follow the entity you're looking at (only works if it hitting range). `followplayers` to follow any players in range (combine with Kill Aura for a fun time).
 - `save waypointName` to save a waypoint. `goto waypointName` to go to it.
+- `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
+- `tunnel` to dig just straight ahead and make a tunnel
+- `farm` to automatically harvest, replant, or bone meal crops
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
+- `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
-- `render` to rerender the world in case `renderCachedChunks` is being glitchy
 - `version` to get the version of Baritone you're running
 - `damn` daniel
-- `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
+
 
 For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java).
 
@@ -54,17 +57,22 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `allowPlace`
 - `allowParkour`
 - `allowParkourPlace`
+- `blockPlacementPenalty`
 - `renderCachedChunks` (and `cachedChunksOpacity`) <-- very fun but you need a beefy computer
-- `avoidance`
+- `avoidance` (avoidance of mobs / mob spawners)
 - `legitMine`
 - `followRadius`
+- `backfill` (fill in tunnels behind you)
+- `buildInLayers`
+- `buildRepeatDistance` and `buildRepeatDirection`
+- `worldExploringChunkOffset`
+- `acceptableThrowawayItems`
+- `blocksToAvoidBreaking`
+
 
 
 
 # Troubleshooting / common issues
-
-## Baritone highlights a block in green but gets completely stuck? Also I'm using Baritone with Future?
-Baritone is trying to right click to place a block there, but it can't since there's a conflicting mixin. Baritone can't force click right click when Future is also installed. Left click **does work** on recent Baritone even with Future, however. For now, turn off `allowPlace` and Baritone will only search for paths that don't require placing blocks to complete. `allowBreak` can remain on.
 
 ## Why doesn't Baritone respond to any of my chat commands?
 This could be one of many things.

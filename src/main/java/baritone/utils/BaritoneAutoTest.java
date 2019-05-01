@@ -22,6 +22,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;

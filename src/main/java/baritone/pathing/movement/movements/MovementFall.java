@@ -40,7 +40,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
@@ -94,8 +93,7 @@ public class MovementFall extends Movement {
 
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
-                RayTraceResult trace = ctx.objectMouseOver();
-                if (trace != null && trace.type == RayTraceResult.Type.BLOCK && (trace.getBlockPos().equals(dest) || trace.getBlockPos().equals(dest.down()))) {
+                if (ctx.isLookingAt(dest) || ctx.isLookingAt(dest.down())) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }

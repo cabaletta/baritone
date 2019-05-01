@@ -123,27 +123,27 @@ public class InventoryBehavior extends Behavior {
 
     public boolean hasGenericThrowaway() {
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(false, item::equals)) {
+            if (throwaway(false, stack -> item.equals(stack.getItem()))) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean selectThrowawayForLocation(int x, int y, int z) {
+    public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
         IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z);
-        if (maybe != null && throwaway(true, item -> item instanceof ItemBlock && ((ItemBlock) item).getBlock().equals(maybe.getBlock()))) {
+        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
             return true; // gotem
         }
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(true, item::equals)) {
+            if (throwaway(select, stack -> item.equals(stack.getItem()))) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean throwaway(boolean select, Predicate<? super Item> desired) {
+    public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
         EntityPlayerSP p = ctx.player();
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (byte i = 0; i < 9; i++) {
@@ -153,14 +153,14 @@ public class InventoryBehavior extends Behavior {
             // and then it's called during execution
             // since this function is never called during cost calculation, we don't need to migrate
             // acceptableThrowawayItems to the CalculationContext
-            if (desired.test(item.getItem())) {
+            if (desired.test(item)) {
                 if (select) {
                     p.inventory.currentItem = i;
                 }
                 return true;
             }
         }
-        if (desired.test(p.inventory.offHandInventory.get(0).getItem())) {
+        if (desired.test(p.inventory.offHandInventory.get(0))) {
             // main hand takes precedence over off hand
             // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
             // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem

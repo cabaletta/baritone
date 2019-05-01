@@ -19,7 +19,7 @@ package baritone.cache;
 
 import baritone.Baritone;
 import baritone.api.cache.IWorldProvider;
-import baritone.utils.Helper;
+import baritone.api.utils.Helper;
 import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
 import net.minecraft.server.integrated.IntegratedServer;

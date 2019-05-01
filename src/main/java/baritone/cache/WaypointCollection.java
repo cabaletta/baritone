@@ -19,6 +19,7 @@ package baritone.cache;
 
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.IWaypointCollection;
+import baritone.api.cache.Waypoint;
 import net.minecraft.util.math.BlockPos;
 
 import java.io.*;

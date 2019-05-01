@@ -160,7 +160,7 @@ public final class RotationUtils {
      */
     public static Optional<Rotation> reachable(EntityPlayerSP entity, BlockPos pos, double blockReachDistance) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(entity);
-        if (pos.equals(baritone.getPlayerContext().getSelectedBlock().orElse(null))) {
+        if (baritone.getPlayerContext().isLookingAt(pos)) {
             /*
              * why add 0.0001?
              * to indicate that we actually have a desired pitch
