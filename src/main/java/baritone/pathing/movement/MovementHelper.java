@@ -18,7 +18,6 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.MovementStatus;
@@ -353,6 +352,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(context.bsi, x, y, z, state)) {
+            if (block instanceof BlockLiquid) {
+                return COST_INF;
+            }
             double mult = context.breakCostMultiplierAt(x, y, z);
             if (mult >= COST_INF) {
                 return COST_INF;
@@ -360,16 +362,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (avoidBreaking(context.bsi, x, y, z, state)) {
                 return COST_INF;
             }
-            if (block instanceof BlockLiquid) {
-                return COST_INF;
-            }
-            double m = Baritone.settings().blocksToAvoidBreaking.value.contains(block) ? 10 : 1;
             double strVsBlock = context.toolSet.getStrVsBlock(state);
             if (strVsBlock <= 0) {
                 return COST_INF;
             }
-
-            double result = m / strVsBlock;
+            double result = 1 / strVsBlock;
             result += context.breakBlockAdditionalCost;
             result *= mult;
             if (includeFalling) {
