@@ -111,7 +111,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         Optional<BlockPos> shaft = curr.stream()
                 .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
-                .filter(pos -> pos.getY() > ctx.playerFeet().getY())
+                .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
                 .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof BlockAir)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
                 .min(Comparator.comparingDouble(ctx.player()::getDistanceSq));
         baritone.getInputOverrideHandler().clearAllKeys();
