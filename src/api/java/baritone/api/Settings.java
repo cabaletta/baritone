@@ -164,7 +164,8 @@ public final class Settings {
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
             Blocks.LIT_FURNACE,
-            Blocks.CHEST
+            Blocks.CHEST,
+            Blocks.TRAPPED_CHEST
     )));
 
     /**
