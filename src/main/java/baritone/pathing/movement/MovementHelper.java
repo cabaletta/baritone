@@ -51,11 +51,19 @@ public interface MovementHelper extends ActionCosts, Helper {
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no reason
-                || bsi.get0(x, y + 1, z).getBlock() instanceof BlockLiquid//don't break anything touching liquid on any side
-                || bsi.get0(x + 1, y, z).getBlock() instanceof BlockLiquid
-                || bsi.get0(x - 1, y, z).getBlock() instanceof BlockLiquid
-                || bsi.get0(x, y, z + 1).getBlock() instanceof BlockLiquid
-                || bsi.get0(x, y, z - 1).getBlock() instanceof BlockLiquid;
+                || avoidAdjacentBreaking(bsi, x, y + 1, z)
+                || avoidAdjacentBreaking(bsi, x + 1, y, z)
+                || avoidAdjacentBreaking(bsi, x - 1, y, z)
+                || avoidAdjacentBreaking(bsi, x, y, z + 1)
+                || avoidAdjacentBreaking(bsi, x, y, z - 1);
+    }
+
+    static boolean avoidAdjacentBreaking(BlockStateInterface bsi, int x, int y, int z) {
+        // returns true if you should avoid breaking a block that's adjacent to this one (e.g. lava that will start flowing if you give it a path)
+        // this is only called for north, south, east, west, and up. this is NOT called for down.
+        // we assume that it's ALWAYS okay to break the block thats ABOVE liquid
+        IBlockState state = bsi.get0(x, y, z);
+        return state.getBlock() instanceof BlockLiquid;
     }
 
     static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {
