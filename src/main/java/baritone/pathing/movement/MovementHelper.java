@@ -51,19 +51,27 @@ public interface MovementHelper extends ActionCosts, Helper {
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no reason
-                || avoidAdjacentBreaking(bsi, x, y + 1, z)
-                || avoidAdjacentBreaking(bsi, x + 1, y, z)
-                || avoidAdjacentBreaking(bsi, x - 1, y, z)
-                || avoidAdjacentBreaking(bsi, x, y, z + 1)
-                || avoidAdjacentBreaking(bsi, x, y, z - 1);
+                || avoidAdjacentBreaking(bsi, x, y + 1, z, true)
+                || avoidAdjacentBreaking(bsi, x + 1, y, z, false)
+                || avoidAdjacentBreaking(bsi, x - 1, y, z, false)
+                || avoidAdjacentBreaking(bsi, x, y, z + 1, false)
+                || avoidAdjacentBreaking(bsi, x, y, z - 1, false);
     }
 
-    static boolean avoidAdjacentBreaking(BlockStateInterface bsi, int x, int y, int z) {
+    static boolean avoidAdjacentBreaking(BlockStateInterface bsi, int x, int y, int z, boolean directlyAbove) {
         // returns true if you should avoid breaking a block that's adjacent to this one (e.g. lava that will start flowing if you give it a path)
         // this is only called for north, south, east, west, and up. this is NOT called for down.
         // we assume that it's ALWAYS okay to break the block thats ABOVE liquid
         IBlockState state = bsi.get0(x, y, z);
-        return state.getBlock() instanceof BlockLiquid;
+        Block block = state.getBlock();
+        if (!directlyAbove // it is fine to mine a block that has a falling block directly above, this (the cost of breaking the stacked fallings) is included in cost calculations
+                // therefore if directlyAbove is true, we will actually ignore if this is falling
+                && block instanceof BlockFalling // obviously, this check is only valid for falling blocks
+                && Baritone.settings().avoidUpdatingFallingBlocks.value // and if the setting is enabled
+                && BlockFalling.canFallThrough(bsi.get0(x, y - 1, z))) { // and if it would fall (i.e. it's unsupported)
+            return true; // dont break a block that is adjacent to unsupported gravel because it can cause really weird stuff
+        }
+        return block instanceof BlockLiquid;
     }
 
     static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {

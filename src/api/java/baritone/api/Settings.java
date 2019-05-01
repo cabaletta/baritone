@@ -160,13 +160,20 @@ public final class Settings {
     /**
      * Blocks that Baritone is not allowed to break
      */
-    public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList( // TODO can this be a HashSet or ImmutableSet?
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
             Blocks.LIT_FURNACE,
             Blocks.CHEST,
             Blocks.TRAPPED_CHEST
     )));
+
+    /**
+     * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
+     * <p>
+     * I.E. it will never trigger cascading sand / gravel falls
+     */
+    public final Setting<Boolean> avoidUpdatingFallingBlocks = new Setting<>(true);
 
     /**
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
