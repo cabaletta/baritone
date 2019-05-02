@@ -206,9 +206,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         knownOreLocations = locs;
     }
 
-    private static boolean internalMiningGoal(BlockPos pos, IPlayerContext ctx, List<BlockPos> locs) {
+    private boolean internalMiningGoal(BlockPos pos, IPlayerContext ctx, List<BlockPos> locs) {
         // Here, BlockStateInterface is used because the position may be in a cached chunk (the targeted block is one that is kept track of)
-        return locs.contains(pos) || (Baritone.settings().internalMiningAirException.value && BlockStateInterface.getBlock(ctx, pos) instanceof BlockAir);
+        if (locs.contains(pos)) {
+            return true;
+        }
+        Block block = BlockStateInterface.getBlock(ctx, pos);
+        if (Baritone.settings().internalMiningAirException.value && block instanceof BlockAir) {
+            return true;
+        }
+        return mining.contains(block);
     }
 
     private Goal coalesce(BlockPos loc, List<BlockPos> locs) {
@@ -363,7 +370,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
                 .filter(pos -> !blacklist.contains(pos))
 
-                .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().playerFeet()::distanceSq))
+                .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player()::getDistanceSq))
                 .collect(Collectors.toList());
 
         if (locs.size() > max) {

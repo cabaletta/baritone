@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -238,7 +239,9 @@ public class SettingsUtil {
 
         @Override
         public Object parse(ParserContext context, String raw) {
-            return this.parser.apply(raw);
+            Object parsed = this.parser.apply(raw);
+            Objects.requireNonNull(parsed);
+            return parsed;
         }
 
         @Override

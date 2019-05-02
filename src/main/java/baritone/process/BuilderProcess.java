@@ -37,6 +37,7 @@ import baritone.utils.schematic.AirSchematic;
 import baritone.utils.schematic.Schematic;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockAir;
+import net.minecraft.block.BlockFlowingFluid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.BlockItemUseContext;
@@ -54,7 +55,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
@@ -517,17 +517,45 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
     }
 
     private Goal assemble(BuilderCalculationContext bcc, List<IBlockState> approxPlacable) {
-        List<BetterBlockPos> placable = incorrectPositions.stream().filter(pos -> bcc.bsi.get0(pos).getBlock() instanceof BlockAir && approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))).collect(Collectors.toList());
-        Goal[] toBreak = incorrectPositions.stream().filter(pos -> !(bcc.bsi.get0(pos).getBlock() instanceof BlockAir)).map(pos -> breakGoal(pos, bcc)).toArray(Goal[]::new);
-        Goal[] toPlace = placable.stream().filter(pos -> !placable.contains(pos.down()) && !placable.contains(pos.down(2))).map(pos -> placementGoal(pos, bcc)).toArray(Goal[]::new);
+        List<BetterBlockPos> placable = new ArrayList<>();
+        List<BetterBlockPos> breakable = new ArrayList<>();
+        List<BetterBlockPos> sourceLiquids = new ArrayList<>();
+        incorrectPositions.forEach(pos -> {
+            IBlockState state = bcc.bsi.get0(pos);
+            if (state.getBlock() instanceof BlockAir) {
+                if (approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))) {
+                    placable.add(pos);
+                }
+            } else {
+                if (state.getBlock() instanceof BlockFlowingFluid) {
+                    // if the block itself is JUST a liquid (i.e. not just a waterlogged block), we CANNOT break it
+                    // TODO for 1.13 make sure that this only matches pure water, not waterlogged blocks
+                    if (!MovementHelper.possiblyFlowing(state)) {
+                        // if it's a source block then we want to replace it with a throwaway
+                        sourceLiquids.add(pos);
+                    }
+                } else {
+                    breakable.add(pos);
+                }
+            }
+        });
+        List<Goal> toBreak = new ArrayList<>();
+        breakable.forEach(pos -> toBreak.add(breakGoal(pos, bcc)));
+        List<Goal> toPlace = new ArrayList<>();
+        placable.forEach(pos -> {
+            if (!placable.contains(pos.down()) && !placable.contains(pos.down(2))) {
+                toPlace.add(placementGoal(pos, bcc));
+            }
+        });
+        sourceLiquids.forEach(pos -> toPlace.add(new GoalBlock(pos.up())));
 
-        if (toPlace.length != 0) {
-            return new JankyGoalComposite(new GoalComposite(toPlace), new GoalComposite(toBreak));
+        if (!toPlace.isEmpty()) {
+            return new JankyGoalComposite(new GoalComposite(toPlace.toArray(new Goal[0])), new GoalComposite(toBreak.toArray(new Goal[0])));
         }
-        if (toBreak.length == 0) {
+        if (toBreak.isEmpty()) {
             return null;
         }
-        return new GoalComposite(toBreak);
+        return new GoalComposite(toBreak.toArray(new Goal[0]));
     }
 
     public static class JankyGoalComposite implements Goal {
