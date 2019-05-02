@@ -78,7 +78,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 && BlockFalling.canFallThrough(bsi.get0(x, y - 1, z))) { // and if it would fall (i.e. it's unsupported)
             return true; // dont break a block that is adjacent to unsupported gravel because it can cause really weird stuff
         }
-        return state.getFluidState().isEmpty();
+        return !state.getFluidState().isEmpty();
     }
 
     static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {
