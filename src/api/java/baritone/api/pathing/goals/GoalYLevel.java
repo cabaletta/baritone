@@ -29,7 +29,7 @@ public class GoalYLevel implements Goal, ActionCosts {
     /**
      * The target Y level
      */
-    private final int level;
+    public final int level;
 
     public GoalYLevel(int level) {
         this.level = level;
