@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -80,6 +80,8 @@ public final class Settings {
      * Additional penalty for hitting the space bar (ascend, pillar, or parkour) because it uses hunger
      */
     public final Setting<Double> jumpPenalty = new Setting<>(2D);
+
+    public final Setting<Double> yLevelBoxSize = new Setting<>(15D);
 
     /**
      * Walking on water uses up hunger really quick, so penalize it
