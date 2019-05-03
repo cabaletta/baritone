@@ -82,11 +82,6 @@ public final class Settings {
     public final Setting<Double> jumpPenalty = new Setting<>(2D);
 
     /**
-     * The size of the box that is rendered when the current goal is a GoalYLevel
-     */
-    public final Setting<Double> yLevelBoxSize = new Setting<>(15D);
-
-    /**
      * Walking on water uses up hunger really quick, so penalize it
      */
     public final Setting<Double> walkOnWaterOnePenalty = new Setting<>(3D);
@@ -803,6 +798,11 @@ public final class Settings {
      * {@link Setting#value};
      */
     public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getMinecraft().ingameGUI.getChatGUI()::printChatMessage);
+
+    /**
+     * The size of the box that is rendered when the current goal is a GoalYLevel
+     */
+    public final Setting<Double> yLevelBoxSize = new Setting<>(15D);
 
     /**
      * The color of the current path
