@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -81,6 +81,9 @@ public final class Settings {
      */
     public final Setting<Double> jumpPenalty = new Setting<>(2D);
 
+    /**
+     * The size of the box that is rendered when the current goal is a GoalYLevel
+     */
     public final Setting<Double> yLevelBoxSize = new Setting<>(15D);
 
     /**
