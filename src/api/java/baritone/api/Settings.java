@@ -216,6 +216,13 @@ public final class Settings {
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
 
     /**
+     * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
+     * <p>
+     * This helps with speed at >=20m/s
+     */
+    public final Setting<Boolean> overshootTraverse = new Setting<>(true);
+
+    /**
      * When breaking blocks for a movement, wait until all falling blocks have settled before continuing
      */
     public final Setting<Boolean> pauseMiningForFallingBlocks = new Setting<>(true);
