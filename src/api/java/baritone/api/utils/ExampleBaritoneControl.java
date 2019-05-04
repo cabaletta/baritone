@@ -39,6 +39,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -90,8 +91,35 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         String msg = event.getMessage();
         if (BaritoneAPI.getSettings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
             if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
-                logDirect("Invalid command");
+                String closestmatch = "";
+                int lowestnum = -1;
+                for (Field field : BaritoneAPI.getSettings().getClass().getFields()) {
+                    if (field.getType().isAssignableFrom(Settings.Setting.class)) {
+                        String fieldname = field.getName();
+                        if (Levenshtein.distance(fieldname, msg.split(" ")[0]) < lowestnum && lowestnum != -1) {
+                            lowestnum = Levenshtein.distance(fieldname, msg.split(" ")[0]);
+                            closestmatch = fieldname;
+                        }
+                        if (lowestnum == -1) {
+                            closestmatch = fieldname;
+                            lowestnum = Levenshtein.distance(fieldname, msg.split(" ")[0]);
+                        }
+                    }
+                }
+                for (int i = 0; i < HELP_MSG.split("\n").length; i++) {
+                    String command = HELP_MSG.split("\n")[i].split(" ")[0];
+                    if (Levenshtein.distance(command, msg.split(" ")[0]) < lowestnum && lowestnum != -1) {
+                        closestmatch = command;
+                        lowestnum = Levenshtein.distance(command, msg.split(" ")[0]);
+                    }
+                    if (lowestnum == -1) {
+                        closestmatch = command;
+                        lowestnum = Levenshtein.distance(command, msg.split(" ")[0]);
+                    }
+                }
+                logDirect("You fool. You absolute buffoon. That command doesn't exist. Did you mean " + closestmatch + "?");
             }
+
             event.cancel(); // always cancel if using prefixControl
             return;
         }
