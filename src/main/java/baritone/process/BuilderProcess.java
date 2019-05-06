@@ -301,6 +301,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             if (realSchematic == null) {
                 realSchematic = schematic;
             }
+            ISchematic realSchematic = this.realSchematic; // wrap this properly, dont just have the inner class refer to the builderprocess.this
             schematic = new ISchematic() {
                 @Override
                 public IBlockState desiredState(int x, int y, int z) {
