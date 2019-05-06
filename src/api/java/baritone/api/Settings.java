@@ -23,7 +23,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
@@ -663,14 +663,9 @@ public final class Settings {
     public final Setting<Boolean> buildInLayers = new Setting<>(false);
 
     /**
-     * How far to move before repeating the build. -1 for the size of the build in that axis. 0 to disable
+     * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
-    public final Setting<Integer> buildRepeatDistance = new Setting<>(0);
-
-    /**
-     * What direction to repeat the build in
-     */
-    public final Setting<EnumFacing> buildRepeatDirection = new Setting<>(EnumFacing.NORTH);
+    public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
 
     /**
      * Allow standing above a block while mining it, in BuilderProcess

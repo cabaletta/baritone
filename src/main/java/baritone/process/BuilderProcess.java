@@ -330,20 +330,16 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                 layer++;
                 return onTick(calcFailed, isSafeToCancel);
             }
-            int distance = Baritone.settings().buildRepeatDistance.value;
-            EnumFacing direction = Baritone.settings().buildRepeatDirection.value;
-            if (distance == 0) {
+            Vec3i repeat = Baritone.settings().buildRepeat.value;
+            if (repeat.equals(new Vec3i(0, 0, 0))) {
                 logDirect("Done building");
                 onLostControl();
                 return null;
             }
             // build repeat time
-            if (distance == -1) {
-                distance = schematic.size(direction.getAxis());
-            }
             layer = 0;
-            origin = new BlockPos(origin).offset(direction, distance);
-            logDirect("Repeating build " + distance + " blocks to the " + direction + ", new origin is " + origin);
+            origin = new BlockPos(origin).add(repeat);
+            logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
             return onTick(calcFailed, isSafeToCancel);
         }
         trim(bcc);
