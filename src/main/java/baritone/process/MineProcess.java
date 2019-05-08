@@ -88,14 +88,14 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
-        boolean shouldCancel = calcFailed;
-        if (calcFailed && !knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
-            logDirect("Unable to find any path to " + mining + ", blacklisting presumably unreachable closest instance...");
-            knownOreLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(blacklist::add);
-            knownOreLocations.removeIf(blacklist::contains);
-            shouldCancel = false; // 😎
-        }
-        if (shouldCancel) {
+        CANCEL:
+        if (calcFailed) {
+            if (!knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
+                logDirect("Unable to find any path to " + mining + ", blacklisting presumably unreachable closest instance...");
+                knownOreLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(blacklist::add);
+                knownOreLocations.removeIf(blacklist::contains);
+                break CANCEL; // 😎
+            }
             logDirect("Unable to find any path to " + mining + ", canceling Mine");
             cancel();
             return null;
