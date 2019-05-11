@@ -646,7 +646,7 @@ public final class Settings {
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
 
     /**
-     * Replant nether wart
+     * Replant nether wart while farming
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
 
