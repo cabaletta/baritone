@@ -545,6 +545,8 @@ public final class Settings {
 
     /**
      * Exclusively use cached chunks for pathing
+     * <p>
+     * Never turn this on
      */
     public final Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
