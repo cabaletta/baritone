@@ -456,7 +456,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                             observedCompleted.add(BetterBlockPos.longHash(pos));
                         } else {
                             incorrectPositions.add(pos);
-                            observedCompleted.rem(BetterBlockPos.longHash(pos));
+                            observedCompleted.remove(BetterBlockPos.longHash(pos));
                         }
                     }
                 }
@@ -481,7 +481,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                             observedCompleted.add(BetterBlockPos.longHash(blockX, blockY, blockZ));
                         } else {
                             incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
-                            observedCompleted.rem(BetterBlockPos.longHash(blockX, blockY, blockZ));
+                            observedCompleted.remove(BetterBlockPos.longHash(blockX, blockY, blockZ));
                         }
                         continue;
                     }
