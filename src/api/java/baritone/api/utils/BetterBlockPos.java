@@ -61,6 +61,8 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     public static long longHash(int x, int y, int z) {
+        // TODO use the same thing as BlockPos.fromLong();
+        // invertibility would be incredibly useful
         /*
          *   This is the hashcode implementation of Vec3i (the superclass of the class which I shall not name)
          *
