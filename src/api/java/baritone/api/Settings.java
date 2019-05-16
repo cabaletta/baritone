@@ -23,7 +23,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
@@ -213,6 +213,13 @@ public final class Settings {
      * Sprint and jump a block early on ascends wherever possible
      */
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
+
+    /**
+     * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
+     * <p>
+     * This helps with speed at >=20m/s
+     */
+    public final Setting<Boolean> overshootTraverse = new Setting<>(true);
 
     /**
      * When breaking blocks for a movement, wait until all falling blocks have settled before continuing
@@ -537,6 +544,8 @@ public final class Settings {
 
     /**
      * Exclusively use cached chunks for pathing
+     * <p>
+     * Never turn this on
      */
     public final Setting<Boolean> pathThroughCachedOnly = new Setting<>(false);
 
@@ -567,7 +576,7 @@ public final class Settings {
     public final Setting<Boolean> renderCachedChunks = new Setting<>(false);
 
     /**
-     * 0.0f = not visible, fully transparent
+     * 0.0f = not visible, fully transparent (instead of setting this to 0, turn off renderCachedChunks)
      * 1.0f = fully opaque
      */
     public final Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
@@ -638,7 +647,7 @@ public final class Settings {
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
 
     /**
-     * Replant nether wart
+     * Replant nether wart while farming
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
 
@@ -655,14 +664,16 @@ public final class Settings {
     public final Setting<Boolean> buildInLayers = new Setting<>(false);
 
     /**
-     * How far to move before repeating the build. -1 for the size of the build in that axis. 0 to disable
+     * false = build from bottom to top
+     * <p>
+     * true = build from top to bottom
      */
-    public final Setting<Integer> buildRepeatDistance = new Setting<>(0);
+    public final Setting<Boolean> layerOrder = new Setting<>(false);
 
     /**
-     * What direction to repeat the build in
+     * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
-    public final Setting<EnumFacing> buildRepeatDirection = new Setting<>(EnumFacing.NORTH);
+    public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
 
     /**
      * Allow standing above a block while mining it, in BuilderProcess
@@ -797,6 +808,11 @@ public final class Settings {
      * {@link Setting#value};
      */
     public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getInstance().ingameGUI.getChatGUI()::printChatMessage);
+
+    /**
+     * The size of the box that is rendered when the current goal is a GoalYLevel
+     */
+    public final Setting<Double> yLevelBoxSize = new Setting<>(15D);
 
     /**
      * The color of the current path

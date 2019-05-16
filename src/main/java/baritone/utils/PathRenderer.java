@@ -276,13 +276,13 @@ public final class PathRenderer implements Helper {
         double maxY;
         double y1;
         double y2;
+        double y = MathHelper.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
         if (goal instanceof IGoalRenderPos) {
             BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
             minX = goalPos.getX() + 0.002 - renderPosX;
             maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
             minZ = goalPos.getZ() + 0.002 - renderPosZ;
             maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
-            double y = MathHelper.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
             if (goal instanceof GoalGetToBlock || goal instanceof GoalTwoBlocks) {
                 y /= 2;
             }
@@ -345,6 +345,16 @@ public final class PathRenderer implements Helper {
                 drawDankLitGoalBox(player, g, partialTicks, color);
             }
             return;
+        } else if (goal instanceof GoalYLevel) {
+            GoalYLevel goalpos = (GoalYLevel) goal;
+            minX = player.posX - Baritone.settings().yLevelBoxSize.value - renderPosX;
+            minZ = player.posZ - Baritone.settings().yLevelBoxSize.value - renderPosZ;
+            maxX = player.posX + Baritone.settings().yLevelBoxSize.value - renderPosX;
+            maxZ = player.posZ + Baritone.settings().yLevelBoxSize.value - renderPosZ;
+            minY = ((GoalYLevel) goal).level - renderPosY;
+            maxY = minY + 2;
+            y1 = 1 + y + goalpos.level - renderPosY;
+            y2 = 1 - y + goalpos.level - renderPosY;
         } else {
             return;
         }

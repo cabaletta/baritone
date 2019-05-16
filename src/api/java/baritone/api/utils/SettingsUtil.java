@@ -24,6 +24,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
+import net.minecraft.util.math.Vec3i;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -180,6 +181,11 @@ public class SettingsUtil {
                 Color.class,
                 str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
                 color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue()
+        ),
+        VEC3I(
+                Vec3i.class,
+                str -> new Vec3i(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
+                vec -> vec.getX() + "," + vec.getY() + "," + vec.getZ()
         ),
         BLOCK(
                 Block.class,

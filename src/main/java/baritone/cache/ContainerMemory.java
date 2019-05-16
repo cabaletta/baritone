@@ -29,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -45,6 +46,8 @@ public class ContainerMemory implements IContainerMemory {
         this.saveTo = saveTo;
         try {
             read(Files.readAllBytes(saveTo));
+        } catch (NoSuchFileException ignored) {
+            inventories.clear();
         } catch (Exception ex) {
             ex.printStackTrace();
             inventories.clear();

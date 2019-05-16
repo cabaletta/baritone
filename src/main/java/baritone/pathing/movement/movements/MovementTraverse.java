@@ -231,7 +231,11 @@ public class MovementTraverse extends Movement {
         }
 
         if (isTheBridgeBlockThere) {
-            if (ctx.playerFeet().equals(dest)) {
+            BetterBlockPos feet = ctx.playerFeet();
+            if (feet.equals(dest)) {
+                return state.setStatus(MovementStatus.SUCCESS);
+            }
+            if (Baritone.settings().overshootTraverse.value && (feet.equals(dest.add(getDirection())) || feet.equals(dest.add(getDirection()).add(getDirection())))) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             Block low = BlockStateInterface.get(ctx, src).getBlock();

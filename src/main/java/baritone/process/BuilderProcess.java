@@ -318,10 +318,27 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             if (realSchematic == null) {
                 realSchematic = schematic;
             }
+            ISchematic realSchematic = this.realSchematic; // wrap this properly, dont just have the inner class refer to the builderprocess.this
+            int minYInclusive;
+            int maxYInclusive;
+            // layer = 0 should be nothing
+            // layer = realSchematic.heightY() should be everything
+            if (Baritone.settings().layerOrder.value) { // top to bottom
+                maxYInclusive = realSchematic.heightY() - 1;
+                minYInclusive = realSchematic.heightY() - layer;
+            } else {
+                maxYInclusive = layer - 1;
+                minYInclusive = 0;
+            }
             schematic = new ISchematic() {
                 @Override
                 public IBlockState desiredState(int x, int y, int z) {
                     return realSchematic.desiredState(x, y, z);
+                }
+
+                @Override
+                public boolean inSchematic(int x, int y, int z) {
+                    return ISchematic.super.inSchematic(x, y, z) && y >= minYInclusive && y <= maxYInclusive;
                 }
 
                 @Override
@@ -331,7 +348,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
 
                 @Override
                 public int heightY() {
-                    return layer;
+                    return realSchematic.heightY();
                 }
 
                 @Override
@@ -347,20 +364,16 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
                 layer++;
                 return onTick(calcFailed, isSafeToCancel);
             }
-            int distance = Baritone.settings().buildRepeatDistance.value;
-            EnumFacing direction = Baritone.settings().buildRepeatDirection.value;
-            if (distance == 0) {
+            Vec3i repeat = Baritone.settings().buildRepeat.value;
+            if (repeat.equals(new Vec3i(0, 0, 0))) {
                 logDirect("Done building");
                 onLostControl();
                 return null;
             }
             // build repeat time
-            if (distance == -1) {
-                distance = schematic.size(direction.getAxis());
-            }
             layer = 0;
-            origin = new BlockPos(origin).offset(direction, distance);
-            logDirect("Repeating build " + distance + " blocks to the " + direction + ", new origin is " + origin);
+            origin = new BlockPos(origin).add(repeat);
+            logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
             return onTick(calcFailed, isSafeToCancel);
         }
         trim(bcc);

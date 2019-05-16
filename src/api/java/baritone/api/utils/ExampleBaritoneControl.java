@@ -688,18 +688,20 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
     private Goal parseGoal(String[] params) {
         Goal goal;
         try {
+            BetterBlockPos playerFeet = ctx.playerFeet();
             switch (params.length) {
                 case 0:
-                    goal = new GoalBlock(ctx.playerFeet());
+                    goal = new GoalBlock(playerFeet);
                     break;
                 case 1:
-                    goal = new GoalYLevel(Integer.parseInt(params[0]));
+
+                    goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y));
                     break;
                 case 2:
-                    goal = new GoalXZ(Integer.parseInt(params[0]), Integer.parseInt(params[1]));
+                    goal = new GoalXZ(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.z));
                     break;
                 case 3:
-                    goal = new GoalBlock(new BlockPos(Integer.parseInt(params[0]), Integer.parseInt(params[1]), Integer.parseInt(params[2])));
+                    goal = new GoalBlock(new BlockPos(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.y), parseOrDefault(params[2], playerFeet.z)));
                     break;
                 default:
                     logDirect("unable to understand lol");
