@@ -577,7 +577,7 @@ public final class Settings {
     public final Setting<Boolean> renderCachedChunks = new Setting<>(false);
 
     /**
-     * 0.0f = not visible, fully transparent
+     * 0.0f = not visible, fully transparent (instead of setting this to 0, turn off renderCachedChunks)
      * 1.0f = fully opaque
      */
     public final Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
