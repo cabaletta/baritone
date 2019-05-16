@@ -2,24 +2,17 @@
 
 # Prefix
 
-Baritone commands can by default be typed in the chatbox. However if you make a typo, like typing "gola 10000 10000" instead of goal it goes into public chat, which is bad.
+Baritone's chat control prefix is `#` by default. In Impact, you can also use `.b` as a prefix. (for example, `.b click` instead of `#click`)
 
-Therefore you can use a prefix before your messages.
+Baritone commands can also by default be typed in the chatbox. However if you make a typo, like typing "gola 10000 10000" instead of "goal" it goes into public chat, which is bad, so using `#` is suggested.
 
-On Baritone v1.1.0 and newer: The prefix is `#` by default. Anything beginning with `#` isn't sent, and is only interpreted by Baritone.
-For older than v1.1.0, `#` must be enabled by toggling on the `prefix` setting.
-
-**Only** in Impact is `.b` also a valid prefix. In 4.4, `#` does **not** work, neither does saying the commands directly in chat. `#` works by default in 4.5 (not 4.4).
-
-Other clients like Kami and Asuna have their own custom things (like `-path`), and can disable direct chat control entirely.
-
-
+To disable direct chat control (with no prefix), turn off the `chatControl` setting. To disable chat control with the `#` prefix, turn off the `prefixControl` setting. In Impact, `.b` cannot be disabled. Be careful that you don't leave yourself with all control methods disabled (if you do, reset your settings by deleting the file `minecraft/baritone/settings.txt` and relaunching).
 
 # Commands
 
 **All** of these commands may need a prefix before them, as above ^.
 
-`help` for (rudimentary) help. You can see what it says [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java#L53).
+`help` for (rudimentary) help. You can see what it says [here](https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/utils/ExampleBaritoneControl.java#L47).
 
 To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
 
@@ -47,7 +40,7 @@ Some common examples:
 - `damn` daniel
 
 
-For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java).
+For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/utils/ExampleBaritoneControl.java).
 
 All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/baritone/api/Settings.html#field.detail">here</a>.
 
