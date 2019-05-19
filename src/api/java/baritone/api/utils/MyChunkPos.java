@@ -23,8 +23,10 @@ import com.google.gson.annotations.SerializedName;
  * Need a non obfed chunkpos that we can load using GSON
  */
 public class MyChunkPos {
+    
     @SerializedName("x")
     public int x;
+
     @SerializedName("y")
     public int z;
 
