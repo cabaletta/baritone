@@ -55,7 +55,7 @@ import java.util.*;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
-public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
+public final class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
 
     private HashSet<BetterBlockPos> incorrectPositions;
     private LongOpenHashSet observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now

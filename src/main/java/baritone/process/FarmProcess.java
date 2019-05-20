@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
+public final class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
 
     private boolean active;
 
