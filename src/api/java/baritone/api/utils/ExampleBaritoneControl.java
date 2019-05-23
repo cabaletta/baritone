@@ -332,7 +332,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             if (suffix.isEmpty()) {
                 // clear the area from the current goal to here
                 Goal goal = baritone.getPathingBehavior().getGoal();
-                if (goal == null || !(goal instanceof GoalBlock)) {
+                if (!(goal instanceof GoalBlock)) {
                     logDirect("Need to specify goal of opposite corner");
                     return true;
                 }
