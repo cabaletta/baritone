@@ -638,24 +638,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             return true;
         }
-        // this is completely impossible from api
-        /*if (msg.equals("costs")) {
-            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(new CalculationContext(baritone), ctx.playerFeet())).collect(Collectors.toCollection(ArrayList::new));
-            while (moves.contains(null)) {
-                moves.remove(null);
-            }
-            moves.sort(Comparator.comparingDouble(move -> move.getCost(new CalculationContext(baritone))));
-            for (Movement move : moves) {
-                String[] parts = move.getClass().toString().split("\\.");
-                double cost = move.getCost();
-                String strCost = cost + "";
-                if (cost >= ActionCosts.COST_INF) {
-                    strCost = "IMPOSSIBLE";
-                }
-                logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
-            }
-            return true;
-        }*/
         if (msg.equals("damn")) {
             logDirect("daniel");
         }
