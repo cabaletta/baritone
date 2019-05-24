@@ -385,17 +385,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("farming");
             return true;
         }
-        // this literally doesn't work, memory is disabled lol
-        /*if (msg.equals("echest")) {
-            Optional<List<ItemStack>> contents = baritone.getMemoryBehavior().echest();
-            if (contents.isPresent()) {
-                logDirect("echest contents:");
-                log(contents.get());
-            } else {
-                logDirect("echest contents unknown");
-            }
-            return true;
-        }*/
         if (msg.equals("chests")) {
             for (Map.Entry<BlockPos, IRememberedInventory> entry : baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet()) {
                 logDirect(entry.getKey() + "");
