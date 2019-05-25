@@ -415,7 +415,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 return true;
             }
             Entity effectivelyFinal = toFollow.get();
-            baritone.getFollowProcess().follow(x -> effectivelyFinal.equals(x));
+            baritone.getFollowProcess().follow(effectivelyFinal::equals);
             logDirect("Following " + toFollow.get());
             return true;
         }
