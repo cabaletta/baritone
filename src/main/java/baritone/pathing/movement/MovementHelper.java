@@ -51,12 +51,27 @@ public interface MovementHelper extends ActionCosts, Helper {
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no reason
-                || bsi.get0(x, y + 1, z).getBlock() instanceof BlockLiquid//don't break anything touching liquid on any side
-                || bsi.get0(x + 1, y, z).getBlock() instanceof BlockLiquid
-                || bsi.get0(x - 1, y, z).getBlock() instanceof BlockLiquid
-                || bsi.get0(x, y, z + 1).getBlock() instanceof BlockLiquid
-                || bsi.get0(x, y, z - 1).getBlock() instanceof BlockLiquid
-                || Baritone.settings().blocksToAvoidBreaking.value.contains(b);
+                || avoidAdjacentBreaking(bsi, x, y + 1, z, true)
+                || avoidAdjacentBreaking(bsi, x + 1, y, z, false)
+                || avoidAdjacentBreaking(bsi, x - 1, y, z, false)
+                || avoidAdjacentBreaking(bsi, x, y, z + 1, false)
+                || avoidAdjacentBreaking(bsi, x, y, z - 1, false);
+    }
+
+    static boolean avoidAdjacentBreaking(BlockStateInterface bsi, int x, int y, int z, boolean directlyAbove) {
+        // returns true if you should avoid breaking a block that's adjacent to this one (e.g. lava that will start flowing if you give it a path)
+        // this is only called for north, south, east, west, and up. this is NOT called for down.
+        // we assume that it's ALWAYS okay to break the block thats ABOVE liquid
+        IBlockState state = bsi.get0(x, y, z);
+        Block block = state.getBlock();
+        if (!directlyAbove // it is fine to mine a block that has a falling block directly above, this (the cost of breaking the stacked fallings) is included in cost calculations
+                // therefore if directlyAbove is true, we will actually ignore if this is falling
+                && block instanceof BlockFalling // obviously, this check is only valid for falling blocks
+                && Baritone.settings().avoidUpdatingFallingBlocks.value // and if the setting is enabled
+                && BlockFalling.canFallThrough(bsi.get0(x, y - 1, z))) { // and if it would fall (i.e. it's unsupported)
+            return true; // dont break a block that is adjacent to unsupported gravel because it can cause really weird stuff
+        }
+        return block instanceof BlockLiquid;
     }
 
     static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {
@@ -353,6 +368,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(context.bsi, x, y, z, state)) {
+            if (block instanceof BlockLiquid) {
+                return COST_INF;
+            }
             double mult = context.breakCostMultiplierAt(x, y, z);
             if (mult >= COST_INF) {
                 return COST_INF;
@@ -360,16 +378,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (avoidBreaking(context.bsi, x, y, z, state)) {
                 return COST_INF;
             }
-            if (block instanceof BlockLiquid) {
-                return COST_INF;
-            }
-            double m = Blocks.CRAFTING_TABLE.equals(block) ? 10 : 1; // TODO see if this is still necessary. it's from MineBot when we wanted to penalize breaking its crafting table
             double strVsBlock = context.toolSet.getStrVsBlock(state);
             if (strVsBlock <= 0) {
                 return COST_INF;
             }
-
-            double result = m / strVsBlock;
+            double result = 1 / strVsBlock;
             result += context.breakBlockAdditionalCost;
             result *= mult;
             if (includeFalling) {

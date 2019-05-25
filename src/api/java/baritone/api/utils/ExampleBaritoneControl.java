@@ -332,7 +332,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             if (suffix.isEmpty()) {
                 // clear the area from the current goal to here
                 Goal goal = baritone.getPathingBehavior().getGoal();
-                if (goal == null || !(goal instanceof GoalBlock)) {
+                if (!(goal instanceof GoalBlock)) {
                     logDirect("Need to specify goal of opposite corner");
                     return true;
                 }
@@ -385,17 +385,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("farming");
             return true;
         }
-        // this literally doesn't work, memory is disabled lol
-        /*if (msg.equals("echest")) {
-            Optional<List<ItemStack>> contents = baritone.getMemoryBehavior().echest();
-            if (contents.isPresent()) {
-                logDirect("echest contents:");
-                log(contents.get());
-            } else {
-                logDirect("echest contents unknown");
-            }
-            return true;
-        }*/
         if (msg.equals("chests")) {
             for (Map.Entry<BlockPos, IRememberedInventory> entry : baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet()) {
                 logDirect(entry.getKey() + "");
@@ -649,24 +638,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             return true;
         }
-        // this is completely impossible from api
-        /*if (msg.equals("costs")) {
-            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(new CalculationContext(baritone), ctx.playerFeet())).collect(Collectors.toCollection(ArrayList::new));
-            while (moves.contains(null)) {
-                moves.remove(null);
-            }
-            moves.sort(Comparator.comparingDouble(move -> move.getCost(new CalculationContext(baritone))));
-            for (Movement move : moves) {
-                String[] parts = move.getClass().toString().split("\\.");
-                double cost = move.getCost();
-                String strCost = cost + "";
-                if (cost >= ActionCosts.COST_INF) {
-                    strCost = "IMPOSSIBLE";
-                }
-                logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
-            }
-            return true;
-        }*/
         if (msg.equals("damn")) {
             logDirect("daniel");
         }
@@ -688,18 +659,20 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
     private Goal parseGoal(String[] params) {
         Goal goal;
         try {
+            BetterBlockPos playerFeet = ctx.playerFeet();
             switch (params.length) {
                 case 0:
-                    goal = new GoalBlock(ctx.playerFeet());
+                    goal = new GoalBlock(playerFeet);
                     break;
                 case 1:
-                    goal = new GoalYLevel(Integer.parseInt(params[0]));
+
+                    goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y));
                     break;
                 case 2:
-                    goal = new GoalXZ(Integer.parseInt(params[0]), Integer.parseInt(params[1]));
+                    goal = new GoalXZ(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.z));
                     break;
                 case 3:
-                    goal = new GoalBlock(new BlockPos(Integer.parseInt(params[0]), Integer.parseInt(params[1]), Integer.parseInt(params[2])));
+                    goal = new GoalBlock(new BlockPos(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.y), parseOrDefault(params[2], playerFeet.z)));
                     break;
                 default:
                     logDirect("unable to understand lol");

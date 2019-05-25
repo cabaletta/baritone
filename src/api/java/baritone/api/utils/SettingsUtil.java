@@ -21,6 +21,7 @@ import baritone.api.Settings;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3i;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -29,10 +30,12 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -80,6 +83,8 @@ public class SettingsUtil {
                     ex.printStackTrace();
                 }
             });
+        } catch (NoSuchFileException ignored) {
+            System.out.println("Baritone settings file not found, resetting.");
         } catch (Exception ex) {
             System.out.println("Exception while reading Baritone settings, some settings may be reset to default values!");
             ex.printStackTrace();
@@ -175,6 +180,11 @@ public class SettingsUtil {
                 str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
                 color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue()
         ),
+        VEC3I(
+                Vec3i.class,
+                str -> new Vec3i(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
+                vec -> vec.getX() + "," + vec.getY() + "," + vec.getZ()
+        ),
         BLOCK(
                 Block.class,
                 str -> BlockUtils.stringToBlockRequired(str.trim()),
@@ -234,7 +244,9 @@ public class SettingsUtil {
 
         @Override
         public Object parse(ParserContext context, String raw) {
-            return this.parser.apply(raw);
+            Object parsed = this.parser.apply(raw);
+            Objects.requireNonNull(parsed);
+            return parsed;
         }
 
         @Override

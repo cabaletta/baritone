@@ -195,7 +195,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 current.onTick();
                 return;
             }
-            current = current.trySplice(next);
+            if (Baritone.settings().splicePath.value) {
+                current = current.trySplice(next);
+            }
             if (next != null && current.getPath().getDest().equals(next.getPath().getDest())) {
                 next = null;
             }

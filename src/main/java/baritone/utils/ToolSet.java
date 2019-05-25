@@ -65,10 +65,10 @@ public class ToolSet {
     }
 
     /**
-     * Using the best tool on the hotbar, how long would it take to mine this block
+     * Using the best tool on the hotbar, how fast we can mine this block
      *
      * @param state the blockstate to be mined
-     * @return how long it would take in ticks
+     * @return the speed of how fast we'll mine it. 1/(time in ticks)
      */
     public double getStrVsBlock(IBlockState state) {
         return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation);
@@ -128,7 +128,11 @@ public class ToolSet {
      */
     private double getBestDestructionTime(Block b) {
         ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b));
-        return calculateSpeedVsBlock(stack, b.getDefaultState());
+        return calculateSpeedVsBlock(stack, b.getDefaultState()) * avoidanceMultiplier(b);
+    }
+
+    private double avoidanceMultiplier(Block b) {
+        return Baritone.settings().blocksToAvoidBreaking.value.contains(b) ? 0.1 : 1;
     }
 
     /**

@@ -88,17 +88,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
-        boolean shouldCancel = calcFailed;
-        if (calcFailed && !knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
-            logDirect("Unable to find any path to " + mining + ", blacklisting presumably unreachable closest instance...");
-            knownOreLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(blacklist::add);
-            knownOreLocations.removeIf(blacklist::contains);
-            shouldCancel = false; // 😎
-        }
-        if (shouldCancel) {
-            logDirect("Unable to find any path to " + mining + ", canceling Mine");
-            cancel();
-            return null;
+        if (calcFailed) {
+            if (!knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
+                logDirect("Unable to find any path to " + mining + ", blacklisting presumably unreachable closest instance...");
+                knownOreLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(blacklist::add);
+                knownOreLocations.removeIf(blacklist::contains);
+            } else {
+                logDirect("Unable to find any path to " + mining + ", canceling Mine");
+                cancel();
+                return null;
+            }
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
@@ -111,7 +110,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         Optional<BlockPos> shaft = curr.stream()
                 .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
-                .filter(pos -> pos.getY() > ctx.playerFeet().getY())
+                .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
                 .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof BlockAir)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
                 .min(Comparator.comparingDouble(ctx.player()::getDistanceSq));
         baritone.getInputOverrideHandler().clearAllKeys();
@@ -206,9 +205,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         knownOreLocations = locs;
     }
 
-    private static boolean internalMiningGoal(BlockPos pos, IPlayerContext ctx, List<BlockPos> locs) {
+    private boolean internalMiningGoal(BlockPos pos, IPlayerContext ctx, List<BlockPos> locs) {
         // Here, BlockStateInterface is used because the position may be in a cached chunk (the targeted block is one that is kept track of)
-        return locs.contains(pos) || (Baritone.settings().internalMiningAirException.value && BlockStateInterface.getBlock(ctx, pos) instanceof BlockAir);
+        if (locs.contains(pos)) {
+            return true;
+        }
+        Block block = BlockStateInterface.getBlock(ctx, pos);
+        if (Baritone.settings().internalMiningAirException.value && block instanceof BlockAir) {
+            return true;
+        }
+        return mining.contains(block);
     }
 
     private Goal coalesce(BlockPos loc, List<BlockPos> locs) {
@@ -363,7 +369,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
                 .filter(pos -> !blacklist.contains(pos))
 
-                .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().playerFeet()::distanceSq))
+                .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player()::getDistanceSq))
                 .collect(Collectors.toList());
 
         if (locs.size() > max) {

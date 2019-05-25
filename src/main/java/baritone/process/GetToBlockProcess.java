@@ -34,7 +34,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
 
-public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
+public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
     private Block gettingTo;
     private List<BlockPos> knownLocations;
@@ -42,6 +42,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     private BlockPos start;
 
     private int tickCount = 0;
+    private int arrivalTickCount = 0;
 
     public GetToBlockProcess(Baritone baritone) {
         super(baritone);
@@ -53,6 +54,7 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
         gettingTo = block;
         start = ctx.playerFeet();
         blacklist = new ArrayList<>();
+        arrivalTickCount = 0;
         rescan(new ArrayList<>(), new CalculationContext(baritone));
     }
 
@@ -195,6 +197,10 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
                     if (!(ctx.player().openContainer instanceof ContainerPlayer)) {
                         return true;
                     }
+                }
+                if (arrivalTickCount++ > 20) {
+                    logDirect("Right click timed out");
+                    return true;
                 }
                 return false; // trying to right click, will do it next tick or so
             }
