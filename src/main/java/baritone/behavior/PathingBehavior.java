@@ -65,7 +65,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private boolean lastAutoJump;
 
-    private BlockPos expectedSegmentStart;
+    private BetterBlockPos expectedSegmentStart;
 
     private final LinkedBlockingQueue<PathEvent> toDispatch = new LinkedBlockingQueue<>();
 
