@@ -1,0 +1,20 @@
+language: node_js
+node_js:
+  - "0.10"
+  - 0.11
+
+matrix:
+  allow_failures:
+    - node_js: 0.11
+
+notifications:
+  email:
+    - mosconfabrizio@gmail.com
+
+before_install:
+  - rm -rf ~/.nvm
+  - curl https://raw.github.com/creationix/nvm/master/install.sh | sh
+  - source ~/.nvm/nvm.sh
+  - nvm install ${TRAVIS_NODE_VERSION}
+
+script: "npm test"

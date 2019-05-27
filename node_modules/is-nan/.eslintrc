@@ -1,0 +1,9 @@
+{
+	"root": true,
+
+	"extends": "@ljharb",
+
+	"rules": {
+		"no-extra-parens": [2]
+	}
+}

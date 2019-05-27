@@ -1,0 +1,18 @@
+environment:
+  matrix:
+    - nodejs_version: '8'
+    - nodejs_version: '6'
+    - nodejs_version: '4'
+install:
+  - ps: Install-Product node $env:nodejs_version
+  - set CI=true
+  - npm -g install npm@latest
+  - set PATH=%APPDATA%\npm;%PATH%
+  - npm install
+build: off
+test_script:
+  - node --version
+  - npm --version
+  - set SHELL=cmd.exe
+  - set SHELL_EXECUTION_FLAG=/c
+  - npm test

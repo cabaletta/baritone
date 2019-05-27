@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "0.12"
+  - "0.10"
+  - "4"
+  - "6"
+  - "7"
+before_script: >
+  if nvm ls-remote --lts | grep "$(nvm current)"; then
+    echo "running on a LTS node version, linting"
+    npm test
+  else
+    echo "running on a non-LTS node version, skipping linting"
+  fi
+script: ./node_modules/.bin/istanbul cover ./node_modules/.bin/nodeunit test && cat ./coverage/lcov.info | ./node_modules/.bin/coveralls && rm -rf ./coverage

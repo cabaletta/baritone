@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "9"
+  - "8"
+  - "7"
+  - "6"
+  - "5"
+  - "4"
+script: "npm run-script test-travis"
+after_script: "npm install coveralls@2.10.0 && cat ./coverage/lcov.info | coveralls"

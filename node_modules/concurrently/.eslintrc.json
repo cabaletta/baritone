@@ -1,0 +1,23 @@
+{
+    "root": true,
+    "env": {
+        "browser": false,
+        "node": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 6
+    },
+    "rules": {
+        "block-spacing": "error",
+        "curly": "error",
+        "eqeqeq": ["error", "always", { "null": "ignore" }],
+        "indent": ["error", 4],
+        "keyword-spacing": "error",
+        "no-var": "error",
+        "prefer-const": "error",
+        "quotes": ["error", "single"],
+        "semi": "error",
+        "space-before-blocks": "error",
+        "space-before-function-paren": ["error", "never"]
+    }
+}
