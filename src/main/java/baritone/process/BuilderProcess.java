@@ -359,7 +359,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
             return onTick(calcFailed, isSafeToCancel);
         }
-        trim(bcc);
+        trim();
 
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround) {
@@ -447,7 +447,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return !incorrectPositions.isEmpty();
     }
 
-    private void trim(BuilderCalculationContext bcc) {
+    private void trim() {
         HashSet<BetterBlockPos> copy = new HashSet<>(incorrectPositions);
         copy.removeIf(pos -> pos.distanceSq(ctx.player().posX, ctx.player().posY, ctx.player().posZ) > 200);
         if (!copy.isEmpty()) {
