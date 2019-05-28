@@ -33,9 +33,11 @@ import baritone.api.process.IGetToBlockProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
@@ -193,6 +195,17 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             customGoalProcess.setGoal(goal);
             logDirect("Goal: " + goal);
+            return true;
+        }
+        if (msg.equals("crash")) {
+            StringBuilder meme = new StringBuilder();
+            CrashReport rep = (new CrashReport("Manually triggered debug crash", new Throwable()));
+            mc.addGraphicsAndWorldToCrashReport(rep);
+            new ReportedException(rep).printStackTrace();
+            rep.getSectionsInStringBuilder(meme);
+            System.out.println(meme);
+            logDirect(meme.toString());
+            logDirect("ok");
             return true;
         }
         if (msg.equals("path")) {
