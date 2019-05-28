@@ -199,7 +199,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         if (msg.equals("crash")) {
             StringBuilder meme = new StringBuilder();
-            CrashReport rep = (new CrashReport("Manually triggered debug crash", new Throwable()));
+            CrashReport rep = new CrashReport("Manually triggered debug crash", new Throwable());
             mc.addGraphicsAndWorldToCrashReport(rep);
             new ReportedException(rep).printStackTrace();
             rep.getSectionsInStringBuilder(meme);
