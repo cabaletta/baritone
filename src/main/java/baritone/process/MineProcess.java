@@ -281,7 +281,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     public static List<BlockPos> droppedItemsScan(List<Block> mining, World world) {
         if (!Baritone.settings().mineScanDroppedItems.value) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         Set<Item> searchingFor = new HashSet<>();
         for (Block block : mining) {
