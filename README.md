@@ -19,7 +19,6 @@
 [![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
 [![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.6%20/%20v1.3.2-brightgreen.svg)](https://impactdevelopment.github.io/)
 [![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-master%3F-green.svg)](https://wweclient.com/)
-[![KAMI integration](https://img.shields.io/badge/KAMI%20integration-v1.0.0-red.svg)](https://github.com/zeroeightysix/KAMI/)
 [![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20integration-Soon™-red.svg)](https://github.com/fr1kin/ForgeHax)
 [![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com)
