@@ -34,6 +34,8 @@ the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2. Bariton
 
 Have committed at least once a day for the last 8 months =D 🦀
 
+If you'd like to donate to this project via bitcoin, here is an address:
+
 1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
 
 # Getting Started
