@@ -62,7 +62,7 @@ public class WorldProvider implements IWorldProvider, Helper {
         IntegratedServer integratedServer = mc.getIntegratedServer();
 
         // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
-        if (integratedServer != null) {
+        if (mc.isSingleplayer()) {
             WorldServer localServerWorld = integratedServer.getWorld(dimension);
             IChunkProviderServer provider = (IChunkProviderServer) localServerWorld.getChunkProvider();
             IAnvilChunkLoader loader = (IAnvilChunkLoader) provider.getChunkLoader();
