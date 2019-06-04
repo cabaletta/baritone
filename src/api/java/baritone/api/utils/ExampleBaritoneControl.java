@@ -68,6 +68,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     "get - Same as list\n" +
                     "show - Same as list\n" +
                     "save - Saves a waypoint (works but don't try to make sense of it)\n" +
+                    "delete - Deletes a waypoint\n" +
                     "goto - Paths towards specified block or waypoint\n" +
                     "spawn - Paths towards world spawn or your most recent bed right-click\n" +
                     "sethome - Sets \"home\"\n" +
@@ -581,6 +582,17 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, IWaypoint.Tag.USER, pos));
             logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto " + name + "' to set goal, say 'list user' to list custom waypoints.");
+            return true;
+        }
+        if (msg.startsWith("delete")) {
+            String name = msg.substring(6).trim();
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w ->  w.getTag() == IWaypoint.Tag.USER && w.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+            if (waypoint == null) {
+                logDirect("No user defined position under the name '" + name + "' found.");
+                return true;
+            }
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().removeWaypoint(waypoint);
+            logDirect("Deleted user defined position under name '" + name + "'.");
             return true;
         }
         if (msg.startsWith("goto")) {
