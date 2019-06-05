@@ -147,10 +147,10 @@ public abstract class Movement implements IMovement, MovementHelper {
             }
             if (!MovementHelper.canWalkThrough(ctx, blockPos) && !(BlockStateInterface.getBlock(ctx, blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
+                MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
-                    MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
                     if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
