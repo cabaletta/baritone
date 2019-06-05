@@ -169,6 +169,10 @@ public class MovementTraverse extends Movement {
             if (dist < 0.83) {
                 return state;
             }
+            if (!state.getTarget().getRotation().isPresent()) {
+                // this can happen rarely when the server lags and doesn't send the falling sand entity until you've already walked through the block and are now mining the next one
+                return state;
+            }
 
             // combine the yaw to the center of the destination, and the pitch to the specific block we're trying to break
             // it's safe to do this since the two blocks we break (in a traverse) are right on top of each other and so will have the same yaw
