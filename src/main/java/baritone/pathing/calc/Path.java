@@ -96,7 +96,7 @@ class Path extends PathBase {
         }
         PathNode current = end;
         LinkedList<BetterBlockPos> tempPath = new LinkedList<>();
-        LinkedList<PathNode> tempNodes = new LinkedList();
+        LinkedList<PathNode> tempNodes = new LinkedList<>();
         // Repeatedly inserting to the beginning of an arraylist is O(n^2)
         // Instead, do it into a linked list, then convert at the end
         while (current != null) {
