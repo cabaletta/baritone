@@ -214,17 +214,16 @@ public class MovementTraverse extends Movement {
         }
 
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(ctx, positionToPlace) || ladder;
-        BlockPos whereAmI = ctx.playerFeet();
-        if (whereAmI.getY() != dest.getY() && !ladder) {
+        BlockPos feet = ctx.playerFeet();
+        if (feet.getY() != dest.getY() && !ladder) {
             logDebug("Wrong Y coordinate");
-            if (whereAmI.getY() < dest.getY()) {
+            if (feet.getY() < dest.getY()) {
                 return state.setInput(Input.JUMP, true);
             }
             return state;
         }
 
         if (isTheBridgeBlockThere) {
-            BetterBlockPos feet = ctx.playerFeet();
             if (feet.equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
@@ -241,20 +240,20 @@ public class MovementTraverse extends Movement {
             BlockPos into = dest.subtract(src).add(dest);
             Block intoBelow = BlockStateInterface.get(ctx, into).getBlock();
             Block intoAbove = BlockStateInterface.get(ctx, into.up()).getBlock();
-            if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, ctx.playerFeet()) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
+            if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, feet) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
             }
 
             IBlockState destDown = BlockStateInterface.get(ctx, dest.down());
             BlockPos against = positionsToBreak[0];
-            if (whereAmI.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
+            if (feet.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
                 against = destDown.getBlock() == Blocks.VINE ? MovementPillar.getAgainst(new CalculationContext(baritone), dest.down()) : dest.offset(destDown.getValue(BlockLadder.FACING).getOpposite());
             }
             MovementHelper.moveTowards(ctx, state, against);
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
-            Block standingOn = BlockStateInterface.get(ctx, ctx.playerFeet().down()).getBlock();
+            Block standingOn = BlockStateInterface.get(ctx, feet.down()).getBlock();
             if (standingOn.equals(Blocks.SOUL_SAND) || standingOn instanceof BlockSlab) { // see issue #118
                 double dist = Math.max(Math.abs(dest.getX() + 0.5 - ctx.player().posX), Math.abs(dest.getZ() + 0.5 - ctx.player().posZ));
                 if (dist < 0.85) { // 0.5 + 0.3 + epsilon
@@ -292,7 +291,7 @@ public class MovementTraverse extends Movement {
                 default:
                     break;
             }
-            if (whereAmI.equals(dest)) {
+            if (feet.equals(dest)) {
                 // If we are in the block that we are trying to get to, we are sneaking over air and we need to place a block beneath us against the one we just walked off of
                 // Out.log(from + " " + to + " " + faceX + "," + faceY + "," + faceZ + " " + whereAmI);
                 double faceX = (dest.getX() + src.getX() + 1.0D) * 0.5D;
