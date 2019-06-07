@@ -183,8 +183,9 @@ public class MovementTraverse extends Movement {
                 pitchToBreak = 26;
             }
 
-            state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
-            return state.setInput(Input.MOVE_FORWARD, true).setInput(Input.SPRINT, true);
+            return state.setTarget(new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true))
+                    .setInput(Input.MOVE_FORWARD, true)
+                    .setInput(Input.SPRINT, true);
         }
 
         //sneak may have been set to true in the PREPPING state while mining an adjacent block
@@ -193,28 +194,19 @@ public class MovementTraverse extends Movement {
         Block fd = BlockStateInterface.get(ctx, src.down()).getBlock();
         boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
 
-        boolean door = pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor;
-        if (door) {
-            boolean blocked = false;
-            if (pb0.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, src, dest)) {
-                blocked = true;
-            } else if (pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, dest, src)) {
-                blocked = true;
-            }
-            if (blocked && !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
+        if (pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor) {
+            if ((pb0.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, src, dest)
+                    || pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, dest, src))
+                    && !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
                 return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), positionsToBreak[0]), ctx.playerRotations()), true))
                         .setInput(Input.CLICK_RIGHT, true);
             }
         }
 
         if (pb0.getBlock() instanceof BlockFenceGate || pb1.getBlock() instanceof BlockFenceGate) {
-            BlockPos blocked = null;
-            if (!MovementHelper.isGatePassable(ctx, positionsToBreak[0], src.up())) {
-                blocked = positionsToBreak[0];
-            } else if (!MovementHelper.isGatePassable(ctx, positionsToBreak[1], src)) {
-                blocked = positionsToBreak[1];
-            }
-
+            BlockPos blocked = !MovementHelper.isGatePassable(ctx, positionsToBreak[0], src.up()) ? positionsToBreak[0]
+                            : !MovementHelper.isGatePassable(ctx, positionsToBreak[1], src) ? positionsToBreak[1]
+                            : null;
             if (blocked != null) {
                 return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), blocked), ctx.playerRotations()), true))
                         .setInput(Input.CLICK_RIGHT, true);
@@ -226,7 +218,7 @@ public class MovementTraverse extends Movement {
         if (whereAmI.getY() != dest.getY() && !ladder) {
             logDebug("Wrong Y coordinate");
             if (whereAmI.getY() < dest.getY()) {
-                state.setInput(Input.JUMP, true);
+                return state.setInput(Input.JUMP, true);
             }
             return state;
         }
