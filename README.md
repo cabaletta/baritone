@@ -32,7 +32,7 @@ Baritone is the pathfinding system used in [Impact](https://impactdevelopment.gi
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 and 1.13.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
 
-Have committed at least once a day for the last 8 months =D 🦀
+Have committed at least once a day for the last 10 months =D 🦀
 
 1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
 
