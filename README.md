@@ -69,7 +69,7 @@ BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAnd
 
 ## Can I use Baritone as a library in my custom utility client?
 
-That's what it's for, sure! (As long as usage is in compliance with the LGPL 3 License)
+That's what it's for, sure! (As long as usage is in compliance with the LGPL 3.0 License)
 
 ## How is it so fast?
 
