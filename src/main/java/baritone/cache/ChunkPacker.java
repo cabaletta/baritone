@@ -21,7 +21,7 @@ import baritone.api.utils.BlockUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.*;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -59,7 +59,7 @@ public final class ChunkPacker {
                     // since a bitset is initialized to all zero, and air is saved as zeros
                     continue;
                 }
-                BlockStateContainer<IBlockState> bsc = extendedblockstorage.getData();
+                BlockStateContainer<BlockState> bsc = extendedblockstorage.getData();
                 int yReal = y0 << 4;
                 // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
                 // for better cache locality, iterate in that order
@@ -68,7 +68,7 @@ public final class ChunkPacker {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
                             int index = CachedChunk.getPositionIndex(x, y, z);
-                            IBlockState state = bsc.get(x, y1, z);
+                            BlockState state = bsc.get(x, y1, z);
                             boolean[] bits = getPathingBlockType(state, chunk, x, y, z).getBits();
                             bitSet.set(index, bits[0]);
                             bitSet.set(index + 1, bits[1]);
@@ -86,7 +86,7 @@ public final class ChunkPacker {
         }
         //long end = System.nanoTime() / 1000000L;
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
-        IBlockState[] blocks = new IBlockState[256];
+        BlockState[] blocks = new BlockState[256];
 
         for (int z = 0; z < 16; z++) {
             https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
@@ -104,7 +104,7 @@ public final class ChunkPacker {
         return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
     }
 
-    private static PathingBlockType getPathingBlockType(IBlockState state, Chunk chunk, int x, int y, int z) {
+    private static PathingBlockType getPathingBlockType(BlockState state, Chunk chunk, int x, int y, int z) {
         Block block = state.getBlock();
         if (MovementHelper.isWater(state)) {
             // only water source blocks are plausibly usable, flowing water should be avoid
@@ -144,7 +144,7 @@ public final class ChunkPacker {
         return PathingBlockType.SOLID;
     }
 
-    public static IBlockState pathingTypeToBlock(PathingBlockType type, int dimension) {
+    public static BlockState pathingTypeToBlock(PathingBlockType type, int dimension) {
         switch (type) {
             case AIR:
                 return Blocks.AIR.getDefaultState();

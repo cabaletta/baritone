@@ -17,7 +17,7 @@
 
 package baritone.api.utils;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
@@ -101,10 +101,10 @@ public final class BetterBlockPos extends BlockPos {
         // this is unimaginably faster than blockpos.up
         // that literally calls
         // this.up(1)
-        // which calls this.offset(EnumFacing.UP, 1)
+        // which calls this.offset(Direction.UP, 1)
         // which does return n == 0 ? this : new BlockPos(this.getX() + facing.getXOffset() * n, this.getY() + facing.getYOffset() * n, this.getZ() + facing.getZOffset() * n);
 
-        // how many function calls is that? up(), up(int), offset(EnumFacing, int), new BlockPos, getX, getXOffset, getY, getYOffset, getZ, getZOffset
+        // how many function calls is that? up(), up(int), offset(Direction, int), new BlockPos, getX, getXOffset, getY, getYOffset, getZ, getZOffset
         // that's ten.
         // this is one function call.
         return new BetterBlockPos(x, y + 1, z);
@@ -129,13 +129,13 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public BetterBlockPos offset(EnumFacing dir) {
+    public BetterBlockPos offset(Direction dir) {
         Vec3i vec = dir.getDirectionVec();
         return new BetterBlockPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
     }
 
     @Override
-    public BetterBlockPos offset(EnumFacing dir, int dist) {
+    public BetterBlockPos offset(Direction dir, int dist) {
         if (dist == 0) {
             return this;
         }

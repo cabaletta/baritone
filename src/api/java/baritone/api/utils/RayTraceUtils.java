@@ -18,7 +18,7 @@
 package baritone.api.utils;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.RayTraceFluidMode;
+import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
@@ -48,6 +48,6 @@ public final class RayTraceUtils {
                 direction.y * blockReachDistance,
                 direction.z * blockReachDistance
         );
-        return entity.world.rayTraceBlocks(start, end, RayTraceFluidMode.NEVER, false, true);
+        return entity.world.func_217299_a(new RayTraceContext(start, end, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, entity));
     }
 }

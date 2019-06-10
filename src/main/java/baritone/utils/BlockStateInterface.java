@@ -25,7 +25,7 @@ import baritone.utils.accessor.IChunkProviderClient;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -48,7 +48,7 @@ public class BlockStateInterface {
 
     private final boolean useTheRealWorld;
 
-    private static final IBlockState AIR = Blocks.AIR.getDefaultState();
+    private static final BlockState AIR = Blocks.AIR.getDefaultState();
 
     public BlockStateInterface(IPlayerContext ctx) {
         this(ctx, false);
@@ -80,17 +80,17 @@ public class BlockStateInterface {
         return get(ctx, pos).getBlock();
     }
 
-    public static IBlockState get(IPlayerContext ctx, BlockPos pos) {
+    public static BlockState get(IPlayerContext ctx, BlockPos pos) {
         return new BlockStateInterface(ctx).get0(pos.getX(), pos.getY(), pos.getZ()); // immense iq
         // can't just do world().get because that doesn't work for out of bounds
         // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
     }
 
-    public IBlockState get0(BlockPos pos) {
+    public BlockState get0(BlockPos pos) {
         return get0(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public IBlockState get0(int x, int y, int z) { // Mickey resigned
+    public BlockState get0(int x, int y, int z) { // Mickey resigned
 
         // Invalid vertical position
         if (y < 0 || y >= 256) {
@@ -129,7 +129,7 @@ public class BlockStateInterface {
             prevCached = region;
             cached = region;
         }
-        IBlockState type = cached.getBlock(x & 511, y, z & 511);
+        BlockState type = cached.getBlock(x & 511, y, z & 511);
         if (type == null) {
             return AIR;
         }

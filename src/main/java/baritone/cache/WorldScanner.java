@@ -20,7 +20,7 @@ package baritone.cache;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -119,13 +119,13 @@ public enum WorldScanner implements IWorldScanner {
                 continue;
             }
             int yReal = y0 << 4;
-            BlockStateContainer<IBlockState> bsc = extendedblockstorage.getData();
+            BlockStateContainer<BlockState> bsc = extendedblockstorage.getData();
             // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
             // for better cache locality, iterate in that order
             for (int y = 0; y < 16; y++) {
                 for (int z = 0; z < 16; z++) {
                     for (int x = 0; x < 16; x++) {
-                        IBlockState state = bsc.get(x, y, z);
+                        BlockState state = bsc.get(x, y, z);
                         if (search.contains(state.getBlock())) {
                             int yy = yReal | y;
                             if (result.size() >= max) {

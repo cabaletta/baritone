@@ -26,9 +26,9 @@ import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.utils.BaritoneAutoTest;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.entity.ClientPlayerEntity;
+import net.minecraft.client.gui.Screen;
+import net.minecraft.client.multiplayer.ClientWorld;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -50,9 +50,9 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class MixinMinecraft {
 
     @Shadow
-    public EntityPlayerSP player;
+    public ClientPlayerEntity player;
     @Shadow
-    public WorldClient world;
+    public ClientWorld world;
 
     @Inject(
             method = "init",
@@ -78,7 +78,7 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/GuiScreen;",
+                    target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/Screen;",
                     ordinal = 5,
                     shift = At.Shift.BY,
                     by = -3
@@ -97,10 +97,10 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Lnet/minecraft/client/gui/GuiScreen;)V",
+            method = "loadWorld(Lnet/minecraft/client/multiplayer/ClientWorld;Lnet/minecraft/client/gui/Screen;)V",
             at = @At("HEAD")
     )
-    private void preLoadWorld(WorldClient world, GuiScreen loadingScreen, CallbackInfo ci) {
+    private void preLoadWorld(ClientWorld world, Screen loadingScreen, CallbackInfo ci) {
         // If we're unloading the world but one doesn't exist, ignore it
         if (this.world == null && world == null) {
             return;
@@ -117,10 +117,10 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Lnet/minecraft/client/gui/GuiScreen;)V",
+            method = "loadWorld(Lnet/minecraft/client/multiplayer/ClientWorld;Lnet/minecraft/client/gui/Screen;)V",
             at = @At("RETURN")
     )
-    private void postLoadWorld(WorldClient world, GuiScreen loadingScreen, CallbackInfo ci) {
+    private void postLoadWorld(ClientWorld world, Screen loadingScreen, CallbackInfo ci) {
         // still fire event for both null, as that means we've just finished exiting a world
 
         // mc.world changing is only the primary baritone
@@ -137,10 +137,10 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/gui/GuiScreen.allowUserInput:Z"
+                    target = "net/minecraft/client/gui/Screen.allowUserInput:Z"
             )
     )
-    private boolean isAllowUserInput(GuiScreen screen) {
+    private boolean isAllowUserInput(Screen screen) {
         // allow user input is only the primary baritone
         return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
     }
@@ -149,7 +149,7 @@ public class MixinMinecraft {
             method = "clickMouse",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/multiplayer/PlayerControllerMP.clickBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)Z"
+                    target = "net/minecraft/client/multiplayer/PlayerControllerMP.clickBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/Direction;)Z"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
@@ -162,7 +162,7 @@ public class MixinMinecraft {
             method = "rightClickMouse",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/EntityPlayerSP.swingArm(Lnet/minecraft/util/EnumHand;)V"
+                    target = "net/minecraft/client/entity/ClientPlayerEntity.swingArm(Lnet/minecraft/util/EnumHand;)V"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )

@@ -21,10 +21,10 @@ import baritone.api.Settings;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.IRegistry;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.registry.Registry;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -176,7 +176,7 @@ public class SettingsUtil {
         INTEGER(Integer.class, Integer::parseInt),
         FLOAT(Float.class, Float::parseFloat),
         LONG(Long.class, Long::parseLong),
-        ENUMFACING(EnumFacing.class, EnumFacing::byName),
+        ENUMFACING(Direction.class, Direction::byName),
         COLOR(
                 Color.class,
                 str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
@@ -194,8 +194,8 @@ public class SettingsUtil {
         ),
         ITEM(
                 Item.class,
-                str -> IRegistry.ITEM.get(new ResourceLocation(str.trim())),
-                item -> IRegistry.ITEM.getKey(item).toString()
+                str -> Registry.field_212630_s.getOrDefault(new ResourceLocation(str.trim())), // TODO this now returns AIR on failure instead of null, is that an issue?
+                item -> Registry.field_212630_s.getKey(item).toString()
         ),
         LIST() {
             @Override

@@ -32,13 +32,13 @@ import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.fluid.WaterFluid;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -80,7 +80,7 @@ public class MovementFall extends Movement {
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
         Rotation targetRotation = null;
-        IBlockState destState = ctx.world().getBlockState(dest);
+        BlockState destState = ctx.world().getBlockState(dest);
         Block destBlock = destState.getBlock();
         boolean isWater = destState.getFluidState().getFluid() instanceof WaterFluid;
         if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
@@ -128,7 +128,7 @@ public class MovementFall extends Movement {
             }
             state.setInput(Input.MOVE_FORWARD, true);
         }
-        Vec3i avoid = Optional.ofNullable(avoid()).map(EnumFacing::getDirectionVec).orElse(null);
+        Vec3i avoid = Optional.ofNullable(avoid()).map(Direction::getDirectionVec).orElse(null);
         if (avoid == null) {
             avoid = src.subtract(dest);
         } else {
@@ -146,9 +146,9 @@ public class MovementFall extends Movement {
         return state;
     }
 
-    private EnumFacing avoid() {
+    private Direction avoid() {
         for (int i = 0; i < 15; i++) {
-            IBlockState state = ctx.world().getBlockState(ctx.playerFeet().down(i));
+            BlockState state = ctx.world().getBlockState(ctx.playerFeet().down(i));
             if (state.getBlock() == Blocks.LADDER) {
                 return state.get(BlockLadder.FACING);
             }

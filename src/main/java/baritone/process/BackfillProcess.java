@@ -26,7 +26,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BaritoneProcessHelper;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 public final class BackfillProcess extends BaritoneProcessHelper {
 
-    public HashMap<BlockPos, IBlockState> blocksToReplace = new HashMap<>();
+    public HashMap<BlockPos, BlockState> blocksToReplace = new HashMap<>();
 
     public BackfillProcess(Baritone baritone) {
         super(baritone);

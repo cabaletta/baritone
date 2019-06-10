@@ -19,12 +19,11 @@ package baritone.api.event.listener;
 
 import baritone.api.event.events.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiGameOver;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.gui.screen.DeathScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.Packet;
 
 /**
  * @author Brady
@@ -44,7 +43,7 @@ public interface IGameEventListener {
      * Run once per game tick from before and after the player rotation is sent to the server.
      *
      * @param event The event
-     * @see EntityPlayerSP#tick()
+     * @see ClientPlayerEntity#tick()
      */
     void onPlayerUpdate(PlayerUpdateEvent event);
 
@@ -52,7 +51,7 @@ public interface IGameEventListener {
      * Runs whenever the client player sends a message to the server.
      *
      * @param event The event
-     * @see EntityPlayerSP#sendChatMessage(String)
+     * @see ClientPlayerEntity#sendChatMessage(String)
      */
     void onSendChatMessage(ChatEvent event);
 
@@ -74,7 +73,7 @@ public interface IGameEventListener {
      * Runs before and after whenever a new world is loaded
      *
      * @param event The event
-     * @see Minecraft#loadWorld(WorldClient, GuiScreen)
+     * @see Minecraft#loadWorld(ClientWorld, Screen)
      */
     void onWorldEvent(WorldEvent event);
 
@@ -104,10 +103,10 @@ public interface IGameEventListener {
     void onPlayerRotationMove(RotationMoveEvent event);
 
     /**
-     * Called whenever the sprint keybind state is checked in {@link EntityPlayerSP#livingTick}
+     * Called whenever the sprint keybind state is checked in {@link ClientPlayerEntity#livingTick}
      *
      * @param event The event
-     * @see EntityPlayerSP#livingTick()
+     * @see ClientPlayerEntity#livingTick()
      */
     void onPlayerSprintState(SprintStateEvent event);
 

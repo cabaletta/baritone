@@ -17,7 +17,7 @@
 
 package baritone.api.cache;
 
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -26,9 +26,9 @@ import net.minecraft.util.math.BlockPos;
  */
 public interface IBlockTypeAccess {
 
-    IBlockState getBlock(int x, int y, int z);
+    BlockState getBlock(int x, int y, int z);
 
-    default IBlockState getBlock(BlockPos pos) {
+    default BlockState getBlock(BlockPos pos) {
         return getBlock(pos.getX(), pos.getY(), pos.getZ());
     }
 }

@@ -36,7 +36,7 @@ import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFalling;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
@@ -116,7 +116,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         baritone.getInputOverrideHandler().clearAllKeys();
         if (shaft.isPresent()) {
             BlockPos pos = shaft.get();
-            IBlockState state = baritone.bsi.get0(pos);
+            BlockState state = baritone.bsi.get0(pos);
             if (!MovementHelper.avoidBreaking(baritone.bsi, pos.getX(), pos.getY(), pos.getZ(), state)) {
                 Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
                 if (rot.isPresent() && isSafeToCancel) {

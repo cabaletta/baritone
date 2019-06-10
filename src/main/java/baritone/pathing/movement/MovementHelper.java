@@ -27,7 +27,7 @@ import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import net.minecraft.block.*;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.fluid.FlowingFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.IFluidState;
@@ -37,7 +37,7 @@ import net.minecraft.init.Fluids;
 import net.minecraft.pathfinding.PathType;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.properties.SlabType;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -53,7 +53,7 @@ import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____S
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
-    static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+    static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         Block b = state.getBlock();
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
@@ -69,7 +69,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // returns true if you should avoid breaking a block that's adjacent to this one (e.g. lava that will start flowing if you give it a path)
         // this is only called for north, south, east, west, and up. this is NOT called for down.
         // we assume that it's ALWAYS okay to break the block thats ABOVE liquid
-        IBlockState state = bsi.get0(x, y, z);
+        BlockState state = bsi.get0(x, y, z);
         Block block = state.getBlock();
         if (!directlyAbove // it is fine to mine a block that has a falling block directly above, this (the cost of breaking the stacked fallings) is included in cost calculations
                 // therefore if directlyAbove is true, we will actually ignore if this is falling
@@ -89,7 +89,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkThrough(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
-    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         Block block = state.getBlock();
         if (block instanceof BlockAir) { // early return for most common case
             return true;
@@ -133,7 +133,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (Baritone.settings().assumeWalkOnWater.value) {
                 return false;
             }
-            IBlockState up = bsi.get0(x, y + 1, z);
+            BlockState up = bsi.get0(x, y + 1, z);
             if (!up.getFluidState().isEmpty() || up.getBlock() instanceof BlockLilyPad) {
                 return false;
             }
@@ -159,7 +159,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return fullyPassable(context.get(x, y, z));
     }
 
-    static boolean fullyPassable(IBlockState state) {
+    static boolean fullyPassable(BlockState state) {
         Block block = state.getBlock();
         if (block instanceof BlockAir) { // early return for most common case
             return true;
@@ -185,7 +185,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.allowsMovement(null, null, PathType.LAND);
     }
 
-    static boolean isReplacable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
+    static boolean isReplacable(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
         // all other overrides just return true or false
@@ -219,7 +219,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
 
-        IBlockState state = BlockStateInterface.get(ctx, doorPos);
+        BlockState state = BlockStateInterface.get(ctx, doorPos);
         if (!(state.getBlock() instanceof BlockDoor)) {
             return true;
         }
@@ -232,7 +232,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
 
-        IBlockState state = BlockStateInterface.get(ctx, gatePos);
+        BlockState state = BlockStateInterface.get(ctx, gatePos);
         if (!(state.getBlock() instanceof BlockFenceGate)) {
             return true;
         }
@@ -240,19 +240,19 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.get(BlockFenceGate.OPEN);
     }
 
-    static boolean isHorizontalBlockPassable(BlockPos blockPos, IBlockState blockState, BlockPos playerPos, BooleanProperty propertyOpen) {
+    static boolean isHorizontalBlockPassable(BlockPos blockPos, BlockState blockState, BlockPos playerPos, BooleanProperty propertyOpen) {
         if (playerPos.equals(blockPos)) {
             return false;
         }
 
-        EnumFacing.Axis facing = blockState.get(BlockHorizontal.HORIZONTAL_FACING).getAxis();
+        Direction.Axis facing = blockState.get(BlockHorizontal.HORIZONTAL_FACING).getAxis();
         boolean open = blockState.get(propertyOpen);
 
-        EnumFacing.Axis playerFacing;
+        Direction.Axis playerFacing;
         if (playerPos.north().equals(blockPos) || playerPos.south().equals(blockPos)) {
-            playerFacing = EnumFacing.Axis.Z;
+            playerFacing = Direction.Axis.Z;
         } else if (playerPos.east().equals(blockPos) || playerPos.west().equals(blockPos)) {
-            playerFacing = EnumFacing.Axis.X;
+            playerFacing = Direction.Axis.X;
         } else {
             return true;
         }
@@ -260,7 +260,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return (facing == playerFacing) == open;
     }
 
-    static boolean avoidWalkingInto(IBlockState state) {
+    static boolean avoidWalkingInto(BlockState state) {
         Block block = state.getBlock();
         return !state.getFluidState().isEmpty()
                 || block == Blocks.MAGMA_BLOCK
@@ -283,7 +283,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param state The state of the block at the specified location
      * @return Whether or not the specified block can be walked on
      */
-    static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+    static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         Block block = state.getBlock();
         if (block instanceof BlockAir || block == Blocks.MAGMA_BLOCK || block == Blocks.BUBBLE_COLUMN) {
             // early return for most common case (air)
@@ -305,7 +305,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (isWater(state)) {
             // since this is called literally millions of times per second, the benefit of not allocating millions of useless "pos.up()"
             // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
-            IBlockState upState = bsi.get0(x, y + 1, z);
+            BlockState upState = bsi.get0(x, y + 1, z);
             Block up = upState.getBlock();
             if (up == Blocks.LILY_PAD || up instanceof BlockCarpet) {
                 return true;
@@ -333,7 +333,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block instanceof BlockStairs;
     }
 
-    static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos, IBlockState state) {
+    static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos, BlockState state) {
         return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z, state);
     }
 
@@ -361,7 +361,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canPlaceAgainst(new BlockStateInterface(ctx), pos);
     }
 
-    static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+    static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         // can we look at the center of a side face of this block and likely be able to place?
         // (thats how this check is used)
         // therefore dont include weird things that we technically could place against (like carpet) but practically can't
@@ -372,7 +372,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return getMiningDurationTicks(context, x, y, z, context.get(x, y, z), includeFalling);
     }
 
-    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, BlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(context.bsi, x, y, z, state)) {
             if (!state.getFluidState().isEmpty()) {
@@ -393,7 +393,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             result += context.breakBlockAdditionalCost;
             result *= mult;
             if (includeFalling) {
-                IBlockState above = context.get(x, y + 1, z);
+                BlockState above = context.get(x, y + 1, z);
                 if (above.getBlock() instanceof BlockFalling) {
                     result += getMiningDurationTicks(context, x, y + 1, z, above, true);
                 }
@@ -403,7 +403,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return 0; // we won't actually mine it, so don't check fallings above
     }
 
-    static boolean isBottomSlab(IBlockState state) {
+    static boolean isBottomSlab(BlockState state) {
         return state.getBlock() instanceof BlockSlab
                 && state.get(BlockSlab.TYPE) == SlabType.BOTTOM;
     }
@@ -414,7 +414,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ctx The player context
      * @param b   the blockstate to mine
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
+    static void switchToBestToolFor(IPlayerContext ctx, BlockState b) {
         switchToBestToolFor(ctx, b, new ToolSet(ctx.player()));
     }
 
@@ -425,7 +425,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param b   the blockstate to mine
      * @param ts  previously calculated ToolSet
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts) {
+    static void switchToBestToolFor(IPlayerContext ctx, BlockState b, ToolSet ts) {
         ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
     }
 
@@ -445,7 +445,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param state The block state
      * @return Whether or not the block is water
      */
-    static boolean isWater(IBlockState state) {
+    static boolean isWater(BlockState state) {
         Fluid f = state.getFluidState().getFluid();
         return f == Fluids.WATER || f == Fluids.FLOWING_WATER;
     }
@@ -462,7 +462,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return isWater(BlockStateInterface.get(ctx, bp));
     }
 
-    static boolean isLava(IBlockState state) {
+    static boolean isLava(BlockState state) {
         Fluid f = state.getFluidState().getFluid();
         return f == Fluids.LAVA || f == Fluids.FLOWING_LAVA;
     }
@@ -478,17 +478,17 @@ public interface MovementHelper extends ActionCosts, Helper {
         return isLiquid(BlockStateInterface.get(ctx, p));
     }
 
-    static boolean isLiquid(IBlockState blockState) {
+    static boolean isLiquid(BlockState blockState) {
         return !blockState.getFluidState().isEmpty();
     }
 
-    static boolean possiblyFlowing(IBlockState state) {
+    static boolean possiblyFlowing(BlockState state) {
         IFluidState fluidState = state.getFluidState();
         return fluidState.getFluid() instanceof FlowingFluid
                 && fluidState.getFluid().getLevel(fluidState) != 8;
     }
 
-    static boolean isFlowing(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
+    static boolean isFlowing(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
         IFluidState fluidState = state.getFluidState();
         if (!(fluidState.getFluid() instanceof FlowingFluid)) {
             return false;
@@ -524,7 +524,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 double faceZ = (placeAt.getZ() + against1.getZ() + 1.0D) * 0.5D;
                 Rotation place = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
                 RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance());
-                if (res != null && res.type == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(placeAt)) {
+                if (res != null && res.getType() == RayTraceResult.Type.BLOCK && res.getBlockPos().equals(against1) && res.getBlockPos().offset(res.sideHit).equals(placeAt)) {
                     state.setTarget(new MovementState.MovementTarget(place, true));
                     found = true;
 
@@ -538,7 +538,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         if (ctx.getSelectedBlock().isPresent()) {
             BlockPos selectedBlock = ctx.getSelectedBlock().get();
-            EnumFacing side = ctx.objectMouseOver().sideHit;
+            Direction side = ctx.objectMouseOver().sideHit;
             // only way for selectedBlock.equals(placeAt) to be true is if it's replacable
             if (selectedBlock.equals(placeAt) || (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.offset(side).equals(placeAt))) {
                 ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());

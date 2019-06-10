@@ -20,7 +20,7 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.chunk.RenderChunkCache;
@@ -40,10 +40,10 @@ public class MixinRenderChunk {
             method = "rebuildChunk",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/renderer/chunk/RenderChunkCache.getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/state/IBlockState;"
+                    target = "net/minecraft/client/renderer/chunk/RenderChunkCache.getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/state/BlockState;"
             )
     )
-    private IBlockState getBlockState(RenderChunkCache chunkCache, BlockPos pos) {
+    private BlockState getBlockState(RenderChunkCache chunkCache, BlockPos pos) {
         if (Baritone.settings().renderCachedChunks.value && !Minecraft.getInstance().isSingleplayer()) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();

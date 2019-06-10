@@ -91,7 +91,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         // If we're on the main menu then create the test world and launch the integrated server
         if (mc.currentScreen instanceof GuiMainMenu) {
             System.out.println("Beginning Baritone automatic test routine");
-            mc.displayGuiScreen(null);
+            mc.displayScreen(null);
             WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.getByName("survival"), true, false, WorldType.DEFAULT);
             mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
         }

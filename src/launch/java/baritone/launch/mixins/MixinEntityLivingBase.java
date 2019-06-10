@@ -20,7 +20,7 @@ package baritone.launch.mixins;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RotationMoveEvent;
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.entity.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EntityType;
@@ -55,8 +55,8 @@ public abstract class MixinEntityLivingBase extends Entity {
     )
     private void preMoveRelative(CallbackInfo ci) {
         // noinspection ConstantConditions
-        if (EntityPlayerSP.class.isInstance(this)) {
-            IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (ClientPlayerEntity.class.isInstance(this)) {
+            IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this);
             if (baritone != null) {
                 this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.rotationYaw);
                 baritone.getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
@@ -73,7 +73,7 @@ public abstract class MixinEntityLivingBase extends Entity {
             )
     )
     private float overrideYaw(EntityLivingBase self) {
-        if (self instanceof EntityPlayerSP && BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this) != null) {
+        if (self instanceof ClientPlayerEntity && BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this) != null) {
             return this.jumpRotationEvent.getYaw();
         }
         return self.rotationYaw;
@@ -88,12 +88,12 @@ public abstract class MixinEntityLivingBase extends Entity {
     )
     private void travel(EntityLivingBase self, float strafe, float up, float forward, float friction) {
         // noinspection ConstantConditions
-        if (!EntityPlayerSP.class.isInstance(this) || BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this) == null) {
+        if (!ClientPlayerEntity.class.isInstance(this) || BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this) == null) {
             moveRelative(strafe, up, forward, friction);
             return;
         }
         RotationMoveEvent motionUpdateRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw);
-        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerRotationMove(motionUpdateRotationEvent);
+        BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this).getGameEventHandler().onPlayerRotationMove(motionUpdateRotationEvent);
         float originalYaw = this.rotationYaw;
         this.rotationYaw = motionUpdateRotationEvent.getYaw();
         this.moveRelative(strafe, up, forward, friction);

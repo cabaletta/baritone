@@ -22,7 +22,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.Screen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
@@ -36,7 +36,7 @@ import java.util.Collections;
 
 import static org.lwjgl.opengl.GL11.*;
 
-public class GuiClick extends GuiScreen {
+public class GuiClick extends Screen {
 
     // My name is Brady and I grant leijurv permission to use this pasted code
     private final FloatBuffer MODELVIEW = BufferUtils.createFloatBuffer(16);
@@ -64,7 +64,7 @@ public class GuiClick extends GuiScreen {
         if (near != null && far != null) {
             Vec3d viewerPos = new Vec3d(mc.getRenderManager().viewerPosX, mc.getRenderManager().viewerPosY, mc.getRenderManager().viewerPosZ);
             RayTraceResult result = mc.world.rayTraceBlocks(near.add(viewerPos), far.add(viewerPos), RayTraceFluidMode.NEVER, false, true);
-            if (result != null && result.type == RayTraceResult.Type.BLOCK) {
+            if (result != null && result.getType() == RayTraceResult.Type.BLOCK) {
                 currentMouseOver = result.getBlockPos();
             }
         }

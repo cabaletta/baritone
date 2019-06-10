@@ -18,7 +18,7 @@
 package baritone.utils.pathing;
 
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
 
@@ -57,7 +57,7 @@ public class BetterBlockPosTest {
         assertEquals(pos.south(), better.south());
         assertEquals(pos.east(), better.east());
         assertEquals(pos.west(), better.west());
-        for (EnumFacing dir : EnumFacing.values()) {
+        for (Direction dir : Direction.values()) {
             assertEquals(pos.offset(dir), better.offset(dir));
             assertEquals(pos.offset(dir, 0), pos);
             assertEquals(better.offset(dir, 0), better);

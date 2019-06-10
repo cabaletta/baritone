@@ -17,13 +17,13 @@
 
 package baritone.api.utils;
 
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.ClickType;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.ClickType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameType;
@@ -35,11 +35,11 @@ import net.minecraft.world.World;
  */
 public interface IPlayerController {
 
-    boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side);
+    boolean onPlayerDamageBlock(BlockPos pos, Direction side);
 
     void resetBlockRemoving();
 
-    ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, EntityPlayer player);
+    ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player);
 
     void setGameType(GameType type);
 
@@ -49,7 +49,7 @@ public interface IPlayerController {
         return this.getGameType().isCreative() ? 5.0F : 4.5F;
     }
 
-    EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand);
+    ActionResultType processRightClickBlock(ClientPlayerEntity player, World world, BlockPos pos, Direction direction, Vec3d vec, Hand hand);
 
-    EnumActionResult processRightClick(EntityPlayerSP player, World world, EnumHand hand);
+    ActionResultType processRightClick(ClientPlayerEntity player, World world, Hand hand);
 }

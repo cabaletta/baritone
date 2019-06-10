@@ -74,7 +74,7 @@ task sourceJar(type: Jar, dependsOn: classes) {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20190307-1.13.1'
+    mappings channel: 'snapshot', version: '20190608-1.14.2'
     reobfMappings 'notch'
 
     runs {
@@ -130,7 +130,7 @@ repositories {
 }
 
 dependencies {
-    minecraft 'com.github.ImpactDevelopment:Vanilla:1.13.2'
+    minecraft 'com.github.ImpactDevelopment:Vanilla:1.14.2'
 
     runtime launchCompile('net.minecraft:launchwrapper:1.12') {
         exclude module: 'lwjgl'

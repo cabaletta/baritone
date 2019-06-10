@@ -29,33 +29,33 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.fluid.WaterFluid;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Fluids;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 
 public class MovementParkour extends Movement {
 
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
 
-    private final EnumFacing direction;
+    private final Direction direction;
     private final int dist;
 
-    private MovementParkour(IBaritone baritone, BetterBlockPos src, int dist, EnumFacing dir) {
+    private MovementParkour(IBaritone baritone, BetterBlockPos src, int dist, Direction dir) {
         super(baritone, src, src.offset(dir, dist), EMPTY, src.offset(dir, dist).down());
         this.direction = dir;
         this.dist = dist;
     }
 
-    public static MovementParkour cost(CalculationContext context, BetterBlockPos src, EnumFacing direction) {
+    public static MovementParkour cost(CalculationContext context, BetterBlockPos src, Direction direction) {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, direction, res);
         int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
         return new MovementParkour(context.getBaritone(), src, dist, direction);
     }
 
-    public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
+    public static void cost(CalculationContext context, int x, int y, int z, Direction dir, MutableMoveResult res) {
         if (!context.allowParkour) {
             return;
         }
@@ -69,7 +69,7 @@ public class MovementParkour extends Movement {
             // most common case at the top -- the adjacent block isn't air
             return;
         }
-        IBlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
+        BlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
         if (MovementHelper.canWalkOn(context.bsi, x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
             // second most common case -- we could just traverse not parkour
             return;
@@ -86,7 +86,7 @@ public class MovementParkour extends Movement {
         if (!MovementHelper.fullyPassable(context, x, y + 2, z)) {
             return;
         }
-        IBlockState standingOn = context.get(x, y - 1, z);
+        BlockState standingOn = context.get(x, y - 1, z);
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn) || standingOn.getFluidState().getFluid() != Fluids.EMPTY) {
             return;
         }
@@ -107,7 +107,7 @@ public class MovementParkour extends Movement {
                     return;
                 }
             }
-            IBlockState landingOn = context.bsi.get0(x + xDiff * i, y - 1, z + zDiff * i);
+            BlockState landingOn = context.bsi.get0(x + xDiff * i, y - 1, z + zDiff * i);
             // farmland needs to be canwalkon otherwise farm can never work at all, but we want to specifically disallow ending a jumy on farmland haha
             if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, x + xDiff * i, y - 1, z + zDiff * i, landingOn)) {
                 res.x = x + xDiff * i;
@@ -130,7 +130,7 @@ public class MovementParkour extends Movement {
         if (placeCost >= COST_INF) {
             return;
         }
-        IBlockState toReplace = context.get(destX, y - 1, destZ);
+        BlockState toReplace = context.get(destX, y - 1, destZ);
         if (!MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.bsi)) {
             return;
         }

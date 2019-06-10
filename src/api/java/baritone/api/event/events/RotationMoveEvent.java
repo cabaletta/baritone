@@ -18,7 +18,6 @@
 package baritone.api.event.events;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 
 /**
  * @author Brady

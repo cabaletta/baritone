@@ -110,7 +110,7 @@ public class MixinNetHandlerPlayClient {
             method = "handleCombatEvent",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/Minecraft.displayGuiScreen(Lnet/minecraft/client/gui/GuiScreen;)V"
+                    target = "net/minecraft/client/Minecraft.displayScreen(Lnet/minecraft/client/gui/Screen;)V"
             )
     )
     private void onPlayerDeath(SPacketCombatEvent packetIn, CallbackInfo ci) {

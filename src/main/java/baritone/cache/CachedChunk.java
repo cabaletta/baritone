@@ -22,7 +22,7 @@ import baritone.utils.pathing.PathingBlockType;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
@@ -143,7 +143,7 @@ public final class CachedChunk {
     /**
      * The block names of each surface level block for generating an overview
      */
-    private final IBlockState[] overview;
+    private final BlockState[] overview;
 
     private final int[] heightMap;
 
@@ -151,7 +151,7 @@ public final class CachedChunk {
 
     public final long cacheTimestamp;
 
-    CachedChunk(int x, int z, BitSet data, IBlockState[] overview, Map<String, List<BlockPos>> specialBlockLocations, long cacheTimestamp) {
+    CachedChunk(int x, int z, BitSet data, BlockState[] overview, Map<String, List<BlockPos>> specialBlockLocations, long cacheTimestamp) {
         validateSize(data);
 
         this.x = x;
@@ -178,7 +178,7 @@ public final class CachedChunk {
         }
     }
 
-    public final IBlockState getBlock(int x, int y, int z, int dimension) {
+    public final BlockState getBlock(int x, int y, int z, int dimension) {
         int index = getPositionIndex(x, y, z);
         PathingBlockType type = getType(index);
         int internalPos = z << 4 | x;
@@ -225,7 +225,7 @@ public final class CachedChunk {
         }
     }
 
-    public final IBlockState[] getOverview() {
+    public final BlockState[] getOverview() {
         return overview;
     }
 

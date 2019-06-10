@@ -31,7 +31,7 @@ import baritone.cache.WorldScanner;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.block.*;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
@@ -103,35 +103,35 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         NETHERWART(Blocks.NETHER_WART, state -> state.get(BlockNetherWart.AGE) >= 3),
         SUGARCANE(Blocks.SUGAR_CANE, null) {
             @Override
-            public boolean readyToHarvest(World world, BlockPos pos, IBlockState state) {
+            public boolean readyToHarvest(World world, BlockPos pos, BlockState state) {
                 return world.getBlockState(pos.down()).getBlock() instanceof BlockReed;
             }
         },
         CACTUS(Blocks.CACTUS, null) {
             @Override
-            public boolean readyToHarvest(World world, BlockPos pos, IBlockState state) {
+            public boolean readyToHarvest(World world, BlockPos pos, BlockState state) {
                 return world.getBlockState(pos.down()).getBlock() instanceof BlockCactus;
             }
         };
         public final Block block;
-        public final Predicate<IBlockState> readyToHarvest;
+        public final Predicate<BlockState> readyToHarvest;
 
         Harvest(BlockCrops blockCrops) {
             this(blockCrops, blockCrops::isMaxAge);
             // max age is 7 for wheat, carrots, and potatoes, but 3 for beetroot
         }
 
-        Harvest(Block block, Predicate<IBlockState> readyToHarvest) {
+        Harvest(Block block, Predicate<BlockState> readyToHarvest) {
             this.block = block;
             this.readyToHarvest = readyToHarvest;
         }
 
-        public boolean readyToHarvest(World world, BlockPos pos, IBlockState state) {
+        public boolean readyToHarvest(World world, BlockPos pos, BlockState state) {
             return readyToHarvest.test(state);
         }
     }
 
-    private boolean readyForHarvest(World world, BlockPos pos, IBlockState state) {
+    private boolean readyForHarvest(World world, BlockPos pos, BlockState state) {
         for (Harvest harvest : Harvest.values()) {
             if (harvest.block == state.getBlock()) {
                 return harvest.readyToHarvest(world, pos, state);
@@ -170,7 +170,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         List<BlockPos> bonemealable = new ArrayList<>();
         List<BlockPos> openSoulsand = new ArrayList<>();
         for (BlockPos pos : locations) {
-            IBlockState state = ctx.world().getBlockState(pos);
+            BlockState state = ctx.world().getBlockState(pos);
             boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir;
             if (state.getBlock() == Blocks.FARMLAND) {
                 if (airAbove) {

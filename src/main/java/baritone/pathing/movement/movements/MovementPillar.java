@@ -31,7 +31,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -50,10 +50,10 @@ public class MovementPillar extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        IBlockState fromState = context.get(x, y, z);
+        BlockState fromState = context.get(x, y, z);
         Block from = fromState.getBlock();
         boolean ladder = from == Blocks.LADDER || from == Blocks.VINE;
-        IBlockState fromDown = context.get(x, y - 1, z);
+        BlockState fromDown = context.get(x, y - 1, z);
         if (!ladder) {
             if (fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE) {
                 return COST_INF; // can't pillar from a ladder or vine onto something that isn't also climbable
@@ -65,12 +65,12 @@ public class MovementPillar extends Movement {
         if (from == Blocks.VINE && !hasAgainst(context, x, y, z)) { // TODO this vine can't be climbed, but we could place a pillar still since vines are replacable, no? perhaps the pillar jump would be impossible because of the slowdown actually.
             return COST_INF;
         }
-        IBlockState toBreak = context.get(x, y + 2, z);
+        BlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
         if (toBreakBlock instanceof BlockFenceGate) { // see issue #172
             return COST_INF;
         }
-        IBlockState srcUp = null;
+        BlockState srcUp = null;
         if (MovementHelper.isWater(toBreak) && MovementHelper.isWater(fromState)) { // TODO should this also be allowed if toBreakBlock is air?
             srcUp = context.get(x, y + 1, z);
             if (MovementHelper.isWater(srcUp)) {
@@ -102,7 +102,7 @@ public class MovementPillar extends Movement {
             if (toBreakBlock == Blocks.LADDER || toBreakBlock == Blocks.VINE) {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
-                IBlockState check = context.get(x, y + 3, z); // the block on top of the one we're going to break, could it fall on us?
+                BlockState check = context.get(x, y + 3, z); // the block on top of the one we're going to break, could it fall on us?
                 if (check.getBlock() instanceof BlockFalling) {
                     // see MovementAscend's identical check for breaking a falling block above our head
                     if (srcUp == null) {
@@ -162,7 +162,7 @@ public class MovementPillar extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
 
-        IBlockState fromDown = BlockStateInterface.get(ctx, src);
+        BlockState fromDown = BlockStateInterface.get(ctx, src);
         if (MovementHelper.isWater(fromDown) && MovementHelper.isWater(ctx, dest)) {
             // stay centered while swimming up a water column
             state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations()), false));
@@ -236,7 +236,7 @@ public class MovementPillar extends Movement {
 
 
             if (!blockIsThere) {
-                IBlockState frState = BlockStateInterface.get(ctx, src);
+                BlockState frState = BlockStateInterface.get(ctx, src);
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
                 if (!(fr instanceof BlockAir || frState.getMaterial().isReplaceable())) {

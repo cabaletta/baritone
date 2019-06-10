@@ -27,7 +27,7 @@ import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.path.SplicedPath;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -80,7 +80,7 @@ public class SegmentedCalculator {
             // it checks if every chunk is loaded before getting blocks from it
             // so you see path segments ending at multiples of 512 (plus or minus one) on either x or z axis
             // this loads every adjacent chunk to the segment end, so it can continue into the next cached region
-            BetterBlockPos toLoad = bp.offset(EnumFacing.byHorizontalIndex(i), 16);
+            BetterBlockPos toLoad = bp.offset(Direction.byHorizontalIndex(i), 16);
             cached.tryLoadFromDisk(toLoad.x >> 9, toLoad.z >> 9);
         }
     }

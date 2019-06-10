@@ -37,7 +37,7 @@ import net.minecraft.network.play.server.SPacketCloseWindow;
 import net.minecraft.network.play.server.SPacketOpenWindow;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityLockable;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 
@@ -140,7 +140,7 @@ public final class MemoryBehavior extends Behavior {
                     return;
                 }
                 futureInventories.stream()
-                        .filter(i -> i.type.equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
+                        .filter(i -> i.getType().equals(packet.getGuiId()) && i.slots == packet.getSlotCount())
                         .findFirst().ifPresent(matched -> {
                     // Remove the future inventory
                     futureInventories.remove(matched);
@@ -201,7 +201,7 @@ public final class MemoryBehavior extends Behavior {
             return null; // other things that have contents, but can be placed adjacent without combining
         }
         for (int i = 0; i < 4; i++) {
-            BlockPos adj = in.offset(EnumFacing.byHorizontalIndex(i));
+            BlockPos adj = in.offset(Direction.byHorizontalIndex(i));
             if (bsi.get0(adj).getBlock() == block) {
                 return adj;
             }

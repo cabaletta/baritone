@@ -32,10 +32,10 @@ import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IGetToBlockProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ChunkProviderClient;
+import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
@@ -260,13 +260,13 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.equals("repack") || msg.equals("rescan")) {
-            ChunkProviderClient cli = (ChunkProviderClient) ctx.world().getChunkProvider();
+            ClientChunkProvider cli = (ClientChunkProvider) ctx.world().getChunkProvider();
             int playerChunkX = ctx.playerFeet().getX() >> 4;
             int playerChunkZ = ctx.playerFeet().getZ() >> 4;
             int count = 0;
             for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
                 for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
-                    Chunk chunk = cli.getChunk(x, z, false, false);
+                    Chunk chunk = cli.getChunk(x, z, null, false);
                     if (chunk != null) {
                         count++;
                         baritone.getWorldProvider().getCurrentWorld().getCachedWorld().queueForPacking(chunk);
@@ -405,7 +405,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.startsWith("followplayers")) {
-            baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
+            baritone.getFollowProcess().follow(PlayerEntity.class::isInstance); // O P P A
             logDirect("Following any players");
             return true;
         }
@@ -415,7 +415,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             if (name.length() == 0) {
                 toFollow = ctx.getSelectedEntity();
             } else {
-                for (EntityPlayer pl : ctx.world().playerEntities) {
+                for (PlayerEntity pl : ctx.world().getPlayers()) {
                     String theirName = pl.getName().getString().trim().toLowerCase();
                     if (!theirName.equals(ctx.player().getName().getString().trim().toLowerCase()) && (theirName.contains(name) || name.contains(theirName))) { // don't follow ourselves lol
                         toFollow = Optional.of(pl);

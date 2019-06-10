@@ -31,7 +31,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.fluid.WaterFluid;
 import net.minecraft.init.Blocks;
 import net.minecraft.state.properties.SlabType;
@@ -61,10 +61,10 @@ public class MovementTraverse extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
-        IBlockState pb0 = context.get(destX, y + 1, destZ);
-        IBlockState pb1 = context.get(destX, y, destZ);
-        IBlockState destOn = context.get(destX, y - 1, destZ);
-        IBlockState down = context.get(x, y - 1, z);
+        BlockState pb0 = context.get(destX, y + 1, destZ);
+        BlockState pb1 = context.get(destX, y, destZ);
+        BlockState destOn = context.get(destX, y - 1, destZ);
+        BlockState down = context.get(x, y - 1, z);
         Block srcDown = down.getBlock();
         if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
@@ -149,8 +149,8 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        IBlockState pb0 = BlockStateInterface.get(ctx, positionsToBreak[0]);
-        IBlockState pb1 = BlockStateInterface.get(ctx, positionsToBreak[1]);
+        BlockState pb0 = BlockStateInterface.get(ctx, positionsToBreak[0]);
+        BlockState pb1 = BlockStateInterface.get(ctx, positionsToBreak[1]);
         if (state.getStatus() != MovementStatus.RUNNING) {
             // if the setting is enabled
             if (!Baritone.settings().walkWhileBreaking.value) {
@@ -241,13 +241,13 @@ public class MovementTraverse extends Movement {
                 return state;
             }
             BlockPos into = dest.subtract(src).add(dest);
-            IBlockState intoBelow = BlockStateInterface.get(ctx, into);
-            IBlockState intoAbove = BlockStateInterface.get(ctx, into.up());
+            BlockState intoBelow = BlockStateInterface.get(ctx, into);
+            BlockState intoAbove = BlockStateInterface.get(ctx, into.up());
             if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, feet) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
             }
 
-            IBlockState destDown = BlockStateInterface.get(ctx, dest.down());
+            BlockState destDown = BlockStateInterface.get(ctx, dest.down());
             BlockPos against = positionsToBreak[0];
             if (feet.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
                 against = destDown.getBlock() == Blocks.VINE ? MovementPillar.getAgainst(new CalculationContext(baritone), dest.down()) : dest.offset(destDown.get(BlockLadder.FACING).getOpposite());

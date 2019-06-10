@@ -18,7 +18,7 @@
 package baritone.utils.schematic;
 
 import baritone.api.utils.ISchematic;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.init.Blocks;
 
 public class AirSchematic implements ISchematic {
@@ -34,7 +34,7 @@ public class AirSchematic implements ISchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z) {
+    public BlockState desiredState(int x, int y, int z) {
         return Blocks.AIR.getDefaultState();
     }
 

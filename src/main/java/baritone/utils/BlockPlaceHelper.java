@@ -38,7 +38,7 @@ public class BlockPlaceHelper implements Helper {
             return;
         }
         RayTraceResult mouseOver = ctx.objectMouseOver();
-        if (!rightClickRequested || ctx.player().isRowingBoat() || mouseOver == null || mouseOver.getBlockPos() == null || mouseOver.type != RayTraceResult.Type.BLOCK) {
+        if (!rightClickRequested || ctx.player().isRowingBoat() || mouseOver == null || mouseOver.getBlockPos() == null || mouseOver.getType() != RayTraceResult.Type.BLOCK) {
             return;
         }
         rightClickTimer = Baritone.settings().rightClickSpeed.value;

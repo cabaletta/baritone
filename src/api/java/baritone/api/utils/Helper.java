@@ -20,7 +20,7 @@ package baritone.api.utils;
 import baritone.api.BaritoneAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 /**
@@ -34,7 +34,7 @@ public interface Helper {
      */
     Helper HELPER = new Helper() {};
 
-    ITextComponent MESSAGE_PREFIX = new TextComponentString(String.format(
+    ITextComponent MESSAGE_PREFIX = new StringTextComponent(String.format(
             "%s[%sBaritone%s]%s",
             TextFormatting.DARK_PURPLE,
             TextFormatting.LIGHT_PURPLE,
@@ -66,7 +66,7 @@ public interface Helper {
     default void logDirect(String message) {
         ITextComponent component = MESSAGE_PREFIX.shallowCopy();
         component.getStyle().setColor(TextFormatting.GRAY);
-        component.appendSibling(new TextComponentString(" " + message));
-        Minecraft.getInstance().addScheduledTask(() -> BaritoneAPI.getSettings().logger.value.accept(component));
+        component.appendSibling(new StringTextComponent(" " + message));
+        Minecraft.getInstance().execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
     }
 }

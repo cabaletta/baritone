@@ -19,8 +19,8 @@ package baritone.utils;
 
 import baritone.Baritone;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.client.entity.ClientPlayerEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
@@ -48,9 +48,9 @@ public class ToolSet {
      */
     private final Function<Block, Double> backendCalculation;
 
-    private final EntityPlayerSP player;
+    private final ClientPlayerEntity player;
 
-    public ToolSet(EntityPlayerSP player) {
+    public ToolSet(ClientPlayerEntity player) {
         breakStrengthCache = new HashMap<>();
         this.player = player;
 
@@ -69,7 +69,7 @@ public class ToolSet {
      * @param state the blockstate to be mined
      * @return the speed of how fast we'll mine it. 1/(time in ticks)
      */
-    public double getStrVsBlock(IBlockState state) {
+    public double getStrVsBlock(BlockState state) {
         return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation);
     }
 
@@ -93,7 +93,7 @@ public class ToolSet {
         byte best = 0;
         double value = Double.NEGATIVE_INFINITY;
         int materialCost = Integer.MIN_VALUE;
-        IBlockState blockState = b.getDefaultState();
+        BlockState blockState = b.getDefaultState();
         for (byte i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
             double v = calculateSpeedVsBlock(itemStack, blockState);
@@ -136,7 +136,7 @@ public class ToolSet {
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */
-    public static double calculateSpeedVsBlock(ItemStack item, IBlockState state) {
+    public static double calculateSpeedVsBlock(ItemStack item, BlockState state) {
         float hardness = state.getBlockHardness(null, null);
         if (hardness < 0) {
             return -1;

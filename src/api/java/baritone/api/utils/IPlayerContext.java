@@ -18,12 +18,10 @@
 package baritone.api.utils;
 
 import baritone.api.cache.IWorldData;
-import net.minecraft.block.BlockSlab;
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.block.SlabBlock;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 
 import java.util.Optional;
@@ -34,7 +32,7 @@ import java.util.Optional;
  */
 public interface IPlayerContext {
 
-    EntityPlayerSP player();
+    ClientPlayerEntity player();
 
     IPlayerController playerController();
 
@@ -47,7 +45,7 @@ public interface IPlayerContext {
     default BetterBlockPos playerFeet() {
         // TODO find a better way to deal with soul sand!!!!!
         BetterBlockPos feet = new BetterBlockPos(player().posX, player().posY + 0.1251, player().posZ);
-        if (world().getBlockState(feet).getBlock() instanceof BlockSlab) {
+        if (world().getBlockState(feet).getBlock() instanceof SlabBlock) {
             return feet.up();
         }
         return feet;
@@ -72,8 +70,8 @@ public interface IPlayerContext {
      */
     default Optional<BlockPos> getSelectedBlock() {
         RayTraceResult result = objectMouseOver();
-        if (result != null && result.type == RayTraceResult.Type.BLOCK) {
-            return Optional.of(result.getBlockPos());
+        if (result != null && result.getType() == RayTraceResult.Type.BLOCK) {
+            return Optional.of(((BlockRayTraceResult) result).getPos());
         }
         return Optional.empty();
     }
@@ -89,8 +87,8 @@ public interface IPlayerContext {
      */
     default Optional<Entity> getSelectedEntity() {
         RayTraceResult result = objectMouseOver();
-        if (result != null && result.type == RayTraceResult.Type.ENTITY) {
-            return Optional.of(result.entity);
+        if (result != null && result.getType() == RayTraceResult.Type.ENTITY) {
+            return Optional.of(((EntityRayTraceResult) result).getEntity());
         }
         return Optional.empty();
     }

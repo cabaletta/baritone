@@ -19,13 +19,13 @@ package baritone.utils.player;
 
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerController;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.entity.ClientPlayerEntity;
+import net.minecraft.client.multiplayer.ClientWorld;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -43,7 +43,7 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     INSTANCE;
 
     @Override
-    public boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side) {
+    public boolean onPlayerDamageBlock(BlockPos pos, Direction side) {
         return mc.playerController.onPlayerDamageBlock(pos, side);
     }
 
@@ -53,7 +53,7 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     }
 
     @Override
-    public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, EntityPlayer player) {
+    public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player) {
         return mc.playerController.windowClick(windowId, slotId, mouseButton, type, player);
     }
 
@@ -68,13 +68,13 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     }
 
     @Override
-    public EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand) {
-        // primaryplayercontroller is always in a WorldClient so this is ok
-        return mc.playerController.processRightClickBlock(player, (WorldClient) world, pos, direction, vec, hand);
+    public EnumActionResult processRightClickBlock(ClientPlayerEntity player, World world, BlockPos pos, Direction direction, Vec3d vec, EnumHand hand) {
+        // primaryplayercontroller is always in a ClientWorld so this is ok
+        return mc.playerController.processRightClickBlock(player, (ClientWorld) world, pos, direction, vec, hand);
     }
 
     @Override
-    public EnumActionResult processRightClick(EntityPlayerSP player, World world, EnumHand hand) {
+    public EnumActionResult processRightClick(ClientPlayerEntity player, World world, EnumHand hand) {
         return mc.playerController.processRightClick(player, world, hand);
     }
 }

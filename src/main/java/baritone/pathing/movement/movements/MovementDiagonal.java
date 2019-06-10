@@ -29,9 +29,9 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -41,12 +41,12 @@ public class MovementDiagonal extends Movement {
 
     private static final double SQRT_2 = Math.sqrt(2);
 
-    public MovementDiagonal(IBaritone baritone, BetterBlockPos start, EnumFacing dir1, EnumFacing dir2, int dy) {
+    public MovementDiagonal(IBaritone baritone, BetterBlockPos start, Direction dir1, Direction dir2, int dy) {
         this(baritone, start, start.offset(dir1), start.offset(dir2), dir2, dy);
         // super(start, start.offset(dir1).offset(dir2), new BlockPos[]{start.offset(dir1), start.offset(dir1).up(), start.offset(dir2), start.offset(dir2).up(), start.offset(dir1).offset(dir2), start.offset(dir1).offset(dir2).up()}, new BlockPos[]{start.offset(dir1).offset(dir2).down()});
     }
 
-    private MovementDiagonal(IBaritone baritone, BetterBlockPos start, BetterBlockPos dir1, BetterBlockPos dir2, EnumFacing drr2, int dy) {
+    private MovementDiagonal(IBaritone baritone, BetterBlockPos start, BetterBlockPos dir1, BetterBlockPos dir2, Direction drr2, int dy) {
         this(baritone, start, dir1.offset(drr2).up(dy), dir1, dir2);
     }
 
@@ -65,11 +65,11 @@ public class MovementDiagonal extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
-        IBlockState destInto = context.get(destX, y, destZ);
+        BlockState destInto = context.get(destX, y, destZ);
         if (!MovementHelper.canWalkThrough(context.bsi, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context.bsi, destX, y + 1, destZ)) {
             return;
         }
-        IBlockState destWalkOn = context.get(destX, y - 1, destZ);
+        BlockState destWalkOn = context.get(destX, y - 1, destZ);
         boolean descend = false;
         if (!MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn)) {
             descend = true;
@@ -91,16 +91,16 @@ public class MovementDiagonal extends Movement {
         if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        IBlockState cuttingOver1 = context.get(x, y - 1, destZ);
+        BlockState cuttingOver1 = context.get(x, y - 1, destZ);
         if (cuttingOver1.getBlock() == Blocks.MAGMA_BLOCK || MovementHelper.isLava(cuttingOver1)) {
             return;
         }
-        IBlockState cuttingOver2 = context.get(destX, y - 1, z);
+        BlockState cuttingOver2 = context.get(destX, y - 1, z);
         if (cuttingOver2.getBlock() == Blocks.MAGMA_BLOCK || MovementHelper.isLava(cuttingOver2)) {
             return;
         }
-        IBlockState pb0 = context.get(x, y, destZ);
-        IBlockState pb2 = context.get(destX, y, z);
+        BlockState pb0 = context.get(x, y, destZ);
+        BlockState pb2 = context.get(destX, y, z);
         double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false);
         double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false);
         if (optionA != 0 && optionB != 0) {
@@ -108,13 +108,13 @@ public class MovementDiagonal extends Movement {
             // so no need to check pb1 as well, might as well return early here
             return;
         }
-        IBlockState pb1 = context.get(x, y + 1, destZ);
+        BlockState pb1 = context.get(x, y + 1, destZ);
         optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true);
         if (optionA != 0 && optionB != 0) {
             // same deal, if pb1 makes optionA nonzero and option B already was nonzero, pb3 can't affect the result
             return;
         }
-        IBlockState pb3 = context.get(destX, y + 1, z);
+        BlockState pb3 = context.get(destX, y + 1, z);
         if (optionA == 0 && ((MovementHelper.avoidWalkingInto(pb2) && pb2.getBlock() != Blocks.WATER) || MovementHelper.avoidWalkingInto(pb3))) {
             // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
             return;
@@ -129,7 +129,7 @@ public class MovementDiagonal extends Movement {
             return;
         }
         boolean water = false;
-        IBlockState startState = context.get(x, y, z);
+        BlockState startState = context.get(x, y, z);
         Block startIn = startState.getBlock();
         if (MovementHelper.isWater(startState) || MovementHelper.isWater(destInto)) {
             // Ignore previous multiplier

@@ -19,7 +19,7 @@ package baritone.utils;
 
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -38,7 +38,7 @@ public final class BlockBreakHelper implements Helper {
         this.playerContext = playerContext;
     }
 
-    public void tryBreakBlock(BlockPos pos, EnumFacing side) {
+    public void tryBreakBlock(BlockPos pos, Direction side) {
         if (playerContext.playerController().onPlayerDamageBlock(pos, side)) {
             playerContext.player().swingArm(EnumHand.MAIN_HAND);
         }
@@ -54,7 +54,7 @@ public final class BlockBreakHelper implements Helper {
 
     public void tick(boolean isLeftClick) {
         RayTraceResult trace = playerContext.objectMouseOver();
-        boolean isBlockTrace = trace != null && trace.type == RayTraceResult.Type.BLOCK;
+        boolean isBlockTrace = trace != null && trace.getType() == RayTraceResult.Type.BLOCK;
 
         if (isLeftClick && isBlockTrace) {
             tryBreakBlock(trace.getBlockPos(), trace.sideHit);

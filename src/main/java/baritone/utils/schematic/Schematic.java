@@ -18,14 +18,14 @@
 package baritone.utils.schematic;
 
 import baritone.api.utils.ISchematic;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class Schematic implements ISchematic {
     public final int widthX;
     public final int heightY;
     public final int lengthZ;
-    protected final IBlockState[][][] states;
+    protected final BlockState[][][] states;
 
     public Schematic(NBTTagCompound schematic) {
         /*String type = schematic.getString("Materials");
@@ -47,7 +47,7 @@ public class Schematic implements ISchematic {
                 additional[i * 2 + 1] = (byte) ((addBlocks[i] >> 0) & 0xF); // upper nibble
             }
         }
-        states = new IBlockState[widthX][lengthZ][heightY];
+        states = new BlockState[widthX][lengthZ][heightY];
         for (int y = 0; y < heightY; y++) {
             for (int z = 0; z < lengthZ; z++) {
                 for (int x = 0; x < widthX; x++) {
@@ -68,7 +68,7 @@ public class Schematic implements ISchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z) {
+    public BlockState desiredState(int x, int y, int z) {
         return states[x][z][y];
     }
 
