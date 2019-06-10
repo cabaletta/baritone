@@ -29,7 +29,7 @@ import baritone.utils.BaritoneProcessHelper;
  *
  * @author leijurv
  */
-public class CustomGoalProcess extends BaritoneProcessHelper implements ICustomGoalProcess {
+public final class CustomGoalProcess extends BaritoneProcessHelper implements ICustomGoalProcess {
 
     /**
      * The current goal

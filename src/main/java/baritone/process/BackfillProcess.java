@@ -34,7 +34,7 @@ import net.minecraft.world.chunk.EmptyChunk;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BackfillProcess extends BaritoneProcessHelper {
+public final class BackfillProcess extends BaritoneProcessHelper {
 
     public HashMap<BlockPos, IBlockState> blocksToReplace = new HashMap<>();
 

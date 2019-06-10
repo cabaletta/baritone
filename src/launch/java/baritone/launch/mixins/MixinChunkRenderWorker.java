@@ -43,7 +43,7 @@ public abstract class MixinChunkRenderWorker {
             )
     )
     private boolean isChunkExisting(ChunkRenderWorker worker, BlockPos pos, World world) {
-        if (Baritone.settings().renderCachedChunks.value && Minecraft.getInstance().getIntegratedServer() == null) {
+        if (Baritone.settings().renderCachedChunks.value && !Minecraft.getInstance().isSingleplayer()) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {

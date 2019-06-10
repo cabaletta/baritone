@@ -51,7 +51,7 @@ public class SegmentedCalculator {
     private Optional<IPath> doCalc() {
         Optional<IPath> soFar = Optional.empty();
         while (true) {
-            PathCalculationResult result = segment(soFar);
+            PathCalculationResult result = segment(soFar.orElse(null));
             switch (result.getType()) {
                 case SUCCESS_SEGMENT:
                 case SUCCESS_TO_GOAL:
@@ -62,8 +62,8 @@ public class SegmentedCalculator {
                 default: // CANCELLATION and null should not be possible, nothing else has access to this, so it can't have been canceled
                     throw new IllegalStateException();
             }
-            IPath segment = result.getPath().get(); // path calculation result type is SUCCESS_SEGMENT, so the path must be present
-            IPath combined = soFar.map(previous -> (IPath) SplicedPath.trySplice(previous, segment, true).get()).orElse(segment);
+            IPath segment = result.getPath().orElseThrow(IllegalStateException::new); // path calculation result type is SUCCESS_SEGMENT, so the path must be present
+            IPath combined = soFar.map(previous -> (IPath) SplicedPath.trySplice(previous, segment, true).orElseThrow(IllegalStateException::new)).orElse(segment);
             loadAdjacent(combined.getDest().getX(), combined.getDest().getZ());
             soFar = Optional.of(combined);
             if (result.getType() == PathCalculationResult.Type.SUCCESS_TO_GOAL) {
@@ -85,9 +85,9 @@ public class SegmentedCalculator {
         }
     }
 
-    private PathCalculationResult segment(Optional<IPath> previous) {
-        BetterBlockPos segmentStart = previous.map(IPath::getDest).orElse(start); // <-- e p i c
-        AbstractNodeCostSearch search = new AStarPathFinder(segmentStart.x, segmentStart.y, segmentStart.z, goal, new Favoring(previous.orElse(null), context), context); // this is on another thread, so cannot include mob avoidances.
+    private PathCalculationResult segment(IPath previous) {
+        BetterBlockPos segmentStart = previous != null ? previous.getDest() : start;
+        AbstractNodeCostSearch search = new AStarPathFinder(segmentStart.x, segmentStart.y, segmentStart.z, goal, new Favoring(previous, context), context); // this is on another thread, so cannot include mob avoidances.
         return search.calculate(Baritone.settings().primaryTimeoutMS.value, Baritone.settings().failureTimeoutMS.value); // use normal time settings, not the plan ahead settings, so as to not overwhelm the computer
     }
 

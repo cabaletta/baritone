@@ -37,7 +37,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
-import java.util.Optional;
 
 public class MovementPillar extends Movement {
 
@@ -241,10 +240,9 @@ public class MovementPillar extends Movement {
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
                 if (!(fr instanceof BlockAir || frState.getMaterial().isReplaceable())) {
-                    Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance());
-                    if (reachable.isPresent()) {
-                        state.setTarget(new MovementState.MovementTarget(reachable.get(), true));
-                    }
+                    RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance())
+                            .map(rot -> new MovementState.MovementTarget(rot, true))
+                            .ifPresent(state::setTarget);
                     state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;

@@ -44,7 +44,7 @@ public class MixinRenderChunk {
             )
     )
     private IBlockState getBlockState(RenderChunkCache chunkCache, BlockPos pos) {
-        if (Baritone.settings().renderCachedChunks.value && Minecraft.getInstance().getIntegratedServer() == null) {
+        if (Baritone.settings().renderCachedChunks.value && !Minecraft.getInstance().isSingleplayer()) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {

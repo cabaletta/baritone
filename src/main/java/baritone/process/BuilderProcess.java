@@ -58,7 +58,7 @@ import java.util.*;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
-public class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
+public final class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
 
     private HashSet<BetterBlockPos> incorrectPositions;
     private LongOpenHashSet observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now
@@ -376,7 +376,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
             return onTick(calcFailed, isSafeToCancel);
         }
-        trim(bcc);
+        trim();
 
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround) {
@@ -464,7 +464,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
         return !incorrectPositions.isEmpty();
     }
 
-    private void trim(BuilderCalculationContext bcc) {
+    private void trim() {
         HashSet<BetterBlockPos> copy = new HashSet<>(incorrectPositions);
         copy.removeIf(pos -> pos.distanceSq(ctx.player().posX, ctx.player().posY, ctx.player().posZ) > 200);
         if (!copy.isEmpty()) {
@@ -619,7 +619,7 @@ public class BuilderProcess extends BaritoneProcessHelper implements IBuilderPro
             return new GoalPlace(pos);
         }
         boolean allowSameLevel = !(ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir);
-        for (EnumFacing facing : Movement.HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP) {
+        for (EnumFacing facing : Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP) {
             if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && placementPlausible(pos, bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ()))) {
                 return new GoalAdjacent(pos, allowSameLevel);
             }

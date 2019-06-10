@@ -50,14 +50,14 @@ public class OpenSetsTest {
         return testSizes;
     }
 
-    private static void removeAndTest(int amount, IOpenSet[] test, Optional<Collection<PathNode>> mustContain) {
+    private static void removeAndTest(int amount, IOpenSet[] test, Collection<PathNode> mustContain) {
         double[][] results = new double[test.length][amount];
         for (int i = 0; i < test.length; i++) {
             long before = System.nanoTime() / 1000000L;
             for (int j = 0; j < amount; j++) {
                 PathNode pn = test[i].removeLowest();
-                if (mustContain.isPresent() && !mustContain.get().contains(pn)) {
-                    throw new IllegalStateException(mustContain.get() + " " + pn);
+                if (mustContain != null && !mustContain.contains(pn)) {
+                    throw new IllegalStateException(mustContain + " " + pn);
                 }
                 results[i][j] = pn.combinedCost;
             }
@@ -131,7 +131,7 @@ public class OpenSetsTest {
 
         System.out.println("Removal round 1");
         // remove a quarter of the nodes and verify that they are indeed the size/4 lowest ones
-        removeAndTest(size / 4, test, Optional.of(lowestQuarter));
+        removeAndTest(size / 4, test, lowestQuarter);
 
         // none of them should be empty (sanity check)
         for (IOpenSet set : test) {
@@ -160,7 +160,7 @@ public class OpenSetsTest {
 
         System.out.println("Removal round 2");
         // remove the remaining 3/4
-        removeAndTest(size - size / 4, test, Optional.empty());
+        removeAndTest(size - size / 4, test, null);
 
         // every set should now be empty
         for (IOpenSet set : test) {

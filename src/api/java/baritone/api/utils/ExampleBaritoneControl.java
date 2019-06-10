@@ -33,6 +33,7 @@ import baritone.api.process.IGetToBlockProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -66,6 +67,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     "get - Same as list\n" +
                     "show - Same as list\n" +
                     "save - Saves a waypoint (works but don't try to make sense of it)\n" +
+                    "delete - Deletes a waypoint\n" +
                     "goto - Paths towards specified block or waypoint\n" +
                     "spawn - Paths towards world spawn or your most recent bed right-click\n" +
                     "sethome - Sets \"home\"\n" +
@@ -193,6 +195,16 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             customGoalProcess.setGoal(goal);
             logDirect("Goal: " + goal);
+            return true;
+        }
+        if (msg.equals("crash")) {
+            StringBuilder meme = new StringBuilder();
+            CrashReport rep = new CrashReport("Manually triggered debug crash", new Throwable());
+            mc.addGraphicsAndWorldToCrashReport(rep);
+            rep.getSectionsInStringBuilder(meme);
+            System.out.println(meme);
+            logDirect(meme.toString());
+            logDirect("ok");
             return true;
         }
         if (msg.equals("path")) {
@@ -332,7 +344,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             if (suffix.isEmpty()) {
                 // clear the area from the current goal to here
                 Goal goal = baritone.getPathingBehavior().getGoal();
-                if (goal == null || !(goal instanceof GoalBlock)) {
+                if (!(goal instanceof GoalBlock)) {
                     logDirect("Need to specify goal of opposite corner");
                     return true;
                 }
@@ -385,17 +397,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("farming");
             return true;
         }
-        // this literally doesn't work, memory is disabled lol
-        /*if (msg.equals("echest")) {
-            Optional<List<ItemStack>> contents = baritone.getMemoryBehavior().echest();
-            if (contents.isPresent()) {
-                logDirect("echest contents:");
-                log(contents.get());
-            } else {
-                logDirect("echest contents unknown");
-            }
-            return true;
-        }*/
         if (msg.equals("chests")) {
             for (Map.Entry<BlockPos, IRememberedInventory> entry : baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet()) {
                 logDirect(entry.getKey() + "");
@@ -426,7 +427,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 return true;
             }
             Entity effectivelyFinal = toFollow.get();
-            baritone.getFollowProcess().follow(x -> effectivelyFinal.equals(x));
+            baritone.getFollowProcess().follow(effectivelyFinal::equals);
             logDirect("Following " + toFollow.get());
             return true;
         }
@@ -581,6 +582,17 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto " + name + "' to set goal, say 'list user' to list custom waypoints.");
             return true;
         }
+        if (msg.startsWith("delete")) {
+            String name = msg.substring(6).trim();
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getTag() == IWaypoint.Tag.USER && w.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+            if (waypoint == null) {
+                logDirect("No user defined position under the name '" + name + "' found.");
+                return true;
+            }
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().removeWaypoint(waypoint);
+            logDirect("Deleted user defined position under name '" + name + "'.");
+            return true;
+        }
         if (msg.startsWith("goto")) {
             String waypointType = msg.substring(4).trim();
             if (waypointType.endsWith("s") && IWaypoint.Tag.fromString(waypointType.substring(0, waypointType.length() - 1)) != null) {
@@ -649,24 +661,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             return true;
         }
-        // this is completely impossible from api
-        /*if (msg.equals("costs")) {
-            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(new CalculationContext(baritone), ctx.playerFeet())).collect(Collectors.toCollection(ArrayList::new));
-            while (moves.contains(null)) {
-                moves.remove(null);
-            }
-            moves.sort(Comparator.comparingDouble(move -> move.getCost(new CalculationContext(baritone))));
-            for (Movement move : moves) {
-                String[] parts = move.getClass().toString().split("\\.");
-                double cost = move.getCost();
-                String strCost = cost + "";
-                if (cost >= ActionCosts.COST_INF) {
-                    strCost = "IMPOSSIBLE";
-                }
-                logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
-            }
-            return true;
-        }*/
         if (msg.equals("damn")) {
             logDirect("daniel");
         }

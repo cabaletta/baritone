@@ -19,13 +19,17 @@ package baritone.cache;
 
 import baritone.api.utils.BlockUtils;
 import baritone.utils.pathing.PathingBlockType;
+import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Brady
@@ -33,99 +37,77 @@ import java.util.*;
  */
 public final class CachedChunk {
 
-    public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF;
+    public static final ImmutableSet<Block> BLOCKS_TO_KEEP_TRACK_OF = ImmutableSet.of(
+            Blocks.ENDER_CHEST,
+            Blocks.FURNACE,
+            Blocks.CHEST,
+            Blocks.TRAPPED_CHEST,
+            Blocks.END_PORTAL,
+            Blocks.END_PORTAL_FRAME,
+            Blocks.SPAWNER,
+            Blocks.BARRIER,
+            Blocks.OBSERVER,
+            Blocks.WHITE_SHULKER_BOX,
+            Blocks.ORANGE_SHULKER_BOX,
+            Blocks.MAGENTA_SHULKER_BOX,
+            Blocks.LIGHT_BLUE_SHULKER_BOX,
+            Blocks.YELLOW_SHULKER_BOX,
+            Blocks.LIME_SHULKER_BOX,
+            Blocks.PINK_SHULKER_BOX,
+            Blocks.GRAY_SHULKER_BOX,
+            Blocks.LIGHT_GRAY_SHULKER_BOX,
+            Blocks.CYAN_SHULKER_BOX,
+            Blocks.PURPLE_SHULKER_BOX,
+            Blocks.BLUE_SHULKER_BOX,
+            Blocks.BROWN_SHULKER_BOX,
+            Blocks.GREEN_SHULKER_BOX,
+            Blocks.RED_SHULKER_BOX,
+            Blocks.BLACK_SHULKER_BOX,
+            Blocks.NETHER_PORTAL,
+            Blocks.HOPPER,
+            Blocks.BEACON,
+            Blocks.BREWING_STAND,
 
-    static {
-        HashSet<Block> temp = new HashSet<>();
-        //temp.add(Blocks.DIAMOND_ORE);
-        temp.add(Blocks.DIAMOND_BLOCK);
-        //temp.add(Blocks.COAL_ORE);
-        temp.add(Blocks.COAL_BLOCK);
-        //temp.add(Blocks.IRON_ORE);
-        temp.add(Blocks.IRON_BLOCK);
-        //temp.add(Blocks.GOLD_ORE);
-        temp.add(Blocks.GOLD_BLOCK);
-        temp.add(Blocks.EMERALD_ORE);
-        temp.add(Blocks.EMERALD_BLOCK);
-
-        temp.add(Blocks.ENDER_CHEST);
-        temp.add(Blocks.FURNACE);
-        temp.add(Blocks.CHEST);
-        temp.add(Blocks.TRAPPED_CHEST);
-        temp.add(Blocks.END_PORTAL);
-        temp.add(Blocks.END_PORTAL_FRAME);
-        temp.add(Blocks.SPAWNER);
-        temp.add(Blocks.BARRIER);
-        temp.add(Blocks.OBSERVER);
-
-        temp.add(Blocks.WHITE_SHULKER_BOX);
-        temp.add(Blocks.ORANGE_SHULKER_BOX);
-        temp.add(Blocks.MAGENTA_SHULKER_BOX);
-        temp.add(Blocks.LIGHT_BLUE_SHULKER_BOX);
-        temp.add(Blocks.YELLOW_SHULKER_BOX);
-        temp.add(Blocks.LIME_SHULKER_BOX);
-        temp.add(Blocks.PINK_SHULKER_BOX);
-        temp.add(Blocks.GRAY_SHULKER_BOX);
-        temp.add(Blocks.LIGHT_GRAY_SHULKER_BOX);
-        temp.add(Blocks.CYAN_SHULKER_BOX);
-        temp.add(Blocks.PURPLE_SHULKER_BOX);
-        temp.add(Blocks.BLUE_SHULKER_BOX);
-        temp.add(Blocks.BROWN_SHULKER_BOX);
-        temp.add(Blocks.GREEN_SHULKER_BOX);
-        temp.add(Blocks.RED_SHULKER_BOX);
-        temp.add(Blocks.BLACK_SHULKER_BOX);
-
-        temp.add(Blocks.NETHER_PORTAL);
-        temp.add(Blocks.HOPPER);
-        temp.add(Blocks.BEACON);
-        temp.add(Blocks.BREWING_STAND);
-
-        // TODO: Maybe add a predicate for blocks to keep track of?
-        // This should really not need to happen
-        temp.add(Blocks.CREEPER_HEAD);
-        temp.add(Blocks.CREEPER_WALL_HEAD);
-        temp.add(Blocks.DRAGON_HEAD);
-        temp.add(Blocks.DRAGON_WALL_HEAD);
-        temp.add(Blocks.PLAYER_HEAD);
-        temp.add(Blocks.PLAYER_WALL_HEAD);
-        temp.add(Blocks.ZOMBIE_HEAD);
-        temp.add(Blocks.ZOMBIE_WALL_HEAD);
-        temp.add(Blocks.SKELETON_SKULL);
-        temp.add(Blocks.SKELETON_WALL_SKULL);
-        temp.add(Blocks.WITHER_SKELETON_SKULL);
-        temp.add(Blocks.WITHER_SKELETON_WALL_SKULL);
-
-        temp.add(Blocks.ENCHANTING_TABLE);
-        temp.add(Blocks.ANVIL);
-
-        temp.add(Blocks.WHITE_BED);
-        temp.add(Blocks.ORANGE_BED);
-        temp.add(Blocks.MAGENTA_BED);
-        temp.add(Blocks.LIGHT_BLUE_BED);
-        temp.add(Blocks.YELLOW_BED);
-        temp.add(Blocks.LIME_BED);
-        temp.add(Blocks.PINK_BED);
-        temp.add(Blocks.GRAY_BED);
-        temp.add(Blocks.LIGHT_GRAY_BED);
-        temp.add(Blocks.CYAN_BED);
-        temp.add(Blocks.PURPLE_BED);
-        temp.add(Blocks.BLUE_BED);
-        temp.add(Blocks.BROWN_BED);
-        temp.add(Blocks.GREEN_BED);
-        temp.add(Blocks.RED_BED);
-        temp.add(Blocks.BLACK_BED);
-
-        temp.add(Blocks.DRAGON_EGG);
-        temp.add(Blocks.JUKEBOX);
-        temp.add(Blocks.END_GATEWAY);
-        temp.add(Blocks.COBWEB);
-        temp.add(Blocks.NETHER_WART);
-        temp.add(Blocks.LADDER);
-        temp.add(Blocks.VINE);
-        BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(temp);
-
-        // TODO: Lit Furnaces
-    }
+// TODO: Maybe add a predicate for blocks to keep track of?
+// This should really not need to happen
+            Blocks.CREEPER_HEAD,
+            Blocks.CREEPER_WALL_HEAD,
+            Blocks.DRAGON_HEAD,
+            Blocks.DRAGON_WALL_HEAD,
+            Blocks.PLAYER_HEAD,
+            Blocks.PLAYER_WALL_HEAD,
+            Blocks.ZOMBIE_HEAD,
+            Blocks.ZOMBIE_WALL_HEAD,
+            Blocks.SKELETON_SKULL,
+            Blocks.SKELETON_WALL_SKULL,
+            Blocks.WITHER_SKELETON_SKULL,
+            Blocks.WITHER_SKELETON_WALL_SKULL,
+            Blocks.ENCHANTING_TABLE,
+            Blocks.ANVIL,
+            Blocks.WHITE_BED,
+            Blocks.ORANGE_BED,
+            Blocks.MAGENTA_BED,
+            Blocks.LIGHT_BLUE_BED,
+            Blocks.YELLOW_BED,
+            Blocks.LIME_BED,
+            Blocks.PINK_BED,
+            Blocks.GRAY_BED,
+            Blocks.LIGHT_GRAY_BED,
+            Blocks.CYAN_BED,
+            Blocks.PURPLE_BED,
+            Blocks.BLUE_BED,
+            Blocks.BROWN_BED,
+            Blocks.GREEN_BED,
+            Blocks.RED_BED,
+            Blocks.BLACK_BED,
+            Blocks.DRAGON_EGG,
+            Blocks.JUKEBOX,
+            Blocks.END_GATEWAY,
+            Blocks.COBWEB,
+            Blocks.NETHER_WART,
+            Blocks.LADDER,
+            Blocks.VINE
+    );
 
     /**
      * The size of the chunk data in bits. Equal to 16 KiB.

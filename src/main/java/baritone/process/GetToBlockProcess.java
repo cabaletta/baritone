@@ -34,7 +34,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
 
-public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
+public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
     private Block gettingTo;
     private List<BlockPos> knownLocations;

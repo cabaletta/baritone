@@ -41,7 +41,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExploreProcess extends BaritoneProcessHelper implements IExploreProcess {
+public final class ExploreProcess extends BaritoneProcessHelper implements IExploreProcess {
 
     private BlockPos explorationOrigin;
 

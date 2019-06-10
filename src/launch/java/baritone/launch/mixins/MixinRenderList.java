@@ -38,7 +38,7 @@ public class MixinRenderList {
             )
     )
     private void popMatrix() {
-        if (Baritone.settings().renderCachedChunks.value && Minecraft.getInstance().getIntegratedServer() == null) {
+        if (Baritone.settings().renderCachedChunks.value && !Minecraft.getInstance().isSingleplayer()) {
             // reset the blend func to normal (not dependent on constant alpha)
             GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         }

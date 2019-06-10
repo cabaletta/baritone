@@ -33,7 +33,7 @@ import java.util.OptionalInt;
 import java.util.Random;
 import java.util.function.Predicate;
 
-public class InventoryBehavior extends Behavior {
+public final class InventoryBehavior extends Behavior {
     public InventoryBehavior(Baritone baritone) {
         super(baritone);
     }
