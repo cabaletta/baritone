@@ -26,10 +26,13 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiMainMenu;
+import net.minecraft.client.gui.screen.MainMenuScreen;
+import net.minecraft.client.settings.AmbientOcclusionStatus;
+import net.minecraft.client.settings.CloudOption;
+import net.minecraft.client.settings.ParticleStatus;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.HttpUtil;
+import net.minecraft.util.HTTPUtil;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.WorldSettings;
@@ -71,14 +74,14 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         GameSettings s = mc.gameSettings;
         s.limitFramerate = 20;
         s.mipmapLevels = 0;
-        s.particleSetting = 2;
+        s.field_74362_aa = ParticleStatus.MINIMAL;
         s.overrideWidth = 128;
         s.overrideHeight = 128;
         s.heldItemTooltips = false;
         s.entityShadows = false;
         s.chatScale = 0.0F;
-        s.ambientOcclusion = 0;
-        s.clouds = 0;
+        s.ambientOcclusionStatus = AmbientOcclusionStatus.OFF;
+        s.field_74345_l = CloudOption.OFF;
         s.fancyGraphics = false;
         s.tutorialStep = TutorialSteps.NONE;
         s.hideGUI = true;
@@ -89,9 +92,9 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
     public void onTick(TickEvent event) {
         IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
         // If we're on the main menu then create the test world and launch the integrated server
-        if (mc.currentScreen instanceof GuiMainMenu) {
+        if (mc.field_71462_r instanceof MainMenuScreen) {
             System.out.println("Beginning Baritone automatic test routine");
-            mc.displayScreen(null);
+            mc.displayGuiScreen(null);
             WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.getByName("survival"), true, false, WorldType.DEFAULT);
             mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
         }
@@ -110,7 +113,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             // Force the integrated server to share the world to LAN so that
             // the ingame pause menu gui doesn't actually pause our game
             if (mc.isSingleplayer() && !mc.getIntegratedServer().getPublic()) {
-                mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false, HttpUtil.getSuitableLanPort());
+                mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false, HTTPUtil.getSuitableLanPort());
             }
 
             // For the first 200 ticks, wait for the world to generate

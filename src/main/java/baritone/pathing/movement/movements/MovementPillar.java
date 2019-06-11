@@ -31,12 +31,9 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-
-import java.util.Objects;
 
 public class MovementPillar extends Movement {
 
@@ -58,7 +55,7 @@ public class MovementPillar extends Movement {
             if (fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE) {
                 return COST_INF; // can't pillar from a ladder or vine onto something that isn't also climbable
             }
-            if (fromDown.getBlock() instanceof BlockSlab && !fromDown.isTopSolid()) {
+            if (fromDown.getBlock() instanceof SlabBlock && fromDown.get(SlabBlock.TYPE) == SlabType.BOTTOM) {
                 return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
@@ -67,7 +64,7 @@ public class MovementPillar extends Movement {
         }
         BlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
-        if (toBreakBlock instanceof BlockFenceGate) { // see issue #172
+        if (toBreakBlock instanceof FenceGateBlock) { // see issue #172
             return COST_INF;
         }
         BlockState srcUp = null;
@@ -84,7 +81,7 @@ public class MovementPillar extends Movement {
             if (placeCost >= COST_INF) {
                 return COST_INF;
             }
-            if (fromDown.getBlock() instanceof BlockAir) {
+            if (fromDown.getBlock() instanceof AirBlock) {
                 placeCost += 0.1; // slightly (1/200th of a second) penalize pillaring on what's currently air
             }
         }
@@ -103,19 +100,19 @@ public class MovementPillar extends Movement {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
                 BlockState check = context.get(x, y + 3, z); // the block on top of the one we're going to break, could it fall on us?
-                if (check.getBlock() instanceof BlockFalling) {
+                if (check.getBlock() instanceof FallingBlock) {
                     // see MovementAscend's identical check for breaking a falling block above our head
                     if (srcUp == null) {
                         srcUp = context.get(x, y + 1, z);
                     }
-                    if (!(toBreakBlock instanceof BlockFalling) || !(srcUp.getBlock() instanceof BlockFalling)) {
+                    if (!(toBreakBlock instanceof FallingBlock) || !(srcUp.getBlock() instanceof FallingBlock)) {
                         return COST_INF;
                     }
                 }
                 // this is commented because it may have had a purpose, but it's very unclear what it was. it's from the minebot era.
                 //if (!MovementHelper.canWalkOn(chkPos, check) || MovementHelper.canWalkThrough(chkPos, check)) {//if the block above where we want to break is not a full block, don't do it
                 // TODO why does canWalkThrough mean this action is COST_INF?
-                // BlockFalling makes sense, and !canWalkOn deals with weird cases like if it were lava
+                // FallingBlock makes sense, and !canWalkOn deals with weird cases like if it were lava
                 // but I don't understand why canWalkThrough makes it impossible
                 //    return COST_INF;
                 //}
@@ -129,23 +126,23 @@ public class MovementPillar extends Movement {
     }
 
     public static boolean hasAgainst(CalculationContext context, int x, int y, int z) {
-        return context.get(x + 1, y, z).isBlockNormalCube() ||
-                context.get(x - 1, y, z).isBlockNormalCube() ||
-                context.get(x, y, z + 1).isBlockNormalCube() ||
-                context.get(x, y, z - 1).isBlockNormalCube();
+        return MovementHelper.isBlockNormalCube(context.get(x + 1, y, z)) ||
+                MovementHelper.isBlockNormalCube(context.get(x - 1, y, z)) ||
+                MovementHelper.isBlockNormalCube(context.get(x, y, z + 1)) ||
+                MovementHelper.isBlockNormalCube(context.get(x, y, z - 1));
     }
 
     public static BlockPos getAgainst(CalculationContext context, BetterBlockPos vine) {
-        if (context.get(vine.north()).isBlockNormalCube()) {
+        if (MovementHelper.isBlockNormalCube(context.get(vine.north()))) {
             return vine.north();
         }
-        if (context.get(vine.south()).isBlockNormalCube()) {
+        if (MovementHelper.isBlockNormalCube(context.get(vine.south()))) {
             return vine.south();
         }
-        if (context.get(vine.east()).isBlockNormalCube()) {
+        if (MovementHelper.isBlockNormalCube(context.get(vine.east()))) {
             return vine.east();
         }
-        if (context.get(vine.west()).isBlockNormalCube()) {
+        if (MovementHelper.isBlockNormalCube(context.get(vine.west()))) {
             return vine.west();
         }
         return null;
@@ -186,7 +183,7 @@ public class MovementPillar extends Movement {
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
         if (ladder) {
-            BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.offset(fromDown.get(BlockLadder.FACING).getOpposite());
+            BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.offset(fromDown.get(LadderBlock.FACING).getOpposite());
             if (against == null) {
                 logDebug("Unable to climb vines");
                 return state.setStatus(MovementStatus.UNREACHABLE);
@@ -219,7 +216,7 @@ public class MovementPillar extends Movement {
             double diffX = ctx.player().posX - (dest.getX() + 0.5);
             double diffZ = ctx.player().posZ - (dest.getZ() + 0.5);
             double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
-            double flatMotion = Math.sqrt(ctx.player().motionX * ctx.player().motionX + ctx.player().motionZ * ctx.player().motionZ);
+            double flatMotion = Math.sqrt(ctx.player().getMotion().x * ctx.player().getMotion().x + ctx.player().getMotion().z * ctx.player().getMotion().z);
             if (dist > 0.17) {//why 0.17? because it seemed like a good number, that's why
                 //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
                 //and 0.17 is reasonably less than 0.2
@@ -239,14 +236,14 @@ public class MovementPillar extends Movement {
                 BlockState frState = BlockStateInterface.get(ctx, src);
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
-                if (!(fr instanceof BlockAir || frState.getMaterial().isReplaceable())) {
+                if (!(fr instanceof AirBlock || frState.getMaterial().isReplaceable())) {
                     RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance())
                             .map(rot -> new MovementState.MovementTarget(rot, true))
                             .ifPresent(state::setTarget);
                     state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos())) && ctx.player().posY > dest.getY() + 0.1) {
+                } else if (ctx.player().isSneaking() && (ctx.isLookingAt(src.down()) || ctx.isLookingAt(src)) && ctx.player().posY > dest.getY() + 0.1) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }

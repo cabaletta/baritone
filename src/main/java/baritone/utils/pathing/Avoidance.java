@@ -21,7 +21,7 @@ import baritone.Baritone;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class Avoidance {
         }
         if (mobCoeff != 1.0D) {
             ctx.world().loadedEntityList.stream()
-                    .filter(entity -> entity instanceof EntityMob)
+                    .filter(entity -> entity instanceof MobEntity)
                     .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
         }
         return res;

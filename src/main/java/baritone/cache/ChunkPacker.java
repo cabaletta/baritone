@@ -21,8 +21,6 @@ import baritone.api.utils.BlockUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.*;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.BlockStateContainer;
@@ -30,6 +28,8 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 
 import java.util.*;
+
+import static baritone.utils.BlockStateInterface.getFromChunk;
 
 /**
  * @author Brady
@@ -89,19 +89,20 @@ public final class ChunkPacker {
         BlockState[] blocks = new BlockState[256];
 
         for (int z = 0; z < 16; z++) {
-            https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
+            https:
+//www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
                 for (int y = 255; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
                     if (bitSet.get(index) || bitSet.get(index + 1)) {
-                        blocks[z << 4 | x] = chunk.getBlockState(x, y, z);
+                        blocks[z << 4 | x] = getFromChunk(chunk, x, y, z);
                         continue https;
                     }
                 }
                 blocks[z << 4 | x] = Blocks.AIR.getDefaultState();
             }
         }
-        return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
+        return new CachedChunk(chunk.getPos().x, chunk.getPos().z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
     }
 
     private static PathingBlockType getPathingBlockType(BlockState state, Chunk chunk, int x, int y, int z) {
@@ -113,15 +114,15 @@ public final class ChunkPacker {
                 return PathingBlockType.AVOID;
             }
             if (
-                    (x != 15 && MovementHelper.possiblyFlowing(chunk.getBlockState(x + 1, y, z)))
-                            || (x != 0 && MovementHelper.possiblyFlowing(chunk.getBlockState(x - 1, y, z)))
-                            || (z != 15 && MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z + 1)))
-                            || (z != 0 && MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z - 1)))
+                    (x != 15 && MovementHelper.possiblyFlowing(getFromChunk(chunk, x + 1, y, z)))
+                            || (x != 0 && MovementHelper.possiblyFlowing(getFromChunk(chunk, x - 1, y, z)))
+                            || (z != 15 && MovementHelper.possiblyFlowing(getFromChunk(chunk, x, y, z + 1)))
+                            || (z != 0 && MovementHelper.possiblyFlowing(getFromChunk(chunk, x, y, z - 1)))
             ) {
                 return PathingBlockType.AVOID;
             }
             if (x == 0 || x == 15 || z == 0 || z == 15) {
-                Vec3d flow = state.getFluidState().getFlow(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4));
+                Vec3d flow = state.getFluidState().getFlow(chunk.getWorld(), new BlockPos(x + chunk.getPos().x << 4, y, z + chunk.getPos().z << 4));
                 if (flow.x != 0.0 || flow.z != 0.0) {
                     return PathingBlockType.WATER;
                 }
@@ -137,7 +138,7 @@ public final class ChunkPacker {
         // however, this failed in the nether when you were near a nether fortress
         // because fences check their adjacent blocks in the world for their fence connection status to determine AABB shape
         // this caused a nullpointerexception when we saved chunks on unload, because they were unable to check their neighbors
-        if (block instanceof BlockAir || block instanceof BlockTallGrass || block instanceof BlockDoublePlant || block instanceof BlockFlower) {
+        if (block instanceof AirBlock || block instanceof TallGrassBlock || block instanceof DoublePlantBlock || block instanceof FlowerBlock) {
             return PathingBlockType.AIR;
         }
 

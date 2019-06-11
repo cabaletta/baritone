@@ -75,7 +75,7 @@ public final class RotationMoveEvent {
         /**
          * Called when the player jumps.
          *
-         * @see EntityLivingBase#jump
+         * @see LivingEntity#jump
          */
         JUMP
     }

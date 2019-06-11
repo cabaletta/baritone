@@ -27,11 +27,11 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
-import net.minecraft.block.state.BlockState;
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer;
+import net.minecraft.client.renderer.tileentity.BeaconTileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
@@ -60,11 +60,23 @@ public final class PathRenderer implements Helper {
 
     private PathRenderer() {}
 
+    public static double posX() {
+        return mc.getRenderManager().viewerPosX;
+    }
+
+    public static double posY() {
+        return mc.getRenderManager().viewerPosY;
+    }
+
+    public static double posZ() {
+        return mc.getRenderManager().viewerPosZ;
+    }
+
     public static void render(RenderEvent event, PathingBehavior behavior) {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
-        if (mc.currentScreen instanceof GuiClick) {
-            ((GuiClick) mc.currentScreen).onRender();
+        if (mc.field_71462_r instanceof GuiClick) {
+            ((GuiClick) mc.field_71462_r).onRender();
         }
 
         int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getId();
@@ -137,7 +149,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
         GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
-        GlStateManager.disableTexture2D();
+        GlStateManager.disableTexture();
         GlStateManager.depthMask(false);
         if (Baritone.settings().renderPathIgnoreDepth.value) {
             GlStateManager.disableDepthTest();
@@ -187,14 +199,14 @@ public final class PathRenderer implements Helper {
         }
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
         GlStateManager.depthMask(true);
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
         GlStateManager.disableBlend();
     }
 
     public static void drawLine(double bp1x, double bp1y, double bp1z, double bp2x, double bp2y, double bp2z) {
-        double d0 = mc.getRenderManager().viewerPosX;
-        double d1 = mc.getRenderManager().viewerPosY;
-        double d2 = mc.getRenderManager().viewerPosZ;
+        double d0 = posX();
+        double d1 = posY();
+        double d2 = posZ();
         BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
         BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
         BUFFER.pos(bp2x + 0.5D - d0, bp2y + 0.5D - d1, bp2z + 0.5D - d2).endVertex();
@@ -208,7 +220,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
         GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
-        GlStateManager.disableTexture2D();
+        GlStateManager.disableTexture();
         GlStateManager.depthMask(false);
 
         if (Baritone.settings().renderSelectionBoxesIgnoreDepth.value) {
@@ -231,13 +243,13 @@ public final class PathRenderer implements Helper {
         }
 
         GlStateManager.depthMask(true);
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
         GlStateManager.disableBlend();
     }
 
     public static void drawAABB(AxisAlignedBB aabb) {
         float expand = 0.002F;
-        AxisAlignedBB toDraw = aabb.expand(expand, expand, expand).offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
+        AxisAlignedBB toDraw = aabb.expand(expand, expand, expand).offset(-posX(), -posY(), -posZ());
         BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
         BUFFER.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
         BUFFER.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
@@ -265,9 +277,9 @@ public final class PathRenderer implements Helper {
     }
 
     public static void drawDankLitGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
-        double renderPosX = mc.getRenderManager().viewerPosX;
-        double renderPosY = mc.getRenderManager().viewerPosY;
-        double renderPosZ = mc.getRenderManager().viewerPosZ;
+        double renderPosX = posX();
+        double renderPosY = posY();
+        double renderPosZ = posZ();
         double minX;
         double maxX;
         double minZ;
@@ -307,7 +319,7 @@ public final class PathRenderer implements Helper {
                     GlStateManager.disableDepthTest();
                 }
 
-                TileEntityBeaconRenderer.renderBeamSegment(
+                BeaconTileEntityRenderer.renderBeamSegment(
                         goalPos.getX() - renderPosX,
                         -renderPosY,
                         goalPos.getZ() - renderPosZ,
@@ -363,7 +375,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.6F);
         GlStateManager.lineWidth(Baritone.settings().goalRenderLineWidthPixels.value);
-        GlStateManager.disableTexture2D();
+        GlStateManager.disableTexture();
         GlStateManager.depthMask(false);
         if (Baritone.settings().renderGoalIgnoreDepth.value) {
             GlStateManager.disableDepthTest();
@@ -387,7 +399,7 @@ public final class PathRenderer implements Helper {
             GlStateManager.enableDepthTest();
         }
         GlStateManager.depthMask(true);
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
         GlStateManager.disableBlend();
     }
 

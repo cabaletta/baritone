@@ -26,8 +26,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BaritoneProcessHelper;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -103,7 +103,7 @@ public final class BackfillProcess extends BaritoneProcessHelper {
                 .filter(pos -> ctx.world().getBlockState(pos).getBlock() == Blocks.AIR)
                 .filter(pos -> baritone.getBuilderProcess().placementPlausible(pos, Blocks.DIRT.getDefaultState()))
                 .filter(pos -> !partOfCurrentMovement(pos))
-                .sorted(Comparator.<BlockPos>comparingDouble(ctx.player()::getDistanceSq).reversed())
+                .sorted(Comparator.<BlockPos>comparingDouble(ctx.playerFeet()::distanceSq).reversed())
                 .collect(Collectors.toList());
     }
 

@@ -25,13 +25,14 @@ import baritone.utils.accessor.IChunkProviderClient;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.BlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkSection;
 
 /**
  * Wraps get for chuck caching capability
@@ -67,7 +68,7 @@ public class BlockStateInterface {
             this.loadedChunks = worldLoaded; // this will only be used on the main thread
         }
         this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.value;
-        if (!Minecraft.getInstance().isCallingFromMinecraftThread()) {
+        if (!Minecraft.getInstance().isOnExecutionThread()) {
             throw new IllegalStateException();
         }
     }
@@ -105,14 +106,14 @@ public class BlockStateInterface {
             // we can just skip the mc.world.getChunk lookup
             // which is a Long2ObjectOpenHashMap.get
             // see issue #113
-            if (cached != null && cached.x == x >> 4 && cached.z == z >> 4) {
-                return cached.getBlockState(x, y, z);
+            if (cached != null && cached.getPos().x == x >> 4 && cached.getPos().z == z >> 4) {
+                return getFromChunk(cached, x, y, z);
             }
             Chunk chunk = loadedChunks.get(ChunkPos.asLong(x >> 4, z >> 4));
 
-            if (chunk != null && chunk.isLoaded()) {
+            if (chunk != null && !chunk.isEmpty()) {
                 prev = chunk;
-                return chunk.getBlockState(x, y, z);
+                return getFromChunk(chunk, x, y, z);
             }
         }
         // same idea here, skip the Long2ObjectOpenHashMap.get if at all possible
@@ -138,11 +139,11 @@ public class BlockStateInterface {
 
     public boolean isLoaded(int x, int z) {
         Chunk prevChunk = prev;
-        if (prevChunk != null && prevChunk.x == x >> 4 && prevChunk.z == z >> 4) {
+        if (prevChunk != null && prevChunk.getPos().x == x >> 4 && prevChunk.getPos().z == z >> 4) {
             return true;
         }
         prevChunk = loadedChunks.get(ChunkPos.asLong(x >> 4, z >> 4));
-        if (prevChunk != null && prevChunk.isLoaded()) {
+        if (prevChunk != null && !prevChunk.isEmpty()) {
             prev = prevChunk;
             return true;
         }
@@ -159,5 +160,14 @@ public class BlockStateInterface {
         }
         prevCached = prevRegion;
         return prevRegion.isCached(x & 511, z & 511);
+    }
+
+    // get the block at x,y,z from this chunk WITHOUT creating a single blockpos object
+    public static BlockState getFromChunk(Chunk chunk, int x, int y, int z) {
+        ChunkSection section = chunk.getSections()[y >> 4];
+        if (ChunkSection.isEmpty(section)) {
+            return AIR;
+        }
+        return section.get(x & 15, y & 15, z & 15);
     }
 }

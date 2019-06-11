@@ -25,6 +25,7 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
@@ -49,7 +50,7 @@ public interface IPlayerController {
         return this.getGameType().isCreative() ? 5.0F : 4.5F;
     }
 
-    ActionResultType processRightClickBlock(ClientPlayerEntity player, World world, BlockPos pos, Direction direction, Vec3d vec, Hand hand);
+    ActionResultType processRightClickBlock(ClientPlayerEntity player, World world, Hand hand, BlockRayTraceResult result);
 
     ActionResultType processRightClick(ClientPlayerEntity player, World world, Hand hand);
 }

@@ -21,10 +21,10 @@ import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.client.entity.ClientPlayerEntity;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.ClickType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.inventory.container.ClickType;
 import net.minecraft.item.*;
 import net.minecraft.util.NonNullList;
 
@@ -46,14 +46,14 @@ public final class InventoryBehavior extends Behavior {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (ctx.player().openContainer != ctx.player().inventoryContainer) {
+        if (ctx.player().openContainer != ctx.player().container) {
             // we have a crafting table or a chest or something open
             return;
         }
         if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
             swapWithHotBar(firstValidThrowaway(), 8);
         }
-        int pick = bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
+        int pick = bestToolAgainst(Blocks.STONE, PickaxeItem.class);
         if (pick >= 9) {
             swapWithHotBar(pick, 0);
         }
@@ -88,7 +88,7 @@ public final class InventoryBehavior extends Behavior {
     }
 
     private void swapWithHotBar(int inInventory, int inHotbar) {
-        ctx.playerController().windowClick(ctx.player().inventoryContainer.windowId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickType.SWAP, ctx.player());
+        ctx.playerController().windowClick(ctx.player().container.windowId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickType.SWAP, ctx.player());
     }
 
     private int firstValidThrowaway() { // TODO offhand idk
@@ -101,7 +101,7 @@ public final class InventoryBehavior extends Behavior {
         return -1;
     }
 
-    private int bestToolAgainst(Block against, Class<? extends ItemTool> klass) {
+    private int bestToolAgainst(Block against, Class<? extends ToolItem> klass) {
         NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
         int bestInd = -1;
         double bestSpeed = -1;
@@ -132,7 +132,7 @@ public final class InventoryBehavior extends Behavior {
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
         BlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z);
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
             return true; // gotem
         }
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
@@ -168,7 +168,7 @@ public final class InventoryBehavior extends Behavior {
             // so not a shovel, not a hoe, not a block, etc
             for (byte i = 0; i < 9; i++) {
                 ItemStack item = inv.get(i);
-                if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
+                if (item.isEmpty() || item.getItem() instanceof PickaxeItem) {
                     if (select) {
                         p.inventory.currentItem = i;
                     }

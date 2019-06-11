@@ -18,8 +18,8 @@
 package baritone.utils.schematic;
 
 import baritone.api.utils.ISchematic;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 
 public class AirSchematic implements ISchematic {
 

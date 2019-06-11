@@ -19,13 +19,13 @@ package baritone.utils;
 
 import baritone.Baritone;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.client.entity.ClientPlayerEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.init.Enchantments;
-import net.minecraft.init.MobEffects;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemTool;
+import net.minecraft.item.ToolItem;
+import net.minecraft.potion.Effects;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,7 +80,7 @@ public class ToolSet {
      * @return Either 1 or -1
      */
     private int getMaterialCost(ItemStack itemStack) {
-        return itemStack.getItem() instanceof ItemTool ? 1 : -1;
+        return itemStack.getItem() instanceof ToolItem ? 1 : -1;
     }
 
     /**
@@ -165,11 +165,11 @@ public class ToolSet {
      */
     private double potionAmplifier() {
         double speed = 1;
-        if (player.isPotionActive(MobEffects.HASTE)) {
-            speed *= 1 + (player.getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
+        if (player.isPotionActive(Effects.field_76422_e)) {
+            speed *= 1 + (player.getActivePotionEffect(Effects.field_76422_e).getAmplifier() + 1) * 0.2;
         }
-        if (player.isPotionActive(MobEffects.MINING_FATIGUE)) {
-            switch (player.getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
+        if (player.isPotionActive(Effects.field_76419_f)) {
+            switch (player.getActivePotionEffect(Effects.field_76419_f).getAmplifier()) {
                 case 0:
                     speed *= 0.3;
                     break;

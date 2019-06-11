@@ -22,10 +22,13 @@ import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.client.gui.Screen;
-import net.minecraft.client.renderer.GlStateManager;
+import baritone.api.utils.Helper;
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
+import net.minecraft.util.text.StringTextComponent;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -36,7 +39,7 @@ import java.util.Collections;
 
 import static org.lwjgl.opengl.GL11.*;
 
-public class GuiClick extends Screen {
+public class GuiClick extends Screen implements Helper {
 
     // My name is Brady and I grant leijurv permission to use this pasted code
     private final FloatBuffer MODELVIEW = BufferUtils.createFloatBuffer(16);
@@ -47,8 +50,12 @@ public class GuiClick extends Screen {
     private BlockPos clickStart;
     private BlockPos currentMouseOver;
 
+    public GuiClick() {
+        super(new StringTextComponent("CLICK"));
+    }
+
     @Override
-    public boolean doesGuiPauseGame() {
+    public boolean isPauseScreen() {
         return false;
     }
 
@@ -62,10 +69,12 @@ public class GuiClick extends Screen {
         Vec3d near = toWorld(mx, my, 0);
         Vec3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
         if (near != null && far != null) {
-            Vec3d viewerPos = new Vec3d(mc.getRenderManager().viewerPosX, mc.getRenderManager().viewerPosY, mc.getRenderManager().viewerPosZ);
-            RayTraceResult result = mc.world.rayTraceBlocks(near.add(viewerPos), far.add(viewerPos), RayTraceFluidMode.NEVER, false, true);
+            ///
+            Vec3d viewerPos = new Vec3d(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
+            ClientPlayerEntity player = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().player();
+            RayTraceResult result = player.world.func_217299_a(new RayTraceContext(near.add(viewerPos), far.add(viewerPos), RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, player));
             if (result != null && result.getType() == RayTraceResult.Type.BLOCK) {
-                currentMouseOver = result.getBlockPos();
+                currentMouseOver = ((BlockRayTraceResult) result).getPos();
             }
         }
 
@@ -94,8 +103,8 @@ public class GuiClick extends Screen {
     }
 
     public void onRender() {
-        GlStateManager.getFloatv(GL_MODELVIEW_MATRIX, (FloatBuffer) MODELVIEW.clear());
-        GlStateManager.getFloatv(GL_PROJECTION_MATRIX, (FloatBuffer) PROJECTION.clear());
+        GlStateManager.getMatrix(GL_MODELVIEW_MATRIX, (FloatBuffer) MODELVIEW.clear());
+        GlStateManager.getMatrix(GL_PROJECTION_MATRIX, (FloatBuffer) PROJECTION.clear());
         GL11.glGetIntegerv(GL_VIEWPORT, (IntBuffer) VIEWPORT.clear());
 
         if (currentMouseOver != null) {
@@ -107,7 +116,7 @@ public class GuiClick extends Screen {
                 GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
                 GlStateManager.color4f(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
                 GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
-                GlStateManager.disableTexture2D();
+                GlStateManager.disableTexture();
                 GlStateManager.depthMask(false);
                 GlStateManager.disableDepthTest();
                 BetterBlockPos a = new BetterBlockPos(currentMouseOver);
@@ -116,7 +125,7 @@ public class GuiClick extends Screen {
                 GlStateManager.enableDepthTest();
 
                 GlStateManager.depthMask(true);
-                GlStateManager.enableTexture2D();
+                GlStateManager.enableTexture();
                 GlStateManager.disableBlend();
             }
         }

@@ -8,21 +8,15 @@
     "maxShiftBy": 2
   },
   "client": [
-    "MixinAnvilChunkLoader",
     "MixinBlockPos",
-    "MixinChunkProviderClient",
-    "MixinChunkProviderServer",
-    "MixinChunkRenderContainer",
-    "MixinChunkRenderWorker",
-    "MixinEntityLivingBase",
-    "MixinEntityPlayerSP",
+    "MixinClientPlayerEntity",
+    "MixinClientPlayNetHandler",
+    "MixinEntity",
     "MixinGameRenderer",
+    "MixinLivingEntity",
     "MixinMinecraft",
-    "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
-    "MixinRenderChunk",
-    "MixinRenderChunkCache",
-    "MixinRenderList",
-    "MixinVboRenderList"
+    "MixinRegionFileCache",
+    "MixinServerChunkProvider"
   ]
 }

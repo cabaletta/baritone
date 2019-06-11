@@ -18,8 +18,8 @@
 package baritone.utils.schematic;
 
 import baritone.api.utils.ISchematic;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 
 public class Schematic implements ISchematic {
     public final int widthX;
@@ -27,7 +27,7 @@ public class Schematic implements ISchematic {
     public final int lengthZ;
     protected final BlockState[][][] states;
 
-    public Schematic(NBTTagCompound schematic) {
+    public Schematic(CompoundNBT schematic) {
         /*String type = schematic.getString("Materials");
         if (!type.equals("Alpha")) {
             throw new IllegalStateException("bad schematic " + type);

@@ -33,7 +33,7 @@ public class MixinGameRenderer {
             method = "updateCameraAndRender(FJ)V",
             at = @At(
                     value = "INVOKE_STRING",
-                    target = "Lnet/minecraft/profiler/Profiler;endStartSection(Ljava/lang/String;)V",
+                    target = "Lnet/minecraft/profiler/IProfiler;endStartSection(Ljava/lang/String;)V",
                     args = {"ldc=hand"}
             )
     )

@@ -24,9 +24,9 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.SprintStateEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.behavior.LookBehavior;
-import net.minecraft.client.entity.ClientPlayerEntity;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.PlayerCapabilities;
+import net.minecraft.entity.player.PlayerAbilities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -61,7 +61,7 @@ public class MixinClientPlayerEntity {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/ClientPlayerEntity.isPassenger()Z",
+                    target = "net/minecraft/client/entity/player/ClientPlayerEntity.isPassenger()Z",
                     shift = At.Shift.BY,
                     by = -3
             )
@@ -77,7 +77,7 @@ public class MixinClientPlayerEntity {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/ClientPlayerEntity.onUpdateWalkingPlayer()V",
+                    target = "net/minecraft/client/entity/player/ClientPlayerEntity.onUpdateWalkingPlayer()V",
                     shift = At.Shift.BY,
                     by = 2
             )
@@ -93,10 +93,10 @@ public class MixinClientPlayerEntity {
             method = "livingTick",
             at = @At(
                     value = "FIELD",
-                    target = "net/minecraft/entity/player/PlayerCapabilities.allowFlying:Z"
+                    target = "net/minecraft/entity/player/PlayerAbilities.allowFlying:Z"
             )
     )
-    private boolean isAllowFlying(PlayerCapabilities capabilities) {
+    private boolean isAllowFlying(PlayerAbilities capabilities) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this);
         if (baritone == null) {
             return capabilities.allowFlying;

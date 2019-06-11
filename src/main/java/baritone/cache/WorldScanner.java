@@ -20,8 +20,8 @@ package baritone.cache;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.client.multiplayer.ChunkProviderClient;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.BlockStateContainer;
@@ -46,7 +46,7 @@ public enum WorldScanner implements IWorldScanner {
         if (blocks.isEmpty()) {
             return res;
         }
-        ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
+        ClientChunkProvider chunkProvider = (ClientChunkProvider) ctx.world().getChunkProvider();
 
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
         int playerChunkX = ctx.playerFeet().getX() >> 4;
@@ -70,7 +70,7 @@ public enum WorldScanner implements IWorldScanner {
                     foundChunks = true;
                     int chunkX = xoff + playerChunkX;
                     int chunkZ = zoff + playerChunkZ;
-                    Chunk chunk = chunkProvider.getChunk(chunkX, chunkZ, false, false);
+                    Chunk chunk = chunkProvider.getChunk(chunkX, chunkZ, null, false);
                     if (chunk == null) {
                         continue;
                     }
@@ -96,8 +96,8 @@ public enum WorldScanner implements IWorldScanner {
             return Collections.emptyList();
         }
 
-        ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
-        Chunk chunk = chunkProvider.getChunk(pos.x, pos.z, false, false);
+        ClientChunkProvider chunkProvider = (ClientChunkProvider) ctx.world().getChunkProvider();
+        Chunk chunk = chunkProvider.getChunk(pos.x, pos.z, null, false);
         int playerY = ctx.playerFeet().getY();
 
         if (chunk == null || chunk.isEmpty()) {
@@ -114,12 +114,12 @@ public enum WorldScanner implements IWorldScanner {
         boolean foundWithinY = false;
         for (int yIndex = 0; yIndex < 16; yIndex++) {
             int y0 = coordinateIterationOrder[yIndex];
-            ChunkSection extendedblockstorage = chunkInternalStorageArray[y0];
-            if (extendedblockstorage == null) {
+            ChunkSection section = chunkInternalStorageArray[y0];
+            if (section == null || ChunkSection.isEmpty(section)) {
                 continue;
             }
             int yReal = y0 << 4;
-            BlockStateContainer<BlockState> bsc = extendedblockstorage.getData();
+            BlockStateContainer<BlockState> bsc = section.getData();
             // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
             // for better cache locality, iterate in that order
             for (int y = 0; y < 16; y++) {

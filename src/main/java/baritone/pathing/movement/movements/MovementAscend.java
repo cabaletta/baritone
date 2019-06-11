@@ -27,9 +27,9 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
-import net.minecraft.block.BlockFalling;
-import net.minecraft.block.state.BlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.FallingBlock;
 import net.minecraft.util.Direction;
 
 public class MovementAscend extends Movement {
@@ -80,18 +80,18 @@ public class MovementAscend extends Movement {
             }
         }
         BlockState srcUp2 = context.get(x, y + 2, z); // used lower down anyway
-        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context.bsi, x, y + 1, z) || !(srcUp2.getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
+        if (context.get(x, y + 3, z).getBlock() instanceof FallingBlock && (MovementHelper.canWalkThrough(context.bsi, x, y + 1, z) || !(srcUp2.getBlock() instanceof FallingBlock))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
             // if the lower one is can't walk through and the upper one is falling, that means that by standing on src
             // (the presupposition of this Movement)
-            // we have necessarily already cleared the entire BlockFalling stack
+            // we have necessarily already cleared the entire FallingBlock stack
             // on top of our head
 
-            // as in, if we have a block, then two BlockFallings on top of it
+            // as in, if we have a block, then two FallingBlocks on top of it
             // and that block is x, y+1, z, and we'd have to clear it to even start this movement
-            // we don't need to worry about those BlockFallings because we've already cleared them
+            // we don't need to worry about those FallingBlocks because we've already cleared them
             return COST_INF;
             // you may think we only need to check srcUp2, not srcUp
             // however, in the scenario where glitchy world gen where unsupported sand / gravel generates
@@ -189,7 +189,7 @@ public class MovementAscend extends Movement {
         double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().posX) + zAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().posZ);
         double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().posX) + xAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().posZ);
 
-        double lateralMotion = xAxis * ctx.player().motionZ + zAxis * ctx.player().motionX;
+        double lateralMotion = xAxis * ctx.player().getMotion().z + zAxis * ctx.player().getMotion().x;
         if (Math.abs(lateralMotion) > 0.1) {
             return state;
         }

@@ -32,7 +32,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -353,7 +353,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             return false;
         } else {
             // we are either onGround or in liquid
-            if (ctx.player().motionY < -0.1) {
+            if (ctx.player().getMotion().y < -0.1) {
                 // if we are strictly moving downwards (not stationary)
                 // we could be falling through water, which could be unsafe to splice
                 return false; // so don't

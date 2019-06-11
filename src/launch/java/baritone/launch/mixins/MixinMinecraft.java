@@ -26,12 +26,12 @@ import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.utils.BaritoneAutoTest;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.ClientPlayerEntity;
-import net.minecraft.client.gui.Screen;
-import net.minecraft.client.multiplayer.ClientWorld;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -78,7 +78,7 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/Screen;",
+                    target = "net/minecraft/client/Minecraft.field_71462_r:Lnet/minecraft/client/gui/screen/Screen;",
                     ordinal = 5,
                     shift = At.Shift.BY,
                     by = -3
@@ -97,10 +97,10 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/multiplayer/ClientWorld;Lnet/minecraft/client/gui/Screen;)V",
+            method = "loadWorld(Lnet/minecraft/client/world/ClientWorld;)V",
             at = @At("HEAD")
     )
-    private void preLoadWorld(ClientWorld world, Screen loadingScreen, CallbackInfo ci) {
+    private void preLoadWorld(ClientWorld world, CallbackInfo ci) {
         // If we're unloading the world but one doesn't exist, ignore it
         if (this.world == null && world == null) {
             return;
@@ -117,10 +117,10 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/multiplayer/ClientWorld;Lnet/minecraft/client/gui/Screen;)V",
+            method = "loadWorld(Lnet/minecraft/client/world/ClientWorld;)V",
             at = @At("RETURN")
     )
-    private void postLoadWorld(ClientWorld world, Screen loadingScreen, CallbackInfo ci) {
+    private void postLoadWorld(ClientWorld world, CallbackInfo ci) {
         // still fire event for both null, as that means we've just finished exiting a world
 
         // mc.world changing is only the primary baritone
@@ -137,19 +137,19 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/gui/Screen.allowUserInput:Z"
+                    target = "net/minecraft/client/gui/screen/Screen.passEvents:Z"
             )
     )
-    private boolean isAllowUserInput(Screen screen) {
+    private boolean passEvents(Screen screen) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
+        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.passEvents;
     }
 
     @Inject(
             method = "clickMouse",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/multiplayer/PlayerControllerMP.clickBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/Direction;)Z"
+                    target = "net/minecraft/client/multiplayer/PlayerController.clickBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/Direction;)Z"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
@@ -162,11 +162,11 @@ public class MixinMinecraft {
             method = "rightClickMouse",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/ClientPlayerEntity.swingArm(Lnet/minecraft/util/EnumHand;)V"
+                    target = "net/minecraft/client/entity/player/ClientPlayerEntity.swingArm(Lnet/minecraft/util/Hand;)V"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void onBlockUse(CallbackInfo ci, EnumHand var1[], int var2, int var3, EnumHand enumhand, ItemStack itemstack, BlockPos blockpos, int i, EnumActionResult enumactionresult) {
+    private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack, BlockPos blockpos, int i, ActionResultType enumactionresult) {
         // rightClickMouse is only for the main player
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
     }

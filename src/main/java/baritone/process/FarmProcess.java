@@ -31,13 +31,11 @@ import baritone.cache.WorldScanner;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.block.*;
-import net.minecraft.block.state.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -94,29 +92,29 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     }
 
     private enum Harvest {
-        WHEAT((BlockCrops) Blocks.WHEAT),
-        CARROTS((BlockCrops) Blocks.CARROTS),
-        POTATOES((BlockCrops) Blocks.POTATOES),
-        BEETROOT((BlockCrops) Blocks.BEETROOTS),
+        WHEAT((CropsBlock) Blocks.WHEAT),
+        CARROTS((CropsBlock) Blocks.CARROTS),
+        POTATOES((CropsBlock) Blocks.POTATOES),
+        BEETROOT((CropsBlock) Blocks.BEETROOTS),
         PUMPKIN(Blocks.PUMPKIN, state -> true),
         MELON(Blocks.MELON, state -> true),
-        NETHERWART(Blocks.NETHER_WART, state -> state.get(BlockNetherWart.AGE) >= 3),
+        NETHERWART(Blocks.NETHER_WART, state -> state.get(NetherWartBlock.AGE) >= 3),
         SUGARCANE(Blocks.SUGAR_CANE, null) {
             @Override
             public boolean readyToHarvest(World world, BlockPos pos, BlockState state) {
-                return world.getBlockState(pos.down()).getBlock() instanceof BlockReed;
+                return world.getBlockState(pos.down()).getBlock() instanceof SugarCaneBlock;
             }
         },
         CACTUS(Blocks.CACTUS, null) {
             @Override
             public boolean readyToHarvest(World world, BlockPos pos, BlockState state) {
-                return world.getBlockState(pos.down()).getBlock() instanceof BlockCactus;
+                return world.getBlockState(pos.down()).getBlock() instanceof CactusBlock;
             }
         };
         public final Block block;
         public final Predicate<BlockState> readyToHarvest;
 
-        Harvest(BlockCrops blockCrops) {
+        Harvest(CropsBlock blockCrops) {
             this(blockCrops, blockCrops::isMaxAge);
             // max age is 7 for wheat, carrots, and potatoes, but 3 for beetroot
         }
@@ -171,7 +169,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         List<BlockPos> openSoulsand = new ArrayList<>();
         for (BlockPos pos : locations) {
             BlockState state = ctx.world().getBlockState(pos);
-            boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir;
+            boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof AirBlock;
             if (state.getBlock() == Blocks.FARMLAND) {
                 if (airAbove) {
                     openFarmland.add(pos);
@@ -258,8 +256,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
         }
         for (Entity entity : ctx.world().loadedEntityList) {
-            if (entity instanceof EntityItem && entity.onGround) {
-                EntityItem ei = (EntityItem) entity;
+            if (entity instanceof ItemEntity && entity.onGround) {
+                ItemEntity ei = (ItemEntity) entity;
                 if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {
                     // +0.1 because of farmland's 0.9375 dummy height lol
                     goalz.add(new GoalBlock(new BlockPos(entity.posX, entity.posY + 0.1, entity.posZ)));
