@@ -303,6 +303,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
+                } catch (Throwable th) {
+                    th.printStackTrace();
                 }
             }
         }
