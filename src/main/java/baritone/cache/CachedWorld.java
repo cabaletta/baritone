@@ -304,6 +304,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     e.printStackTrace();
                     break;
                 } catch (Throwable th) {
+                    // in the case of an exception, keep consuming from the queue so as not to leak memory
                     th.printStackTrace();
                 }
             }
