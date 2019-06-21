@@ -71,9 +71,9 @@ public class PathExecutor implements IPathExecutor, Helper {
     private Integer costEstimateIndex;
     private boolean failed;
     private boolean recalcBP = true;
-    private HashSet<BlockPos> toBreak = new HashSet<>();
-    private HashSet<BlockPos> toPlace = new HashSet<>();
-    private HashSet<BlockPos> toWalkInto = new HashSet<>();
+    private HashSet<any> toBreak = new HashSet<>();
+    private HashSet<any> toPlace = new HashSet<>();
+    private HashSet<any> toWalkInto = new HashSet<>();
 
     private PathingBehavior behavior;
     private IPlayerContext ctx;
@@ -100,53 +100,56 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (pathPosition >= path.length()) {
             return true; // stop bugging me, I'm done
         }
-        BetterBlockPos whereShouldIBe = path.positions().get(pathPosition);
-        BetterBlockPos whereAmI = ctx.playerFeet();
-        if (!whereShouldIBe.equals(whereAmI) && !Blocks.AIR.equals(BlockStateInterface.getBlock(ctx, whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
-            for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
-                if (whereAmI.equals(path.positions().get(i))) {
+        BetterBlockPos whereShouldIBe = path.positions().get(pathPosition       );
+        BetterBlockPos whereAmI = ctx.playerFeet      ();
+        if (!whereShouldIBe.equals(whereAmI)                                    &&
+            !Blocks.AIR.equals(BlockStateInterface
+                          .getBlock(ctx, whereAmI.down())))                     {//do not skip if standing on air, because our position isn't stable to skip
+            for (int i = 0; i < pathPosition - 1 && i < path.length(); i++)     {//this happens for example when you lag out and get teleported back a couple blocks
+                if (whereAmI.equals(path.positions().get(i)))                   {
                     logDebug("Skipping back " + (pathPosition - i) + " steps, to " + i);
                     int previousPos = pathPosition;
                     pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
-                    for (int j = pathPosition; j <= previousPos; j++) {
+                    for (int j = pathPosition; j <= previousPos; j++)           {
                         path.movements().get(j).reset();
-                    }
-                    onChangeInPathPosition();
-                    onTick();
+                                                                                }
+                                                         onChangeInPathPosition();
+                                                                                onTick();
                     return false;
-                }
-            }
+                                                                                }
+                                                                                }
             for (int i = pathPosition + 3; i < path.length(); i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
                 // also don't check pathPosition+2 because reasons
-                if (whereAmI.equals(path.positions().get(i))) {
+                if (whereAmI.equals(path.positions().get(i)))                   {
                     if (i - pathPosition > 2) {
                         logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
-                    }
+                                                                                }
                     //System.out.println("Double skip sundae");
                     pathPosition = i - 1;
                     onChangeInPathPosition();
                     onTick();
                     return false;
-                }
-            }
-        }
+                                                                                }
+                                                                                }
+                                                                                }
         Tuple<Double, BlockPos> status = closestPathPos(path);
-        if (possiblyOffPath(status, MAX_DIST_FROM_PATH)) {
+        if (possiblyOffPath(status, MAX_DIST_FROM_PATH))                        {
             ticksAway++;
             System.out.println("FAR AWAY FROM PATH FOR " + ticksAway + " TICKS. Current distance: " + status.getFirst() + ". Threshold: " + MAX_DIST_FROM_PATH);
-            if (ticksAway > MAX_TICKS_AWAY) {
+            if (ticksAway > MAX_TICKS_AWAY)                                     {
                 logDebug("Too far away from path for too long, cancelling path");
                 cancel();
                 return false;
-            }
-        } else {
+                                                                                 }
+                                                                                }
+        else                                                                    {
             ticksAway = 0;
-        }
-        if (possiblyOffPath(status, MAX_MAX_DIST_FROM_PATH)) { // ok, stop right away, we're way too far.
+                                                                               }
+        if (possiblyOffPath(status, MAX_MAX_DIST_FROM_PATH))                   { // ok, stop right away, we're way too far.
             logDebug("too far from path");
             cancel();
             return false;
-        }
+                                                                               }
         //this commented block is literally cursed.
         /*Out.log(actions.get(pathPosition));
         if (pathPosition < actions.size() - 1) {//if there are two ActionBridges in a row and they are at right angles, walk diagonally. This makes it so you walk at 45 degrees along a zigzag path instead of doing inefficient zigging and zagging
