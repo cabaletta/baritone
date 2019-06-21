@@ -52,7 +52,7 @@ Here are some links to help to get started:
 
 # API
 
-The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com).
+The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
 Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
 jar.
 
