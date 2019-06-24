@@ -188,6 +188,11 @@ public class PathExecutor implements IPathExecutor, Helper {
             System.out.println("Recalculating break and place took " + (end - start) + "ms");
         }*/
         IMovement movement = path.movements().get(pathPosition);
+        if (!behavior.baritone.bsi.worldContainsLoadedChunk(movement.getDest().x, movement.getDest().z)) {
+            logDebug("Pausing since destination is at edge of loaded chunks");
+            clearKeys();
+            return true;
+        }
         boolean canCancel = movement.safeToCancel();
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
             costEstimateIndex = pathPosition;
