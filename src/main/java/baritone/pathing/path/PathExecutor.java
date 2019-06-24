@@ -147,38 +147,6 @@ public class PathExecutor implements IPathExecutor, Helper {
             cancel();
             return false;
         }
-        //this commented block is literally cursed.
-        /*Out.log(actions.get(pathPosition));
-        if (pathPosition < actions.size() - 1) {//if there are two ActionBridges in a row and they are at right angles, walk diagonally. This makes it so you walk at 45 degrees along a zigzag path instead of doing inefficient zigging and zagging
-            if ((actions.get(pathPosition) instanceof ActionBridge) && (actions.get(pathPosition + 1) instanceof ActionBridge)) {
-                ActionBridge curr = (ActionBridge) actions.get(pathPosition);
-                ActionBridge next = (ActionBridge) actions.get(pathPosition + 1);
-                if (curr.dx() != next.dx() || curr.dz() != next.dz()) {//two movement are not parallel, so this is a right angle
-                    if (curr.amIGood() && next.amIGood()) {//nothing in the way
-                        BlockPos cornerToCut1 = new BlockPos(next.to.getX() - next.from.getX() + curr.from.getX(), next.to.getY(), next.to.getZ() - next.from.getZ() + curr.from.getZ());
-                        BlockPos cornerToCut2 = cornerToCut1.up();
-                        //Block corner1 = Baritone.get(cornerToCut1).getBlock();
-                        //Block corner2 = Baritone.get(cornerToCut2).getBlock();
-                        //Out.gui("Cutting conner " + cornerToCut1 + " " + corner1, Out.Mode.Debug);
-                        if (!Action.avoidWalkingInto(cornerToCut1) && !Action.avoidWalkingInto(cornerToCut2)) {
-                            double x = (next.from.getX() + next.to.getX() + 1.0D) * 0.5D;
-                            double z = (next.from.getZ() + next.to.getZ() + 1.0D) * 0.5D;
-                            MovementManager.clearMovement();
-                            if (!MovementManager.forward && curr.oneInTen != null && curr.oneInTen) {
-                                MovementManager.clearMovement();
-                                MovementManager.forward = LookManager.lookAtCoords(x, 0, z, false);
-                            } else {
-                                MovementManager.moveTowardsCoords(x, 0, z);
-                            }
-                            if (MovementManager.forward && !MovementManager.backward) {
-                                thePlayer.setSprinting(true);
-                            }
-                            return false;
-                        }
-                    }
-                }
-            }
-        }*/
         //long start = System.nanoTime() / 1000000L;
         BlockStateInterface bsi = new BlockStateInterface(ctx);
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
