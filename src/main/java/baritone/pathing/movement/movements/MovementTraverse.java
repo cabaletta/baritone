@@ -30,11 +30,14 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.Set;
 
 public class MovementTraverse extends Movement {
 
@@ -56,6 +59,11 @@ public class MovementTraverse extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        return ImmutableSet.of(src, dest);
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
@@ -205,8 +213,8 @@ public class MovementTraverse extends Movement {
 
         if (pb0.getBlock() instanceof BlockFenceGate || pb1.getBlock() instanceof BlockFenceGate) {
             BlockPos blocked = !MovementHelper.isGatePassable(ctx, positionsToBreak[0], src.up()) ? positionsToBreak[0]
-                            : !MovementHelper.isGatePassable(ctx, positionsToBreak[1], src) ? positionsToBreak[1]
-                            : null;
+                    : !MovementHelper.isGatePassable(ctx, positionsToBreak[1], src) ? positionsToBreak[1]
+                    : null;
             if (blocked != null) {
                 return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), blocked), ctx.playerRotations()), true))
                         .setInput(Input.CLICK_RIGHT, true);

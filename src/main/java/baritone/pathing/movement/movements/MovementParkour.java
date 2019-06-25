@@ -34,6 +34,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class MovementParkour extends Movement {
 
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
@@ -172,6 +175,17 @@ public class MovementParkour extends Movement {
             return COST_INF;
         }
         return res.cost;
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        Set<BetterBlockPos> set = new HashSet<>();
+        for (int i = 0; i <= dist; i++) {
+            for (int y = 0; y < 2; y++) {
+                set.add(src.offset(direction, i).up(y));
+            }
+        }
+        return set;
     }
 
     @Override

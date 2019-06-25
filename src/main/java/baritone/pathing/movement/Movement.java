@@ -30,9 +30,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
@@ -62,6 +60,8 @@ public abstract class Movement implements IMovement, MovementHelper {
     public List<BlockPos> toBreakCached = null;
     public List<BlockPos> toPlaceCached = null;
     public List<BlockPos> toWalkIntoCached = null;
+
+    private Set<BetterBlockPos> validPositionsCached = null;
 
     private Boolean calculatedWhileLoaded;
 
@@ -98,6 +98,16 @@ public abstract class Movement implements IMovement, MovementHelper {
 
     public void override(double cost) {
         this.cost = cost;
+    }
+
+    protected abstract Set<BetterBlockPos> calculateValidPositions();
+
+    public Set<BetterBlockPos> getValidPositions() {
+        if (validPositionsCached == null) {
+            validPositionsCached = calculateValidPositions();
+            Objects.requireNonNull(validPositionsCached);
+        }
+        return validPositionsCached;
     }
 
     /**

@@ -33,7 +33,6 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.BlockLiquid;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -100,14 +99,13 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (pathPosition >= path.length()) {
             return true; // stop bugging me, I'm done
         }
-        BetterBlockPos whereShouldIBe = path.positions().get(pathPosition);
+        Movement movement = (Movement) path.movements().get(pathPosition);
         BetterBlockPos whereAmI = ctx.playerFeet();
-        if (!whereShouldIBe.equals(whereAmI) && !Blocks.AIR.equals(BlockStateInterface.getBlock(ctx, whereAmI.down()))) {//do not skip if standing on air, because our position isn't stable to skip
-            for (int i = 0; i < pathPosition - 1 && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
-                if (whereAmI.equals(path.positions().get(i))) {
-                    logDebug("Skipping back " + (pathPosition - i) + " steps, to " + i);
+        if (!movement.getValidPositions().contains(whereAmI)) {
+            for (int i = 0; i < pathPosition && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
+                if (((Movement) path.movements().get(i)).getValidPositions().contains(whereAmI)) {
                     int previousPos = pathPosition;
-                    pathPosition = Math.max(i - 1, 0); // previous step might not actually be done
+                    pathPosition = i;
                     for (int j = pathPosition; j <= previousPos; j++) {
                         path.movements().get(j).reset();
                     }
@@ -173,10 +171,10 @@ public class PathExecutor implements IPathExecutor, Helper {
             HashSet<BlockPos> newPlace = new HashSet<>();
             HashSet<BlockPos> newWalkInto = new HashSet<>();
             for (int i = pathPosition; i < path.movements().size(); i++) {
-                Movement movement = (Movement) path.movements().get(i);
-                newBreak.addAll(movement.toBreak(bsi));
-                newPlace.addAll(movement.toPlace(bsi));
-                newWalkInto.addAll(movement.toWalkInto(bsi));
+                Movement m = (Movement) path.movements().get(i);
+                newBreak.addAll(m.toBreak(bsi));
+                newPlace.addAll(m.toPlace(bsi));
+                newWalkInto.addAll(m.toWalkInto(bsi));
             }
             toBreak = newBreak;
             toPlace = newPlace;
@@ -187,11 +185,13 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (end - start > 0) {
             System.out.println("Recalculating break and place took " + (end - start) + "ms");
         }*/
-        IMovement movement = path.movements().get(pathPosition);
-        if (!behavior.baritone.bsi.worldContainsLoadedChunk(movement.getDest().x, movement.getDest().z)) {
-            logDebug("Pausing since destination is at edge of loaded chunks");
-            clearKeys();
-            return true;
+        if (pathPosition < path.movements().size() - 1) {
+            IMovement next = path.movements().get(pathPosition + 1);
+            if (!behavior.baritone.bsi.worldContainsLoadedChunk(next.getDest().x, next.getDest().z)) {
+                logDebug("Pausing since destination is at edge of loaded chunks");
+                clearKeys();
+                return true;
+            }
         }
         boolean canCancel = movement.safeToCancel();
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
@@ -206,7 +206,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 }
             }
         }
-        double currentCost = ((Movement) movement).recalculateCost(behavior.secretInternalGetCalculationContext());
+        double currentCost = movement.recalculateCost(behavior.secretInternalGetCalculationContext());
         if (currentCost >= ActionCosts.COST_INF && canCancel) {
             logDebug("Something has changed in the world and this movement has become impossible. Cancelling.");
             cancel();
@@ -258,11 +258,13 @@ public class PathExecutor implements IPathExecutor, Helper {
     private Tuple<Double, BlockPos> closestPathPos(IPath path) {
         double best = -1;
         BlockPos bestPos = null;
-        for (BlockPos pos : path.positions()) {
-            double dist = VecUtils.entityDistanceToCenter(ctx.player(), pos);
-            if (dist < best || best == -1) {
-                best = dist;
-                bestPos = pos;
+        for (IMovement movement : path.movements()) {
+            for (BlockPos pos : ((Movement) movement).getValidPositions()) {
+                double dist = VecUtils.entityDistanceToCenter(ctx.player(), pos);
+                if (dist < best || best == -1) {
+                    best = dist;
+                    bestPos = pos;
+                }
             }
         }
         return new Tuple<>(best, bestPos);
