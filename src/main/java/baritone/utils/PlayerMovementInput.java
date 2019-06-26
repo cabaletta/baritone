@@ -23,7 +23,7 @@ import net.minecraft.util.MovementInput;
 public class PlayerMovementInput extends MovementInput {
     private final InputOverrideHandler handler;
 
-    public PlayerMovementInput(InputOverrideHandler handler) {
+    PlayerMovementInput(InputOverrideHandler handler) {
         this.handler = handler;
     }
 
