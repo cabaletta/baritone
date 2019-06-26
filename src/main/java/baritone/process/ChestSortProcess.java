@@ -194,8 +194,8 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         }
 
         public UniqueChest(Set<TileEntityChest> connectedChests) {
-            //this.connectedChests = getConnectedChests(connectedChests.iterator().next());
-            if (connectedChests.size() < 1) throw new IllegalArgumentException("Must have at least 1 chest");
+            if (connectedChests.isEmpty()) throw new IllegalArgumentException("Must have at least 1 chest");
+            if (!connectedChests.equals(getConnectedChests(connectedChests.iterator().next()))) throw new IllegalArgumentException("bad"); // lol
             this.connectedChests = Collections.unmodifiableSet(connectedChests);
         }
 
