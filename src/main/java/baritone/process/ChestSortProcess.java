@@ -94,8 +94,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         }
 
         if (isChestOpen(ctx)) {
-            this.getVisitor().containerOpenTick((ContainerChest)ctx.player().openContainer);
-            if (!this.getVisitor().wantsContainerOpen()) {
+            if (!this.getVisitor().containerOpenTick((ContainerChest)ctx.player().openContainer)) {
                 ctx.player().closeScreenAndDropStack();
             }
         }
@@ -171,7 +170,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
     }
 
     private static boolean isChestOpen(IPlayerContext ctx) {
-        return ctx.player().openContainer instanceof ContainerChest /*&& Minecraft.getMinecraft().currentScreen instanceof GuiChest*/;
+        return ctx.player().openContainer instanceof ContainerChest ;
     }
 
     // TODO: use this
@@ -252,20 +251,19 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
             return Optional.ofNullable(this.currentTarget);
         }
 
+        // maybe should just check if target is empty??
         abstract boolean finished();
 
         // return true if this visitor must do more work
         abstract boolean onContainerOpened(ContainerChest container, List<ItemStack> itemStacks);
 
-        // Called when SPacketCloseWindow is called.
+        // Called when SPacketCloseWindow is received.
         // This may happen unexpectedly while the visitor is doing stuff and this visitor may want to call onLostControl in that case
         void onContainerClosed(int windowId) {}
 
-        abstract boolean wantsContainerOpen();
-
         // do some work while the container is open
-        void containerOpenTick(ContainerChest container) { }
-
+        // return true if the container should stay open
+        abstract boolean containerOpenTick(ContainerChest container);
     }
 
     private static class ScanningChestVisitor extends ChestVisitor {
@@ -296,9 +294,9 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         }
 
         @Override
-        public boolean wantsContainerOpen() {
+        boolean containerOpenTick(ContainerChest container) {
             // we want to wait until we receive the items
-            return isChestOpen(parent.ctx) && !this.visitedChests.contains(this.currentTarget);
+            return !this.visitedChests.contains(this.currentTarget);
         }
 
         private Optional<TileEntityChest> nextTarget() {
@@ -313,7 +311,6 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
     private static class SortingChestVisitor extends ChestVisitor {
         private final ImmutableSet<TileEntityChest> chestsToSort;
         private final Map<TileEntityChest, List<ItemStack>> chestData; // this should be kept updated
-        //private final Set<TileEntityChest> sortedChests = new HashSet<>();
 
 
         private final BiMap<StackLocation, StackLocation> howToSort; // immutable
@@ -325,7 +322,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         private Tuple<StackLocationPair, SortState> currentlyMoving;
 
         @Nullable
-        private ContainerChest openContainer;
+        private ContainerChest openContainer; // not used for functionality
 
 
         static SortingChestVisitor fromScanner(ChestSortProcess parent, ScanningChestVisitor scanner) {
@@ -365,13 +362,9 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
             }
         }
 
-        @Override
-        public boolean wantsContainerOpen() {
-            return this.openContainer != null;
-        }
 
         @Override
-        void containerOpenTick(ContainerChest container) {
+        boolean containerOpenTick(ContainerChest container) {
             if (this.openContainer == null) throw new IllegalStateException();
 
             switch(currentlyMoving.getSecond()) {
@@ -384,8 +377,9 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
                     this.currentTarget = this.currentlyMoving.getFirst().to.chest;
 
                     this.openContainer = null; // close chest
+                    return false;
                 }
-                break;
+                //break;
                 case MOVING: {
                     // from inv to chest
                     pickupClick(getInvSlotIndex(WORKING_SLOT, container), parent.ctx);
@@ -397,8 +391,11 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
                     this.currentTarget = this.currentlyMoving != null ? this.currentlyMoving.getFirst().from.chest : null;
 
                     this.openContainer = null; // close chest
+                    return false;
                 }
-                break;
+                //break;
+
+                default: throw new IllegalStateException("enum??");
             }
         }
 
