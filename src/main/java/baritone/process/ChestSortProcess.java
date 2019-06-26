@@ -42,6 +42,7 @@ import net.minecraft.network.play.server.SPacketWindowItems;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
@@ -54,10 +55,6 @@ import java.util.stream.Collectors;
 
 public final class ChestSortProcess extends BaritoneProcessHelper implements IChestSortProcess, AbstractGameEventListener {
     private static final PathingCommand NO_PATH = new PathingCommand(null, PathingCommandType.DEFER);
-    private static Comparator<TileEntityChest> closestChestToPlayer(EntityPlayerSP player) {
-        return Comparator.comparingDouble(chest -> player.getDistanceSq(chest.getPos()));
-    }
-
 
     private boolean active = false;
 
@@ -109,15 +106,17 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         }
 
         final ChestVisitor visitor = getVisitor();
-        TileEntityChest target = visitor.getCurrentTarget().get();
-        Goal goal = new GoalNear(target.getPos(), 2);
-        Optional<Rotation> newRotation = getRotationForChest(target);
+        final UniqueChest target = visitor.getCurrentTarget().get();
+        final BlockPos targetPos = target.closestChest(ctx).getPos();
+
+        Goal goal = new GoalNear(targetPos, 2);
+        Optional<Rotation> newRotation = getRotationForChest(target); // may be aiming at different chest than targetPos but thats fine
         newRotation.ifPresent(rotation -> {
             baritone.getLookBehavior().updateTarget(rotation, true);
         });
         final RayTraceResult trace = ctx.objectMouseOver();
-        if (!(isChestOpen(ctx)) && getConnectedChests(target).stream().anyMatch(chest -> ctx.isLookingAt(chest.getPos()))) {
-            ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), target.getPos(), trace.sideHit, trace.hitVec, EnumHand.OFF_HAND);
+        if (!(isChestOpen(ctx)) && target.getAllChests().stream().anyMatch(chest -> ctx.isLookingAt(chest.getPos()))) {
+            ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), targetPos, trace.sideHit, trace.hitVec, EnumHand.OFF_HAND);
         }
 
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
@@ -162,8 +161,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
     private void scanWorld(World world) {
         List<TileEntityChest> allChests = world.loadedTileEntityList
             .stream()
-            .filter(ent -> ent instanceof TileEntityChest)
-            .map(ent -> (TileEntityChest)ent)
+            .filter(TileEntityChest.class::isInstance).map(TileEntityChest.class::cast)
             .collect(Collectors.toList());
 
         this.setScanning(new ScanningChestVisitor(this, getUniqueChests(allChests)));
@@ -173,12 +171,32 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         return ctx.player().openContainer instanceof ContainerChest ;
     }
 
+    private static Comparator<UniqueChest> closestChestToPlayer(EntityPlayerSP player) {
+        return Comparator.comparingDouble(unique ->
+            unique.getAllChests()
+                .stream()
+                .mapToDouble(tileEnt -> player.getDistanceSq(tileEnt.getPos()))
+                .min()
+                .getAsDouble() // UniqueChest should be guaranteed to have at least 1 chest
+        );
+    }
+
+    private static Comparator<TileEntityChest> closestTileEntToPlayer(EntityPlayerSP player) {
+        return Comparator.comparingDouble(tileEnt -> player.getDistanceSq(tileEnt.getPos()));
+    }
+
     // TODO: use this
     private static final class UniqueChest {
-        private final Set<TileEntityChest> connectedChests;
+        private final Set<TileEntityChest> connectedChests; // always has at least 1 chest
 
         public UniqueChest(TileEntityChest chest) {
-            this.connectedChests = Collections.unmodifiableSet(getConnectedChests(chest));
+            this(getConnectedChests(chest));
+        }
+
+        public UniqueChest(Set<TileEntityChest> connectedChests) {
+            //this.connectedChests = getConnectedChests(connectedChests.iterator().next());
+            if (connectedChests.size() < 1) throw new IllegalArgumentException("Must have at least 1 chest");
+            this.connectedChests = Collections.unmodifiableSet(connectedChests);
         }
 
         public int slots() {
@@ -194,6 +212,14 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
             return this.connectedChests;
         }
 
+        public TileEntityChest closestChest(IPlayerContext ctx) {
+            return this.getAllChests().stream()
+                .min(closestTileEntToPlayer(ctx.player()))
+                .get();
+        }
+
+
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -208,11 +234,11 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         }
     }
 
-    public static final class StackLocation {
-        final TileEntityChest chest; // TODO: use UniqueChest
+    private static final class StackLocation {
+        final UniqueChest chest; // TODO: use UniqueChest
         final int slot;
 
-        public StackLocation(TileEntityChest chest, int slot) {
+        public StackLocation(UniqueChest chest, int slot) {
             this.chest = chest;
             this.slot = slot;
         }
@@ -233,7 +259,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
         @Override
         public String toString() {
-            return String.format("StackLocation(%s, %d)", this.chest.getPos(), this.slot);
+            return String.format("StackLocation(%s, %d)", this.chest.toString(), this.slot);
         }
     }
 
@@ -241,50 +267,49 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         protected final ChestSortProcess parent; // non static inner class does not allow static methods :^(
 
         @Nullable
-        protected TileEntityChest currentTarget;
+        protected UniqueChest currentTarget;
 
         protected ChestVisitor(ChestSortProcess parent) {
             this.parent = parent;
         }
 
-        final Optional<TileEntityChest> getCurrentTarget() {
+        public final Optional<UniqueChest> getCurrentTarget() {
             return Optional.ofNullable(this.currentTarget);
         }
 
         // maybe should just check if target is empty??
-        abstract boolean finished();
+        public abstract boolean finished();
 
         // return true if this visitor must do more work
-        abstract boolean onContainerOpened(ContainerChest container, List<ItemStack> itemStacks);
+        public abstract boolean onContainerOpened(ContainerChest container, List<ItemStack> itemStacks);
 
         // Called when SPacketCloseWindow is received.
         // This may happen unexpectedly while the visitor is doing stuff and this visitor may want to call onLostControl in that case
-        void onContainerClosed(int windowId) {}
+        public void onContainerClosed(int windowId) {}
 
         // do some work while the container is open
         // return true if the container should stay open
-        abstract boolean containerOpenTick(ContainerChest container);
+        public abstract boolean containerOpenTick(ContainerChest container);
     }
 
     private static class ScanningChestVisitor extends ChestVisitor {
-        private final ImmutableSet<TileEntityChest> scannedChests;
-        private final Set<TileEntityChest> visitedChests = new HashSet<>(); // visited chest = chest we have opened and received items for. can probably just use chestData keys
-        private final Map<TileEntityChest, List<ItemStack>> chestData = new HashMap<>();
-        //private final ImmutableMap<TileEntityChest, List<ItemStack>> desiredChestState;
+        private final ImmutableSet<UniqueChest> scannedChests;
+        private final Set<UniqueChest> visitedChests = new HashSet<>(); // visited chest = chest we have opened and received items for. can probably just use chestData keys
+        private final Map<UniqueChest, List<ItemStack>> chestData = new HashMap<>();
 
 
-        ScanningChestVisitor(ChestSortProcess parent, Set<TileEntityChest> chests) {
+        ScanningChestVisitor(ChestSortProcess parent, Set<UniqueChest> chests) {
             super(parent);
             this.scannedChests = ImmutableSet.copyOf(chests);
             super.currentTarget = nextTarget().orElse(null);
         }
 
-        boolean finished() {
+        public boolean finished() {
             return Sets.difference(scannedChests, visitedChests).isEmpty();
         }
 
         @Override
-        boolean onContainerOpened(ContainerChest container, List<ItemStack> itemStacks) {
+        public boolean onContainerOpened(ContainerChest container, List<ItemStack> itemStacks) {
             Objects.requireNonNull(currentTarget, "null currentTarget");
             this.chestData.put(this.currentTarget, itemStacks);
             this.visitedChests.add(this.currentTarget);
@@ -294,13 +319,13 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         }
 
         @Override
-        boolean containerOpenTick(ContainerChest container) {
+        public boolean containerOpenTick(ContainerChest container) {
             // we want to wait until we receive the items
             return !this.visitedChests.contains(this.currentTarget);
         }
 
-        private Optional<TileEntityChest> nextTarget() {
-            Set<TileEntityChest> remaining = Sets.difference(this.scannedChests, this.visitedChests);
+        private Optional<UniqueChest> nextTarget() {
+            Set<UniqueChest> remaining = Sets.difference(this.scannedChests, this.visitedChests);
             return remaining.stream()
                 .min(closestChestToPlayer(parent.ctx.player()));
         }
@@ -309,8 +334,8 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
 
     private static class SortingChestVisitor extends ChestVisitor {
-        private final ImmutableSet<TileEntityChest> chestsToSort;
-        private final Map<TileEntityChest, List<ItemStack>> chestData; // this should be kept updated
+        private final ImmutableSet<UniqueChest> chestsToSort;
+        private final Map<UniqueChest, List<ItemStack>> chestData; // this should be kept updated
 
 
         private final BiMap<StackLocation, StackLocation> howToSort; // immutable
@@ -329,7 +354,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
             return new SortingChestVisitor(parent, scanner.visitedChests, scanner.chestData);
         }
 
-        SortingChestVisitor(ChestSortProcess parent, Set<TileEntityChest> toSort, Map<TileEntityChest, List<ItemStack>> chestData) {
+        public SortingChestVisitor(ChestSortProcess parent, Set<UniqueChest> toSort, Map<UniqueChest, List<ItemStack>> chestData) {
             super(parent);
             this.chestsToSort = ImmutableSet.copyOf(toSort);
             this.chestData = chestData;
@@ -343,18 +368,18 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
             MOVING
         }
 
-        boolean finished() { // TODO don't create new hashsets from the values
+        public boolean finished() { // TODO don't create new hashsets from the values
             return Sets.difference(Sets.newHashSet(howToSort.values()), sortedSlots).isEmpty();
         }
 
         @Override
-        boolean onContainerOpened(ContainerChest container, List<ItemStack> itemStacks) {
+        public boolean onContainerOpened(ContainerChest container, List<ItemStack> itemStacks) {
             this.openContainer = container;
             return true;
         }
 
         @Override
-        void onContainerClosed(int windowId) {
+        public void onContainerClosed(int windowId) {
             if (this.openContainer != null && this.openContainer.windowId == windowId) {
                 parent.logDirect("onLostControl");
                 // commented out because seems to sometimes happen when everything is fine
@@ -364,7 +389,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
 
         @Override
-        boolean containerOpenTick(ContainerChest container) {
+        public boolean containerOpenTick(ContainerChest container) {
             if (this.openContainer == null) throw new IllegalStateException();
 
             switch(currentlyMoving.getSecond()) {
@@ -417,25 +442,25 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
         // given all the chest data, return a map that says where to move chest slots to
         // number = slot slot
-        private static BiMap<StackLocation, StackLocation> howToSortChests(final Map<TileEntityChest, List<ItemStack>> chestData) {
+        private static BiMap<StackLocation, StackLocation> howToSortChests(final Map<UniqueChest, List<ItemStack>> chestData) {
             final List<List<ItemStack>> sortedChestList = sortChestData(chestData.values()); // paritioned into groups of no more than size of double chest (need to allow single chests later)
-            final Set<TileEntityChest> chests = Collections.unmodifiableSet(chestData.keySet());
+            final Set<UniqueChest> chests = Collections.unmodifiableSet(chestData.keySet());
             if (sortedChestList.size() > chests.size()) throw new IllegalStateException(sortedChestList.size() + " - " + chests.size());
 
-            final List<Tuple<TileEntityChest, List<ItemStack>>> pairs =
+            final List<Tuple<UniqueChest, List<ItemStack>>> pairs =
                 combine(
                     sortedChestList.iterator(), chests.iterator(),
                     (stack, chest) -> new Tuple<>(chest, stack)
                 ); // TODO: don't choose random chests
 
-            final Map<TileEntityChest, List<ItemStack>> sortedChestState = pairs.stream() // how we want the state of the chests to be
+            final Map<UniqueChest, List<ItemStack>> sortedChestState = pairs.stream() // how we want the state of the chests to be
                 .collect(Collectors.toMap(Tuple::getFirst, Tuple::getSecond));
 
             return conversion(chestData, sortedChestState);
         }
 
 
-        private static BiMap<StackLocation, StackLocation> conversion(Map<TileEntityChest, List<ItemStack>> unsorted, Map<TileEntityChest, List<ItemStack>> sorted) {
+        private static BiMap<StackLocation, StackLocation> conversion(Map<UniqueChest, List<ItemStack>> unsorted, Map<UniqueChest, List<ItemStack>> sorted) {
             // set of slots that some stack has been decided to be moved to
             final Set<StackLocation> reservedSlots = new HashSet<>();
             final BiMap<StackLocation, StackLocation> out = HashBiMap.create();
@@ -499,13 +524,27 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
             return Lists.partition(sorted, CHEST_SIZE); // guava is based
         }
 
-        private static class StackLocationPair {
+        private static final class StackLocationPair {
             public final StackLocation from;
             public final StackLocation to;
 
             StackLocationPair(StackLocation from, StackLocation to) {
                 this.from = from;
                 this.to = to;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                StackLocationPair that = (StackLocationPair) o;
+                return from.equals(that.from) &&
+                    to.equals(that.to);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(from, to);
             }
         }
     }
@@ -547,9 +586,9 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
     }
 
 
-    private Optional<Rotation> getRotationForChest(TileEntityChest chestIn) {
-        return getConnectedChests(chestIn).stream()
-            .sorted(closestChestToPlayer(ctx.player()))
+    private Optional<Rotation> getRotationForChest(UniqueChest chestIn) {
+        return chestIn.getAllChests().stream()
+            .sorted(closestTileEntToPlayer(ctx.player()))
             .map(chest -> RotationUtils.reachable(ctx, chest.getPos()))
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -559,7 +598,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
 
     // takes any list of chests and returns a new list of chests where no 2 chests in the list are connected
-    private Set<TileEntityChest> getUniqueChests(final Collection<TileEntityChest> chestsIn) {
+    private Set<UniqueChest> getUniqueChests(final Collection<TileEntityChest> chestsIn) {
         final Set<Set<TileEntityChest>> graphs = new HashSet<>(); // set of graphs
 
         // this code is O(1) but more complicated
@@ -578,26 +617,12 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
             if (graphs.stream().noneMatch(set -> set.contains(iter))) {
                 final Set<TileEntityChest> newGraph = getConnectedChests(iter);
                 graphs.add(newGraph);
-
             }
         }
 
-        return reduceSets(graphs);
+        return graphs.stream().map(UniqueChest::new).collect(Collectors.toSet());
     }
 
-
-    // reduce set of sets to a single set of random values, 1 from each set
-    private <T> Set<T> reduceSets(Set<Set<T>> sets) {
-        return sets.stream()
-            .map(this::reduceSet)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toSet());
-    }
-
-    private <T> Optional<T> reduceSet(Set<T> set) {
-        return set.isEmpty() ? Optional.empty() : Optional.of(set.iterator().next());
-    }
 
     private static Set<TileEntityChest> getConnectedChests(TileEntityChest root) {
         Set<TileEntityChest> out = new HashSet<>();
