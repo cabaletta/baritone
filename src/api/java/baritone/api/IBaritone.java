@@ -96,6 +96,12 @@ public interface IBaritone {
     IGetToBlockProcess getGetToBlockProcess();
 
     /**
+     * @return The {@link IChestSortProcess} instance
+     * @see IChestSortProcess
+     */
+    IChestSortProcess getChestSortProcess();
+
+    /**
      * @return The {@link IWorldProvider} instance
      * @see IWorldProvider
      */

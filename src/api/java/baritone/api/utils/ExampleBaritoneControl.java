@@ -666,6 +666,11 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         if (msg.equals("damn")) {
             logDirect("daniel");
         }
+        if (msg.equals("sort")) {
+            baritone.getChestSortProcess().activate();
+            logDirect("Enabled sort");
+            return true;
+        }
         return false;
     }
 
