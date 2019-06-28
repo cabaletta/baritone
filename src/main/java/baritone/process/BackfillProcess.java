@@ -85,6 +85,8 @@ public final class BackfillProcess extends BaritoneProcessHelper {
                     // patience
                     baritone.getLookBehavior().updateTarget(fake.getTarget().getRotation().get(), true);
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                default:
+                    throw new IllegalStateException();
             }
         }
         return new PathingCommand(null, PathingCommandType.DEFER); // cede to other process
