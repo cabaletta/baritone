@@ -40,7 +40,7 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     List<Category<T, ? extends Item>> getSubcategories();
     Comparator<T> comparator();
 
-    
+
 
     // returns -1 if stack is not in category
     static int indexOf(ItemStack stack, Category<Item, Item> root) {
@@ -86,41 +86,43 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     // ItemStack
     //
     @SafeVarargs
-    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> create(BiPredicate<ItemStack, SUPER> biPredicate, Category<T, ?>... subCategories) {
+    @Deprecated // biPredicate must do type checking
+    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> predicate(BiPredicate<ItemStack, SUPER> biPredicate, Category<T, ?>... subCategories) {
         return new BasicCategory<>(biPredicate, subCategories);
     }
 
     // subcategories ignored
     // unsure about this function
     @SafeVarargs
-    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> notMatching(Category<SUPER, T> category, Category<T, ?>... subCategories) {
-        return create((stack, item) -> !category.isInCategory(stack, item), subCategories);
+    static <SUPER extends Item> Category<SUPER, SUPER> notMatching(Category<SUPER, ?> category, Category<SUPER, SUPER>... subCategories) {
+        return predicate((stack, item) -> !category.isInCategory(stack, item), subCategories);
     }
 
     //
     // Item
     //
     @SafeVarargs
-    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> forItem(Predicate<SUPER> predicate, Category<T, ?>... subCategories) {
-        return create((stack, item) -> predicate.test(item), subCategories);
+    @Deprecated // predicate must do type checking
+    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> itemPredicate(Predicate<SUPER> predicate, Category<T, ?>... subCategories) {
+        return predicate((stack, item) -> predicate.test(item), subCategories);
     }
 
     @SafeVarargs
     static <SUPER extends Item, T extends SUPER> Category<SUPER, T> itemType(Class<T> type, Category<T, ?>... subCategories) {
-        return forItem(type::isInstance, subCategories);
+        return itemPredicate(type::isInstance, subCategories);
     }
 
     @SafeVarargs
-    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> itemEquals(Item item, Category<T, ?>... subCategories) {
-        return forItem(item::equals, subCategories);
+    static <SUPER extends Item> Category<SUPER, SUPER> itemEquals(Item item, Category<SUPER, SUPER>... subCategories) {
+        return itemPredicate(item::equals, subCategories);
     }
 
     //
     // ItemBlock
     //
     @SafeVarargs
-    static <SUPER extends ItemBlock, T extends SUPER> Category<SUPER, T> itemBlockType(Class<? extends Block> type, Category<T, ?>... subCategories) {
-        return forItem(itemBlock -> type.isInstance(itemBlock.getBlock()), subCategories);
+    static <SUPER extends ItemBlock> Category<SUPER, SUPER> itemBlockType(Class<? extends Block> type, Category<SUPER, SUPER>... subCategories) {
+        return itemPredicate(itemBlock -> type.isInstance(itemBlock.getBlock()), subCategories);
     }
 
 
@@ -128,14 +130,14 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     @SafeVarargs
     @SuppressWarnings("unchecked")
     // Item to enum
-    static <SUPER extends Item, T extends SUPER, ENUM extends Enum<ENUM>> Category<SUPER, T> itemEnums(Class<ENUM> enumClass, Function<SUPER, ENUM> toEnum, Category<T, ?>... subCategories) {
-        final Category<T, T>[] categories =
+    static <SUPER extends Item, ENUM extends Enum<ENUM>> Category<SUPER, SUPER> itemEnums(Class<ENUM> enumClass, Function<SUPER, ENUM> toEnum, Category<SUPER, SUPER>... subCategories) {
+        final Category<SUPER, SUPER>[] categories =
             Stream.of(enumClass.getEnumConstants())
                 //.peek(enom -> System.out.println("Enum: " + enom))
-                .map(enom -> Category.<SUPER, T>forItem(item -> toEnum.apply(item) == enom))
+                .map(enom -> Category.<SUPER, SUPER>itemPredicate(item -> toEnum.apply(item) == enom))
                 .toArray(Category[]::new);
 
-        return forItem(obj -> true,
+        return itemPredicate(obj -> true,
                 categories
             );
     }
@@ -146,10 +148,10 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     static <SUPER extends Item, T extends SUPER, ENUM extends Enum<ENUM>> Category<SUPER, T> enumCategories(Class<ENUM> enumClass, BiFunction<ItemStack, SUPER, ENUM> toEnum, Category<T, ?>... subCategories) {
         final Category<T, T>[] categories =
             Stream.of(enumClass.getEnumConstants())
-                .map(enom -> Category.<SUPER, T>create((stack, item) -> toEnum.apply(stack, item) == enom))
+                .map(enom -> Category.<SUPER, T>predicate((stack, item) -> toEnum.apply(stack, item) == enom))
                 .toArray(Category[]::new);
 
-        return create((a, b) -> true,
+        return predicate((a, b) -> true,
             categories
         );
     }

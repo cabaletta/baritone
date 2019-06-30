@@ -35,7 +35,6 @@ import baritone.utils.chestsorter.Category;
 import com.google.common.collect.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
@@ -84,7 +83,6 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
     @Override
     public void activate() {
-        //Category.postOrderTraverse(Categories.BASE_CATEGORY, System.out::println);
         this.active = true;
     }
 
@@ -643,14 +641,12 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
     private static class ItemSorter {
 
-
         // temporary
         public static int compare(ItemStack a, ItemStack b) {
             return Comparator.<ItemStack>comparingInt(stack -> {
                 final int idx = Category.indexOf(stack, Categories.BASE_CATEGORY);
                 return idx == -1 ? Integer.MAX_VALUE : idx;
             }).compare(a, b);
-
         }
     }
 

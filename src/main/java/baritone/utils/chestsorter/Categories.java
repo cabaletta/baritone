@@ -72,7 +72,7 @@ public interface Categories {
 
     @SuppressWarnings("unchecked")
     Category<Item, Item> BASE_CATEGORY =
-        create((stack, item) -> item != Items.AIR,
+        predicate((stack, item) -> item != Items.AIR,
             Stream.concat(
                 FOOD_CATEGORIES.stream(),
                 Stream.of(
