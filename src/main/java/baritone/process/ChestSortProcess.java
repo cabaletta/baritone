@@ -30,9 +30,12 @@ import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.utils.BaritoneProcessHelper;
+import baritone.utils.chestsorter.Categories;
+import baritone.utils.chestsorter.Category;
 import com.google.common.collect.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
@@ -81,6 +84,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
     @Override
     public void activate() {
+        //Category.postOrderTraverse(Categories.BASE_CATEGORY, System.out::println);
         this.active = true;
     }
 
@@ -185,7 +189,6 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         return Comparator.comparingDouble(tileEnt -> player.getDistanceSq(tileEnt.getPos()));
     }
 
-    // TODO: use this
     private static final class UniqueChest {
         private final Set<TileEntityChest> connectedChests; // always has at least 1 chest
 
@@ -199,7 +202,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
             this.connectedChests = Collections.unmodifiableSet(connectedChests);
         }
 
-        public int slots() {
+        public int slotCount() {
             return connectedChests.size() * (9 * 3);
         }
 
@@ -218,8 +221,6 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
                 .get();
         }
 
-
-
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -235,8 +236,8 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
     }
 
     private static final class StackLocation {
-        final UniqueChest chest; // TODO: use UniqueChest
-        final int slot;
+        public final UniqueChest chest; // TODO: use UniqueChest
+        public final int slot;
 
         public StackLocation(UniqueChest chest, int slot) {
             this.chest = chest;
@@ -342,7 +343,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         private final Set<StackLocation> sortedSlots = new HashSet<>();
 
         // temp impl
-        static final int WORKING_SLOT = 0;
+        private static final int WORKING_SLOT = 0;
 
         private Tuple<StackLocationPair, SortState> currentlyMoving;
 
@@ -350,7 +351,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
         private ContainerChest openContainer; // not used for functionality
 
 
-        static SortingChestVisitor fromScanner(ChestSortProcess parent, ScanningChestVisitor scanner) {
+        public static SortingChestVisitor fromScanner(ChestSortProcess parent, ScanningChestVisitor scanner) {
             return new SortingChestVisitor(parent, scanner.visitedChests, scanner.chestData);
         }
 
@@ -380,17 +381,17 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
         @Override
         public void onContainerClosed(int windowId) {
-            if (this.openContainer != null && this.openContainer.windowId == windowId) {
+            /*if (this.openContainer != null && this.openContainer.windowId == windowId) {
                 parent.logDirect("onLostControl");
                 // commented out because seems to sometimes happen when everything is fine
                 //this.parent.onLostControl(); // container closed while we were using it :^(
-            }
+            }*/
         }
 
 
         @Override
         public boolean containerOpenTick(ContainerChest container) {
-            if (this.openContainer == null) throw new IllegalStateException();
+            //if (this.openContainer == null) throw new IllegalStateException();
 
             switch(currentlyMoving.getSecond()) {
                 case FETCHING: {
@@ -401,7 +402,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
                     this.currentlyMoving = new Tuple<>(this.currentlyMoving.getFirst(), SortState.MOVING); // change the state
                     this.currentTarget = this.currentlyMoving.getFirst().to.chest;
 
-                    this.openContainer = null; // close chest
+                    //this.openContainer = null; // close chest
                     return false;
                 }
                 //break;
@@ -415,7 +416,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
                     this.currentlyMoving = nextTarget(this.howToSort, this.sortedSlots).map(entry -> new Tuple<>(entry, SortState.FETCHING)).orElse(null);
                     this.currentTarget = this.currentlyMoving != null ? this.currentlyMoving.getFirst().from.chest : null;
 
-                    this.openContainer = null; // close chest
+                    //this.openContainer = null; // close chest
                     return false;
                 }
                 //break;
@@ -519,6 +520,7 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
                 .flatMap(List::stream)
                 .sorted(ItemSorter::compare)
                 .collect(Collectors.toList());
+            System.out.println(sorted);
             final int CHEST_SIZE = 9 * 6; // TODO: dont assume double chests
 
             return Lists.partition(sorted, CHEST_SIZE); // guava is based
@@ -641,10 +643,14 @@ public final class ChestSortProcess extends BaritoneProcessHelper implements ICh
 
     private static class ItemSorter {
 
+
         // temporary
-        static int compare(ItemStack a, ItemStack b) {
-            return Comparator.<ItemStack, String>comparing(stack -> stack.getItem().getItemStackDisplayName(stack), String.CASE_INSENSITIVE_ORDER)
-                .compare(a, b);
+        public static int compare(ItemStack a, ItemStack b) {
+            return Comparator.<ItemStack>comparingInt(stack -> {
+                final int idx = Category.indexOf(stack, Categories.BASE_CATEGORY);
+                return idx == -1 ? Integer.MAX_VALUE : idx;
+            }).compare(a, b);
+
         }
     }
 

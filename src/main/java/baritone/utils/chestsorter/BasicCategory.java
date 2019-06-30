@@ -22,20 +22,23 @@ import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiPredicate;
+import net.minecraft.util.text.translation.I18n;
 
-public final class BasicCategory<SUPER extends Item, T extends SUPER> implements Category<SUPER, T> {
+final class BasicCategory<SUPER extends Item, T extends SUPER> implements Category<SUPER, T> {
 
     private final BiPredicate<ItemStack, SUPER> predicate;
     private final List<Category<T, ?>> subCategories;
 
 
-    protected BasicCategory(BiPredicate<ItemStack, SUPER> predicate, List<Category<T, ?>> subCategories) {
+    private BasicCategory(BiPredicate<ItemStack, SUPER> predicate, List<Category<T, ?>> subCategories) {
         this.predicate = predicate;
         this.subCategories = Collections.unmodifiableList(subCategories);
     }
 
+    @SafeVarargs
     public BasicCategory(BiPredicate<ItemStack, SUPER> predicate, Category<T, ?>... subCategories) {
         this(predicate, Arrays.asList(subCategories));
     }
@@ -47,7 +50,12 @@ public final class BasicCategory<SUPER extends Item, T extends SUPER> implements
     }
 
     @Override
-    public final List<Category<T, ?>> getSubcategories() {
+    public final List<Category<T, ? extends Item>> getSubcategories() {
         return this.subCategories;
+    }
+
+    @Override
+    public Comparator<T> comparator() { // TODO: allow comparator to be customized
+        return Comparator.comparing(item -> I18n.translateToLocal(item.getTranslationKey()), String.CASE_INSENSITIVE_ORDER);
     }
 }

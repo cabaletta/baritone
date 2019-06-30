@@ -17,20 +17,68 @@
 
 package baritone.utils.chestsorter;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 // items only
+// TODO: make more type safe
 public interface Category<SUPER extends Item, T extends SUPER> {
+    // responsible for type checks
+    // if this function returns true then SUPER should assignable to T
     boolean isInCategory(ItemStack stack, SUPER item);
-    List<Category<T, ?>> getSubcategories();
+    //Class<? extends T> getSubType(); // TODO: use this for type checking
+
+    List<Category<T, ? extends Item>> getSubcategories();
+    Comparator<T> comparator();
+
+    
+
+    // returns -1 if stack is not in category
+    static int indexOf(ItemStack stack, Category<Item, Item> root) {
+        final Category<? extends Item, ? extends Item> category = findBestCategory(stack, root);
+        if (category != null) {
+            // tfw no coroutines
+            final List<Category<? extends Item, ? extends Item>> flatList = new ArrayList<>();
+            postOrderTraverse(root, flatList::add);
+
+            return flatList.indexOf(category);
+        } else {
+            return -1;
+        }
+
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    // breadth first search
+    static Category<? extends Item, ? extends Item> findBestCategory(ItemStack stack, Category<? extends Item, ? extends Item> category) {
+        // cast to raw type
+        if (!((Category)category).isInCategory(stack, stack.getItem())) return null; // this should only be done for root category
+
+        for (Category iter : category.getSubcategories()) {
+            if (iter.isInCategory(stack, stack.getItem())) {
+                return findBestCategory(stack, iter);
+            }
+        }
+        return category;
+    }
+
+    static void postOrderTraverse(Category<? extends Item, ? extends Item> category, Consumer<Category<? extends Item, ? extends Item>> consumer) {
+        for (Category<? extends Item, ? extends Item> iter : category.getSubcategories()) {
+            postOrderTraverse(iter, consumer);
+        }
+        consumer.accept(category);
+    }
 
 
 
@@ -38,35 +86,53 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     // ItemStack
     //
     @SafeVarargs
-    static <SUPER_ARG extends Item, T_ARG extends SUPER_ARG> Category<SUPER_ARG, T_ARG> create(BiPredicate<ItemStack, SUPER_ARG> biPredicate, Category<T_ARG, ?>... subCategories) {
+    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> create(BiPredicate<ItemStack, SUPER> biPredicate, Category<T, ?>... subCategories) {
         return new BasicCategory<>(biPredicate, subCategories);
     }
 
+    // subcategories ignored
+    // unsure about this function
+    @SafeVarargs
+    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> notMatching(Category<SUPER, T> category, Category<T, ?>... subCategories) {
+        return create((stack, item) -> !category.isInCategory(stack, item), subCategories);
+    }
+
     //
-    // ITEM CATEGORIZATION
+    // Item
     //
     @SafeVarargs
-    static <SUPER_ARG extends Item, T_ARG extends SUPER_ARG> Category<SUPER_ARG, T_ARG> forItem(Predicate<SUPER_ARG> predicate, Category<T_ARG, ?>... subCategories) {
-        return new BasicCategory<>((stack, item) -> predicate.test(item), subCategories);
+    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> forItem(Predicate<SUPER> predicate, Category<T, ?>... subCategories) {
+        return create((stack, item) -> predicate.test(item), subCategories);
     }
 
     @SafeVarargs
-    static <SUPER_ARG extends Item, T_ARG extends SUPER_ARG> Category<SUPER_ARG, T_ARG> itemType(Class<T_ARG> type, Category<T_ARG, ?>... subCategories) {
+    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> itemType(Class<T> type, Category<T, ?>... subCategories) {
         return forItem(type::isInstance, subCategories);
     }
 
     @SafeVarargs
-    static <SUPER_ARG extends Item, T_ARG extends SUPER_ARG> Category<SUPER_ARG, T_ARG> itemEquals(Item item, Category<T_ARG, ?>... subCategories) {
+    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> itemEquals(Item item, Category<T, ?>... subCategories) {
         return forItem(item::equals, subCategories);
     }
 
+    //
+    // ItemBlock
+    //
+    @SafeVarargs
+    static <SUPER extends ItemBlock, T extends SUPER> Category<SUPER, T> itemBlockType(Class<? extends Block> type, Category<T, ?>... subCategories) {
+        return forItem(itemBlock -> type.isInstance(itemBlock.getBlock()), subCategories);
+    }
+
+
+
     @SafeVarargs
     @SuppressWarnings("unchecked")
-    // Item to enum (unlikely this will be used)
-    static <SUPER_ARG extends Item, T_ARG extends SUPER_ARG, ENUM extends Enum<ENUM>> Category<SUPER_ARG, T_ARG> itemEnums(Class<ENUM> enumClass, Function<SUPER_ARG, ENUM> toEnum, Category<T_ARG, ?>... subCategories) {
-        final Category<T_ARG, T_ARG>[] categories =
+    // Item to enum
+    static <SUPER extends Item, T extends SUPER, ENUM extends Enum<ENUM>> Category<SUPER, T> itemEnums(Class<ENUM> enumClass, Function<SUPER, ENUM> toEnum, Category<T, ?>... subCategories) {
+        final Category<T, T>[] categories =
             Stream.of(enumClass.getEnumConstants())
-                .map(enom -> Category.<SUPER_ARG, T_ARG>forItem(item -> toEnum.apply(item) == enom))
+                //.peek(enom -> System.out.println("Enum: " + enom))
+                .map(enom -> Category.<SUPER, T>forItem(item -> toEnum.apply(item) == enom))
                 .toArray(Category[]::new);
 
         return forItem(obj -> true,
@@ -76,11 +142,11 @@ public interface Category<SUPER extends Item, T extends SUPER> {
 
     @SafeVarargs
     @SuppressWarnings("unchecked")
-    // ItemStack and item to enum
-    static <SUPER_ARG extends Item, T_ARG extends SUPER_ARG, ENUM extends Enum<ENUM>> Category<SUPER_ARG, T_ARG> enumCategories(Class<ENUM> enumClass, BiFunction<ItemStack, SUPER_ARG, ENUM> toEnum, Category<T_ARG, ?>... subCategories) {
-        final Category<T_ARG, T_ARG>[] categories =
+    // ItemStack and item to enum (unlikely this will be used)
+    static <SUPER extends Item, T extends SUPER, ENUM extends Enum<ENUM>> Category<SUPER, T> enumCategories(Class<ENUM> enumClass, BiFunction<ItemStack, SUPER, ENUM> toEnum, Category<T, ?>... subCategories) {
+        final Category<T, T>[] categories =
             Stream.of(enumClass.getEnumConstants())
-                .map(enom -> Category.<SUPER_ARG, T_ARG>create((stack, item) -> toEnum.apply(stack, item) == enom))
+                .map(enom -> Category.<SUPER, T>create((stack, item) -> toEnum.apply(stack, item) == enom))
                 .toArray(Category[]::new);
 
         return create((a, b) -> true,
