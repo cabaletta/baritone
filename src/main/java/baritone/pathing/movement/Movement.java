@@ -23,6 +23,7 @@ import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
+import baritone.behavior.PathingBehavior;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.entity.item.EntityFallingBlock;
@@ -108,6 +109,10 @@ public abstract class Movement implements IMovement, MovementHelper {
             Objects.requireNonNull(validPositionsCached);
         }
         return validPositionsCached;
+    }
+
+    protected boolean playerInValidPosition() {
+        return getValidPositions().contains(ctx.playerFeet()) || getValidPositions().contains(((PathingBehavior) baritone.getPathingBehavior()).pathStart());
     }
 
     /**

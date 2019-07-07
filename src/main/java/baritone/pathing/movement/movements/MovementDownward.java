@@ -81,7 +81,7 @@ public class MovementDownward extends Movement {
 
         if (ctx.playerFeet().equals(dest)) {
             return state.setStatus(MovementStatus.SUCCESS);
-        } else if (!getValidPositions().contains(ctx.playerFeet())) {
+        } else if (!playerInValidPosition()) {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         double diffX = ctx.player().posX - (dest.getX() + 0.5);
