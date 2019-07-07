@@ -69,7 +69,6 @@ public class GuiClick extends GuiScreen {
                 currentMouseOver = result.getBlockPos();
             }
         }
-
     }
 
     @Override
