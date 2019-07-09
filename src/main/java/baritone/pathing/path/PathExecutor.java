@@ -427,7 +427,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (current instanceof MovementFall) {
             Tuple<Vec3d, BlockPos> data = overrideFall((MovementFall) current);
             if (data != null) {
-                BlockPos fallDest = data.getSecond();
+                BetterBlockPos fallDest = new BetterBlockPos(data.getSecond());
                 if (!path.positions().contains(fallDest)) {
                     throw new IllegalStateException();
                 }
