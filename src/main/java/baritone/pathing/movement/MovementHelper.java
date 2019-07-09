@@ -94,7 +94,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof BlockAir) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block == Blocks.BUBBLE_COLUMN || block instanceof BlockShulkerBox || block instanceof BlockSlab || block instanceof BlockTrapDoor) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockAbstractSkull || block == Blocks.BUBBLE_COLUMN || block instanceof BlockShulkerBox || block instanceof BlockSlab || block instanceof BlockTrapDoor) {
             return false;
         }
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
