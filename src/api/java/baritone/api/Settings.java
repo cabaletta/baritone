@@ -232,6 +232,11 @@ public final class Settings {
     public final Setting<Integer> rightClickSpeed = new Setting<>(4);
 
     /**
+     * How many degrees to randomize the yaw every tick. Set to 0 to disable
+     */
+    public final Setting<Double> randomLooking = new Setting<>(2d);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.
