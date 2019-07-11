@@ -99,6 +99,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
+        if (!Baritone.settings().allowBreak.value) {
+            logDirect("Unable to mine when allowBreak is false!");
+            cancel();
+            return null;
+        }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
@@ -395,6 +400,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public void mine(int quantity, Block... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
+        if (mining != null && !Baritone.settings().allowBreak.value) {
+            logDirect("Unable to mine when allowBreak is false!");
+            mining = null;
+        }
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
         this.blacklist = new ArrayList<>();
