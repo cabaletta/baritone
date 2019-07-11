@@ -82,7 +82,12 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     }
 
     private void scanWorld() {
-        cache = Stream.of(ctx.world().loadedEntityList, ctx.world().playerEntities).flatMap(List::stream).filter(this::followable).filter(this.filter).distinct().collect(Collectors.toCollection(ArrayList::new));
+        cache = Stream.of(ctx.world().loadedEntityList, ctx.world().playerEntities)
+            .flatMap(List::stream)
+            .filter(this::followable)
+            .filter(this.filter)
+            .distinct()
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override

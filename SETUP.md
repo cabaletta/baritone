@@ -1,5 +1,9 @@
 # Installation
 
+The easiest way to install Baritone is to install [Impact](https://impactdevelopment.github.io/), which comes with Baritone.
+
+Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+
 ## Prebuilt official releases
 These releases are not always completely up to date with latest features, and are only released from `master`. (so if you want `backfill-2` branch for example, you'll have to build it yourself)
 

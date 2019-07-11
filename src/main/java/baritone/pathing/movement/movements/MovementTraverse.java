@@ -30,6 +30,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.fluid.WaterFluid;
@@ -37,6 +38,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.Set;
 
 public class MovementTraverse extends Movement {
 
@@ -58,6 +61,11 @@ public class MovementTraverse extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        return ImmutableSet.of(src, dest);
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
@@ -197,13 +205,12 @@ public class MovementTraverse extends Movement {
         Block fd = BlockStateInterface.get(ctx, src.down()).getBlock();
         boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
 
-        if (pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor) {
-            if ((pb0.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, src, dest)
-                    || pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, dest, src))
-                    && !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
-                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), positionsToBreak[0]), ctx.playerRotations()), true))
-                        .setInput(Input.CLICK_RIGHT, true);
-            }
+        if ((pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor)
+                && (pb0.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, src, dest)
+                || pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, dest, src))
+                && !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
+            return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), positionsToBreak[0]), ctx.playerRotations()), true))
+                    .setInput(Input.CLICK_RIGHT, true);
         }
 
         if (pb0.getBlock() instanceof BlockFenceGate || pb1.getBlock() instanceof BlockFenceGate) {

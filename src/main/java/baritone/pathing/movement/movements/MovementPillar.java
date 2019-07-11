@@ -30,6 +30,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -37,6 +38,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class MovementPillar extends Movement {
 
@@ -47,6 +49,11 @@ public class MovementPillar extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         return cost(context, src.x, src.y, src.z);
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        return ImmutableSet.of(src, dest);
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {

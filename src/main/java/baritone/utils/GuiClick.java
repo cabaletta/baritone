@@ -68,7 +68,6 @@ public class GuiClick extends GuiScreen {
                 currentMouseOver = result.getBlockPos();
             }
         }
-
     }
 
     @Override
@@ -122,7 +121,7 @@ public class GuiClick extends GuiScreen {
         }
     }
 
-    public Vec3d toWorld(double x, double y, double z) {
+    private Vec3d toWorld(double x, double y, double z) {
         boolean result = gluUnProject((float) x, (float) y, (float) z, MODELVIEW, PROJECTION, VIEWPORT, (FloatBuffer) TO_WORLD_BUFFER.clear());
         if (result) {
             return new Vec3d(TO_WORLD_BUFFER.get(0), TO_WORLD_BUFFER.get(1), TO_WORLD_BUFFER.get(2));

@@ -100,8 +100,6 @@ public final class PathRenderer implements Helper {
         }
 
         //drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()), partialTicks, Color.WHITE);
-        //long start = System.nanoTime();
-
 
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
@@ -111,8 +109,6 @@ public final class PathRenderer implements Helper {
         if (next != null && next.getPath() != null) {
             drawPath(next.getPath(), 0, renderView, partialTicks, Baritone.settings().colorNextPath.value, Baritone.settings().fadePath.value, 10, 20);
         }
-
-        //long split = System.nanoTime();
 
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {
@@ -125,11 +121,6 @@ public final class PathRenderer implements Helper {
                 drawManySelectionBoxes(renderView, Collections.singletonList(mr.getDest()), Baritone.settings().colorMostRecentConsidered.value);
             });
         });
-        //long end = System.nanoTime();
-        //System.out.println((end - split) + " " + (split - start));
-        // if (end - start > 0) {
-        //   System.out.println("Frame took " + (split - start) + " " + (end - split));
-        //}
     }
 
     public static void drawPath(IPath path, int startIndex, Entity player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {

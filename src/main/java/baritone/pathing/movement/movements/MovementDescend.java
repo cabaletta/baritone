@@ -29,6 +29,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -36,6 +37,8 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.Set;
 
 public class MovementDescend extends Movement {
 
@@ -59,6 +62,11 @@ public class MovementDescend extends Movement {
             return COST_INF; // doesn't apply to us, this position is a fall not a descend
         }
         return result.cost;
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        return ImmutableSet.of(src, dest.up(), dest);
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {

@@ -92,7 +92,7 @@ public class PathingControlManager implements IPathingControlManager {
             p.secretInternalSetGoal(null);
             return;
         }
-        if (inControlThisTick != inControlLastTick && command.commandType != PathingCommandType.REQUEST_PAUSE && inControlLastTick != null && !inControlLastTick.isTemporary()) {
+        if (!Objects.equals(inControlThisTick, inControlLastTick) && command.commandType != PathingCommandType.REQUEST_PAUSE && inControlLastTick != null && !inControlLastTick.isTemporary()) {
             // if control has changed from a real process to another real process, and the new process wants to do something
             p.cancelSegmentIfSafe();
             // get rid of the in progress stuff from the last process
