@@ -92,7 +92,7 @@ public final class BackfillProcess extends BaritoneProcessHelper {
         return new PathingCommand(null, PathingCommandType.DEFER); // cede to other process
     }
 
-    public void amIBreakingABlockHMMMMMMM() {
+    private void amIBreakingABlockHMMMMMMM() {
         if (!ctx.getSelectedBlock().isPresent()) {
             return;
         }
