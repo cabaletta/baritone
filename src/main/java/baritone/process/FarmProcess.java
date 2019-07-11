@@ -52,6 +52,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private boolean active;
 
+    private List<BlockPos> locations;
+    private int tickCount;
+
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
             Items.MELON_SEEDS,
@@ -91,6 +94,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     @Override
     public void farm() {
         active = true;
+        locations = null;
     }
 
     private enum Harvest {
@@ -162,9 +166,12 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         if (Baritone.settings().replantNetherWart.value) {
             scan.add(Blocks.SOUL_SAND);
         }
-
-        List<BlockPos> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 4);
-
+        if (Baritone.settings().mineGoalUpdateInterval.value != 0 && tickCount++ % Baritone.settings().mineGoalUpdateInterval.value == 0) {
+            Baritone.getExecutor().execute(() -> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 10));
+        }
+        if (locations == null) {
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
         List<BlockPos> toBreak = new ArrayList<>();
         List<BlockPos> openFarmland = new ArrayList<>();
         List<BlockPos> bonemealable = new ArrayList<>();
