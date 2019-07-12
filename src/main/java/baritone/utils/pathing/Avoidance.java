@@ -73,7 +73,7 @@ public class Avoidance {
             ctx.world().loadedEntityList.stream()
                     .filter(entity -> entity instanceof EntityMob)
                     .filter(entity -> (!(entity instanceof EntitySpider)) || !(ctx.player().getBrightness() >= 0.5))
-                    .filter(entity -> !(entity instanceof EntityPigZombie) || ((EntityPigZombie) entity).isAngry())
+                    .filter(entity -> (!(entity instanceof EntitySpider)) || !(ctx.player().getBrightness() >= 0.5))
                     .map(entity -> new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value))
                     .forEach(res::add);
         }
