@@ -23,6 +23,7 @@ import baritone.api.utils.IPlayerContext;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityPigZombie;
+import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -71,6 +72,7 @@ public class Avoidance {
         if (mobCoeff != 1.0D) {
             ctx.world().loadedEntityList.stream()
                     .filter(entity -> entity instanceof EntityMob)
+                    .filter(entity -> (!(entity instanceof EntitySpider)) || !(ctx.player().getBrightness() >= 0.5))
                     .filter(entity -> !(entity instanceof EntityPigZombie) || ((EntityPigZombie) entity).isAngry())
                     .map(entity -> new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value))
                     .forEach(res::add);
