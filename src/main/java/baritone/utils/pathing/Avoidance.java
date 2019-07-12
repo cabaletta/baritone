@@ -21,7 +21,6 @@ import baritone.Baritone;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.util.math.BlockPos;
