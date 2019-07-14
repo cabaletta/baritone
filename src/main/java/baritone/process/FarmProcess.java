@@ -24,6 +24,7 @@ import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
@@ -40,7 +41,9 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -223,11 +226,14 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             boolean soulsand = openSoulsand.contains(pos);
             Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance());
             if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, soulsand ? this::isNetherWart : this::isPlantable)) {
-                baritone.getLookBehavior().updateTarget(rot.get(), true);
-                if (ctx.isLookingAt(pos)) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
+                if (result.typeOfHit == RayTraceResult.Type.BLOCK && result.sideHit == EnumFacing.UP) {
+                    baritone.getLookBehavior().updateTarget(rot.get(), true);
+                    if (ctx.isLookingAt(pos)) {
+                        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                    }
+                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
         for (BlockPos pos : bonemealable) {
