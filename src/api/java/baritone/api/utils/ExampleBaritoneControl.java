@@ -411,6 +411,24 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("Following any players");
             return true;
         }
+        if (msg.startsWith("followentity")) {
+            String name = msg.substring(12).trim();
+            Optional<Entity> toFollow = Optional.empty();
+            for (Entity entity : ctx.world().loadedEntityList) {
+                String entityName = entity.getName().trim().toLowerCase();
+                if (entityName.contains(name) || name.contains(entityName)) {
+                    toFollow = Optional.of(entity);
+                }
+            }
+            if (!toFollow.isPresent()) {
+                logDirect("Entity not found");
+                return true;
+            }
+            Entity effectivelyFinal = toFollow.get();
+            baritone.getFollowProcess().follow(effectivelyFinal::equals);
+            logDirect("Following entity " + toFollow.get());
+            return true;
+        }
         if (msg.startsWith("follow")) {
             String name = msg.substring(6).trim();
             Optional<Entity> toFollow = Optional.empty();
