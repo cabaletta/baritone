@@ -71,17 +71,16 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private static final List<Item> PICKUP_DROPPED = Arrays.asList(
             Items.BEETROOT_SEEDS,
-            Items.WHEAT,
+            Items.BEETROOT,
             Items.MELON_SEEDS,
             Items.MELON,
+            Item.getItemFromBlock(Blocks.MELON_BLOCK),
             Items.WHEAT_SEEDS,
             Items.WHEAT,
             Items.PUMPKIN_SEEDS,
+            Item.getItemFromBlock(Blocks.PUMPKIN),
             Items.POTATO,
             Items.CARROT,
-            Items.BEETROOT,
-            Item.getItemFromBlock(Blocks.PUMPKIN),
-            Item.getItemFromBlock(Blocks.MELON_BLOCK),
             Items.NETHER_WART,
             Items.REEDS,
             Item.getItemFromBlock(Blocks.CACTUS)
