@@ -126,7 +126,7 @@ public class PathingControlManager implements IPathingControlManager {
         }
     }
 
-    public void postTick() {
+    private void postTick() {
         // if we did this in pretick, it would suck
         // we use the time between ticks as calculation time
         // therefore, we only cancel and recalculate after the tick for the current path has executed
