@@ -406,9 +406,32 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             return true;
         }
+        if (msg.startsWith("followentities")) {
+            baritone.getFollowProcess().follow(Entity.class::isInstance);
+            logDirect("Following any entities");
+            return true;
+        }
         if (msg.startsWith("followplayers")) {
             baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
             logDirect("Following any players");
+            return true;
+        }
+        if (msg.startsWith("followentity")) {
+            String name = msg.substring(12).trim();
+            Optional<Entity> toFollow = Optional.empty();
+            for (Entity entity : ctx.world().loadedEntityList) {
+                String entityName = entity.getName().trim().toLowerCase();
+                if (entityName.contains(name) || name.contains(entityName)) {
+                    toFollow = Optional.of(entity);
+                }
+            }
+            if (!toFollow.isPresent()) {
+                logDirect("Entity not found");
+                return true;
+            }
+            Entity effectivelyFinal = toFollow.get();
+            baritone.getFollowProcess().follow(effectivelyFinal::equals);
+            logDirect("Following entity " + toFollow.get());
             return true;
         }
         if (msg.startsWith("follow")) {
