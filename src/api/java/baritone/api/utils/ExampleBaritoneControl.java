@@ -35,6 +35,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ReportedException;
@@ -421,7 +422,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             Optional<Entity> toFollow = Optional.empty();
             for (Entity entity : ctx.world().loadedEntityList) {
                 String entityName = entity.getName().trim().toLowerCase();
-                if (entityName.contains(name) || name.contains(entityName)) {
+                if ((entityName.contains(name) || name.contains(entityName)) && !(entity instanceof EntityItem || entity instanceof EntityPlayer)) { // We dont want it following players while `#follow` exists.
                     toFollow = Optional.of(entity);
                 }
             }
