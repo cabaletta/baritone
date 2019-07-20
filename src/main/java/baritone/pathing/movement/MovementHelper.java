@@ -134,7 +134,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
         // has already been accounted for above
         // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
-        return block.isPassable(null, null);
+        return block.isPassable(null, BlockPos.ORIGIN);
     }
 
     /**
