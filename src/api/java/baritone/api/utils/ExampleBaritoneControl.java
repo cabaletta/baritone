@@ -31,6 +31,7 @@ import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IGetToBlockProcess;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockAir;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.crash.CrashReport;
@@ -60,6 +61,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     "gc - Calls System.gc();\n" +
                     "invert - Runs away from the goal instead of towards it\n" +
                     "follow - Follows a player 'follow username'\n" +
+                    "followentity - Follows an entity 'follow entityname'\n" +
                     "reloadall - (debug) Reloads chunk cache\n" +
                     "saveall - (debug) Saves chunk cache\n" +
                     "find - (debug) outputs how many blocks of a certain type are within the cache\n" +
@@ -75,6 +77,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     "sethome - Sets \"home\"\n" +
                     "home - Paths towards \"home\" \n" +
                     "costs - (debug) all movement costs from current location\n" +
+                    "top - Used to get out of caves, mines, ..." +
                     "damn - Daniel\n" +
                     "Go to https://github.com/cabaletta/baritone/blob/master/USAGE.md for more information";
 
@@ -685,6 +688,16 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 customGoalProcess.setGoalAndPath(goal);
                 logDirect("Going to saved home " + goal);
             }
+            return true;
+        }
+        if (msg.equals("top")) {
+            BlockPos targetPos = mc.player.getPosition();
+            for (int y = 0; y<256; y++) {
+                BlockPos newPos = new BlockPos(targetPos.getX(), y, targetPos.getZ());
+                if(!(mc.world.getBlockState(newPos).getBlock() instanceof BlockAir)) targetPos = newPos;
+            }
+            customGoalProcess.setGoalAndPath(new GoalBlock(targetPos.add(0, 1, 0))); // Stand on block instead of breaking it
+            logDirect(targetPos.toString());
             return true;
         }
         if (msg.equals("damn")) {
