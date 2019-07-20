@@ -691,7 +691,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.equals("top")) {
-            BlockPos targetPos = mc.player.getPosition();
+            BlockPos targetPos = ctx.playerFeet();
             for (int y = 0; y<256; y++) {
                 BlockPos newPos = new BlockPos(targetPos.getX(), y, targetPos.getZ());
                 if(!(mc.world.getBlockState(newPos).getBlock() instanceof BlockAir)) targetPos = newPos;
