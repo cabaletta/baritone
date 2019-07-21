@@ -610,7 +610,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         if (msg.startsWith("delete")) {
             String name = msg.substring(6).trim();
-            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w ->  w.getTag() == IWaypoint.Tag.USER && w.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getTag() == IWaypoint.Tag.USER && w.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
             if (waypoint == null) {
                 logDirect("No user defined position under the name '" + name + "' found.");
                 return true;
@@ -714,7 +714,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     goal = new GoalBlock(playerFeet);
                     break;
                 case 1:
-
                     goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y));
                     break;
                 case 2:
