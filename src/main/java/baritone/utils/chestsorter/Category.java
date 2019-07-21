@@ -31,13 +31,13 @@ import java.util.stream.Stream;
 
 // items only
 // TODO: make more type safe
-public interface Category<SUPER extends Item, T extends SUPER> {
+public interface Category<T extends Item, SUB extends T> {
     // responsible for type checks
     // if this function returns true then SUPER should assignable to T
-    boolean isInCategory(ItemStack stack, SUPER item);
+    boolean isInCategory(ItemStack stack, T item);
     //Class<? extends T> getSubType(); // TODO: use this for type checking
 
-    List<Category<T, ? extends Item>> getSubcategories();
+    List<Category<SUB, ? extends Item>> getSubcategories();
     Comparator<T> comparator();
 
 
@@ -61,7 +61,7 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     @SuppressWarnings("unchecked")
     @Nullable
     // breadth first search
-    static Category<? extends Item, ? extends Item> findBestCategory(ItemStack stack, Category<? extends Item, ? extends Item> category) {
+    static Category<?, ?> findBestCategory(ItemStack stack, Category<?, ?> category) {
         // cast to raw type
         if (!((Category)category).isInCategory(stack, stack.getItem())) return null; // this should only be done for root category
 
@@ -73,8 +73,8 @@ public interface Category<SUPER extends Item, T extends SUPER> {
         return category;
     }
 
-    static void postOrderTraverse(Category<? extends Item, ? extends Item> category, Consumer<Category<? extends Item, ? extends Item>> consumer) {
-        for (Category<? extends Item, ? extends Item> iter : category.getSubcategories()) {
+    static void postOrderTraverse(Category<?, ?> category, Consumer<Category<?, ?>> consumer) {
+        for (Category<?, ?> iter : category.getSubcategories()) {
             postOrderTraverse(iter, consumer);
         }
         consumer.accept(category);
@@ -86,15 +86,15 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     // ItemStack
     //
     @SafeVarargs
-    @Deprecated // biPredicate must do type checking
-    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> predicate(BiPredicate<ItemStack, SUPER> biPredicate, Category<T, ?>... subCategories) {
+    //@Deprecated // biPredicate must do type checking
+    static <T extends Item, SUB extends T> Category<T, SUB> predicate(BiPredicate<ItemStack, T> biPredicate, Category<SUB, ?>... subCategories) {
         return new BasicCategory<>(biPredicate, subCategories);
     }
 
     // subcategories ignored
     // unsure about this function
     @SafeVarargs
-    static <SUPER extends Item> Category<SUPER, SUPER> notMatching(Category<SUPER, ?> category, Category<SUPER, SUPER>... subCategories) {
+    static <T extends Item> Category<T, T> notMatching(Category<T, ?> category, Category<T, T>... subCategories) {
         return predicate((stack, item) -> !category.isInCategory(stack, item), subCategories);
     }
 
@@ -102,18 +102,18 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     // Item
     //
     @SafeVarargs
-    @Deprecated // predicate must do type checking
-    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> itemPredicate(Predicate<SUPER> predicate, Category<T, ?>... subCategories) {
+    //@Deprecated // predicate must do type checking
+    static <T extends Item, SUB extends T> Category<T, SUB> itemPredicate(Predicate<T> predicate, Category<SUB, ?>... subCategories) {
         return predicate((stack, item) -> predicate.test(item), subCategories);
     }
 
     @SafeVarargs
-    static <SUPER extends Item, T extends SUPER> Category<SUPER, T> itemType(Class<T> type, Category<T, ?>... subCategories) {
+    static <T extends Item, SUB extends T> Category<T, SUB> itemType(Class<? extends SUB> type, Category<SUB, ?>... subCategories) {
         return itemPredicate(type::isInstance, subCategories);
     }
 
     @SafeVarargs
-    static <SUPER extends Item> Category<SUPER, SUPER> itemEquals(Item item, Category<SUPER, SUPER>... subCategories) {
+    static <T extends Item> Category<T, T> itemEquals(Item item, Category<T, T>... subCategories) {
         return itemPredicate(item::equals, subCategories);
     }
 
@@ -121,7 +121,7 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     // ItemBlock
     //
     @SafeVarargs
-    static <SUPER extends ItemBlock> Category<SUPER, SUPER> itemBlockType(Class<? extends Block> type, Category<SUPER, SUPER>... subCategories) {
+    static <T extends ItemBlock> Category<T, T> itemBlockType(Class<? extends Block> type, Category<T, T>... subCategories) {
         return itemPredicate(itemBlock -> type.isInstance(itemBlock.getBlock()), subCategories);
     }
 
@@ -130,11 +130,11 @@ public interface Category<SUPER extends Item, T extends SUPER> {
     @SafeVarargs
     @SuppressWarnings("unchecked")
     // Item to enum
-    static <SUPER extends Item, ENUM extends Enum<ENUM>> Category<SUPER, SUPER> itemEnums(Class<ENUM> enumClass, Function<SUPER, ENUM> toEnum, Category<SUPER, SUPER>... subCategories) {
-        final Category<SUPER, SUPER>[] categories =
+    static <T extends Item, ENUM extends Enum<ENUM>> Category<T, T> itemEnums(Class<ENUM> enumClass, Function<T, ENUM> toEnum, Category<T, T>... subCategories) {
+        final Category<T, T>[] categories =
             Stream.of(enumClass.getEnumConstants())
                 //.peek(enom -> System.out.println("Enum: " + enom))
-                .map(enom -> Category.<SUPER, SUPER>itemPredicate(item -> toEnum.apply(item) == enom))
+                .map(enom -> Category.<T, T>itemPredicate(item -> toEnum.apply(item) == enom))
                 .toArray(Category[]::new);
 
         return itemPredicate(obj -> true,
