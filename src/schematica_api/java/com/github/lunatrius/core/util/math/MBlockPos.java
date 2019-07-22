@@ -20,7 +20,7 @@ package com.github.lunatrius.core.util.math;
 import net.minecraft.util.math.BlockPos;
 
 public class MBlockPos extends BlockPos {
-    private MBlockPos() {
+    MBlockPos() {
         super(6, 6, 6);
     }
 
