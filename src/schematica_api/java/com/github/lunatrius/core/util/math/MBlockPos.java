@@ -20,10 +20,6 @@ package com.github.lunatrius.core.util.math;
 import net.minecraft.util.math.BlockPos;
 
 public class MBlockPos extends BlockPos {
-    public int field_177962_a; // x
-    public int field_177960_b; // y
-    public int field_177961_c; // z
-
     private MBlockPos() {
         super(6, 6, 6);
     }

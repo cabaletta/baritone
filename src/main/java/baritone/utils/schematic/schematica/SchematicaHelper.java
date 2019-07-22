@@ -42,7 +42,7 @@ public enum SchematicaHelper {
         return Optional.ofNullable(ClientProxy.schematic)
             .map(world -> {
                 MBlockPos poz = world.position;
-                return new Tuple<>(new SchematicAdapter(world), new BlockPos(poz.field_177962_a, poz.field_177960_b, poz.field_177961_c));
+                return new Tuple<>(new SchematicAdapter(world), new BlockPos(poz.getX(), poz.getY(), poz.getZ()));
             });
     }
 
