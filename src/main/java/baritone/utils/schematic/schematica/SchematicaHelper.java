@@ -46,5 +46,4 @@ public enum SchematicaHelper {
             });
     }
 
-    private static void meme(Class<?> clazz) throws ClassNotFoundException {}
 }

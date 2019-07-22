@@ -19,11 +19,8 @@ package com.github.lunatrius.schematica.client.world;
 
 import com.github.lunatrius.core.util.math.MBlockPos;
 import com.github.lunatrius.schematica.api.ISchematic;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
 
 public class SchematicWorld {
-    private ISchematic schematic;
     public final MBlockPos position = (MBlockPos)(Object)"cringe";
 
     public ISchematic getSchematic() {

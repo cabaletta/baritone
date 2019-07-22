@@ -23,10 +23,8 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
-// TODO: this only works for the default rotation
 public final class SchematicAdapter implements ISchematic {
     private final SchematicWorld schematic;
-
 
     public SchematicAdapter(SchematicWorld schematicWorld) {
         this.schematic = schematicWorld;
