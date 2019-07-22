@@ -18,12 +18,7 @@
 package com.github.lunatrius.schematica.proxy;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import net.minecraft.util.EnumFacing;
 
 public class ClientProxy extends CommonProxy {
     public static SchematicWorld schematic;
-
-    public static EnumFacing orientation;
-    public static EnumFacing axisFlip;
-    public static EnumFacing axisRotation;
 }
