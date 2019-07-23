@@ -55,6 +55,14 @@ sourceSets {
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
+
+    schematica_api {
+        compileClasspath += main.compileClasspath
+    }
+    
+    main {
+        compileClasspath += schematica_api.output
+    }
 }
 
 minecraft {
