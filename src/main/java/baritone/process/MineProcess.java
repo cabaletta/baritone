@@ -70,7 +70,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private int tickCount;
 
     private static LootTableManager manager;
-    private static Map<Block, List<Item>> drops;
+    private static Map<Block, List<Item>> drops = new HashMap<>();
 
     public MineProcess(Baritone baritone) {
         super(baritone);
