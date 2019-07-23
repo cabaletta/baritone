@@ -35,6 +35,9 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.WaterFluid;
 import net.minecraft.util.Direction;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class MovementParkour extends Movement {
 
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
@@ -176,6 +179,17 @@ public class MovementParkour extends Movement {
     }
 
     @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        Set<BetterBlockPos> set = new HashSet<>();
+        for (int i = 0; i <= dist; i++) {
+            for (int y = 0; y < 2; y++) {
+                set.add(src.offset(direction, i).up(y));
+            }
+        }
+        return set;
+    }
+
+    @Override
     public boolean safeToCancel(MovementState state) {
         // once this movement is instantiated, the state is default to PREPPING
         // but once it's ticked for the first time it changes to RUNNING
@@ -213,7 +227,7 @@ public class MovementParkour extends Movement {
                 state.setStatus(MovementStatus.SUCCESS);
             }
         } else if (!ctx.playerFeet().equals(src)) {
-            if (ctx.playerFeet().equals(src.offset(direction)) || ctx.player().posY - ctx.playerFeet().getY() > 0.0001) {
+            if (ctx.playerFeet().equals(src.offset(direction)) || ctx.player().posY - src.y > 0.0001) {
                 if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true) == PlaceResult.READY_TO_PLACE) {
                     // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
                     state.setInput(Input.CLICK_RIGHT, true);

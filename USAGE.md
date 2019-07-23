@@ -16,9 +16,6 @@ To disable direct chat control (with no prefix), turn off the `chatControl` sett
 
 To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
 
-
-
-
 Some common examples:
 - `thisway 1000` then `path` to go in the direction you're facing for a thousand blocks
 - `goal x y z` or `goal x z` or `goal y`, then `path` to go to a certain coordinate
@@ -31,6 +28,7 @@ Some common examples:
 - `follow playerName` to follow a player. `follow` to follow the entity you're looking at (only works if it hitting range). `followplayers` to follow any players in range (combine with Kill Aura for a fun time).
 - `save waypointName` to save a waypoint. `goto waypointName` to go to it.
 - `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
+- `schematica` to build the schematic that is currently open in schematica
 - `tunnel` to dig just straight ahead and make a tunnel
 - `farm` to automatically harvest, replant, or bone meal crops
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).

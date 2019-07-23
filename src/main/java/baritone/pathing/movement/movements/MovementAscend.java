@@ -31,6 +31,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FallingBlock;
 import net.minecraft.util.Direction;
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 public class MovementAscend extends Movement {
 
@@ -49,6 +51,17 @@ public class MovementAscend extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        BetterBlockPos prior = new BetterBlockPos(src.subtract(getDirection()).up()); // sometimes we back up to place the block, also sprint ascends, also skip descend to straight ascend
+        return ImmutableSet.of(src,
+                src.up(),
+                dest,
+                prior,
+                prior.up()
+        );
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
@@ -143,6 +156,10 @@ public class MovementAscend extends Movement {
 
     @Override
     public MovementState updateState(MovementState state) {
+        if (ctx.playerFeet().y < src.y) {
+            // this check should run even when in preparing state (breaking blocks)
+            return state.setStatus(MovementStatus.UNREACHABLE);
+        }
         super.updateState(state);
         // TODO incorporate some behavior from ActionClimb (specifically how it waited until it was at most 1.2 blocks away before starting to jump
         // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
@@ -150,12 +167,8 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().equals(dest)) {
+        if (ctx.playerFeet().equals(dest) || ctx.playerFeet().equals(dest.add(getDirection().down()))) {
             return state.setStatus(MovementStatus.SUCCESS);
-        }
-
-        if (ctx.playerFeet().y < src.y) {
-            return state.setStatus(MovementStatus.UNREACHABLE);
         }
 
         BlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);

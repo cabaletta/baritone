@@ -30,11 +30,15 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.fluid.WaterFluid;
 import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.Optional;
+import java.util.Set;
 
 public class MovementTraverse extends Movement {
 
@@ -56,6 +60,11 @@ public class MovementTraverse extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        return ImmutableSet.of(src, dest);
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
@@ -196,9 +205,10 @@ public class MovementTraverse extends Movement {
         boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
 
         if (pb0.getBlock() instanceof DoorBlock || pb1.getBlock() instanceof DoorBlock) {
-            if ((pb0.getBlock() instanceof DoorBlock && !MovementHelper.isDoorPassable(ctx, src, dest)
-                    || pb1.getBlock() instanceof DoorBlock && !MovementHelper.isDoorPassable(ctx, dest, src))
-                    && !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()))) {
+            boolean notPassable = pb0.getBlock() instanceof DoorBlock && !MovementHelper.isDoorPassable(ctx, src, dest) || pb1.getBlock() instanceof DoorBlock && !MovementHelper.isDoorPassable(ctx, dest, src);
+            boolean canOpen = !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()));
+
+            if (notPassable && canOpen) {
                 return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), positionsToBreak[0]), ctx.playerRotations()), true))
                         .setInput(Input.CLICK_RIGHT, true);
             }
@@ -209,8 +219,10 @@ public class MovementTraverse extends Movement {
                     : !MovementHelper.isGatePassable(ctx, positionsToBreak[1], src) ? positionsToBreak[1]
                     : null;
             if (blocked != null) {
-                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), blocked), ctx.playerRotations()), true))
-                        .setInput(Input.CLICK_RIGHT, true);
+                Optional<Rotation> rotation = RotationUtils.reachable(ctx, blocked);
+                if (rotation.isPresent()) {
+                    return state.setTarget(new MovementState.MovementTarget(rotation.get(), true)).setInput(Input.CLICK_RIGHT, true);
+                }
             }
         }
 

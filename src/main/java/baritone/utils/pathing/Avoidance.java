@@ -22,6 +22,9 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.monster.EndermanEntity;
+import net.minecraft.entity.monster.SpiderEntity;
+import net.minecraft.entity.monster.ZombiePigmanEntity;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -70,6 +73,9 @@ public class Avoidance {
         if (mobCoeff != 1.0D) {
             ctx.world().loadedEntityList.stream()
                     .filter(entity -> entity instanceof MobEntity)
+                    .filter(entity -> (!(entity instanceof SpiderEntity)) || ctx.player().getBrightness() < 0.5)
+                    .filter(entity -> !(entity instanceof ZombiePigmanEntity) || ((ZombiePigmanEntity) entity).isAngry())
+                    .filter(entity -> !(entity instanceof EndermanEntity) || ((EndermanEntity) entity).isScreaming())
                     .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
         }
         return res;

@@ -24,9 +24,12 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+
+import java.util.Set;
 
 public class MovementDownward extends Movement {
 
@@ -45,6 +48,11 @@ public class MovementDownward extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         return cost(context, src.x, src.y, src.z);
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        return ImmutableSet.of(src, dest);
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
@@ -73,6 +81,8 @@ public class MovementDownward extends Movement {
 
         if (ctx.playerFeet().equals(dest)) {
             return state.setStatus(MovementStatus.SUCCESS);
+        } else if (!playerInValidPosition()) {
+            return state.setStatus(MovementStatus.UNREACHABLE);
         }
         double diffX = ctx.player().posX - (dest.getX() + 0.5);
         double diffZ = ctx.player().posZ - (dest.getZ() + 0.5);

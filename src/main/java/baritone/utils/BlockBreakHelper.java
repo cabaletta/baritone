@@ -39,7 +39,7 @@ public final class BlockBreakHelper implements Helper {
         this.playerContext = playerContext;
     }
 
-    public void tryBreakBlock(BlockPos pos, Direction side) {
+    private void tryBreakBlock(BlockPos pos, Direction side) {
         if (playerContext.playerController().onPlayerDamageBlock(pos, side)) {
             playerContext.player().swingArm(Hand.MAIN_HAND);
         }

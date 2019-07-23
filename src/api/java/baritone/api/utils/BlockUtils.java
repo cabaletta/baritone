@@ -39,9 +39,6 @@ public class BlockUtils {
     }
 
     public static Block stringToBlockRequired(String name) {
-        if (name.equals("lit_redstone_ore")) { // workaround for Impact 4.6 only
-            return stringToBlockRequired("redstone_ore");
-        }
         Block block = stringToBlockNullable(name);
         Objects.requireNonNull(block);
         return block;

@@ -15,37 +15,27 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone;
+package com.github.lunatrius.core.util.math;
 
-import baritone.api.IBaritone;
-import baritone.api.IBaritoneProvider;
-import baritone.api.cache.IWorldScanner;
-import baritone.cache.WorldScanner;
+import net.minecraft.util.math.BlockPos;
 
-import java.util.Collections;
-import java.util.List;
-
-/**
- * @author Brady
- * @since 9/29/2018
- */
-public final class BaritoneProvider implements IBaritoneProvider {
-
-    private final Baritone primary = new Baritone();
-    private final List<IBaritone> all = Collections.singletonList(primary);
-
-    @Override
-    public IBaritone getPrimaryBaritone() {
-        return primary;
+public class MBlockPos extends BlockPos {
+    MBlockPos() {
+        super(6, 6, 6);
     }
 
     @Override
-    public List<IBaritone> getAllBaritones() {
-        return all;
+    public int getX() {
+        throw new LinkageError("LOL");
     }
 
     @Override
-    public IWorldScanner getWorldScanner() {
-        return WorldScanner.INSTANCE;
+    public int getY() {
+        throw new LinkageError("LOL");
+    }
+
+    @Override
+    public int getZ() {
+        throw new LinkageError("LOL");
     }
 }
