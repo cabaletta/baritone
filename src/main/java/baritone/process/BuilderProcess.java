@@ -35,6 +35,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.AirSchematic;
 import baritone.utils.schematic.Schematic;
+import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFlowingFluid;
@@ -107,6 +108,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         build(name, parse(tag), origin);
         return true;
+    }
+
+    @Override
+    public void buildOpenSchematic() {
+        if (SchematicaHelper.isSchematicaPresent()) {
+            Optional<Tuple<ISchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
+            if (schematic.isPresent()) {
+                this.build(schematic.get().getA().toString(), schematic.get().getA(), schematic.get().getB());
+            } else {
+                logDirect("No schematic currently open");
+            }
+        } else {
+            logDirect("Schematica is not present");
+        }
     }
 
     public void clearArea(BlockPos corner1, BlockPos corner2) {

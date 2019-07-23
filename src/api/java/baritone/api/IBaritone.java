@@ -128,5 +128,8 @@ public interface IBaritone {
      */
     IEventBus getGameEventHandler();
 
+    /**
+     * Open click
+     */
     void openClick();
 }

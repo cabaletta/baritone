@@ -35,6 +35,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -292,6 +293,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect(success ? "Loaded" : "Unable to load");
             return true;
         }
+        if (msg.startsWith("schematica")) {
+            baritone.getBuilderProcess().buildOpenSchematic();
+            return true;
+        }
         if (msg.equals("come")) {
             customGoalProcess.setGoalAndPath(new GoalBlock(new BlockPos(Helper.mc.getRenderViewEntity())));
             logDirect("Coming");
@@ -404,9 +409,32 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             return true;
         }
+        if (msg.startsWith("followentities")) {
+            baritone.getFollowProcess().follow(Entity.class::isInstance);
+            logDirect("Following any entities");
+            return true;
+        }
         if (msg.startsWith("followplayers")) {
             baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
             logDirect("Following any players");
+            return true;
+        }
+        if (msg.startsWith("followentity")) {
+            String name = msg.substring(12).trim();
+            Optional<Entity> toFollow = Optional.empty();
+            for (Entity entity : ctx.world().loadedEntityList) {
+                String entityName = entity.getName().getFormattedText().trim().toLowerCase();
+                if ((entityName.contains(name) || name.contains(entityName)) && !(entity instanceof EntityItem || entity instanceof EntityPlayer)) { // We dont want it following players while `#follow` exists.
+                    toFollow = Optional.of(entity);
+                }
+            }
+            if (!toFollow.isPresent()) {
+                logDirect("Entity not found");
+                return true;
+            }
+            Entity effectivelyFinal = toFollow.get();
+            baritone.getFollowProcess().follow(effectivelyFinal::equals);
+            logDirect("Following entity " + toFollow.get());
             return true;
         }
         if (msg.startsWith("follow")) {
@@ -688,7 +716,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     goal = new GoalBlock(playerFeet);
                     break;
                 case 1:
-
                     goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y));
                     break;
                 case 2:

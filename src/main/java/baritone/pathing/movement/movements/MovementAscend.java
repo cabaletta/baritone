@@ -168,7 +168,7 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().equals(dest)) {
+        if (ctx.playerFeet().equals(dest) || ctx.playerFeet().equals(dest.add(getDirection().down()))) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 

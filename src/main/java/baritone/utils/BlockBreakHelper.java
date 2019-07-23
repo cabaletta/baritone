@@ -38,7 +38,7 @@ public final class BlockBreakHelper implements Helper {
         this.playerContext = playerContext;
     }
 
-    public void tryBreakBlock(BlockPos pos, EnumFacing side) {
+    private void tryBreakBlock(BlockPos pos, EnumFacing side) {
         if (playerContext.playerController().onPlayerDamageBlock(pos, side)) {
             playerContext.player().swingArm(EnumHand.MAIN_HAND);
         }

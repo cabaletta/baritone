@@ -66,6 +66,14 @@ sourceSets {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
         runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
+
+    schematica_api {
+        compileClasspath += main.compileClasspath
+    }
+    
+    main {
+        compileClasspath += schematica_api.output
+    }
 }
 
 task sourceJar(type: Jar, dependsOn: classes) {
