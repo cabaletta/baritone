@@ -268,7 +268,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 goalz.add(new GoalBlock(pos));
             }
         }
-        for (Entity entity : ctx.world().loadedEntityList) {
+        for (Entity entity : ctx.entities()) {
             if (entity instanceof ItemEntity && entity.onGround) {
                 ItemEntity ei = (ItemEntity) entity;
                 if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {

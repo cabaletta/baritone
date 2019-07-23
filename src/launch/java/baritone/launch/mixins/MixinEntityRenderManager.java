@@ -17,27 +17,32 @@
 
 package baritone.launch.mixins;
 
-import baritone.utils.accessor.IAnvilChunkLoader;
-import net.minecraft.world.chunk.storage.RegionFileCache;
-import org.spongepowered.asm.mixin.Final;
+import baritone.utils.accessor.IEntityRenderManager;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import java.io.File;
-
-/**
- * @author Brady
- * @since 9/4/2018
- */
-@Mixin(RegionFileCache.class)
-public class MixinRegionFileCache implements IAnvilChunkLoader {
-
+@Mixin(EntityRendererManager.class)
+public class MixinEntityRenderManager implements IEntityRenderManager {
     @Shadow
-    @Final
-    private File folder;
+    private double renderPosX;
+    @Shadow
+    private double renderPosY;
+    @Shadow
+    private double renderPosZ;
 
     @Override
-    public File getChunkSaveLocation() {
-        return this.folder;
+    public double renderPosX() {
+        return renderPosX;
+    }
+
+    @Override
+    public double renderPosY() {
+        return renderPosY;
+    }
+
+    @Override
+    public double renderPosZ() {
+        return renderPosZ;
     }
 }

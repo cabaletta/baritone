@@ -168,6 +168,6 @@ public class BlockStateInterface {
         if (ChunkSection.isEmpty(section)) {
             return AIR;
         }
-        return section.get(x & 15, y & 15, z & 15);
+        return section.getBlockState(x & 15, y & 15, z & 15);
     }
 }

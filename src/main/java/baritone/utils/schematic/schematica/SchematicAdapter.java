@@ -20,7 +20,7 @@ package baritone.utils.schematic.schematica;
 import baritone.api.utils.ISchematic;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 
 public final class SchematicAdapter implements ISchematic {
@@ -31,7 +31,7 @@ public final class SchematicAdapter implements ISchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z) {
+    public BlockState desiredState(int x, int y, int z) {
         return schematic.getSchematic().getBlockState(new BlockPos(x, y, z));
     }
 

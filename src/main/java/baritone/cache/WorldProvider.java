@@ -20,11 +20,9 @@ package baritone.cache;
 import baritone.Baritone;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.utils.Helper;
-import baritone.utils.accessor.IAnvilChunkLoader;
-import baritone.utils.accessor.IChunkProviderServer;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.world.ServerWorld;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
@@ -65,9 +63,7 @@ public class WorldProvider implements IWorldProvider, Helper {
         // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
         if (mc.isSingleplayer()) {
             ServerWorld localServerWorld = integratedServer.getWorld(dimension);
-            IChunkProviderServer provider = (IChunkProviderServer) localServerWorld.getChunkProvider();
-            IAnvilChunkLoader loader = (IAnvilChunkLoader) provider.getChunkLoader();
-            directory = loader.getChunkSaveLocation();
+            directory = dimension.getDirectory(localServerWorld.getSaveHandler().getWorldDirectory());
 
             // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
             if (directory.toPath().relativize(mc.gameDir.toPath()).getNameCount() != 2) {

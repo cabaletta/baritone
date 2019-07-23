@@ -44,38 +44,37 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
 
     @Override
     public boolean onPlayerDamageBlock(BlockPos pos, Direction side) {
-
-        return mc.field_71442_b.onPlayerDamageBlock(pos, side);
+        return mc.playerController.onPlayerDamageBlock(pos, side);
     }
 
     @Override
     public void resetBlockRemoving() {
-        mc.field_71442_b.resetBlockRemoving();
+        mc.playerController.resetBlockRemoving();
     }
 
     @Override
     public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player) {
-        return mc.field_71442_b.windowClick(windowId, slotId, mouseButton, type, player);
+        return mc.playerController.windowClick(windowId, slotId, mouseButton, type, player);
     }
 
     @Override
     public void setGameType(GameType type) {
-        mc.field_71442_b.setGameType(type);
+        mc.playerController.setGameType(type);
     }
 
     @Override
     public GameType getGameType() {
-        return mc.field_71442_b.getCurrentGameType();
+        return mc.playerController.getCurrentGameType();
     }
 
     @Override
     public ActionResultType processRightClickBlock(ClientPlayerEntity player, World world, Hand hand, BlockRayTraceResult result) {
         // primaryplayercontroller is always in a ClientWorld so this is ok
-        return mc.field_71442_b.func_217292_a(player, (ClientWorld) world, hand, result);
+        return mc.playerController.func_217292_a(player, (ClientWorld) world, hand, result);
     }
 
     @Override
     public ActionResultType processRightClick(ClientPlayerEntity player, World world, Hand hand) {
-        return mc.field_71442_b.processRightClick(player, world, hand);
+        return mc.playerController.processRightClick(player, world, hand);
     }
 }

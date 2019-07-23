@@ -47,19 +47,19 @@ public class MixinNetworkManager {
 
     @Shadow
     @Final
-    private PacketDirection field_179294_g;
+    private PacketDirection direction;
 
     @Inject(
             method = "dispatchPacket",
             at = @At("HEAD")
     )
     private void preDispatchPacket(IPacket<?> inPacket, final GenericFutureListener<? extends Future<? super Void>> futureListeners, CallbackInfo ci) {
-        if (this.field_179294_g != PacketDirection.CLIENTBOUND) {
+        if (this.direction != PacketDirection.CLIENTBOUND) {
             return;
         }
 
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().field_71174_a.getNetworkManager() == (NetworkManager) (Object) this) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (NetworkManager) (Object) this) {
                 ibaritone.getGameEventHandler().onSendPacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, inPacket));
             }
         }
@@ -70,12 +70,12 @@ public class MixinNetworkManager {
             at = @At("RETURN")
     )
     private void postDispatchPacket(IPacket<?> inPacket, final GenericFutureListener<? extends Future<? super Void>> futureListeners, CallbackInfo ci) {
-        if (this.field_179294_g != PacketDirection.CLIENTBOUND) {
+        if (this.direction != PacketDirection.CLIENTBOUND) {
             return;
         }
 
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().field_71174_a.getNetworkManager() == (NetworkManager) (Object) this) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (NetworkManager) (Object) this) {
                 ibaritone.getGameEventHandler().onSendPacket(new PacketEvent((NetworkManager) (Object) this, EventState.POST, inPacket));
             }
         }
@@ -89,11 +89,11 @@ public class MixinNetworkManager {
             )
     )
     private void preProcessPacket(ChannelHandlerContext context, IPacket<?> packet, CallbackInfo ci) {
-        if (this.field_179294_g != PacketDirection.CLIENTBOUND) {
+        if (this.direction != PacketDirection.CLIENTBOUND) {
             return;
         }
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().field_71174_a.getNetworkManager() == (NetworkManager) (Object) this) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (NetworkManager) (Object) this) {
                 ibaritone.getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.PRE, packet));
             }
         }
@@ -104,11 +104,11 @@ public class MixinNetworkManager {
             at = @At("RETURN")
     )
     private void postProcessPacket(ChannelHandlerContext context, IPacket<?> packet, CallbackInfo ci) {
-        if (!this.channel.isOpen() || this.field_179294_g != PacketDirection.CLIENTBOUND) {
+        if (!this.channel.isOpen() || this.direction != PacketDirection.CLIENTBOUND) {
             return;
         }
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().field_71174_a.getNetworkManager() == (NetworkManager) (Object) this) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (NetworkManager) (Object) this) {
                 ibaritone.getGameEventHandler().onReceivePacket(new PacketEvent((NetworkManager) (Object) this, EventState.POST, packet));
             }
         }

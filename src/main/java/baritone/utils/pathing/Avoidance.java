@@ -71,10 +71,10 @@ public class Avoidance {
                     .forEach(mobspawner -> res.add(new Avoidance(mobspawner, mobSpawnerCoeff, Baritone.settings().mobSpawnerAvoidanceRadius.value)));
         }
         if (mobCoeff != 1.0D) {
-            ctx.world().loadedEntityList.stream()
+            ctx.entitiesStream()
                     .filter(entity -> entity instanceof MobEntity)
                     .filter(entity -> (!(entity instanceof SpiderEntity)) || ctx.player().getBrightness() < 0.5)
-                    .filter(entity -> !(entity instanceof ZombiePigmanEntity) || ((ZombiePigmanEntity) entity).isAngry())
+                    .filter(entity -> !(entity instanceof ZombiePigmanEntity) || ((ZombiePigmanEntity) entity).getRevengeTarget() != null)
                     .filter(entity -> !(entity instanceof EndermanEntity) || ((EndermanEntity) entity).isScreaming())
                     .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
         }

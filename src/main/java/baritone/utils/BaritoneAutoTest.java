@@ -72,27 +72,27 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         System.out.println("Optimizing Game Settings");
 
         GameSettings s = mc.gameSettings;
-        s.limitFramerate = 20;
+        s.framerateLimit = 20;
         s.mipmapLevels = 0;
-        s.field_74362_aa = ParticleStatus.MINIMAL;
+        s.particles = ParticleStatus.MINIMAL;
         s.overrideWidth = 128;
         s.overrideHeight = 128;
         s.heldItemTooltips = false;
         s.entityShadows = false;
         s.chatScale = 0.0F;
         s.ambientOcclusionStatus = AmbientOcclusionStatus.OFF;
-        s.field_74345_l = CloudOption.OFF;
+        s.cloudOption = CloudOption.OFF;
         s.fancyGraphics = false;
         s.tutorialStep = TutorialSteps.NONE;
         s.hideGUI = true;
-        s.fovSetting = 30.0F;
+        s.fov = 30.0F;
     }
 
     @Override
     public void onTick(TickEvent event) {
         IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
         // If we're on the main menu then create the test world and launch the integrated server
-        if (mc.field_71462_r instanceof MainMenuScreen) {
+        if (mc.currentScreen instanceof MainMenuScreen) {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
             WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.getByName("survival"), true, false, WorldType.DEFAULT);
@@ -105,7 +105,8 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         // to our defined starting position
         if (server != null && server.getWorld(DimensionType.OVERWORLD) != null) {
             server.getWorld(DimensionType.OVERWORLD).setSpawnPoint(STARTING_POSITION);
-            server.getWorld(DimensionType.OVERWORLD).getGameRules().setOrCreateGameRule("spawnRadius", "0", server);
+            throw new UnsupportedOperationException("TODO figure out how to set SPAWN_RADIUS");
+            //server.getWorld(DimensionType.OVERWORLD).getGameRules().get(GameRules.SPAWN_RADIUS).func_223554_b(null, "0"); // TODO I HAVE NO IDEA
         }
 
         if (event.getType() == TickEvent.Type.IN) { // If we're in-game

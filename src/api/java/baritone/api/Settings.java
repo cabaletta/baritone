@@ -812,7 +812,7 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getInstance().field_71456_v.getChatGUI()::printChatMessage);
+    public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getInstance().ingameGUI.getChatGUI()::printChatMessage);
 
     /**
      * The size of the box that is rendered when the current goal is a GoalYLevel

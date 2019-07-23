@@ -27,6 +27,7 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
+import baritone.utils.accessor.IEntityRenderManager;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -61,22 +62,22 @@ public final class PathRenderer implements Helper {
     private PathRenderer() {}
 
     public static double posX() {
-        return mc.getRenderManager().viewerPosX;
+        return ((IEntityRenderManager) mc.getRenderManager()).renderPosX();
     }
 
     public static double posY() {
-        return mc.getRenderManager().viewerPosY;
+        return ((IEntityRenderManager) mc.getRenderManager()).renderPosY();
     }
 
     public static double posZ() {
-        return mc.getRenderManager().viewerPosZ;
+        return ((IEntityRenderManager) mc.getRenderManager()).renderPosZ();
     }
 
     public static void render(RenderEvent event, PathingBehavior behavior) {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
-        if (mc.field_71462_r instanceof GuiClick) {
-            ((GuiClick) mc.field_71462_r).onRender();
+        if (mc.currentScreen instanceof GuiClick) {
+            ((GuiClick) mc.currentScreen).onRender();
         }
 
         int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getId();

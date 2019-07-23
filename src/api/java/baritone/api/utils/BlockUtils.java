@@ -29,7 +29,7 @@ public class BlockUtils {
     private static transient Map<String, Block> resourceCache = new HashMap<>();
 
     public static String blockToString(Block block) {
-        ResourceLocation loc = Registry.field_212618_g.getKey(block);
+        ResourceLocation loc = Registry.BLOCK.getKey(block);
         String name = loc.getPath(); // normally, only write the part after the minecraft:
         if (!loc.getNamespace().equals("minecraft")) {
             // Baritone is running on top of forge with mods installed, perhaps?
@@ -53,7 +53,7 @@ public class BlockUtils {
         if (resourceCache.containsKey(name)) {
             return null; // cached as null
         }
-        block = Registry.field_212618_g.getOrDefault(ResourceLocation.tryCreate(name.contains(":") ? name : "minecraft:" + name));
+        block = Registry.BLOCK.getOrDefault(ResourceLocation.tryCreate(name.contains(":") ? name : "minecraft:" + name));
         // TODO this again returns air instead of null!
         Map<String, Block> copy = new HashMap<>(resourceCache); // read only copy is safe, wont throw concurrentmodification
         copy.put(name, block);

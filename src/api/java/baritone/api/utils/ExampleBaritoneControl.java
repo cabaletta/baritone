@@ -35,7 +35,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -419,7 +418,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("Following any players");
             return true;
         }
-        if (msg.startsWith("followentity")) {
+        /*if (msg.startsWith("followentity")) {
             String name = msg.substring(12).trim();
             Optional<Entity> toFollow = Optional.empty();
             for (Entity entity : ctx.world().loadedEntityList) {
@@ -436,7 +435,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             baritone.getFollowProcess().follow(effectivelyFinal::equals);
             logDirect("Following entity " + toFollow.get());
             return true;
-        }
+        }*/
         if (msg.startsWith("follow")) {
             String name = msg.substring(6).trim();
             Optional<Entity> toFollow = Optional.empty();

@@ -33,6 +33,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -78,7 +79,7 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/Minecraft.field_71462_r:Lnet/minecraft/client/gui/screen/Screen;",
+                    target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/screen/Screen;",
                     ordinal = 5,
                     shift = At.Shift.BY,
                     by = -3
@@ -146,19 +147,6 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "clickMouse",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/client/multiplayer/PlayerController.clickBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/Direction;)Z"
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD
-    )
-    private void onBlockBreak(CallbackInfo ci, BlockPos pos) {
-        // clickMouse is only for the main player
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(pos, BlockInteractEvent.Type.START_BREAK));
-    }
-
-    @Inject(
             method = "rightClickMouse",
             at = @At(
                     value = "INVOKE",
@@ -166,8 +154,8 @@ public class MixinMinecraft {
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack, BlockPos blockpos, int i, ActionResultType enumactionresult) {
+    private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack, BlockRayTraceResult raytrace, int i, ActionResultType enumactionresult) {
         // rightClickMouse is only for the main player
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(raytrace.getPos(), BlockInteractEvent.Type.USE));
     }
 }

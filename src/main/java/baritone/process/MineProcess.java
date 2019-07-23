@@ -34,12 +34,15 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.storage.loot.LootParameters;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -75,11 +78,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (desiredQuantity > 0) {
-            Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), ctx.world(), null, 0).asItem();
-            int curr = ctx.player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
+            List<Item> item = drops(mining.get(0));
+            int curr = ctx.player().inventory.mainInventory.stream().filter(stack -> item.contains(stack.getItem())).mapToInt(ItemStack::getCount).sum();
             System.out.println("Currently have " + curr + " " + item);
             if (curr >= desiredQuantity) {
-                logDirect("Have " + curr + " " + item.getDisplayName(new ItemStack(item, 1)));
+                logDirect("Have " + curr);
                 cancel();
                 return null;
             }
@@ -280,19 +283,21 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
     }
 
+    public static List<Item> drops(Block block) {
+        return block.getDefaultState().getDrops(new LootContext.Builder(null).withRandom(new Random()).withParameter(LootParameters.POSITION, BlockPos.ZERO).withParameter(LootParameters.TOOL, ItemStack.EMPTY).withNullableParameter(LootParameters.BLOCK_ENTITY, null)).stream().map(ItemStack::getItem).collect(Collectors.toList());
+    }
+
     public static List<BlockPos> droppedItemsScan(List<Block> mining, World world) {
         if (!Baritone.settings().mineScanDroppedItems.value) {
             return Collections.emptyList();
         }
         Set<Item> searchingFor = new HashSet<>();
         for (Block block : mining) {
-            Item drop = block.getItemDropped(block.getDefaultState(), world, null, 0).asItem();
-            Item ore = block.asItem();
-            searchingFor.add(drop);
-            searchingFor.add(ore);
+            searchingFor.addAll(drops(block));
+            searchingFor.add(block.asItem());
         }
         List<BlockPos> ret = new ArrayList<>();
-        for (Entity entity : world.loadedEntityList) {
+        for (Entity entity : ((ClientWorld) world).getAllEntities()) {
             if (entity instanceof ItemEntity) {
                 ItemEntity ei = (ItemEntity) entity;
                 if (searchingFor.contains(ei.getItem().getItem())) {

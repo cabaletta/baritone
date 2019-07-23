@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Follow an entity
@@ -78,12 +77,11 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
         if (entity.equals(ctx.player())) {
             return false;
         }
-        return ctx.world().loadedEntityList.contains(entity);
+        return ctx.entitiesStream().anyMatch(entity::equals);
     }
 
     private void scanWorld() {
-        cache = Stream.of(ctx.world().loadedEntityList, ctx.world().getPlayers())
-                .flatMap(List::stream)
+        cache = ctx.entitiesStream()
                 .filter(this::followable)
                 .filter(this.filter)
                 .distinct()

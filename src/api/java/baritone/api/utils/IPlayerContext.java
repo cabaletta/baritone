@@ -20,11 +20,14 @@ package baritone.api.utils;
 import baritone.api.cache.IWorldData;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 
 import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Brady
@@ -37,6 +40,15 @@ public interface IPlayerContext {
     IPlayerController playerController();
 
     World world();
+
+    default Iterable<Entity> entities() {
+        return ((ClientWorld) world()).getAllEntities();
+    }
+
+    default Stream<Entity> entitiesStream() {
+        return StreamSupport.stream(entities().spliterator(), false);
+    }
+
 
     IWorldData worldData();
 

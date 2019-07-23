@@ -48,6 +48,6 @@ public final class RayTraceUtils {
                 direction.y * blockReachDistance,
                 direction.z * blockReachDistance
         );
-        return entity.world.func_217299_a(new RayTraceContext(start, end, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, entity));
+        return entity.world.rayTraceBlocks(new RayTraceContext(start, end, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, entity));
     }
 }

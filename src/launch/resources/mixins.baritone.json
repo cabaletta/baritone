@@ -15,8 +15,6 @@
     "MixinGameRenderer",
     "MixinLivingEntity",
     "MixinMinecraft",
-    "MixinNetworkManager",
-    "MixinRegionFileCache",
-    "MixinServerChunkProvider"
+    "MixinNetworkManager"
   ]
 }

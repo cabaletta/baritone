@@ -122,7 +122,7 @@ public abstract class Movement implements IMovement, MovementHelper {
      */
     @Override
     public MovementStatus update() {
-        ctx.player().playerAbilities.isFlying = false;
+        ctx.player().abilities.isFlying = false;
         currentState = updateState(currentState);
         if (MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             currentState.setInput(Input.JUMP, true);

@@ -72,7 +72,7 @@ public class GuiClick extends Screen implements Helper {
             ///
             Vec3d viewerPos = new Vec3d(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
             ClientPlayerEntity player = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().player();
-            RayTraceResult result = player.world.func_217299_a(new RayTraceContext(near.add(viewerPos), far.add(viewerPos), RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, player));
+            RayTraceResult result = player.world.rayTraceBlocks(new RayTraceContext(near.add(viewerPos), far.add(viewerPos), RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, player));
             if (result != null && result.getType() == RayTraceResult.Type.BLOCK) {
                 currentMouseOver = ((BlockRayTraceResult) result).getPos();
             }

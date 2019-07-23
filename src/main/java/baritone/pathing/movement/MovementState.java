@@ -20,6 +20,8 @@ package baritone.pathing.movement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.registry.Registry;
 
 import java.util.HashMap;
 import java.util.Map;

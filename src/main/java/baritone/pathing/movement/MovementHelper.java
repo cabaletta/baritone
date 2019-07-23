@@ -360,7 +360,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // can we look at the center of a side face of this block and likely be able to place?
         // (thats how this check is used)
         // therefore dont include weird things that we technically could place against (like carpet) but practically can't
-        return isBlockNormalCube(state) || isFullCube(state) || state.getBlock() == Blocks.GLASS || state.getBlock() instanceof StainedGlassBlock;
+        return isBlockNormalCube(state) || state.getBlock() == Blocks.GLASS || state.getBlock() instanceof StainedGlassBlock;
     }
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling) {
@@ -498,11 +498,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean isBlockNormalCube(BlockState state) {
-        return state.isBlockNormalCube();
-    }
-
-    static boolean isFullCube(BlockState state){
-        return state.isFullCube();
+        return state.isNormalCube(null, null);
     }
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown) {

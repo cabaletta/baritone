@@ -165,11 +165,11 @@ public class ToolSet {
      */
     private double potionAmplifier() {
         double speed = 1;
-        if (player.isPotionActive(Effects.field_76422_e)) {
-            speed *= 1 + (player.getActivePotionEffect(Effects.field_76422_e).getAmplifier() + 1) * 0.2;
+        if (player.isPotionActive(Effects.HASTE)) {
+            speed *= 1 + (player.getActivePotionEffect(Effects.HASTE).getAmplifier() + 1) * 0.2;
         }
-        if (player.isPotionActive(Effects.field_76419_f)) {
-            switch (player.getActivePotionEffect(Effects.field_76419_f).getAmplifier()) {
+        if (player.isPotionActive(Effects.MINING_FATIGUE)) {
+            switch (player.getActivePotionEffect(Effects.MINING_FATIGUE).getAmplifier()) {
                 case 0:
                     speed *= 0.3;
                     break;

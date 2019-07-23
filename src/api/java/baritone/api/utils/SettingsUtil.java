@@ -194,8 +194,8 @@ public class SettingsUtil {
         ),
         ITEM(
                 Item.class,
-                str -> Registry.field_212630_s.getOrDefault(new ResourceLocation(str.trim())), // TODO this now returns AIR on failure instead of null, is that an issue?
-                item -> Registry.field_212630_s.getKey(item).toString()
+                str -> Registry.ITEM.getOrDefault(new ResourceLocation(str.trim())), // TODO this now returns AIR on failure instead of null, is that an issue?
+                item -> Registry.ITEM.getKey(item).toString()
         ),
         LIST() {
             @Override
