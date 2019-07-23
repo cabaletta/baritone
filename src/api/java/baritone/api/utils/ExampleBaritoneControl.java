@@ -35,6 +35,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -219,23 +220,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             return true;
         }
-        /*if (msg.equals("fullpath")) {
-            if (pathingBehavior.getGoal() == null) {
-                logDirect("No goal.");
-            } else {
-                logDirect("Started segmented calculator");
-                SegmentedCalculator.calculateSegmentsThreaded(pathingBehavior.pathStart(), pathingBehavior.getGoal(), new CalculationContext(baritone, true), ipath -> {
-                    logDirect("Found a path");
-                    logDirect("Ends at " + ipath.getDest());
-                    logDirect("Length " + ipath.length());
-                    logDirect("Estimated time " + ipath.ticksRemainingFrom(0));
-                    pathingBehavior.secretCursedFunctionDoNotCall(ipath); // it's okay when *I* do it
-                }, () -> {
-                    logDirect("Path calculation failed, no path");
-                });
-            }
-            return true;
-        }*/
         if (msg.equals("proc")) {
             Optional<IBaritoneProcess> proc = baritone.getPathingControlManager().mostRecentInControl();
             if (!proc.isPresent()) {
@@ -418,10 +402,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("Following any players");
             return true;
         }
-        /*if (msg.startsWith("followentity")) {
+        if (msg.startsWith("followentity")) {
             String name = msg.substring(12).trim();
             Optional<Entity> toFollow = Optional.empty();
-            for (Entity entity : ctx.world().loadedEntityList) {
+            for (Entity entity : ctx.entities()) {
                 String entityName = entity.getName().getFormattedText().trim().toLowerCase();
                 if ((entityName.contains(name) || name.contains(entityName)) && !(entity instanceof ItemEntity || entity instanceof PlayerEntity)) { // We dont want it following players while `#follow` exists.
                     toFollow = Optional.of(entity);
@@ -435,7 +419,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             baritone.getFollowProcess().follow(effectivelyFinal::equals);
             logDirect("Following entity " + toFollow.get());
             return true;
-        }*/
+        }
         if (msg.startsWith("follow")) {
             String name = msg.substring(6).trim();
             Optional<Entity> toFollow = Optional.empty();

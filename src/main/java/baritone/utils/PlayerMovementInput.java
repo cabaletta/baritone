@@ -27,7 +27,8 @@ public class PlayerMovementInput extends MovementInput {
         this.handler = handler;
     }
 
-    public void updatePlayerMoveState() {
+    @Override
+    public void tick(boolean p_217607_1_, boolean p_217607_2_) {
         this.moveStrafe = 0.0F;
         this.moveForward = 0.0F;
 

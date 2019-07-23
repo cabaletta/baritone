@@ -12,8 +12,10 @@
     "MixinClientPlayerEntity",
     "MixinClientPlayNetHandler",
     "MixinEntity",
+    "MixinEntityRenderManager",
     "MixinGameRenderer",
     "MixinLivingEntity",
+    "MixinLootContext",
     "MixinMinecraft",
     "MixinNetworkManager"
   ]

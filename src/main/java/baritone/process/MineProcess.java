@@ -39,12 +39,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resources.*;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootParameters;
+import net.minecraft.world.storage.loot.*;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -65,6 +68,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
+
+    private static LootTableManager manager;
+    private static Map<Block, List<Item>> drops;
 
     public MineProcess(Baritone baritone) {
         super(baritone);
@@ -141,6 +147,35 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             return null;
         }
         return command;
+    }
+
+    public static LootTableManager getManager() {
+        if (manager == null) {
+            ResourcePackList rpl = new ResourcePackList<>(ResourcePackInfo::new);
+            rpl.addPackFinder(new ServerPackFinder());
+            rpl.reloadPacksFromFinders();
+            IResourcePack thePack = ((ResourcePackInfo) rpl.getAllPacks().iterator().next()).getResourcePack();
+            IReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(ResourcePackType.SERVER_DATA, null);
+            manager = new LootTableManager();
+            resourceManager.addReloadListener(manager);
+            try {
+                resourceManager.reloadResourcesAndThen(Baritone.getExecutor(), Baritone.getExecutor(), Collections.singletonList(thePack), CompletableFuture.completedFuture(Unit.INSTANCE)).get();
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+        return manager;
+    }
+
+    private static List<Item> drops(Block b) {
+        return drops.computeIfAbsent(b, block -> {
+            ResourceLocation lootTableLocation = block.getLootTable();
+            if (lootTableLocation == LootTables.EMPTY) {
+                return Collections.emptyList();
+            } else {
+                return getManager().getLootTableFromLocation(lootTableLocation).generate(new LootContext.Builder(null).withRandom(new Random()).withParameter(LootParameters.POSITION, BlockPos.ZERO).withParameter(LootParameters.TOOL, ItemStack.EMPTY).withNullableParameter(LootParameters.BLOCK_ENTITY, null).withParameter(LootParameters.BLOCK_STATE, block.getDefaultState()).build(LootParameterSets.BLOCK)).stream().map(ItemStack::getItem).collect(Collectors.toList());
+            }
+        });
     }
 
     @Override
@@ -283,9 +318,6 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
     }
 
-    public static List<Item> drops(Block block) {
-        return block.getDefaultState().getDrops(new LootContext.Builder(null).withRandom(new Random()).withParameter(LootParameters.POSITION, BlockPos.ZERO).withParameter(LootParameters.TOOL, ItemStack.EMPTY).withNullableParameter(LootParameters.BLOCK_ENTITY, null)).stream().map(ItemStack::getItem).collect(Collectors.toList());
-    }
 
     public static List<BlockPos> droppedItemsScan(List<Block> mining, World world) {
         if (!Baritone.settings().mineScanDroppedItems.value) {
