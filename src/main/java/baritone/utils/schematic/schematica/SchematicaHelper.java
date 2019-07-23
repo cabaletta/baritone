@@ -32,7 +32,7 @@ public enum SchematicaHelper {
         try {
             Class.forName(Schematica.class.getName());
             return true;
-        } catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException | NoClassDefFoundError ex) {
             return false;
         }
     }
