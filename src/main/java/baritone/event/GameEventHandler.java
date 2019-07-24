@@ -51,6 +51,7 @@ public final class GameEventHandler implements IEventBus, Helper {
             try {
                 baritone.bsi = new BlockStateInterface(baritone.getPlayerContext(), true);
             } catch (Exception ex) {
+                ex.printStackTrace();
                 baritone.bsi = null;
             }
         } else {

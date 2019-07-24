@@ -9,6 +9,8 @@
   },
   "client": [
     "MixinBlockPos",
+    "MixinChunkArray",
+    "MixinClientChunkProvider",
     "MixinClientPlayerEntity",
     "MixinClientPlayNetHandler",
     "MixinEntity",

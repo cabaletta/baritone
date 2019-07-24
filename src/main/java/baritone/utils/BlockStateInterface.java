@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
+import baritone.utils.accessor.IClientChunkProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -59,9 +60,10 @@ public class BlockStateInterface {
 
     public BlockStateInterface(World world, WorldData worldData, boolean copyLoadedChunks) {
         this.worldData = worldData;
-        this.provider = (ClientChunkProvider) world.getChunkProvider();
-        if (copyLoadedChunks) { // todo
-            System.out.println("Really gotta do this");
+        if (copyLoadedChunks) {
+            this.provider = ((IClientChunkProvider) world.getChunkProvider()).createThreadSafeCopy();
+        } else {
+            this.provider = (ClientChunkProvider) world.getChunkProvider();
         }
         this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.value;
         if (!Minecraft.getInstance().isOnExecutionThread()) {
