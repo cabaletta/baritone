@@ -2,6 +2,8 @@
 
 The easiest way to install Baritone is to install [Impact](https://impactdevelopment.github.io/), which comes with Baritone.
 
+For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1).
+
 Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
 
 ## Prebuilt official releases
