@@ -18,14 +18,15 @@ To toggle a boolean setting, just say its name in chat (for example saying `allo
 
 Some common examples:
 - `thisway 1000` then `path` to go in the direction you're facing for a thousand blocks
-- `goal x y z` or `goal x z` or `goal y`, then `path` to go to a certain coordinate
+- `goal x y z` or `goal x z` or `goal y`, then `path` to set a goal to a certain coordinate then path to it
+- `goto x y z` or `goto x z` or `goto y` to go to a certain coordinate (in a single step, starts going immediately)
 - `goal` to set the goal to your player's feet
 - `goal clear` to clear the goal
 - `cancel` or `stop` to stop everything
 - `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
 - `mine diamond_ore` to mine diamond ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.)
 - `click` to click your destination on the screen. Right click path to on top of the block, left click to path into it (either at foot level or eye level), and left click and drag to clear all blocks from an area.
-- `follow playerName` to follow a player. `follow` to follow the entity you're looking at (only works if it hitting range). `followplayers` to follow any players in range (combine with Kill Aura for a fun time).
+- `follow playerName` to follow a player. `followplayers` to follow any players in range (combine with Kill Aura for a fun time). `followentities` to follow any entities. `followentity pig` to follow entities of a specific type.
 - `save waypointName` to save a waypoint. `goto waypointName` to go to it.
 - `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
 - `schematica` to build the schematic that is currently open in schematica
