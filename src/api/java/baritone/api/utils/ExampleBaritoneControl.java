@@ -691,13 +691,16 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.equals("top")) {
-            BlockPos targetPos = ctx.playerFeet();
-            for (int y = 0; y<256; y++) {
-                BlockPos newPos = new BlockPos(targetPos.getX(), y, targetPos.getZ());
-                if(!(mc.world.getBlockState(newPos).getBlock() instanceof BlockAir)) targetPos = newPos;
+            final BlockPos playerPos = ctx.playerFeet();
+            for (int y = ctx.world().getActualHeight(); y>0; y--) {
+                BlockPos newPos = new BlockPos(playerPos.getX(), y, playerPos.getZ());
+                if (!(mc.world.getBlockState(newPos).getBlock() instanceof BlockAir) && newPos.getY() > playerPos.getY()) {
+                    customGoalProcess.setGoalAndPath(new GoalBlock(newPos.add(0, 1, 0)));
+                    logDirect(playerPos.toString());
+                    return true;
+                }
             }
-            customGoalProcess.setGoalAndPath(new GoalBlock(targetPos.add(0, 1, 0))); // Stand on block instead of breaking it
-            logDirect(targetPos.toString());
+            logDirect("No higher location found");
             return true;
         }
         if (msg.equals("damn")) {
