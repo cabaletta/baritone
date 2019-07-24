@@ -105,8 +105,10 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         // to our defined starting position
         if (server != null && server.getWorld(DimensionType.OVERWORLD) != null) {
             server.getWorld(DimensionType.OVERWORLD).setSpawnPoint(STARTING_POSITION);
-            throw new UnsupportedOperationException("TODO figure out how to set SPAWN_RADIUS");
-            //server.getWorld(DimensionType.OVERWORLD).getGameRules().get(GameRules.SPAWN_RADIUS).func_223554_b(null, "0"); // TODO I HAVE NO IDEA
+            int result = server.getCommandManager().handleCommand(server.getCommandSource(), "/gamerule spawnRadius 0");
+            if (result != 0) {
+                throw new IllegalStateException(result + "");
+            }
         }
 
         if (event.getType() == TickEvent.Type.IN) { // If we're in-game
