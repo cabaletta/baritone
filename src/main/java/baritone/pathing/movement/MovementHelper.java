@@ -498,7 +498,14 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean isBlockNormalCube(BlockState state) {
-        return state.isNormalCube(null, null);
+        Block block = state.getBlock();
+        if (block instanceof BambooBlock
+                || block instanceof MovingPistonBlock
+                || block instanceof ScaffoldingBlock
+                || block instanceof ShulkerBoxBlock) {
+            return false;
+        }
+        return Block.isOpaque(state.getCollisionShape(null, null));
     }
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown) {
