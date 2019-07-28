@@ -43,8 +43,7 @@ import java.util.*;
 import static baritone.api.pathing.movement.MovementStatus.*;
 
 /**
- * Behavior to execute a precomputed path. Does not (yet) deal with path segmentation or stitching
- * or cutting (jumping onto the next path if it starts with a backtrack of this path's ending)
+ * Behavior to execute a precomputed path
  *
  * @author leijurv
  */
