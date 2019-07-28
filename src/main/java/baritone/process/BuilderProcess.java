@@ -434,7 +434,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
         }
 
-
         Goal goal = assemble(bcc, approxPlacable.subList(0, 9));
         if (goal == null) {
             goal = assemble(bcc, approxPlacable); // we're far away, so assume that we have our whole inventory to recalculate placable properly
