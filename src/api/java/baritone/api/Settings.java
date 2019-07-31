@@ -125,6 +125,13 @@ public final class Settings {
     public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
     /**
+     * This should be monetized it's so good
+     * <p>
+     * Defaults to true, but only actually takes effect if allowParkour is also true
+     */
+    public final Setting<Boolean> allowParkourAscend = new Setting<>(true);
+
+    /**
      * Allow descending diagonally
      * <p>
      * Safer than allowParkour yet still slightly unsafe, can make contact with unchecked adjacent blocks, so it's unsafe in the nether.
