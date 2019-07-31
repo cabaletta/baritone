@@ -43,18 +43,20 @@ public class MovementParkour extends Movement {
 
     private final EnumFacing direction;
     private final int dist;
+    private final boolean ascend;
 
-    private MovementParkour(IBaritone baritone, BetterBlockPos src, int dist, EnumFacing dir) {
-        super(baritone, src, src.offset(dir, dist), EMPTY, src.offset(dir, dist).down());
+    private MovementParkour(IBaritone baritone, BetterBlockPos src, int dist, EnumFacing dir, boolean ascend) {
+        super(baritone, src, src.offset(dir, dist).up(ascend ? 1 : 0), EMPTY, src.offset(dir, dist).down(ascend ? 0 : 1));
         this.direction = dir;
         this.dist = dist;
+        this.ascend = ascend;
     }
 
     public static MovementParkour cost(CalculationContext context, BetterBlockPos src, EnumFacing direction) {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, direction, res);
         int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
-        return new MovementParkour(context.getBaritone(), src, dist, direction);
+        return new MovementParkour(context.getBaritone(), src, dist, direction, res.y > src.y);
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
@@ -103,19 +105,35 @@ public class MovementParkour extends Movement {
             }
         }
         for (int i = 2; i <= maxJump; i++) {
-            // TODO perhaps dest.up(3) doesn't need to be fullyPassable, just canWalkThrough, possibly?
-            for (int y2 = 0; y2 < 4; y2++) {
-                if (!MovementHelper.fullyPassable(context, x + xDiff * i, y + y2, z + zDiff * i)) {
-                    return;
-                }
+            int destX = x + xDiff * i;
+            int destZ = z + zDiff * i;
+            if (!MovementHelper.fullyPassable(context, destX, y + 1, destZ)) {
+                return;
             }
-            IBlockState landingOn = context.bsi.get0(x + xDiff * i, y - 1, z + zDiff * i);
+            if (!MovementHelper.fullyPassable(context, destX, y + 2, destZ)) {
+                return;
+            }
+            if (!MovementHelper.fullyPassable(context, destX, y, destZ)) {
+                if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context.bsi, destX, y, destZ) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
+                    res.x = destX;
+                    res.y = y + 1;
+                    res.z = destZ;
+                    res.cost = i * SPRINT_ONE_BLOCK_COST + context.jumpPenalty;
+                }
+                return;
+            }
+            IBlockState landingOn = context.bsi.get0(destX, y - 1, destZ);
             // farmland needs to be canwalkon otherwise farm can never work at all, but we want to specifically disallow ending a jumy on farmland haha
-            if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, x + xDiff * i, y - 1, z + zDiff * i, landingOn)) {
-                res.x = x + xDiff * i;
-                res.y = y;
-                res.z = z + zDiff * i;
-                res.cost = costFromJumpDistance(i) + context.jumpPenalty;
+            if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, landingOn)) {
+                if (checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
+                    res.x = destX;
+                    res.y = y;
+                    res.z = destZ;
+                    res.cost = costFromJumpDistance(i) + context.jumpPenalty;
+                }
+                return;
+            }
+            if (!MovementHelper.fullyPassable(context, destX, y + 3, destZ)) {
                 return;
             }
         }
@@ -136,6 +154,9 @@ public class MovementParkour extends Movement {
         if (!MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.bsi)) {
             return;
         }
+        if (!checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
+            return;
+        }
         for (int i = 0; i < 5; i++) {
             int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
             int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
@@ -151,6 +172,11 @@ public class MovementParkour extends Movement {
                 return;
             }
         }
+    }
+
+    private static boolean checkOvershootSafety(BlockStateInterface bsi, int x, int y, int z) {
+        // we're going to walk into these two blocks after the landing of the parkour anyway, so make sure they aren't avoidWalkingInto
+        return !MovementHelper.avoidWalkingInto(bsi.get0(x, y, z).getBlock()) && !MovementHelper.avoidWalkingInto(bsi.get0(x, y + 1, z).getBlock());
     }
 
     private static double costFromJumpDistance(int dist) {
@@ -211,7 +237,7 @@ public class MovementParkour extends Movement {
             logDebug("sorry");
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
-        if (dist >= 4) {
+        if (dist >= 4 || ascend) {
             state.setInput(Input.SPRINT, true);
         }
         MovementHelper.moveTowards(ctx, state, dest);
@@ -231,7 +257,8 @@ public class MovementParkour extends Movement {
                     // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
-                if (dist == 3) { // this is a 2 block gap, dest = src + direction * 3
+                // prevent jumping too late by checking for ascend
+                if (dist == 3 && !ascend) { // this is a 2 block gap, dest = src + direction * 3
                     double xDiff = (src.x + 0.5) - ctx.player().posX;
                     double zDiff = (src.z + 0.5) - ctx.player().posZ;
                     double distFromStart = Math.max(Math.abs(xDiff), Math.abs(zDiff));
