@@ -56,7 +56,7 @@ public class MovementParkour extends Movement {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, direction, res);
         int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
-        return new MovementParkour(context.getBaritone(), src, dist, direction, res.y != src.y);
+        return new MovementParkour(context.getBaritone(), src, dist, direction, res.y > src.y);
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, EnumFacing dir, MutableMoveResult res) {
@@ -118,7 +118,7 @@ public class MovementParkour extends Movement {
                     res.x = destX;
                     res.y = y + 1;
                     res.z = destZ;
-                    res.cost = costFromJumpDistance(i) + context.jumpPenalty;
+                    res.cost = i * SPRINT_ONE_BLOCK_COST + context.jumpPenalty;
                 }
                 return;
             }
@@ -257,6 +257,7 @@ public class MovementParkour extends Movement {
                     // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
+                // prevent jumping too late by checking for ascend
                 if (dist == 3 && !ascend) { // this is a 2 block gap, dest = src + direction * 3
                     double xDiff = (src.x + 0.5) - ctx.player().posX;
                     double zDiff = (src.z + 0.5) - ctx.player().posZ;
