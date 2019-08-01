@@ -198,7 +198,7 @@ public class MovementParkour extends Movement {
     public double calculateCost(CalculationContext context) {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, direction, res);
-        if (res.x != dest.x || res.z != dest.z) {
+        if (res.x != dest.x || res.y != dest.y || res.z != dest.z) {
             return COST_INF;
         }
         return res.cost;
