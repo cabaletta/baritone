@@ -360,12 +360,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
     }
 
-    /*public void secretCursedFunctionDoNotCall(IPath path) {
-        synchronized (pathPlanLock) {
-            current = new PathExecutor(this, path);
-        }
-    }*/
-
     public CalculationContext secretInternalGetCalculationContext() {
         return context;
     }
