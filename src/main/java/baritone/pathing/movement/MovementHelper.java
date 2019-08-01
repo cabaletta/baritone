@@ -134,7 +134,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
         // has already been accounted for above
         // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
-        return block.isPassable(null, null);
+        return block.isPassable(null, BlockPos.ORIGIN);
     }
 
     /**
@@ -254,7 +254,6 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidWalkingInto(Block block) {
         return block instanceof BlockLiquid
-                || block instanceof BlockDynamicLiquid
                 || block == Blocks.MAGMA
                 || block == Blocks.CACTUS
                 || block == Blocks.FIRE
@@ -507,7 +506,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                     return PlaceResult.NO_OPTION;
                 }
                 double faceX = (placeAt.getX() + against1.getX() + 1.0D) * 0.5D;
-                double faceY = (placeAt.getY() + against1.getY() + 1.0D) * 0.5D;
+                double faceY = (placeAt.getY() + against1.getY() + 0.5D) * 0.5D;
                 double faceZ = (placeAt.getZ() + against1.getZ() + 1.0D) * 0.5D;
                 Rotation place = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
                 RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance());

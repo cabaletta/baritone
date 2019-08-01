@@ -135,7 +135,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     ) {
                         // when it was *just* started, currentBest will be empty so we need to also check calcFrom since that's always present
                         inProgress.cancel(); // cancellation doesn't dispatch any events
-                        inProgress = null; // this is safe since we hold both locks
                     }
                 }
             }
@@ -360,12 +359,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             inProgress = null;
         }
     }
-
-    /*public void secretCursedFunctionDoNotCall(IPath path) {
-        synchronized (pathPlanLock) {
-            current = new PathExecutor(this, path);
-        }
-    }*/
 
     public CalculationContext secretInternalGetCalculationContext() {
         return context;

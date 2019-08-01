@@ -24,6 +24,7 @@ import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
@@ -40,7 +41,9 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -54,6 +57,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private boolean active;
 
+    private List<BlockPos> locations;
+    private int tickCount;
+
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
             Items.MELON_SEEDS,
@@ -65,17 +71,16 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private static final List<Item> PICKUP_DROPPED = Arrays.asList(
             Items.BEETROOT_SEEDS,
-            Items.WHEAT,
+            Items.BEETROOT,
             Items.MELON_SEEDS,
             Items.MELON,
+            Item.getItemFromBlock(Blocks.MELON_BLOCK),
             Items.WHEAT_SEEDS,
             Items.WHEAT,
             Items.PUMPKIN_SEEDS,
+            Item.getItemFromBlock(Blocks.PUMPKIN),
             Items.POTATO,
             Items.CARROT,
-            Items.BEETROOT,
-            Item.getItemFromBlock(Blocks.PUMPKIN),
-            Item.getItemFromBlock(Blocks.MELON_BLOCK),
             Items.NETHER_WART,
             Items.REEDS,
             Item.getItemFromBlock(Blocks.CACTUS)
@@ -93,6 +98,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     @Override
     public void farm() {
         active = true;
+        locations = null;
     }
 
     private enum Harvest {
@@ -164,9 +170,12 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         if (Baritone.settings().replantNetherWart.value) {
             scan.add(Blocks.SOUL_SAND);
         }
-
-        List<BlockPos> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 4);
-
+        if (Baritone.settings().mineGoalUpdateInterval.value != 0 && tickCount++ % Baritone.settings().mineGoalUpdateInterval.value == 0) {
+            Baritone.getExecutor().execute(() -> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 10));
+        }
+        if (locations == null) {
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
         List<BlockPos> toBreak = new ArrayList<>();
         List<BlockPos> openFarmland = new ArrayList<>();
         List<BlockPos> bonemealable = new ArrayList<>();
@@ -216,11 +225,14 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             boolean soulsand = openSoulsand.contains(pos);
             Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance());
             if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, soulsand ? this::isNetherWart : this::isPlantable)) {
-                baritone.getLookBehavior().updateTarget(rot.get(), true);
-                if (ctx.isLookingAt(pos)) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
+                if (result.typeOfHit == RayTraceResult.Type.BLOCK && result.sideHit == EnumFacing.UP) {
+                    baritone.getLookBehavior().updateTarget(rot.get(), true);
+                    if (ctx.isLookingAt(pos)) {
+                        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                    }
+                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
         for (BlockPos pos : bonemealable) {

@@ -42,7 +42,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class MovementFall extends Movement {
 
@@ -61,6 +63,16 @@ public class MovementFall extends Movement {
             return COST_INF; // doesn't apply to us, this position is a descend not a fall
         }
         return result.cost;
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        Set<BetterBlockPos> set = new HashSet<>();
+        set.add(src);
+        for (int y = src.y - dest.y; y >= 0; y--) {
+            set.add(dest.up(y));
+        }
+        return set;
     }
 
     private boolean willPlaceBucket() {

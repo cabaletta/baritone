@@ -158,11 +158,11 @@ public class SettingsUtil {
 
         private final Settings.Setting<?> setting;
 
-        public ParserContext(Settings.Setting<?> setting) {
+        private ParserContext(Settings.Setting<?> setting) {
             this.setting = setting;
         }
 
-        final Settings.Setting<?> getSetting() {
+        private Settings.Setting<?> getSetting() {
             return this.setting;
         }
     }

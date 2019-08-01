@@ -31,6 +31,11 @@
 # need to keep mixin names
 -keep class baritone.launch.** { *; }
 
+#try to keep usage of schematica in separate classes
+-keep class baritone.utils.schematic.schematica.**
+#proguard doesnt like it when it cant find our fake schematica classes
+-dontwarn baritone.utils.schematic.schematica.**
+
 # copy all necessary libraries into tempLibraries to build
 
 # The correct jar will be copied from the forgegradle cache based on the mapping type being compiled with

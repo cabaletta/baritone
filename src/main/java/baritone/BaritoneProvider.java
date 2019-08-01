@@ -32,6 +32,7 @@ import java.util.List;
 public final class BaritoneProvider implements IBaritoneProvider {
 
     private final Baritone primary = new Baritone();
+    private final List<IBaritone> all = Collections.singletonList(primary);
 
     @Override
     public IBaritone getPrimaryBaritone() {
@@ -40,8 +41,7 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public List<IBaritone> getAllBaritones() {
-        // TODO return a CopyOnWriteArrayList
-        return Collections.singletonList(primary);
+        return all;
     }
 
     @Override

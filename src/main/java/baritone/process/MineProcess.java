@@ -99,6 +99,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
+        if (!Baritone.settings().allowBreak.value) {
+            logDirect("Unable to mine when allowBreak is false!");
+            cancel();
+            return null;
+        }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
@@ -114,7 +119,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof BlockAir)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
                 .min(Comparator.comparingDouble(ctx.player()::getDistanceSq));
         baritone.getInputOverrideHandler().clearAllKeys();
-        if (shaft.isPresent()) {
+        if (shaft.isPresent() && ctx.player().onGround) {
             BlockPos pos = shaft.get();
             IBlockState state = baritone.bsi.get0(pos);
             if (!MovementHelper.avoidBreaking(baritone.bsi, pos.getX(), pos.getY(), pos.getZ(), state)) {
@@ -395,6 +400,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public void mine(int quantity, Block... blocks) {
         this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
+        if (mining != null && !Baritone.settings().allowBreak.value) {
+            logDirect("Unable to mine when allowBreak is false!");
+            mining = null;
+        }
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
         this.blacklist = new ArrayList<>();

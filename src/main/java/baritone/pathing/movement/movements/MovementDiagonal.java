@@ -28,6 +28,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -36,6 +37,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class MovementDiagonal extends Movement {
 
@@ -62,6 +64,16 @@ public class MovementDiagonal extends Movement {
             return COST_INF; // doesn't apply to us, this position is incorrect
         }
         return result.cost;
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        BetterBlockPos diagA = new BetterBlockPos(src.x, src.y, dest.z);
+        BetterBlockPos diagB = new BetterBlockPos(dest.x, src.y, src.z);
+        if (dest.y != src.y) { // only if allowDiagonalDescend
+            return ImmutableSet.of(src, dest.up(), diagA, diagB, dest, diagA.down(), diagB.down());
+        }
+        return ImmutableSet.of(src, dest, diagA, diagB);
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
@@ -171,8 +183,9 @@ public class MovementDiagonal extends Movement {
         }
 
         if (ctx.playerFeet().equals(dest)) {
-            state.setStatus(MovementStatus.SUCCESS);
-            return state;
+            return state.setStatus(MovementStatus.SUCCESS);
+        } else if (!playerInValidPosition() && !(MovementHelper.isLiquid(ctx, src) && getValidPositions().contains(ctx.playerFeet().up()))) {
+            return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (sprint()) {
             state.setInput(Input.SPRINT, true);
@@ -181,7 +194,7 @@ public class MovementDiagonal extends Movement {
         return state;
     }
 
-    public boolean sprint() {
+    private boolean sprint() {
         if (MovementHelper.isLiquid(ctx, ctx.playerFeet()) && !Baritone.settings().sprintInWater.value) {
             return false;
         }

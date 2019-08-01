@@ -35,13 +35,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ReportedException;
-import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DimensionType;
-import net.minecraft.world.WorldProvider;
 import net.minecraft.world.chunk.Chunk;
 
 import java.nio.file.Path;
@@ -50,38 +49,6 @@ import java.util.*;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
-
-    private static final String HELP_MSG =
-            "baritone - Output settings into chat\n" +
-                    "settings - Same as baritone\n" +
-                    "goal - Create a goal (one number is '<Y>', two is '<X> <Z>', three is '<X> <Y> <Z>, 'clear' to clear)\n" +
-                    "path - Go towards goal\n" +
-                    "repack - (debug) Repacks chunk cache\n" +
-                    "rescan - (debug) Same as repack\n" +
-                    "axis - Paths towards the closest axis or diagonal axis, at y=120\n" +
-                    "cancel - Cancels current path\n" +
-                    "forcecancel - sudo cancel (only use if very glitched, try toggling 'pause' first)\n" +
-                    "gc - Calls System.gc();\n" +
-                    "invert - Runs away from the goal instead of towards it\n" +
-                    "follow - Follows a player 'follow username'\n" +
-                    "reloadall - (debug) Reloads chunk cache\n" +
-                    "saveall - (debug) Saves chunk cache\n" +
-                    "find - (debug) outputs how many blocks of a certain type are within the cache\n" +
-                    "mine - Paths to and mines specified blocks 'mine x_ore y_ore ...'\n" +
-                    "thisway - Creates a goal X blocks where you're facing\n" +
-                    "list - Lists waypoints under a category\n" +
-                    "get - Same as list\n" +
-                    "show - Same as list\n" +
-                    "save - Saves a waypoint (works but don't try to make sense of it)\n" +
-                    "delete - Deletes a waypoint\n" +
-                    "goto - Paths towards specified block or waypoint\n" +
-                    "spawn - Paths towards world spawn or your most recent bed right-click\n" +
-                    "sethome - Sets \"home\"\n" +
-                    "home - Paths towards \"home\" \n" +
-                    "costs - (debug) all movement costs from current location\n" +
-                    "damn - Daniel\n" +
-                    "Go to https://github.com/cabaletta/baritone/blob/master/USAGE.md for more information";
-
     private static final String COMMAND_PREFIX = "#";
 
     public final IBaritone baritone;
@@ -152,9 +119,12 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.equals("") || msg.equals("help") || msg.equals("?")) {
-            for (String line : HELP_MSG.split("\n")) {
-                logDirect(line);
-            }
+            ITextComponent component = MESSAGE_PREFIX.createCopy();
+            component.getStyle().setColor(TextFormatting.GRAY);
+            TextComponentString helpLink = new TextComponentString(" Click here for instructions on how to use Baritone (https://github.com/cabaletta/baritone/blob/master/USAGE.md)");
+            helpLink.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/cabaletta/baritone/blob/master/USAGE.md"));
+            component.appendSibling(helpLink);
+            BaritoneAPI.getSettings().logger.value.accept(component);
             return true;
         }
         if (msg.contains(" ")) {
@@ -299,6 +269,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect(success ? "Loaded" : "Unable to load");
             return true;
         }
+        if (msg.startsWith("schematica")) {
+            baritone.getBuilderProcess().buildOpenSchematic();
+            return true;
+        }
         if (msg.equals("come")) {
             customGoalProcess.setGoalAndPath(new GoalBlock(new BlockPos(Helper.mc.getRenderViewEntity())));
             logDirect("Coming");
@@ -411,9 +385,32 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             return true;
         }
+        if (msg.startsWith("followentities")) {
+            baritone.getFollowProcess().follow(Entity.class::isInstance);
+            logDirect("Following any entities");
+            return true;
+        }
         if (msg.startsWith("followplayers")) {
             baritone.getFollowProcess().follow(EntityPlayer.class::isInstance); // O P P A
             logDirect("Following any players");
+            return true;
+        }
+        if (msg.startsWith("followentity")) {
+            String name = msg.substring(12).trim();
+            Optional<Entity> toFollow = Optional.empty();
+            for (Entity entity : ctx.world().loadedEntityList) {
+                String entityName = entity.getName().trim().toLowerCase();
+                if ((entityName.contains(name) || name.contains(entityName)) && !(entity instanceof EntityItem || entity instanceof EntityPlayer)) { // We dont want it following players while `#follow` exists.
+                    toFollow = Optional.of(entity);
+                }
+            }
+            if (!toFollow.isPresent()) {
+                logDirect("Entity not found");
+                return true;
+            }
+            Entity effectivelyFinal = toFollow.get();
+            baritone.getFollowProcess().follow(effectivelyFinal::equals);
+            logDirect("Following entity " + toFollow.get());
             return true;
         }
         if (msg.startsWith("follow")) {
@@ -591,7 +588,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         if (msg.startsWith("delete")) {
             String name = msg.substring(6).trim();
-            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w ->  w.getTag() == IWaypoint.Tag.USER && w.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getAllWaypoints().stream().filter(w -> w.getTag() == IWaypoint.Tag.USER && w.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
             if (waypoint == null) {
                 logDirect("No user defined position under the name '" + name + "' found.");
                 return true;

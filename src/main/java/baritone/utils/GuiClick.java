@@ -69,7 +69,6 @@ public class GuiClick extends GuiScreen {
                 currentMouseOver = result.getBlockPos();
             }
         }
-
     }
 
     @Override
@@ -103,7 +102,7 @@ public class GuiClick extends GuiScreen {
             PathRenderer.drawManySelectionBoxes(e, Collections.singletonList(currentMouseOver), Color.CYAN);
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 GlStateManager.enableBlend();
-                GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+                GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
                 GlStateManager.color(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
                 GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
                 GlStateManager.disableTexture2D();
@@ -121,7 +120,7 @@ public class GuiClick extends GuiScreen {
         }
     }
 
-    public Vec3d toWorld(double x, double y, double z) {
+    private Vec3d toWorld(double x, double y, double z) {
         boolean result = GLU.gluUnProject((float) x, (float) y, (float) z, MODELVIEW, PROJECTION, VIEWPORT, (FloatBuffer) TO_WORLD_BUFFER.clear());
         if (result) {
             return new Vec3d(TO_WORLD_BUFFER.get(0), TO_WORLD_BUFFER.get(1), TO_WORLD_BUFFER.get(2));
