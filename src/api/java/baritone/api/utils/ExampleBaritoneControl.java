@@ -38,11 +38,16 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ReportedException;
+import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.DimensionType;
+import net.minecraft.world.WorldProvider;
 import net.minecraft.world.chunk.Chunk;
 
 import java.nio.file.Path;
 import java.util.*;
+
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
 
@@ -669,8 +674,12 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         return false;
     }
 
+    private int parseOrDefault(String str, int i, double dimensionFactor) {
+        return str.equals("~") ? i : str.startsWith("~") ? Integer.parseInt(str.substring(1)) + i : (int) (Integer.parseInt(str) * dimensionFactor);
+    }
+
     private int parseOrDefault(String str, int i) {
-        return str.equals("~") ? i : str.startsWith("~") ? Integer.parseInt(str.substring(1)) + i : Integer.parseInt(str);
+        return parseOrDefault(str, i, 1);
     }
 
     private void log(List<ItemStack> stacks) {
@@ -685,19 +694,27 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         Goal goal;
         try {
             BetterBlockPos playerFeet = ctx.playerFeet();
-            switch (params.length) {
+
+            double dimensionFactor = 1;
+            int coordLength = params.length - 1;
+            // test wether there is a dimension sign
+            if(isNumeric(params[coordLength]) || params[coordLength].startsWith("~"))
+                coordLength ++; // if true there is no dimensionSign
+            else
+                dimensionFactor = getDimesionFactor(getCurrentDimension(), getDimensionByName(params[coordLength]));
+
+            switch (coordLength) {
                 case 0:
                     goal = new GoalBlock(playerFeet);
                     break;
                 case 1:
-
                     goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y));
                     break;
                 case 2:
-                    goal = new GoalXZ(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.z));
+                    goal = new GoalXZ(parseOrDefault(params[0], playerFeet.x, dimensionFactor), parseOrDefault(params[1], playerFeet.z, dimensionFactor));
                     break;
                 case 3:
-                    goal = new GoalBlock(new BlockPos(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.y), parseOrDefault(params[2], playerFeet.z)));
+                    goal = new GoalBlock(new BlockPos(parseOrDefault(params[0], playerFeet.x, dimensionFactor), parseOrDefault(params[1], playerFeet.y), parseOrDefault(params[2], playerFeet.z, dimensionFactor)));
                     break;
                 default:
                     logDirect("unable to understand lol");
@@ -708,5 +725,28 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return null;
         }
         return goal;
+    }
+
+
+
+    private double getDimesionFactor(DimensionType from, DimensionType to) {
+        // calculates the "distance". if same dimension it is 0 and 8^0 is 1 and no coord has to be shared. otherwise 1/8 or *8
+        return Math.pow(8, from.getId() - to.getId());
+    }
+
+
+    public DimensionType getDimensionByName(String nameIn) {
+        // so you can use o, n, e instead of full names and it returns actual end (would do overworld otherwise because e is in OvErworld)
+        if(nameIn.equals("e"))
+            return DimensionType.THE_END;
+
+        for (DimensionType dimensiontype : DimensionType.values())
+            if (dimensiontype.getName().contains(nameIn))
+                return dimensiontype;
+        return getCurrentDimension();
+    }
+
+    public DimensionType getCurrentDimension(){
+        return ctx.world().provider.getDimensionType();
     }
 }
