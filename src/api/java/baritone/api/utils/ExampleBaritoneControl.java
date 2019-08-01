@@ -668,6 +668,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         if (msg.equals("damn")) {
             logDirect("daniel");
+            return true;
         }
         return false;
     }
