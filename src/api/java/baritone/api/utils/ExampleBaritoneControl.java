@@ -30,6 +30,7 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IGetToBlockProcess;
+import baritone.api.utils.Command.CommandHandler;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
@@ -55,10 +56,13 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
     private static final String COMMAND_PREFIX = "#";
 
+    public final CommandHandler commandHandler;
+
     public final IBaritone baritone;
     public final IPlayerContext ctx;
 
     public ExampleBaritoneControl(IBaritone baritone) {
+        commandHandler = new CommandHandler(COMMAND_PREFIX);
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         baritone.getGameEventHandler().registerEventListener(this);
@@ -66,14 +70,17 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
+
+
         String msg = event.getMessage();
-        if (BaritoneAPI.getSettings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
-            if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
-                logDirect("Invalid command");
-            }
+        if (commandHandler.handleCommand(msg)){//BaritoneAPI.getSettings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
+            //if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
+              //  logDirect("Invalid command");
+            //}
             event.cancel(); // always cancel if using prefixControl
             return;
-        }
+        } else
+            logDirect("Invalid command");
         if (!BaritoneAPI.getSettings().chatControl.value && !BaritoneAPI.getSettings().removePrefix.value) {
             return;
         }
