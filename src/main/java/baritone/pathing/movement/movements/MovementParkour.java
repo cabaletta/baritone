@@ -113,8 +113,9 @@ public class MovementParkour extends Movement {
             if (!MovementHelper.fullyPassable(context, destX, y + 2, destZ)) {
                 return;
             }
-            if (!MovementHelper.fullyPassable(context, destX, y, destZ)) {
-                if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context.bsi, destX, y, destZ) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
+            IBlockState destInto = context.bsi.get0(destX, y, destZ);
+            if (!MovementHelper.fullyPassable(destInto)) {
+                if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context.bsi, destX, y, destZ, destInto) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
                     res.x = destX;
                     res.y = y + 1;
                     res.z = destZ;
