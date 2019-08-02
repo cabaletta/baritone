@@ -338,7 +338,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     // just cancel the current path
-    public void secretInternalSegmentCancel() {
+    private void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
         synchronized (pathPlanLock) {
             getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
@@ -488,7 +488,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     }
                 }
                 if (talkAboutIt && current != null && current.getPath() != null) {
-                    if (goal == null || goal.isInGoal(current.getPath().getDest())) {
+                    if (goal.isInGoal(current.getPath().getDest())) {
                         logDebug("Finished finding a path from " + start + " to " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
                     } else {
                         logDebug("Found path segment from " + start + " towards " + goal + ". " + current.getPath().getNumNodesConsidered() + " nodes considered");
@@ -501,7 +501,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         });
     }
 
-    public static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
+    private static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
         Goal transformed = goal;
         if (Baritone.settings().simplifyUnloadedYCoord.value && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
