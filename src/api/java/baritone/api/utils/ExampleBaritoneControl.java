@@ -376,7 +376,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             int b;
             int c;
             if (suffix.isEmpty()) {
-                    logDirect("Need to specify depth, height and width of the tunnel. eg .b tunnelcustom depth height width");
+                    logDirect("Need to specify depth, height and width of the tunnel. eg #tunnelcustom depth height width");
                     return true;
             }
             else {
