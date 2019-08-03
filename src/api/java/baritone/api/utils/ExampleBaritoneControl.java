@@ -437,6 +437,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     corner1 = new BlockPos(ctx.playerFeet().x + c/2 + addition, ctx.playerFeet().y , ctx.playerFeet().z);
                     corner2 = new BlockPos(ctx.playerFeet().x - c/2 , ctx.playerFeet().y + b, ctx.playerFeet().z + a);
                     break;
+                default:
+                    logDirect("How did you get here");
+                    return true;
+
             }
             baritone.getBuilderProcess().clearArea(corner1, corner2);
             return true;
