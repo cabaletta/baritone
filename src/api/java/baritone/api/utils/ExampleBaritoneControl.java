@@ -369,17 +369,15 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("tunneling");
             return true;
         }
-        if(msg.startsWith("tunnelcustom"))
-        {
+        if (msg.startsWith("tunnelcustom")) {
             String suffix = msg.substring("tunnelcustom".length());
             int a;
             int b;
             int c;
             if (suffix.isEmpty()) {
-                    logDirect("Need to specify depth, height and width of the tunnel. eg #tunnelcustom depth height width");
-                    return true;
-            }
-            else {
+                logDirect("Need to specify depth, height and width of the tunnel. eg #tunnelcustom depth height width");
+                return true;
+            } else {
                 try {
                     String[] spl = suffix.split(" ");
                     if(spl.length != 4) {
@@ -391,56 +389,50 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     b = Integer.parseInt(spl[2]);
                     c = Integer.parseInt(spl[3]);
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
-                    logDirect("unable to parse");
+                    logDirect("One or more number arguments were invalid");
                     return true;
                 }
             }
-            if(c < 1)
-            {
+            if(c < 1) {
                 logDirect("Width must at least be 1 block");
                 return true;
             }
-            if(b < 2)
-            {
+            if(b < 2) {
                 logDirect("Height must at least be 2 blocks");
                 return true;
             }
-
             //Adjustment for player location
-            a --;
-            b --;
-            c --;
-            BlockPos corner1 = ctx.playerFeet();
-            BlockPos corner2 = ctx.playerFeet();
+            a--;
+            b--;
+            c--;
+            BlockPos corner1;
+            BlockPos corner2;
             EnumFacing enumfacing = ctx.player().getHorizontalFacing();
             int addition = 1;
             //Check if width is uneven to center player's location
-            if(c % 2 ==0)
-            {
+            if(c % 2 == 0) {
                 addition = 0;
             }
-            switch(enumfacing)
-            {
+            switch(enumfacing) {
                 case EAST:
-                    corner1 = new BlockPos(ctx.playerFeet().x , ctx.playerFeet().y , ctx.playerFeet().z - c/2);
-                    corner2 = new BlockPos(ctx.playerFeet().x + a, ctx.playerFeet().y + b, ctx.playerFeet().z + c/2 + addition);
+                    corner1 = new BlockPos(ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z - c / 2);
+                    corner2 = new BlockPos(ctx.playerFeet().x + a, ctx.playerFeet().y + b, ctx.playerFeet().z + c / 2 + addition);
                     break;
                 case WEST:
-                    corner1 = new BlockPos(ctx.playerFeet().x , ctx.playerFeet().y , ctx.playerFeet().z + c/2 + addition);
+                    corner1 = new BlockPos(ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z + c / 2 + addition);
                     corner2 = new BlockPos(ctx.playerFeet().x - a, ctx.playerFeet().y + b, ctx.playerFeet().z - c / 2 );
                     break;
                 case NORTH:
-                    corner1 = new BlockPos(ctx.playerFeet().x - c/2 , ctx.playerFeet().y , ctx.playerFeet().z);
-                    corner2 = new BlockPos(ctx.playerFeet().x + c/2 + addition, ctx.playerFeet().y + b, ctx.playerFeet().z - a);
+                    corner1 = new BlockPos(ctx.playerFeet().x - c / 2, ctx.playerFeet().y, ctx.playerFeet().z);
+                    corner2 = new BlockPos(ctx.playerFeet().x + c / 2 + addition, ctx.playerFeet().y + b, ctx.playerFeet().z - a);
                     break;
                 case SOUTH:
-                    corner1 = new BlockPos(ctx.playerFeet().x + c/2 + addition, ctx.playerFeet().y , ctx.playerFeet().z);
-                    corner2 = new BlockPos(ctx.playerFeet().x - c/2 , ctx.playerFeet().y + b, ctx.playerFeet().z + a);
+                    corner1 = new BlockPos(ctx.playerFeet().x + c / 2 + addition, ctx.playerFeet().y, ctx.playerFeet().z);
+                    corner2 = new BlockPos(ctx.playerFeet().x - c / 2, ctx.playerFeet().y + b, ctx.playerFeet().z + a);
                     break;
                 default:
-                    logDirect("How did you get here");
+                    logDirect("How did you get here?");
                     return true;
-
             }
             baritone.getBuilderProcess().clearArea(corner1, corner2);
             return true;
