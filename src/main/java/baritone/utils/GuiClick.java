@@ -82,6 +82,8 @@ public class GuiClick extends GuiScreen {
             }
         } else if (mouseButton == 1) {
             BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
+        } else if (mouseButton == 2) {
+            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoal(new GoalBlock(currentMouseOver));
         }
         clickStart = null;
     }
