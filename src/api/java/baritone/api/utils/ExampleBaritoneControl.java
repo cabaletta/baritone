@@ -393,11 +393,11 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                     return true;
                 }
             }
-            if(c < 1) {
+            if (c < 1) {
                 logDirect("Width must at least be 1 block");
                 return true;
             }
-            if(b < 2) {
+            if (b < 2) {
                 logDirect("Height must at least be 2 blocks");
                 return true;
             }
@@ -410,7 +410,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             EnumFacing enumfacing = ctx.player().getHorizontalFacing();
             int addition = 1;
             //Check if width is uneven to center player's location
-            if(c % 2 == 0) {
+            if (c % 2 == 0) {
                 addition = 0;
             }
             switch(enumfacing) {
