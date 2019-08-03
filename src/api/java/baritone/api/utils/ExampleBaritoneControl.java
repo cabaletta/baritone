@@ -25,20 +25,24 @@ import baritone.api.cache.IRememberedInventory;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.Waypoint;
 import baritone.api.event.events.ChatEvent;
+import baritone.api.event.events.TickEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IGetToBlockProcess;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ReportedException;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -366,6 +370,78 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         if (msg.equals("tunnel")) {
             customGoalProcess.setGoalAndPath(new GoalStrictDirection(ctx.playerFeet(), ctx.player().getHorizontalFacing()));
             logDirect("tunneling");
+            return true;
+        }
+        if(msg.startsWith("tunnelcustom"))
+        {
+            String suffix = msg.substring("tunnelcustom".length());
+            int a;
+            int b;
+            int c;
+            if (suffix.isEmpty()) {
+                    logDirect("Need to specify depth, height and width of the tunnel. eg .b tunnel2 depth height width");
+                    return true;
+            }
+            else {
+                try {
+                    String[] spl = suffix.split(" ");
+                    if(spl.length != 4) {
+                        logDirect(Integer.toString(spl.length));
+                        logDirect("Please enter 3 values");
+                        return true;
+                    }
+                    a = Integer.parseInt(spl[1]);
+                    b = Integer.parseInt(spl[2]);
+                    c = Integer.parseInt(spl[3]);
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+                    logDirect("unable to parse");
+                    return true;
+                }
+            }
+            if(c < 1)
+            {
+                logDirect("Width must at least be 1 block");
+                return true;
+            }
+            if(b < 2)
+            {
+                logDirect("Height must at least be 2 blocks");
+                return true;
+            }
+
+            //Adjustment for player location
+            a --;
+            b --;
+            c --;
+            BlockPos corner1 = ctx.playerFeet();
+            BlockPos corner2 = ctx.playerFeet();
+            EnumFacing enumfacing = ctx.player().getHorizontalFacing();
+            int addition = 1;
+            //Check if width is uneven to center player's location
+            if(c % 2 ==0)
+            {
+                addition = 0;
+            }
+            switch(enumfacing)
+            {
+                case EAST:
+                    corner1 = new BlockPos(ctx.playerFeet().x , ctx.playerFeet().y , ctx.playerFeet().z - c/2);
+                    corner2 = new BlockPos(ctx.playerFeet().x + a, ctx.playerFeet().y + b, ctx.playerFeet().z + c/2 + addition);
+                    break;
+                case WEST:
+                    corner1 = new BlockPos(ctx.playerFeet().x , ctx.playerFeet().y , ctx.playerFeet().z + c/2 + addition);
+                    corner2 = new BlockPos(ctx.playerFeet().x - a, ctx.playerFeet().y + b, ctx.playerFeet().z - c / 2 );
+                    break;
+                case NORTH:
+                    corner1 = new BlockPos(ctx.playerFeet().x - c/2 , ctx.playerFeet().y , ctx.playerFeet().z);
+                    corner2 = new BlockPos(ctx.playerFeet().x + c/2 + addition, ctx.playerFeet().y + b, ctx.playerFeet().z - a);
+                    break;
+                case SOUTH:
+                    corner1 = new BlockPos(ctx.playerFeet().x + c/2 + addition, ctx.playerFeet().y , ctx.playerFeet().z);
+                    corner2 = new BlockPos(ctx.playerFeet().x - c/2 , ctx.playerFeet().y + b, ctx.playerFeet().z + a);
+                    break;
+            }
+            baritone.getBuilderProcess().clearArea(corner1, corner2);
             return true;
         }
         if (msg.equals("render")) {
