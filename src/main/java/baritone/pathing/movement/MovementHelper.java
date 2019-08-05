@@ -97,7 +97,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
             // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
             // be opened by just interacting.
-            return block != Blocks.IRON_DOOR;
+            if (block != Blocks.IRON_DOOR) {
+                return true;
+            } else {
+                return state.getValue(BlockDoor.OPEN) || state.getValue(BlockDoor.POWERED);
+            }
         }
         if (block == Blocks.CARPET) {
             return canWalkOn(bsi, x, y - 1, z);
