@@ -370,7 +370,8 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         if (msg.equals("render")) {
             BetterBlockPos pf = ctx.playerFeet();
-            Minecraft.getMinecraft().renderGlobal.markBlockRangeForRenderUpdate(pf.x - 500, pf.y - 500, pf.z - 500, pf.x + 500, pf.y + 500, pf.z + 500);
+            int dist = (Minecraft.getMinecraft().gameSettings.renderDistanceChunks + 1) * 16;
+            Minecraft.getMinecraft().renderGlobal.markBlockRangeForRenderUpdate(pf.x - dist, pf.y - 256, pf.z - dist, pf.x + dist, pf.y + 256, pf.z + dist);
             logDirect("okay");
             return true;
         }
