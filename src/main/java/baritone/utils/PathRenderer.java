@@ -122,6 +122,7 @@ public final class PathRenderer implements Helper {
 
     public static void drawPath(IPath path, int startIndex, Entity player, float partialTicks, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         GlStateManager.enableBlend();
+        GlStateManager.disableLighting();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager.color(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
         GlStateManager.glLineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
@@ -176,6 +177,7 @@ public final class PathRenderer implements Helper {
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
+        GlStateManager.enableLighting();
         GlStateManager.disableBlend();
     }
 
