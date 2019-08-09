@@ -229,10 +229,6 @@ public class MovementParkour extends Movement {
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
-        if (ctx.player().isHandActive()) {
-            logDebug("Pausing parkour since hand is active");
-            return state;
-        }
         if (ctx.playerFeet().y < src.y) {
             // we have fallen
             logDebug("sorry");
