@@ -378,27 +378,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("okay");
             return true;
         }
-        /*
-        if (msg.startsWith("goal")) {
-            String rest = msg.substring(4).trim();
-            Goal goal;
-            if (rest.equals("clear") || rest.equals("none")) {
-                goal = null;
-            } else {
-                String[] params = rest.split(" ");
-                if (params[0].equals("")) {
-                    params = new String[]{};
-                }
-                goal = parseGoal(params);
-                if (goal == null) {
-                    return true;
-                }
-            }
-            customGoalProcess.setGoal(goal);
-            logDirect("Goal: " + goal);
-            return true;
-        }
-        */
         if (msg.startsWith("farm")) {
             String rest = msg.substring(4).trim();
             String[] params = rest.split(" ");
