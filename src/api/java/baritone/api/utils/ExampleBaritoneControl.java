@@ -381,26 +381,29 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         if (msg.startsWith("farm")) {
             String rest = msg.substring(4).trim();
             String[] params = rest.split(" ");
-            int range = -1, x = 0, y = 0, z = 0;
+            int range = -1;
+            int posX = 0;
+            int posY = 0;
+            int posZ = 0;
             try {
                 if (!params[0].equals("") && !params[0].equals(" "))
                     range = Integer.parseInt(params[0]);
                 if (params.length == 2) {
-                    y = Integer.parseInt(params[1]);
+                    posY = Integer.parseInt(params[1]);
                 } else if (params.length == 3) {
-                    x = Integer.parseInt(params[1]);
-                    z = Integer.parseInt(params[2]);
+                    posX = Integer.parseInt(params[1]);
+                    posZ = Integer.parseInt(params[2]);
                 } else if (params.length == 4) {
-                    x = Integer.parseInt(params[1]);
-                    y = Integer.parseInt(params[2]);
-                    z = Integer.parseInt(params[3]);
+                    posX = Integer.parseInt(params[1]);
+                    posY = Integer.parseInt(params[2]);
+                    posZ = Integer.parseInt(params[3]);
 
                 }
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
                 logDirect("unable to parse");
                 return true;
             }
-            baritone.getFarmProcess().farm(range, x, y, z);
+            baritone.getFarmProcess().farm(range, posX, posY, posZ);
             logDirect("farming");
             return true;
         }

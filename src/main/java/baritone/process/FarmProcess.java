@@ -101,16 +101,16 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     }
 
     @Override
-    public void farm(int range, int x, int y, int z) {
+    public void farm(int range, int posX, int posY, int posZ) {
 
         //0 for getting player pos
-        if (x == 0)
-            x = (int)ctx.playerFeetAsVec().x;
-        if (y == 0)
-            y = (int)ctx.playerFeetAsVec().y;
-        if (z == 0)
-            z = (int)ctx.playerFeetAsVec().z;
-        center = new Vec3i(x,y,z);
+        if (posX == 0)
+            posX = (int)ctx.playerFeetAsVec().x;
+        if (posY == 0)
+            posY = (int)ctx.playerFeetAsVec().y;
+        if (posZ == 0)
+            posZ = (int)ctx.playerFeetAsVec().z;
+        center = new Vec3i(posX, posY, posZ);
         if (range < 0) //case of < 0, set to default value, 0 is unlimited. > 0 is just radius.
             _range = Baritone.settings().defaultFarmRange.value;
         else
@@ -202,10 +202,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         for (BlockPos pos : locations) {
 
             //check if outside of range
-            if (_range != 0)
-                if (pos.getDistance(center.getX(),center.getY(),center.getZ()) > _range){
-                    continue;
-                }
+            if (_range != 0 && pos.getDistance(center.getX(),center.getY(),center.getZ()) > _range){
+                continue;
+            }
 
             IBlockState state = ctx.world().getBlockState(pos);
             boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir;

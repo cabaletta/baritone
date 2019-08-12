@@ -18,7 +18,7 @@
 package baritone.api.process;
 
 public interface IFarmProcess extends IBaritoneProcess {
-    void farm(int range, int x, int y, int z);
+    void farm(int range, int posX, int posY, int posZ);
 
     default void farm(){
         farm(-1, 0, 0, 0);
