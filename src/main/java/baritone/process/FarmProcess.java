@@ -102,15 +102,18 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     @Override
     public void farm(int range, int posX, int posY, int posZ) {
-
+        //Reassigning values to incoming parameters is not recommended, there for I Use temporary local variables instead.
+        int _posX = posX;
+        int _posY = posY;
+        int _posZ = posZ;
         //0 for getting player pos
-        if (posX == 0)
-            posX = (int)ctx.playerFeetAsVec().x;
-        if (posY == 0)
-            posY = (int)ctx.playerFeetAsVec().y;
-        if (posZ == 0)
-            posZ = (int)ctx.playerFeetAsVec().z;
-        center = new Vec3i(posX, posY, posZ);
+        if (_posX == 0)
+            _posX = (int)ctx.playerFeetAsVec().x;
+        if (_posY == 0)
+            _posY = (int)ctx.playerFeetAsVec().y;
+        if (_posZ == 0)
+            _posZ = (int)ctx.playerFeetAsVec().z;
+        center = new Vec3i(_posX, _posY, _posZ);
         if (range < 0) //case of < 0, set to default value, 0 is unlimited. > 0 is just radius.
             _range = Baritone.settings().defaultFarmRange.value;
         else
