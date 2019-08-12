@@ -24,14 +24,14 @@ Some common examples:
 - `goal clear` to clear the goal
 - `cancel` or `stop` to stop everything
 - `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
-- `mine diamond_ore` to mine diamond ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.)
+- `mine diamond_ore` to mine diamond ore. also try `mine diamond_ore 3` to just mine 3 diamond ore. (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.)
 - `click` to click your destination on the screen. Right click path to on top of the block, left click to path into it (either at foot level or eye level), and left click and drag to clear all blocks from an area.
 - `follow playerName` to follow a player. `followplayers` to follow any players in range (combine with Kill Aura for a fun time). `followentities` to follow any entities. `followentity pig` to follow entities of a specific type.
 - `save waypointName` to save a waypoint. `goto waypointName` to go to it.
 - `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
 - `schematica` to build the schematic that is currently open in schematica
 - `tunnel` to dig just straight ahead and make a tunnel
-- `farm range x y z` or `farm range x z` or `farm range y` or `farm range` or `farm` to automatically harvest, replant, or bone meal crops inside of its range. if range is 0 then the range is limitless. default is limitless at from the player's feats.
+- `farm range x y z` or `farm range x z` or `farm range y` or `farm range` or `farm` to automatically harvest, replant, or bone meal crops inside of its range. if range is 0 then the range is limitless. default is limitless from the player's feats position.
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
 - `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
