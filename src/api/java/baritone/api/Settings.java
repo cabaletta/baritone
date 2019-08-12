@@ -41,6 +41,12 @@ import java.util.function.Consumer;
  */
 public final class Settings {
 
+
+    /**
+     * default farm radius. 0, is unlimited.
+     */
+    public final Setting<Integer> defaultFarmRange = new Setting<>(0);
+
     /**
      * Allow Baritone to break blocks
      */

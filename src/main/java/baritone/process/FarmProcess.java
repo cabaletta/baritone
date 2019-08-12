@@ -45,6 +45,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -59,6 +60,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private List<BlockPos> locations;
     private int tickCount;
+
+    private int _range;
+    private Vec3i center;
 
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
@@ -83,7 +87,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             Items.CARROT,
             Items.NETHER_WART,
             Items.REEDS,
-            Item.getItemFromBlock(Blocks.CACTUS)
+            Item.getItemFromBlock(Blocks.CACTUS)//,
+            //Item.SWEET_BERRIES
     );
 
     public FarmProcess(Baritone baritone) {
@@ -96,7 +101,21 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     }
 
     @Override
-    public void farm() {
+    public void farm(int range, int x, int y, int z) {
+
+        //0 for getting player pos
+        if (x == 0)
+            x = (int)ctx.playerFeetAsVec().x;
+        if (y == 0)
+            y = (int)ctx.playerFeetAsVec().y;
+        if (z == 0)
+            z = (int)ctx.playerFeetAsVec().z;
+        center = new Vec3i(x,y,z);
+        if (range < 0) //case of < 0, set to default value, 0 is unlimited. > 0 is just radius.
+            _range = Baritone.settings().defaultFarmRange.value;
+        else
+            _range = range;
+
         active = true;
         locations = null;
     }
@@ -181,6 +200,13 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         List<BlockPos> bonemealable = new ArrayList<>();
         List<BlockPos> openSoulsand = new ArrayList<>();
         for (BlockPos pos : locations) {
+
+            //check if outside of range
+            if (_range != 0)
+                if (pos.getDistance(center.getX(),center.getY(),center.getZ()) > _range){
+                    continue;
+                }
+
             IBlockState state = ctx.world().getBlockState(pos);
             boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir;
             if (state.getBlock() == Blocks.FARMLAND) {
@@ -206,6 +232,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 }
             }
         }
+
 
         baritone.getInputOverrideHandler().clearAllKeys();
         for (BlockPos pos : toBreak) {

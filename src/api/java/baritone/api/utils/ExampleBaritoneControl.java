@@ -378,8 +378,50 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("okay");
             return true;
         }
-        if (msg.equals("farm")) {
-            baritone.getFarmProcess().farm();
+        /*
+        if (msg.startsWith("goal")) {
+            String rest = msg.substring(4).trim();
+            Goal goal;
+            if (rest.equals("clear") || rest.equals("none")) {
+                goal = null;
+            } else {
+                String[] params = rest.split(" ");
+                if (params[0].equals("")) {
+                    params = new String[]{};
+                }
+                goal = parseGoal(params);
+                if (goal == null) {
+                    return true;
+                }
+            }
+            customGoalProcess.setGoal(goal);
+            logDirect("Goal: " + goal);
+            return true;
+        }
+        */
+        if (msg.startsWith("farm")) {
+            String rest = msg.substring(4).trim();
+            String[] params = rest.split(" ");
+            int range = -1, x = 0, y = 0, z = 0;
+            try {
+                if (!params[0].equals("") && !params[0].equals(" "))
+                    range = Integer.parseInt(params[0]);
+                if (params.length == 2) {
+                    y = Integer.parseInt(params[1]);
+                } else if (params.length == 3) {
+                    x = Integer.parseInt(params[1]);
+                    z = Integer.parseInt(params[2]);
+                } else if (params.length == 4) {
+                    x = Integer.parseInt(params[1]);
+                    y = Integer.parseInt(params[2]);
+                    z = Integer.parseInt(params[3]);
+
+                }
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+                logDirect("unable to parse");
+                return true;
+            }
+            baritone.getFarmProcess().farm(range, x, y, z);
             logDirect("farming");
             return true;
         }
