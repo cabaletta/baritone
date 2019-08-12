@@ -102,7 +102,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     @Override
     public void farm(int range, int posX, int posY, int posZ) {
-        //Reassigning values to incoming parameters is not recommended, there for I Use temporary local variables instead.
+        //Reassigning values to incoming parameters is not recommended, therefor I Use temporary local variables instead.
         int _posX = posX;
         int _posY = posY;
         int _posZ = posZ;
