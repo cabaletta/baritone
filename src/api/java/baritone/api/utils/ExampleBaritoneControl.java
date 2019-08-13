@@ -397,6 +397,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             switch (params.length) {
                 case 0:
                     args[0] = BaritoneAPI.getSettings().defaultFarmRange.value;
+                    args[1] = ctx.playerFeet().x;
+                    args[2] = ctx.playerFeet().y;
+                    args[3] = ctx.playerFeet().z;
+                    break;
                 case 1:
                     args[1] = ctx.playerFeet().x;
                     args[2] = ctx.playerFeet().y;
