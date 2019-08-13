@@ -186,7 +186,7 @@ public final class Settings {
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
      * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
      * <p>
-     * Never turn this on lol
+     * Almost never turn this on lol
      */
     public final Setting<Boolean> allowVines = new Setting<>(false);
 
@@ -653,6 +653,11 @@ public final class Settings {
      * -1 to disable
      */
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
+
+    /**
+     * default farm radius. 0, is unlimited.
+     */
+    public final Setting<Integer> defaultFarmRange = new Setting<>(0);
 
     /**
      * Replant nether wart while farming

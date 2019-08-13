@@ -378,8 +378,48 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("okay");
             return true;
         }
-        if (msg.equals("farm")) {
-            baritone.getFarmProcess().farm();
+        if (msg.startsWith("farm")) {
+            String rest = msg.substring(4).trim();
+            String[] params = rest.split(" ");
+            int[] paramsInt = new int[params.length];
+            try {
+                for (int i = 0; i < paramsInt.length; i++) {
+                    paramsInt[i] = Integer.parseInt(params[i]);
+                }
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+                logDirect("unable to parse");
+                return true;
+            }
+            int[] args = new int[]{-1, 0, 0, 0};
+            if (params.length > 0) {
+                args[0] = paramsInt[0];
+            }
+            switch (params.length) {
+                case 0:
+                    args[0] = BaritoneAPI.getSettings().defaultFarmRange.value;
+                case 1:
+                    args[1] = ctx.playerFeet().x;
+                    args[2] = ctx.playerFeet().y;
+                    args[3] = ctx.playerFeet().z;
+                    break;
+                case 2:
+                    args[1] = ctx.playerFeet().x;
+                    args[2] = paramsInt[1];
+                    args[3] = ctx.playerFeet().z;
+                    break;
+                case 3:
+                    args[1] = paramsInt[1];
+                    args[2] = ctx.playerFeet().y;
+                    args[3] = paramsInt[2];
+                    break;
+                case 4:
+                    args = paramsInt;
+                    break;
+                default:
+                    logDirect("to many arguments");
+                    return true;
+            }
+            baritone.getFarmProcess().farm(args[0], args[1], args[2], args[3]);
             logDirect("farming");
             return true;
         }
@@ -521,7 +561,8 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 baritone.getMineProcess().mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+            }
             for (String s : blockTypes) {
                 if (BlockUtils.stringToBlockNullable(s) == null) {
                     logDirect(s + " isn't a valid block name");
@@ -720,7 +761,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         return goal;
     }
-
 
 
     private double calculateDimensionFactor(String to) {
