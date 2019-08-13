@@ -21,6 +21,7 @@ public interface IFarmProcess extends IBaritoneProcess {
     void farm(int range, int posX, int posY, int posZ);
 
     default void farm(){
-        farm(0, 0, 0, 0);
+        farm(-1, 0, 0, 0);
     }
+
 }

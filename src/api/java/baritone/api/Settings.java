@@ -41,6 +41,7 @@ import java.util.function.Consumer;
  */
 public final class Settings {
 
+
     /**
      * Allow Baritone to break blocks
      */
