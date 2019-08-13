@@ -43,11 +43,6 @@ public final class Settings {
 
 
     /**
-     * default farm radius. 0, is unlimited.
-     */
-    public final Setting<Integer> defaultFarmRange = new Setting<>(0);
-
-    /**
      * Allow Baritone to break blocks
      */
     public final Setting<Boolean> allowBreak = new Setting<>(true);
@@ -659,6 +654,11 @@ public final class Settings {
      * -1 to disable
      */
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
+
+    /**
+     * default farm radius. 0, is unlimited.
+     */
+    public final Setting<Integer> defaultFarmRange = new Setting<>(0);
 
     /**
      * Replant nether wart while farming
