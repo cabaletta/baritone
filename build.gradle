@@ -82,7 +82,7 @@ task sourceJar(type: Jar, dependsOn: classes) {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20190723-1.14.3'
+    mappings channel: 'snapshot', version: '20190814-1.14.3'
     reobfMappings 'notch'
 
     runs {
