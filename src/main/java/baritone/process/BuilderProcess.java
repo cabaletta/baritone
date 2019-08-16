@@ -226,7 +226,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private Optional<Placement> possibleToPlace(IBlockState toPlace, int x, int y, int z, BlockStateInterface bsi) {
-        for (EnumFacing against : EnumFacing.values()) {
+        EnumFacing[] againsts = EnumFacing.values();
+        for (EnumFacing against : againsts) {
             BetterBlockPos placeAgainstPos = new BetterBlockPos(x, y, z).offset(against);
             IBlockState placeAgainstState = bsi.get0(placeAgainstPos);
             if (MovementHelper.isReplacable(placeAgainstPos.x, placeAgainstPos.y, placeAgainstPos.z, placeAgainstState, bsi)) {
