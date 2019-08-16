@@ -31,7 +31,7 @@ A Minecraft pathfinder bot.
 
 Baritone is the pathfinding system used in [Impact](https://impactdevelopment.github.io/) since 4.4. There's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Baritone's integration into Impact. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
 
-The easiest way to install Baritone is to install [Impact](https://impactdevelopment.github.io/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the forge jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+The easiest way to install Baritone is to install [Impact](https://impactdevelopment.github.io/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the v1.2.* forge api jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
 
 For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1). Or [with optifine](https://github.com/cabaletta/baritone/issues/797).
 

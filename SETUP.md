@@ -11,6 +11,8 @@ These releases are not always completely up to date with latest features, and ar
 
 Link to the releases page: [Releases](https://github.com/cabaletta/baritone/releases)
 
+v1.2.* is for 1.12.2, v1.3.* is for 1.13.2
+
 Any official release will be GPG signed by leijurv (44A3EA646EADAC6A) and ZeroMemes (73A788379A197567). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by those two public keys of `checksums.txt`. 
 
 The build is fully deterministic and reproducible, and you can verify Travis did it properly by running `docker build --no-cache -t cabaletta/baritone .` yourself and comparing the shasum. This works identically on Travis, Mac, and Linux (if you have docker on Windows, I'd be grateful if you could let me know if it works there too).
