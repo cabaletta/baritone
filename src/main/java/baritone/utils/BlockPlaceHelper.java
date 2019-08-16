@@ -42,7 +42,8 @@ public class BlockPlaceHelper implements Helper {
             return;
         }
         rightClickTimer = Baritone.settings().rightClickSpeed.value;
-        for (EnumHand hand : EnumHand.values()) {
+        EnumHand[] hands = EnumHand.values();
+        for (EnumHand hand : hands) {
             if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), mouseOver.getBlockPos(), mouseOver.sideHit, mouseOver.hitVec, hand) == EnumActionResult.SUCCESS) {
                 ctx.player().swingArm(hand);
                 return;
