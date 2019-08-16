@@ -56,7 +56,8 @@ public class WaypointCollection implements IWaypointCollection {
     }
 
     private void load() {
-        for (Waypoint.Tag tag : Waypoint.Tag.values()) {
+        Waypoint.Tag[] tags = Waypoint.Tag.values();
+        for (Waypoint.Tag tag : tags) {
             load(tag);
         }
     }
