@@ -140,7 +140,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     }
 
     private boolean readyForHarvest(World world, BlockPos pos, IBlockState state) {
-        for (Harvest harvest : Harvest.values()) {
+        Harvest[] harvests = Harvest.values();
+        for (Harvest harvest : harvests) {
             if (harvest.block == state.getBlock()) {
                 return harvest.readyToHarvest(world, pos, state);
             }
@@ -163,7 +164,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         ArrayList<Block> scan = new ArrayList<>();
-        for (Harvest harvest : Harvest.values()) {
+        Harvest[] harvests = Harvest.values();
+        for (Harvest harvest : harvests) {
             scan.add(harvest.block);
         }
         scan.add(Blocks.FARMLAND);
