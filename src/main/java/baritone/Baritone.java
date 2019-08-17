@@ -148,12 +148,12 @@ public class Baritone implements IBaritone {
     }
 
     @Override
-    public CustomGoalProcess getCustomGoalProcess() { // Iffy
+    public CustomGoalProcess getCustomGoalProcess() {
         return this.customGoalProcess;
     }
 
     @Override
-    public GetToBlockProcess getGetToBlockProcess() {  // Iffy
+    public GetToBlockProcess getGetToBlockProcess() {
         return this.getToBlockProcess;
     }
 

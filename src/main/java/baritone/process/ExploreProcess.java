@@ -140,6 +140,9 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
                     centers.add(new BlockPos(centerX, 0, centerZ));
                 }
             }
+            if (dist % 10 == 0) {
+                count = Math.min(filter.countRemain(), Baritone.settings().exploreChunkSetMinimumSize.value);
+            }
             if (centers.size() >= count) {
                 return centers.stream().map(pos -> createGoal(pos.getX(), pos.getZ())).toArray(Goal[]::new);
             }

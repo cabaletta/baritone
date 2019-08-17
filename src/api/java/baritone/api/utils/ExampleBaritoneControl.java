@@ -44,9 +44,12 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.nio.file.Path;
 import java.util.*;
+
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
     private static final String COMMAND_PREFIX = "#";
@@ -258,7 +261,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             try {
                 String[] coords = msg.substring("build".length()).trim().split(" ");
                 file = coords[0] + ".schematic";
-                origin = new BlockPos(parseOrDefault(coords[1], ctx.playerFeet().x), parseOrDefault(coords[2], ctx.playerFeet().y), parseOrDefault(coords[3], ctx.playerFeet().z));
+                origin = new BlockPos(parseOrDefault(coords[1], ctx.playerFeet().x, 1), parseOrDefault(coords[2], ctx.playerFeet().y, 1), parseOrDefault(coords[3], ctx.playerFeet().z, 1));
             } catch (Exception ex) {
                 file = msg.substring(5).trim() + ".schematic";
                 origin = ctx.playerFeet();
@@ -368,7 +371,8 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         if (msg.equals("render")) {
             BetterBlockPos pf = ctx.playerFeet();
-            Minecraft.getInstance().worldRenderer.markBlockRangeForRenderUpdate(pf.x - 500, pf.y - 500, pf.z - 500, pf.x + 500, pf.y + 500, pf.z + 500);
+            int dist = (Minecraft.getInstance().gameSettings.renderDistanceChunks + 1) * 16;
+            Minecraft.getInstance().worldRenderer.markBlockRangeForRenderUpdate(pf.x - dist, pf.y - 256, pf.z - dist, pf.x + dist, pf.y + 256, pf.z + dist);
             logDirect("okay");
             return true;
         }
@@ -670,8 +674,8 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         return false;
     }
 
-    private int parseOrDefault(String str, int i) {
-        return str.equals("~") ? i : str.startsWith("~") ? Integer.parseInt(str.substring(1)) + i : Integer.parseInt(str);
+    private int parseOrDefault(String str, int i, double dimensionFactor) {
+        return str.equals("~") ? i : str.startsWith("~") ? (int) (Integer.parseInt(str.substring(1)) * dimensionFactor) + i : (int) (Integer.parseInt(str) * dimensionFactor);
     }
 
     private void log(List<ItemStack> stacks) {
@@ -686,18 +690,23 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         Goal goal;
         try {
             BetterBlockPos playerFeet = ctx.playerFeet();
-            switch (params.length) {
+
+            int length = params.length - 1; // length has to be smaller when a dimension parameter is added
+            if (params.length < 1 || (isNumeric(params[params.length - 1]) || params[params.length - 1].startsWith("~"))) {
+                length = params.length;
+            }
+            switch (length) {
                 case 0:
                     goal = new GoalBlock(playerFeet);
                     break;
                 case 1:
-                    goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y));
+                    goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y, 1));
                     break;
                 case 2:
-                    goal = new GoalXZ(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.z));
+                    goal = new GoalXZ(parseOrDefault(params[0], playerFeet.x, calculateDimensionFactor(params[params.length - 1])), parseOrDefault(params[1], playerFeet.z, calculateDimensionFactor(params[params.length - 1])));
                     break;
                 case 3:
-                    goal = new GoalBlock(new BlockPos(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.y), parseOrDefault(params[2], playerFeet.z)));
+                    goal = new GoalBlock(new BlockPos(parseOrDefault(params[0], playerFeet.x, calculateDimensionFactor(params[params.length - 1])), parseOrDefault(params[1], playerFeet.y, 1), parseOrDefault(params[2], playerFeet.z, calculateDimensionFactor(params[params.length - 1]))));
                     break;
                 default:
                     logDirect("unable to understand lol");
@@ -709,4 +718,23 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         return goal;
     }
+
+
+    private double calculateDimensionFactor(String to) {
+        return Math.pow(8, ctx.world().dimension.getType().getId() - getDimensionByName(to.toLowerCase()).getId());
+    }
+
+    private DimensionType getDimensionByName(String name) {
+        if ("the_end".contains(name)) {
+            return DimensionType.THE_END;
+        }
+        if ("the_overworld".contains(name) || "surface".contains(name)) {
+            return DimensionType.OVERWORLD;
+        }
+        if ("the_nether".contains(name) || "hell".contains(name)) {
+            return DimensionType.NETHER;
+        }
+        return ctx.world().dimension.getType();
+    }
+
 }

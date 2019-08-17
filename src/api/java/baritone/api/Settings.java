@@ -125,6 +125,13 @@ public final class Settings {
     public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
     /**
+     * This should be monetized it's so good
+     * <p>
+     * Defaults to true, but only actually takes effect if allowParkour is also true
+     */
+    public final Setting<Boolean> allowParkourAscend = new Setting<>(true);
+
+    /**
      * Allow descending diagonally
      * <p>
      * Safer than allowParkour yet still slightly unsafe, can make contact with unchecked adjacent blocks, so it's unsafe in the nether.
@@ -178,7 +185,7 @@ public final class Settings {
      * Enables some more advanced vine features. They're honestly just gimmicks and won't ever be needed in real
      * pathing scenarios. And they can cause Baritone to get trapped indefinitely in a strange scenario.
      * <p>
-     * Never turn this on lol
+     * Almost never turn this on lol
      */
     public final Setting<Boolean> allowVines = new Setting<>(false);
 

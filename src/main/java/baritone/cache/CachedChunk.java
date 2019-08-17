@@ -199,8 +199,17 @@ public final class CachedChunk {
             }
         }
 
-        if (type == PathingBlockType.SOLID && y == 127 && dimension == -1) {
-            return Blocks.BEDROCK.getDefaultState();
+        if (type == PathingBlockType.SOLID) {
+            if (y == 127 && dimension == -1) {
+                // nether roof is always unbreakable
+                return Blocks.BEDROCK.getDefaultState();
+            }
+            if (y < 5 && dimension == 0) {
+                // solid blocks below 5 are commonly bedrock
+                // however, returning bedrock always would be a little yikes
+                // discourage paths that include breaking blocks below 5 a little more heavily just so that it takes paths breaking what's known to be stone (at 5 or above) instead of what could maybe be bedrock (below 5)
+                return Blocks.OBSIDIAN.getDefaultState();
+            }
         }
         return ChunkPacker.pathingTypeToBlock(type, dimension);
     }

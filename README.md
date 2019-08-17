@@ -19,8 +19,9 @@
 ![Lines of Code](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
 [![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
 [![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
-[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.6%20/%20v1.3.2-brightgreen.svg)](https://impactdevelopment.github.io/)
+[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.8%20/%20v1.3.4-brightgreen.svg)](https://impactdevelopment.github.io/)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg)](https://github.com/fr1kin/ForgeHax/)
+[![Aristois add-on integration](https://img.shields.io/badge/Aristois%20add--on%20integration-v1.3.4-green.svg)](https://gitlab.com/emc-mods-indrit/baritone_api)
 [![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-master%3F-green.svg)](https://wweclient.com/)
 [![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
 [![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com/)
@@ -30,14 +31,14 @@ A Minecraft pathfinder bot.
 
 Baritone is the pathfinding system used in [Impact](https://impactdevelopment.github.io/) since 4.4. There's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Baritone's integration into Impact. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
 
-The easiest way to install Baritone is to install [Impact](https://impactdevelopment.github.io/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the forge jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+The easiest way to install Baritone is to install [Impact](https://impactdevelopment.github.io/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the v1.2.* forge api jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
 
-For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1).
+For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1). Or [with optifine](https://github.com/cabaletta/baritone/issues/797).
 
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 and 1.13.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
 
-Have committed at least once a day for the last 11 months =D 🦀
+Have committed at least once a day from Aug 1 2018 to Aug 1 2019.
 
 1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
 

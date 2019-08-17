@@ -58,6 +58,7 @@ public class CalculationContext {
     public final boolean allowParkour;
     public final boolean allowParkourPlace;
     public final boolean allowJumpAt256;
+    public final boolean allowParkourAscend;
     public final boolean assumeWalkOnWater;
     public final boolean allowDiagonalDescend;
     public final boolean allowDownward;
@@ -90,6 +91,7 @@ public class CalculationContext {
         this.allowParkour = Baritone.settings().allowParkour.value;
         this.allowParkourPlace = Baritone.settings().allowParkourPlace.value;
         this.allowJumpAt256 = Baritone.settings().allowJumpAt256.value;
+        this.allowParkourAscend = Baritone.settings().allowParkourAscend.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
         this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.value;
         this.allowDownward = Baritone.settings().allowDownward.value;
