@@ -199,7 +199,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
                     }
                 }
                 if (arrivalTickCount++ > 20) {
-                    logDirect("Right click timed out");
+                    logDirect("Right click trigger timed out");
                     return true;
                 }
                 return false; // trying to right click, will do it next tick or so
