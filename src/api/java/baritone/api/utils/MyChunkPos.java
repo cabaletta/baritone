@@ -27,7 +27,7 @@ public class MyChunkPos {
     @SerializedName("x")
     public int x;
 
-    @SerializedName("y")
+    @SerializedName("z")
     public int z;
 
     @Override

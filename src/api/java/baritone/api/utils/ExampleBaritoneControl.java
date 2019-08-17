@@ -39,44 +39,19 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.apache.commons.lang3.StringUtils.isNumeric;
+
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
-
-    private static final String HELP_MSG =
-            "baritone - Output settings into chat\n" +
-                    "settings - Same as baritone\n" +
-                    "goal - Create a goal (one number is '<Y>', two is '<X> <Z>', three is '<X> <Y> <Z>, 'clear' to clear)\n" +
-                    "path - Go towards goal\n" +
-                    "repack - (debug) Repacks chunk cache\n" +
-                    "rescan - (debug) Same as repack\n" +
-                    "axis - Paths towards the closest axis or diagonal axis, at y=120\n" +
-                    "cancel - Cancels current path\n" +
-                    "forcecancel - sudo cancel (only use if very glitched, try toggling 'pause' first)\n" +
-                    "gc - Calls System.gc();\n" +
-                    "invert - Runs away from the goal instead of towards it\n" +
-                    "follow - Follows a player 'follow username'\n" +
-                    "reloadall - (debug) Reloads chunk cache\n" +
-                    "saveall - (debug) Saves chunk cache\n" +
-                    "find - (debug) outputs how many blocks of a certain type are within the cache\n" +
-                    "mine - Paths to and mines specified blocks 'mine x_ore y_ore ...'\n" +
-                    "thisway - Creates a goal X blocks where you're facing\n" +
-                    "list - Lists waypoints under a category\n" +
-                    "get - Same as list\n" +
-                    "show - Same as list\n" +
-                    "save - Saves a waypoint (works but don't try to make sense of it)\n" +
-                    "delete - Deletes a waypoint\n" +
-                    "goto - Paths towards specified block or waypoint\n" +
-                    "spawn - Paths towards world spawn or your most recent bed right-click\n" +
-                    "sethome - Sets \"home\"\n" +
-                    "home - Paths towards \"home\" \n" +
-                    "costs - (debug) all movement costs from current location\n" +
-                    "damn - Daniel\n" +
-                    "Go to https://github.com/cabaletta/baritone/blob/master/USAGE.md for more information";
-
     private static final String COMMAND_PREFIX = "#";
 
     public final IBaritone baritone;
@@ -147,9 +122,12 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.equals("") || msg.equals("help") || msg.equals("?")) {
-            for (String line : HELP_MSG.split("\n")) {
-                logDirect(line);
-            }
+            ITextComponent component = MESSAGE_PREFIX.shallowCopy();
+            component.getStyle().setColor(TextFormatting.GRAY);
+            TextComponentString helpLink = new TextComponentString(" Click here for instructions on how to use Baritone (https://github.com/cabaletta/baritone/blob/master/USAGE.md)");
+            helpLink.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/cabaletta/baritone/blob/master/USAGE.md"));
+            component.appendSibling(helpLink);
+            BaritoneAPI.getSettings().logger.value.accept(component);
             return true;
         }
         if (msg.contains(" ")) {
@@ -266,7 +244,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             try {
                 String[] coords = msg.substring("build".length()).trim().split(" ");
                 file = coords[0] + ".schematic";
-                origin = new BlockPos(parseOrDefault(coords[1], ctx.playerFeet().x), parseOrDefault(coords[2], ctx.playerFeet().y), parseOrDefault(coords[3], ctx.playerFeet().z));
+                origin = new BlockPos(parseOrDefault(coords[1], ctx.playerFeet().x, 1), parseOrDefault(coords[2], ctx.playerFeet().y, 1), parseOrDefault(coords[3], ctx.playerFeet().z, 1));
             } catch (Exception ex) {
                 file = msg.substring(5).trim() + ".schematic";
                 origin = ctx.playerFeet();
@@ -376,7 +354,8 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         if (msg.equals("render")) {
             BetterBlockPos pf = ctx.playerFeet();
-            Minecraft.getInstance().worldRenderer.markBlockRangeForRenderUpdate(pf.x - 500, pf.y - 500, pf.z - 500, pf.x + 500, pf.y + 500, pf.z + 500);
+            int dist = (Minecraft.getInstance().gameSettings.renderDistanceChunks + 1) * 16;
+            Minecraft.getInstance().worldRenderer.markBlockRangeForRenderUpdate(pf.x - dist, pf.y - 256, pf.z - dist, pf.x + dist, pf.y + 256, pf.z + dist);
             logDirect("okay");
             return true;
         }
@@ -678,8 +657,8 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         return false;
     }
 
-    private int parseOrDefault(String str, int i) {
-        return str.equals("~") ? i : str.startsWith("~") ? Integer.parseInt(str.substring(1)) + i : Integer.parseInt(str);
+    private int parseOrDefault(String str, int i, double dimensionFactor) {
+        return str.equals("~") ? i : str.startsWith("~") ? (int) (Integer.parseInt(str.substring(1)) * dimensionFactor) + i : (int) (Integer.parseInt(str) * dimensionFactor);
     }
 
     private void log(List<ItemStack> stacks) {
@@ -694,18 +673,23 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         Goal goal;
         try {
             BetterBlockPos playerFeet = ctx.playerFeet();
-            switch (params.length) {
+
+            int length = params.length - 1; // length has to be smaller when a dimension parameter is added
+            if (params.length < 1 || (isNumeric(params[params.length - 1]) || params[params.length - 1].startsWith("~"))) {
+                length = params.length;
+            }
+            switch (length) {
                 case 0:
                     goal = new GoalBlock(playerFeet);
                     break;
                 case 1:
-                    goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y));
+                    goal = new GoalYLevel(parseOrDefault(params[0], playerFeet.y, 1));
                     break;
                 case 2:
-                    goal = new GoalXZ(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.z));
+                    goal = new GoalXZ(parseOrDefault(params[0], playerFeet.x, calculateDimensionFactor(params[params.length - 1])), parseOrDefault(params[1], playerFeet.z, calculateDimensionFactor(params[params.length - 1])));
                     break;
                 case 3:
-                    goal = new GoalBlock(new BlockPos(parseOrDefault(params[0], playerFeet.x), parseOrDefault(params[1], playerFeet.y), parseOrDefault(params[2], playerFeet.z)));
+                    goal = new GoalBlock(new BlockPos(parseOrDefault(params[0], playerFeet.x, calculateDimensionFactor(params[params.length - 1])), parseOrDefault(params[1], playerFeet.y, 1), parseOrDefault(params[2], playerFeet.z, calculateDimensionFactor(params[params.length - 1]))));
                     break;
                 default:
                     logDirect("unable to understand lol");
@@ -717,4 +701,23 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         return goal;
     }
+
+
+    private double calculateDimensionFactor(String to) {
+        return Math.pow(8, ctx.world().dimension.getType().getId() - getDimensionByName(to.toLowerCase()).getId());
+    }
+
+    private DimensionType getDimensionByName(String name) {
+        if ("the_end".contains(name)) {
+            return DimensionType.THE_END;
+        }
+        if ("the_overworld".contains(name) || "surface".contains(name)) {
+            return DimensionType.OVERWORLD;
+        }
+        if ("the_nether".contains(name) || "hell".contains(name)) {
+            return DimensionType.NETHER;
+        }
+        return ctx.world().dimension.getType();
+    }
+
 }
