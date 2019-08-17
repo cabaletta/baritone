@@ -72,28 +72,9 @@ class Path extends PathBase {
         this.start = new BetterBlockPos(start.x, start.y, start.z);
         this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
-        this.path = new ArrayList<>();
         this.movements = new ArrayList<>();
-        this.nodes = new ArrayList<>();
         this.goal = goal;
         this.context = context;
-        assemblePath(end);
-    }
-
-    @Override
-    public Goal getGoal() {
-        return goal;
-    }
-
-    /**
-     * Assembles this path given the end node.
-     *
-     * @param end The end node
-     */
-    private void assemblePath(PathNode end) {
-        if (!path.isEmpty() || !movements.isEmpty()) {
-            throw new IllegalStateException();
-        }
         PathNode current = end;
         LinkedList<BetterBlockPos> tempPath = new LinkedList<>();
         LinkedList<PathNode> tempNodes = new LinkedList<>();
@@ -107,8 +88,13 @@ class Path extends PathBase {
         // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
         // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         // to performantly do that conversion since it knows the length.
-        path.addAll(tempPath);
-        nodes.addAll(tempNodes);
+        this.path = new ArrayList<>(tempPath);
+        this.nodes = new ArrayList<>(tempNodes);
+    }
+
+    @Override
+    public Goal getGoal() {
+        return goal;
     }
 
     private boolean assembleMovements() {
