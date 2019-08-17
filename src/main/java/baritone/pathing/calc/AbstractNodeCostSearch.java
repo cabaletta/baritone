@@ -127,7 +127,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
             }
         } catch (Exception e) {
-            Helper.HELPER.logDebug("Pathing exception: " + e);
+            Helper.HELPER.logDirect("Pathing exception: " + e);
             e.printStackTrace();
             return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION);
         } finally {

@@ -142,6 +142,7 @@ public final class PathRenderer implements Helper {
         GlStateManager.color4f(color.getColorComponents(null)[0], color.getColorComponents(null)[1], color.getColorComponents(null)[2], 0.4F);
         GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
         GlStateManager.disableTexture();
+        GlStateManager.disableLighting();
         GlStateManager.depthMask(false);
         if (Baritone.settings().renderPathIgnoreDepth.value) {
             GlStateManager.disableDepthTest();
@@ -192,6 +193,7 @@ public final class PathRenderer implements Helper {
         //GlStateManager.color(0.0f, 0.0f, 0.0f, 0.4f);
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture();
+        GlStateManager.enableLighting();
         GlStateManager.disableBlend();
     }
 

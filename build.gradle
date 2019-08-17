@@ -70,7 +70,7 @@ sourceSets {
     schematica_api {
         compileClasspath += main.compileClasspath
     }
-    
+
     main {
         compileClasspath += schematica_api.output
     }
