@@ -50,7 +50,7 @@ import net.minecraft.world.chunk.Chunk;
 import java.nio.file.Path;
 import java.util.*;
 
-import static org.apache.commons.lang3.StringUtils.isNumeric;
+import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
     private static final String COMMAND_PREFIX = "#";
@@ -694,7 +694,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             BetterBlockPos playerFeet = ctx.playerFeet();
 
             int length = params.length - 1; // length has to be smaller when a dimension parameter is added
-            if (params.length < 1 || (isNumeric(params[params.length - 1]) || params[params.length - 1].startsWith("~"))) {
+            if (params.length < 1 || (isCreatable(params[params.length - 1]) || params[params.length - 1].startsWith("~"))) {
                 length = params.length;
             }
             switch (length) {
