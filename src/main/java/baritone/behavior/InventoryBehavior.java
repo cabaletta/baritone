@@ -26,6 +26,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 
 import java.util.ArrayList;
@@ -132,8 +133,11 @@ public final class InventoryBehavior extends Behavior {
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
         IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z);
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && maybe.equals(((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(new BlockItemUseContext(new ItemUseContext(ctx.player(), stack, ctx.playerFeet(), EnumFacing.UP, (float) ctx.player().posX, (float) ctx.player().posY, (float) ctx.player().posZ)))))) {
             return true; // gotem
+        }
+        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+            return true;
         }
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
             if (throwaway(select, stack -> item.equals(stack.getItem()))) {

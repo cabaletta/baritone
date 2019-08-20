@@ -34,6 +34,7 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.AirSchematic;
+import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.Schematic;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -133,7 +134,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private static ISchematic parse(NBTTagCompound schematic) {
-        return new Schematic(schematic);
+        return Baritone.settings().mapArtMode.value ? new MapArtSchematic(schematic) : new Schematic(schematic);
     }
 
     @Override
@@ -529,6 +530,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         } else {
                             incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
                             observedCompleted.remove(BetterBlockPos.longHash(blockX, blockY, blockZ));
+                            if (incorrectPositions.size() > Baritone.settings().incorrectSize.value) {
+                                return;
+                            }
                         }
                         continue;
                     }
@@ -537,6 +541,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         // and we've never seen this position be correct
                         // therefore mark as incorrect
                         incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
+                        if (incorrectPositions.size() > Baritone.settings().incorrectSize.value) {
+                            return;
+                        }
                     }
                 }
             }
@@ -635,7 +642,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         boolean allowSameLevel = !(ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir);
         for (EnumFacing facing : Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP) {
             if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && placementPlausible(pos, bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ()))) {
-                return new GoalAdjacent(pos, allowSameLevel);
+                return new GoalAdjacent(pos, pos.offset(facing), allowSameLevel);
             }
         }
         return new GoalPlace(pos);
@@ -658,14 +665,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     public static class GoalAdjacent extends GoalGetToBlock {
         private boolean allowSameLevel;
+        private BlockPos no;
 
-        public GoalAdjacent(BlockPos pos, boolean allowSameLevel) {
+        public GoalAdjacent(BlockPos pos, BlockPos no, boolean allowSameLevel) {
             super(pos);
+            this.no = no;
             this.allowSameLevel = allowSameLevel;
         }
 
         public boolean isInGoal(int x, int y, int z) {
             if (x == this.x && y == this.y && z == this.z) {
+                return false;
+            }
+            if (x == no.getX() && y == no.getY() && z == no.getZ()) {
                 return false;
             }
             if (!allowSameLevel && y == this.y - 1) {
@@ -730,6 +742,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return true;
         }
         if (current.getBlock() instanceof BlockAir && desired.getBlock() instanceof BlockAir) {
+            return true;
+        }
+        if ((current.getBlock() == Blocks.WATER || current.getBlock() == Blocks.LAVA) && Baritone.settings().okIfWater.value) {
             return true;
         }
         // TODO more complicated comparison logic I guess
@@ -812,7 +827,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 // it should be a real block
                 // is it already that block?
                 if (valid(bsi.get0(x, y, z), sch)) {
-                    return 3;
+                    return Baritone.settings().breakCorrectBlockPenaltyMultiplier.value;
                 } else {
                     // can break if it's wrong
                     // would be great to return less than 1 here, but that would actually make the cost calculation messed up

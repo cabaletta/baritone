@@ -35,8 +35,7 @@ public class MapArtSchematic extends Schematic {
         for (int x = 0; x < widthX; x++) {
             for (int z = 0; z < lengthZ; z++) {
                 IBlockState[] column = states[x][z];
-
-                OptionalInt lowestBlockY = lastIndexMatching(column, block -> !(block instanceof BlockAir));
+                OptionalInt lowestBlockY = lastIndexMatching(column, state -> !(state.getBlock() instanceof BlockAir));
                 if (lowestBlockY.isPresent()) {
                     heightMap[x][z] = lowestBlockY.getAsInt();
                 } else {
