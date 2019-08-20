@@ -26,7 +26,11 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.inventory.container.ClickType;
 import net.minecraft.item.*;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.OptionalInt;
@@ -132,8 +136,11 @@ public final class InventoryBehavior extends Behavior {
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
         BlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z);
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && maybe.equals(((BlockItem) stack.getItem()).getBlock().getStateForPlacement(new BlockItemUseContext(new ItemUseContext(ctx.world(), ctx.player(), Hand.MAIN_HAND, stack, new BlockRayTraceResult(new Vec3d(ctx.player().posX, ctx.player().posY, ctx.player().posZ), Direction.UP, ctx.playerFeet(), false)) {}))))) {
             return true; // gotem
+        }
+        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+            return true;
         }
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
             if (throwaway(select, stack -> item.equals(stack.getItem()))) {

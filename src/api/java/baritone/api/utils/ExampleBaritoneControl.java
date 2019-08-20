@@ -49,7 +49,7 @@ import net.minecraft.world.dimension.DimensionType;
 import java.nio.file.Path;
 import java.util.*;
 
-import static org.apache.commons.lang3.StringUtils.isNumeric;
+import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
 public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
     private static final String COMMAND_PREFIX = "#";
@@ -222,20 +222,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.equals("repack") || msg.equals("rescan")) {
-            ClientChunkProvider cli = (ClientChunkProvider) ctx.world().getChunkProvider();
-            int playerChunkX = ctx.playerFeet().getX() >> 4;
-            int playerChunkZ = ctx.playerFeet().getZ() >> 4;
-            int count = 0;
-            for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
-                for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
-                    Chunk chunk = cli.getChunk(x, z, null, false);
-                    if (chunk != null) {
-                        count++;
-                        baritone.getWorldProvider().getCurrentWorld().getCachedWorld().queueForPacking(chunk);
-                    }
-                }
-            }
-            logDirect("Queued " + count + " chunks for repacking");
+            logDirect("Queued " + repack() + " chunks for repacking");
             return true;
         }
         if (msg.startsWith("build")) {
@@ -483,6 +470,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.startsWith("find")) {
+            repack();
             String blockType = msg.substring(4).trim();
             ArrayList<BlockPos> locs = baritone.getWorldProvider().getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, ctx.playerFeet().getX(), ctx.playerFeet().getZ(), 4);
             logDirect("Have " + locs.size() + " locations");
@@ -495,6 +483,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.startsWith("mine")) {
+            repack();
             String[] blockTypes = msg.substring(4).trim().split(" ");
             try {
                 int quantity = Integer.parseInt(blockTypes[1]);
@@ -584,6 +573,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.startsWith("goto")) {
+            repack();
             String waypointType = msg.substring(4).trim();
             if (waypointType.endsWith("s") && IWaypoint.Tag.fromString(waypointType.substring(0, waypointType.length() - 1)) != null) {
                 // for example, "show deaths"
@@ -657,6 +647,23 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         return false;
     }
 
+    private int repack() {
+        ClientChunkProvider cli = (ClientChunkProvider) ctx.world().getChunkProvider();
+        int playerChunkX = ctx.playerFeet().getX() >> 4;
+        int playerChunkZ = ctx.playerFeet().getZ() >> 4;
+        int count = 0;
+        for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
+            for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
+                Chunk chunk = cli.getChunk(x, z, null, false);
+                if (chunk != null) {
+                    count++;
+                    baritone.getWorldProvider().getCurrentWorld().getCachedWorld().queueForPacking(chunk);
+                }
+            }
+        }
+        return count;
+    }
+
     private int parseOrDefault(String str, int i, double dimensionFactor) {
         return str.equals("~") ? i : str.startsWith("~") ? (int) (Integer.parseInt(str.substring(1)) * dimensionFactor) + i : (int) (Integer.parseInt(str) * dimensionFactor);
     }
@@ -675,7 +682,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             BetterBlockPos playerFeet = ctx.playerFeet();
 
             int length = params.length - 1; // length has to be smaller when a dimension parameter is added
-            if (params.length < 1 || (isNumeric(params[params.length - 1]) || params[params.length - 1].startsWith("~"))) {
+            if (params.length < 1 || (isCreatable(params[params.length - 1]) || params[params.length - 1].startsWith("~"))) {
                 length = params.length;
             }
             switch (length) {
