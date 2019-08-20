@@ -106,11 +106,11 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         if (server != null && server.getWorld(DimensionType.OVERWORLD) != null) {
             if (mc.player == null) {
                 server.getWorld(DimensionType.OVERWORLD).setSpawnPoint(STARTING_POSITION);
-            }
-            server.getCommandManager().handleCommand(server.getCommandSource(), "/difficulty peaceful");
-            int result = server.getCommandManager().handleCommand(server.getCommandSource(), "/gamerule spawnRadius 0");
-            if (result != 0) {
-                throw new IllegalStateException(result + "");
+                server.getCommandManager().handleCommand(server.getCommandSource(), "/difficulty peaceful");
+                int result = server.getCommandManager().handleCommand(server.getCommandSource(), "/gamerule spawnRadius 0");
+                if (result != 0) {
+                    throw new IllegalStateException(result + "");
+                }
             }
         }
 
