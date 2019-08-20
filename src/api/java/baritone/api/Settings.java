@@ -698,6 +698,26 @@ public final class Settings {
     public final Setting<Boolean> goalBreakFromAbove = new Setting<>(false);
 
     /**
+     * Build in map art mode, which makes baritone only care about the top block in each column
+     */
+    public final Setting<Boolean> mapArtMode = new Setting<>(false);
+
+    /**
+     * Override builder's behavior to not attempt to correct blocks that are currently water
+     */
+    public final Setting<Boolean> okIfWater = new Setting<>(false);
+
+    /**
+     * The set of incorrect blocks can never grow beyond this size
+     */
+    public final Setting<Integer> incorrectSize = new Setting<>(100);
+
+    /**
+     * Multiply the cost of breaking a block that's correct in the builder's schematic by this coefficient
+     */
+    public final Setting<Double> breakCorrectBlockPenaltyMultiplier = new Setting<>(10d);
+
+    /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
