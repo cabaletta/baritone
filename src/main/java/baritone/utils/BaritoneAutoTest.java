@@ -104,7 +104,9 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         // If the integrated server is launched and the world has initialized, set the spawn point
         // to our defined starting position
         if (server != null && server.getWorld(DimensionType.OVERWORLD) != null) {
-            server.getWorld(DimensionType.OVERWORLD).setSpawnPoint(STARTING_POSITION);
+            if (mc.player == null) {
+                server.getWorld(DimensionType.OVERWORLD).setSpawnPoint(STARTING_POSITION);
+            }
             server.getCommandManager().handleCommand(server.getCommandSource(), "/difficulty peaceful");
             int result = server.getCommandManager().handleCommand(server.getCommandSource(), "/gamerule spawnRadius 0");
             if (result != 0) {
