@@ -172,7 +172,9 @@ public final class Settings {
             Blocks.FURNACE,
             Blocks.LIT_FURNACE,
             Blocks.CHEST,
-            Blocks.TRAPPED_CHEST
+            Blocks.TRAPPED_CHEST,
+            Blocks.STANDING_SIGN,
+            Blocks.WALL_SIGN
     )));
 
     /**
