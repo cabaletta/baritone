@@ -511,10 +511,18 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
-            for (String s : blockTypes) {
+            for (int i = 0; i < blockTypes.length; i++) {
+                String s = blockTypes[i];
                 if (BlockUtils.stringToBlockNullable(s) == null) {
-                    logDirect(s + " isn't a valid block name");
-                    return true;
+                    if (s.endsWith("s")) {
+                        s = s.substring(0, s.length() - 1);
+                        blockTypes[i] = s;
+                    }
+
+                    if (BlockUtils.stringToBlockNullable(s) == null) {
+                        logDirect(s + " isn't a valid block name");
+                        return true;
+                    }
                 }
 
             }
