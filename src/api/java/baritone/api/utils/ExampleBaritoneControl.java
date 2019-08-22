@@ -511,11 +511,29 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
+
+            Map<String, String> aliases = new HashMap(); // This should definitely be in a setting i'm just too dumb for that
+            aliases.put("diamond", "diamond_ore");
+            aliases.put("iron", "iron_ore");
+            aliases.put("coal", "coal_ore");
+            aliases.put("lapis", "lapis_ore");
+            aliases.put("gold", "gold_ore");
+            aliases.put("redstone", "redstone_ore");
+            aliases.put("emerald", "emerald_ore");
+            aliases.put("quartz", "quartz_ore");
+
             for (int i = 0; i < blockTypes.length; i++) {
                 String s = blockTypes[i];
                 if (BlockUtils.stringToBlockNullable(s) == null) {
                     if (s.endsWith("s")) {
                         s = s.substring(0, s.length() - 1);
+                        blockTypes[i] = s;
+                    }
+
+                    String alias = aliases.get(s);
+
+                    if (alias != null) {
+                        s = alias;
                         blockTypes[i] = s;
                     }
 
