@@ -524,23 +524,22 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
 
             for (int i = 0; i < blockTypes.length; i++) {
                 String s = blockTypes[i];
+
+                s = BlockUtils.stringToBlockNullable(s) == null // Is it not already a block?
+                    ? aliases.get(s) != null // Check if it's an alias
+                        ? aliases.get(s) // If is an alias just set it to that
+                        : s.endsWith("s") // Else is it plural?
+                            ? aliases.get(s.substring(0, s.length() - 1)) != null // Is it a plural alias?
+                                ? aliases.get(s.substring(0, s.length() - 1)) // If it's a plural alias set it to that
+                                : s.substring(0, s.length() - 1) // If just plural set it to that
+                            : s // Otherwise, don't change it
+                    : s; // Otherwise, don't change it
+
+                blockTypes[i] = s;
+
                 if (BlockUtils.stringToBlockNullable(s) == null) {
-                    if (s.endsWith("s")) {
-                        s = s.substring(0, s.length() - 1);
-                        blockTypes[i] = s;
-                    }
-
-                    String alias = aliases.get(s);
-
-                    if (alias != null) {
-                        s = alias;
-                        blockTypes[i] = s;
-                    }
-
-                    if (BlockUtils.stringToBlockNullable(s) == null) {
-                        logDirect(s + " isn't a valid block name");
-                        return true;
-                    }
+                    logDirect(s + " isn't a valid block name");
+                    return true;
                 }
 
             }
