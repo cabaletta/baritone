@@ -375,7 +375,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
             return onTick(calcFailed, isSafeToCancel);
         }
-        trim();
+        if (Baritone.settings().distanceTrim.value) {
+            trim();
+        }
 
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround) {

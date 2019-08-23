@@ -725,6 +725,11 @@ public final class Settings {
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
 
     /**
+     * Trim incorrect positions too far away, helps performance but hurts reliability in very large schematics
+     */
+    public final Setting<Boolean> distanceTrim = new Setting<>(false);
+
+    /**
      * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.
      * <p>
      * Currently only runs when either MineBehavior or FollowBehavior is active.
