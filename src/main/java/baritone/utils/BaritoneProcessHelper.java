@@ -19,6 +19,7 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.process.IBaritoneProcess;
+import baritone.api.utils.ExampleBaritoneControl;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 
@@ -32,6 +33,11 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         this.ctx = baritone.getPlayerContext();
         baritone.getPathingControlManager().registerProcess(this);
     }
+
+    @Override
+    public void onLostControl(){
+        ExampleBaritoneControl.nextCommand();
+    };
 
     @Override
     public boolean isTemporary() {

@@ -160,6 +160,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         start = null;
         blacklist = null;
         baritone.getInputOverrideHandler().clearAllKeys();
+        super.onLostControl();
     }
 
     @Override

@@ -282,6 +282,7 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
     @Override
     public void onLostControl() {
         explorationOrigin = null;
+        super.onLostControl();
     }
 
     @Override

@@ -105,6 +105,7 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
     public void onLostControl() {
         this.state = State.NONE;
         this.goal = null;
+        super.onLostControl();
     }
 
     @Override

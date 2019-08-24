@@ -59,6 +59,8 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
     public final IPlayerContext ctx;
 
     public ExampleBaritoneControl(IBaritone baritone) {
+        if (thisExampleBaritoneControl == null)
+            thisExampleBaritoneControl = this;
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         baritone.getGameEventHandler().registerEventListener(this);
@@ -68,7 +70,15 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
     public void onSendChatMessage(ChatEvent event) {
         String msg = event.getMessage();
         if (BaritoneAPI.getSettings().prefixControl.value && msg.startsWith(COMMAND_PREFIX)) {
-            if (!runCommand(msg.substring(COMMAND_PREFIX.length()))) {
+
+            String[] commandsList = msg.split(COMMAND_PREFIX);
+            commandsToBeExecutedOld = commandsToBeExecuted;
+            commandsToBeExecuted = "";
+            for (int i = 2; i < commandsList.length; i++) {
+                commandsToBeExecuted += COMMAND_PREFIX+ commandsList[i];
+            }
+
+            if (!runCommand(commandsList[1])) {
                 logDirect("Invalid command");
             }
             event.cancel(); // always cancel if using prefixControl
@@ -365,8 +375,52 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("okay");
             return true;
         }
-        if (msg.equals("farm")) {
-            baritone.getFarmProcess().farm();
+        if (msg.startsWith("farm")) {
+            String rest = msg.substring(4).trim();
+            String[] params = rest.split(" ");
+            int[] paramsInt = new int[params.length];
+            try {
+                for (int i = 0; i < paramsInt.length; i++) {
+                    paramsInt[i] = Integer.parseInt(params[i]);
+                }
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+                logDirect("unable to parse");
+                return true;
+            }
+            int[] args = new int[]{-1, 0, 0, 0};
+            if (params.length > 0) {
+                args[0] = paramsInt[0];
+            }
+            switch (params.length) {
+                case 0:
+                    args[0] = BaritoneAPI.getSettings().defaultFarmRange.value;
+                    args[1] = ctx.playerFeet().x;
+                    args[2] = ctx.playerFeet().y;
+                    args[3] = ctx.playerFeet().z;
+                    break;
+                case 1:
+                    args[1] = ctx.playerFeet().x;
+                    args[2] = ctx.playerFeet().y;
+                    args[3] = ctx.playerFeet().z;
+                    break;
+                case 2:
+                    args[1] = ctx.playerFeet().x;
+                    args[2] = paramsInt[1];
+                    args[3] = ctx.playerFeet().z;
+                    break;
+                case 3:
+                    args[1] = paramsInt[1];
+                    args[2] = ctx.playerFeet().y;
+                    args[3] = paramsInt[2];
+                    break;
+                case 4:
+                    args = paramsInt;
+                    break;
+                default:
+                    logDirect("to many arguments");
+                    return true;
+            }
+            baritone.getFarmProcess().farm(args[0], args[1], args[2], args[3]);
             logDirect("farming");
             return true;
         }
@@ -662,8 +716,45 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         }
         if (msg.equals("damn")) {
             logDirect("daniel");
+            return true;
+        }
+        if (msg.startsWith("add")){
+            String newCommands = msg.substring(3).trim();
+            commandsToBeExecuted = commandsToBeExecutedOld+ newCommands;
+            return true;
+        }
+        if (msg.equals("next")){
+            commandsToBeExecuted = commandsToBeExecutedOld;
+            nextCommand();
+
+            return true;
+        }
+        if (msg.equals("commandlist")){
+            commandsToBeExecuted = commandsToBeExecutedOld;
+            logDirect(commandsToBeExecuted);
+            return true;
         }
         return false;
+    }
+
+    private static ExampleBaritoneControl thisExampleBaritoneControl;
+    private static String commandsToBeExecuted = "";
+    private static String commandsToBeExecutedOld = "";
+    public static void nextCommand(){ // execute nex command in commandsToBeExecuted
+        String[] commandsList = commandsToBeExecuted.split(COMMAND_PREFIX);
+        if (commandsList.length > 1){
+            String msg0 = commandsList[1];
+            StringBuilder sb = new StringBuilder();
+            for (int i = 2; i < commandsList.length; i++) {
+                sb.append(COMMAND_PREFIX);
+                sb.append(commandsList[i]);
+            }
+            commandsToBeExecuted = sb.toString();
+            thisExampleBaritoneControl.logDirectTextComponentString(new TextComponentString(String.format("%s Executing: %s" + COMMAND_PREFIX + msg0, TextFormatting.YELLOW, TextFormatting.WHITE)));
+            if (!thisExampleBaritoneControl.runCommand(msg0)) {
+                thisExampleBaritoneControl.logDirect("Invalid command");
+            }
+        }
     }
 
     private int repack() {

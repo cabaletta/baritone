@@ -124,6 +124,7 @@ public final class BackfillProcess extends BaritoneProcessHelper {
         if (blocksToReplace != null && !blocksToReplace.isEmpty()) {
             blocksToReplace.clear();
         }
+        super.onLostControl();
     }
 
     @Override

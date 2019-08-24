@@ -657,6 +657,11 @@ public final class Settings {
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
 
     /**
+     * default farm radius. 0, is unlimited.
+     */
+    public final Setting<Integer> defaultFarmRange = new Setting<>(0);
+
+    /**
      * Replant nether wart while farming
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);

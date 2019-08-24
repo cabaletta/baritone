@@ -700,6 +700,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         layer = 0;
         paused = false;
         observedCompleted = null;
+        super.onLostControl();
     }
 
     @Override

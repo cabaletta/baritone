@@ -85,7 +85,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             if (curr >= desiredQuantity) {
                 logDirect("Have " + curr + " " + item.getItemStackDisplayName(new ItemStack(item, 1)));
                 cancel();
-                return null;
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
         if (calcFailed) {
@@ -96,13 +96,13 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             } else {
                 logDirect("Unable to find any path to " + mining + ", canceling Mine");
                 cancel();
-                return null;
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
         if (!Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
             cancel();
-            return null;
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
@@ -139,7 +139,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             // none in range
             // maybe say something in chat? (ahem impact)
             cancel();
-            return null;
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
         return command;
     }
@@ -147,6 +147,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public void onLostControl() {
         mine(0, (Block[]) null);
+        super.onLostControl();
     }
 
     @Override

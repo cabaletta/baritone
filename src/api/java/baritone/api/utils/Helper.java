@@ -69,4 +69,9 @@ public interface Helper {
         component.appendSibling(new TextComponentString(" " + message));
         Minecraft.getMinecraft().addScheduledTask(() -> BaritoneAPI.getSettings().logger.value.accept(component));
     }
+    default void logDirectTextComponentString(TextComponentString message) {
+        ITextComponent component = MESSAGE_PREFIX.createCopy();
+        component.appendSibling(message);
+        Minecraft.getMinecraft().addScheduledTask(() -> BaritoneAPI.getSettings().logger.value.accept(component));
+    }
 }

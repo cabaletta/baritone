@@ -14,6 +14,10 @@ To disable direct chat control (with no prefix), turn off the `chatControl` sett
 
 `help` for (rudimentary) help. You can see what it says [here](https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/utils/ExampleBaritoneControl.java#L47).
 
+It is possible to automatically execute commands after one another. example: `#mine oak_log 64 #mine stone 64 #goto x y z`. this try to harvest 64 oak logs and 64 cobblestone/stone and then head to "x y z". perfect for harvesting materials for your house while you go and eat a snack.
+not all commands will automatically execute the next one, for example: `thisway` and `goal`. if you ever get stuck or want to do the next operation, use `next`.
+all upcoming commands will be canceled when typing any command except for `next` and `add`.
+
 To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
 
 Some common examples:
@@ -31,11 +35,13 @@ Some common examples:
 - `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
 - `schematica` to build the schematic that is currently open in schematica
 - `tunnel` to dig just straight ahead and make a tunnel
-- `farm` to automatically harvest, replant, or bone meal crops
+- `farm range x y z` or `farm range x z` or `farm range y` or `farm range` or `farm` to automatically harvest, replant, or bone meal crops inside of its range. if range is 0 then the range is limitless. default is limitless from the player's feats position.
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
 - `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
 - `version` to get the version of Baritone you're running
+- `next` to skip to the next command in the command queue.
+- `add` add one ore more comm,ands to the command queue. example: `#add #farm 16`.
 - `damn` daniel
 
 
