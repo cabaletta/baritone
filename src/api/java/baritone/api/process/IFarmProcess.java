@@ -17,10 +17,8 @@
 
 package baritone.api.process;
 
-public interface IFarmProcess extends IBaritoneProcess {
-    void farm(int range, int posX, int posY, int posZ);
+import net.minecraft.util.math.BlockPos;
 
-    default void farm(){
-        farm(0, 0, 0, 0);
-    }
+public interface IFarmProcess extends IBaritoneProcess {
+    void farm(int range, BlockPos pos);
 }

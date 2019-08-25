@@ -58,6 +58,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
     public final IBaritone baritone;
     public final IPlayerContext ctx;
 
+    private static ExampleBaritoneControl thisExampleBaritoneControl;
+    private static String commandsToBeExecuted = "";
+    private String commandsToBeExecutedOld = "";
+
     public ExampleBaritoneControl(IBaritone baritone) {
         if (thisExampleBaritoneControl == null)
             thisExampleBaritoneControl = this;
@@ -75,7 +79,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             commandsToBeExecutedOld = commandsToBeExecuted;
             commandsToBeExecuted = "";
             for (int i = 2; i < commandsList.length; i++) {
-                commandsToBeExecuted += COMMAND_PREFIX+ commandsList[i];
+                commandsToBeExecuted += COMMAND_PREFIX + commandsList[i];
             }
 
             if (!runCommand(commandsList[1])) {
@@ -378,49 +382,48 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         if (msg.startsWith("farm")) {
             String rest = msg.substring(4).trim();
             String[] params = rest.split(" ");
-            int[] paramsInt = new int[params.length];
+            int[] args = new int[]{-1, 0, 0, 0};
+            if (params.length > 0) {
+                args[0] = Integer.parseInt(params[0]);
+            }
             try {
-                for (int i = 0; i < paramsInt.length; i++) {
-                    paramsInt[i] = Integer.parseInt(params[i]);
+                switch (params.length) {
+                    case 0:
+                        args[0] = BaritoneAPI.getSettings().defaultFarmRange.value;
+                        args[1] = ctx.playerFeet().x;
+                        args[2] = ctx.playerFeet().y;
+                        args[3] = ctx.playerFeet().z;
+                        break;
+                    case 1:
+                        args[1] = ctx.playerFeet().x;
+                        args[2] = ctx.playerFeet().y;
+                        args[3] = ctx.playerFeet().z;
+                        break;
+                    case 2:
+                        args[1] = ctx.playerFeet().x;
+                        args[2] = parseOrDefault(params[1], ctx.playerFeet().y, 1);
+                        args[3] = ctx.playerFeet().z;
+                        break;
+                    case 3:
+                        args[1] = parseOrDefault(params[1], ctx.playerFeet().x, 1);
+                        args[2] = ctx.playerFeet().y;
+                        args[3] = parseOrDefault(params[2], ctx.playerFeet().z, 1);
+                        break;
+                    case 4:
+                        args[1] = parseOrDefault(params[1], ctx.playerFeet().x, 1);
+                        args[2] = parseOrDefault(params[2], ctx.playerFeet().y, 1);
+                        args[3] = parseOrDefault(params[3], ctx.playerFeet().z, 1);
+                        break;
+                    default:
+                        logDirect("to many arguments");
+                        return true;
                 }
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+            } catch (NumberFormatException ex) {
                 logDirect("unable to parse");
                 return true;
             }
-            int[] args = new int[]{-1, 0, 0, 0};
-            if (params.length > 0) {
-                args[0] = paramsInt[0];
-            }
-            switch (params.length) {
-                case 0:
-                    args[0] = BaritoneAPI.getSettings().defaultFarmRange.value;
-                    args[1] = ctx.playerFeet().x;
-                    args[2] = ctx.playerFeet().y;
-                    args[3] = ctx.playerFeet().z;
-                    break;
-                case 1:
-                    args[1] = ctx.playerFeet().x;
-                    args[2] = ctx.playerFeet().y;
-                    args[3] = ctx.playerFeet().z;
-                    break;
-                case 2:
-                    args[1] = ctx.playerFeet().x;
-                    args[2] = paramsInt[1];
-                    args[3] = ctx.playerFeet().z;
-                    break;
-                case 3:
-                    args[1] = paramsInt[1];
-                    args[2] = ctx.playerFeet().y;
-                    args[3] = paramsInt[2];
-                    break;
-                case 4:
-                    args = paramsInt;
-                    break;
-                default:
-                    logDirect("to many arguments");
-                    return true;
-            }
-            baritone.getFarmProcess().farm(args[0], args[1], args[2], args[3]);
+            BlockPos bp = new BlockPos(args[1], args[2], args[3]);
+            baritone.getFarmProcess().farm(args[0], bp);
             logDirect("farming");
             return true;
         }
@@ -718,18 +721,17 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("daniel");
             return true;
         }
-        if (msg.startsWith("add")){
+        if (msg.startsWith("add")) {
             String newCommands = msg.substring(3).trim();
-            commandsToBeExecuted = commandsToBeExecutedOld+ newCommands;
+            commandsToBeExecuted = commandsToBeExecutedOld + newCommands;
             return true;
         }
-        if (msg.equals("next")){
+        if (msg.equals("next")) {
             commandsToBeExecuted = commandsToBeExecutedOld;
             nextCommand();
-
             return true;
         }
-        if (msg.equals("commandlist")){
+        if (msg.equals("commandlist")) {
             commandsToBeExecuted = commandsToBeExecutedOld;
             logDirect(commandsToBeExecuted);
             return true;
@@ -737,12 +739,9 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         return false;
     }
 
-    private static ExampleBaritoneControl thisExampleBaritoneControl;
-    private static String commandsToBeExecuted = "";
-    private static String commandsToBeExecutedOld = "";
-    public static void nextCommand(){ // execute nex command in commandsToBeExecuted
+    public static void nextCommand() { // execute nex command in commandsToBeExecuted
         String[] commandsList = commandsToBeExecuted.split(COMMAND_PREFIX);
-        if (commandsList.length > 1){
+        if (commandsList.length > 1) {
             String msg0 = commandsList[1];
             StringBuilder sb = new StringBuilder();
             for (int i = 2; i < commandsList.length; i++) {

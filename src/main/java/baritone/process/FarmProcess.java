@@ -99,8 +99,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     }
 
     @Override
-    public void farm(int range, int posX, int posY, int posZ) {
-        center = new BlockPos(posX, posY, posZ);
+    public void farm(int range, BlockPos pos) {
+        center = pos;
         this.range = range;
         active = true;
         locations = null;
