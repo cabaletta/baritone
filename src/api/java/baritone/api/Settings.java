@@ -154,8 +154,7 @@ public final class Settings {
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK),
-            Item.getItemFromBlock(Blocks.STONE),
-			Item.getItemFromBlock(Blocks.COARSED_DIRT)
+            Item.getItemFromBlock(Blocks.STONE)
 			
     )));
 
