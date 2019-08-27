@@ -77,6 +77,7 @@ public class Avoidance {
                     .filter(entity -> !(entity instanceof EntityPigZombie) || ((EntityPigZombie) entity).isAngry())
                     .filter(entity -> !(entity instanceof EntityEnderman) || ((EntityEnderman) entity).isScreaming())
                     .filter(entity -> !(entity instanceof EntityWither))
+					.filter(entity -> !(entity instanceof EntityWitherSkull))
                     .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
         }
         return res;

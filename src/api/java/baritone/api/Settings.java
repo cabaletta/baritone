@@ -176,7 +176,8 @@ public final class Settings {
             Blocks.TRAPPED_CHEST,
             Blocks.STANDING_SIGN,
             Blocks.WALL_SIGN,
-			Blocks.BEDROCK
+			Blocks.BEDROCK,
+			Blocks.SKULL
     )));
 
     /**
