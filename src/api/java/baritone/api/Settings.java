@@ -154,7 +154,9 @@ public final class Settings {
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK),
-            Item.getItemFromBlock(Blocks.STONE)
+            Item.getItemFromBlock(Blocks.STONE),
+			Item.getItemFromBlock(Blocks.COARSED_DIRT)
+			
     )));
 
     /**
@@ -174,7 +176,8 @@ public final class Settings {
             Blocks.CHEST,
             Blocks.TRAPPED_CHEST,
             Blocks.STANDING_SIGN,
-            Blocks.WALL_SIGN
+            Blocks.WALL_SIGN,
+			Blocks.BEDROCK
     )));
 
     /**
