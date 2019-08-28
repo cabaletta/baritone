@@ -659,6 +659,11 @@ public final class Settings {
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
 
     /**
+     * Replant normal Crops while farming and leave cactus and sugarcane to regrow
+     */
+    public final Setting<Boolean> replantCrops = new Setting<>(true);
+
+    /**
      * Replant nether wart while farming
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
