@@ -522,6 +522,27 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
             return true;
         }
+        if (msg.startsWith("strip")) {
+            repack();
+            String[] blockTypes = msg.substring(5).trim().split(" ");
+            try {
+                int quantity = Integer.parseInt(blockTypes[1]);
+                Block block = BlockUtils.stringToBlockRequired(blockTypes[0]);
+                baritone.getStripMineProcess().mine(quantity, block);
+                logDirect("Will strip mine " + quantity + " " + blockTypes[0]);
+                return true;
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
+            for (String s : blockTypes) {
+                if (BlockUtils.stringToBlockNullable(s) == null) {
+                    logDirect(s + " isn't a valid block name");
+                    return true;
+                }
+
+            }
+            baritone.getStripMineProcess().mineByName(0, blockTypes);
+            logDirect("Started strip mining blocks of type " + Arrays.toString(blockTypes));
+            return true;
+        }
         if (msg.equals("click")) {
             baritone.openClick();
             logDirect("aight dude");
