@@ -110,16 +110,18 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         SUGARCANE(Blocks.SUGAR_CANE, null) {
             @Override
             public boolean readyToHarvest(World world, BlockPos pos, IBlockState state) {
-                if(Baritone.settings().replantCrops.value)
+                if (Baritone.settings().replantCrops.value) {
                     return world.getBlockState(pos.down()).getBlock() instanceof BlockReed;
+                }
                 return true;
             }
         },
         CACTUS(Blocks.CACTUS, null) {
             @Override
             public boolean readyToHarvest(World world, BlockPos pos, IBlockState state) {
-                if(Baritone.settings().replantCrops.value)
+                if (Baritone.settings().replantCrops.value) {
                     return world.getBlockState(pos.down()).getBlock() instanceof BlockCactus;
+                }
                 return true;
             }
         };
@@ -170,10 +172,11 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         }
         if (Baritone.settings().replantCrops.value) {
             scan.add(Blocks.FARMLAND);
+            if (Baritone.settings().replantNetherWart.value) {
+                scan.add(Blocks.SOUL_SAND);
+            }
         }
-        if (Baritone.settings().replantNetherWart.value) {
-            scan.add(Blocks.SOUL_SAND);
-        }
+
         if (Baritone.settings().mineGoalUpdateInterval.value != 0 && tickCount++ % Baritone.settings().mineGoalUpdateInterval.value == 0) {
             Baritone.getExecutor().execute(() -> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 10));
         }
