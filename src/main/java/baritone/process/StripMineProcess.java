@@ -55,7 +55,8 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
  * Strip Mine blocks of a certain type
  * (modification of the MineProcess)
  *
- * @author leijurv
+ * @author XerneraC
+ *
  */
 public final class StripMineProcess extends BaritoneProcessHelper implements IStripMineProcess {
 
@@ -64,7 +65,6 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
     private List<Block> mining;
     private List<BlockPos> knownOreLocations;
     private List<BlockPos> blacklist; // inaccessible
-    private BlockPos branchPoint;
     private GoalStrictDirection stripMineGoal;
     private int desiredQuantity;
     private int tickCount;
@@ -166,16 +166,6 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
             return new PathingCommand(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
         }
 
-        if (branchPoint == null) {
-            /*if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
-                // cool, path is over and we are at desired y
-                branchPoint = playerFeet();
-                branchPointRunaway = null;
-            } else {
-                return new GoalYLevel(y);
-            }*/
-            branchPoint = ctx.playerFeet();
-        }
 
         if (stripMineGoal == null) {
             stripMineGoal = new GoalStrictDirection(ctx.playerFeet(), ctx.player().getHorizontalFacing());
@@ -381,7 +371,6 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
         this.blacklist = new ArrayList<>();
-        this.branchPoint = null;
         this.stripMineGoal = null;
     }
 }
