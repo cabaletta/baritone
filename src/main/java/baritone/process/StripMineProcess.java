@@ -19,7 +19,6 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.*;
-import baritone.api.process.IMineProcess;
 import baritone.api.process.IStripMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -67,7 +66,6 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
     private List<BlockPos> blacklist; // inaccessible
     private GoalStrictDirection stripMineGoal;
     private int desiredQuantity;
-    private int tickCount;
 
     public StripMineProcess(Baritone baritone) {
         super(baritone);
@@ -106,11 +104,7 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
             cancel();
             return null;
         }
-        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
-        if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
-            CalculationContext context = new CalculationContext(baritone, true);
-        }
         addNearby();
         Optional<BlockPos> shaft = curr.stream()
                 .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
