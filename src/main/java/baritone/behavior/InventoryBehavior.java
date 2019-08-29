@@ -102,7 +102,7 @@ public final class InventoryBehavior extends Behavior {
         return -1;
     }
 
-    private int bestToolAgainst(Block against, Class<? extends ItemTool> klass) {
+    private int bestToolAgainst(Block against, Class<? extends ItemTool> cla$$) {
         NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
         int bestInd = -1;
         double bestSpeed = -1;
@@ -111,7 +111,7 @@ public final class InventoryBehavior extends Behavior {
             if (stack.isEmpty()) {
                 continue;
             }
-            if (klass.isInstance(stack.getItem())) {
+            if (cla$$.isInstance(stack.getItem())) {
                 double speed = ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState()); // takes into account enchants
                 if (speed > bestSpeed) {
                     bestSpeed = speed;
