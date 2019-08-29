@@ -112,9 +112,7 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
             CalculationContext context = new CalculationContext(baritone, true);
             Baritone.getExecutor().execute(() -> rescan(curr, context));
         }
-        if (Baritone.settings().legitMine.value) {
-            addNearby();
-        }
+        addNearby();
         Optional<BlockPos> shaft = curr.stream()
                 .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
                 .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
@@ -187,22 +185,7 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
         return new PathingCommand(stripMineGoal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
 
-    private void rescan(List<BlockPos> already, CalculationContext context) {
-        if (mining == null) {
-            return;
-        }
-        if (Baritone.settings().legitMine.value) {
-            return;
-        }
-        List<BlockPos> locs = searchWorld(context, mining, ORE_LOCATIONS_COUNT, already, blacklist);
-        locs.addAll(droppedItemsScan(mining, ctx.world()));
-        if (locs.isEmpty()) {
-            logDirect("No locations for " + mining + " known, cancelling");
-            cancel();
-            return;
-        }
-        knownOreLocations = locs;
-    }
+    private void rescan(List<BlockPos> already, CalculationContext context) { return; }
 
     private boolean internalMiningGoal(BlockPos pos, IPlayerContext ctx, List<BlockPos> locs) {
         // Here, BlockStateInterface is used because the position may be in a cached chunk (the targeted block is one that is kept track of)
