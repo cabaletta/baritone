@@ -662,7 +662,7 @@ public final class Settings {
     public final Setting<Boolean> replantCrops = new Setting<>(true);
 
     /**
-     * Replant nether wart while farming
+     * Replant nether wart while farming. This setting only has an effect when replantCrops is also enabled
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
 
