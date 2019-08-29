@@ -222,22 +222,22 @@ public class SettingsUtil {
             }
         };
 
-        private final Class<?> klass;
+        private final Class<?> cla$$;
         private final Function<String, Object> parser;
         private final Function<Object, String> toString;
 
         Parser() {
-            this.klass = null;
+            this.cla$$ = null;
             this.parser = null;
             this.toString = null;
         }
 
-        <T> Parser(Class<T> klass, Function<String, T> parser) {
-            this(klass, parser, Object::toString);
+        <T> Parser(Class<T> cla$$, Function<String, T> parser) {
+            this(cla$$, parser, Object::toString);
         }
 
-        <T> Parser(Class<T> klass, Function<String, T> parser, Function<T, String> toString) {
-            this.klass = klass;
+        <T> Parser(Class<T> cla$$, Function<String, T> parser, Function<T, String> toString) {
+            this.cla$$ = cla$$;
             this.parser = parser::apply;
             this.toString = x -> toString.apply((T) x);
         }
@@ -256,7 +256,7 @@ public class SettingsUtil {
 
         @Override
         public boolean accepts(Type type) {
-            return type instanceof Class && this.klass.isAssignableFrom((Class) type);
+            return type instanceof Class && this.cla$$.isAssignableFrom((Class) type);
         }
 
         public static Parser getParser(Type type) {
