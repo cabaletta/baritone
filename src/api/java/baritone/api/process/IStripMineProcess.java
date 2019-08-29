@@ -26,7 +26,7 @@ import net.minecraft.block.Block;
 public interface IStripMineProcess extends IBaritoneProcess {
 
     /**
-     * Begin to search for and mine the specified blocks until
+     * Begin to tunnel and mine the specified blocks until
      * the number of specified items to get from the blocks that
      * are mined. This is based on the first target block to mine.
      *
@@ -36,7 +36,7 @@ public interface IStripMineProcess extends IBaritoneProcess {
     void mineByName(int quantity, String... blocks);
 
     /**
-     * Begin to search for and mine the specified blocks until
+     * Begin to tunnel and mine the specified blocks until
      * the number of specified items to get from the blocks that
      * are mined. This is based on the first target block to mine.
      *
@@ -46,7 +46,7 @@ public interface IStripMineProcess extends IBaritoneProcess {
     void mine(int quantity, Block... blocks);
 
     /**
-     * Begin to search for and mine the specified blocks.
+     * Begin to tunnel and mine the specified blocks.
      *
      * @param blocks The blocks to mine
      */
@@ -55,7 +55,7 @@ public interface IStripMineProcess extends IBaritoneProcess {
     }
 
     /**
-     * Begin to search for and mine the specified blocks.
+     * Begin to tunnel and mine the specified blocks.
      *
      * @param blocks The blocks to mine
      */
@@ -64,7 +64,7 @@ public interface IStripMineProcess extends IBaritoneProcess {
     }
 
     /**
-     * Cancels the current mining task
+     * Cancels the current strip mining task
      */
     default void cancel() {
         onLostControl();
