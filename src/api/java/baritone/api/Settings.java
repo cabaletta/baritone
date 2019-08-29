@@ -985,10 +985,10 @@ public final class Settings {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<Setting<T>> getAllValuesByType(Class<T> klass) {
+    public <T> List<Setting<T>> getAllValuesByType(Class<T> cla$$) {
         List<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
-            if (setting.getValueClass().equals(klass)) {
+            if (setting.getValueClass().equals(cla$$)) {
                 result.add((Setting<T>) setting);
             }
         }
