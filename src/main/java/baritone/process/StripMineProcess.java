@@ -110,7 +110,6 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             CalculationContext context = new CalculationContext(baritone, true);
-            Baritone.getExecutor().execute(() -> rescan(curr, context));
         }
         addNearby();
         Optional<BlockPos> shaft = curr.stream()
@@ -184,8 +183,6 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
 
         return new PathingCommand(stripMineGoal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
-
-    private void rescan(List<BlockPos> already, CalculationContext context) { return; }
 
     private boolean internalMiningGoal(BlockPos pos, IPlayerContext ctx, List<BlockPos> locs) {
         // Here, BlockStateInterface is used because the position may be in a cached chunk (the targeted block is one that is kept track of)
@@ -386,8 +383,5 @@ public final class StripMineProcess extends BaritoneProcessHelper implements ISt
         this.blacklist = new ArrayList<>();
         this.branchPoint = null;
         this.stripMineGoal = null;
-        if (mining != null) {
-            rescan(new ArrayList<>(), new CalculationContext(baritone));
-        }
     }
 }
