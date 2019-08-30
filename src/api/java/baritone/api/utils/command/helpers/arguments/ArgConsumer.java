@@ -84,21 +84,21 @@ public class ArgConsumer {
         return peek().is(type);
     }
 
-    public String peekS(int index) {
+    public String peekString(int index) {
         return peek(index).value;
     }
 
-    public String peekS() {
-        return peekS(0);
+    public String peekString() {
+        return peekString(0);
     }
 
-    public <E extends Enum<?>> E peekE(Class<E> enumClass) {
-        return peek().getE(enumClass);
+    public <E extends Enum<?>> E peekEnum(Class<E> enumClass) {
+        return peek().getEnum(enumClass);
     }
 
-    public <E extends Enum<?>> E peekEOrNull(Class<E> enumClass) {
+    public <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass) {
         try {
-            return peekE(enumClass);
+            return peekEnum(enumClass);
         } catch (NoSuchElementException e) {
             return null;
         }
@@ -171,22 +171,22 @@ public class ArgConsumer {
         return arg;
     }
 
-    public String getS() {
+    public String getString() {
         return get().value;
     }
 
-    public <E extends Enum<?>> E getE(Class<E> enumClass) {
+    public <E extends Enum<?>> E getEnum(Class<E> enumClass) {
         try {
-            return get().getE(enumClass);
+            return get().getEnum(enumClass);
         } catch (NoSuchElementException e) {
             throw new CommandInvalidTypeException(consumed(), enumClass.getSimpleName());
         }
     }
 
-    public <E extends Enum<?>> E getEOrNull(Class<E> enumClass) {
+    public <E extends Enum<?>> E getEnumOrNull(Class<E> enumClass) {
         try {
-            peekE(enumClass);
-            return getE(enumClass);
+            peekEnum(enumClass);
+            return getEnum(enumClass);
         } catch (CommandInvalidTypeException e) {
             return null;
         }

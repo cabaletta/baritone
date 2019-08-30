@@ -20,7 +20,7 @@ public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
     }
 
     public PlayerByUsername(ArgConsumer consumer) {
-        String username = consumer.getS();
+        String username = consumer.getString();
 
         if (isNull(
             player = players
@@ -46,7 +46,7 @@ public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
                     .stream()
                     .map(EntityPlayer::getName)
             )
-            .filterPrefix(consumer.getS())
+            .filterPrefix(consumer.getString())
             .sortAlphabetically()
             .stream();
     }

@@ -17,6 +17,7 @@ import static java.util.Objects.isNull;
 public class BlockSelector implements IBlockFilter {
     private final Block block;
     private final IBlockState blockstate;
+    private final int damage;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
 
     public BlockSelector(@Nonnull String selector) {
@@ -38,12 +39,12 @@ public class BlockSelector implements IBlockFilter {
         block = Block.REGISTRY.getObject(id);
         //noinspection deprecation
         blockstate = hasData ? block.getStateFromMeta(Integer.parseInt(matchResult.group(2))) : null;
+        damage = block.damageDropped(blockstate);
     }
 
     @Override
     public boolean selected(@Nonnull IBlockState blockstate) {
-        return blockstate.getBlock() == block && (isNull(this.blockstate) ||
-            block.damageDropped(blockstate) == block.damageDropped(this.blockstate));
+        return blockstate.getBlock() == block && (isNull(this.blockstate) || block.damageDropped(blockstate) == damage);
     }
 
     @Override

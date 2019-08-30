@@ -36,7 +36,7 @@ public class BuildCommand extends Command {
 
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
-        String filename = String.format("%s.schematic", args.getS());
+        String filename = String.format("%s.schematic", args.getString());
         BetterBlockPos origin = ctx.playerFeet();
         BetterBlockPos buildOrigin;
 

@@ -23,7 +23,7 @@ public class RelativeCoordinate implements IDatatypePost<Double, Double> {
             throw new RuntimeException("relative coordinate requires an argument");
         }
 
-        Matcher matcher = PATTERN.matcher(consumer.getS());
+        Matcher matcher = PATTERN.matcher(consumer.getString());
 
         if (!matcher.matches()) {
             throw new RuntimeException("pattern doesn't match");
@@ -48,7 +48,7 @@ public class RelativeCoordinate implements IDatatypePost<Double, Double> {
 
     @Override
     public Stream<String> tabComplete(ArgConsumer consumer) {
-        if (!consumer.has(2) && consumer.getS().matches("^(~|$)")) {
+        if (!consumer.has(2) && consumer.getString().matches("^(~|$)")) {
             return Stream.of("~");
         }
 

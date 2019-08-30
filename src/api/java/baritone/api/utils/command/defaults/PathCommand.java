@@ -68,7 +68,7 @@ public class PathCommand extends Command {
                 if (!args.has(2)) {
                     return new TabCompleteHelper()
                         .append("~")
-                        .filterPrefix(args.getS())
+                        .filterPrefix(args.getString())
                         .stream();
                 }
             }

@@ -39,7 +39,7 @@ public class CommandArgument {
         this.rawRest = rawRest;
     }
 
-    public <E extends Enum<?>> E getE(Class<E> enumClass) {
+    public <E extends Enum<?>> E getEnum(Class<E> enumClass) {
         //noinspection OptionalGetWithoutIsPresent
         return Arrays.stream(enumClass.getEnumConstants())
             .filter(e -> e.name().equalsIgnoreCase(value))

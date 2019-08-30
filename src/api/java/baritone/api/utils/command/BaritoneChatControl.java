@@ -151,7 +151,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
 
                 if (setting.getName().equalsIgnoreCase(pair.first())) {
                     logRanCommand(msg);
-                    CommandManager.execute(String.format("set %s %s", setting.getName(), argc.getS()));
+                    CommandManager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
                     return true;
                 }
             }
@@ -203,11 +203,11 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 return new TabCompleteHelper()
                     .addCommands()
                     .addSettings()
-                    .filterPrefix(argc.getS())
+                    .filterPrefix(argc.getString())
                     .stream();
             }
 
-            Settings.Setting setting = settings.byLowerName.get(argc.getS().toLowerCase(Locale.US));
+            Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
 
             if (nonNull(setting)) {
                 if (setting.getValueClass() == Boolean.class) {
@@ -219,7 +219,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                         helper.append(of("false", "true"));
                     }
 
-                    return helper.filterPrefix(argc.getS()).stream();
+                    return helper.filterPrefix(argc.getString()).stream();
                 } else {
                     return of(SettingsUtil.settingValueToString(setting));
                 }

@@ -13,7 +13,7 @@ public class ForBlockSelector implements IDatatypeFor<BlockSelector> {
     }
 
     public ForBlockSelector(ArgConsumer consumer) {
-        selector = new BlockSelector(consumer.getS());
+        selector = new BlockSelector(consumer.getString());
     }
 
     @Override

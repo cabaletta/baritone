@@ -49,13 +49,13 @@ public class ProcCommand extends Command {
 
         logDirect(String.format(
             "Class: %s\n" +
-                "Priority: %s\n" +
-                "Temporary: %s\n" +
+                "Priority: %f\n" +
+                "Temporary: %b\n" +
                 "Display name: %s\n" +
                 "Last command: %s",
             process.getClass().getTypeName(),
-            Double.toString(process.priority()),
-            Boolean.toString(process.isTemporary()),
+            process.priority(),
+            process.isTemporary(),
             process.displayName(),
             pathingControlManager
                 .mostRecentCommand()

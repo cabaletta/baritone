@@ -18,7 +18,7 @@ public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
     }
 
     public EntityClassById(ArgConsumer consumer) {
-        ResourceLocation id = new ResourceLocation(consumer.getS());
+        ResourceLocation id = new ResourceLocation(consumer.getString());
 
         if (isNull(entity = EntityList.REGISTRY.getObject(id))) {
             throw new RuntimeException("no entity found by that id");
@@ -38,7 +38,7 @@ public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
                     .stream()
                     .map(Object::toString)
             )
-            .filterPrefixNamespaced(consumer.getS())
+            .filterPrefixNamespaced(consumer.getString())
             .sortAlphabetically()
             .stream();
     }

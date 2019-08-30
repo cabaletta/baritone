@@ -44,7 +44,7 @@ public class ExploreFilterCommand extends Command {
         boolean invert = false;
 
         if (args.has()) {
-            if (args.getS().equalsIgnoreCase("invert")) {
+            if (args.getString().equalsIgnoreCase("invert")) {
                 invert = true;
             } else {
                 throw new CommandInvalidTypeException(args.consumed(), "either \"invert\" or nothing");

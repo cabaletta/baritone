@@ -57,13 +57,13 @@ public class FollowCommand extends Command {
         List<Class<? extends Entity>> classes = new ArrayList<>();
 
         if (args.hasExactlyOne()) {
-            baritone.getFollowProcess().follow((group = args.getE(FollowGroup.class)).filter);
+            baritone.getFollowProcess().follow((group = args.getEnum(FollowGroup.class)).filter);
             list = null;
         } else {
             args.requireMin(2);
 
             group = null;
-            list = args.getE(FollowList.class);
+            list = args.getEnum(FollowList.class);
 
             while (args.has()) {
                 //noinspection unchecked
@@ -109,13 +109,13 @@ public class FollowCommand extends Command {
             return new TabCompleteHelper()
                 .append(FollowGroup.class)
                 .append(FollowList.class)
-                .filterPrefix(args.getS())
+                .filterPrefix(args.getString())
                 .stream();
         } else {
             Class<? extends IDatatype> followType;
 
             try {
-                followType = args.getE(FollowList.class).datatype;
+                followType = args.getEnum(FollowList.class).datatype;
             } catch (NullPointerException e) {
                 return Stream.empty();
             }

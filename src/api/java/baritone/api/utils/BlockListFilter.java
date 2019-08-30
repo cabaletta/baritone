@@ -22,12 +22,12 @@ public class BlockListFilter implements IBlockFilter {
 
     @Override
     public boolean selected(@Nonnull IBlockState blockstate) {
-        return false;
+        return blocks.contains(blockstate.getBlock());
     }
 
     @Override
     public List<Block> blocks() {
-        return null;
+        return blocks;
     }
 
     @Override

@@ -43,7 +43,7 @@ public class GoalCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         ICustomGoalProcess goalProcess = baritone.getCustomGoalProcess();
 
-        if (args.has() && asList("reset", "clear", "none").contains(args.peekS())) {
+        if (args.has() && asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
 
             if (nonNull(goalProcess.getGoal())) {
@@ -83,7 +83,7 @@ public class GoalCommand extends Command {
             }
         }
 
-        return helper.filterPrefix(args.getS()).stream();
+        return helper.filterPrefix(args.getString()).stream();
     }
 
     @Override

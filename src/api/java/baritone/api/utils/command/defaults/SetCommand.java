@@ -51,12 +51,12 @@ public class SetCommand extends Command {
 
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
-        String arg = args.has() ? args.getS().toLowerCase(Locale.US) : "list";
+        String arg = args.has() ? args.getString().toLowerCase(Locale.US) : "list";
         boolean viewModified = asList("m", "mod", "modified").contains(arg);
         boolean viewAll = asList("all", "l", "list").contains(arg);
         boolean paginate = viewModified | viewAll;
         if (paginate) {
-            String search = args.has() && args.peekAsOrNull(Integer.class) == null ? args.getS() : "";
+            String search = args.has() && args.peekAsOrNull(Integer.class) == null ? args.getString() : "";
             args.requireMax(1);
 
             List<? extends Settings.Setting> toPaginate =
@@ -122,7 +122,7 @@ public class SetCommand extends Command {
                 logDirect("Please specify 'all' as an argument to reset to confirm you'd really like to do this");
                 logDirect("ALL settings will be reset. Use the 'set modified' or 'modified' commands to see what will be reset.");
                 logDirect("Specify a setting name instead of 'all' to only reset one setting");
-            } else if (args.peekS().equalsIgnoreCase("all")) {
+            } else if (args.peekString().equalsIgnoreCase("all")) {
                 SettingsUtil.modifiedSettings(settings).forEach(Settings.Setting::reset);
                 logDirect("All settings have been reset to their default values");
 
@@ -134,7 +134,7 @@ public class SetCommand extends Command {
             args.requireMin(1);
         }
 
-        String settingName = doingSomething ? args.getS() : arg;
+        String settingName = doingSomething ? args.getString() : arg;
         Settings.Setting<?> setting = settings.allSettings.stream()
             .filter(s -> s.getName().equalsIgnoreCase(settingName))
             .findFirst()
@@ -166,7 +166,7 @@ public class SetCommand extends Command {
                     Boolean.toString((Boolean) setting.value)
                 ));
             } else {
-                String newValue = args.getS();
+                String newValue = args.getString();
 
                 try {
                     SettingsUtil.parseAndApply(settings, arg, newValue);
@@ -210,19 +210,19 @@ public class SetCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         if (args.has()) {
-            String arg = args.getS();
+            String arg = args.getString();
 
             if (args.hasExactlyOne()) {
                 if (arg.equalsIgnoreCase("reset")) {
                     return new TabCompleteHelper()
                         .addModifiedSettings()
                         .prepend("all")
-                        .filterPrefix(args.getS())
+                        .filterPrefix(args.getString())
                         .stream();
                 } else if (arg.equalsIgnoreCase("toggle")) {
                     return new TabCompleteHelper()
                         .addToggleableSettings()
-                        .filterPrefix(args.getS())
+                        .filterPrefix(args.getString())
                         .stream();
                 }
 
@@ -238,7 +238,7 @@ public class SetCommand extends Command {
                             helper.append(of("false", "true"));
                         }
 
-                        return helper.filterPrefix(args.getS()).stream();
+                        return helper.filterPrefix(args.getString()).stream();
                     } else {
                         return Stream.of(settingValueToString(setting));
                     }

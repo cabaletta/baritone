@@ -5,37 +5,36 @@ import net.minecraft.block.state.IBlockState;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
-
 public class CompositeBlockFilter implements IBlockFilter {
-    List<IBlockFilter> filters = new ArrayList<>();
-
-    public CompositeBlockFilter() {
-    }
+    private IBlockFilter[] filters;
 
     public CompositeBlockFilter(List<? extends IBlockFilter> filters) {
-        this.filters.addAll(filters);
+        this.filters = filters.toArray(new IBlockFilter[0]);
     }
 
     public CompositeBlockFilter(IBlockFilter... filters) {
-        this.filters.addAll(asList(filters));
+        this.filters = filters;
     }
 
     @Override
     public boolean selected(@Nonnull IBlockState blockstate) {
-        return filters.stream()
-            .map(f -> f.selected(blockstate))
-            .filter(Boolean::valueOf).findFirst()
-            .orElse(false);
+        for (IBlockFilter filter : filters) {
+            if (filter.selected(blockstate)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
     public List<Block> blocks() {
-        return filters.stream()
+        return Arrays.stream(filters)
             .map(IBlockFilter::blocks)
             .flatMap(Collection::stream)
             .collect(Collectors.toCollection(ArrayList::new));
@@ -45,7 +44,7 @@ public class CompositeBlockFilter implements IBlockFilter {
     public String toString() {
         return String.format(
             "CompositeBlockFilter{%s}",
-            String.join(",", filters.stream().map(Object::toString).toArray(String[]::new))
+            String.join(",", Arrays.stream(filters).map(Object::toString).toArray(String[]::new))
         );
     }
 }

@@ -89,7 +89,7 @@ public class HelpCommand extends Command {
                 FORCE_COMMAND_PREFIX + "help %d"
             );
         } else {
-            String commandName = args.getS().toLowerCase();
+            String commandName = args.getString().toLowerCase();
             Command command = getCommand(commandName);
 
             if (isNull(command)) {
@@ -112,7 +112,7 @@ public class HelpCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         if (args.hasExactlyOne()) {
-            return new TabCompleteHelper().addCommands().filterPrefix(args.getS()).stream();
+            return new TabCompleteHelper().addCommands().filterPrefix(args.getString()).stream();
         }
 
         return Stream.empty();

@@ -16,7 +16,7 @@ public class BlockById implements IDatatypeFor<Block> {
     }
 
     public BlockById(ArgConsumer consumer) {
-        ResourceLocation id = new ResourceLocation(consumer.getS());
+        ResourceLocation id = new ResourceLocation(consumer.getString());
 
         if ((block = Block.REGISTRY.getObject(id)) == Blocks.AIR) {
             throw new RuntimeException("no block found by that id");
@@ -36,7 +36,7 @@ public class BlockById implements IDatatypeFor<Block> {
                     .stream()
                     .map(Object::toString)
             )
-            .filterPrefixNamespaced(consumer.getS())
+            .filterPrefixNamespaced(consumer.getString())
             .sortAlphabetically()
             .stream();
     }

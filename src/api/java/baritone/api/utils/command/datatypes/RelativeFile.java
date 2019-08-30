@@ -20,7 +20,7 @@ public class RelativeFile implements IDatatypePost<File, File> {
 
     public RelativeFile(ArgConsumer consumer) {
         try {
-            path = FileSystems.getDefault().getPath(consumer.getS());
+            path = FileSystems.getDefault().getPath(consumer.getString());
         } catch (InvalidPathException e) {
             throw new RuntimeException("invalid path");
         }
@@ -32,7 +32,7 @@ public class RelativeFile implements IDatatypePost<File, File> {
     }
 
     public static Stream<String> tabComplete(ArgConsumer consumer, File base) {
-        String currentPathStringThing = consumer.getS();
+        String currentPathStringThing = consumer.getString();
         Path currentPath = FileSystems.getDefault().getPath(currentPathStringThing);
         Path basePath = currentPath.isAbsolute() ? currentPath.getRoot() : base.toPath();
         boolean useParent = !currentPathStringThing.isEmpty() && !currentPathStringThing.endsWith(File.separator);
