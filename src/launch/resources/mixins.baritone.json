@@ -23,6 +23,10 @@
     "MixinRenderChunk",
     "MixinRenderList",
     "MixinVboRenderList",
-    "MixinWorldClient"
+    "MixinWorldClient",
+    "MixinTabCompleter",
+    "MixinGuiChat",
+    "MixinChatTabCompleter",
+    "MixinGuiScreen"
   ]
 }

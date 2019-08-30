@@ -58,6 +58,8 @@ public interface IBuilderProcess extends IBaritoneProcess {
 
     void pause();
 
+    boolean isPaused();
+
     void resume();
 
     void clearArea(BlockPos corner1, BlockPos corner2);

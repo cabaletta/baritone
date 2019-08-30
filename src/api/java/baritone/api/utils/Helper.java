@@ -23,6 +23,10 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
+import java.util.Arrays;
+
+import static java.util.Arrays.asList;
+
 /**
  * @author Brady
  * @since 8/1/2018
@@ -32,15 +36,19 @@ public interface Helper {
     /**
      * Instance of {@link Helper}. Used for static-context reference.
      */
-    Helper HELPER = new Helper() {};
+    Helper HELPER = new Helper() {
+    };
 
-    ITextComponent MESSAGE_PREFIX = new TextComponentString(String.format(
-            "%s[%sBaritone%s]%s",
-            TextFormatting.DARK_PURPLE,
-            TextFormatting.LIGHT_PURPLE,
-            TextFormatting.DARK_PURPLE,
-            TextFormatting.GRAY
-    ));
+    static ITextComponent getPrefix() {
+        return new TextComponentString("") {{
+            getStyle().setColor(TextFormatting.DARK_PURPLE);
+            appendSibling(new TextComponentString("["));
+            appendSibling(new TextComponentString(BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone") {{
+                getStyle().setColor(TextFormatting.LIGHT_PURPLE);
+            }});
+            appendSibling(new TextComponentString("]"));
+        }};
+    }
 
     Minecraft mc = Minecraft.getMinecraft();
 
@@ -59,14 +67,40 @@ public interface Helper {
     }
 
     /**
+     * Send components to chat with the [Baritone] prefix
+     *
+     * @param components The components to send
+     */
+    default void logDirect(ITextComponent... components) {
+        ITextComponent component = new TextComponentString("") {{
+            appendSibling(getPrefix());
+            appendSibling(new TextComponentString(" "));
+            asList(components).forEach(this::appendSibling);
+        }};
+
+        Minecraft.getMinecraft().addScheduledTask(() -> BaritoneAPI.getSettings().logger.value.accept(component));
+    }
+
+    /**
+     * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a direct response to a chat command)
+     *
+     * @param message The message to display in chat
+     * @param color   The color to print that message in
+     */
+    default void logDirect(String message, TextFormatting color) {
+        Arrays.stream(message.split("\\n")).forEach(line ->
+            logDirect(new TextComponentString(line.replace("\t", "    ")) {{
+                getStyle().setColor(color);
+            }})
+        );
+    }
+
+    /**
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a direct response to a chat command)
      *
      * @param message The message to display in chat
      */
     default void logDirect(String message) {
-        ITextComponent component = MESSAGE_PREFIX.createCopy();
-        component.getStyle().setColor(TextFormatting.GRAY);
-        component.appendSibling(new TextComponentString(" " + message));
-        Minecraft.getMinecraft().addScheduledTask(() -> BaritoneAPI.getSettings().logger.value.accept(component));
+        logDirect(message, TextFormatting.GRAY);
     }
 }

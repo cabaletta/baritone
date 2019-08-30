@@ -18,6 +18,7 @@
 package baritone.api.pathing.goals;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -43,6 +44,11 @@ public class GoalXZ implements Goal {
     public GoalXZ(int x, int z) {
         this.x = x;
         this.z = z;
+    }
+
+    public GoalXZ(BetterBlockPos pos) {
+        this.x = pos.x;
+        this.z = pos.z;
     }
 
     @Override

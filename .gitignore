@@ -14,6 +14,8 @@ classes/
 # IntelliJ Files
 .idea/
 *.iml
+*.ipr
+*.iws
 /logs/
 
 # Copyright Files

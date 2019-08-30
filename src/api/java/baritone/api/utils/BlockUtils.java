@@ -39,7 +39,7 @@ public class BlockUtils {
 
     public static Block stringToBlockRequired(String name) {
         Block block = stringToBlockNullable(name);
-        Objects.requireNonNull(block);
+        Objects.requireNonNull(block, String.format("Invalid block name %s", name));
         return block;
     }
 

@@ -24,6 +24,7 @@ import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BlockListFilter;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -180,7 +181,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         }
 
         if (Baritone.settings().mineGoalUpdateInterval.value != 0 && tickCount++ % Baritone.settings().mineGoalUpdateInterval.value == 0) {
-            Baritone.getExecutor().execute(() -> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 10));
+            Baritone.getExecutor().execute(() -> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, new BlockListFilter(scan), 256, 10, 10));
         }
         if (locations == null) {
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);

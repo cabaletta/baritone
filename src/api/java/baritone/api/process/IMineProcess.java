@@ -17,6 +17,8 @@
 
 package baritone.api.process;
 
+import baritone.api.utils.BlockListFilter;
+import baritone.api.utils.IBlockFilter;
 import net.minecraft.block.Block;
 
 /**
@@ -24,13 +26,12 @@ import net.minecraft.block.Block;
  * @since 9/23/2018
  */
 public interface IMineProcess extends IBaritoneProcess {
-
     /**
      * Begin to search for and mine the specified blocks until
      * the number of specified items to get from the blocks that
-     * are mined. This is based on the first target block to mine.
+     * are mined.
      *
-     * @param quantity The number of items to get from blocks mined
+     * @param quantity The total number of items to get
      * @param blocks   The blocks to mine
      */
     void mineByName(int quantity, String... blocks);
@@ -41,9 +42,18 @@ public interface IMineProcess extends IBaritoneProcess {
      * are mined. This is based on the first target block to mine.
      *
      * @param quantity The number of items to get from blocks mined
-     * @param blocks   The blocks to mine
+     * @param filter   The filter to run blocks through
      */
-    void mine(int quantity, Block... blocks);
+    void mine(int quantity, IBlockFilter filter);
+
+    /**
+     * Begin to search for and mine the specified blocks.
+     *
+     * @param filter The filter to run blocks through
+     */
+    default void mine(IBlockFilter filter) {
+        mine(0, filter);
+    }
 
     /**
      * Begin to search for and mine the specified blocks.
@@ -52,6 +62,16 @@ public interface IMineProcess extends IBaritoneProcess {
      */
     default void mineByName(String... blocks) {
         mineByName(0, blocks);
+    }
+
+    /**
+     * Begin to search for and mine the specified blocks.
+     *
+     * @param quantity The total number of items to get
+     * @param blocks   The blocks to mine
+     */
+    default void mine(int quantity, Block... blocks) {
+        mine(quantity, new BlockListFilter(blocks));
     }
 
     /**

@@ -40,6 +40,12 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onSendChatMessage(ChatEvent event) {}
 
     @Override
+    default void onPreTabComplete(TabCompleteEvent.Pre event) {};
+
+    @Override
+    default void onPostTabComplete(TabCompleteEvent.Post event) {};
+
+    @Override
     default void onChunkEvent(ChunkEvent event) {}
 
     @Override

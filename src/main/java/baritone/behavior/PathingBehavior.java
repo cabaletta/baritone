@@ -19,7 +19,11 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.behavior.IPathingBehavior;
-import baritone.api.event.events.*;
+import baritone.api.event.events.PathEvent;
+import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.RenderEvent;
+import baritone.api.event.events.SprintStateEvent;
+import baritone.api.event.events.TickEvent;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
@@ -55,6 +59,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
     private boolean unpausedLastTick;
+    private boolean pausedThisTick;
     private boolean cancelRequested;
     private boolean calcFailedLastTick;
 
@@ -108,6 +113,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     private void tickPath() {
+        pausedThisTick = false;
         if (pauseRequestedLastTick && safeToCancel) {
             pauseRequestedLastTick = false;
             if (unpausedLastTick) {
@@ -115,6 +121,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
             }
             unpausedLastTick = false;
+            pausedThisTick = true;
             return;
         }
         unpausedLastTick = true;
@@ -130,8 +137,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     BetterBlockPos calcFrom = inProgress.getStart();
                     Optional<IPath> currentBest = inProgress.bestPathSoFar();
                     if ((current == null || !current.getPath().getDest().equals(calcFrom)) // if current ends in inProgress's start, then we're ok
-                            && !calcFrom.equals(ctx.playerFeet()) && !calcFrom.equals(expectedSegmentStart) // if current starts in our playerFeet or pathStart, then we're ok
-                            && (!currentBest.isPresent() || (!currentBest.get().positions().contains(ctx.playerFeet()) && !currentBest.get().positions().contains(expectedSegmentStart))) // if
+                        && !calcFrom.equals(ctx.playerFeet()) && !calcFrom.equals(expectedSegmentStart) // if current starts in our playerFeet or pathStart, then we're ok
+                        && (!currentBest.isPresent() || (!currentBest.get().positions().contains(ctx.playerFeet()) && !currentBest.get().positions().contains(expectedSegmentStart))) // if
                     ) {
                         // when it was *just* started, currentBest will be empty so we need to also check calcFrom since that's always present
                         inProgress.cancel(); // cancellation doesn't dispatch any events
@@ -277,6 +284,16 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     @Override
     public Goal getGoal() {
         return goal;
+    }
+
+    @Override
+    public boolean isPathing() {
+        return hasPath() && !pausedThisTick;
+    }
+
+    @Override
+    public boolean hasPath() {
+        return current != null;
     }
 
     @Override

@@ -18,6 +18,7 @@
 package baritone.cache;
 
 import baritone.api.cache.IWorldScanner;
+import baritone.api.utils.IBlockFilter;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -38,14 +39,8 @@ public enum WorldScanner implements IWorldScanner {
     private static final int[] DEFAULT_COORDINATE_ITERATION_ORDER = IntStream.range(0, 16).toArray();
 
     @Override
-    public List<BlockPos> scanChunkRadius(IPlayerContext ctx, List<Block> blocks, int max, int yLevelThreshold, int maxSearchRadius) {
-        if (blocks.contains(null)) {
-            throw new IllegalStateException("Invalid block name should have been caught earlier: " + blocks.toString());
-        }
+    public List<BlockPos> scanChunkRadius(IPlayerContext ctx, IBlockFilter filter, int max, int yLevelThreshold, int maxSearchRadius) {
         ArrayList<BlockPos> res = new ArrayList<>();
-        if (blocks.isEmpty()) {
-            return res;
-        }
         ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
 
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
@@ -75,7 +70,7 @@ public enum WorldScanner implements IWorldScanner {
                         continue;
                     }
                     allUnloaded = false;
-                    if (scanChunkInto(chunkX << 4, chunkZ << 4, chunk, blocks, res, max, yLevelThreshold, playerY, coordinateIterationOrder)) {
+                    if (scanChunkInto(chunkX << 4, chunkZ << 4, chunk, filter, res, max, yLevelThreshold, playerY, coordinateIterationOrder)) {
                         foundWithinY = true;
                     }
                 }
@@ -91,11 +86,7 @@ public enum WorldScanner implements IWorldScanner {
     }
 
     @Override
-    public List<BlockPos> scanChunk(IPlayerContext ctx, List<Block> blocks, ChunkPos pos, int max, int yLevelThreshold) {
-        if (blocks.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+    public List<BlockPos> scanChunk(IPlayerContext ctx, IBlockFilter filter, ChunkPos pos, int max, int yLevelThreshold) {
         ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
         Chunk chunk = chunkProvider.getLoadedChunk(pos.x, pos.z);
         int playerY = ctx.playerFeet().getY();
@@ -105,11 +96,11 @@ public enum WorldScanner implements IWorldScanner {
         }
 
         ArrayList<BlockPos> res = new ArrayList<>();
-        scanChunkInto(pos.x << 4, pos.z << 4, chunk, blocks, res, max, yLevelThreshold, playerY, DEFAULT_COORDINATE_ITERATION_ORDER);
+        scanChunkInto(pos.x << 4, pos.z << 4, chunk, filter, res, max, yLevelThreshold, playerY, DEFAULT_COORDINATE_ITERATION_ORDER);
         return res;
     }
 
-    private boolean scanChunkInto(int chunkX, int chunkZ, Chunk chunk, List<Block> search, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY, int[] coordinateIterationOrder) {
+    private boolean scanChunkInto(int chunkX, int chunkZ, Chunk chunk, IBlockFilter filter, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY, int[] coordinateIterationOrder) {
         ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
         boolean foundWithinY = false;
         for (int yIndex = 0; yIndex < 16; yIndex++) {
@@ -126,7 +117,7 @@ public enum WorldScanner implements IWorldScanner {
                 for (int z = 0; z < 16; z++) {
                     for (int x = 0; x < 16; x++) {
                         IBlockState state = bsc.get(x, y, z);
-                        if (search.contains(state.getBlock())) {
+                        if (filter.selected(state)) {
                             int yy = yReal | y;
                             if (result.size() >= max) {
                                 if (Math.abs(yy - playerY) < yLevelThreshold) {

@@ -185,12 +185,17 @@ public final class PathRenderer implements Helper {
         double d0 = mc.getRenderManager().viewerPosX;
         double d1 = mc.getRenderManager().viewerPosY;
         double d2 = mc.getRenderManager().viewerPosZ;
-        BUFFER.begin(GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        boolean renderPathAsFrickinThingy = !Baritone.settings().renderPathAsLine.value;
+
+        BUFFER.begin(renderPathAsFrickinThingy ? GL_LINE_STRIP : GL_LINES, DefaultVertexFormats.POSITION);
         BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
         BUFFER.pos(bp2x + 0.5D - d0, bp2y + 0.5D - d1, bp2z + 0.5D - d2).endVertex();
-        BUFFER.pos(bp2x + 0.5D - d0, bp2y + 0.53D - d1, bp2z + 0.5D - d2).endVertex();
-        BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.53D - d1, bp1z + 0.5D - d2).endVertex();
-        BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
+
+        if (renderPathAsFrickinThingy) {
+            BUFFER.pos(bp2x + 0.5D - d0, bp2y + 0.53D - d1, bp2z + 0.5D - d2).endVertex();
+            BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.53D - d1, bp1z + 0.5D - d2).endVertex();
+            BUFFER.pos(bp1x + 0.5D - d0, bp1y + 0.5D - d1, bp1z + 0.5D - d2).endVertex();
+        }
     }
 
     public static void drawManySelectionBoxes(Entity player, Collection<BlockPos> positions, Color color) {
@@ -333,6 +338,9 @@ public final class PathRenderer implements Helper {
             for (Goal g : ((GoalComposite) goal).goals()) {
                 drawDankLitGoalBox(player, g, partialTicks, color);
             }
+            return;
+        } else if (goal instanceof GoalInverted) {
+            drawDankLitGoalBox(player, ((GoalInverted) goal).origin, partialTicks, Baritone.settings().colorInvertedGoalBox.value);
             return;
         } else if (goal instanceof GoalYLevel) {
             GoalYLevel goalpos = (GoalYLevel) goal;

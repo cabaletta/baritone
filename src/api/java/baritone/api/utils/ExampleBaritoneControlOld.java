@@ -26,7 +26,14 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.cache.Waypoint;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
-import baritone.api.pathing.goals.*;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalAxis;
+import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.pathing.goals.GoalGetToBlock;
+import baritone.api.pathing.goals.GoalRunAway;
+import baritone.api.pathing.goals.GoalStrictDirection;
+import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IGetToBlockProcess;
@@ -48,17 +55,24 @@ import net.minecraft.world.DimensionType;
 import net.minecraft.world.chunk.Chunk;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
-public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
+public class ExampleBaritoneControlOld implements Helper, AbstractGameEventListener {
     private static final String COMMAND_PREFIX = "#";
 
     public final IBaritone baritone;
     public final IPlayerContext ctx;
 
-    public ExampleBaritoneControl(IBaritone baritone) {
+    public ExampleBaritoneControlOld(IBaritone baritone) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         baritone.getGameEventHandler().registerEventListener(this);
@@ -74,7 +88,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             event.cancel(); // always cancel if using prefixControl
             return;
         }
-        if (!BaritoneAPI.getSettings().chatControl.value && !BaritoneAPI.getSettings().removePrefix.value) {
+        if (!BaritoneAPI.getSettings().chatControl.value && !BaritoneAPI.getSettings().chatControlAnyway.value) {
             return;
         }
         if (runCommand(msg)) {
@@ -123,7 +137,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.equals("") || msg.equals("help") || msg.equals("?")) {
-            ITextComponent component = MESSAGE_PREFIX.createCopy();
+            ITextComponent component = Helper.getPrefix();
             component.getStyle().setColor(TextFormatting.GRAY);
             TextComponentString helpLink = new TextComponentString(" Click here for instructions on how to use Baritone (https://github.com/cabaletta/baritone/blob/master/USAGE.md)");
             helpLink.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/cabaletta/baritone/blob/master/USAGE.md"));
@@ -166,7 +180,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             } else {
                 String[] params = rest.split(" ");
                 if (params[0].equals("")) {
-                    params = new String[]{};
+                    params = new String[] {};
                 }
                 goal = parseGoal(params);
                 if (goal == null) {
@@ -232,7 +246,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.equals("version")) {
-            String version = ExampleBaritoneControl.class.getPackage().getImplementationVersion();
+            String version = ExampleBaritoneControlOld.class.getPackage().getImplementationVersion();
             if (version == null) {
                 logDirect("No version detected. Either dev environment or broken install.");
             } else {
@@ -510,7 +524,8 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 baritone.getMineProcess().mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
+            }
             for (String s : blockTypes) {
                 if (BlockUtils.stringToBlockNullable(s) == null) {
                     logDirect(s + " isn't a valid block name");

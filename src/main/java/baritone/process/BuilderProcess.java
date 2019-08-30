@@ -93,6 +93,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     @Override
+    public boolean isPaused() {
+        return paused;
+    }
+
+    @Override
     public boolean build(String name, File schematic, Vec3i origin) {
         NBTTagCompound tag;
         try (FileInputStream fileIn = new FileInputStream(schematic)) {

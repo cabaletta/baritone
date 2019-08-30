@@ -21,7 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
-import baritone.api.utils.ExampleBaritoneControl;
+import baritone.api.utils.command.BaritoneChatControl;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
@@ -109,7 +109,7 @@ public class Baritone implements IBaritone {
             memoryBehavior = new MemoryBehavior(this);
             inventoryBehavior = new InventoryBehavior(this);
             inputOverrideHandler = new InputOverrideHandler(this);
-            new ExampleBaritoneControl(this);
+            new BaritoneChatControl(this);
         }
 
         this.pathingControlManager = new PathingControlManager(this);

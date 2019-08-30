@@ -483,14 +483,19 @@ public final class Settings {
     public final Setting<Boolean> chatControl = new Setting<>(true);
 
     /**
-     * A second override over chatControl to force it on
+     * Some clients like Impact try to force chatControl to off, so here's a second setting to do it anyway
      */
-    public final Setting<Boolean> removePrefix = new Setting<>(false);
+    public final Setting<Boolean> chatControlAnyway = new Setting<>(false);
 
     /**
      * Render the path
      */
     public final Setting<Boolean> renderPath = new Setting<>(true);
+
+    /**
+     * Render the path as a line instead of a frickin thingy
+     */
+    public final Setting<Boolean> renderPathAsLine = new Setting<>(true);
 
     /**
      * Render the goal
@@ -592,9 +597,24 @@ public final class Settings {
     public final Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
 
     /**
-     * Whether or not to use the "#" command prefix
+     * Whether or not to allow you to run Baritone commands with the prefix
      */
     public final Setting<Boolean> prefixControl = new Setting<>(true);
+
+    /**
+     * The command prefix for chat control
+     */
+    public final Setting<String> prefix = new Setting<>("#");
+
+    /**
+     * Use a short Baritone prefix [B] instead of [Baritone] when logging to chat
+     */
+    public final Setting<Boolean> shortBaritonePrefix = new Setting<>(false);
+
+    /**
+     * Echo commands to chat when they are run
+     */
+    public final Setting<Boolean> echoCommands = new Setting<>(true);
 
     /**
      * Don't stop walking forward when you need to break blocks in your way
@@ -893,6 +913,11 @@ public final class Settings {
      * The color of the goal box
      */
     public final Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
+
+    /**
+     * The color of the goal box when it's inverted
+     */
+    public final Setting<Color> colorInvertedGoalBox = new Setting<>(Color.RED);
 
 
     /**

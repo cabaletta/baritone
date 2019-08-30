@@ -64,11 +64,17 @@ public interface IPathingBehavior extends IBehavior {
     Goal getGoal();
 
     /**
-     * @return Whether or not a path is currently being executed.
+     * @return Whether or not a path is currently being executed. This will be false if there's currently a pause.
+     * @see #hasPath()
      */
-    default boolean isPathing() {
-        return getCurrent() != null;
-    }
+    boolean isPathing();
+
+    /**
+     * @return If there is a current path. Note that the path is not necessarily being executed, for example when there
+     * is a pause in effect.
+     * @see #isPathing()
+     */
+    boolean hasPath();
 
     /**
      * Cancels the pathing behavior or the current path calculation, and all processes that could be controlling path.
