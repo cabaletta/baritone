@@ -576,10 +576,9 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 }
                 name = parts[0];
             }
-            for (IWaypoint.Tag tag : IWaypoint.Tag.values())
-            {
+            for (IWaypoint.Tag tag : IWaypoint.Tag.values()) {
                 if (tag.name().equalsIgnoreCase(name)) {
-                    logDirect("Unable to use Tags as name. Tags are: " + Arrays.asList(IWaypoint.Tag.values()).toString().toLowerCase());
+                    logDirect("Unable to use tags as name. Tags are: " + Arrays.asList(IWaypoint.Tag.values()).toString().toLowerCase());
                     return true;
                 }
             }
