@@ -657,7 +657,12 @@ public final class Settings {
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
 
     /**
-     * Replant nether wart while farming
+     * Replant normal Crops while farming and leave cactus and sugarcane to regrow
+     */
+    public final Setting<Boolean> replantCrops = new Setting<>(true);
+
+    /**
+     * Replant nether wart while farming. This setting only has an effect when replantCrops is also enabled
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
 
