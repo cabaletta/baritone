@@ -28,6 +28,7 @@ public class PauseResumeCommands {
     public static Command pausedCommand;
 
     static {
+        // array for mutability, non-field so reflection can't touch it
         final boolean[] paused = {false};
 
         BaritoneAPI.getProvider().getPrimaryBaritone().getPathingControlManager().registerProcess(

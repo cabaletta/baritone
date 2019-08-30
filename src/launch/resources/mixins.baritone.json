@@ -9,7 +9,9 @@
   },
   "client": [
     "MixinAnvilChunkLoader",
+    "MixinBitArray",
     "MixinBlockPos",
+    "MixinBlockStateContainer",
     "MixinChatTabCompleter",
     "MixinChunkProviderClient",
     "MixinChunkProviderServer",

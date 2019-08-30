@@ -17,9 +17,11 @@
 
 package baritone.api.process;
 
-import baritone.api.utils.BlockListFilter;
-import baritone.api.utils.IBlockFilter;
+import baritone.api.utils.BlockOptionalMeta;
+import baritone.api.utils.BlockOptionalMetaLookup;
 import net.minecraft.block.Block;
+
+import java.util.Arrays;
 
 /**
  * @author Brady
@@ -42,16 +44,16 @@ public interface IMineProcess extends IBaritoneProcess {
      * are mined. This is based on the first target block to mine.
      *
      * @param quantity The number of items to get from blocks mined
-     * @param filter   The filter to run blocks through
+     * @param filter   The blocks to mine
      */
-    void mine(int quantity, IBlockFilter filter);
+    void mine(int quantity, BlockOptionalMetaLookup filter);
 
     /**
      * Begin to search for and mine the specified blocks.
      *
-     * @param filter The filter to run blocks through
+     * @param filter The blocks to mine
      */
-    default void mine(IBlockFilter filter) {
+    default void mine(BlockOptionalMetaLookup filter) {
         mine(0, filter);
     }
 
@@ -67,11 +69,33 @@ public interface IMineProcess extends IBaritoneProcess {
     /**
      * Begin to search for and mine the specified blocks.
      *
+     * @param boms The blocks to mine
+     */
+    default void mine(int quantity, BlockOptionalMeta... boms) {
+        mine(quantity, new BlockOptionalMetaLookup(boms));
+    }
+
+    /**
+     * Begin to search for and mine the specified blocks.
+     *
+     * @param boms The blocks to mine
+     */
+    default void mine(BlockOptionalMeta... boms) {
+        mine(0, boms);
+    }
+
+    /**
+     * Begin to search for and mine the specified blocks.
+     *
      * @param quantity The total number of items to get
      * @param blocks   The blocks to mine
      */
     default void mine(int quantity, Block... blocks) {
-        mine(quantity, new BlockListFilter(blocks));
+        mine(quantity, new BlockOptionalMetaLookup(
+            Arrays.stream(blocks)
+                .map(BlockOptionalMeta::new)
+                .toArray(BlockOptionalMeta[]::new)
+        ));
     }
 
     /**

@@ -18,12 +18,10 @@
 package baritone.api.utils.command.defaults;
 
 import baritone.api.Settings;
-import baritone.api.utils.BlockSelector;
-import baritone.api.utils.CompositeBlockFilter;
-import baritone.api.utils.IBlockFilter;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.BlockById;
-import baritone.api.utils.command.datatypes.ForBlockSelector;
+import baritone.api.utils.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.ArrayList;
@@ -41,15 +39,14 @@ public class MineCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         int quantity = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
-        List<BlockSelector> selectors = new ArrayList<>();
+        List<BlockOptionalMeta> boms = new ArrayList<>();
 
         while (args.has()) {
-            selectors.add(args.getDatatypeFor(ForBlockSelector.class));
+            boms.add(args.getDatatypeFor(ForBlockOptionalMeta.class));
         }
 
-        IBlockFilter filter = new CompositeBlockFilter(selectors);
-        baritone.getMineProcess().mine(quantity, filter);
-        logDirect(String.format("Mining %s", filter.toString()));
+        baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        logDirect(String.format("Mining %s", boms.toString()));
     }
 
     @Override

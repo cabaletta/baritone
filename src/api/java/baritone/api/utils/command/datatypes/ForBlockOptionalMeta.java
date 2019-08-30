@@ -1,23 +1,23 @@
 package baritone.api.utils.command.datatypes;
 
-import baritone.api.utils.BlockSelector;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
 
-public class ForBlockSelector implements IDatatypeFor<BlockSelector> {
-    public final BlockSelector selector;
+public class ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
+    public final BlockOptionalMeta selector;
 
-    public ForBlockSelector() {
+    public ForBlockOptionalMeta() {
         selector = null;
     }
 
-    public ForBlockSelector(ArgConsumer consumer) {
-        selector = new BlockSelector(consumer.getString());
+    public ForBlockOptionalMeta(ArgConsumer consumer) {
+        selector = new BlockOptionalMeta(consumer.getString());
     }
 
     @Override
-    public BlockSelector get() {
+    public BlockOptionalMeta get() {
         return selector;
     }
 
