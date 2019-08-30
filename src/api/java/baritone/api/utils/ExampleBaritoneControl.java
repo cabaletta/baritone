@@ -576,6 +576,12 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 }
                 name = parts[0];
             }
+            for (IWaypoint.Tag tag : IWaypoint.Tag.values()) {
+                if (tag.name().equalsIgnoreCase(name)) {
+                    logDirect("Unable to use tags as name. Tags are: " + Arrays.asList(IWaypoint.Tag.values()).toString().toLowerCase());
+                    return true;
+                }
+            }
             baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint(name, IWaypoint.Tag.USER, pos));
             logDirect("Saved user defined position " + pos + " under name '" + name + "'. Say 'goto " + name + "' to set goal, say 'list user' to list custom waypoints.");
             return true;
