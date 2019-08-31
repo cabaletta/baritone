@@ -17,16 +17,21 @@
 
 package baritone.api.utils;
 
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
@@ -34,12 +39,25 @@ public final class BlockOptionalMeta {
     private final Block block;
     private final int meta;
     private final boolean noMeta;
+    private final ImmutableSet<Integer> stateMetas;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
+
+    private static ImmutableSet<Integer> getStateMetas(@Nonnull Block block, @Nullable Integer meta) {
+        List<IBlockState> blockstates = block.getBlockState().getValidStates();
+
+        return ImmutableSet.copyOf(
+            (ArrayList<Integer>) blockstates.stream()
+                .filter(blockstate -> meta == null || block.getMetaFromState(blockstate.withRotation(Rotation.NONE)) == meta)
+                .map(IBlockState::hashCode)
+                .collect(Collectors.toCollection(ArrayList::new))
+        );
+    }
 
     public BlockOptionalMeta(@Nonnull Block block, @Nullable Integer meta) {
         this.block = block;
         this.noMeta = isNull(meta);
         this.meta = noMeta ? 0 : meta;
+        this.stateMetas = getStateMetas(block, meta);
     }
 
     public BlockOptionalMeta(@Nonnull Block block) {
@@ -64,6 +82,7 @@ public final class BlockOptionalMeta {
 
         block = Block.REGISTRY.getObject(id);
         meta = noMeta ? 0 : Integer.parseInt(matchResult.group(2));
+        stateMetas = getStateMetas(block, noMeta ? null : meta);
     }
 
     public Block getBlock() {
@@ -80,7 +99,7 @@ public final class BlockOptionalMeta {
 
     public boolean matches(@Nonnull IBlockState blockstate) {
         Block block = blockstate.getBlock();
-        return block == this.block && (noMeta || block.damageDropped(blockstate) == this.meta);
+        return block == this.block && stateMetas.contains(blockstate.hashCode());
     }
 
     @Override

@@ -27,6 +27,7 @@
     "MixinNetworkManager",
     "MixinRenderChunk",
     "MixinRenderList",
+    "MixinStateImplementation",
     "MixinTabCompleter",
     "MixinVboRenderList",
     "MixinWorldClient"
