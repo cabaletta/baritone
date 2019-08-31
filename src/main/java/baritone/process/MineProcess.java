@@ -318,7 +318,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         List<Block> untracked = new ArrayList<>();
         for (BlockOptionalMeta bom : filter.blocks()) {
             Block block = bom.getBlock();
-            if (CachedChunk.tracked(block)) {
+            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
                 BetterBlockPos pf = ctx.baritone.getPlayerContext().playerFeet();
 
                 locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(
