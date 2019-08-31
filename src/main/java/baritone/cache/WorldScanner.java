@@ -116,9 +116,10 @@ public enum WorldScanner implements IWorldScanner {
             IBlockStateContainer bsc = (IBlockStateContainer) extendedblockstorage.getData();
             // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
             // for better cache locality, iterate in that order
+            int[] storage = bsc.storageArray();
             int imax = 1 << 12;
             for (int i = 0; i < imax; i++) {
-                IBlockState state = bsc.getFast(i);
+                IBlockState state = bsc.getAtPalette(storage[i]);
                 if (filter.has(state)) {
                     int y = yReal | (i >> 8 & 15);
                     if (result.size() >= max) {
