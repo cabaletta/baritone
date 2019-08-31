@@ -63,6 +63,7 @@ public class CommandUnhandledException extends CommandErrorMessageException {
 
                 // line = line.replaceFirst("\\(([^)]+)\\)$", "\n\t  . $1");
                 line = line.replaceFirst("\\([^:]+:(\\d+)\\)$", ":$1");
+                line = line.replaceFirst("\\(Unknown Source\\)$", "");
                 lines.set(i, line);
             }
         }
