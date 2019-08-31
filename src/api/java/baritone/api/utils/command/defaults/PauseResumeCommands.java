@@ -19,8 +19,7 @@ import static java.util.Arrays.asList;
  *
  * This thing is scoped to hell, private so far you can't even access it using reflection, because you AREN'T SUPPOSED
  * TO USE THIS to pause and resume Baritone. Make your own process that returns {@link PathingCommandType#REQUEST_PAUSE
- * REQUEST_PAUSE}
- * as needed.
+ * REQUEST_PAUSE} as needed.
  */
 public class PauseResumeCommands {
     public static Command pauseCommand;

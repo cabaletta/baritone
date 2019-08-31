@@ -59,6 +59,7 @@ public class DefaultCommands {
         new ExploreCommand(),
         new BlacklistCommand(),
         new FindCommand(),
-        new MineCommand()
+        new MineCommand(),
+        new ClickCommand()
     ));
 }
