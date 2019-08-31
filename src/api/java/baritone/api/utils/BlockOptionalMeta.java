@@ -54,7 +54,7 @@ public final class BlockOptionalMeta {
         }
 
         MatchResult matchResult = matcher.toMatchResult();
-        noMeta = matchResult.groupCount() < 2;
+        noMeta = matchResult.group(2) == null;
 
         ResourceLocation id = new ResourceLocation(matchResult.group(1));
 
@@ -74,13 +74,13 @@ public final class BlockOptionalMeta {
         return meta;
     }
 
-    public boolean matches(@Nonnull Block block, int meta) {
-        // & instead of && is intentional
-        return block == this.block & (noMeta || meta == this.meta);
+    public boolean matches(@Nonnull Block block) {
+        return block == this.block;
     }
 
     public boolean matches(@Nonnull IBlockState blockstate) {
-        return matches(blockstate.getBlock(), block.damageDropped(blockstate));
+        Block block = blockstate.getBlock();
+        return block == this.block && (noMeta || block.damageDropped(blockstate) == this.meta);
     }
 
     @Override

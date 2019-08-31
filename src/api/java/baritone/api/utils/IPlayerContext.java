@@ -47,9 +47,14 @@ public interface IPlayerContext {
     default BetterBlockPos playerFeet() {
         // TODO find a better way to deal with soul sand!!!!!
         BetterBlockPos feet = new BetterBlockPos(player().posX, player().posY + 0.1251, player().posZ);
-        if (world().getBlockState(feet).getBlock() instanceof BlockSlab) {
-            return feet.up();
+
+        try {
+            if (world().getBlockState(feet).getBlock() instanceof BlockSlab) {
+                return feet.up();
+            }
+        } catch (NullPointerException ignored) {
         }
+
         return feet;
     }
 

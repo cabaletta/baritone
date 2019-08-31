@@ -91,6 +91,16 @@ public final class CachedChunk {
             Blocks.VINE
     );
 
+    public static boolean tracked(Block block) {
+        for (Block tracked : BLOCKS_TO_KEEP_TRACK_OF) {
+            if (tracked == block) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * The size of the chunk data in bits. Equal to 16 KiB.

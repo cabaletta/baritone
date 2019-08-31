@@ -2,69 +2,34 @@ package baritone.api.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import static java.util.Arrays.asList;
 
 public class BlockOptionalMetaLookup {
-    private final Map<Block, int[]> lookup = new HashMap<>();
-
-    public BlockOptionalMetaLookup() {
-    }
+    private final BlockOptionalMeta[] boms;
 
     public BlockOptionalMetaLookup(BlockOptionalMeta... boms) {
-        put(boms);
+        this.boms = boms;
     }
 
     public BlockOptionalMetaLookup(Block... blocks) {
-        put(blocks);
+        this.boms = Arrays.stream(blocks)
+            .map(BlockOptionalMeta::new)
+            .toArray(BlockOptionalMeta[]::new);
     }
 
     public BlockOptionalMetaLookup(List<Block> blocks) {
-        put(blocks);
-    }
-
-    public void put(BlockOptionalMeta bom) {
-        final int[] metaArr = new int[] {bom.getMeta()};
-        lookup.compute(bom.getBlock(), (__, arr) -> arr == null ? metaArr : ArrayUtils.addAll(arr, metaArr));
-    }
-
-    public void put(BlockOptionalMeta... boms) {
-        for (BlockOptionalMeta bom : boms) {
-            put(bom);
-        }
-    }
-
-    public void put(Block... blocks) {
-        for (Block block : blocks) {
-            put(new BlockOptionalMeta(block));
-        }
-    }
-
-    public void put(List<Block> blocks) {
-        for (Block block : blocks) {
-            put(new BlockOptionalMeta(block));
-        }
+        this.boms = blocks.stream()
+            .map(BlockOptionalMeta::new)
+            .toArray(BlockOptionalMeta[]::new);
     }
 
     public boolean has(Block block) {
-        return lookup.containsKey(block);
-    }
-
-    public boolean has(IBlockState state) {
-        Block block = state.getBlock();
-        int[] arr = lookup.get(block);
-
-        if (arr == null) {
-            return false;
-        }
-
-        int meta = block.damageDropped(state);
-        for (int value : arr) {
-            if (value == meta) {
+        for (BlockOptionalMeta bom : boms) {
+            if (bom.getBlock() == block) {
                 return true;
             }
         }
@@ -72,7 +37,25 @@ public class BlockOptionalMetaLookup {
         return false;
     }
 
-    public Set<Block> blocks() {
-        return lookup.keySet();
+    public boolean has(IBlockState state) {
+        for (BlockOptionalMeta bom : boms) {
+            if (bom.matches(state)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public List<BlockOptionalMeta> blocks() {
+        return asList(boms);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "BlockOptionalMetaLookup{%s}",
+            Arrays.toString(boms)
+        );
     }
 }

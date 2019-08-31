@@ -23,20 +23,29 @@ import net.minecraft.util.BitArray;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.IBlockStatePalette;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(BlockStateContainer.class)
 public abstract class MixinBlockStateContainer implements IBlockStateContainer {
-    @Accessor
-    public abstract IBlockStatePalette getPalette();
+    @Shadow
+    protected BitArray storage;
 
+    @Shadow
+    protected IBlockStatePalette palette;
+
+    @Override
     @Accessor
     public abstract BitArray getStorage();
 
     @Override
+    @Accessor
+    public abstract IBlockStatePalette getPalette();
+
+    @Override
     @Unique
     public IBlockState getFast(int x, int y, int z) {
-        return getPalette().getBlockState(getStorage().getAt(y << 8 | z << 4 | x));
+        return palette.getBlockState(storage.getAt(y << 8 | z << 4 | x));
     }
 }

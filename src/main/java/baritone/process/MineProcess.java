@@ -26,17 +26,21 @@ import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
+import baritone.api.utils.BlockUtils;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
+import baritone.cache.CachedChunk;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -122,10 +126,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             addNearby();
         }
         Optional<BlockPos> shaft = curr.stream()
-                .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
-                .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
-                .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof BlockAir)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
-                .min(Comparator.comparingDouble(ctx.player()::getDistanceSq));
+            .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
+            .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
+            .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof BlockAir)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
+            .min(Comparator.comparingDouble(ctx.player()::getDistanceSq));
         baritone.getInputOverrideHandler().clearAllKeys();
         if (shaft.isPresent() && ctx.player().onGround) {
             BlockPos pos = shaft.get();
@@ -311,9 +315,36 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     public static List<BlockPos> searchWorld(CalculationContext ctx, BlockOptionalMetaLookup filter, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist) {
         List<BlockPos> locs = new ArrayList<>();
-        locs = prune(ctx, locs, filter, max, blacklist);
-        locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(ctx.getBaritone().getPlayerContext(), filter, max, 10, 32)); // maxSearchRadius is NOT sq
+        List<Block> untracked = new ArrayList<>();
+        for (BlockOptionalMeta bom : filter.blocks()) {
+            Block block = bom.getBlock();
+            if (CachedChunk.tracked(block)) {
+                BetterBlockPos pf = ctx.baritone.getPlayerContext().playerFeet();
+
+                locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(
+                    BlockUtils.blockToString(block),
+                    Baritone.settings().maxCachedWorldScanCount.value,
+                    pf.x,
+                    pf.z,
+                    2
+                ));
+            } else {
+                untracked.add(block);
+            }
+        }
+
+        if (!untracked.isEmpty()) {
+            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(
+                ctx.getBaritone().getPlayerContext(),
+                filter,
+                max,
+                10,
+                32
+            )); // maxSearchRadius is NOT sq
+        }
+
         locs.addAll(alreadyKnown);
+
         return prune(ctx, locs, filter, max, blacklist);
     }
 
