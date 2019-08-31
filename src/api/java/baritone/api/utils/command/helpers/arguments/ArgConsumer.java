@@ -25,6 +25,7 @@ import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.exception.CommandTooManyArgumentsException;
+import baritone.api.utils.command.exception.CommandUnhandledException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -213,8 +214,10 @@ public class ArgConsumer {
     public <T extends IDatatype> T getDatatype(Class<T> datatype) {
         try {
             return datatype.getConstructor(ArgConsumer.class).newInstance(this);
-        } catch (RuntimeException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (RuntimeException e) {
             throw new CommandInvalidTypeException(has() ? peek() : consumed(), datatype.getSimpleName());
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new CommandUnhandledException(e);
         }
     }
 
