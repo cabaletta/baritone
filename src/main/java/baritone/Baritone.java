@@ -75,7 +75,7 @@ public class Baritone implements IBaritone {
 
     private FollowProcess followProcess;
     private MineProcess mineProcess;
-	private StripMineProcess stripMineProcess;
+    private StripMineProcess stripMineProcess;
     private GetToBlockProcess getToBlockProcess;
     private CustomGoalProcess customGoalProcess;
     private BuilderProcess builderProcess;
@@ -117,7 +117,7 @@ public class Baritone implements IBaritone {
         {
             followProcess = new FollowProcess(this);
             mineProcess = new MineProcess(this);
-			stripMineProcess = new StripMineProcess(this);
+            stripMineProcess = new StripMineProcess(this);
             customGoalProcess = new CustomGoalProcess(this); // very high iq
             getToBlockProcess = new GetToBlockProcess(this);
             builderProcess = new BuilderProcess(this);
@@ -196,10 +196,10 @@ public class Baritone implements IBaritone {
         return this.mineProcess;
     }
 
-	@Override
-	public StripMineProcess getStripMineProcess() {
-		return this.stripMineProcess;
-	}
+    @Override
+    public StripMineProcess getStripMineProcess() {
+        return this.stripMineProcess;
+    }
 
     public FarmProcess getFarmProcess() {
         return this.farmProcess;
