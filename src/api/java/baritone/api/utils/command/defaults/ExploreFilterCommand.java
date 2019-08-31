@@ -67,7 +67,7 @@ public class ExploreFilterCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         if (args.hasExactlyOne()) {
-            return RelativeFile.tabComplete(args, MC.gameDir.getAbsoluteFile().getParentFile());
+            return RelativeFile.tabComplete(args, RelativeFile.gameDir());
         }
 
         return Stream.empty();

@@ -11,6 +11,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static baritone.api.utils.Helper.HELPER;
+
 public class RelativeFile implements IDatatypePost<File, File> {
     private final Path path;
 
@@ -47,5 +49,15 @@ public class RelativeFile implements IDatatypePost<File, File> {
     @Override
     public File apply(File original) {
         return original.toPath().resolve(path).toFile();
+    }
+
+    public static File gameDir() {
+        File gameDir = HELPER.mc.gameDir.getAbsoluteFile();
+
+        if (gameDir.getName().equals(".")) {
+            return gameDir.getParentFile();
+        }
+
+        return gameDir;
     }
 }
