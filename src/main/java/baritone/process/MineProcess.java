@@ -333,7 +333,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             }
         }
 
-        if (!untracked.isEmpty()) {
+        if (!untracked.isEmpty() || (Baritone.settings().extendCacheOnThreshold.value && locs.size() < max)) {
             locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(
                 ctx.getBaritone().getPlayerContext(),
                 filter,
