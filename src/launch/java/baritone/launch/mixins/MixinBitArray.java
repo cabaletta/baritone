@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(BitArray.class)
 public abstract class MixinBitArray implements IBitArray {
@@ -49,8 +50,9 @@ public abstract class MixinBitArray implements IBitArray {
      *
      * @author LoganDark
      */
-    @Overwrite
-    public int getAt(int index) {
+    @Override
+    @Unique
+    public int getAtFast(int index) {
         final int b = bitsPerEntry;
         final long mev = maxEntryValue;
         final int i = index * b;
@@ -66,6 +68,7 @@ public abstract class MixinBitArray implements IBitArray {
     }
 
     @Override
+    @Unique
     public int[] toArray() {
         int[] out = new int[arraySize];
 
