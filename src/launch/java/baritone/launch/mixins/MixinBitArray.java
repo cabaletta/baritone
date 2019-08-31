@@ -68,17 +68,6 @@ public abstract class MixinBitArray implements IBitArray {
         }
     }
 
-    @Unique
-    public int[] toArrayBad() {
-        int[] out = new int[arraySize];
-
-        for (int i = 0; i < arraySize; i++) {
-            out[i] = getAt(i);
-        }
-
-        return out;
-    }
-
     @Override
     public int[] toArray() {
         int[] out = new int[arraySize];
