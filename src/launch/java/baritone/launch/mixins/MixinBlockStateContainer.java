@@ -45,7 +45,7 @@ public abstract class MixinBlockStateContainer implements IBlockStateContainer {
 
     @Override
     @Unique
-    public IBlockState getFast(int x, int y, int z) {
-        return palette.getBlockState(storage.getAt(y << 8 | z << 4 | x));
+    public IBlockState getFast(int index) {
+        return palette.getBlockState(storage.getAt(index));
     }
 }

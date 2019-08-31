@@ -9,5 +9,9 @@ public interface IBlockStateContainer {
 
     BitArray getStorage();
 
-    IBlockState getFast(int x, int y, int z);
+    IBlockState getFast(int index);
+
+    default IBlockState getFast(int x, int y, int z) {
+        return getFast(y << 8 | z << 4 | x);
+    };
 }

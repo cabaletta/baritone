@@ -116,26 +116,23 @@ public enum WorldScanner implements IWorldScanner {
             IBlockStateContainer bsc = (IBlockStateContainer) extendedblockstorage.getData();
             // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
             // for better cache locality, iterate in that order
-            for (int y = 0; y < 16; y++) {
-                for (int z = 0; z < 16; z++) {
-                    for (int x = 0; x < 16; x++) {
-                        IBlockState state = bsc.getFast(x, y, z);
-                        if (filter.has(state)) {
-                            int yy = yReal | y;
-                            if (result.size() >= max) {
-                                if (Math.abs(yy - playerY) < yLevelThreshold) {
-                                    foundWithinY = true;
-                                } else {
-                                    if (foundWithinY) {
-                                        // have found within Y in this chunk, so don't need to consider outside Y
-                                        // TODO continue iteration to one more sorted Y coordinate block
-                                        return true;
-                                    }
-                                }
+            int imax = 1 << 12;
+            for (int i = 0; i < imax; i++) {
+                IBlockState state = bsc.getFast(i);
+                if (filter.has(state)) {
+                    int y = yReal | (i >> 8 & 15);
+                    if (result.size() >= max) {
+                        if (Math.abs(y - playerY) < yLevelThreshold) {
+                            foundWithinY = true;
+                        } else {
+                            if (foundWithinY) {
+                                // have found within Y in this chunk, so don't need to consider outside Y
+                                // TODO continue iteration to one more sorted Y coordinate block
+                                return true;
                             }
-                            result.add(new BlockPos(chunkX | x, yy, chunkZ | z));
                         }
                     }
+                    result.add(new BlockPos(chunkX | (i & 15), y, chunkZ | (i >> 4 & 15)));
                 }
             }
         }
