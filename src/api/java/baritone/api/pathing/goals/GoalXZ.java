@@ -93,7 +93,7 @@ public class GoalXZ implements Goal {
         float theta = (float) Math.toRadians(yaw);
         double x = origin.x - MathHelper.sin(theta) * distance;
         double z = origin.z + MathHelper.cos(theta) * distance;
-        return new GoalXZ((int) x, (int) z);
+        return new GoalXZ(MathHelper.floor(x), MathHelper.floor(z));
     }
 
     public int getX() {

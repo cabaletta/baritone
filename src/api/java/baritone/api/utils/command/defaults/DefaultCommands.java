@@ -60,6 +60,7 @@ public class DefaultCommands {
         new BlacklistCommand(),
         new FindCommand(),
         new MineCommand(),
-        new ClickCommand()
+        new ClickCommand(),
+        new ThisWayCommand()
     ));
 }

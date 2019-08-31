@@ -50,7 +50,7 @@ public class DefaultArgParsers {
         public Float parseArg(CommandArgument arg) throws RuntimeException {
             String value = arg.value;
 
-            if (!value.matches("^[+-]?\\d+(?:\\.\\d+)$")) {
+            if (!value.matches("^([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$")) {
                 throw new RuntimeException("failed float format check");
             }
 
@@ -69,7 +69,7 @@ public class DefaultArgParsers {
         public Double parseArg(CommandArgument arg) throws RuntimeException {
             String value = arg.value;
 
-            if (!value.matches("^[+-]?\\d+(?:\\.\\d+)$")) {
+            if (!value.matches("^([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$")) {
                 throw new RuntimeException("failed double format check");
             }
 
