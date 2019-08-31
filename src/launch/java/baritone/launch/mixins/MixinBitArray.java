@@ -17,14 +17,18 @@
 
 package baritone.launch.mixins;
 
+import baritone.utils.accessor.IBitArray;
 import net.minecraft.util.BitArray;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+
+import java.util.Arrays;
 
 @Mixin(BitArray.class)
-public abstract class MixinBitArray {
+public abstract class MixinBitArray implements IBitArray {
     @Shadow
     @Final
     private long[] longArray;
@@ -37,6 +41,10 @@ public abstract class MixinBitArray {
     @Final
     private long maxEntryValue;
 
+    @Shadow
+    @Final
+    private int arraySize;
+
     /**
      * why did mojang divide by 64 instead of shifting right by 6 (2^6=64)?
      * why did mojang modulo by 64 instead of ANDing with 63?
@@ -47,16 +55,48 @@ public abstract class MixinBitArray {
     @Overwrite
     public int getAt(int index) {
         final int b = bitsPerEntry;
+        final long mev = maxEntryValue;
         final int i = index * b;
         final int j = i >> 6;
         final int l = i & 63;
         final int k = ((index + 1) * b - 1) >> 6;
 
         if (j == k) {
-            return (int) (this.longArray[j] >>> l & maxEntryValue);
+            return (int) (this.longArray[j] >>> l & mev);
         } else {
-            int i1 = 64 - l;
-            return (int) ((this.longArray[j] >>> l | longArray[k] << i1) & maxEntryValue);
+            return (int) ((this.longArray[j] >>> l | longArray[k] << (64 - l)) & mev);
         }
+    }
+
+    @Unique
+    public int[] toArrayBad() {
+        int[] out = new int[arraySize];
+
+        for (int i = 0; i < arraySize; i++) {
+            out[i] = getAt(i);
+        }
+
+        return out;
+    }
+
+    @Override
+    public int[] toArray() {
+        int[] out = new int[arraySize];
+
+        for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
+            final int i = idx * bitsPerEntry;
+            final int j = i >> 6;
+            final int l = i & 63;
+            final int k = kl >> 6;
+            final long jl = longArray[j] >>> l;
+
+            if (j == k) {
+                out[idx] = (int) (jl & maxEntryValue);
+            } else {
+                out[idx] = (int) ((jl | longArray[k] << (64 - l)) & maxEntryValue);
+            }
+        }
+
+        return out;
     }
 }

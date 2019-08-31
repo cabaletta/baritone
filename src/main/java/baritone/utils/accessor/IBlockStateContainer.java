@@ -11,7 +11,7 @@ public interface IBlockStateContainer {
 
     IBlockState getFast(int index);
 
-    default IBlockState getFast(int x, int y, int z) {
-        return getFast(y << 8 | z << 4 | x);
-    };
+    IBlockState getAtPalette(int index);
+
+    int[] storageArray();
 }
