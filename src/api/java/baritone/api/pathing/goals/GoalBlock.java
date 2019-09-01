@@ -70,9 +70,9 @@ public class GoalBlock implements Goal, IGoalRenderPos {
     public String toString() {
         return String.format(
             "GoalBlock{x=%s,y=%s,z=%s}",
-            SettingsUtil.possiblyCensorCoordinate(x),
-            SettingsUtil.possiblyCensorCoordinate(y),
-            SettingsUtil.possiblyCensorCoordinate(z)
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(y),
+            SettingsUtil.maybeCensor(z)
         );
     }
 

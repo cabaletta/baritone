@@ -64,9 +64,9 @@ public class GoalGetToBlock implements Goal, IGoalRenderPos {
     public String toString() {
         return String.format(
             "GoalGetToBlock{x=%s,y=%s,z=%s}",
-            SettingsUtil.possiblyCensorCoordinate(x),
-            SettingsUtil.possiblyCensorCoordinate(y),
-            SettingsUtil.possiblyCensorCoordinate(z)
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(y),
+            SettingsUtil.maybeCensor(z)
         );
     }
 }

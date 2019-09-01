@@ -68,8 +68,8 @@ public class GoalXZ implements Goal {
     public String toString() {
         return String.format(
             "GoalXZ{x=%s,z=%s}",
-            SettingsUtil.possiblyCensorCoordinate(x),
-            SettingsUtil.possiblyCensorCoordinate(z)
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(z)
         );
     }
 

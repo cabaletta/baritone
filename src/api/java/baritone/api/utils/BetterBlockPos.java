@@ -204,9 +204,9 @@ public final class BetterBlockPos extends BlockPos {
     public String toString() {
         return String.format(
             "BetterBlockPos{x=%s,y=%s,z=%s}",
-            SettingsUtil.possiblyCensorCoordinate(x),
-            SettingsUtil.possiblyCensorCoordinate(y),
-            SettingsUtil.possiblyCensorCoordinate(z)
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(y),
+            SettingsUtil.maybeCensor(z)
         );
     }
 }
