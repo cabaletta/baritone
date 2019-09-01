@@ -17,6 +17,7 @@
 
 package baritone.api.utils;
 
+import baritone.api.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -26,8 +27,9 @@ import net.minecraft.util.Rotation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,17 +41,35 @@ public final class BlockOptionalMeta {
     private final Block block;
     private final int meta;
     private final boolean noMeta;
-    private final ImmutableSet<Integer> stateMetas;
+    private final Set<IBlockState> blockstates;
+    private final ImmutableSet<Integer> stateHashes;
+    private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
 
-    private static ImmutableSet<Integer> getStateMetas(@Nonnull Block block, @Nullable Integer meta) {
-        List<IBlockState> blockstates = block.getBlockState().getValidStates();
+    private static Set<IBlockState> getStates(@Nonnull Block block, @Nullable Integer meta) {
+        return block.getBlockState().getValidStates().stream()
+            .filter(blockstate -> meta == null || block.getMetaFromState(blockstate.withRotation(Rotation.NONE)) == meta)
+            .collect(Collectors.toCollection(HashSet::new));
+    }
 
+    private static ImmutableSet<Integer> getStateHashes(Set<IBlockState> blockstates) {
         return ImmutableSet.copyOf(
-            (ArrayList<Integer>) blockstates.stream()
-                .filter(blockstate -> meta == null || block.getMetaFromState(blockstate.withRotation(Rotation.NONE)) == meta)
+            blockstates.stream()
                 .map(IBlockState::hashCode)
-                .collect(Collectors.toCollection(ArrayList::new))
+                .toArray(Integer[]::new)
+        );
+    }
+
+    private static ImmutableSet<Integer> getStackHashes(Set<IBlockState> blockstates) {
+        //noinspection ConstantConditions
+        return ImmutableSet.copyOf(
+            blockstates.stream()
+                .map(state -> new ItemStack(
+                    state.getBlock().getItemDropped(state, new Random(), 0),
+                    state.getBlock().damageDropped(state)
+                ))
+                .map(stack -> ((IItemStack) (Object) stack).getBaritoneHash())
+                .toArray(Integer[]::new)
         );
     }
 
@@ -57,7 +77,9 @@ public final class BlockOptionalMeta {
         this.block = block;
         this.noMeta = isNull(meta);
         this.meta = noMeta ? 0 : meta;
-        this.stateMetas = getStateMetas(block, meta);
+        this.blockstates = getStates(block, meta);
+        this.stateHashes = getStateHashes(blockstates);
+        this.stackHashes = getStackHashes(blockstates);
     }
 
     public BlockOptionalMeta(@Nonnull Block block) {
@@ -82,7 +104,9 @@ public final class BlockOptionalMeta {
 
         block = Block.REGISTRY.getObject(id);
         meta = noMeta ? 0 : Integer.parseInt(matchResult.group(2));
-        stateMetas = getStateMetas(block, noMeta ? null : meta);
+        blockstates = getStates(block, noMeta ? null : meta);
+        stateHashes = getStateHashes(blockstates);
+        stackHashes = getStackHashes(blockstates);
     }
 
     public Block getBlock() {
@@ -99,7 +123,12 @@ public final class BlockOptionalMeta {
 
     public boolean matches(@Nonnull IBlockState blockstate) {
         Block block = blockstate.getBlock();
-        return block == this.block && stateMetas.contains(blockstate.hashCode());
+        return block == this.block && stateHashes.contains(blockstate.hashCode());
+    }
+
+    public boolean matches(ItemStack stack) {
+        //noinspection ConstantConditions
+        return stackHashes.contains(((IItemStack) (Object) stack).getBaritoneHash());
     }
 
     @Override

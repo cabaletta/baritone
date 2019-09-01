@@ -91,7 +91,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (desiredQuantity > 0) {
             int curr = ctx.player().inventory.mainInventory.stream()
-                .filter(stack -> filter.has(BlockOptionalMeta.blockStateFromStack(stack)))
+                .filter(stack -> filter.has(stack))
                 .mapToInt(ItemStack::getCount).sum();
             System.out.println("Currently have " + curr + " valid items");
             if (curr >= desiredQuantity) {
@@ -304,8 +304,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         for (Entity entity : world.loadedEntityList) {
             if (entity instanceof EntityItem) {
                 EntityItem ei = (EntityItem) entity;
-                ItemStack stack = ei.getItem();
-                if (filter.has(BlockOptionalMeta.blockStateFromStack(stack))) {
+                if (filter.has(ei.getItem())) {
                     ret.add(new BlockPos(entity));
                 }
             }
