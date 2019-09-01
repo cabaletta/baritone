@@ -52,6 +52,13 @@ public class SetCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         String arg = args.has() ? args.getString().toLowerCase(Locale.US) : "list";
+
+        if (asList("s", "save").contains(arg)) {
+            SettingsUtil.save(settings);
+            logDirect("Settings saved");
+            return;
+        }
+
         boolean viewModified = asList("m", "mod", "modified").contains(arg);
         boolean viewAll = asList("all", "l", "list").contains(arg);
         boolean paginate = viewModified | viewAll;
@@ -125,6 +132,7 @@ public class SetCommand extends Command {
             } else if (args.peekString().equalsIgnoreCase("all")) {
                 SettingsUtil.modifiedSettings(settings).forEach(Settings.Setting::reset);
                 logDirect("All settings have been reset to their default values");
+                SettingsUtil.save(settings);
 
                 return;
             }
@@ -205,6 +213,8 @@ public class SetCommand extends Command {
                 logDirect("Warning: Prefixed commands will no longer work. If you want to revert this change, use chat control (if enabled) or click the old value listed above.", TextFormatting.RED);
             }
         }
+
+        SettingsUtil.save(settings);
     }
 
     @Override
@@ -212,7 +222,7 @@ public class SetCommand extends Command {
         if (args.has()) {
             String arg = args.getString();
 
-            if (args.hasExactlyOne()) {
+            if (args.hasExactlyOne() && !asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {
                 if (arg.equalsIgnoreCase("reset")) {
                     return new TabCompleteHelper()
                         .addModifiedSettings()
@@ -247,7 +257,7 @@ public class SetCommand extends Command {
                 return new TabCompleteHelper()
                     .addSettings()
                     .sortAlphabetically()
-                    .prepend("list", "modified", "reset", "toggle")
+                    .prepend("list", "modified", "reset", "toggle", "save")
                     .filterPrefix(arg)
                     .stream();
             }
@@ -269,7 +279,8 @@ public class SetCommand extends Command {
             "> set <setting> <value> - Set the value of a setting",
             "> set reset all - Reset ALL SETTINGS to their defaults",
             "> set reset <setting> - Reset a setting to its default",
-            "> set toggle <setting> - Toggle a boolean setting"
+            "> set toggle <setting> - Toggle a boolean setting",
+            "> set save - Save all settings (this is automatic tho)"
         );
     }
 }
