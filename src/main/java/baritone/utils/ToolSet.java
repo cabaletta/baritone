@@ -117,7 +117,7 @@ public class ToolSet {
                 bestSilkTouch = silkTouch;
             } else if (speed == highestSpeed) {
                 int cost = getMaterialCost(itemStack);
-                if (cost < lowestCost && (silkTouch || !bestSilkTouch) ||
+                if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
                     (preferSilkTouch && !bestSilkTouch && silkTouch)) {
                     highestSpeed = speed;
                     best = i;
