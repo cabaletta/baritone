@@ -300,6 +300,10 @@ public class ArgConsumer {
         return consumed.size() > 0 ? consumed.getLast() : CommandArgument.unknown();
     }
 
+    public String consumedString() {
+        return consumed().value;
+    }
+
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public ArgConsumer clone() {

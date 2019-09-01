@@ -20,6 +20,7 @@ package baritone.cache;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.cache.Waypoint;
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
 
 import java.io.*;
@@ -86,7 +87,7 @@ public class WaypointCollection implements IWaypointCollection {
                 int x = in.readInt();
                 int y = in.readInt();
                 int z = in.readInt();
-                this.waypoints.get(tag).add(new Waypoint(name, tag, new BlockPos(x, y, z), creationTimestamp));
+                this.waypoints.get(tag).add(new Waypoint(name, tag, new BetterBlockPos(x, y, z), creationTimestamp));
             }
         } catch (IOException ignored) {}
     }

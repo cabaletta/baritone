@@ -29,6 +29,7 @@ import net.minecraft.util.text.event.HoverEvent;
 import java.util.List;
 import java.util.function.Function;
 
+import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 
 public class Paginator<E> implements Helper {
@@ -38,6 +39,10 @@ public class Paginator<E> implements Helper {
 
     public Paginator(List<E> entries) {
         this.entries = entries;
+    }
+
+    public Paginator(E... entries) {
+        this.entries = asList(entries);
     }
 
     public Paginator<E> setPageSize(int pageSize) {
@@ -60,7 +65,7 @@ public class Paginator<E> implements Helper {
         return this;
     }
 
-    public void display(Function<E, ITextComponent> transform, String commandFormat) {
+    public void display(Function<E, ITextComponent> transform, String commandPrefix) {
         int offset = (page - 1) * pageSize;
 
         for (int i = offset; i < offset + pageSize; i++) {
@@ -71,8 +76,8 @@ public class Paginator<E> implements Helper {
             }
         }
 
-        boolean hasPrevPage = nonNull(commandFormat) && validPage(page - 1);
-        boolean hasNextPage = nonNull(commandFormat) && validPage(page + 1);
+        boolean hasPrevPage = nonNull(commandPrefix) && validPage(page - 1);
+        boolean hasNextPage = nonNull(commandPrefix) && validPage(page + 1);
 
         logDirect(new TextComponentString("") {{
             getStyle().setColor(TextFormatting.GRAY);
@@ -82,7 +87,7 @@ public class Paginator<E> implements Helper {
                     getStyle()
                         .setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
-                            String.format(commandFormat, page - 1)
+                            String.format("%s %d", commandPrefix, page - 1)
                         ))
                         .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
@@ -100,7 +105,7 @@ public class Paginator<E> implements Helper {
                     getStyle()
                         .setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
-                            String.format(commandFormat, page + 1)
+                            commandPrefix + " " + (page + 1)
                         ))
                         .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
@@ -119,7 +124,7 @@ public class Paginator<E> implements Helper {
         display(transform, null);
     }
 
-    public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Runnable pre, Function<T, ITextComponent> transform, String commandFormat) {
+    public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Runnable pre, Function<T, ITextComponent> transform, String commandPrefix) {
         int page = 1;
 
         consumer.requireMax(1);
@@ -145,18 +150,50 @@ public class Paginator<E> implements Helper {
             pre.run();
         }
 
-        pagi.display(transform, commandFormat);
+        pagi.display(transform, commandPrefix);
     }
 
-    public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Function<T, ITextComponent> transform, String commandName) {
-        paginate(consumer, pagi, null, transform, commandName);
+    public static <T> void paginate(ArgConsumer consumer, List<T> elems, Runnable pre, Function<T, ITextComponent> transform, String commandPrefix) {
+        paginate(consumer, new Paginator<>(elems), pre, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(ArgConsumer consumer, T[] elems, Runnable pre, Function<T, ITextComponent> transform, String commandPrefix) {
+        paginate(consumer, asList(elems), pre, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Function<T, ITextComponent> transform, String commandPrefix) {
+        paginate(consumer, pagi, null, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(ArgConsumer consumer, List<T> elems, Function<T, ITextComponent> transform, String commandPrefix) {
+        paginate(consumer, new Paginator<>(elems), null, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(ArgConsumer consumer, T[] elems, Function<T, ITextComponent> transform, String commandPrefix) {
+        paginate(consumer, asList(elems), null, transform, commandPrefix);
     }
 
     public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Runnable pre, Function<T, ITextComponent> transform) {
         paginate(consumer, pagi, pre, transform, null);
     }
 
+    public static <T> void paginate(ArgConsumer consumer, List<T> elems, Runnable pre, Function<T, ITextComponent> transform) {
+        paginate(consumer, new Paginator<>(elems), pre, transform, null);
+    }
+
+    public static <T> void paginate(ArgConsumer consumer, T[] elems, Runnable pre, Function<T, ITextComponent> transform) {
+        paginate(consumer, asList(elems), pre, transform, null);
+    }
+
     public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Function<T, ITextComponent> transform) {
         paginate(consumer, pagi, null, transform, null);
+    }
+
+    public static <T> void paginate(ArgConsumer consumer, List<T> elems, Function<T, ITextComponent> transform) {
+        paginate(consumer, new Paginator<>(elems), null, transform, null);
+    }
+
+    public static <T> void paginate(ArgConsumer consumer, T[] elems, Function<T, ITextComponent> transform) {
+        paginate(consumer, asList(elems), null, transform, null);
     }
 }

@@ -61,6 +61,9 @@ public class DefaultCommands {
         new FindCommand(),
         new MineCommand(),
         new ClickCommand(),
-        new ThisWayCommand()
+        new ThisWayCommand(),
+        new WaypointsCommand(),
+        new CommandAlias("sethome", "Sets your home waypoint", "waypoints save home"),
+        new CommandAlias("home", "Set goal to your home waypoint", "waypoints goal home")
     ));
 }

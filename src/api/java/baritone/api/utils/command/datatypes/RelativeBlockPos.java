@@ -42,11 +42,9 @@ public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlo
                 }
 
                 consumer.get();
-
-                if (!consumer.has(2)) {
-                    return consumer.tabCompleteDatatype(RelativeCoordinate.class);
-                }
             }
+
+            return consumer.tabCompleteDatatype(RelativeCoordinate.class);
         }
 
         return Stream.empty();

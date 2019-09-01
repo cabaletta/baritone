@@ -39,6 +39,19 @@ public class DefaultArgParsers {
         }
     }
 
+    public static class LongArgumentParser extends ArgParser<Long> implements IArgParser.Stateless<Long> {
+        public static final LongArgumentParser INSTANCE = new LongArgumentParser();
+
+        public LongArgumentParser() {
+            super(Long.class);
+        }
+
+        @Override
+        public Long parseArg(CommandArgument arg) throws RuntimeException {
+            return Long.parseLong(arg.value);
+        }
+    }
+
     public static class FloatArgumentParser extends ArgParser<Float> implements IArgParser.Stateless<Float> {
         public static final FloatArgumentParser INSTANCE = new FloatArgumentParser();
 
@@ -103,6 +116,7 @@ public class DefaultArgParsers {
 
     public static final List<ArgParser<?>> all = Collections.unmodifiableList(asList(
         IntArgumentParser.INSTANCE,
+        LongArgumentParser.INSTANCE,
         FloatArgumentParser.INSTANCE,
         DoubleArgumentParser.INSTANCE,
         BooleanArgumentParser.INSTANCE

@@ -575,7 +575,7 @@ public class ExampleBaritoneControlOld implements Helper, AbstractGameEventListe
         }
         if (msg.startsWith("save")) {
             String name = msg.substring(4).trim();
-            BlockPos pos = ctx.playerFeet();
+            BetterBlockPos pos = ctx.playerFeet();
             if (name.contains(" ")) {
                 logDirect("Name contains a space, assuming it's in the format 'save waypointName X Y Z'");
                 String[] parts = name.split(" ");
@@ -584,7 +584,7 @@ public class ExampleBaritoneControlOld implements Helper, AbstractGameEventListe
                     return true;
                 }
                 try {
-                    pos = new BlockPos(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
+                    pos = new BetterBlockPos(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
                 } catch (NumberFormatException ex) {
                     logDirect("Unable to parse coordinate integers");
                     return true;

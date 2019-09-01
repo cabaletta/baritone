@@ -17,7 +17,7 @@
 
 package baritone.api.cache;
 
-import net.minecraft.util.math.BlockPos;
+import baritone.api.utils.BetterBlockPos;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
@@ -60,7 +60,7 @@ public interface IWaypoint {
      *
      * @return The block position of this waypoint
      */
-    BlockPos getLocation();
+    BetterBlockPos getLocation();
 
     enum Tag {
 
@@ -92,7 +92,7 @@ public interface IWaypoint {
         /**
          * The names for the tag, anything that the tag can be referred to as.
          */
-        private final String[] names;
+        public final String[] names;
 
         Tag(String... names) {
             this.names = names;
