@@ -266,8 +266,7 @@ public class ArgConsumer {
             return datatype.getConstructor().newInstance().tabComplete(this);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
-        } catch (CommandException ignored) {
-        }
+        } catch (CommandException ignored) {}
 
         return Stream.empty();
     }

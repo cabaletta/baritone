@@ -112,8 +112,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
             try {
                 ((Lol) mc.currentScreen).openLink(new URI("https://www.dominos.com/en/pages/order/"));
-            } catch (NullPointerException | URISyntaxException ignored) {
-            }
+            } catch (NullPointerException | URISyntaxException ignored) {}
 
             return false;
         }

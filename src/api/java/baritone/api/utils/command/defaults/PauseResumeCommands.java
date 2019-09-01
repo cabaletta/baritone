@@ -48,8 +48,7 @@ public class PauseResumeCommands {
                 }
 
                 @Override
-                public void onLostControl() {
-                }
+                public void onLostControl() {}
 
                 @Override
                 public double priority() {

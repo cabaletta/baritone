@@ -52,8 +52,7 @@ public interface IPlayerContext {
             if (world().getBlockState(feet).getBlock() instanceof BlockSlab) {
                 return feet.up();
             }
-        } catch (NullPointerException ignored) {
-        }
+        } catch (NullPointerException ignored) {}
 
         return feet;
     }
