@@ -627,6 +627,12 @@ public final class Settings {
     public final Setting<Boolean> censorRanCommands = new Setting<>(false);
 
     /**
+     * Always prefer silk touch tools over regular tools. This will not sacrifice speed, but it will always prefer silk
+     * touch tools over other tools of the same speed. This includes always choosing ANY silk touch tool over your hand.
+     */
+    public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
+
+    /**
      * Don't stop walking forward when you need to break blocks in your way
      */
     public final Setting<Boolean> walkWhileBreaking = new Setting<>(true);
