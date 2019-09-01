@@ -617,6 +617,16 @@ public final class Settings {
     public final Setting<Boolean> echoCommands = new Setting<>(true);
 
     /**
+     * Censor coordinates in goals and block positions
+     */
+    public final Setting<Boolean> censorCoordinates = new Setting<>(false);
+
+    /**
+     * Censor arguments to ran commands, to hide, for example, coordinates to #goal
+     */
+    public final Setting<Boolean> censorRanCommands = new Setting<>(false);
+
+    /**
      * Don't stop walking forward when you need to break blocks in your way
      */
     public final Setting<Boolean> walkWhileBreaking = new Setting<>(true);

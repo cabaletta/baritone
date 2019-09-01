@@ -17,6 +17,7 @@
 
 package baritone.api.cache;
 
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Date;
@@ -80,7 +81,12 @@ public class Waypoint implements IWaypoint {
 
     @Override
     public String toString() {
-        return name + " " + location.toString() + " " + new Date(creationTimestamp).toString();
+        return String.format(
+            "%s %s %s",
+            name,
+            BetterBlockPos.from(location).toString(),
+            new Date(creationTimestamp).toString()
+        );
     }
 
     @Override

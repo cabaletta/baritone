@@ -19,6 +19,7 @@ package baritone.api.utils.command.defaults;
 
 import baritone.api.Settings;
 import baritone.api.cache.IRememberedInventory;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
@@ -49,7 +50,8 @@ public class ChestsCommand extends Command {
         }
 
         for (Map.Entry<BlockPos, IRememberedInventory> entry : entries) {
-            BlockPos pos = entry.getKey();
+            // betterblockpos has censoring
+            BetterBlockPos pos = new BetterBlockPos(entry.getKey());
             IRememberedInventory inv = entry.getValue();
 
             logDirect(pos.toString());

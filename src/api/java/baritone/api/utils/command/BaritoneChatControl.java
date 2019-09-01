@@ -88,9 +88,11 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         }
     }
 
-    private void logRanCommand(String msg) {
+    private void logRanCommand(String command, String rest) {
         if (settings.echoCommands.value) {
-            logDirect(new TextComponentString(String.format("> %s", msg)) {{
+            String msg = command + rest;
+            String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
+            logDirect(new TextComponentString(String.format("> %s", toDisplay)) {{
                 getStyle()
                     .setColor(TextFormatting.WHITE)
                     .setHoverEvent(new HoverEvent(
@@ -122,6 +124,8 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         }
 
         Pair<String, List<CommandArgument>> pair = CommandExecution.expand(msg);
+        String command = pair.first();
+        String rest = msg.substring(pair.first().length());
         ArgConsumer argc = new ArgConsumer(pair.second());
 
         if (!argc.has()) {
@@ -130,8 +134,8 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                     continue;
                 }
 
-                if (setting.getName().equalsIgnoreCase(pair.first())) {
-                    logRanCommand(msg);
+                if (setting.getName().equalsIgnoreCase(command)) {
+                    logRanCommand(command, rest);
 
                     if (setting.getValueClass() == Boolean.class) {
                         CommandManager.execute(String.format("set toggle %s", setting.getName()));
@@ -149,7 +153,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 }
 
                 if (setting.getName().equalsIgnoreCase(pair.first())) {
-                    logRanCommand(msg);
+                    logRanCommand(command, rest);
                     CommandManager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
                     return true;
                 }
@@ -162,7 +166,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             return false;
         }
 
-        logRanCommand(msg);
+        logRanCommand(command, rest);
         CommandManager.execute(execution);
 
         return true;

@@ -386,7 +386,7 @@ public class ExampleBaritoneControlOld implements Helper, AbstractGameEventListe
         }
         if (msg.equals("chests")) {
             for (Map.Entry<BlockPos, IRememberedInventory> entry : baritone.getWorldProvider().getCurrentWorld().getContainerMemory().getRememberedInventories().entrySet()) {
-                logDirect(entry.getKey() + "");
+                logDirect(BetterBlockPos.from(entry.getKey()) + "");
                 log(entry.getValue().getContents());
             }
             return true;
