@@ -58,7 +58,6 @@ public class FollowCommand extends Command {
 
         if (args.hasExactlyOne()) {
             baritone.getFollowProcess().follow((group = args.getEnum(FollowGroup.class)).filter);
-            list = null;
         } else {
             args.requireMin(2);
 

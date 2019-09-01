@@ -55,7 +55,7 @@ public class Waypoint implements IWaypoint {
 
     @Override
     public int hashCode() {
-        return name.hashCode() + tag.hashCode() + location.hashCode(); //lol
+        return name.hashCode() * tag.hashCode() * location.hashCode(); //lol
     }
 
     @Override
