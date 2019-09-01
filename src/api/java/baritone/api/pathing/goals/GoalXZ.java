@@ -18,6 +18,7 @@
 package baritone.api.pathing.goals;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -59,7 +60,11 @@ public class GoalXZ implements Goal {
 
     @Override
     public String toString() {
-        return "GoalXZ{x=" + x + ",z=" + z + "}";
+        return String.format(
+            "GoalXZ{x=%s,z=%s}",
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(z)
+        );
     }
 
     public static double calculate(double xDiff, double zDiff) {

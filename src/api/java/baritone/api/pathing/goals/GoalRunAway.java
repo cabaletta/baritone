@@ -17,6 +17,7 @@
 
 package baritone.api.pathing.goals;
 
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
@@ -82,7 +83,11 @@ public class GoalRunAway implements Goal {
     @Override
     public String toString() {
         if (maintainY != null) {
-            return "GoalRunAwayFromMaintainY y=" + maintainY + ", " + Arrays.asList(from);
+            return String.format(
+                "GoalRunAwayFromMaintainY y=%s, %s",
+                SettingsUtil.maybeCensor(maintainY),
+                Arrays.asList(from)
+            );
         } else {
             return "GoalRunAwayFrom" + Arrays.asList(from);
         }

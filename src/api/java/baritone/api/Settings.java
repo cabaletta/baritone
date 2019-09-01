@@ -602,6 +602,11 @@ public final class Settings {
      */
     public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
 
+    /*
+     * Censor coordinates in goals and block positions
+     */
+    public final Setting<Boolean> censorCoordinates = new Setting<>(false);
+
     /**
      * Don't stop walking forward when you need to break blocks in your way
      */
