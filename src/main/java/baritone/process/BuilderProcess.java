@@ -33,7 +33,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
-import baritone.utils.schematic.AirSchematic;
+import baritone.utils.schematic.FillSchematic;
 import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.Schematic;
 import baritone.utils.schematic.schematica.SchematicaHelper;
@@ -132,7 +132,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         int widthX = Math.abs(corner1.getX() - corner2.getX()) + 1;
         int heightY = Math.abs(corner1.getY() - corner2.getY()) + 1;
         int lengthZ = Math.abs(corner1.getZ() - corner2.getZ()) + 1;
-        build("clear area", new AirSchematic(widthX, heightY, lengthZ), origin);
+        build("clear area", new FillSchematic(widthX, heightY, lengthZ, Blocks.AIR.getDefaultState()), origin);
     }
 
     private static ISchematic parse(NBTTagCompound schematic) {
