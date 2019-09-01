@@ -17,6 +17,7 @@
 
 package baritone.api.pathing.goals;
 
+import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
@@ -56,11 +57,12 @@ public class GoalNear implements Goal, IGoalRenderPos {
 
     @Override
     public String toString() {
-        return "GoalNear{" +
-                "x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                ", rangeSq=" + rangeSq +
-                "}";
+        return String.format(
+            "GoalNear{x=%s, y=%s, z=%s, rangeSq=%d}",
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(y),
+            SettingsUtil.maybeCensor(z),
+            rangeSq
+        );
     }
 }

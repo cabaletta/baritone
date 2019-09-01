@@ -17,6 +17,7 @@
 
 package baritone.api.pathing.goals;
 
+import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
@@ -73,6 +74,11 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
 
     @Override
     public String toString() {
-        return "GoalTwoBlocks{x=" + x + ",y=" + y + ",z=" + z + "}";
+        return String.format(
+            "GoalTwoBlocks{x=%s,y=%s,z=%s}",
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(y),
+            SettingsUtil.maybeCensor(z)
+        );
     }
 }

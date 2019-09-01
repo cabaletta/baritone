@@ -17,6 +17,7 @@
 
 package baritone.api.pathing.goals;
 
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -64,12 +65,13 @@ public class GoalStrictDirection implements Goal {
 
     @Override
     public String toString() {
-        return "GoalStrictDirection{" +
-                "x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                ", dx=" + dx +
-                ", dz=" + dz +
-                "}";
+        return String.format(
+            "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(y),
+            SettingsUtil.maybeCensor(z),
+            SettingsUtil.maybeCensor(dx),
+            SettingsUtil.maybeCensor(dz)
+        );
     }
 }
