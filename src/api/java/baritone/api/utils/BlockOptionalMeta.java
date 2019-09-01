@@ -104,7 +104,7 @@ public final class BlockOptionalMeta {
 
         block = Block.REGISTRY.getObject(id);
         meta = noMeta ? 0 : Integer.parseInt(matchResult.group(2));
-        blockstates = getStates(block, noMeta ? null : meta);
+        blockstates = getStates(block, getMeta());
         stateHashes = getStateHashes(blockstates);
         stackHashes = getStackHashes(blockstates);
     }
@@ -114,7 +114,7 @@ public final class BlockOptionalMeta {
     }
 
     public Integer getMeta() {
-        return meta;
+        return noMeta ? null : meta;
     }
 
     public boolean matches(@Nonnull Block block) {
@@ -128,12 +128,18 @@ public final class BlockOptionalMeta {
 
     public boolean matches(ItemStack stack) {
         //noinspection ConstantConditions
-        return stackHashes.contains(((IItemStack) (Object) stack).getBaritoneHash());
+        int hash = ((IItemStack) (Object) stack).getBaritoneHash();
+
+        if (noMeta) {
+            hash -= stack.getItemDamage();
+        }
+
+        return stackHashes.contains(hash);
     }
 
     @Override
     public String toString() {
-        return String.format("BlockOptionalMeta{block=%s,meta=%s}", block, meta);
+        return String.format("BlockOptionalMeta{block=%s,meta=%s}", block, getMeta());
     }
 
     public static IBlockState blockStateFromStack(ItemStack stack) {
