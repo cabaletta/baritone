@@ -17,6 +17,7 @@
 
 package baritone.api.utils;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -118,6 +119,14 @@ public class SettingsUtil {
             modified.add(setting);
         }
         return modified;
+    }
+
+    public static String possiblyCensorCoordinate(int coord) {
+        if (BaritoneAPI.getSettings().censorCoordinates.value) {
+            return "<censored>";
+        }
+
+        return Integer.toString(coord);
     }
 
     public static String settingToString(Settings.Setting setting) throws IllegalStateException {
