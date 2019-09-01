@@ -18,6 +18,7 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.MovementStatus;
@@ -408,7 +409,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param b   the blockstate to mine
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
-        switchToBestToolFor(ctx, b, new ToolSet(ctx.player()));
+        switchToBestToolFor(ctx, b, new ToolSet(ctx.player()), BaritoneAPI.getSettings().preferSilkTouch.value);
     }
 
     /**
@@ -418,8 +419,8 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param b   the blockstate to mine
      * @param ts  previously calculated ToolSet
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts) {
-        ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock());
+    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts, boolean preferSilkTouch) {
+        ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock(), preferSilkTouch);
     }
 
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {

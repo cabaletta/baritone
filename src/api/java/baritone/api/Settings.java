@@ -597,6 +597,12 @@ public final class Settings {
     public final Setting<Boolean> prefixControl = new Setting<>(true);
 
     /**
+     * Always prefer silk touch tools over regular tools. This will not sacrifice speed, but it will always prefer silk
+     * touch tools over other tools of the same speed. This includes always choosing ANY silk touch tool over your hand.
+     */
+    public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
+
+    /*
      * Censor coordinates in goals and block positions
      */
     public final Setting<Boolean> censorCoordinates = new Setting<>(false);
