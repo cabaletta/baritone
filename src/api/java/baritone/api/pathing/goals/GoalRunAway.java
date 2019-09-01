@@ -85,7 +85,7 @@ public class GoalRunAway implements Goal {
         if (maintainY != null) {
             return String.format(
                 "GoalRunAwayFromMaintainY y=%s, %s",
-                SettingsUtil.possiblyCensorCoordinate(maintainY),
+                SettingsUtil.maybeCensor(maintainY),
                 Arrays.asList(from)
             );
         } else {

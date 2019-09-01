@@ -59,9 +59,9 @@ public class GoalNear implements Goal, IGoalRenderPos {
     public String toString() {
         return String.format(
             "GoalNear{x=%s, y=%s, z=%s, rangeSq=%d}",
-            SettingsUtil.possiblyCensorCoordinate(x),
-            SettingsUtil.possiblyCensorCoordinate(y),
-            SettingsUtil.possiblyCensorCoordinate(z),
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(y),
+            SettingsUtil.maybeCensor(z),
             rangeSq
         );
     }

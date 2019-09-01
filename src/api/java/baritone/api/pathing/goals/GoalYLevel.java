@@ -62,7 +62,7 @@ public class GoalYLevel implements Goal, ActionCosts {
     public String toString() {
         return String.format(
             "GoalYLevel{y=%s}",
-            SettingsUtil.possiblyCensorCoordinate(level)
+            SettingsUtil.maybeCensor(level)
         );
     }
 }

@@ -121,7 +121,7 @@ public class SettingsUtil {
         return modified;
     }
 
-    public static String possiblyCensorCoordinate(int coord) {
+    public static String maybeCensor(int coord) {
         if (BaritoneAPI.getSettings().censorCoordinates.value) {
             return "<censored>";
         }

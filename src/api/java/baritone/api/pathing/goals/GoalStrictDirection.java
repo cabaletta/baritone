@@ -67,11 +67,11 @@ public class GoalStrictDirection implements Goal {
     public String toString() {
         return String.format(
             "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",
-            SettingsUtil.possiblyCensorCoordinate(x),
-            SettingsUtil.possiblyCensorCoordinate(y),
-            SettingsUtil.possiblyCensorCoordinate(z),
-            SettingsUtil.possiblyCensorCoordinate(dx),
-            SettingsUtil.possiblyCensorCoordinate(dz)
+            SettingsUtil.maybeCensor(x),
+            SettingsUtil.maybeCensor(y),
+            SettingsUtil.maybeCensor(z),
+            SettingsUtil.maybeCensor(dx),
+            SettingsUtil.maybeCensor(dz)
         );
     }
 }
