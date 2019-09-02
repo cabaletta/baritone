@@ -47,8 +47,16 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.chunk.Chunk;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
@@ -512,16 +520,6 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 return true;
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
 
-            Map<String, String> aliases = new HashMap(); // This should definitely be in a setting i'm just too dumb for that
-            aliases.put("diamond", "diamond_ore");
-            aliases.put("iron", "iron_ore");
-            aliases.put("coal", "coal_ore");
-            aliases.put("lapis", "lapis_ore");
-            aliases.put("gold", "gold_ore");
-            aliases.put("redstone", "redstone_ore");
-            aliases.put("emerald", "emerald_ore");
-            aliases.put("quartz", "quartz_ore");
-
             for (int i = 0; i < blockTypes.length; i++) {
                 String s = blockTypes[i];
 
@@ -685,6 +683,60 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
             return true;
         }
+        if (msg.startsWith("alias")) {
+            logDirect(ALIAS_PATH.toString());
+            String[] args = msg.substring(5).trim().split(" ");
+            String type = args[0];
+            int numOfArgs = args.length - 1;
+
+            if (type.equals("add")) { // maybe these should be a switch
+                if (numOfArgs < 2) {
+                    logDirect("One or more arguments not provided");
+                    return true;
+                }
+
+                String name = args[1];
+                String block = args[2];
+
+                if (BlockUtils.stringToBlockNullable(block) == null) {
+                    logDirect(block + " isn't a valid block name");
+                } else if (aliases.get(name) != null) {
+                    logDirect(name + " is already in use. Use `alias remove " + name + "` to delete it");
+                } else if (BlockUtils.stringToBlockNullable(name) != null){
+                    logDirect(name + " is already the name of a block");
+                } else {
+                    aliases.put(name, block);
+                    logDirect("New alias: " + name + " : " + block);
+                    saveAliases();
+                }
+            }
+
+            if (type.equals("remove")) {
+                if (numOfArgs < 1) {
+                    logDirect("One or more arguments not provided");
+                    return true;
+                }
+
+                String name = args[1];
+
+                if (aliases.get(name) == null) {
+                    logDirect(name + " is not in use");
+                } else {
+                    aliases.remove(name);
+                    logDirect("Removed alias " + name);
+                    saveAliases();
+                }
+            }
+
+            if (type.equals("list")) {
+                logDirect("Current alias pairs:");
+                for (Map.Entry i : aliases.entrySet()) {
+                    logDirect(i.getKey() + " : " + i.getValue());
+                }
+            }
+
+            return true;
+        }
         if (msg.equals("damn")) {
             logDirect("daniel");
         }
@@ -769,6 +821,64 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return DimensionType.NETHER;
         }
         return ctx.world().provider.getDimensionType();
+    }
+
+
+    private static final Path ALIAS_PATH = Minecraft.getMinecraft().gameDir.toPath().resolve("baritone").resolve("alias.txt");
+    private static final Pattern ALIAS_PATTERN = Pattern.compile("^(?<name>[^ ]+) +(?<block>.+)");
+
+    private Map<String, String> aliases = createAliases();
+
+    private static void forEachLine(Path file, Consumer<String> consumer) throws IOException {
+        try (BufferedReader scan = Files.newBufferedReader(file)) {
+            String line;
+            while ((line = scan.readLine()) != null) {
+                if (line.isEmpty()) {
+                    continue;
+                }
+                consumer.accept(line);
+            }
+        }
+    }
+
+    private static Map<String, String> createAliases() {
+        Map<String,String> myMap = new HashMap<String,String>();
+        try { // I stole all of this from SettingsUtil.java
+            forEachLine(ALIAS_PATH, line -> {
+                Matcher matcher = ALIAS_PATTERN.matcher(line);
+                if (!matcher.matches()) {
+                    System.out.println("Invalid syntax in setting file: " + line);
+                    return;
+                }
+
+                String aliasName = matcher.group("name");
+                String aliasBlock = matcher.group("block");
+                try {
+                    myMap.put(aliasName, aliasBlock);
+                } catch (Exception ex) {
+                    System.out.println("Unable to parse line " + line);
+                    ex.printStackTrace();
+                }
+            });
+        } catch (NoSuchFileException ignored) {
+            System.out.println("Baritone alias file not found, resetting.");
+        } catch (Exception ex) {
+            System.out.println("Exception while reading Baritone aliases, some settings may be reset to default values!");
+            ex.printStackTrace();
+        }
+
+        return myMap;
+    }
+
+    private void saveAliases() {
+        try (BufferedWriter out = Files.newBufferedWriter(ALIAS_PATH)) {
+            for (Map.Entry i : aliases.entrySet()) {
+                out.write(i.getKey() + " " + i.getValue() + "\n");
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception thrown while saving alias settings!");
+            ex.printStackTrace();
+        }
     }
 
 }
