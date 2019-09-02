@@ -25,7 +25,11 @@ import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.*;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.ISchematic;
+import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -48,17 +52,24 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public final class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
-
     private HashSet<BetterBlockPos> incorrectPositions;
     private LongOpenHashSet observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now
     private String name;
@@ -106,6 +117,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             e.printStackTrace();
             return false;
         }
+        //noinspection ConstantConditions
         if (tag == null) {
             return false;
         }
@@ -144,14 +156,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return schematic != null;
     }
 
-    public IBlockState placeAt(int x, int y, int z) {
+    public IBlockState placeAt(int x, int y, int z, IBlockState current) {
         if (!isActive()) {
             return null;
         }
-        if (!schematic.inSchematic(x - origin.getX(), y - origin.getY(), z - origin.getZ())) {
+        if (!schematic.inSchematic(x - origin.getX(), y - origin.getY(), z - origin.getZ(), current)) {
             return null;
         }
-        IBlockState state = schematic.desiredState(x - origin.getX(), y - origin.getY(), z - origin.getZ());
+        IBlockState state = schematic.desiredState(x - origin.getX(), y - origin.getY(), z - origin.getZ(), current);
         if (state.getBlock() == Blocks.AIR) {
             return null;
         }
@@ -170,7 +182,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     if (dy == -1 && x == pathStart.x && z == pathStart.z) {
                         continue; // dont mine what we're supported by, but not directly standing on
                     }
-                    IBlockState desired = bcc.getSchematic(x, y, z);
+                    IBlockState desired = bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z));
                     if (desired == null) {
                         continue; // irrelevant
                     }
@@ -188,7 +200,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return Optional.empty();
     }
 
-    public class Placement {
+    public static class Placement {
         private final int hotbarSelection;
         private final BlockPos placeAgainst;
         private final EnumFacing side;
@@ -210,7 +222,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     int x = center.x + dx;
                     int y = center.y + dy;
                     int z = center.z + dz;
-                    IBlockState desired = bcc.getSchematic(x, y, z);
+                    IBlockState desired = bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z));
                     if (desired == null) {
                         continue; // irrelevant
                     }
@@ -271,14 +283,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             ctx.player().rotationYaw = rot.getYaw();
             ctx.player().rotationPitch = rot.getPitch();
             IBlockState wouldBePlaced = ((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(
-                    ctx.world(),
-                    result.getBlockPos().offset(result.sideHit),
-                    result.sideHit,
-                    (float) result.hitVec.x - result.getBlockPos().getX(), // as in PlayerControllerMP
-                    (float) result.hitVec.y - result.getBlockPos().getY(),
-                    (float) result.hitVec.z - result.getBlockPos().getZ(),
-                    stack.getItem().getMetadata(stack.getMetadata()),
-                    ctx.player()
+                ctx.world(),
+                result.getBlockPos().offset(result.sideHit),
+                result.sideHit,
+                (float) result.hitVec.x - result.getBlockPos().getX(), // as in PlayerControllerMP
+                (float) result.hitVec.y - result.getBlockPos().getY(),
+                (float) result.hitVec.z - result.getBlockPos().getZ(),
+                stack.getItem().getMetadata(stack.getMetadata()),
+                ctx.player()
             );
             ctx.player().rotationYaw = originalYaw;
             ctx.player().rotationPitch = originalPitch;
@@ -292,16 +304,16 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private static Vec3d[] aabbSideMultipliers(EnumFacing side) {
         switch (side) {
             case UP:
-                return new Vec3d[]{new Vec3d(0.5, 1, 0.5), new Vec3d(0.1, 1, 0.5), new Vec3d(0.9, 1, 0.5), new Vec3d(0.5, 1, 0.1), new Vec3d(0.5, 1, 0.9)};
+                return new Vec3d[] {new Vec3d(0.5, 1, 0.5), new Vec3d(0.1, 1, 0.5), new Vec3d(0.9, 1, 0.5), new Vec3d(0.5, 1, 0.1), new Vec3d(0.5, 1, 0.9)};
             case DOWN:
-                return new Vec3d[]{new Vec3d(0.5, 0, 0.5), new Vec3d(0.1, 0, 0.5), new Vec3d(0.9, 0, 0.5), new Vec3d(0.5, 0, 0.1), new Vec3d(0.5, 0, 0.9)};
+                return new Vec3d[] {new Vec3d(0.5, 0, 0.5), new Vec3d(0.1, 0, 0.5), new Vec3d(0.9, 0, 0.5), new Vec3d(0.5, 0, 0.1), new Vec3d(0.5, 0, 0.9)};
             case NORTH:
             case SOUTH:
             case EAST:
             case WEST:
                 double x = side.getXOffset() == 0 ? 0.5 : (1 + side.getXOffset()) / 2D;
                 double z = side.getZOffset() == 0 ? 0.5 : (1 + side.getZOffset()) / 2D;
-                return new Vec3d[]{new Vec3d(x, 0.25, z), new Vec3d(x, 0.75, z)};
+                return new Vec3d[] {new Vec3d(x, 0.25, z), new Vec3d(x, 0.75, z)};
             default: // null
                 throw new IllegalStateException();
         }
@@ -336,13 +348,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
             schematic = new ISchematic() {
                 @Override
-                public IBlockState desiredState(int x, int y, int z) {
-                    return realSchematic.desiredState(x, y, z);
+                public IBlockState desiredState(int x, int y, int z, IBlockState current) {
+                    return realSchematic.desiredState(x, y, z, current);
                 }
 
                 @Override
-                public boolean inSchematic(int x, int y, int z) {
-                    return ISchematic.super.inSchematic(x, y, z) && y >= minYInclusive && y <= maxYInclusive;
+                public boolean inSchematic(int x, int y, int z, IBlockState currentState) {
+                    return ISchematic.super.inSchematic(x, y, z, currentState) && y >= minYInclusive && y <= maxYInclusive;
                 }
 
                 @Override
@@ -485,7 +497,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     int x = center.x + dx;
                     int y = center.y + dy;
                     int z = center.z + dz;
-                    IBlockState desired = bcc.getSchematic(x, y, z);
+                    IBlockState desired = bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z));
                     if (desired != null) {
                         // we care about this position
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
@@ -507,15 +519,16 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         for (int y = 0; y < schematic.heightY(); y++) {
             for (int z = 0; z < schematic.lengthZ(); z++) {
                 for (int x = 0; x < schematic.widthX(); x++) {
-                    if (!schematic.inSchematic(x, y, z)) {
-                        continue;
-                    }
                     int blockX = x + origin.getX();
                     int blockY = y + origin.getY();
                     int blockZ = z + origin.getZ();
+                    IBlockState current = bcc.bsi.get0(x, y, z);
+                    if (!schematic.inSchematic(x, y, z, current)) {
+                        continue;
+                    }
                     if (bcc.bsi.worldContainsLoadedChunk(blockX, blockZ)) { // check if its in render distance, not if its in cache
                         // we can directly observe this block, it is in render distance
-                        if (valid(bcc.bsi.get0(blockX, blockY, blockZ), schematic.desiredState(x, y, z))) {
+                        if (valid(bcc.bsi.get0(blockX, blockY, blockZ), schematic.desiredState(x, y, z, current))) {
                             observedCompleted.add(BetterBlockPos.longHash(blockX, blockY, blockZ));
                         } else {
                             incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
@@ -541,14 +554,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private Goal assemble(BuilderCalculationContext bcc, List<IBlockState> approxPlacable) {
-        List<BetterBlockPos> placable = new ArrayList<>();
+        List<BetterBlockPos> placeable = new ArrayList<>();
         List<BetterBlockPos> breakable = new ArrayList<>();
         List<BetterBlockPos> sourceLiquids = new ArrayList<>();
         incorrectPositions.forEach(pos -> {
             IBlockState state = bcc.bsi.get0(pos);
             if (state.getBlock() instanceof BlockAir) {
-                if (approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z))) {
-                    placable.add(pos);
+                if (approxPlacable.contains(bcc.getSchematic(pos.x, pos.y, pos.z, state))) {
+                    placeable.add(pos);
                 }
             } else {
                 if (state.getBlock() instanceof BlockLiquid) {
@@ -566,8 +579,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         List<Goal> toBreak = new ArrayList<>();
         breakable.forEach(pos -> toBreak.add(breakGoal(pos, bcc)));
         List<Goal> toPlace = new ArrayList<>();
-        placable.forEach(pos -> {
-            if (!placable.contains(pos.down()) && !placable.contains(pos.down(2))) {
+        placeable.forEach(pos -> {
+            if (!placeable.contains(pos.down()) && !placeable.contains(pos.down(2))) {
                 toPlace.add(placementGoal(pos, bcc));
             }
         });
@@ -629,9 +642,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (ctx.world().getBlockState(pos).getBlock() != Blocks.AIR) { // TODO can this even happen?
             return new GoalPlace(pos);
         }
-        boolean allowSameLevel = ctx.world().getBlockState(pos.up()).getBlock() != Blocks.AIR;
+        IBlockState current = ctx.world().getBlockState(pos.up());
+        boolean allowSameLevel = current.getBlock() != Blocks.AIR;
         for (EnumFacing facing : Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP) {
-            if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && ctx.world().mayPlace(bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ()).getBlock(), pos, false, facing, null)) {
+            //noinspection ConstantConditions
+            if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && ctx.world().mayPlace(bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), current).getBlock(), pos, false, facing, null)) {
                 return new GoalAdjacent(pos, pos.offset(facing), allowSameLevel);
             }
         }
@@ -754,9 +769,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             this.backtrackCostFavoringCoefficient = 1;
         }
 
-        private IBlockState getSchematic(int x, int y, int z) {
-            if (schematic.inSchematic(x - originX, y - originY, z - originZ)) {
-                return schematic.desiredState(x - originX, y - originY, z - originZ);
+        private IBlockState getSchematic(int x, int y, int z, IBlockState current) {
+            if (schematic.inSchematic(x - originX, y - originY, z - originZ, current)) {
+                return schematic.desiredState(x - originX, y - originY, z - originZ, current);
             } else {
                 return null;
             }
@@ -767,7 +782,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (isPossiblyProtected(x, y, z) || !worldBorder.canPlaceAt(x, z)) { // make calculation fail properly if we can't build
                 return COST_INF;
             }
-            IBlockState sch = getSchematic(x, y, z);
+            IBlockState sch = getSchematic(x, y, z, bsi.get0(x, y, z));
             if (sch != null) {
                 // TODO this can return true even when allowPlace is off.... is that an issue?
                 if (sch.getBlock() == Blocks.AIR) {
@@ -801,7 +816,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (!allowBreak || isPossiblyProtected(x, y, z)) {
                 return COST_INF;
             }
-            IBlockState sch = getSchematic(x, y, z);
+            IBlockState sch = getSchematic(x, y, z, bsi.get0(x, y, z));
             if (sch != null) {
                 if (sch.getBlock() == Blocks.AIR) {
                     // it should be air

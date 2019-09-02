@@ -68,7 +68,7 @@ public class Schematic implements ISchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z) {
+    public IBlockState desiredState(int x, int y, int z, IBlockState current) {
         return states[x][z][y];
     }
 

@@ -49,6 +49,8 @@ public abstract class MixinStateImplementation {
      * Cache this instead of using the fucking map every time
      *
      * @author LoganDark
+     * @reason Regular IBlockState generates a new hash every fucking time. This is not needed when scanning millions
+     * per second
      */
     @Override
     @Overwrite

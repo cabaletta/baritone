@@ -31,7 +31,7 @@ public final class SchematicAdapter implements ISchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z) {
+    public IBlockState desiredState(int x, int y, int z, IBlockState current) {
         return schematic.getSchematic().getBlockState(new BlockPos(x, y, z));
     }
 

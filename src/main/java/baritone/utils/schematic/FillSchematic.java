@@ -35,7 +35,7 @@ public class FillSchematic implements ISchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z) {
+    public IBlockState desiredState(int x, int y, int z, IBlockState current) {
         return state;
     }
 
