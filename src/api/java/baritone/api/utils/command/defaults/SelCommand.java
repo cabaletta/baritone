@@ -19,15 +19,25 @@ package baritone.api.utils.command.defaults;
 
 import baritone.api.Settings;
 import baritone.api.event.events.RenderEvent;
+import baritone.api.schematic.CompositeSchematic;
+import baritone.api.schematic.FillBomSchematic;
+import baritone.api.schematic.ShellSchematic;
+import baritone.api.schematic.WallsSchematic;
+import baritone.api.selection.ISelection;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.IRenderer;
+import baritone.api.utils.ISchematic;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.utils.command.datatypes.RelativeBlockPos;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3i;
 
 import java.awt.Color;
 import java.util.HashSet;
@@ -75,6 +85,46 @@ public class SelCommand extends Command {
                 "Removed %d selections",
                 baritone.getSelectionManager().removeAllSelections().length
             ));
+        } else {
+            BlockOptionalMeta type = action == Action.CLEARAREA
+                ? new BlockOptionalMeta(Blocks.AIR)
+                : args.getDatatypeFor(ForBlockOptionalMeta.class);
+            args.requireMax(0);
+            ISelection[] selections = baritone.getSelectionManager().getSelections();
+
+            if (selections.length == 0) {
+                throw new CommandInvalidStateException("No selections");
+            }
+
+            BetterBlockPos origin = selections[0].min();
+            CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
+
+            for (ISelection selection : selections) {
+                BetterBlockPos min = selection.min();
+                origin = new BetterBlockPos(
+                    Math.min(origin.x, min.x),
+                    Math.min(origin.y, min.y),
+                    Math.min(origin.z, min.z)
+                );
+            }
+
+            for (ISelection selection : selections) {
+                Vec3i size = selection.size();
+                BetterBlockPos min = selection.min();
+
+                ISchematic schematic = new FillBomSchematic(size.getX(), size.getY(), size.getZ(), type);
+
+                if (action == Action.WALLS) {
+                    schematic = new WallsSchematic(schematic);
+                } else if (action == Action.SHELL) {
+                    schematic = new ShellSchematic(schematic);
+                }
+
+                composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
+            }
+
+            baritone.getBuilderProcess().build("Fill", composite, origin);
+            logDirect("Filling now");
         }
     }
 
@@ -112,7 +162,11 @@ public class SelCommand extends Command {
     enum Action {
         POS1("pos1", "p1"),
         POS2("pos2", "p2"),
-        CLEAR("clear", "c");
+        CLEAR("clear", "c"),
+        SET("set", "fill", "s", "f"),
+        WALLS("walls", "w"),
+        SHELL("shell", "sh"),
+        CLEARAREA("cleararea", "ca");
 
         private final String[] names;
 

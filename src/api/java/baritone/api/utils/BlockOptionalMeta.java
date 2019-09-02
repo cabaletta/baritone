@@ -31,7 +31,6 @@ import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockFire;
 import net.minecraft.block.BlockGrass;
-import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockLever;
 import net.minecraft.block.BlockLog;
@@ -322,5 +321,13 @@ public final class BlockOptionalMeta {
     public static IBlockState blockStateFromStack(ItemStack stack) {
         //noinspection deprecation
         return Block.getBlockFromItem(stack.getItem()).getStateFromMeta(stack.getMetadata());
+    }
+
+    public IBlockState getAnyBlockState() {
+        if (blockstates.size() > 0) {
+            return blockstates.iterator().next();
+        }
+
+        return null;
     }
 }
