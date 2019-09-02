@@ -20,6 +20,7 @@ package baritone.api.utils.command;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
+import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.command.execution.CommandExecution;
@@ -34,8 +35,9 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class Command implements Helper {
+public abstract class Command implements Helper, AbstractGameEventListener {
     protected IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
+    protected Settings settings = BaritoneAPI.getSettings();
     protected IPlayerContext ctx = baritone.getPlayerContext();
     protected Minecraft MC = mc;
 
@@ -60,6 +62,7 @@ public abstract class Command implements Helper {
             .map(s -> s.toLowerCase(Locale.US))
             .collect(Collectors.toCollection(ArrayList::new));
         this.shortDesc = shortDesc;
+        baritone.getGameEventHandler().registerEventListener(this);
     }
 
     protected Command(String name, String shortDesc) {

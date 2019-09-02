@@ -64,6 +64,7 @@ public class DefaultCommands {
         new ThisWayCommand(),
         new WaypointsCommand(),
         new CommandAlias("sethome", "Sets your home waypoint", "waypoints save home"),
-        new CommandAlias("home", "Set goal to your home waypoint", "waypoints goal home")
+        new CommandAlias("home", "Set goal to your home waypoint", "waypoints goal home"),
+        new SelCommand()
     ));
 }
