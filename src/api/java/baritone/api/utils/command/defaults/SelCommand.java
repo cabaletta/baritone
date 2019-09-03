@@ -24,18 +24,21 @@ import baritone.api.schematic.FillBomSchematic;
 import baritone.api.schematic.ShellSchematic;
 import baritone.api.schematic.WallsSchematic;
 import baritone.api.selection.ISelection;
+import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.IRenderer;
 import baritone.api.utils.ISchematic;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.ForBlockOptionalMeta;
+import baritone.api.utils.command.datatypes.ForEnumFacing;
 import baritone.api.utils.command.datatypes.RelativeBlockPos;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3i;
 
@@ -43,11 +46,13 @@ import java.awt.Color;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 
 public class SelCommand extends Command {
+    private ISelectionManager manager = baritone.getSelectionManager();
     private BetterBlockPos pos1 = null;
 
     public SelCommand() {
@@ -75,22 +80,36 @@ public class SelCommand extends Command {
                 pos1 = pos;
                 logDirect("Position 1 has been set");
             } else {
-                baritone.getSelectionManager().addSelection(pos1, pos);
+                manager.addSelection(pos1, pos);
                 pos1 = null;
                 logDirect("Selection added");
             }
         } else if (action == Action.CLEAR) {
+            args.requireMax(0);
             pos1 = null;
-            logDirect(String.format(
-                "Removed %d selections",
-                baritone.getSelectionManager().removeAllSelections().length
-            ));
-        } else {
+            logDirect(String.format("Removed %d selections", manager.removeAllSelections().length));
+        } else if (action == Action.UNDO) {
+            args.requireMax(0);
+
+            if (pos1 != null) {
+                pos1 = null;
+                logDirect("Undid pos1");
+            } else {
+                ISelection[] selections = manager.getSelections();
+
+                if (selections.length < 1) {
+                    throw new CommandInvalidStateException("Nothing to undo!");
+                } else {
+                    pos1 = manager.removeSelection(selections[selections.length - 1]).pos1();
+                    logDirect("Undid pos2");
+                }
+            }
+        } else if (action == Action.SET || action == Action.WALLS || action == Action.SHELL || action == Action.CLEARAREA) {
             BlockOptionalMeta type = action == Action.CLEARAREA
                 ? new BlockOptionalMeta(Blocks.AIR)
                 : args.getDatatypeFor(ForBlockOptionalMeta.class);
             args.requireMax(0);
-            ISelection[] selections = baritone.getSelectionManager().getSelections();
+            ISelection[] selections = manager.getSelections();
 
             if (selections.length == 0) {
                 throw new CommandInvalidStateException("No selections");
@@ -125,6 +144,36 @@ public class SelCommand extends Command {
 
             baritone.getBuilderProcess().build("Fill", composite, origin);
             logDirect("Filling now");
+        } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
+            args.requireExactly(3);
+            TransformTarget transformTarget = TransformTarget.getByName(args.getString());
+
+            if (transformTarget == null) {
+                throw new CommandInvalidStateException("Invalid transform type");
+            }
+
+            EnumFacing direction = args.getDatatypeFor(ForEnumFacing.class);
+            int blocks = args.getAs(Integer.class);
+
+            ISelection[] selections = manager.getSelections();
+
+            if (selections.length < 1) {
+                throw new CommandInvalidStateException("No selections found");
+            }
+
+            selections = transformTarget.transform(selections);
+
+            for (ISelection selection : selections) {
+                if (action == Action.EXPAND) {
+                    manager.expand(selection, direction, blocks);
+                } else if (action == Action.CONTRACT) {
+                    manager.contract(selection, direction, blocks);
+                } else {
+                    manager.shift(selection, direction, blocks);
+                }
+            }
+
+            logDirect(String.format("Transformed %d selections", selections.length));
         }
     }
 
@@ -141,7 +190,27 @@ public class SelCommand extends Command {
 
             if (action != null) {
                 if (action == Action.POS1 || action == Action.POS2) {
-                    return args.tabCompleteDatatype(RelativeBlockPos.class);
+                    if (args.hasAtMost(3)) {
+                        return args.tabCompleteDatatype(RelativeBlockPos.class);
+                    }
+                } else if (action == Action.SET || action == Action.WALLS || action == Action.CLEARAREA) {
+                    if (args.hasExactlyOne()) {
+                        return args.tabCompleteDatatype(ForBlockOptionalMeta.class);
+                    }
+                } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
+                    if (args.hasExactlyOne()) {
+                        return new TabCompleteHelper()
+                            .append(TransformTarget.getAllNames())
+                            .filterPrefix(args.getString())
+                            .sortAlphabetically()
+                            .stream();
+                    } else {
+                        TransformTarget target = TransformTarget.getByName(args.getString());
+
+                        if (target != null && args.hasExactlyOne()) {
+                            return args.tabCompleteDatatype(ForEnumFacing.class);
+                        }
+                    }
                 }
             }
         }
@@ -152,21 +221,38 @@ public class SelCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
+            "The sel command allows you to manipulate Baritone's selections, similarly to WorldEdit.",
             "",
+            "Using these selections, you can clear areas, fill them with blocks, or something else.",
             "",
             "Usage:",
-            "> "
+            "> sel pos1/p1/1 - Set position 1 to your current position.",
+            "> sel pos1/p1/1 <x> <y> <z> - Set position 1 to a relative position.",
+            "> sel pos2/p2/2 - Set position 2 to your current position.",
+            "> sel pos2/p2/2 <x> <y> <z> - Set position 2 to a relative position.",
+            "> sel clear/c - Clear the selection.",
+            "> sel undo/u - Undo the last action (setting positions, creating selections, etc.)",
+            "> sel walls/w [block] - Fill in the walls of the selection with a specified block, or the block in your hand.",
+            "> sel shell/sh [block] - The same as walls, but fills in a ceiling and floor too.",
+            "> sel cleararea/ca - Basically 'set air'."
         );
     }
 
     enum Action {
-        POS1("pos1", "p1"),
-        POS2("pos2", "p2"),
+        POS1("pos1", "p1", "1"),
+        POS2("pos2", "p2", "2"),
+
         CLEAR("clear", "c"),
+        UNDO("undo", "u"),
+
         SET("set", "fill", "s", "f"),
         WALLS("walls", "w"),
-        SHELL("shell", "sh"),
-        CLEARAREA("cleararea", "ca");
+        SHELL("shell", "shl"),
+        CLEARAREA("cleararea", "ca"),
+
+        EXPAND("expand", "ex"),
+        CONTRACT("contact", "ct"),
+        SHIFT("shift", "sh");
 
         private final String[] names;
 
@@ -191,6 +277,46 @@ public class SelCommand extends Command {
 
             for (Action action : Action.values()) {
                 names.addAll(asList(action.names));
+            }
+
+            return names.toArray(new String[0]);
+        }
+    }
+
+    enum TransformTarget {
+        ALL(sels -> sels, "all", "a"),
+        NEWEST(sels -> new ISelection[] {sels[0]}, "newest", "n"),
+        OLDEST(sels -> new ISelection[] {sels[sels.length - 1]}, "oldest", "o");
+
+        private final Function<ISelection[], ISelection[]> transform;
+        private final String[] names;
+
+        TransformTarget(Function<ISelection[], ISelection[]> transform, String... names) {
+            this.transform = transform;
+            this.names = names;
+        }
+
+        public ISelection[] transform(ISelection[] selections) {
+            return transform.apply(selections);
+        }
+
+        public static TransformTarget getByName(String name) {
+            for (TransformTarget target : TransformTarget.values()) {
+                for (String alias : target.names) {
+                    if (alias.equalsIgnoreCase(name)) {
+                        return target;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public static String[] getAllNames() {
+            Set<String> names = new HashSet<>();
+
+            for (TransformTarget target : TransformTarget.values()) {
+                names.addAll(asList(target.names));
             }
 
             return names.toArray(new String[0]);

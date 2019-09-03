@@ -3,12 +3,13 @@ package baritone.selection;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
+import net.minecraft.util.EnumFacing;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
 public class SelectionManager implements ISelectionManager {
-    private final Set<ISelection> selections = new LinkedHashSet<>();
+    private final LinkedList<ISelection> selections = new LinkedList<>();
     private ISelection[] selectionsArr = new ISelection[0];
 
     public SelectionManager() {
@@ -54,7 +55,60 @@ public class SelectionManager implements ISelectionManager {
     @Override
     public synchronized ISelection getOnlySelection() {
         if (selections.size() == 1) {
-            return selections.iterator().next();
+            return selections.peekFirst();
+        }
+
+        return null;
+    }
+
+    @Override
+    public ISelection getLastSelection() {
+        return selections.peekLast();
+    }
+
+    @Override
+    public synchronized ISelection expand(ISelection selection, EnumFacing direction, int blocks) {
+        for (ListIterator<ISelection> it = selections.listIterator(); it.hasNext(); ) {
+            ISelection current = it.next();
+
+            if (current == selection) {
+                it.remove();
+                it.add(current.expand(direction, blocks));
+                resetSelectionsArr();
+                return it.previous();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public synchronized ISelection contract(ISelection selection, EnumFacing direction, int blocks) {
+        for (ListIterator<ISelection> it = selections.listIterator(); it.hasNext(); ) {
+            ISelection current = it.next();
+
+            if (current == selection) {
+                it.remove();
+                it.add(current.contract(direction, blocks));
+                resetSelectionsArr();
+                return it.previous();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public synchronized ISelection shift(ISelection selection, EnumFacing direction, int blocks) {
+        for (ListIterator<ISelection> it = selections.listIterator(); it.hasNext(); ) {
+            ISelection current = it.next();
+
+            if (current == selection) {
+                it.remove();
+                it.add(current.shift(direction, blocks));
+                resetSelectionsArr();
+                return it.previous();
+            }
         }
 
         return null;

@@ -116,9 +116,9 @@ public class Selection implements ISelection {
     @Override
     public ISelection contract(EnumFacing direction, int blocks) {
         if (isPos2(direction)) {
-            return new Selection(pos1.offset(direction, -blocks), pos2);
+            return new Selection(pos1.offset(direction, blocks), pos2);
         } else {
-            return new Selection(pos1, pos2.offset(direction, -blocks));
+            return new Selection(pos1, pos2.offset(direction, blocks));
         }
     }
 
