@@ -225,16 +225,24 @@ public class SelCommand extends Command {
             "",
             "Using these selections, you can clear areas, fill them with blocks, or something else.",
             "",
+            "The expand/contract/shift commands use a kind of selector to choose which selections to target. Supported ones are a/all, n/newest, and o/oldest.",
+            "",
             "Usage:",
             "> sel pos1/p1/1 - Set position 1 to your current position.",
             "> sel pos1/p1/1 <x> <y> <z> - Set position 1 to a relative position.",
             "> sel pos2/p2/2 - Set position 2 to your current position.",
             "> sel pos2/p2/2 <x> <y> <z> - Set position 2 to a relative position.",
+            "",
             "> sel clear/c - Clear the selection.",
             "> sel undo/u - Undo the last action (setting positions, creating selections, etc.)",
-            "> sel walls/w [block] - Fill in the walls of the selection with a specified block, or the block in your hand.",
-            "> sel shell/sh [block] - The same as walls, but fills in a ceiling and floor too.",
-            "> sel cleararea/ca - Basically 'set air'."
+            "> sel set/fill/s/f [block] - Completely fill all selections with a block.",
+            "> sel walls/w [block] - Fill in the walls of the selection with a specified block.",
+            "> sel shell/shl [block] - The same as walls, but fills in a ceiling and floor too.",
+            "> sel cleararea/ca - Basically 'set air'.",
+            "",
+            "> sel expand <target> <direction> <blocks> - Expand the targets.",
+            "> sel contract <target> <direction> <blocks> - Contract the targets.",
+            "> sel shift <target> <direction> <blocks> - Shift the targets (does not resize)."
         );
     }
 
