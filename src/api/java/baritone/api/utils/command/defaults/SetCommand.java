@@ -112,7 +112,7 @@ public class SetCommand extends Command {
                         getStyle().setColor(TextFormatting.DARK_GRAY);
                     }});
                 }},
-                FORCE_COMMAND_PREFIX + "set " + arg + " " + search + " %d"
+                FORCE_COMMAND_PREFIX + "set " + arg + " " + search
             );
 
             return;

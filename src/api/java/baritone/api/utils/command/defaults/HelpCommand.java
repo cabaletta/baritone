@@ -86,7 +86,7 @@ public class HelpCommand extends Command {
                         }});
                     }};
                 },
-                FORCE_COMMAND_PREFIX + "help %d"
+                FORCE_COMMAND_PREFIX + "help"
             );
         } else {
             String commandName = args.getString().toLowerCase();
