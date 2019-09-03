@@ -1,13 +1,15 @@
 package baritone.api.schematic;
 
+import baritone.api.IBaritone;
 import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 
 public class FillBomSchematic extends AbstractSchematic {
     private final BlockOptionalMeta bom;
 
-    public FillBomSchematic(int x, int y, int z, BlockOptionalMeta bom) {
-        super(x, y, z);
+    public FillBomSchematic(IBaritone baritone, int x, int y, int z, BlockOptionalMeta bom) {
+        super(baritone, x, y, z);
         this.bom = bom;
     }
 
@@ -19,8 +21,16 @@ public class FillBomSchematic extends AbstractSchematic {
     public IBlockState desiredState(int x, int y, int z, IBlockState current) {
         if (bom.matches(current)) {
             return current;
+        } else if (current.getBlock() != Blocks.AIR) {
+            return Blocks.AIR.getDefaultState();
         }
 
-        return bom.getAnyBlockState();
+        for (IBlockState placeable : approxPlaceable()) {
+            if (bom.matches(placeable)) {
+                return placeable;
+            }
+        }
+
+        throw new IllegalStateException("Couldn't find desired state");
     }
 }

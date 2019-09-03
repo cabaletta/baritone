@@ -1,11 +1,12 @@
 package baritone.api.schematic;
 
+import baritone.api.IBaritone;
 import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 
 public class WallsSchematic extends MaskSchematic {
-    public WallsSchematic(ISchematic schematic) {
-        super(schematic);
+    public WallsSchematic(IBaritone baritone, ISchematic schematic) {
+        super(baritone, schematic);
     }
 
     protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {

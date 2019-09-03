@@ -1,13 +1,14 @@
 package baritone.api.schematic;
 
+import baritone.api.IBaritone;
 import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 
 public abstract class MaskSchematic extends AbstractSchematic {
     private final ISchematic schematic;
 
-    public MaskSchematic(ISchematic schematic) {
-        super(schematic.widthX(), schematic.heightY(), schematic.lengthZ());
+    public MaskSchematic(IBaritone baritone, ISchematic schematic) {
+        super(baritone, schematic.widthX(), schematic.heightY(), schematic.lengthZ());
         this.schematic = schematic;
     }
 

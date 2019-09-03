@@ -522,7 +522,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     int blockX = x + origin.getX();
                     int blockY = y + origin.getY();
                     int blockZ = z + origin.getZ();
-                    IBlockState current = bcc.bsi.get0(x, y, z);
+                    IBlockState current = bcc.bsi.get0(blockX, blockY, blockZ);
                     if (!schematic.inSchematic(x, y, z, current)) {
                         continue;
                     }

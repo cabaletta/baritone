@@ -21,12 +21,14 @@ import baritone.api.Settings;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.schematic.CompositeSchematic;
 import baritone.api.schematic.FillBomSchematic;
+import baritone.api.schematic.ReplaceSchematic;
 import baritone.api.schematic.ShellSchematic;
 import baritone.api.schematic.WallsSchematic;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
+import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.IRenderer;
 import baritone.api.utils.ISchematic;
 import baritone.api.utils.command.Command;
@@ -43,6 +45,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3i;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -104,11 +107,26 @@ public class SelCommand extends Command {
                     logDirect("Undid pos2");
                 }
             }
-        } else if (action == Action.SET || action == Action.WALLS || action == Action.SHELL || action == Action.CLEARAREA) {
+        } else if (action == Action.SET || action == Action.WALLS || action == Action.SHELL || action == Action.CLEARAREA || action == Action.REPLACE) {
             BlockOptionalMeta type = action == Action.CLEARAREA
                 ? new BlockOptionalMeta(Blocks.AIR)
                 : args.getDatatypeFor(ForBlockOptionalMeta.class);
-            args.requireMax(0);
+            BlockOptionalMetaLookup replaces = null;
+
+            if (action == Action.REPLACE) {
+                args.requireMin(1);
+
+                List<BlockOptionalMeta> replacesList = new ArrayList<>();
+
+                while (args.has()) {
+                    replacesList.add(args.getDatatypeFor(ForBlockOptionalMeta.class));
+                }
+
+                replaces = new BlockOptionalMetaLookup(replacesList.toArray(new BlockOptionalMeta[0]));
+            } else {
+                args.requireMax(0);
+            }
+
             ISelection[] selections = manager.getSelections();
 
             if (selections.length == 0) {
@@ -116,7 +134,7 @@ public class SelCommand extends Command {
             }
 
             BetterBlockPos origin = selections[0].min();
-            CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
+            CompositeSchematic composite = new CompositeSchematic(baritone, 0, 0, 0);
 
             for (ISelection selection : selections) {
                 BetterBlockPos min = selection.min();
@@ -131,12 +149,14 @@ public class SelCommand extends Command {
                 Vec3i size = selection.size();
                 BetterBlockPos min = selection.min();
 
-                ISchematic schematic = new FillBomSchematic(size.getX(), size.getY(), size.getZ(), type);
+                ISchematic schematic = new FillBomSchematic(baritone, size.getX(), size.getY(), size.getZ(), type);
 
                 if (action == Action.WALLS) {
-                    schematic = new WallsSchematic(schematic);
+                    schematic = new WallsSchematic(baritone, schematic);
                 } else if (action == Action.SHELL) {
-                    schematic = new ShellSchematic(schematic);
+                    schematic = new ShellSchematic(baritone, schematic);
+                } else if (action == Action.REPLACE) {
+                    schematic = new ReplaceSchematic(baritone, schematic, replaces);
                 }
 
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
@@ -193,8 +213,12 @@ public class SelCommand extends Command {
                     if (args.hasAtMost(3)) {
                         return args.tabCompleteDatatype(RelativeBlockPos.class);
                     }
-                } else if (action == Action.SET || action == Action.WALLS || action == Action.CLEARAREA) {
-                    if (args.hasExactlyOne()) {
+                } else if (action == Action.SET || action == Action.WALLS || action == Action.CLEARAREA || action == Action.REPLACE) {
+                    if (args.hasExactlyOne() || action == Action.REPLACE) {
+                        while (args.has(2)) {
+                            args.get();
+                        }
+
                         return args.tabCompleteDatatype(ForBlockOptionalMeta.class);
                     }
                 } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
@@ -239,6 +263,7 @@ public class SelCommand extends Command {
             "> sel walls/w [block] - Fill in the walls of the selection with a specified block.",
             "> sel shell/shl [block] - The same as walls, but fills in a ceiling and floor too.",
             "> sel cleararea/ca - Basically 'set air'.",
+            "> sel replace/r <place> <break...> - Replaces, with 'place', all blocks listed after it.",
             "",
             "> sel expand <target> <direction> <blocks> - Expand the targets.",
             "> sel contract <target> <direction> <blocks> - Contract the targets.",
@@ -257,6 +282,7 @@ public class SelCommand extends Command {
         WALLS("walls", "w"),
         SHELL("shell", "shl"),
         CLEARAREA("cleararea", "ca"),
+        REPLACE("replace", "r"),
 
         EXPAND("expand", "ex"),
         CONTRACT("contract", "ct"),
