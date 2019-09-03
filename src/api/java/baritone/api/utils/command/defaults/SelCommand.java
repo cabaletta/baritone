@@ -259,7 +259,7 @@ public class SelCommand extends Command {
         CLEARAREA("cleararea", "ca"),
 
         EXPAND("expand", "ex"),
-        CONTRACT("contact", "ct"),
+        CONTRACT("contract", "ct"),
         SHIFT("shift", "sh");
 
         private final String[] names;
