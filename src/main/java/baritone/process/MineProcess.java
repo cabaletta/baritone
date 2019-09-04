@@ -19,6 +19,7 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.*;
+import baritone.api.cache.IWaypoint;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -91,8 +92,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                }
                List<Item> miningDrops = new ArrayList<Item>();
                for (Block block : mining) {
-                   for (Item drop : drops(block))
-                       miningDrops.add(drop);
+
+                       miningDrops.add(block.getItemDropped(mining.get(0).getDefaultState(), new Random(), 0));
                }
 
                if (miningDrops.contains(stack.getItem()) && stack.getMaxStackSize() != stack.getCount()) {
@@ -102,19 +103,15 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
            }
            if (inventoryFull && !DropsHaveSpace.isEmpty()) {
                inventoryFull = false;
-               List<Block> deleteBlocks = new ArrayList<Block>();
                for (Block block : mining) {
-                   boolean drophasspace = false;
-                   for (Item drop : drops(block)) {
-                       if (DropsHaveSpace.contains(drop)) {
-                           drophasspace = true;
+
+
+                       if (!DropsHaveSpace.contains(block.getItemDropped(mining.get(0).getDefaultState(), new Random(), 0))) {
+                           mining.remove(block);
                        }
-                   }
-                   if (!drophasspace) {
-                       deleteBlocks.add(block);
-                   }
+
                }
-               mining.removeAll(deleteBlocks);
+
            }
 
            if (inventoryFull) {
