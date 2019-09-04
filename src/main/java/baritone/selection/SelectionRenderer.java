@@ -17,7 +17,7 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
     public static void renderSelections(ISelection[] selections) {
         float opacity = settings.selectionOpacity.value;
         boolean ignoreDepth = settings.renderSelectionIgnoreDepth.value;
-        float lineWidth = settings.selectionRenderLineWidthPixels.value;
+        float lineWidth = settings.selectionLineWidth.value;
 
         if (!settings.renderSelection.value) {
             return;
@@ -26,26 +26,21 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
         IRenderer.startLines(settings.colorSelection.value, opacity, lineWidth, ignoreDepth);
 
         for (ISelection selection : selections) {
-            IRenderer.drawAABB(selection.aabb());
+            IRenderer.drawAABB(selection.aabb(), .005f);
         }
 
-        IRenderer.endLines(ignoreDepth);
+        if (settings.renderSelectionCorners.value) {
+            IRenderer.glColor(settings.colorSelectionPos1.value, opacity);
 
-        if (!settings.renderSelectionCorners.value) {
-            return;
-        }
+            for (ISelection selection : selections) {
+                IRenderer.drawAABB(new AxisAlignedBB(selection.pos1(), selection.pos1().add(1, 1, 1)));
+            }
 
-        IRenderer.startLines(settings.colorSelectionPos1.value, opacity, lineWidth, ignoreDepth);
+            IRenderer.glColor(settings.colorSelectionPos2.value, opacity);
 
-        for (ISelection selection : selections) {
-            IRenderer.drawAABB(new AxisAlignedBB(selection.pos1(), selection.pos1().add(1, 1, 1)), -.01f);
-        }
-
-        IRenderer.endLines(ignoreDepth);
-        IRenderer.startLines(settings.colorSelectionPos2.value, opacity, lineWidth, ignoreDepth);
-
-        for (ISelection selection : selections) {
-            IRenderer.drawAABB(new AxisAlignedBB(selection.pos2(), selection.pos2().add(1, 1, 1)), -.01f);
+            for (ISelection selection : selections) {
+                IRenderer.drawAABB(new AxisAlignedBB(selection.pos2(), selection.pos2().add(1, 1, 1)));
+            }
         }
 
         IRenderer.endLines(ignoreDepth);

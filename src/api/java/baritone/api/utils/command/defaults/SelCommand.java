@@ -365,11 +365,11 @@ public class SelCommand extends Command {
 
         Color color = settings.colorSelectionPos1.value;
         float opacity = settings.selectionOpacity.value;
-        float lineWidth = settings.selectionRenderLineWidthPixels.value;
+        float lineWidth = settings.selectionLineWidth.value;
         boolean ignoreDepth = settings.renderSelectionIgnoreDepth.value;
 
         IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
-        IRenderer.drawAABB(new AxisAlignedBB(pos1, pos1.add(1, 1, 1)), -.01f);
+        IRenderer.drawAABB(new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
         IRenderer.endLines(ignoreDepth);
     }
 }

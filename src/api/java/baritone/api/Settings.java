@@ -529,21 +529,6 @@ public final class Settings {
     public final Setting<Boolean> renderPathIgnoreDepth = new Setting<>(true);
 
     /**
-     * Ignore depth when rendering selections
-     */
-    public final Setting<Boolean> renderSelectionIgnoreDepth = new Setting<>(true);
-
-    /**
-     * Render selections
-     */
-    public final Setting<Boolean> renderSelection = new Setting<>(true);
-
-    /**
-     * Render selection corners
-     */
-    public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
-
-    /**
      * Line width of the path when rendered, in pixels
      */
     public final Setting<Float> pathRenderLineWidthPixels = new Setting<>(5F);
@@ -552,11 +537,6 @@ public final class Settings {
      * Line width of the goal when rendered, in pixels
      */
     public final Setting<Float> goalRenderLineWidthPixels = new Setting<>(3F);
-
-    /**
-     * Line width of the goal when rendered, in pixels
-     */
-    public final Setting<Float> selectionRenderLineWidthPixels = new Setting<>(3F);
 
     /**
      * Start fading out the path at 20 movements ahead, and stop rendering it entirely 30 movements ahead.
@@ -958,22 +938,42 @@ public final class Settings {
     /**
      * The color of all selections
      */
-    public final Setting<Color> colorSelection = new Setting<>(Color.GREEN);
+    public final Setting<Color> colorSelection = new Setting<>(Color.CYAN);
 
     /**
      * The color of the selection pos 1
      */
-    public final Setting<Color> colorSelectionPos1 = new Setting<>(Color.PINK);
+    public final Setting<Color> colorSelectionPos1 = new Setting<>(Color.BLACK);
 
     /**
      * The color of the selection pos 2
      */
-    public final Setting<Color> colorSelectionPos2 = new Setting<>(Color.PINK);
+    public final Setting<Color> colorSelectionPos2 = new Setting<>(Color.ORANGE);
 
     /**
-     * The opacity of the selection. The default (0.4) is what's used for goals and such
+     * The opacity of the selection. 0 is completely transparent, 1 is completely opaque
      */
-    public final Setting<Float> selectionOpacity = new Setting<>(.4f);
+    public final Setting<Float> selectionOpacity = new Setting<>(.5f);
+
+    /**
+     * Line width of the goal when rendered, in pixels
+     */
+    public final Setting<Float> selectionLineWidth = new Setting<>(1F);
+
+    /**
+     * Render selections
+     */
+    public final Setting<Boolean> renderSelection = new Setting<>(true);
+
+    /**
+     * Ignore depth when rendering selections
+     */
+    public final Setting<Boolean> renderSelectionIgnoreDepth = new Setting<>(true);
+
+    /**
+     * Render selection corners
+     */
+    public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
 
     /**

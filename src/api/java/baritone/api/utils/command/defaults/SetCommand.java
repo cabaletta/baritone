@@ -61,30 +61,24 @@ public class SetCommand extends Command {
 
         boolean viewModified = asList("m", "mod", "modified").contains(arg);
         boolean viewAll = asList("all", "l", "list").contains(arg);
-        boolean paginate = viewModified | viewAll;
+        boolean paginate = viewModified || viewAll;
         if (paginate) {
             String search = args.has() && args.peekAsOrNull(Integer.class) == null ? args.getString() : "";
             args.requireMax(1);
 
             List<? extends Settings.Setting> toPaginate =
-                viewModified
-                    ? SettingsUtil.modifiedSettings(settings)
-                    : settings.allSettings.stream()
+                (viewModified ? SettingsUtil.modifiedSettings(settings) : settings.allSettings).stream()
                     .filter(s -> !s.getName().equals("logger"))
                     .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
+                    .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
                     .collect(Collectors.toCollection(ArrayList<Settings.Setting>::new));
-
-            toPaginate.sort((setting1, setting2) -> String.CASE_INSENSITIVE_ORDER.compare(
-                setting1.getName(),
-                setting2.getName()
-            ));
 
             Paginator.paginate(
                 args,
                 new Paginator<>(toPaginate),
                 () -> logDirect(
                     !search.isEmpty()
-                        ? String.format("All settings containing the string '%s':", search)
+                        ? String.format("All %ssettings containing the string '%s':", viewModified ? "modified " : "", search)
                         : String.format("All %ssettings:", viewModified ? "modified " : "")
                 ),
                 setting -> new TextComponentString(setting.getName()) {{

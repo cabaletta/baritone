@@ -25,12 +25,16 @@ public interface IRenderer {
     IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
     Settings settings = BaritoneAPI.getSettings();
 
+    static void glColor(Color color, float alpha) {
+        float[] colorComponents = color.getColorComponents(null);
+        GlStateManager.color(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
+    }
+
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
         GlStateManager.enableBlend();
         GlStateManager.disableLighting();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-        float[] colorComponents = color.getColorComponents(null);
-        GlStateManager.color(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
+        glColor(color, alpha);
         GlStateManager.glLineWidth(lineWidth);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
@@ -55,10 +59,8 @@ public interface IRenderer {
         GlStateManager.disableBlend();
     }
 
-    static void drawAABB(AxisAlignedBB aabb, float expand) {
-        AxisAlignedBB toDraw = aabb
-            .offset(-renderManager.viewerPosX, -renderManager.viewerPosY, -renderManager.viewerPosZ)
-            .grow(expand, expand, expand);
+    static void drawAABB(AxisAlignedBB aabb) {
+        AxisAlignedBB toDraw = aabb.offset(-renderManager.viewerPosX, -renderManager.viewerPosY, -renderManager.viewerPosZ);
 
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
         // bottom
@@ -91,7 +93,7 @@ public interface IRenderer {
         tessellator.draw();
     }
 
-    static void drawAABB(AxisAlignedBB aabb) {
-        drawAABB(aabb, 0.002f);
+    static void drawAABB(AxisAlignedBB aabb, float expand) {
+        drawAABB(aabb.grow(expand, expand, expand));
     }
 }

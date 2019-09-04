@@ -35,7 +35,6 @@ import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
@@ -162,8 +161,7 @@ public final class PathRenderer implements IRenderer {
                     alpha = 0.4F * (1.0F - (float) (i - fadeStart) / (float) (fadeEnd - fadeStart));
                 }
 
-                float[] components = color.getComponents(null);
-                GlStateManager.color(components[0], components[1], components[2], alpha);
+                IRenderer.glColor(color, alpha);
             }
 
             drawLine(start.x, start.y, start.z, end.x, end.y, end.z);
@@ -207,7 +205,7 @@ public final class PathRenderer implements IRenderer {
                 toDraw = state.getSelectedBoundingBox(player.world, pos);
             }
 
-            IRenderer.drawAABB(toDraw);
+            IRenderer.drawAABB(toDraw, .002f);
         });
 
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);
