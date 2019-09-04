@@ -31,6 +31,6 @@ public class FillBomSchematic extends AbstractSchematic {
             }
         }
 
-        throw new IllegalStateException("Couldn't find desired state");
+        return bom.getAnyBlockState();
     }
 }

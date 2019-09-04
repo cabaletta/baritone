@@ -322,4 +322,12 @@ public final class BlockOptionalMeta {
         //noinspection deprecation
         return Block.getBlockFromItem(stack.getItem()).getStateFromMeta(stack.getMetadata());
     }
+
+    public IBlockState getAnyBlockState() {
+        if (blockstates.size() > 0) {
+            return blockstates.iterator().next();
+        }
+
+        return null;
+    }
 }
