@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  * @author leijurv
  */
 public final class Settings {
-
+   
     /**
      * Allow Baritone to break blocks
      */
@@ -776,6 +776,16 @@ public final class Settings {
      * couldn't. If you don't want it to look like you're X-Raying, turn this on
      */
     public final Setting<Boolean> legitMine = new Setting<>(false);
+    
+    /**
+     *  Tells Baritone to go home after mining
+     */
+    public final Setting<Boolean> miningGoHome = new Setting<>(true);
+    
+    /**
+     *  Tells Baritone to check if there is enough Space in the Inventory, while mining
+     */
+    public final Setting<Boolean> miningCheckInventory = new Setting<>(true);
 
     /**
      * What Y level to go to for legit strip mining
