@@ -319,8 +319,8 @@ public class SelCommand extends Command {
 
     enum TransformTarget {
         ALL(sels -> sels, "all", "a"),
-        NEWEST(sels -> new ISelection[] {sels[0]}, "newest", "n"),
-        OLDEST(sels -> new ISelection[] {sels[sels.length - 1]}, "oldest", "o");
+        NEWEST(sels -> new ISelection[] {sels[sels.length - 1]}, "newest", "n"),
+        OLDEST(sels -> new ISelection[] {sels[0]}, "oldest", "o");
 
         private final Function<ISelection[], ISelection[]> transform;
         private final String[] names;
