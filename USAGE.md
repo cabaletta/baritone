@@ -24,7 +24,7 @@ Some common examples:
 - `goal clear` to clear the goal
 - `cancel` or `stop` to stop everything
 - `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
-- `mine diamond_ore` to mine diamond ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.) An amount of blocks can also be specified, for example, `mine diamond_ore 64`.
+- `mine diamond_ore iron_ore` to mine diamond ore or iron ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.) An amount of blocks can also be specified, for example, `mine diamond_ore 64`.
 - `click` to click your destination on the screen. Right click path to on top of the block, left click to path into it (either at foot level or eye level), and left click and drag to clear all blocks from an area.
 - `follow playerName` to follow a player. `followplayers` to follow any players in range (combine with Kill Aura for a fun time). `followentities` to follow any entities. `followentity pig` to follow entities of a specific type.
 - `save waypointName` to save a waypoint. `goto waypointName` to go to it.
