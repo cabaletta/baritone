@@ -40,6 +40,14 @@ import java.util.function.Consumer;
  * @author leijurv
  */
 public final class Settings {
+    /**
+     *  Tells Baritone to go home after mining
+     */
+    public final Setting<Boolean> miningGoHome = new Setting<>(true);
+    /**
+     *  Tells Baritone to check if there is enough Space in the Inventory, while mining
+     */
+    public final Setting<Boolean> miningCheckInventory = new Setting<>(true);
 
     /**
      * Allow Baritone to break blocks
