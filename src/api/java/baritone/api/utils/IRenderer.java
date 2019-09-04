@@ -21,15 +21,16 @@ import static org.lwjgl.opengl.GL11.GL_ZERO;
 public interface IRenderer {
     Tessellator tessellator = Tessellator.getInstance();
     BufferBuilder buffer = tessellator.getBuffer();
+    RenderManager renderManager = Helper.mc.getRenderManager();
     IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
     Settings settings = BaritoneAPI.getSettings();
 
-    static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
+    static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
         GlStateManager.enableBlend();
         GlStateManager.disableLighting();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         float[] colorComponents = color.getColorComponents(null);
-        GlStateManager.color(colorComponents[0], colorComponents[1], colorComponents[2], 0.4f);
+        GlStateManager.color(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
         GlStateManager.glLineWidth(lineWidth);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
@@ -37,6 +38,10 @@ public interface IRenderer {
         if (ignoreDepth) {
             GlStateManager.disableDepth();
         }
+    }
+
+    static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
+        startLines(color, .4f, lineWidth, ignoreDepth);
     }
 
     static void endLines(boolean ignoredDepth) {
@@ -50,10 +55,10 @@ public interface IRenderer {
         GlStateManager.disableBlend();
     }
 
-    static void drawAABB(AxisAlignedBB aabb) {
-        float expand = 0.002F;
-        RenderManager renderManager = Helper.mc.getRenderManager();
-        AxisAlignedBB toDraw = aabb.expand(expand, expand, expand).offset(-renderManager.viewerPosX, -renderManager.viewerPosY, -renderManager.viewerPosZ);
+    static void drawAABB(AxisAlignedBB aabb, float expand) {
+        AxisAlignedBB toDraw = aabb
+            .offset(-renderManager.viewerPosX, -renderManager.viewerPosY, -renderManager.viewerPosZ)
+            .grow(expand, expand, expand);
 
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
         // bottom
@@ -84,5 +89,9 @@ public interface IRenderer {
         buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
         buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
         tessellator.draw();
+    }
+
+    static void drawAABB(AxisAlignedBB aabb) {
+        drawAABB(aabb, 0.002f);
     }
 }

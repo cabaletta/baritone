@@ -970,6 +970,11 @@ public final class Settings {
      */
     public final Setting<Color> colorSelectionPos2 = new Setting<>(Color.PINK);
 
+    /**
+     * The opacity of the selection. The default (0.4) is what's used for goals and such
+     */
+    public final Setting<Float> selectionOpacity = new Setting<>(.4f);
+
 
     /**
      * A map of lowercase setting field names to their respective setting

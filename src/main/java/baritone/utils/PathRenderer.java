@@ -175,7 +175,6 @@ public final class PathRenderer implements IRenderer {
     }
 
     public static void drawLine(double x1, double y1, double z1, double x2, double y2, double z2) {
-        RenderManager renderManager = Helper.mc.getRenderManager();
         double vpX = renderManager.viewerPosX;
         double vpY = renderManager.viewerPosY;
         double vpZ = renderManager.viewerPosZ;
@@ -215,7 +214,6 @@ public final class PathRenderer implements IRenderer {
     }
 
     public static void drawDankLitGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
-        RenderManager renderManager = Helper.mc.getRenderManager();
         double renderPosX = renderManager.viewerPosX;
         double renderPosY = renderManager.viewerPosY;
         double renderPosZ = renderManager.viewerPosZ;

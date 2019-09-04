@@ -15,6 +15,7 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
     }
 
     public static void renderSelections(ISelection[] selections) {
+        float opacity = settings.selectionOpacity.value;
         boolean ignoreDepth = settings.renderSelectionIgnoreDepth.value;
         float lineWidth = settings.selectionRenderLineWidthPixels.value;
 
@@ -22,7 +23,7 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
             return;
         }
 
-        IRenderer.startLines(settings.colorSelection.value, lineWidth, ignoreDepth);
+        IRenderer.startLines(settings.colorSelection.value, opacity, lineWidth, ignoreDepth);
 
         for (ISelection selection : selections) {
             IRenderer.drawAABB(selection.aabb());
@@ -34,17 +35,17 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
             return;
         }
 
-        IRenderer.startLines(settings.colorSelectionPos1.value, lineWidth, ignoreDepth);
+        IRenderer.startLines(settings.colorSelectionPos1.value, opacity, lineWidth, ignoreDepth);
 
         for (ISelection selection : selections) {
-            IRenderer.drawAABB(new AxisAlignedBB(selection.pos1(), selection.pos1().add(1, 1, 1)));
+            IRenderer.drawAABB(new AxisAlignedBB(selection.pos1(), selection.pos1().add(1, 1, 1)), -.01f);
         }
 
         IRenderer.endLines(ignoreDepth);
-        IRenderer.startLines(settings.colorSelectionPos2.value, lineWidth, ignoreDepth);
+        IRenderer.startLines(settings.colorSelectionPos2.value, opacity, lineWidth, ignoreDepth);
 
         for (ISelection selection : selections) {
-            IRenderer.drawAABB(new AxisAlignedBB(selection.pos2(), selection.pos2().add(1, 1, 1)));
+            IRenderer.drawAABB(new AxisAlignedBB(selection.pos2(), selection.pos2().add(1, 1, 1)), -.01f);
         }
 
         IRenderer.endLines(ignoreDepth);
