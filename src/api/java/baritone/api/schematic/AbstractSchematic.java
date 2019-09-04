@@ -6,6 +6,7 @@ import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -54,17 +55,20 @@ public abstract class AbstractSchematic implements ISchematic {
         // 27 + 9
         for (int i = 0; i < 36; i++) {
             ItemStack stack = inventory.get(i);
+            Item item = stack.getItem();
 
             if (!stack.isEmpty() && stack.getItem() instanceof ItemBlock) {
+                ItemBlock itemBlock = (ItemBlock) item;
+
                 // <toxic cloud>
-                placeable.add(((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(
+                placeable.add(itemBlock.getBlock().getStateForPlacement(
                     ctx.world(),
                     ctx.playerFeet(),
                     EnumFacing.UP,
                     (float) player.posX,
                     (float) player.posY,
                     (float) player.posZ,
-                    stack.getItem().getMetadata(stack.getMetadata()),
+                    itemBlock.getMetadata(stack.getMetadata()),
                     player
                 ));
                 // </toxic cloud>
