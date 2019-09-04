@@ -78,6 +78,56 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        if (Baritone.settings().miningCheckInventory.value) {
+           boolean inventoryFull = true;
+           NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
+           List<Item> DropsHaveSpace = new ArrayList<Item>();
+           for (ItemStack stack:invy) {
+
+               if (stack.isEmpty()) {
+                   inventoryFull = false;
+                   break;
+               }
+               List<Item> miningDrops = new ArrayList<Item>();
+               for (Block block : mining) {
+                   for (Item drop : drops(block))
+                       miningDrops.add(drop);
+               }
+
+               if (miningDrops.contains(stack.getItem()) && stack.getMaxStackSize() != stack.getCount()) {
+                   DropsHaveSpace.add(stack.getItem());
+               }
+
+           }
+           if (inventoryFull && !DropsHaveSpace.isEmpty()) {
+               inventoryFull = false;
+               List<Block> deleteBlocks = new ArrayList<Block>();
+               for (Block block : mining) {
+                   boolean drophasspace = false;
+                   for (Item drop : drops(block)) {
+                       if (DropsHaveSpace.contains(drop)) {
+                           drophasspace = true;
+                       }
+                   }
+                   if (!drophasspace) {
+                       deleteBlocks.add(block);
+                   }
+               }
+               mining.removeAll(deleteBlocks);
+           }
+
+           if (inventoryFull) {
+               logDirect("Cancel Mining Inventory Full");
+               if (Baritone.settings().miningGoHome.value) {
+                   Goal goal = new GoalBlock(baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME).getLocation());
+                   baritone.getCustomGoalProcess().setGoalAndPath(goal);
+               }
+               cancel();
+               return null;
+
+           }
+       }
+        
         if (desiredQuantity > 0) {
             Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
             int curr = ctx.player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
@@ -95,12 +145,20 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 knownOreLocations.removeIf(blacklist::contains);
             } else {
                 logDirect("Unable to find any path to " + mining + ", canceling Mine");
+                if (Baritone.settings().miningGoHome.value) {
+                   Goal goal = new GoalBlock(baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME).getLocation());
+                   baritone.getCustomGoalProcess().setGoalAndPath(goal);
+               }
                 cancel();
                 return null;
             }
         }
         if (!Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
+            if (Baritone.settings().miningGoHome.value) {
+                   Goal goal = new GoalBlock(baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME).getLocation());
+                   baritone.getCustomGoalProcess().setGoalAndPath(goal);
+               }
             cancel();
             return null;
         }
@@ -138,6 +196,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (command == null) {
             // none in range
             // maybe say something in chat? (ahem impact)
+            if (Baritone.settings().miningGoHome.value) {
+                   Goal goal = new GoalBlock(baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME).getLocation());
+                   baritone.getCustomGoalProcess().setGoalAndPath(goal);
+               }
             cancel();
             return null;
         }
@@ -204,6 +266,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         locs.addAll(droppedItemsScan(mining, ctx.world()));
         if (locs.isEmpty()) {
             logDirect("No locations for " + mining + " known, cancelling");
+            if (Baritone.settings().miningGoHome.value) {
+                   Goal goal = new GoalBlock(baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME).getLocation());
+                   baritone.getCustomGoalProcess().setGoalAndPath(goal);
+               }
             cancel();
             return;
         }
