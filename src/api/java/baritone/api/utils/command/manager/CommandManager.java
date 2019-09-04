@@ -19,7 +19,6 @@ package baritone.api.utils.command.manager;
 
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argument.CommandArgument;
-import baritone.api.utils.command.defaults.DefaultCommands;
 import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.utils.command.registry.Registry;
@@ -34,10 +33,6 @@ import static java.util.Objects.nonNull;
 
 public class CommandManager {
     public static final Registry<Command> REGISTRY = new Registry<>();
-
-    static {
-        DefaultCommands.commands.forEach(REGISTRY::register);
-    }
 
     /**
      * @param name The command name to search for.

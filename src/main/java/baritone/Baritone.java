@@ -24,12 +24,14 @@ import baritone.api.event.listener.IEventBus;
 import baritone.api.utils.command.BaritoneChatControl;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.command.manager.CommandManager;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
 import baritone.selection.SelectionManager;
 import baritone.utils.*;
+import baritone.utils.command.defaults.DefaultCommands;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
@@ -111,6 +113,8 @@ public class Baritone implements IBaritone {
             memoryBehavior = new MemoryBehavior(this);
             inventoryBehavior = new InventoryBehavior(this);
             inputOverrideHandler = new InputOverrideHandler(this);
+
+            DefaultCommands.commands.forEach(CommandManager.REGISTRY::register);
             new BaritoneChatControl(this);
         }
 

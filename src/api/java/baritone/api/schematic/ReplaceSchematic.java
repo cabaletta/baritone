@@ -29,7 +29,7 @@ public class ReplaceSchematic extends MaskSchematic {
     public ReplaceSchematic(IBaritone baritone, ISchematic schematic, BlockOptionalMetaLookup filter) {
         super(baritone, schematic);
         this.filter = filter;
-        this.cache = new boolean[lengthZ()][heightY()][widthX()];
+        this.cache = new boolean[widthX()][heightY()][lengthZ()];
     }
 
     protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {
