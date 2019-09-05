@@ -116,14 +116,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
            if (inventoryFull) {
                logDirect("Cancel Mining Inventory Full");
-               if (Baritone.settings().miningGoHome.value) {
-                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
-                    if (waypoint != null) {
-                        Goal goal = new GoalBlock(waypoint.getLocation());
-                        baritone.getCustomGoalProcess().setGoalAndPath(goal);
-                    } else {
-                        logDirect("No recent waypoint found, can't return home");
-                    }
+               if (Baritone.settings().miningGoHome.value){
+                   returnhome();
                }
                cancel();
                return null;
@@ -149,13 +143,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             } else {
                 logDirect("Unable to find any path to " + mining + ", canceling Mine");
                 if (Baritone.settings().miningGoHome.value) {
-                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
-                    if (waypoint != null) {
-                        Goal goal = new GoalBlock(waypoint.getLocation());
-                        baritone.getCustomGoalProcess().setGoalAndPath(goal);
-                    } else {
-                        logDirect("No recent waypoint found, can't return home");
-                    }
+                    returnhome();
                }
                 cancel();
                 return null;
@@ -164,13 +152,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (!Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
             if (Baritone.settings().miningGoHome.value) {
-                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
-                    if (waypoint != null) {
-                        Goal goal = new GoalBlock(waypoint.getLocation());
-                        baritone.getCustomGoalProcess().setGoalAndPath(goal);
-                    } else {
-                        logDirect("No recent waypoint found, can't return home");
-                    }
+                    returnhome();
                }
             cancel();
             return null;
@@ -210,13 +192,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             // none in range
             // maybe say something in chat? (ahem impact)
             if (Baritone.settings().miningGoHome.value) {
-                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
-                    if (waypoint != null) {
-                        Goal goal = new GoalBlock(waypoint.getLocation());
-                        baritone.getCustomGoalProcess().setGoalAndPath(goal);
-                    } else {
-                        logDirect("No recent waypoint found, can't return home");
-                    }
+                    returnhome();
                }
             cancel();
             return null;
@@ -285,13 +261,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (locs.isEmpty()) {
             logDirect("No locations for " + mining + " known, cancelling");
             if (Baritone.settings().miningGoHome.value) {
-                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
-                    if (waypoint != null) {
-                        Goal goal = new GoalBlock(waypoint.getLocation());
-                        baritone.getCustomGoalProcess().setGoalAndPath(goal);
-                    } else {
-                        logDirect("No recent waypoint found, can't return home");
-                    }
+                    returnhome();
                }
             cancel();
             return;
@@ -501,5 +471,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (mining != null) {
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
+    }
+
+    private void returnhome(){
+        IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
+        if (waypoint != null) {
+            Goal goal = new GoalBlock(waypoint.getLocation());
+            baritone.getCustomGoalProcess().setGoalAndPath(goal);
+        } else {
+            logDirect("No recent waypoint found, can't return home");
+        }
+
     }
 }
