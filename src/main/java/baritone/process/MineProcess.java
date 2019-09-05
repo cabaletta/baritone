@@ -152,8 +152,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (!Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
             if (Baritone.settings().miningGoHome.value) {
-                    returnhome();
-               }
+                returnhome();
+            }
             cancel();
             return null;
         }
@@ -192,8 +192,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             // none in range
             // maybe say something in chat? (ahem impact)
             if (Baritone.settings().miningGoHome.value) {
-                    returnhome();
-               }
+                returnhome();
+            }
             cancel();
             return null;
         }
