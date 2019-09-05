@@ -104,11 +104,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
            if (inventoryFull && !DropsHaveSpace.isEmpty()) {
                inventoryFull = false;
                for (Block block : mining) {
-
-
-                       if (!DropsHaveSpace.contains(block.getItemDropped(mining.get(0).getDefaultState(), new Random(), 0))) {
+                   if (!DropsHaveSpace.contains(block.getItemDropped(mining.get(0).getDefaultState(), new Random(), 0))) {
                            mining.remove(block);
-                       }
+                   }
 
                }
 
