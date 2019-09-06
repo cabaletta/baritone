@@ -19,7 +19,7 @@
 ![Lines of Code](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
 [![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
 [![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
-[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.8%20/%20v1.3.4%20/%20v1.4.1-brightgreen.svg)](https://impactdevelopment.github.io/)
+[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.8%20/%20v1.3.4%20/%20v1.4.1-brightgreen.svg)](https://impactclient.net/)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg)](https://github.com/fr1kin/ForgeHax/)
 [![Aristois add-on integration](https://img.shields.io/badge/Aristois%20add--on%20integration-v1.3.4%20/%20v1.4.1-green.svg)](https://gitlab.com/emc-mods-indrit/baritone_api)
 [![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-master%3F-green.svg)](https://wweclient.com/)
@@ -29,9 +29,9 @@
 
 A Minecraft pathfinder bot. 
 
-Baritone is the pathfinding system used in [Impact](https://impactdevelopment.github.io/) since 4.4. There's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Baritone's integration into Impact. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
+Baritone is the pathfinding system used in [Impact](https://impactclient.net/) since 4.4. There's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Baritone's integration into Impact. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
 
-The easiest way to install Baritone is to install [Impact](https://impactdevelopment.github.io/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the v1.2.* forge api jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+The easiest way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the v1.2.* forge api jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
 
 For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1). Or [with optifine](https://github.com/cabaletta/baritone/issues/797).
 
