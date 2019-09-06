@@ -80,7 +80,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        if (Baritone.settings().miningCheckInventory.value) {
+        if (Baritone.settings().checkInventory.value) {
            boolean inventoryFull = true;
            NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
            List<Item> DropsHaveSpace = new ArrayList<Item>();

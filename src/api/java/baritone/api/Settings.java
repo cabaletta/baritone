@@ -783,9 +783,9 @@ public final class Settings {
     public final Setting<Boolean> goHome = new Setting<>(true);
     
     /**
-     *  Tells Baritone to check if there is enough Space in the Inventory, while mining
+     *  Tells Baritone to check if there is enough Space in the Inventory, while mining/farming
      */
-    public final Setting<Boolean> miningCheckInventory = new Setting<>(true);
+    public final Setting<Boolean> checkInventory = new Setting<>(true);
 
     /**
      * What Y level to go to for legit strip mining

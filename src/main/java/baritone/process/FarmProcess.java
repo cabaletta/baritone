@@ -42,16 +42,14 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import sun.net.util.IPAddressUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 public final class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
@@ -169,6 +167,45 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        if (Baritone.settings().checkInventory.value) {
+            boolean inventoryFull = true;
+            NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
+            HashMap<Item,ItemStack> smallestStack =new HashMap<>();
+            List<Item> DropsHaveSpace = new ArrayList<Item>();
+            for (ItemStack stack:invy) {
+                if(stack.isEmpty()){
+                    inventoryFull=false;
+                    break;
+                }
+                if(PICKUP_DROPPED.contains(stack.getItem())){
+                    if(smallestStack.containsKey(stack.getItem())){
+                        if(stack.getCount()< smallestStack.get(stack.getItem()).getCount()){
+                            smallestStack.put(stack.getItem(),stack);
+                        }
+                    }else{
+                        smallestStack.put(stack.getItem(),stack);
+                    }
+
+                }
+
+            }
+            boolean allDropsHaveSpace=true;
+            for(ItemStack stack:smallestStack.values()){
+                if(stack.getCount()==stack.getMaxStackSize())
+                    allDropsHaveSpace=false;
+            }
+            if(allDropsHaveSpace){
+                inventoryFull=false;
+            }
+
+            if(inventoryFull){
+                logDirect("Inventory Full Cancel Farming");
+                if(Baritone.settings().goHome.value){
+                    returnhome();
+                }
+                onLostControl();
+            }
+        }
         ArrayList<Block> scan = new ArrayList<>();
         for (Harvest harvest : Harvest.values()) {
             scan.add(harvest.block);
