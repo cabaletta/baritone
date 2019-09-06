@@ -778,9 +778,9 @@ public final class Settings {
     public final Setting<Boolean> legitMine = new Setting<>(false);
     
     /**
-     *  Tells Baritone to go home after mining
+     *  Tells Baritone to go home after mining/farming
      */
-    public final Setting<Boolean> miningGoHome = new Setting<>(true);
+    public final Setting<Boolean> goHome = new Setting<>(true);
     
     /**
      *  Tells Baritone to check if there is enough Space in the Inventory, while mining

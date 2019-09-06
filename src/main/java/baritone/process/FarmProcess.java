@@ -46,6 +46,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import sun.net.util.IPAddressUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -183,6 +184,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             Baritone.getExecutor().execute(() -> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 10));
         }
         if (locations == null) {
+
+
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
         List<BlockPos> toBreak = new ArrayList<>();
@@ -225,6 +228,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                 }
+
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
@@ -240,6 +244,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                     if (ctx.isLookingAt(pos)) {
                         baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                     }
+
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
             }
@@ -251,6 +256,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
+
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
@@ -258,6 +264,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         if (calcFailed) {
             logDirect("Farm failed");
             onLostControl();
+            if(Baritone.settings().goHome.value){
+                returnhome();
+            }
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
 
