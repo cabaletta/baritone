@@ -121,6 +121,15 @@ public class SettingsUtil {
         return modified;
     }
 
+    /**
+     * Gets the type of a setting and returns it as a string, with package names stripped.
+     *
+     * For example, if the setting type is {@code java.util.List<java.lang.String>}, this function returns
+     * {@code List<String>}.
+     *
+     * @param setting The setting
+     * @return The type
+     */
     public static String settingTypeToString(Settings.Setting setting) {
         return setting.getType().getTypeName()
             .replaceAll("(?:\\w+\\.)+(\\w+)", "$1");

@@ -29,7 +29,7 @@ import static java.util.Arrays.asList;
 
 public class ThisWayCommand extends Command {
     public ThisWayCommand() {
-        super(asList("thisway", "forward"), "Travel in your current direction");
+        super(asList("thisway", "forward"));
     }
 
     @Override
@@ -49,6 +49,11 @@ public class ThisWayCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Travel in your current direction";
     }
 
     @Override

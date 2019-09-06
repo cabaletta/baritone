@@ -79,7 +79,7 @@ public class PauseResumeCommands {
             }
         );
 
-        pauseCommand = new Command("pause", "Pauses Baritone until you use resume") {
+        pauseCommand = new Command("pause") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);
@@ -98,6 +98,11 @@ public class PauseResumeCommands {
             }
 
             @Override
+            public String getShortDesc() {
+                return "Pauses Baritone until you use resume";
+            }
+
+            @Override
             public List<String> getLongDesc() {
                 return asList(
                     "The pause command tells Baritone to temporarily stop whatever it's doing.",
@@ -110,7 +115,7 @@ public class PauseResumeCommands {
             }
         };
 
-        resumeCommand = new Command("resume", "Resumes Baritone after a pause") {
+        resumeCommand = new Command("resume") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);
@@ -129,6 +134,11 @@ public class PauseResumeCommands {
             }
 
             @Override
+            public String getShortDesc() {
+                return "Resumes Baritone after a pause";
+            }
+
+            @Override
             public List<String> getLongDesc() {
                 return asList(
                     "The resume command tells Baritone to resume whatever it was doing when you last used pause.",
@@ -139,7 +149,7 @@ public class PauseResumeCommands {
             }
         };
 
-        pausedCommand = new Command("paused", "Tells you if Baritone is paused") {
+        pausedCommand = new Command("paused") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);
@@ -150,6 +160,11 @@ public class PauseResumeCommands {
             @Override
             protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
                 return Stream.empty();
+            }
+
+            @Override
+            public String getShortDesc() {
+                return "Tells you if Baritone is paused";
             }
 
             @Override

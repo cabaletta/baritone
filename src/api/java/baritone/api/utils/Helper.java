@@ -39,14 +39,15 @@ public interface Helper {
     Helper HELPER = new Helper() {};
 
     static ITextComponent getPrefix() {
-        return new TextComponentString("") {{
-            getStyle().setColor(TextFormatting.DARK_PURPLE);
-            appendSibling(new TextComponentString("["));
-            appendSibling(new TextComponentString(BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone") {{
-                getStyle().setColor(TextFormatting.LIGHT_PURPLE);
-            }});
-            appendSibling(new TextComponentString("]"));
-        }};
+        ITextComponent baritone = new TextComponentString(BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
+        baritone.getStyle().setColor(TextFormatting.LIGHT_PURPLE);
+        ITextComponent prefix = new TextComponentString("");
+        prefix.getStyle().setColor(TextFormatting.DARK_PURPLE);
+        prefix.appendText("[");
+        prefix.appendSibling(baritone);
+        prefix.appendText("]");
+
+        return prefix;
     }
 
     Minecraft mc = Minecraft.getMinecraft();
@@ -71,31 +72,31 @@ public interface Helper {
      * @param components The components to send
      */
     default void logDirect(ITextComponent... components) {
-        ITextComponent component = new TextComponentString("") {{
-            appendSibling(getPrefix());
-            appendSibling(new TextComponentString(" "));
-            asList(components).forEach(this::appendSibling);
-        }};
-
+        ITextComponent component = new TextComponentString("");
+        component.appendSibling(getPrefix());
+        component.appendSibling(new TextComponentString(" "));
+        asList(components).forEach(component::appendSibling);
         Minecraft.getMinecraft().addScheduledTask(() -> BaritoneAPI.getSettings().logger.value.accept(component));
     }
 
     /**
-     * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a direct response to a chat command)
+     * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
+     * direct response to a chat command)
      *
      * @param message The message to display in chat
      * @param color   The color to print that message in
      */
     default void logDirect(String message, TextFormatting color) {
-        Arrays.stream(message.split("\\n")).forEach(line ->
-            logDirect(new TextComponentString(line.replace("\t", "    ")) {{
-                getStyle().setColor(color);
-            }})
-        );
+        Arrays.stream(message.split("\\n")).forEach(line -> {
+            ITextComponent component = new TextComponentString(line.replace("\t", "    "));
+            component.getStyle().setColor(color);
+            logDirect(component);
+        });
     }
 
     /**
-     * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a direct response to a chat command)
+     * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
+     * direct response to a chat command)
      *
      * @param message The message to display in chat
      */

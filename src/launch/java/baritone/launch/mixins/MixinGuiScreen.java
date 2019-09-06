@@ -17,7 +17,7 @@
 
 package baritone.launch.mixins;
 
-import baritone.api.utils.command.Lol;
+import baritone.api.accessor.IGuiScreen;
 import net.minecraft.client.gui.GuiScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 import java.net.URI;
 
 @Mixin(GuiScreen.class)
-public abstract class MixinGuiScreen implements Lol {
+public abstract class MixinGuiScreen implements IGuiScreen {
     @Override
     @Invoker("openWebLink")
     public abstract void openLink(URI url);

@@ -177,7 +177,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block.isPassable(null, null);
     }
 
-    static boolean isReplacable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
+    static boolean isReplaceable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
         // for MovementTraverse and MovementAscend
         // block double plant defaults to true when the block doesn't match, so don't need to check that case
         // all other overrides just return true or false
@@ -205,6 +205,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             return kek == BlockDoublePlant.EnumPlantType.FERN || kek == BlockDoublePlant.EnumPlantType.GRASS;
         }
         return state.getMaterial().isReplaceable();
+    }
+
+    @Deprecated
+    static boolean isReplacable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
+        return isReplaceable(x, y, z, state, bsi);
     }
 
     static boolean isDoorPassable(IPlayerContext ctx, BlockPos doorPos, BlockPos playerPos) {

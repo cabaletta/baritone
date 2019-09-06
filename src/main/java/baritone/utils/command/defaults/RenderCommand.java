@@ -29,7 +29,7 @@ import static java.util.Arrays.asList;
 
 public class RenderCommand extends Command {
     public RenderCommand() {
-        super("render", "Fix glitched chunks");
+        super("render");
     }
 
     @Override
@@ -53,6 +53,11 @@ public class RenderCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Fix glitched chunks";
     }
 
     @Override

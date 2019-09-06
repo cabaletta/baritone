@@ -44,7 +44,7 @@ import static java.util.Objects.nonNull;
 
 public class FollowCommand extends Command {
     public FollowCommand() {
-        super("follow", "Follow entity things");
+        super("follow");
     }
 
     @Override
@@ -129,6 +129,11 @@ public class FollowCommand extends Command {
 
             return args.tabCompleteDatatype(followType);
         }
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Follow entity things";
     }
 
     @Override

@@ -20,9 +20,11 @@ package baritone.api.utils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 
+import java.util.List;
+
 /**
- * Basic representation of a schematic. Provides the dimensions and
- * the desired statefor a given position relative to the origin.
+ * Basic representation of a schematic. Provides the dimensions and the desired statefor a given position relative to
+ * the origin.
  *
  * @author leijurv
  */
@@ -62,13 +64,14 @@ public interface ISchematic {
     /**
      * Returns the desired block state at a given (X, Y, Z) position relative to the origin (0, 0, 0).
      *
-     * @param x       The x position of the block, relative to the origin
-     * @param y       The y position of the block, relative to the origin
-     * @param z       The z position of the block, relative to the origin
-     * @param current The current state of that block in the world, or null
+     * @param x               The x position of the block, relative to the origin
+     * @param y               The y position of the block, relative to the origin
+     * @param z               The z position of the block, relative to the origin
+     * @param current         The current state of that block in the world, or null
+     * @param approxPlaceable The list of blockstates estimated to be placeable
      * @return The desired block state at the specified position
      */
-    IBlockState desiredState(int x, int y, int z, IBlockState current);
+    IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable);
 
     /**
      * @return The width (X axis length) of this schematic

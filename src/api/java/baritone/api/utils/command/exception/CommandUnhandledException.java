@@ -19,7 +19,6 @@ package baritone.api.utils.command.exception;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +34,7 @@ public class CommandUnhandledException extends CommandErrorMessageException {
 
     public static String getBaritoneStackTrace(String stackTrace) {
         List<String> lines = Arrays.stream(stackTrace.split("\n"))
-            .collect(Collectors.toCollection(ArrayList::new));
+            .collect(Collectors.toList());
 
         int lastBaritoneLine = 0;
         for (int i = 0; i < lines.size(); i++) {

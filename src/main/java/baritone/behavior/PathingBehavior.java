@@ -292,11 +292,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     @Override
-    public boolean hasPath() {
-        return current != null;
-    }
-
-    @Override
     public PathExecutor getCurrent() {
         return current;
     }

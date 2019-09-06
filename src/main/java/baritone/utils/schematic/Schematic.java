@@ -22,6 +22,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.List;
+
 public class Schematic implements ISchematic {
     public final int widthX;
     public final int heightY;
@@ -68,7 +70,7 @@ public class Schematic implements ISchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z, IBlockState current) {
+    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
         return states[x][z][y];
     }
 

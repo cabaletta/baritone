@@ -45,6 +45,12 @@ public class BlockOptionalMetaLookup {
             .toArray(BlockOptionalMeta[]::new);
     }
 
+    public BlockOptionalMetaLookup(String... blocks) {
+        this.boms = Arrays.stream(blocks)
+            .map(BlockOptionalMeta::new)
+            .toArray(BlockOptionalMeta[]::new);
+    }
+
     public boolean has(Block block) {
         for (BlockOptionalMeta bom : boms) {
             if (bom.getBlock() == block) {

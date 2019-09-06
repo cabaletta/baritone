@@ -36,14 +36,10 @@ public class RelativeCoordinate implements IDatatypePost<Double, Double> {
     }
 
     public RelativeCoordinate(ArgConsumer consumer) {
-        if (!consumer.has()) {
-            throw new RuntimeException("relative coordinate requires an argument");
-        }
-
         Matcher matcher = PATTERN.matcher(consumer.getString());
 
         if (!matcher.matches()) {
-            throw new RuntimeException("pattern doesn't match");
+            throw new IllegalArgumentException("pattern doesn't match");
         }
 
         isRelative = !matcher.group(1).isEmpty();

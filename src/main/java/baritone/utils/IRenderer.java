@@ -15,11 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package baritone.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
+import baritone.api.utils.Helper;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -110,7 +111,7 @@ public interface IRenderer {
         tessellator.draw();
     }
 
-    static void drawAABB(AxisAlignedBB aabb, float expand) {
+    static void drawAABB(AxisAlignedBB aabb, double expand) {
         drawAABB(aabb.grow(expand, expand, expand));
     }
 }

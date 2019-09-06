@@ -30,7 +30,7 @@ import static java.util.Objects.isNull;
 
 public class VersionCommand extends Command {
     public VersionCommand() {
-        super("version", "View the Baritone version");
+        super("version");
     }
 
     @Override
@@ -49,6 +49,11 @@ public class VersionCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "View the Baritone version";
     }
 
     @Override

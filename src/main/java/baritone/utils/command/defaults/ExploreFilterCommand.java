@@ -34,7 +34,7 @@ import static java.util.Arrays.asList;
 
 public class ExploreFilterCommand extends Command {
     public ExploreFilterCommand() {
-        super("explorefilter", "Explore chunks from a json");
+        super("explorefilter");
     }
 
     @Override
@@ -71,6 +71,11 @@ public class ExploreFilterCommand extends Command {
         }
 
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Explore chunks from a json";
     }
 
     @Override

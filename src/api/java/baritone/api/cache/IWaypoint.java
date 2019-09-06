@@ -18,11 +18,14 @@
 package baritone.api.cache;
 
 import baritone.api.utils.BetterBlockPos;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static java.util.Arrays.asList;
 
 /**
  * A marker for a position in the world.
@@ -99,13 +102,41 @@ public interface IWaypoint {
         }
 
         /**
-         * Finds a tag from one of the names that could be used to identify said tag.
-         *
-         * @param name The name of the tag
-         * @return The tag, if one is found, otherwise, {@code null}
+         * @return A name that can be passed to {@link #getByName(String)} to retrieve this tag
          */
-        public static Tag fromString(String name) {
-            return TAG_LIST.stream().filter(tag -> ArrayUtils.contains(tag.names, name.toLowerCase())).findFirst().orElse(null);
+        public String getName() {
+            return names[0];
+        }
+
+        /**
+         * Gets a tag by one of its names.
+         *
+         * @param name The name to search for.
+         * @return The tag, if found, or null.
+         */
+        public static Tag getByName(String name) {
+            for (Tag action : Tag.values()) {
+                for (String alias : action.names) {
+                    if (alias.equalsIgnoreCase(name)) {
+                        return action;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * @return All tag names.
+         */
+        public static String[] getAllNames() {
+            Set<String> names = new HashSet<>();
+
+            for (Tag tag : Tag.values()) {
+                names.addAll(asList(tag.names));
+            }
+
+            return names.toArray(new String[0]);
         }
     }
 }

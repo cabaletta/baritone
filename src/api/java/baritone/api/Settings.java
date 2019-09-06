@@ -495,7 +495,7 @@ public final class Settings {
     /**
      * Render the path as a line instead of a frickin thingy
      */
-    public final Setting<Boolean> renderPathAsLine = new Setting<>(true);
+    public final Setting<Boolean> renderPathAsLine = new Setting<>(false);
 
     /**
      * Render the goal

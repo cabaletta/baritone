@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 
 public class ClickCommand extends Command {
     public ClickCommand() {
-        super("click", "Open click");
+        super("click");
     }
 
     @Override
@@ -41,6 +41,11 @@ public class ClickCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Open click";
     }
 
     @Override

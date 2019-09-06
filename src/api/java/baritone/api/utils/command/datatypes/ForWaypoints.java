@@ -29,8 +29,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
-
 public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
     private final IWaypoint[] waypoints;
 
@@ -39,7 +37,7 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
     }
 
     public ForWaypoints(String arg) {
-        IWaypoint.Tag tag = getTagByName(arg);
+        IWaypoint.Tag tag = IWaypoint.Tag.getByName(arg);
         waypoints = tag == null ? getWaypointsByName(arg) : getWaypointsByTag(tag);
     }
 
@@ -57,7 +55,7 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
         return new TabCompleteHelper()
             .append(getWaypointNames())
             .sortAlphabetically()
-            .prepend(getTagNames())
+            .prepend(IWaypoint.Tag.getAllNames())
             .filterPrefix(consumer.getString())
             .stream();
     }
@@ -68,28 +66,6 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
             .getWorldProvider()
             .getCurrentWorld()
             .getWaypoints();
-    }
-
-    public static String[] getTagNames() {
-        Set<String> names = new HashSet<>();
-
-        for (IWaypoint.Tag tag : IWaypoint.Tag.values()) {
-            names.addAll(asList(tag.names));
-        }
-
-        return names.toArray(new String[0]);
-    }
-
-    public static IWaypoint.Tag getTagByName(String name) {
-        for (IWaypoint.Tag tag : IWaypoint.Tag.values()) {
-            for (String alias : tag.names) {
-                if (alias.equalsIgnoreCase(name)) {
-                    return tag;
-                }
-            }
-        }
-
-        return null;
     }
 
     public static IWaypoint[] getWaypoints() {

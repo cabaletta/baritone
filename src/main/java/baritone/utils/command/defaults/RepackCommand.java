@@ -18,52 +18,34 @@
 package baritone.utils.command.defaults;
 
 import baritone.api.Settings;
-import baritone.api.cache.ICachedWorld;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunkProvider;
+import baritone.cache.WorldScanner;
 
 import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
 
 public class RepackCommand extends Command {
     public RepackCommand() {
-        super(asList("repack", "rescan"), "Re-cache chunks");
+        super(asList("repack", "rescan"));
     }
 
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
-
-        IChunkProvider chunkProvider = ctx.world().getChunkProvider();
-        ICachedWorld cachedWorld = ctx.worldData().getCachedWorld();
-
-        BetterBlockPos playerPos = ctx.playerFeet();
-        int playerChunkX = playerPos.getX() >> 4;
-        int playerChunkZ = playerPos.getZ() >> 4;
-        int queued = 0;
-        for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
-            for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
-                Chunk chunk = chunkProvider.getLoadedChunk(x, z);
-
-                if (nonNull(chunk) && !chunk.isEmpty()) {
-                    queued++;
-                    cachedWorld.queueForPacking(chunk);
-                }
-            }
-        }
-
-        logDirect(String.format("Queued %d chunks for repacking", queued));
+        logDirect(String.format("Queued %d chunks for repacking", WorldScanner.INSTANCE.repack(ctx)));
     }
 
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Re-cache chunks";
     }
 
     @Override

@@ -27,15 +27,18 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class CommandAlias extends Command {
+    private final String shortDesc;
     public final String target;
 
     public CommandAlias(List<String> names, String shortDesc, String target) {
-        super(names, shortDesc);
+        super(names);
+        this.shortDesc = shortDesc;
         this.target = target;
     }
 
     public CommandAlias(String name, String shortDesc, String target) {
-        super(name, shortDesc);
+        super(name);
+        this.shortDesc = shortDesc;
         this.target = target;
     }
 
@@ -47,6 +50,11 @@ public class CommandAlias extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return CommandManager.tabComplete(String.format("%s %s", target, args.rawRest()));
+    }
+
+    @Override
+    public String getShortDesc() {
+        return shortDesc;
     }
 
     @Override

@@ -33,7 +33,7 @@ import static java.util.Objects.isNull;
 
 public class ProcCommand extends Command {
     public ProcCommand() {
-        super("proc", "View process state information");
+        super("proc");
     }
 
     @Override
@@ -67,6 +67,11 @@ public class ProcCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "View process state information";
     }
 
     @Override

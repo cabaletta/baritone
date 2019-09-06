@@ -38,7 +38,7 @@ public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
         ResourceLocation id = new ResourceLocation(consumer.getString());
 
         if (isNull(entity = EntityList.REGISTRY.getObject(id))) {
-            throw new RuntimeException("no entity found by that id");
+            throw new IllegalArgumentException("no entity found by that id");
         }
     }
 

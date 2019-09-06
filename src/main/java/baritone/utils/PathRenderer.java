@@ -29,7 +29,6 @@ import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
-import baritone.api.utils.IRenderer;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
@@ -205,7 +204,7 @@ public final class PathRenderer implements IRenderer {
                 toDraw = state.getSelectedBoundingBox(player.world, pos);
             }
 
-            IRenderer.drawAABB(toDraw, .002f);
+            IRenderer.drawAABB(toDraw, .002D);
         });
 
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);

@@ -24,18 +24,17 @@ import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.pagination.Paginator;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static baritone.api.utils.SettingsUtil.settingDefaultToString;
 import static baritone.api.utils.SettingsUtil.settingTypeToString;
 import static baritone.api.utils.SettingsUtil.settingValueToString;
 import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
@@ -46,7 +45,7 @@ import static java.util.stream.Stream.of;
 
 public class SetCommand extends Command {
     public SetCommand() {
-        super(asList("set", "setting", "settings"), "View or change settings");
+        super(asList("set", "setting", "settings"));
     }
 
     @Override
@@ -71,7 +70,7 @@ public class SetCommand extends Command {
                     .filter(s -> !s.getName().equals("logger"))
                     .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
                     .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
-                    .collect(Collectors.toCollection(ArrayList<Settings.Setting>::new));
+                    .collect(Collectors.toList());
 
             Paginator.paginate(
                 args,
@@ -81,31 +80,29 @@ public class SetCommand extends Command {
                         ? String.format("All %ssettings containing the string '%s':", viewModified ? "modified " : "", search)
                         : String.format("All %ssettings:", viewModified ? "modified " : "")
                 ),
-                setting -> new TextComponentString(setting.getName()) {{
-                    getStyle()
-                        .setColor(TextFormatting.GRAY)
-                        .setHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            new TextComponentString("") {{
-                                getStyle().setColor(TextFormatting.GRAY);
-                                appendText(setting.getName());
-                                appendText(String.format("\nType: %s", settingTypeToString(setting)));
-                                appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                setting -> {
+                    ITextComponent typeComponent = new TextComponentString(String.format(
+                        " (%s)",
+                        settingTypeToString(setting)
+                    ));
+                    typeComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
 
-                                if (setting.value != setting.defaultValue) {
-                                    appendText(String.format("\n\nDefault:\n%s", settingDefaultToString(setting)));
-                                }
-                            }}
-                        ))
-                        .setClickEvent(new ClickEvent(
-                            ClickEvent.Action.SUGGEST_COMMAND,
-                            settings.prefix.value + String.format("set %s ", setting.getName())
-                        ));
+                    ITextComponent hoverComponent = new TextComponentString("");
+                    hoverComponent.getStyle().setColor(TextFormatting.GRAY);
+                    hoverComponent.appendText(setting.getName());
+                    hoverComponent.appendText(String.format("\nType: %s", settingTypeToString(setting)));
+                    hoverComponent.appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                    String commandSuggestion = settings.prefix.value + String.format("set %s ", setting.getName());
 
-                    appendSibling(new TextComponentString(String.format(" (%s)", settingTypeToString(setting))) {{
-                        getStyle().setColor(TextFormatting.DARK_GRAY);
-                    }});
-                }},
+                    ITextComponent component = new TextComponentString(setting.getName());
+                    component.getStyle().setColor(TextFormatting.GRAY);
+                    component.appendSibling(typeComponent);
+                    component.getStyle()
+                        .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion));
+
+                    return component;
+                },
                 FORCE_COMMAND_PREFIX + "set " + arg + " " + search
             );
 
@@ -187,18 +184,19 @@ public class SetCommand extends Command {
                 ));
             }
 
-            logDirect(new TextComponentString(String.format("Old value: %s", oldValue)) {{
-                getStyle()
-                    .setColor(TextFormatting.GRAY)
-                    .setHoverEvent(new HoverEvent(
-                        HoverEvent.Action.SHOW_TEXT,
-                        new TextComponentString("Click to set the setting back to this value")
-                    ))
-                    .setClickEvent(new ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
-                        FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
-                    ));
-            }});
+            ITextComponent oldValueComponent = new TextComponentString(String.format("Old value: %s", oldValue));
+            oldValueComponent.getStyle()
+                .setColor(TextFormatting.GRAY)
+                .setHoverEvent(new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    new TextComponentString("Click to set the setting back to this value")
+                ))
+                .setClickEvent(new ClickEvent(
+                    ClickEvent.Action.RUN_COMMAND,
+                    FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
+                ));
+
+            logDirect(oldValueComponent);
 
             if ((setting.getName().equals("chatControl") && !(Boolean) setting.value && !settings.chatControlAnyway.value) ||
                 setting.getName().equals("chatControlAnyway") && !(Boolean) setting.value && !settings.chatControl.value) {
@@ -258,6 +256,11 @@ public class SetCommand extends Command {
         }
 
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "View or change settings";
     }
 
     @Override

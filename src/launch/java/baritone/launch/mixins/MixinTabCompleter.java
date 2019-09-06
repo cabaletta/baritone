@@ -63,17 +63,17 @@ public abstract class MixinTabCompleter implements ITabCompleter {
         textField.setCursorPosition(prefix.length());
     }
 
-    @Inject(method = "requestCompletions", at = @At("HEAD"), cancellable = true)
+    @Inject(
+        method = "requestCompletions",
+        at = @At("HEAD"),
+        cancellable = true
+    )
     private void onRequestCompletions(String prefix, CallbackInfo ci) {
         if (!isChatCompleter) {
             return;
         }
 
-        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(Minecraft.getMinecraft().player);
-
-        if (isNull(baritone)) {
-            return;
-        }
+        IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
 
         TabCompleteEvent.Pre event = new TabCompleteEvent.Pre(prefix);
         baritone.getGameEventHandler().onPreTabComplete(event);

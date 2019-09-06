@@ -74,7 +74,9 @@ public interface IPathingBehavior extends IBehavior {
      * is a pause in effect.
      * @see #isPathing()
      */
-    boolean hasPath();
+    default boolean hasPath() {
+        return getCurrent() != null;
+    }
 
     /**
      * Cancels the pathing behavior or the current path calculation, and all processes that could be controlling path.

@@ -20,6 +20,7 @@ package baritone.api.utils.command;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
+import baritone.api.accessor.IGuiScreen;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
@@ -33,6 +34,7 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.utils.command.manager.CommandManager;
 import com.mojang.realmsclient.util.Pair;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
@@ -47,7 +49,6 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.stream.Stream.of;
 
 public class BaritoneChatControl implements Helper, AbstractGameEventListener {
     public final IBaritone baritone;
@@ -67,10 +68,6 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         String prefix = settings.prefix.value;
         boolean forceRun = msg.startsWith(FORCE_COMMAND_PREFIX);
 
-        if (!forceRun && !settings.chatControl.value && !settings.chatControlAnyway.value && !settings.prefixControl.value) {
-            return;
-        }
-
         if ((settings.prefixControl.value && msg.startsWith(prefix)) || forceRun) {
             event.cancel();
 
@@ -79,11 +76,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
                 new CommandNotFoundException(CommandExecution.expand(commandStr).first()).handle(null, null);
             }
-
-            return;
-        }
-
-        if ((settings.chatControl.value || settings.chatControlAnyway.value) && runCommand(msg)) {
+        } else if ((settings.chatControl.value || settings.chatControlAnyway.value) && runCommand(msg)) {
             event.cancel();
         }
     }
@@ -92,18 +85,20 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (settings.echoCommands.value) {
             String msg = command + rest;
             String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
-            logDirect(new TextComponentString(String.format("> %s", toDisplay)) {{
-                getStyle()
-                    .setColor(TextFormatting.WHITE)
-                    .setHoverEvent(new HoverEvent(
-                        HoverEvent.Action.SHOW_TEXT,
-                        new TextComponentString("Click to rerun command")
-                    ))
-                    .setClickEvent(new ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
-                        FORCE_COMMAND_PREFIX + msg
-                    ));
-            }});
+
+            ITextComponent component = new TextComponentString(String.format("> %s", toDisplay));
+            component.getStyle()
+                .setColor(TextFormatting.WHITE)
+                .setHoverEvent(new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    new TextComponentString("Click to rerun command")
+                ))
+                .setClickEvent(new ClickEvent(
+                    ClickEvent.Action.RUN_COMMAND,
+                    FORCE_COMMAND_PREFIX + msg
+                ));
+
+            logDirect(component);
         }
     }
 
@@ -113,7 +108,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             return false;
         } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
             try {
-                ((Lol) mc.currentScreen).openLink(new URI("https://www.dominos.com/en/pages/order/"));
+                ((IGuiScreen) mc.currentScreen).openLink(new URI("https://www.dominos.com/en/pages/order/"));
             } catch (NullPointerException | URISyntaxException ignored) {}
 
             return false;
@@ -129,22 +124,18 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         ArgConsumer argc = new ArgConsumer(pair.second());
 
         if (!argc.has()) {
-            for (Settings.Setting setting : settings.allSettings) {
-                if (setting.getName().equals("logger")) {
-                    continue;
+            Settings.Setting setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
+
+            if (setting != null) {
+                logRanCommand(command, rest);
+
+                if (setting.getValueClass() == Boolean.class) {
+                    CommandManager.execute(String.format("set toggle %s", setting.getName()));
+                } else {
+                    CommandManager.execute(String.format("set %s", setting.getName()));
                 }
 
-                if (setting.getName().equalsIgnoreCase(command)) {
-                    logRanCommand(command, rest);
-
-                    if (setting.getValueClass() == Boolean.class) {
-                        CommandManager.execute(String.format("set toggle %s", setting.getName()));
-                    } else {
-                        CommandManager.execute(String.format("set %s", setting.getName()));
-                    }
-
-                    return true;
-                }
+                return true;
             }
         } else if (argc.hasExactlyOne()) {
             for (Settings.Setting setting : settings.allSettings) {
@@ -217,14 +208,14 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                     TabCompleteHelper helper = new TabCompleteHelper();
 
                     if ((Boolean) setting.value) {
-                        helper.append(of("true", "false"));
+                        helper.append(Stream.of("true", "false"));
                     } else {
-                        helper.append(of("false", "true"));
+                        helper.append(Stream.of("false", "true"));
                     }
 
                     return helper.filterPrefix(argc.getString()).stream();
                 } else {
-                    return of(SettingsUtil.settingValueToString(setting));
+                    return Stream.of(SettingsUtil.settingValueToString(setting));
                 }
             }
         }

@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 
 public class CancelCommand extends Command {
     public CancelCommand() {
-        super(asList("cancel", "stop"), "Cancel what Baritone is currently doing");
+        super(asList("cancel", "stop"));
     }
 
     @Override
@@ -41,6 +41,11 @@ public class CancelCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Cancel what Baritone is currently doing";
     }
 
     @Override

@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 
 public class GcCommand extends Command {
     public GcCommand() {
-        super("gc", "Call System.gc()");
+        super("gc");
     }
 
     @Override
@@ -43,6 +43,11 @@ public class GcCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Call System.gc()";
     }
 
     @Override

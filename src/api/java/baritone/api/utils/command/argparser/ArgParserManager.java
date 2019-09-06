@@ -22,8 +22,6 @@ import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.exception.CommandNoParserForTypeException;
 import baritone.api.utils.command.registry.Registry;
 
-import java.util.Iterator;
-
 import static java.util.Objects.isNull;
 
 public class ArgParserManager {
@@ -38,16 +36,13 @@ public class ArgParserManager {
      * @return A parser that can parse arguments into this class, if found.
      */
     public static <T> ArgParser.Stateless<T> getParserStateless(Class<T> klass) {
-        for (Iterator<ArgParser> it = REGISTRY.descendingIterator(); it.hasNext(); ) {
-            ArgParser<?> parser = it.next();
-
-            if (parser instanceof ArgParser.Stateless && parser.getKlass().isAssignableFrom(klass)) {
-                //noinspection unchecked
-                return (ArgParser.Stateless<T>) parser;
-            }
-        }
-
-        return null;
+        //noinspection unchecked
+        return REGISTRY.descendingStream()
+            .filter(ArgParser.Stateless.class::isInstance)
+            .map(ArgParser.Stateless.class::cast)
+            .filter(parser -> parser.getKlass().isAssignableFrom(klass))
+            .findFirst()
+            .orElse(null);
     }
 
     /**
@@ -55,21 +50,27 @@ public class ArgParserManager {
      * @return A parser that can parse arguments into this class, if found.
      */
     public static <T, S> ArgParser.Stated<T, S> getParserStated(Class<T> klass, Class<S> stateKlass) {
-        for (Iterator<ArgParser> it = REGISTRY.descendingIterator(); it.hasNext(); ) {
-            ArgParser<?> parser = it.next();
-
-            //noinspection unchecked
-            if (parser instanceof ArgParser.Stated
-                && parser.getKlass().isAssignableFrom(klass)
-                && ((ArgParser.Stated) parser).getStateKlass().isAssignableFrom(stateKlass)) {
-                //noinspection unchecked
-                return (ArgParser.Stated<T, S>) parser;
-            }
-        }
-
-        return null;
+        //noinspection unchecked
+        return REGISTRY.descendingStream()
+            .filter(ArgParser.Stated.class::isInstance)
+            .map(ArgParser.Stated.class::cast)
+            .filter(parser -> parser.getKlass().isAssignableFrom(klass))
+            .filter(parser -> parser.getStateKlass().isAssignableFrom(stateKlass))
+            .map(ArgParser.Stated.class::cast)
+            .findFirst()
+            .orElse(null);
     }
 
+    /**
+     * Attempt to parse the specified argument with a stateless {@link ArgParser} that outputs the specified class.
+     *
+     * @param klass The class to parse the argument into.
+     * @param arg   The argument to parse.
+     * @return An instance of the specified class.
+     * @throws CommandNoParserForTypeException If no parser exists for that type
+     * @throws CommandInvalidTypeException     If the parsing failed
+     * @see ArgParser.Stateless
+     */
     public static <T> T parseStateless(Class<T> klass, CommandArgument arg) {
         ArgParser.Stateless<T> parser = getParserStateless(klass);
 
@@ -84,6 +85,17 @@ public class ArgParserManager {
         }
     }
 
+    /**
+     * Attempt to parse the specified argument with a stated {@link ArgParser} that outputs the specified class.
+     *
+     * @param klass The class to parse the argument into.
+     * @param arg   The argument to parse.
+     * @param state The state to pass to the {@link ArgParser.Stated}.
+     * @return An instance of the specified class.
+     * @throws CommandNoParserForTypeException If no parser exists for that type
+     * @throws CommandInvalidTypeException     If the parsing failed
+     * @see ArgParser.Stated
+     */
     public static <T, S> T parseStated(Class<T> klass, Class<S> stateKlass, CommandArgument arg, S state) {
         ArgParser.Stated<T, S> parser = getParserStated(klass, stateKlass);
 

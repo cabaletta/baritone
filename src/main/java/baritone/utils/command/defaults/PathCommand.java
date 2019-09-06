@@ -26,6 +26,7 @@ import baritone.api.utils.command.datatypes.RelativeGoal;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.cache.WorldScanner;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -35,7 +36,7 @@ import static java.util.Objects.isNull;
 
 public class PathCommand extends Command {
     public PathCommand() {
-        super("path", "Start heading towards a goal");
+        super(asList("path", "goto"));
     }
 
     @Override
@@ -51,6 +52,7 @@ public class PathCommand extends Command {
         }
 
         args.requireMax(0);
+        WorldScanner.INSTANCE.repack(ctx);
         customGoalProcess.setGoalAndPath(goal);
         logDirect("Now pathing");
     }
@@ -75,6 +77,11 @@ public class PathCommand extends Command {
         }
 
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Start heading towards a goal";
     }
 
     @Override

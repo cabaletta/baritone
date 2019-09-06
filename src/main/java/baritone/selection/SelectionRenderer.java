@@ -3,10 +3,12 @@ package baritone.selection;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.selection.ISelection;
-import baritone.api.utils.IRenderer;
+import baritone.utils.IRenderer;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
+    public static final double SELECTION_BOX_EXPANSION = .005D;
+
     private final SelectionManager manager;
 
     SelectionRenderer(SelectionManager manager) {
@@ -26,7 +28,7 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
         IRenderer.startLines(settings.colorSelection.value, opacity, lineWidth, ignoreDepth);
 
         for (ISelection selection : selections) {
-            IRenderer.drawAABB(selection.aabb(), .005f);
+            IRenderer.drawAABB(selection.aabb(), SELECTION_BOX_EXPANSION);
         }
 
         if (settings.renderSelectionCorners.value) {

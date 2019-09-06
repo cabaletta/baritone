@@ -67,13 +67,13 @@ public class CompositeSchematic extends AbstractSchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z, IBlockState current) {
+    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
         CompositeSchematicEntry entry = getSchematic(x, y, z, current);
 
         if (entry == null) {
             throw new IllegalStateException("couldn't find schematic for this position");
         }
 
-        return entry.schematic.desiredState(x - entry.x, y - entry.y, z - entry.z, current);
+        return entry.schematic.desiredState(x - entry.x, y - entry.y, z - entry.z, current, approxPlaceable);
     }
 }

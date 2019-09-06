@@ -46,7 +46,7 @@ public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
                 .findFirst()
                 .orElse(null)
         )) {
-            throw new RuntimeException("no player found by that username");
+            throw new IllegalArgumentException("no player found by that username");
         }
     }
 

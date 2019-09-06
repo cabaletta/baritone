@@ -33,7 +33,7 @@ import static java.util.Objects.isNull;
 
 public class InvertCommand extends Command {
     public InvertCommand() {
-        super("invert", "Run away from the current goal");
+        super("invert");
     }
 
     @Override
@@ -60,6 +60,11 @@ public class InvertCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Run away from the current goal";
     }
 
     @Override

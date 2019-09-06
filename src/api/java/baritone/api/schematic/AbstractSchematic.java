@@ -40,7 +40,7 @@ public abstract class AbstractSchematic implements ISchematic {
     protected int y;
     protected int z;
 
-    public AbstractSchematic(@Nullable IBaritone baritone, int x, int y, int z) {
+    public AbstractSchematic(IBaritone baritone, int x, int y, int z) {
         this.baritone = baritone;
         this.ctx = baritone == null ? null : baritone.getPlayerContext();
         this.x = x;
@@ -61,37 +61,5 @@ public abstract class AbstractSchematic implements ISchematic {
     @Override
     public int lengthZ() {
         return z;
-    }
-
-    protected IBlockState[] approxPlaceable() {
-        EntityPlayerSP player = ctx.player();
-        NonNullList<ItemStack> inventory = player.inventory.mainInventory;
-        List<IBlockState> placeable = new ArrayList<>();
-        placeable.add(Blocks.AIR.getDefaultState());
-
-        // 27 + 9
-        for (int i = 0; i < 36; i++) {
-            ItemStack stack = inventory.get(i);
-            Item item = stack.getItem();
-
-            if (!stack.isEmpty() && stack.getItem() instanceof ItemBlock) {
-                ItemBlock itemBlock = (ItemBlock) item;
-
-                // <toxic cloud>
-                placeable.add(itemBlock.getBlock().getStateForPlacement(
-                    ctx.world(),
-                    ctx.playerFeet(),
-                    EnumFacing.UP,
-                    (float) player.posX,
-                    (float) player.posY,
-                    (float) player.posZ,
-                    itemBlock.getMetadata(stack.getMetadata()),
-                    player
-                ));
-                // </toxic cloud>
-            }
-        }
-
-        return placeable.toArray(new IBlockState[0]);
     }
 }

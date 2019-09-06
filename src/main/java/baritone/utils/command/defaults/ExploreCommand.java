@@ -30,7 +30,7 @@ import static java.util.Arrays.asList;
 
 public class ExploreCommand extends Command {
     public ExploreCommand() {
-        super("explore", "Explore things");
+        super("explore");
     }
 
     @Override
@@ -56,6 +56,11 @@ public class ExploreCommand extends Command {
         }
 
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Explore things";
     }
 
     @Override

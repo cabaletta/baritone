@@ -19,7 +19,6 @@ package baritone.api.utils.command.argparser;
 
 import baritone.api.utils.command.argument.CommandArgument;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -114,11 +113,11 @@ public class DefaultArgParsers {
         }
     }
 
-    public static final List<ArgParser<?>> all = Collections.unmodifiableList(asList(
+    public static final List<ArgParser<?>> all = asList(
         IntArgumentParser.INSTANCE,
         LongArgumentParser.INSTANCE,
         FloatArgumentParser.INSTANCE,
         DoubleArgumentParser.INSTANCE,
         BooleanArgumentParser.INSTANCE
-    ));
+    );
 }

@@ -36,7 +36,7 @@ public class BlockById implements IDatatypeFor<Block> {
         ResourceLocation id = new ResourceLocation(consumer.getString());
 
         if ((block = Block.REGISTRY.getObject(id)) == Blocks.AIR) {
-            throw new RuntimeException("no block found by that id");
+            throw new IllegalArgumentException("no block found by that id");
         }
     }
 

@@ -113,9 +113,6 @@ public class Baritone implements IBaritone {
             memoryBehavior = new MemoryBehavior(this);
             inventoryBehavior = new InventoryBehavior(this);
             inputOverrideHandler = new InputOverrideHandler(this);
-
-            DefaultCommands.commands.forEach(CommandManager.REGISTRY::register);
-            new BaritoneChatControl(this);
         }
 
         this.pathingControlManager = new PathingControlManager(this);
@@ -138,6 +135,9 @@ public class Baritone implements IBaritone {
         }
 
         this.initialized = true;
+
+        DefaultCommands.COMMANDS.forEach(CommandManager.REGISTRY::register);
+        new BaritoneChatControl(this);
     }
 
     @Override

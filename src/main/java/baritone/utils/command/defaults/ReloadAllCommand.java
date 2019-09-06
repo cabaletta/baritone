@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 
 public class ReloadAllCommand extends Command {
     public ReloadAllCommand() {
-        super("reloadall", "Reloads Baritone's cache for this world");
+        super("reloadall");
     }
 
     @Override
@@ -41,6 +41,11 @@ public class ReloadAllCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Reloads Baritone's cache for this world";
     }
 
     @Override

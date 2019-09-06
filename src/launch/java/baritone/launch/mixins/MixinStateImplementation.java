@@ -40,7 +40,10 @@ public abstract class MixinStateImplementation {
     @Unique
     private int hashCode;
 
-    @Inject(method = "<init>*", at = @At("RETURN"))
+    @Inject(
+        method = "<init>*",
+        at = @At("RETURN")
+    )
     private void onInit(CallbackInfo ci) {
         hashCode = properties.hashCode();
     }

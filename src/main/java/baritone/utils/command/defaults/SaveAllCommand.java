@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 
 public class SaveAllCommand extends Command {
     public SaveAllCommand() {
-        super("saveall", "Saves Baritone's cache for this world");
+        super("saveall");
     }
 
     @Override
@@ -41,6 +41,11 @@ public class SaveAllCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Saves Baritone's cache for this world";
     }
 
     @Override

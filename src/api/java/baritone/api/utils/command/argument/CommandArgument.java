@@ -17,16 +17,27 @@
 
 package baritone.api.utils.command.argument;
 
+import baritone.api.utils.command.argparser.ArgParser;
 import baritone.api.utils.command.argparser.ArgParserManager;
+import baritone.api.utils.command.exception.CommandInvalidArgumentException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
+import baritone.api.utils.command.exception.CommandNoParserForTypeException;
+import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import net.minecraft.util.EnumFacing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("UnusedReturnValue")
+/**
+ * A {@link CommandArgument} is an immutable object representing one command argument. It contains data on the index of
+ * that argument, its value, and the rest of the string that argument was found in
+ * <p>
+ * You're recommended to use {@link ArgConsumer}s to handle these. Check out {@link ArgConsumer#from(String)}
+ */
 public class CommandArgument {
     public final int index;
     public final String value;
@@ -39,18 +50,54 @@ public class CommandArgument {
         this.rawRest = rawRest;
     }
 
+    /**
+     * Gets an enum value from the enum class with the same name as this argument's value
+     * <p>
+     * For example if you getEnum as an {@link EnumFacing}, and this argument's value is "up", it will return {@link
+     * EnumFacing#UP}
+     *
+     * @param enumClass The enum class to search
+     * @return An enum constant of that class with the same name as this argument's value
+     * @throws CommandInvalidTypeException If the constant couldn't be found
+     * @see ArgConsumer#peekEnum(Class)
+     * @see ArgConsumer#peekEnum(Class, int)
+     * @see ArgConsumer#peekEnumOrNull(Class)
+     * @see ArgConsumer#peekEnumOrNull(Class, int)
+     * @see ArgConsumer#getEnum(Class)
+     * @see ArgConsumer#getEnumOrNull(Class)
+     */
     public <E extends Enum<?>> E getEnum(Class<E> enumClass) {
-        //noinspection OptionalGetWithoutIsPresent
-        return Arrays.stream(enumClass.getEnumConstants())
-            .filter(e -> e.name().equalsIgnoreCase(value))
-            .findFirst()
-            .get();
+        try {
+            //noinspection OptionalGetWithoutIsPresent
+            return Arrays.stream(enumClass.getEnumConstants())
+                .filter(e -> e.name().equalsIgnoreCase(value))
+                .findFirst()
+                .get();
+        } catch (NoSuchElementException e) {
+            throw new CommandInvalidTypeException(this, enumClass.getSimpleName());
+        }
     }
 
+    /**
+     * Tries to use a <b>stateless</b> {@link ArgParser} to parse this argument into the specified class
+     *
+     * @param type The class to parse this argument into
+     * @return An instance of the specified type
+     * @throws CommandNoParserForTypeException If no parser exists for that type
+     * @throws CommandInvalidTypeException     If the parsing failed
+     * @see ArgParser.Stateless
+     */
     public <T> T getAs(Class<T> type) {
         return ArgParserManager.parseStateless(type, this);
     }
 
+    /**
+     * Tries to use a <b>stateless</b> {@link ArgParser} to parse this argument into the specified class
+     *
+     * @param type The class to parse this argument into
+     * @return If the parser succeeded
+     * @see ArgParser.Stateless
+     */
     public <T> boolean is(Class<T> type) {
         try {
             getAs(type);
@@ -60,10 +107,27 @@ public class CommandArgument {
         }
     }
 
+    /**
+     * Tries to use a <b>stated</b> {@link ArgParser} to parse this argument into the specified class
+     *
+     * @param type The class to parse this argument into
+     * @return An instance of the specified type
+     * @throws CommandNoParserForTypeException If no parser exists for that type
+     * @throws CommandInvalidTypeException     If the parsing failed
+     * @see ArgParser.Stated
+     */
+    @SuppressWarnings("UnusedReturnValue")
     public <T, S> T getAs(Class<T> type, Class<S> stateType, S state) {
         return ArgParserManager.parseStated(type, stateType, this, state);
     }
 
+    /**
+     * Tries to use a <b>stated</b> {@link ArgParser} to parse this argument into the specified class
+     *
+     * @param type The class to parse this argument into
+     * @return If the parser succeeded
+     * @see ArgParser.Stated
+     */
     public <T, S> boolean is(Class<T> type, Class<S> stateType, S state) {
         try {
             getAs(type, stateType, state);
@@ -73,6 +137,14 @@ public class CommandArgument {
         }
     }
 
+    /**
+     * Turn a string into a list of {@link CommandArgument}s. This is needed because of {@link CommandArgument#rawRest}
+     *
+     * @param string            The string to convert
+     * @param preserveEmptyLast If the string ends with whitespace, add an empty {@link CommandArgument} to the end This
+     *                          is useful for tab completion
+     * @return A list of {@link CommandArgument}s
+     */
     public static List<CommandArgument> from(String string, boolean preserveEmptyLast) {
         List<CommandArgument> args = new ArrayList<>();
         Matcher argMatcher = argPattern.matcher(string);
@@ -94,10 +166,19 @@ public class CommandArgument {
         return args;
     }
 
+    /**
+     * @see #from(String, boolean)
+     */
     public static List<CommandArgument> from(String string) {
         return from(string, false);
     }
 
+    /**
+     * Returns an "unknown" {@link CommandArgument}. This shouldn't be used unless you absolutely have no information -
+     * ESPECIALLY not with {@link CommandInvalidArgumentException}s
+     *
+     * @return The unknown {@link CommandArgument}
+     */
     public static CommandArgument unknown() {
         return new CommandArgument(-1, "<unknown>", "");
     }

@@ -79,45 +79,45 @@ public class Paginator<E> implements Helper {
         boolean hasPrevPage = nonNull(commandPrefix) && validPage(page - 1);
         boolean hasNextPage = nonNull(commandPrefix) && validPage(page + 1);
 
-        logDirect(new TextComponentString("") {{
-            getStyle().setColor(TextFormatting.GRAY);
+        ITextComponent prevPageComponent = new TextComponentString("<<");
 
-            appendSibling(new TextComponentString("<<") {{
-                if (hasPrevPage) {
-                    getStyle()
-                        .setClickEvent(new ClickEvent(
-                            ClickEvent.Action.RUN_COMMAND,
-                            String.format("%s %d", commandPrefix, page - 1)
-                        ))
-                        .setHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            new TextComponentString("Click to view previous page")
-                        ));
-                } else {
-                    getStyle().setColor(TextFormatting.DARK_GRAY);
-                }
-            }});
+        if (hasPrevPage) {
+            prevPageComponent.getStyle()
+                .setClickEvent(new ClickEvent(
+                    ClickEvent.Action.RUN_COMMAND,
+                    String.format("%s %d", commandPrefix, page - 1)
+                ))
+                .setHoverEvent(new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    new TextComponentString("Click to view previous page")
+                ));
+        } else {
+            prevPageComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
+        }
 
-            appendText(" | ");
+        ITextComponent nextPageComponent = new TextComponentString(">>");
 
-            appendSibling(new TextComponentString(">>") {{
-                if (hasNextPage) {
-                    getStyle()
-                        .setClickEvent(new ClickEvent(
-                            ClickEvent.Action.RUN_COMMAND,
-                            commandPrefix + " " + (page + 1)
-                        ))
-                        .setHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            new TextComponentString("Click to view next page")
-                        ));
-                } else {
-                    getStyle().setColor(TextFormatting.DARK_GRAY);
-                }
-            }});
+        if (hasNextPage) {
+            nextPageComponent.getStyle()
+                .setClickEvent(new ClickEvent(
+                    ClickEvent.Action.RUN_COMMAND,
+                    String.format("%s %d", commandPrefix, page + 1)
+                ))
+                .setHoverEvent(new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    new TextComponentString("Click to view next page")
+                ));
+        } else {
+            nextPageComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
+        }
 
-            appendText(String.format(" %d/%d", page, getMaxPage()));
-        }});
+        ITextComponent pagerComponent = new TextComponentString("");
+        pagerComponent.getStyle().setColor(TextFormatting.GRAY);
+        pagerComponent.appendSibling(prevPageComponent);
+        pagerComponent.appendText(" | ");
+        pagerComponent.appendSibling(nextPageComponent);
+        pagerComponent.appendText(String.format(" %d/%d", page, getMaxPage()));
+        logDirect(pagerComponent);
     }
 
     public void display(Function<E, ITextComponent> transform) {

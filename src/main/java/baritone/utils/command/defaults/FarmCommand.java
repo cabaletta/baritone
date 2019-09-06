@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 
 public class FarmCommand extends Command {
     public FarmCommand() {
-        super("farm", "Farm nearby crops");
+        super("farm");
     }
 
     @Override
@@ -41,6 +41,11 @@ public class FarmCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Farm nearby crops";
     }
 
     @Override

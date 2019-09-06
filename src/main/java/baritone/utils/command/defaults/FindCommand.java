@@ -32,7 +32,7 @@ import static java.util.Arrays.asList;
 
 public class FindCommand extends Command {
     public FindCommand() {
-        super("find", "Find positions of a certain block");
+        super("find");
     }
 
     @Override
@@ -63,6 +63,11 @@ public class FindCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return args.tabCompleteDatatype(BlockById.class);
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Find positions of a certain block";
     }
 
     @Override

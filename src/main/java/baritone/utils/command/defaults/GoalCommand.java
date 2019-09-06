@@ -36,7 +36,7 @@ import static java.util.Objects.nonNull;
 
 public class GoalCommand extends Command {
     public GoalCommand() {
-        super("goal", "Set or clear the goal");
+        super("goal");
     }
 
     @Override
@@ -84,6 +84,11 @@ public class GoalCommand extends Command {
         }
 
         return helper.filterPrefix(args.getString()).stream();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Set or clear the goal";
     }
 
     @Override

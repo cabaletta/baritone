@@ -33,7 +33,7 @@ import static java.util.Objects.isNull;
 
 public class ComeCommand extends Command {
     public ComeCommand() {
-        super("come", "Start heading towards your camera");
+        super("come");
     }
 
     @Override
@@ -55,11 +55,16 @@ public class ComeCommand extends Command {
     }
 
     @Override
+    public String getShortDesc() {
+        return "Start heading towards your camera";
+    }
+
+    @Override
     public List<String> getLongDesc() {
         return asList(
             "The come command tells Baritone to head towards your camera.",
             "",
-            "I'm... not actually sure how useful this is, to be honest.",
+            "This can be useful in hacked clients where freecam doesn't move your player position.",
             "",
             "Usage:",
             "> come"

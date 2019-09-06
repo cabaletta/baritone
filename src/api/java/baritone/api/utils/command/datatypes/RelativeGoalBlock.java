@@ -17,7 +17,6 @@
 
 package baritone.api.utils.command.datatypes;
 
-import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;

@@ -25,13 +25,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GuiChat.ChatTabCompleter.class)
 public abstract class MixinChatTabCompleter extends MixinTabCompleter {
-    @Inject(method = "<init>*", at = @At("RETURN"))
+    @Inject(
+        method = "<init>*",
+        at = @At("RETURN")
+    )
     private void onConstruction(CallbackInfo ci) {
         isChatCompleter = true;
     }
 
-    @Inject(method = "complete", at = @At("HEAD"), cancellable = true)
+    @Inject(
+        method = "complete",
+        at = @At("HEAD"),
+        cancellable = true
+    )
     private void onComplete(CallbackInfo ci) {
-        if (dontComplete) ci.cancel();
+        if (dontComplete) {
+            ci.cancel();
+        }
     }
 }

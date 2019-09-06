@@ -33,7 +33,7 @@ import static java.util.Arrays.asList;
 
 public class ClearareaCommand extends Command {
     public ClearareaCommand() {
-        super("cleararea", "Clear an area of all blocks");
+        super("cleararea");
     }
 
     @Override
@@ -63,6 +63,11 @@ public class ClearareaCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return args.tabCompleteDatatype(RelativeBlockPos.class);
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Clear an area of all blocks";
     }
 
     @Override

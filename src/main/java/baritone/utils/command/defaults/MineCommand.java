@@ -23,6 +23,7 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.BlockById;
 import baritone.api.utils.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.cache.WorldScanner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ import static java.util.Arrays.asList;
 
 public class MineCommand extends Command {
     public MineCommand() {
-        super("mine", "Mine some blocks");
+        super("mine");
     }
 
     @Override
@@ -45,6 +46,7 @@ public class MineCommand extends Command {
             boms.add(args.getDatatypeFor(ForBlockOptionalMeta.class));
         }
 
+        WorldScanner.INSTANCE.repack(ctx);
         baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
         logDirect(String.format("Mining %s", boms.toString()));
     }
@@ -55,12 +57,23 @@ public class MineCommand extends Command {
     }
 
     @Override
+    public String getShortDesc() {
+        return "Mine some blocks";
+    }
+
+    @Override
     public List<String> getLongDesc() {
         return asList(
+            "The mine command allows you to tell Baritone to search for and mine individual blocks.",
             "",
+            "The specified blocks can be ores (which are commonly cached), or any other block.",
+            "",
+            "Also see the legitMine settings (see #set l legitMine).",
             "",
             "Usage:",
-            "> "
+            "> mine diamond_ore - Mines all diamonds it can find.",
+            "> mine redstone_ore lit_redstone_ore - Mines redstone ore.",
+            "> mine log:0 - Mines only oak logs."
         );
     }
 }

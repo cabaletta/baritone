@@ -30,7 +30,7 @@ import static java.util.Arrays.asList;
 
 public class BlacklistCommand extends Command {
     public BlacklistCommand() {
-        super("blacklist", "Blacklist closest block");
+        super("blacklist");
     }
 
     @Override
@@ -52,6 +52,11 @@ public class BlacklistCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Blacklist closest block";
     }
 
     @Override

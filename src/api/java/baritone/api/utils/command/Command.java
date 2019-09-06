@@ -27,8 +27,6 @@ import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.client.Minecraft;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -47,26 +45,19 @@ public abstract class Command implements Helper, AbstractGameEventListener {
     public final List<String> names;
 
     /**
-     * A <b>single-line</b> string containing a short description of this command's purpose.
-     */
-    public final String shortDesc;
-
-    /**
      * Creates a new Baritone control command.
      *
-     * @param names     The names of this command. This is what you put after the command prefix.
-     * @param shortDesc A <b>single-line</b> string containing a short description of this command's purpose.
+     * @param names The names of this command. This is what you put after the command prefix.
      */
-    protected Command(List<String> names, String shortDesc) {
+    protected Command(List<String> names) {
         this.names = names.stream()
             .map(s -> s.toLowerCase(Locale.US))
-            .collect(Collectors.toCollection(ArrayList::new));
-        this.shortDesc = shortDesc;
+            .collect(Collectors.toList());
         baritone.getGameEventHandler().registerEventListener(this);
     }
 
-    protected Command(String name, String shortDesc) {
-        this(Collections.singletonList(name), shortDesc);
+    protected Command(String name) {
+        this(Collections.singletonList(name));
     }
 
     /**
@@ -88,7 +79,7 @@ public abstract class Command implements Helper, AbstractGameEventListener {
         try {
             return tabCompleted(execution.label, execution.args, execution.settings);
         } catch (Throwable t) {
-            return Arrays.stream(new String[0]);
+            return Stream.empty();
         }
     }
 
@@ -102,6 +93,11 @@ public abstract class Command implements Helper, AbstractGameEventListener {
      * list.
      */
     protected abstract Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings);
+
+    /**
+     * @return A <b>single-line</b> string containing a short description of this command's purpose.
+     */
+    public abstract String getShortDesc();
 
     /**
      * @return A list of lines that will be printed by the help command when the user wishes to view them.

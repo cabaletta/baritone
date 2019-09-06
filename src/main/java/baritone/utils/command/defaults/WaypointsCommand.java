@@ -50,7 +50,7 @@ import static java.util.Arrays.asList;
 
 public class WaypointsCommand extends Command {
     public WaypointsCommand() {
-        super(asList("waypoints", "waypoint", "wp"), "Manage waypoints");
+        super(asList("waypoints", "waypoint", "wp"));
     }
 
     @Override
@@ -87,7 +87,7 @@ public class WaypointsCommand extends Command {
                         FORCE_COMMAND_PREFIX,
                         label,
                         _action.names[0],
-                        waypoint.getTag().names[0],
+                        waypoint.getTag().getName(),
                         waypoint.getCreationTimestamp()
                     ))
                 );
@@ -99,7 +99,7 @@ public class WaypointsCommand extends Command {
             toComponent.apply(waypoint, action == Action.LIST ? Action.INFO : action);
 
         if (action == Action.LIST) {
-            IWaypoint.Tag tag = args.has() ? ForWaypoints.getTagByName(args.peekString()) : null;
+            IWaypoint.Tag tag = args.has() ? IWaypoint.Tag.getByName(args.peekString()) : null;
 
             if (tag != null) {
                 args.get();
@@ -125,7 +125,7 @@ public class WaypointsCommand extends Command {
                         FORCE_COMMAND_PREFIX,
                         label,
                         action.names[0],
-                        tag != null ? " " + tag.names[0] : ""
+                        tag != null ? " " + tag.getName() : ""
                     )
                 );
             } else {
@@ -137,7 +137,7 @@ public class WaypointsCommand extends Command {
                 );
             }
         } else if (action == Action.SAVE) {
-            IWaypoint.Tag tag = ForWaypoints.getTagByName(args.getString());
+            IWaypoint.Tag tag = IWaypoint.Tag.getByName(args.getString());
 
             if (tag == null) {
                 throw new CommandInvalidStateException(String.format("'%s' is not a tag ", args.consumedString()));
@@ -159,7 +159,7 @@ public class WaypointsCommand extends Command {
             logDirect(component);
         } else if (action == Action.CLEAR) {
             args.requireMax(1);
-            IWaypoint.Tag tag = ForWaypoints.getTagByName(args.getString());
+            IWaypoint.Tag tag = IWaypoint.Tag.getByName(args.getString());
             IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(tag);
 
             for (IWaypoint waypoint : waypoints) {
@@ -221,7 +221,7 @@ public class WaypointsCommand extends Command {
                             "%s%s delete %s @ %d",
                             FORCE_COMMAND_PREFIX,
                             label,
-                            waypoint.getTag().names[0],
+                            waypoint.getTag().getName(),
                             waypoint.getCreationTimestamp()
                         )
                     ));
@@ -232,7 +232,7 @@ public class WaypointsCommand extends Command {
                             "%s%s goal %s @ %d",
                             FORCE_COMMAND_PREFIX,
                             label,
-                            waypoint.getTag().names[0],
+                            waypoint.getTag().getName(),
                             waypoint.getCreationTimestamp()
                         )
                     ));
@@ -275,7 +275,7 @@ public class WaypointsCommand extends Command {
                 if (args.hasExactlyOne()) {
                     if (action == Action.LIST || action == Action.SAVE || action == Action.CLEAR) {
                         return new TabCompleteHelper()
-                            .append(ForWaypoints.getTagNames())
+                            .append(IWaypoint.Tag.getAllNames())
                             .sortAlphabetically()
                             .filterPrefix(args.getString())
                             .stream();
@@ -291,6 +291,11 @@ public class WaypointsCommand extends Command {
         }
 
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Manage waypoints";
     }
 
     @Override

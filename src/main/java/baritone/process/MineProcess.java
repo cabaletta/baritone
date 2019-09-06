@@ -320,6 +320,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
                 BetterBlockPos pf = ctx.baritone.getPlayerContext().playerFeet();
 
+                // maxRegionDistanceSq 2 means adjacent directly or adjacent diagonally; nothing further than that
                 locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(
                     BlockUtils.blockToString(block),
                     Baritone.settings().maxCachedWorldScanCount.value,
@@ -414,11 +415,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public void mineByName(int quantity, String... blocks) {
-        mine(quantity, new BlockOptionalMetaLookup(
-            Arrays.stream(Objects.requireNonNull(blocks))
-                .map(BlockOptionalMeta::new)
-                .toArray(BlockOptionalMeta[]::new)
-        ));
+        mine(quantity, new BlockOptionalMetaLookup(blocks));
     }
 
     @Override

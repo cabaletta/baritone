@@ -21,6 +21,8 @@ import baritone.api.IBaritone;
 import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 
+import java.util.List;
+
 public abstract class MaskSchematic extends AbstractSchematic {
     private final ISchematic schematic;
 
@@ -37,7 +39,7 @@ public abstract class MaskSchematic extends AbstractSchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z, IBlockState current) {
-        return schematic.desiredState(x, y, z, current);
+    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
+        return schematic.desiredState(x, y, z, current, approxPlaceable);
     }
 }

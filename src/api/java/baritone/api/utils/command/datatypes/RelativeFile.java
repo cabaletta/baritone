@@ -42,7 +42,7 @@ public class RelativeFile implements IDatatypePost<File, File> {
         try {
             path = FileSystems.getDefault().getPath(consumer.getString());
         } catch (InvalidPathException e) {
-            throw new RuntimeException("invalid path");
+            throw new IllegalArgumentException("invalid path");
         }
     }
 

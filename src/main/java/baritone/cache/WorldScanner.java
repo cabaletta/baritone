@@ -17,7 +17,9 @@
 
 package baritone.cache;
 
+import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IWorldScanner;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IBlockStateContainer;
@@ -26,6 +28,7 @@ import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.ArrayList;
@@ -34,6 +37,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
+
+import static java.util.Objects.nonNull;
 
 public enum WorldScanner implements IWorldScanner {
 
@@ -44,6 +49,11 @@ public enum WorldScanner implements IWorldScanner {
     @Override
     public List<BlockPos> scanChunkRadius(IPlayerContext ctx, BlockOptionalMetaLookup filter, int max, int yLevelThreshold, int maxSearchRadius) {
         ArrayList<BlockPos> res = new ArrayList<>();
+
+        if (filter.blocks().isEmpty()) {
+            return res;
+        }
+
         ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
 
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
@@ -79,8 +89,8 @@ public enum WorldScanner implements IWorldScanner {
                 }
             }
             if ((allUnloaded && foundChunks)
-                    || (res.size() >= max
-                    && (searchRadiusSq > maxSearchRadiusSq || (searchRadiusSq > 1 && foundWithinY)))
+                || (res.size() >= max
+                && (searchRadiusSq > maxSearchRadiusSq || (searchRadiusSq > 1 && foundWithinY)))
             ) {
                 return res;
             }
@@ -90,6 +100,10 @@ public enum WorldScanner implements IWorldScanner {
 
     @Override
     public List<BlockPos> scanChunk(IPlayerContext ctx, BlockOptionalMetaLookup filter, ChunkPos pos, int max, int yLevelThreshold) {
+        if (filter.blocks().isEmpty()) {
+            return Collections.emptyList();
+        }
+
         ChunkProviderClient chunkProvider = (ChunkProviderClient) ctx.world().getChunkProvider();
         Chunk chunk = chunkProvider.getLoadedChunk(pos.x, pos.z);
         int playerY = ctx.playerFeet().getY();
@@ -121,7 +135,7 @@ public enum WorldScanner implements IWorldScanner {
             for (int i = 0; i < imax; i++) {
                 IBlockState state = bsc.getAtPalette(storage[i]);
                 if (filter.has(state)) {
-                    int y = yReal | (i >> 8 & 15);
+                    int y = yReal | ((i >> 8) & 15);
                     if (result.size() >= max) {
                         if (Math.abs(y - playerY) < yLevelThreshold) {
                             foundWithinY = true;
@@ -133,10 +147,32 @@ public enum WorldScanner implements IWorldScanner {
                             }
                         }
                     }
-                    result.add(new BlockPos(chunkX | (i & 15), y, chunkZ | (i >> 4 & 15)));
+                    result.add(new BlockPos(chunkX | (i & 15), y, chunkZ | ((i >> 4) & 15)));
                 }
             }
         }
         return foundWithinY;
+    }
+
+    public int repack(IPlayerContext ctx) {
+        IChunkProvider chunkProvider = ctx.world().getChunkProvider();
+        ICachedWorld cachedWorld = ctx.worldData().getCachedWorld();
+
+        BetterBlockPos playerPos = ctx.playerFeet();
+        int playerChunkX = playerPos.getX() >> 4;
+        int playerChunkZ = playerPos.getZ() >> 4;
+        int queued = 0;
+        for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
+            for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
+                Chunk chunk = chunkProvider.getLoadedChunk(x, z);
+
+                if (nonNull(chunk) && !chunk.isEmpty()) {
+                    queued++;
+                    cachedWorld.queueForPacking(chunk);
+                }
+            }
+        }
+
+        return queued;
     }
 }

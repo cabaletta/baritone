@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 
 public class SchematicaCommand extends Command {
     public SchematicaCommand() {
-        super("schematica", "Opens a Schematica schematic?");
+        super("schematica");
     }
 
     @Override
@@ -43,9 +43,14 @@ public class SchematicaCommand extends Command {
     }
 
     @Override
+    public String getShortDesc() {
+        return "Builds the loaded schematic";
+    }
+
+    @Override
     public List<String> getLongDesc() {
         return asList(
-            "I'm not actually sure what this does.",
+            "Builds the schematica currently open in Schematica.",
             "",
             "Usage:",
             "> schematica"

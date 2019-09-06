@@ -23,6 +23,8 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.List;
+
 public final class SchematicAdapter implements ISchematic {
     private final SchematicWorld schematic;
 
@@ -31,7 +33,7 @@ public final class SchematicAdapter implements ISchematic {
     }
 
     @Override
-    public IBlockState desiredState(int x, int y, int z, IBlockState current) {
+    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
         return schematic.getSchematic().getBlockState(new BlockPos(x, y, z));
     }
 

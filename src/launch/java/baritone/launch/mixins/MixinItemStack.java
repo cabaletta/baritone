@@ -44,12 +44,18 @@ public abstract class MixinItemStack implements IItemStack {
         baritoneHash = item == null ? -1 : item.hashCode() + itemDamage;
     }
 
-    @Inject(method = "<init>*", at = @At("RETURN"))
+    @Inject(
+        method = "<init>*",
+        at = @At("RETURN")
+    )
     private void onInit(CallbackInfo ci) {
         recalculateHash();
     }
 
-    @Inject(method = "setItemDamage", at = @At("TAIL"))
+    @Inject(
+        method = "setItemDamage",
+        at = @At("TAIL")
+    )
     private void onItemDamageSet(CallbackInfo ci) {
         recalculateHash();
     }

@@ -36,7 +36,7 @@ import static java.util.Arrays.asList;
 
 public class ChestsCommand extends Command {
     public ChestsCommand() {
-        super("chests", "Display remembered inventories");
+        super("chests");
     }
 
     @Override
@@ -67,6 +67,11 @@ public class ChestsCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Display remembered inventories";
     }
 
     @Override

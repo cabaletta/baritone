@@ -30,7 +30,7 @@ import static java.util.Arrays.asList;
 
 public class AxisCommand extends Command {
     public AxisCommand() {
-        super(asList("axis", "highway"), "Set a goal to the axes");
+        super(asList("axis", "highway"));
     }
 
     @Override
@@ -44,6 +44,11 @@ public class AxisCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Set a goal to the axes";
     }
 
     @Override

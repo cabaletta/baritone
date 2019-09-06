@@ -15,10 +15,10 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils.command;
+package baritone.api.accessor;
 
 import java.net.URI;
 
-public interface Lol {
+public interface IGuiScreen {
     void openLink(URI url);
 }

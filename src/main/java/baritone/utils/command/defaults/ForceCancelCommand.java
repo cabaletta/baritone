@@ -29,7 +29,7 @@ import static java.util.Arrays.asList;
 
 public class ForceCancelCommand extends Command {
     public ForceCancelCommand() {
-        super("forcecancel", "Force cancel");
+        super("forcecancel");
     }
 
     @Override
@@ -44,6 +44,11 @@ public class ForceCancelCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Force cancel";
     }
 
     @Override

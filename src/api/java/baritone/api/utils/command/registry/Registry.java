@@ -20,10 +20,10 @@ package baritone.api.utils.command.registry;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -50,11 +50,11 @@ public class Registry<V> {
     private final Deque<V> _entries = new LinkedList<>();
 
     /**
-     * A HashMap containing keys for every entry currently registered. Map entries are added to this map when something
-     * is registered and removed from the map when they are unregistered. An entry simply being present in this map
-     * indicates that it is currently registered and therefore can be removed and should not be reregistered.
+     * A HashSet containing every entry currently registered. Entries are added to this set when something is registered
+     * and removed from the set when they are unregistered. An entry being present in this set indicates that it is
+     * currently registered, can be removed, and should not be reregistered until it is removed.
      */
-    private final Map<V, Boolean> registered = new HashMap<>();
+    private final Set<V> registered = new HashSet<>();
 
     /**
      * The collection of entries that are currently in this registry. This is a collection (and not a list) because,
@@ -67,7 +67,7 @@ public class Registry<V> {
      * @return If this entry is currently registered in this registry.
      */
     public boolean registered(V entry) {
-        return registered.containsKey(entry);
+        return registered.contains(entry);
     }
 
     /**
@@ -81,7 +81,7 @@ public class Registry<V> {
     public boolean register(V entry) {
         if (!registered(entry)) {
             _entries.addFirst(entry);
-            registered.put(entry, true);
+            registered.add(entry);
 
             return true;
         }

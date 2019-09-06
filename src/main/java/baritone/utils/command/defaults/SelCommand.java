@@ -20,7 +20,7 @@ package baritone.utils.command.defaults;
 import baritone.api.Settings;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.schematic.CompositeSchematic;
-import baritone.api.schematic.FillBomSchematic;
+import baritone.api.schematic.FillSchematic;
 import baritone.api.schematic.ReplaceSchematic;
 import baritone.api.schematic.ShellSchematic;
 import baritone.api.schematic.WallsSchematic;
@@ -29,7 +29,6 @@ import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.api.utils.IRenderer;
 import baritone.api.utils.ISchematic;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.ForBlockOptionalMeta;
@@ -39,6 +38,7 @@ import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.utils.IRenderer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -59,7 +59,7 @@ public class SelCommand extends Command {
     private BetterBlockPos pos1 = null;
 
     public SelCommand() {
-        super(asList("sel", "selection", "s"), "WorldEdit-like commands");
+        super(asList("sel", "selection", "s"));
     }
 
     @Override
@@ -118,10 +118,13 @@ public class SelCommand extends Command {
 
                 List<BlockOptionalMeta> replacesList = new ArrayList<>();
 
-                while (args.has()) {
+                replacesList.add(type);
+
+                while (args.has(2)) {
                     replacesList.add(args.getDatatypeFor(ForBlockOptionalMeta.class));
                 }
 
+                type = args.getDatatypeFor(ForBlockOptionalMeta.class);
                 replaces = new BlockOptionalMetaLookup(replacesList.toArray(new BlockOptionalMeta[0]));
             } else {
                 args.requireMax(0);
@@ -149,7 +152,7 @@ public class SelCommand extends Command {
                 Vec3i size = selection.size();
                 BetterBlockPos min = selection.min();
 
-                ISchematic schematic = new FillBomSchematic(baritone, size.getX(), size.getY(), size.getZ(), type);
+                ISchematic schematic = new FillSchematic(baritone, size.getX(), size.getY(), size.getZ(), type);
 
                 if (action == Action.WALLS) {
                     schematic = new WallsSchematic(baritone, schematic);
@@ -243,6 +246,11 @@ public class SelCommand extends Command {
     }
 
     @Override
+    public String getShortDesc() {
+        return "WorldEdit-like commands";
+    }
+
+    @Override
     public List<String> getLongDesc() {
         return asList(
             "The sel command allows you to manipulate Baritone's selections, similarly to WorldEdit.",
@@ -263,7 +271,7 @@ public class SelCommand extends Command {
             "> sel walls/w [block] - Fill in the walls of the selection with a specified block.",
             "> sel shell/shl [block] - The same as walls, but fills in a ceiling and floor too.",
             "> sel cleararea/ca - Basically 'set air'.",
-            "> sel replace/r <place> <break...> - Replaces, with 'place', all blocks listed after it.",
+            "> sel replace/r <blocks...> <with> - Replaces blocks with another block.",
             "",
             "> sel expand <target> <direction> <blocks> - Expand the targets.",
             "> sel contract <target> <direction> <blocks> - Contract the targets.",

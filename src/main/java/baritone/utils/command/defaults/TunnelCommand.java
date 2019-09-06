@@ -30,7 +30,7 @@ import static java.util.Arrays.asList;
 
 public class TunnelCommand extends Command {
     public TunnelCommand() {
-        super("tunnel", "Set a goal to tunnel in your current direction");
+        super("tunnel");
     }
 
     @Override
@@ -49,6 +49,11 @@ public class TunnelCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Set a goal to tunnel in your current direction";
     }
 
     @Override

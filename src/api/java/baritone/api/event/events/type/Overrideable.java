@@ -44,8 +44,8 @@ public class Overrideable<T> {
     @Override
     public String toString() {
         return String.format(
-            "Overrideable{modified=%s,value=%s}",
-            Boolean.toString(modified),
+            "Overrideable{modified=%b,value=%s}",
+            modified,
             value.toString()
         );
     }

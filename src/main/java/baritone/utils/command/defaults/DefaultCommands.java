@@ -18,7 +18,6 @@
 package baritone.utils.command.defaults;
 
 import baritone.api.utils.command.Command;
-import baritone.api.utils.command.manager.CommandManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +25,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 public class DefaultCommands {
-    public static final List<Command> commands = Collections.unmodifiableList(asList(
+    public static final List<Command> COMMANDS = Collections.unmodifiableList(asList(
         new HelpCommand(),
         new SetCommand(),
         new CommandAlias(asList("modified", "mod", "baritone", "modifiedsettings"), "List modified settings", "set modified"),

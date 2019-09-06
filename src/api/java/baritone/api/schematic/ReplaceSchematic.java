@@ -24,15 +24,17 @@ import net.minecraft.block.state.IBlockState;
 
 public class ReplaceSchematic extends MaskSchematic {
     private final BlockOptionalMetaLookup filter;
-    private final boolean[][][] cache;
+    private final Boolean[][][] cache;
 
     public ReplaceSchematic(IBaritone baritone, ISchematic schematic, BlockOptionalMetaLookup filter) {
         super(baritone, schematic);
         this.filter = filter;
-        this.cache = new boolean[widthX()][heightY()][lengthZ()];
+        this.cache = new Boolean[widthX()][heightY()][lengthZ()];
     }
 
     protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {
-        return cache[x][y][z] || (cache[x][y][z] = filter.has(currentState));
+        return cache[x][y][z] == null
+            ? cache[x][y][z] = filter.has(currentState)
+            : cache[x][y][z];
     }
 }

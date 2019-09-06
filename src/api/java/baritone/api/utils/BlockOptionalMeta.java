@@ -56,6 +56,7 @@ import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -78,6 +79,42 @@ public final class BlockOptionalMeta {
     private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
     private static final Map<Object, Object> normalizations;
+
+    public BlockOptionalMeta(@Nonnull Block block, @Nullable Integer meta) {
+        this.block = block;
+        this.noMeta = isNull(meta);
+        this.meta = noMeta ? 0 : meta;
+        this.blockstates = getStates(block, meta);
+        this.stateHashes = getStateHashes(blockstates);
+        this.stackHashes = getStackHashes(blockstates);
+    }
+
+    public BlockOptionalMeta(@Nonnull Block block) {
+        this(block, null);
+    }
+
+    public BlockOptionalMeta(@Nonnull String selector) {
+        Matcher matcher = pattern.matcher(selector);
+
+        if (!matcher.find()) {
+            throw new IllegalArgumentException("invalid block selector");
+        }
+
+        MatchResult matchResult = matcher.toMatchResult();
+        noMeta = matchResult.group(2) == null;
+
+        ResourceLocation id = new ResourceLocation(matchResult.group(1));
+
+        if (!Block.REGISTRY.containsKey(id)) {
+            throw new IllegalArgumentException("Invalid block ID");
+        }
+
+        block = Block.REGISTRY.getObject(id);
+        meta = noMeta ? 0 : Integer.parseInt(matchResult.group(2));
+        blockstates = getStates(block, getMeta());
+        stateHashes = getStateHashes(blockstates);
+        stackHashes = getStackHashes(blockstates);
+    }
 
     static {
         Map<Object, Object> _normalizations = new HashMap<>();
@@ -172,7 +209,7 @@ public final class BlockOptionalMeta {
         _normalizations.put(BlockWall.EAST, false);
         _normalizations.put(BlockWall.WEST, false);
         _normalizations.put(BlockWall.SOUTH, false);
-        normalizations = _normalizations;
+        normalizations = Collections.unmodifiableMap(_normalizations);
     }
 
     private static <C extends Comparable<C>, P extends IProperty<C>> P castToIProperty(Object value) {
@@ -180,7 +217,6 @@ public final class BlockOptionalMeta {
         return (P) value;
     }
 
-    @SuppressWarnings("unused")
     private static <C extends Comparable<C>, P extends IProperty<C>> C castToIPropertyValue(P iproperty, Object value) {
         //noinspection unchecked
         return (C) value;
@@ -225,7 +261,7 @@ public final class BlockOptionalMeta {
     private static Set<IBlockState> getStates(@Nonnull Block block, @Nullable Integer meta) {
         return block.getBlockState().getValidStates().stream()
             .filter(blockstate -> meta == null || stateMeta(blockstate) == meta)
-            .collect(Collectors.toCollection(HashSet::new));
+            .collect(Collectors.toSet());
     }
 
     private static ImmutableSet<Integer> getStateHashes(Set<IBlockState> blockstates) {
@@ -247,42 +283,6 @@ public final class BlockOptionalMeta {
                 .map(stack -> ((IItemStack) (Object) stack).getBaritoneHash())
                 .toArray(Integer[]::new)
         );
-    }
-
-    public BlockOptionalMeta(@Nonnull Block block, @Nullable Integer meta) {
-        this.block = block;
-        this.noMeta = isNull(meta);
-        this.meta = noMeta ? 0 : meta;
-        this.blockstates = getStates(block, meta);
-        this.stateHashes = getStateHashes(blockstates);
-        this.stackHashes = getStackHashes(blockstates);
-    }
-
-    public BlockOptionalMeta(@Nonnull Block block) {
-        this(block, null);
-    }
-
-    public BlockOptionalMeta(@Nonnull String selector) {
-        Matcher matcher = pattern.matcher(selector);
-
-        if (!matcher.find()) {
-            throw new IllegalArgumentException("invalid block selector");
-        }
-
-        MatchResult matchResult = matcher.toMatchResult();
-        noMeta = matchResult.group(2) == null;
-
-        ResourceLocation id = new ResourceLocation(matchResult.group(1));
-
-        if (!Block.REGISTRY.containsKey(id)) {
-            throw new IllegalArgumentException("Invalid block ID");
-        }
-
-        block = Block.REGISTRY.getObject(id);
-        meta = noMeta ? 0 : Integer.parseInt(matchResult.group(2));
-        blockstates = getStates(block, getMeta());
-        stateHashes = getStateHashes(blockstates);
-        stackHashes = getStackHashes(blockstates);
     }
 
     public Block getBlock() {

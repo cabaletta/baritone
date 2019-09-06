@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 
 public class EmptyCommand extends Command {
     public EmptyCommand() {
-        super(asList("name1", "name2"), "Short description");
+        super(asList("name1", "name2"));
     }
 
     @Override
@@ -39,6 +39,11 @@ public class EmptyCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Short description";
     }
 
     @Override

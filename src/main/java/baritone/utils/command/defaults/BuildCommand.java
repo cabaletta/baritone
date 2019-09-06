@@ -37,7 +37,7 @@ public class BuildCommand extends Command {
     private static final File schematicsDir = new File(Minecraft.getMinecraft().gameDir, "schematics");
 
     public BuildCommand() {
-        super("build", "Build a schematic");
+        super("build");
     }
 
     @Override
@@ -79,6 +79,11 @@ public class BuildCommand extends Command {
         }
 
         return Stream.empty();
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Build a schematic";
     }
 
     @Override
