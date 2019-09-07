@@ -18,21 +18,11 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalComposite;
-import baritone.api.pathing.goals.GoalRunAway;
-import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.BlockOptionalMeta;
-import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.api.utils.BlockUtils;
-import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.cache.CachedChunk;
 import baritone.cache.WorldScanner;
@@ -51,13 +41,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -91,8 +75,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (desiredQuantity > 0) {
             int curr = ctx.player().inventory.mainInventory.stream()
-                .filter(stack -> filter.has(stack))
-                .mapToInt(ItemStack::getCount).sum();
+                    .filter(stack -> filter.has(stack))
+                    .mapToInt(ItemStack::getCount).sum();
             System.out.println("Currently have " + curr + " valid items");
             if (curr >= desiredQuantity) {
                 logDirect("Have " + curr + " valid items");
@@ -126,10 +110,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             addNearby();
         }
         Optional<BlockPos> shaft = curr.stream()
-            .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
-            .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
-            .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof BlockAir)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
-            .min(Comparator.comparingDouble(ctx.player()::getDistanceSq));
+                .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
+                .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
+                .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof BlockAir)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
+                .min(Comparator.comparingDouble(ctx.player()::getDistanceSq));
         baritone.getInputOverrideHandler().clearAllKeys();
         if (shaft.isPresent() && ctx.player().onGround) {
             BlockPos pos = shaft.get();
@@ -322,11 +306,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
                 // maxRegionDistanceSq 2 means adjacent directly or adjacent diagonally; nothing further than that
                 locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(
-                    BlockUtils.blockToString(block),
-                    Baritone.settings().maxCachedWorldScanCount.value,
-                    pf.x,
-                    pf.z,
-                    2
+                        BlockUtils.blockToString(block),
+                        Baritone.settings().maxCachedWorldScanCount.value,
+                        pf.x,
+                        pf.z,
+                        2
                 ));
             } else {
                 untracked.add(block);
@@ -337,11 +321,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
         if (!untracked.isEmpty() || (Baritone.settings().extendCacheOnThreshold.value && locs.size() < max)) {
             locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(
-                ctx.getBaritone().getPlayerContext(),
-                filter,
-                max,
-                10,
-                32
+                    ctx.getBaritone().getPlayerContext(),
+                    filter,
+                    max,
+                    10,
+                    32
             )); // maxSearchRadius is NOT sq
         }
 
@@ -384,19 +368,19 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             return false;
         });
         List<BlockPos> locs = locs2
-            .stream()
-            .distinct()
+                .stream()
+                .distinct()
 
-            // remove any that are within loaded chunks that aren't actually what we want
-            .filter(pos -> !ctx.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ()) || filter.has(ctx.get(pos.getX(), pos.getY(), pos.getZ())) || dropped.contains(pos))
+                // remove any that are within loaded chunks that aren't actually what we want
+                .filter(pos -> !ctx.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ()) || filter.has(ctx.get(pos.getX(), pos.getY(), pos.getZ())) || dropped.contains(pos))
 
-            // remove any that are implausible to mine (encased in bedrock, or touching lava)
-            .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
+                // remove any that are implausible to mine (encased in bedrock, or touching lava)
+                .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
 
-            .filter(pos -> !blacklist.contains(pos))
+                .filter(pos -> !blacklist.contains(pos))
 
-            .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player()::getDistanceSq))
-            .collect(Collectors.toList());
+                .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player()::getDistanceSq))
+                .collect(Collectors.toList());
 
         if (locs.size() > max) {
             return locs.subList(0, max);
