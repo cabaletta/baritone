@@ -137,7 +137,7 @@ public class SelCommand extends Command {
             }
 
             BetterBlockPos origin = selections[0].min();
-            CompositeSchematic composite = new CompositeSchematic(baritone, 0, 0, 0);
+            CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
 
             for (ISelection selection : selections) {
                 BetterBlockPos min = selection.min();
@@ -152,14 +152,14 @@ public class SelCommand extends Command {
                 Vec3i size = selection.size();
                 BetterBlockPos min = selection.min();
 
-                ISchematic schematic = new FillSchematic(baritone, size.getX(), size.getY(), size.getZ(), type);
+                ISchematic schematic = new FillSchematic(size.getX(), size.getY(), size.getZ(), type);
 
                 if (action == Action.WALLS) {
-                    schematic = new WallsSchematic(baritone, schematic);
+                    schematic = new WallsSchematic(schematic);
                 } else if (action == Action.SHELL) {
-                    schematic = new ShellSchematic(baritone, schematic);
+                    schematic = new ShellSchematic(schematic);
                 } else if (action == Action.REPLACE) {
-                    schematic = new ReplaceSchematic(baritone, schematic, replaces);
+                    schematic = new ReplaceSchematic(schematic, replaces);
                 }
 
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);

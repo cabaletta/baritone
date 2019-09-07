@@ -420,22 +420,6 @@ public class ArgConsumer implements Cloneable {
      * @param datatype The datatype to get
      * @return The datatype instance
      * @see IDatatype
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
      */
     public <T extends IDatatype> T peekDatatype(Class<T> datatype) {
         return clone().getDatatype(datatype);
@@ -453,22 +437,6 @@ public class ArgConsumer implements Cloneable {
      * @param datatype The datatype to get
      * @return The datatype instance, or {@code null} if it throws an exception
      * @see IDatatype
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
      */
     public <T extends IDatatype> T peekDatatypeOrNull(Class<T> datatype) {
         return clone().getDatatypeOrNull(datatype);
@@ -487,22 +455,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance
      * @see IDatatype
      * @see IDatatypePost
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
      */
     public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(Class<D> datatype, O original) {
         return clone().getDatatypePost(datatype, original);
@@ -522,22 +474,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance, or {@code def} if it throws an exception
      * @see IDatatype
      * @see IDatatypePost
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
      */
     public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePostOrDefault(Class<D> datatype, O original, T def) {
         return clone().getDatatypePostOrDefault(datatype, original, def);
@@ -556,22 +492,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance, or {@code null} if it throws an exception
      * @see IDatatype
      * @see IDatatypePost
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
      */
     public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePostOrNull(Class<D> datatype, O original) {
         return peekDatatypePostOrDefault(datatype, original, null);
@@ -590,22 +510,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance
      * @see IDatatype
      * @see IDatatypeFor
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
      */
     public <T, D extends IDatatypeFor<T>> T peekDatatypeFor(Class<D> datatype) {
         return clone().peekDatatypeFor(datatype);
@@ -625,22 +529,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance, or {@code def} if it throws an exception
      * @see IDatatype
      * @see IDatatypeFor
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
      */
     public <T, D extends IDatatypeFor<T>> T peekDatatypeForOrDefault(Class<D> datatype, T def) {
         return clone().peekDatatypeForOrDefault(datatype, def);
@@ -659,22 +547,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance, or {@code null} if it throws an exception
      * @see IDatatype
      * @see IDatatypeFor
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
      */
     public <T, D extends IDatatypeFor<T>> T peekDatatypeForOrNull(Class<D> datatype) {
         return peekDatatypeForOrDefault(datatype, null);
@@ -849,22 +721,6 @@ public class ArgConsumer implements Cloneable {
      * @param datatype The datatype to get
      * @return The datatype instance
      * @see IDatatype
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
      */
     public <T extends IDatatype> T getDatatype(Class<T> datatype) {
         try {
@@ -888,22 +744,6 @@ public class ArgConsumer implements Cloneable {
      * @param datatype The datatype to get
      * @return The datatype instance, or {@code null} if it throws an exception
      * @see IDatatype
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
      */
     public <T extends IDatatype> T getDatatypeOrNull(Class<T> datatype) {
         List<CommandArgument> argsSnapshot = new ArrayList<>(args);
@@ -932,22 +772,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance
      * @see IDatatype
      * @see IDatatypePost
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
      */
     public <T, O, D extends IDatatypePost<T, O>> T getDatatypePost(Class<D> datatype, O original) {
         return getDatatype(datatype).apply(original);
@@ -967,22 +791,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance, or {@code def} if it throws an exception
      * @see IDatatype
      * @see IDatatypePost
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
      */
     public <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrDefault(Class<D> datatype, O original, T def) {
         List<CommandArgument> argsSnapshot = new ArrayList<>(args);
@@ -1013,22 +821,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance, or {@code null} if it throws an exception
      * @see IDatatype
      * @see IDatatypePost
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
      */
     public <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrNull(Class<D> datatype, O original) {
         return getDatatypePostOrDefault(datatype, original, null);
@@ -1045,22 +837,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance
      * @see IDatatype
      * @see IDatatypeFor
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
      */
     public <T, D extends IDatatypeFor<T>> T getDatatypeFor(Class<D> datatype) {
         return getDatatype(datatype).get();
@@ -1080,22 +856,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance, or {@code def} if it throws an exception
      * @see IDatatype
      * @see IDatatypeFor
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
      */
     public <T, D extends IDatatypeFor<T>> T getDatatypeForOrDefault(Class<D> datatype, T def) {
         List<CommandArgument> argsSnapshot = new ArrayList<>(args);
@@ -1126,22 +886,6 @@ public class ArgConsumer implements Cloneable {
      * @return The datatype instance, or {@code null} if it throws an exception
      * @see IDatatype
      * @see IDatatypeFor
-     * @see #getDatatype(Class)
-     * @see #getDatatypeOrNull(Class)
-     * @see #getDatatypePost(Class, Object)
-     * @see #getDatatypePostOrDefault(Class, Object, Object)
-     * @see #getDatatypePostOrNull(Class, Object)
-     * @see #getDatatypeFor(Class)
-     * @see #getDatatypeForOrDefault(Class, Object)
-     * @see #getDatatypeForOrNull(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeOrNull(Class)
-     * @see #peekDatatypePost(Class, Object)
-     * @see #peekDatatypePostOrDefault(Class, Object, Object)
-     * @see #peekDatatypePostOrNull(Class, Object)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypeForOrDefault(Class, Object)
-     * @see #peekDatatypeForOrNull(Class)
      */
     public <T, D extends IDatatypeFor<T>> T getDatatypeForOrNull(Class<D> datatype) {
         return getDatatypeForOrDefault(datatype, null);

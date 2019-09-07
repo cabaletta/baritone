@@ -47,12 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.GL_LIGHTING_BIT;
-import static org.lwjgl.opengl.GL11.GL_LINES;
-import static org.lwjgl.opengl.GL11.GL_LINE_LOOP;
-import static org.lwjgl.opengl.GL11.GL_LINE_STRIP;
-import static org.lwjgl.opengl.GL11.glPopAttrib;
-import static org.lwjgl.opengl.GL11.glPushAttrib;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author Brady

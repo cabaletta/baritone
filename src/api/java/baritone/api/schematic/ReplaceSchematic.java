@@ -17,7 +17,6 @@
 
 package baritone.api.schematic;
 
-import baritone.api.IBaritone;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
@@ -26,15 +25,18 @@ public class ReplaceSchematic extends MaskSchematic {
     private final BlockOptionalMetaLookup filter;
     private final Boolean[][][] cache;
 
-    public ReplaceSchematic(IBaritone baritone, ISchematic schematic, BlockOptionalMetaLookup filter) {
-        super(baritone, schematic);
+    public ReplaceSchematic(ISchematic schematic, BlockOptionalMetaLookup filter) {
+        super(schematic);
         this.filter = filter;
         this.cache = new Boolean[widthX()][heightY()][lengthZ()];
     }
 
+    @Override
     protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {
-        return cache[x][y][z] == null
-            ? cache[x][y][z] = filter.has(currentState)
-            : cache[x][y][z];
+        if (cache[x][y][z] == null) {
+            cache[x][y][z] = filter.has(currentState);
+        }
+
+        return cache[x][y][z];
     }
 }

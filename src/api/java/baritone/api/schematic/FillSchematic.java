@@ -17,7 +17,6 @@
 
 package baritone.api.schematic;
 
-import baritone.api.IBaritone;
 import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -27,8 +26,8 @@ import java.util.List;
 public class FillSchematic extends AbstractSchematic {
     private final BlockOptionalMeta bom;
 
-    public FillSchematic(IBaritone baritone, int x, int y, int z, BlockOptionalMeta bom) {
-        super(baritone, x, y, z);
+    public FillSchematic(int x, int y, int z, BlockOptionalMeta bom) {
+        super(x, y, z);
         this.bom = bom;
     }
 

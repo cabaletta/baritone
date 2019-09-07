@@ -113,7 +113,7 @@ public class DefaultArgParsers {
         }
     }
 
-    public static final List<ArgParser<?>> all = asList(
+    public static final List<ArgParser<?>> ALL = asList(
         IntArgumentParser.INSTANCE,
         LongArgumentParser.INSTANCE,
         FloatArgumentParser.INSTANCE,

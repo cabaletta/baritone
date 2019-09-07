@@ -28,7 +28,7 @@ public class ArgParserManager {
     public static final Registry<ArgParser> REGISTRY = new Registry<>();
 
     static {
-        DefaultArgParsers.all.forEach(REGISTRY::register);
+        DefaultArgParsers.ALL.forEach(REGISTRY::register);
     }
 
     /**

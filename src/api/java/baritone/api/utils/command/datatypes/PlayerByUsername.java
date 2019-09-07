@@ -39,13 +39,13 @@ public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
     public PlayerByUsername(ArgConsumer consumer) {
         String username = consumer.getString();
 
-        if (isNull(
-            player = players
-                .stream()
-                .filter(s -> s.getName().equalsIgnoreCase(username))
-                .findFirst()
-                .orElse(null)
-        )) {
+        player = players
+            .stream()
+            .filter(s -> s.getName().equalsIgnoreCase(username))
+            .findFirst()
+            .orElse(null);
+
+        if (isNull(player)) {
             throw new IllegalArgumentException("no player found by that username");
         }
     }

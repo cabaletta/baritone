@@ -28,7 +28,6 @@ import net.minecraft.util.EnumFacing;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,15 +66,10 @@ public class CommandArgument {
      * @see ArgConsumer#getEnumOrNull(Class)
      */
     public <E extends Enum<?>> E getEnum(Class<E> enumClass) {
-        try {
-            //noinspection OptionalGetWithoutIsPresent
-            return Arrays.stream(enumClass.getEnumConstants())
-                .filter(e -> e.name().equalsIgnoreCase(value))
-                .findFirst()
-                .get();
-        } catch (NoSuchElementException e) {
-            throw new CommandInvalidTypeException(this, enumClass.getSimpleName());
-        }
+        return Arrays.stream(enumClass.getEnumConstants())
+            .filter(e -> e.name().equalsIgnoreCase(value))
+            .findFirst()
+            .orElseThrow(() -> new CommandInvalidTypeException(this, enumClass.getSimpleName()));
     }
 
     /**

@@ -25,8 +25,6 @@ import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
@@ -88,14 +86,8 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
     }
 
     public static IWaypoint[] getWaypointsByName(String name) {
-        Set<IWaypoint> found = new HashSet<>();
-
-        for (IWaypoint waypoint : getWaypoints()) {
-            if (waypoint.getName().equalsIgnoreCase(name)) {
-                found.add(waypoint);
-            }
-        }
-
-        return found.toArray(new IWaypoint[0]);
+        return Arrays.stream(getWaypoints())
+            .filter(waypoint -> waypoint.getName().equalsIgnoreCase(name))
+            .toArray(IWaypoint[]::new);
     }
 }

@@ -17,7 +17,6 @@
 
 package baritone.api.schematic;
 
-import baritone.api.IBaritone;
 import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 
@@ -38,8 +37,8 @@ public class CompositeSchematic extends AbstractSchematic {
         }
     }
 
-    public CompositeSchematic(IBaritone baritone, int x, int y, int z) {
-        super(baritone, x, y, z);
+    public CompositeSchematic(int x, int y, int z) {
+        super(x, y, z);
         schematics = new ArrayList<>();
         recalcArr();
     }
