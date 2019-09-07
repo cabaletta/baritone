@@ -135,9 +135,6 @@ public class Baritone implements IBaritone {
         }
 
         this.initialized = true;
-
-        DefaultCommands.COMMANDS.forEach(CommandManager.REGISTRY::register);
-        new BaritoneChatControl(this);
     }
 
     @Override
