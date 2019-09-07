@@ -25,11 +25,7 @@ import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.ISchematic;
-import baritone.api.utils.RayTraceUtils;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -52,20 +48,12 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.*;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
@@ -289,14 +277,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             ctx.player().rotationYaw = rot.getYaw();
             ctx.player().rotationPitch = rot.getPitch();
             IBlockState wouldBePlaced = ((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(
-                ctx.world(),
-                result.getBlockPos().offset(result.sideHit),
-                result.sideHit,
-                (float) result.hitVec.x - result.getBlockPos().getX(), // as in PlayerControllerMP
-                (float) result.hitVec.y - result.getBlockPos().getY(),
-                (float) result.hitVec.z - result.getBlockPos().getZ(),
-                stack.getItem().getMetadata(stack.getMetadata()),
-                ctx.player()
+                    ctx.world(),
+                    result.getBlockPos().offset(result.sideHit),
+                    result.sideHit,
+                    (float) result.hitVec.x - result.getBlockPos().getX(), // as in PlayerControllerMP
+                    (float) result.hitVec.y - result.getBlockPos().getY(),
+                    (float) result.hitVec.z - result.getBlockPos().getZ(),
+                    stack.getItem().getMetadata(stack.getMetadata()),
+                    ctx.player()
             );
             ctx.player().rotationYaw = originalYaw;
             ctx.player().rotationPitch = originalPitch;
