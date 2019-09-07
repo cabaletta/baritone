@@ -34,7 +34,7 @@ public class CommandUnhandledException extends CommandErrorMessageException {
 
     public static String getBaritoneStackTrace(String stackTrace) {
         List<String> lines = Arrays.stream(stackTrace.split("\n"))
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         int lastBaritoneLine = 0;
         for (int i = 0; i < lines.size(); i++) {
@@ -76,8 +76,8 @@ public class CommandUnhandledException extends CommandErrorMessageException {
 
     public CommandUnhandledException(Throwable cause) {
         super(String.format(
-            "An unhandled exception has occurred:\n\n%s",
-            getFriendlierStackTrace(cause)
+                "An unhandled exception has occurred:\n\n%s",
+                getFriendlierStackTrace(cause)
         ));
     }
 }

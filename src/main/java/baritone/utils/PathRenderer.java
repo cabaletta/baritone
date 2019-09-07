@@ -131,9 +131,9 @@ public final class PathRenderer implements IRenderer {
             int dirZ = end.z - start.z;
 
             while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) &&
-                (dirX == positions.get(next + 1).x - end.x &&
-                    dirY == positions.get(next + 1).y - end.y &&
-                    dirZ == positions.get(next + 1).z - end.z)) {
+                    (dirX == positions.get(next + 1).x - end.x &&
+                            dirY == positions.get(next + 1).y - end.y &&
+                            dirZ == positions.get(next + 1).z - end.z)) {
                 end = positions.get(++next);
             }
 
@@ -239,15 +239,15 @@ public final class PathRenderer implements IRenderer {
                 }
 
                 TileEntityBeaconRenderer.renderBeamSegment(
-                    goalPos.getX() - renderPosX,
-                    -renderPosY,
-                    goalPos.getZ() - renderPosZ,
-                    partialTicks,
-                    1.0,
-                    player.world.getTotalWorldTime(),
-                    0,
-                    256,
-                    color.getColorComponents(null)
+                        goalPos.getX() - renderPosX,
+                        -renderPosY,
+                        goalPos.getZ() - renderPosZ,
+                        partialTicks,
+                        1.0,
+                        player.world.getTotalWorldTime(),
+                        0,
+                        256,
+                        color.getColorComponents(null)
                 );
 
                 if (settings.renderGoalIgnoreDepth.value) {

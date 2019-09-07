@@ -97,9 +97,9 @@ public class CommandExecution {
         }
 
         return new CommandExecution(
-            command,
-            label,
-            args
+                command,
+                label,
+                args
         );
     }
 

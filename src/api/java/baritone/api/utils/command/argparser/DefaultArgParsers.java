@@ -114,10 +114,10 @@ public class DefaultArgParsers {
     }
 
     public static final List<ArgParser<?>> ALL = asList(
-        IntArgumentParser.INSTANCE,
-        LongArgumentParser.INSTANCE,
-        FloatArgumentParser.INSTANCE,
-        DoubleArgumentParser.INSTANCE,
-        BooleanArgumentParser.INSTANCE
+            IntArgumentParser.INSTANCE,
+            LongArgumentParser.INSTANCE,
+            FloatArgumentParser.INSTANCE,
+            DoubleArgumentParser.INSTANCE,
+            BooleanArgumentParser.INSTANCE
     );
 }

@@ -29,7 +29,7 @@ import static java.util.Objects.isNull;
 
 public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
     private final List<EntityPlayer> players =
-        BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().playerEntities;
+            BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().playerEntities;
     public final EntityPlayer player;
 
     public PlayerByUsername() {
@@ -40,10 +40,10 @@ public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
         String username = consumer.getString();
 
         player = players
-            .stream()
-            .filter(s -> s.getName().equalsIgnoreCase(username))
-            .findFirst()
-            .orElse(null);
+                .stream()
+                .filter(s -> s.getName().equalsIgnoreCase(username))
+                .findFirst()
+                .orElse(null);
 
         if (isNull(player)) {
             throw new IllegalArgumentException("no player found by that username");
@@ -58,13 +58,13 @@ public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
     @Override
     public Stream<String> tabComplete(ArgConsumer consumer) {
         return new TabCompleteHelper()
-            .append(
-                players
-                    .stream()
-                    .map(EntityPlayer::getName)
-            )
-            .filterPrefix(consumer.getString())
-            .sortAlphabetically()
-            .stream();
+                .append(
+                        players
+                                .stream()
+                                .map(EntityPlayer::getName)
+                )
+                .filterPrefix(consumer.getString())
+                .sortAlphabetically()
+                .stream();
     }
 }

@@ -44,12 +44,12 @@ public class ForEnumFacing implements IDatatypeFor<EnumFacing> {
     @Override
     public Stream<String> tabComplete(ArgConsumer consumer) {
         return new TabCompleteHelper()
-            .append(
-                Arrays.stream(EnumFacing.values())
-                    .map(EnumFacing::getName)
-                    .map(String::toLowerCase)
-            )
-            .filterPrefix(consumer.getString())
-            .stream();
+                .append(
+                        Arrays.stream(EnumFacing.values())
+                                .map(EnumFacing::getName)
+                                .map(String::toLowerCase)
+                )
+                .filterPrefix(consumer.getString())
+                .stream();
     }
 }

@@ -88,15 +88,15 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
 
             ITextComponent component = new TextComponentString(String.format("> %s", toDisplay));
             component.getStyle()
-                .setColor(TextFormatting.WHITE)
-                .setHoverEvent(new HoverEvent(
-                    HoverEvent.Action.SHOW_TEXT,
-                    new TextComponentString("Click to rerun command")
-                ))
-                .setClickEvent(new ClickEvent(
-                    ClickEvent.Action.RUN_COMMAND,
-                    FORCE_COMMAND_PREFIX + msg
-                ));
+                    .setColor(TextFormatting.WHITE)
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            new TextComponentString("Click to rerun command")
+                    ))
+                    .setClickEvent(new ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            FORCE_COMMAND_PREFIX + msg
+                    ));
 
             logDirect(component);
         }
@@ -195,10 +195,10 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (argc.hasAtMost(2)) {
             if (argc.hasExactly(1)) {
                 return new TabCompleteHelper()
-                    .addCommands()
-                    .addSettings()
-                    .filterPrefix(argc.getString())
-                    .stream();
+                        .addCommands()
+                        .addSettings()
+                        .filterPrefix(argc.getString())
+                        .stream();
             }
 
             Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));

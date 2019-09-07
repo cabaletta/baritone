@@ -50,13 +50,13 @@ public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
     @Override
     public Stream<String> tabComplete(ArgConsumer consumer) {
         return new TabCompleteHelper()
-            .append(
-                EntityList.getEntityNameList()
-                    .stream()
-                    .map(Object::toString)
-            )
-            .filterPrefixNamespaced(consumer.getString())
-            .sortAlphabetically()
-            .stream();
+                .append(
+                        EntityList.getEntityNameList()
+                                .stream()
+                                .map(Object::toString)
+                )
+                .filterPrefixNamespaced(consumer.getString())
+                .sortAlphabetically()
+                .stream();
     }
 }

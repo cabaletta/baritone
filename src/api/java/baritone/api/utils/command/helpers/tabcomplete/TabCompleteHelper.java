@@ -112,9 +112,9 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper append(Class<? extends Enum<?>> num) {
         return append(
-            Arrays.stream(num.getEnumConstants())
-                .map(Enum::name)
-                .map(String::toLowerCase)
+                Arrays.stream(num.getEnumConstants())
+                        .map(Enum::name)
+                        .map(String::toLowerCase)
         );
     }
 
@@ -163,9 +163,9 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper prepend(Class<? extends Enum<?>> num) {
         return prepend(
-            Arrays.stream(num.getEnumConstants())
-                .map(Enum::name)
-                .map(String::toLowerCase)
+                Arrays.stream(num.getEnumConstants())
+                        .map(Enum::name)
+                        .map(String::toLowerCase)
         );
     }
 
@@ -263,9 +263,9 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addCommands() {
         return append(
-            CommandManager.REGISTRY.descendingStream()
-                .flatMap(command -> command.names.stream())
-                .distinct()
+                CommandManager.REGISTRY.descendingStream()
+                        .flatMap(command -> command.names.stream())
+                        .distinct()
         );
     }
 
@@ -276,10 +276,10 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addSettings() {
         return append(
-            BaritoneAPI.getSettings().allSettings.stream()
-                .map(Settings.Setting::getName)
-                .filter(s -> !s.equalsIgnoreCase("logger"))
-                .sorted(String.CASE_INSENSITIVE_ORDER)
+                BaritoneAPI.getSettings().allSettings.stream()
+                        .map(Settings.Setting::getName)
+                        .filter(s -> !s.equalsIgnoreCase("logger"))
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
         );
     }
 
@@ -290,9 +290,9 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addModifiedSettings() {
         return append(
-            SettingsUtil.modifiedSettings(BaritoneAPI.getSettings()).stream()
-                .map(Settings.Setting::getName)
-                .sorted(String.CASE_INSENSITIVE_ORDER)
+                SettingsUtil.modifiedSettings(BaritoneAPI.getSettings()).stream()
+                        .map(Settings.Setting::getName)
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
         );
     }
 
@@ -303,9 +303,9 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addToggleableSettings() {
         return append(
-            BaritoneAPI.getSettings().getAllValuesByType(Boolean.class).stream()
-                .map(Settings.Setting::getName)
-                .sorted(String.CASE_INSENSITIVE_ORDER)
+                BaritoneAPI.getSettings().getAllValuesByType(Boolean.class).stream()
+                        .map(Settings.Setting::getName)
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
         );
     }
 }

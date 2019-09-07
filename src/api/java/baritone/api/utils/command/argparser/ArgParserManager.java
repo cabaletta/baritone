@@ -38,11 +38,11 @@ public class ArgParserManager {
     public static <T> ArgParser.Stateless<T> getParserStateless(Class<T> klass) {
         //noinspection unchecked
         return REGISTRY.descendingStream()
-            .filter(ArgParser.Stateless.class::isInstance)
-            .map(ArgParser.Stateless.class::cast)
-            .filter(parser -> parser.getKlass().isAssignableFrom(klass))
-            .findFirst()
-            .orElse(null);
+                .filter(ArgParser.Stateless.class::isInstance)
+                .map(ArgParser.Stateless.class::cast)
+                .filter(parser -> parser.getKlass().isAssignableFrom(klass))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -52,13 +52,13 @@ public class ArgParserManager {
     public static <T, S> ArgParser.Stated<T, S> getParserStated(Class<T> klass, Class<S> stateKlass) {
         //noinspection unchecked
         return REGISTRY.descendingStream()
-            .filter(ArgParser.Stated.class::isInstance)
-            .map(ArgParser.Stated.class::cast)
-            .filter(parser -> parser.getKlass().isAssignableFrom(klass))
-            .filter(parser -> parser.getStateKlass().isAssignableFrom(stateKlass))
-            .map(ArgParser.Stated.class::cast)
-            .findFirst()
-            .orElse(null);
+                .filter(ArgParser.Stated.class::isInstance)
+                .map(ArgParser.Stated.class::cast)
+                .filter(parser -> parser.getKlass().isAssignableFrom(klass))
+                .filter(parser -> parser.getStateKlass().isAssignableFrom(stateKlass))
+                .map(ArgParser.Stated.class::cast)
+                .findFirst()
+                .orElse(null);
     }
 
     /**

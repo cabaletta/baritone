@@ -83,14 +83,14 @@ public class Paginator<E> implements Helper {
 
         if (hasPrevPage) {
             prevPageComponent.getStyle()
-                .setClickEvent(new ClickEvent(
-                    ClickEvent.Action.RUN_COMMAND,
-                    String.format("%s %d", commandPrefix, page - 1)
-                ))
-                .setHoverEvent(new HoverEvent(
-                    HoverEvent.Action.SHOW_TEXT,
-                    new TextComponentString("Click to view previous page")
-                ));
+                    .setClickEvent(new ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format("%s %d", commandPrefix, page - 1)
+                    ))
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            new TextComponentString("Click to view previous page")
+                    ));
         } else {
             prevPageComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
         }
@@ -99,14 +99,14 @@ public class Paginator<E> implements Helper {
 
         if (hasNextPage) {
             nextPageComponent.getStyle()
-                .setClickEvent(new ClickEvent(
-                    ClickEvent.Action.RUN_COMMAND,
-                    String.format("%s %d", commandPrefix, page + 1)
-                ))
-                .setHoverEvent(new HoverEvent(
-                    HoverEvent.Action.SHOW_TEXT,
-                    new TextComponentString("Click to view next page")
-                ));
+                    .setClickEvent(new ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format("%s %d", commandPrefix, page + 1)
+                    ))
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            new TextComponentString("Click to view next page")
+                    ));
         } else {
             nextPageComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
         }
@@ -134,12 +134,12 @@ public class Paginator<E> implements Helper {
 
             if (!pagi.validPage(page)) {
                 throw new CommandInvalidTypeException(
-                    consumer.consumed(),
-                    String.format(
-                        "a valid page (1-%d)",
-                        pagi.getMaxPage()
-                    ),
-                    consumer.consumed().value
+                        consumer.consumed(),
+                        String.format(
+                                "a valid page (1-%d)",
+                                pagi.getMaxPage()
+                        ),
+                        consumer.consumed().value
                 );
             }
         }

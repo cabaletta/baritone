@@ -44,9 +44,9 @@ public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlo
     @Override
     public BetterBlockPos apply(BetterBlockPos origin) {
         return new BetterBlockPos(
-            x.apply((double) origin.x),
-            y.apply((double) origin.y),
-            z.apply((double) origin.z)
+                x.apply((double) origin.x),
+                y.apply((double) origin.y),
+                z.apply((double) origin.z)
         );
     }
 

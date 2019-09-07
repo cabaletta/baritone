@@ -32,16 +32,16 @@ public class RelativeGoalXZ implements IDatatypePost<GoalXZ, BetterBlockPos> {
 
     public RelativeGoalXZ(ArgConsumer consumer) {
         coords = new RelativeCoordinate[]{
-            consumer.getDatatype(RelativeCoordinate.class),
-            consumer.getDatatype(RelativeCoordinate.class)
+                consumer.getDatatype(RelativeCoordinate.class),
+                consumer.getDatatype(RelativeCoordinate.class)
         };
     }
 
     @Override
     public GoalXZ apply(BetterBlockPos origin) {
         return new GoalXZ(
-            coords[0].applyFloor(origin.x),
-            coords[1].applyFloor(origin.z)
+                coords[0].applyFloor(origin.x),
+                coords[1].applyFloor(origin.z)
         );
     }
 

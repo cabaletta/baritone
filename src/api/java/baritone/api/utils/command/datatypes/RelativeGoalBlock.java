@@ -32,18 +32,18 @@ public class RelativeGoalBlock implements IDatatypePost<GoalBlock, BetterBlockPo
 
     public RelativeGoalBlock(ArgConsumer consumer) {
         coords = new RelativeCoordinate[]{
-            consumer.getDatatype(RelativeCoordinate.class),
-            consumer.getDatatype(RelativeCoordinate.class),
-            consumer.getDatatype(RelativeCoordinate.class)
+                consumer.getDatatype(RelativeCoordinate.class),
+                consumer.getDatatype(RelativeCoordinate.class),
+                consumer.getDatatype(RelativeCoordinate.class)
         };
     }
 
     @Override
     public GoalBlock apply(BetterBlockPos origin) {
         return new GoalBlock(
-            coords[0].applyFloor(origin.x),
-            coords[1].applyFloor(origin.y),
-            coords[2].applyFloor(origin.z)
+                coords[0].applyFloor(origin.x),
+                coords[1].applyFloor(origin.y),
+                coords[2].applyFloor(origin.z)
         );
     }
 

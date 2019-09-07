@@ -51,8 +51,8 @@ public abstract class Command implements Helper, AbstractGameEventListener {
      */
     protected Command(List<String> names) {
         this.names = names.stream()
-            .map(s -> s.toLowerCase(Locale.US))
-            .collect(Collectors.toList());
+                .map(s -> s.toLowerCase(Locale.US))
+                .collect(Collectors.toList());
         baritone.getGameEventHandler().registerEventListener(this);
     }
 

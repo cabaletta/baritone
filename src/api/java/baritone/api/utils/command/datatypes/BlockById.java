@@ -48,13 +48,13 @@ public class BlockById implements IDatatypeFor<Block> {
     @Override
     public Stream<String> tabComplete(ArgConsumer consumer) {
         return new TabCompleteHelper()
-            .append(
-                Block.REGISTRY.getKeys()
-                    .stream()
-                    .map(Object::toString)
-            )
-            .filterPrefixNamespaced(consumer.getString())
-            .sortAlphabetically()
-            .stream();
+                .append(
+                        Block.REGISTRY.getKeys()
+                                .stream()
+                                .map(Object::toString)
+                )
+                .filterPrefixNamespaced(consumer.getString())
+                .sortAlphabetically()
+                .stream();
     }
 }

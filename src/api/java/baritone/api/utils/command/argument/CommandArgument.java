@@ -67,9 +67,9 @@ public class CommandArgument {
      */
     public <E extends Enum<?>> E getEnum(Class<E> enumClass) {
         return Arrays.stream(enumClass.getEnumConstants())
-            .filter(e -> e.name().equalsIgnoreCase(value))
-            .findFirst()
-            .orElseThrow(() -> new CommandInvalidTypeException(this, enumClass.getSimpleName()));
+                .filter(e -> e.name().equalsIgnoreCase(value))
+                .findFirst()
+                .orElseThrow(() -> new CommandInvalidTypeException(this, enumClass.getSimpleName()));
     }
 
     /**
@@ -145,9 +145,9 @@ public class CommandArgument {
         int lastEnd = -1;
         while (argMatcher.find()) {
             args.add(new CommandArgument(
-                args.size(),
-                argMatcher.group(),
-                string.substring(argMatcher.start())
+                    args.size(),
+                    argMatcher.group(),
+                    string.substring(argMatcher.start())
             ));
 
             lastEnd = argMatcher.end();

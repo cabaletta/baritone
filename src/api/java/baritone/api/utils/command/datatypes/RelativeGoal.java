@@ -56,18 +56,18 @@ public class RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
                 return new GoalBlock(origin);
             case 1:
                 return new GoalYLevel(
-                    coords[0].applyFloor(origin.y)
+                        coords[0].applyFloor(origin.y)
                 );
             case 2:
                 return new GoalXZ(
-                    coords[0].applyFloor(origin.x),
-                    coords[1].applyFloor(origin.z)
+                        coords[0].applyFloor(origin.x),
+                        coords[1].applyFloor(origin.z)
                 );
             case 3:
                 return new GoalBlock(
-                    coords[0].applyFloor(origin.x),
-                    coords[1].applyFloor(origin.y),
-                    coords[2].applyFloor(origin.z)
+                        coords[0].applyFloor(origin.x),
+                        coords[1].applyFloor(origin.y),
+                        coords[2].applyFloor(origin.z)
                 );
             default:
                 throw new IllegalStateException("Unexpected coords size: " + coords.length);

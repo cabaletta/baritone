@@ -24,9 +24,9 @@ public abstract class CommandInvalidArgumentException extends CommandErrorMessag
 
     protected CommandInvalidArgumentException(CommandArgument arg, String reason) {
         super(String.format(
-            "Error at argument #%s: %s",
-            arg.index == -1 ? "<unknown>" : Integer.toString(arg.index + 1),
-            reason
+                "Error at argument #%s: %s",
+                arg.index == -1 ? "<unknown>" : Integer.toString(arg.index + 1),
+                reason
         ));
 
         this.arg = arg;

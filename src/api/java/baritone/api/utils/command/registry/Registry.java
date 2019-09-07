@@ -132,9 +132,9 @@ public class Registry<V> {
      */
     public Stream<V> descendingStream() {
         return StreamSupport.stream(Spliterators.spliterator(
-            descendingIterator(),
-            _entries.size(),
-            Spliterator.SIZED | Spliterator.SUBSIZED
+                descendingIterator(),
+                _entries.size(),
+                Spliterator.SIZED | Spliterator.SUBSIZED
         ), false);
     }
 }

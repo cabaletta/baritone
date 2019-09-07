@@ -78,9 +78,9 @@ public class CommandManager {
 
         if (args.isEmpty()) {
             return new TabCompleteHelper()
-                .addCommands()
-                .filterPrefix(label)
-                .stream();
+                    .addCommands()
+                    .filterPrefix(label)
+                    .stream();
         } else {
             return tabComplete(pair);
         }

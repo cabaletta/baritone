@@ -77,14 +77,14 @@ public class RelativeFile implements IDatatypePost<File, File> {
         File currentFile = currentPath.isAbsolute() ? currentPath.toFile() : new File(base, currentPathStringThing);
 
         return Arrays.stream(Objects.requireNonNull(SHUT_THE_FUCK_UP_IOEXCEPTION_NOBODY_LIKES_YOU(
-            useParent
-                ? currentFile.getParentFile()
-                : currentFile
+                useParent
+                        ? currentFile.getParentFile()
+                        : currentFile
         ).listFiles()))
-            .map(f -> (currentPath.isAbsolute() ? f : basePath.relativize(f.toPath()).toString()) +
-                (f.isDirectory() ? File.separator : ""))
-            .filter(s -> s.toLowerCase(Locale.US).startsWith(currentPathStringThing.toLowerCase(Locale.US)))
-            .filter(s -> !s.contains(" "));
+                .map(f -> (currentPath.isAbsolute() ? f : basePath.relativize(f.toPath()).toString()) +
+                        (f.isDirectory() ? File.separator : ""))
+                .filter(s -> s.toLowerCase(Locale.US).startsWith(currentPathStringThing.toLowerCase(Locale.US)))
+                .filter(s -> !s.contains(" "));
     }
 
     @Override

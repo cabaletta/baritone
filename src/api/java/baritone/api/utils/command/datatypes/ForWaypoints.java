@@ -51,43 +51,43 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
     @Override
     public Stream<String> tabComplete(ArgConsumer consumer) {
         return new TabCompleteHelper()
-            .append(getWaypointNames())
-            .sortAlphabetically()
-            .prepend(IWaypoint.Tag.getAllNames())
-            .filterPrefix(consumer.getString())
-            .stream();
+                .append(getWaypointNames())
+                .sortAlphabetically()
+                .prepend(IWaypoint.Tag.getAllNames())
+                .filterPrefix(consumer.getString())
+                .stream();
     }
 
     public static IWaypointCollection waypoints() {
         return BaritoneAPI.getProvider()
-            .getPrimaryBaritone()
-            .getWorldProvider()
-            .getCurrentWorld()
-            .getWaypoints();
+                .getPrimaryBaritone()
+                .getWorldProvider()
+                .getCurrentWorld()
+                .getWaypoints();
     }
 
     public static IWaypoint[] getWaypoints() {
         return waypoints().getAllWaypoints().stream()
-            .sorted(Comparator.comparingLong(IWaypoint::getCreationTimestamp).reversed())
-            .toArray(IWaypoint[]::new);
+                .sorted(Comparator.comparingLong(IWaypoint::getCreationTimestamp).reversed())
+                .toArray(IWaypoint[]::new);
     }
 
     public static String[] getWaypointNames() {
         return Arrays.stream(getWaypoints())
-            .map(IWaypoint::getName)
-            .filter(name -> !name.equals(""))
-            .toArray(String[]::new);
+                .map(IWaypoint::getName)
+                .filter(name -> !name.equals(""))
+                .toArray(String[]::new);
     }
 
     public static IWaypoint[] getWaypointsByTag(IWaypoint.Tag tag) {
         return waypoints().getByTag(tag).stream()
-            .sorted(Comparator.comparingLong(IWaypoint::getCreationTimestamp).reversed())
-            .toArray(IWaypoint[]::new);
+                .sorted(Comparator.comparingLong(IWaypoint::getCreationTimestamp).reversed())
+                .toArray(IWaypoint[]::new);
     }
 
     public static IWaypoint[] getWaypointsByName(String name) {
         return Arrays.stream(getWaypoints())
-            .filter(waypoint -> waypoint.getName().equalsIgnoreCase(name))
-            .toArray(IWaypoint[]::new);
+                .filter(waypoint -> waypoint.getName().equalsIgnoreCase(name))
+                .toArray(IWaypoint[]::new);
     }
 }
