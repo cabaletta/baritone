@@ -19,35 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockBanner;
-import net.minecraft.block.BlockBed;
-import net.minecraft.block.BlockBrewingStand;
-import net.minecraft.block.BlockButton;
-import net.minecraft.block.BlockChorusPlant;
-import net.minecraft.block.BlockDirt;
-import net.minecraft.block.BlockDoor;
-import net.minecraft.block.BlockDoublePlant;
-import net.minecraft.block.BlockFence;
-import net.minecraft.block.BlockFire;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.block.BlockLeaves;
-import net.minecraft.block.BlockLever;
-import net.minecraft.block.BlockLog;
-import net.minecraft.block.BlockPane;
-import net.minecraft.block.BlockQuartz;
-import net.minecraft.block.BlockRailBase;
-import net.minecraft.block.BlockRedstoneWire;
-import net.minecraft.block.BlockSapling;
-import net.minecraft.block.BlockSkull;
-import net.minecraft.block.BlockSlab;
-import net.minecraft.block.BlockStairs;
-import net.minecraft.block.BlockStandingSign;
-import net.minecraft.block.BlockStem;
-import net.minecraft.block.BlockTrapDoor;
-import net.minecraft.block.BlockTripWire;
-import net.minecraft.block.BlockVine;
-import net.minecraft.block.BlockWall;
+import net.minecraft.block.*;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
@@ -56,12 +28,7 @@ import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -230,22 +197,22 @@ public final class BlockOptionalMeta {
             if (normalizations.containsKey(property)) {
                 try {
                     newState = newState.withProperty(
-                        castToIProperty(property),
-                        castToIPropertyValue(property, normalizations.get(property))
+                            castToIProperty(property),
+                            castToIPropertyValue(property, normalizations.get(property))
                     );
                 } catch (IllegalArgumentException ignored) {}
             } else if (normalizations.containsKey(state.getValue(property))) {
                 try {
                     newState = newState.withProperty(
-                        castToIProperty(property),
-                        castToIPropertyValue(property, normalizations.get(state.getValue(property)))
+                            castToIProperty(property),
+                            castToIPropertyValue(property, normalizations.get(state.getValue(property)))
                     );
                 } catch (IllegalArgumentException ignored) {}
             } else if (normalizations.containsKey(valueClass)) {
                 try {
                     newState = newState.withProperty(
-                        castToIProperty(property),
-                        castToIPropertyValue(property, normalizations.get(valueClass))
+                            castToIProperty(property),
+                            castToIPropertyValue(property, normalizations.get(valueClass))
                     );
                 } catch (IllegalArgumentException ignored) {}
             }
@@ -260,28 +227,28 @@ public final class BlockOptionalMeta {
 
     private static Set<IBlockState> getStates(@Nonnull Block block, @Nullable Integer meta) {
         return block.getBlockState().getValidStates().stream()
-            .filter(blockstate -> meta == null || stateMeta(blockstate) == meta)
-            .collect(Collectors.toSet());
+                .filter(blockstate -> meta == null || stateMeta(blockstate) == meta)
+                .collect(Collectors.toSet());
     }
 
     private static ImmutableSet<Integer> getStateHashes(Set<IBlockState> blockstates) {
         return ImmutableSet.copyOf(
-            blockstates.stream()
-                .map(IBlockState::hashCode)
-                .toArray(Integer[]::new)
+                blockstates.stream()
+                        .map(IBlockState::hashCode)
+                        .toArray(Integer[]::new)
         );
     }
 
     private static ImmutableSet<Integer> getStackHashes(Set<IBlockState> blockstates) {
         //noinspection ConstantConditions
         return ImmutableSet.copyOf(
-            blockstates.stream()
-                .map(state -> new ItemStack(
-                    state.getBlock().getItemDropped(state, new Random(), 0),
-                    state.getBlock().damageDropped(state)
-                ))
-                .map(stack -> ((IItemStack) (Object) stack).getBaritoneHash())
-                .toArray(Integer[]::new)
+                blockstates.stream()
+                        .map(state -> new ItemStack(
+                                state.getBlock().getItemDropped(state, new Random(), 0),
+                                state.getBlock().damageDropped(state)
+                        ))
+                        .map(stack -> ((IItemStack) (Object) stack).getBaritoneHash())
+                        .toArray(Integer[]::new)
         );
     }
 
