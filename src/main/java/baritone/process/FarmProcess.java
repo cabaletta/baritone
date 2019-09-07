@@ -47,7 +47,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import sun.net.util.IPAddressUtil;
+
 
 import java.util.*;
 import java.util.function.Predicate;

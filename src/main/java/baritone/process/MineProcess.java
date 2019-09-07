@@ -19,7 +19,6 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.*;
-import baritone.api.cache.IWaypoint;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
