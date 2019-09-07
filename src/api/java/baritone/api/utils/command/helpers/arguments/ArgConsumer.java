@@ -25,12 +25,7 @@ import baritone.api.utils.command.datatypes.IDatatype;
 import baritone.api.utils.command.datatypes.IDatatypeFor;
 import baritone.api.utils.command.datatypes.IDatatypePost;
 import baritone.api.utils.command.datatypes.RelativeFile;
-import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.exception.CommandInvalidTypeException;
-import baritone.api.utils.command.exception.CommandNoParserForTypeException;
-import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
-import baritone.api.utils.command.exception.CommandTooManyArgumentsException;
-import baritone.api.utils.command.exception.CommandUnhandledException;
+import baritone.api.utils.command.exception.*;
 import net.minecraft.util.EnumFacing;
 
 import java.lang.reflect.InvocationTargetException;

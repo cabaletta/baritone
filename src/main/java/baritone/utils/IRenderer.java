@@ -30,11 +30,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 import java.awt.Color;
 
-import static org.lwjgl.opengl.GL11.GL_LINES;
-import static org.lwjgl.opengl.GL11.GL_ONE;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_ZERO;
+import static org.lwjgl.opengl.GL11.*;
 
 public interface IRenderer {
     Tessellator tessellator = Tessellator.getInstance();
