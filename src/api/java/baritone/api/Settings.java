@@ -788,6 +788,12 @@ public final class Settings {
     public final Setting<Boolean> checkInventory = new Setting<>(true);
 
     /**
+     *  Tells Baritone to put the mined/farmed drops into the marked chest,if the inventory is full
+     */
+    public final Setting<Boolean>  putDropsInChest = new Setting<>(true);
+
+
+    /**
      * What Y level to go to for legit strip mining
      */
     public final Setting<Integer> legitMineYLevel = new Setting<>(11);

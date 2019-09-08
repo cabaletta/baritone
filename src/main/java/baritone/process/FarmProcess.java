@@ -105,19 +105,20 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     public void selectChest(){
         BetterBlockPos player= ctx.playerFeet();
         Optional<BlockPos> blockPos=ctx.getSelectedBlock();
-        if(blockPos.isPresent()){
-            if(player.getDistance(blockPos.get().getX(),blockPos.get().getY(),blockPos.get().getZ())<6) {
-                Block block=ctx.world().getBlockState(blockPos.get()).getBlock();
-                if(block.equals(Blocks.CHEST)||block.equals(Blocks.ENDER_CHEST)||block.equals(Blocks.TRAPPED_CHEST)){
+        if(blockPos.isPresent()) {
+            if (player.getDistance(blockPos.get().getX(), blockPos.get().getY(), blockPos.get().getZ()) < 6) {
+                Block block = ctx.world().getBlockState(blockPos.get()).getBlock();
+                if (block.equals(Blocks.CHEST) || block.equals(Blocks.ENDER_CHEST) || block.equals(Blocks.TRAPPED_CHEST)) {
                     baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.CHEST, blockPos.get()));
                     baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.USECHEST, player));
-                }else{
+                } else {
                     logDirect("Block is not a Chest");
                 }
-            }
-            else {
+            } else {
                 logDirect("Block is not in Range");
             }
+        }else{
+            logDirect("Please look at a chest");
         }
     }
 

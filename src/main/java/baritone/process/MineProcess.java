@@ -18,14 +18,12 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.cache.IWaypoint;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BlockUtils;
-import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.cache.CachedChunk;
 import baritone.cache.WorldScanner;
@@ -37,11 +35,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.util.NonNullList;
@@ -61,6 +62,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private static final int ORE_LOCATIONS_COUNT = 64;
 
     private List<Block> mining;
+    private List<Block> disabledMining=new ArrayList<>();
     private List<BlockPos> knownOreLocations;
     private List<BlockPos> blacklist; // inaccessible
     private BlockPos branchPoint;
@@ -105,6 +107,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                for (Block block : mining) {
                    if (!DropsHaveSpace.contains(block.getItemDropped(mining.get(0).getDefaultState(), new Random(), 0))) {
                            mining.remove(block);
+                           disabledMining.add(block);
                    }
 
                }
@@ -112,12 +115,48 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
            }
 
            if (inventoryFull) {
-               logDirect("Cancel Mining Inventory Full");
-               if (Baritone.settings().goHome.value){
-                   returnhome();
+               if(baritone.settings().putDropsInChest.value){
+                   disabledMining.addAll(mining);
+                   disabledMining= new ArrayList<>(new HashSet<>(disabledMining));
+                   IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
+                   IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
+                   if(chestLoc!=null&& waypoint!=null){
+                       BlockPos chest =chestLoc.getLocation();
+                       if(waypoint.getLocation().getDistance(chest.getX(),chest.getY(),chest.getZ())<6){
+                          Goal goal =new GoalBlock(waypoint.getLocation());
+                          if(goal.isInGoal(ctx.playerFeet())&&goal.isInGoal(baritone.getPathingBehavior().pathStart())){
+                              Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
+                              if (rot.isPresent() && isSafeToCancel) {
+                                  baritone.getLookBehavior().updateTarget(rot.get(), true);
+                                  MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(chest));
+                                  if (ctx.isLookingAt(chest) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
+                                      baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                                      //TODO open chest put drops inside
+
+                                  }
+                                  return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                              }
+                          }else{
+                              return new PathingCommand(goal,PathingCommandType.SET_GOAL_AND_PATH);
+                          }
+                       }else{
+                           logDirect("Chest not properly set please use #setchest again");
+                       }
+                   }else {
+                       logDirect("no chest set please use #setchest");
+                   }
+
+
+               }else {
+                   logDirect("Cancel Mining Inventory Full");
+                   if (Baritone.settings().goHome.value) {
+                       returnhome();
+                   }
+                   cancel();
+                   return null;
                }
-               cancel();
-               return null;
+
+               return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
 
            }
        }
@@ -179,6 +218,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(pos));
                     if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
                         baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+
                     }
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
@@ -196,6 +236,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         return command;
     }
+
+
 
     @Override
     public void onLostControl() {
