@@ -19,4 +19,5 @@ package baritone.api.process;
 
 public interface IFarmProcess extends IBaritoneProcess {
     void farm();
+    void selectChest();
 }

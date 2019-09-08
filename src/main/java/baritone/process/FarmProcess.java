@@ -18,12 +18,15 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.cache.IWaypoint;
+import baritone.api.cache.Waypoint;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -99,6 +102,24 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         active = true;
         locations = null;
     }
+    public void selectChest(){
+        BetterBlockPos player= ctx.playerFeet();
+        Optional<BlockPos> blockPos=ctx.getSelectedBlock();
+        if(blockPos.isPresent()){
+            if(player.getDistance(blockPos.get().getX(),blockPos.get().getY(),blockPos.get().getZ())<6) {
+                Block block=ctx.world().getBlockState(blockPos.get()).getBlock();
+                if(block.equals(Blocks.CHEST)||block.equals(Blocks.ENDER_CHEST)||block.equals(Blocks.TRAPPED_CHEST)){
+                    baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.CHEST, blockPos.get()));
+                    baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.USECHEST, player));
+                }else{
+                    logDirect("Block is not a Chest");
+                }
+            }
+            else {
+                logDirect("Block is not in Range");
+            }
+        }
+    }
 
     private enum Harvest {
         WHEAT((BlockCrops) Blocks.WHEAT),
@@ -171,7 +192,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             boolean inventoryFull = true;
             NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
             HashMap<Item,ItemStack> smallestStack =new HashMap<>();
-            List<Item> DropsHaveSpace = new ArrayList<Item>();
             for (ItemStack stack:invy) {
                 if(stack.isEmpty()){
                     inventoryFull=false;

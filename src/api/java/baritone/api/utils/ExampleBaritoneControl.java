@@ -244,6 +244,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect("Queued " + repack() + " chunks for repacking");
             return true;
         }
+
         if (msg.startsWith("build")) {
             String file;
             BlockPos origin;
@@ -653,6 +654,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         if (msg.equals("sethome")) {
             baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.HOME, ctx.playerFeet()));
             logDirect("Saved. Say home to set goal.");
+            return true;
+        }
+        if (msg.equals("setchest")) {
+           baritone.getFarmProcess().selectChest();
             return true;
         }
         if (msg.equals("home")) {
