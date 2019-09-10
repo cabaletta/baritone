@@ -141,6 +141,13 @@ public final class Settings {
     public final Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
 
     /**
+     * Allow diagonal ascending
+     * <p>
+     * Actually pretty safe, much safer than diagonal descend tbh
+     */
+    public final Setting<Boolean> allowDiagonalAscend = new Setting<>(false);
+
+    /**
      * Allow mining the block directly beneath its feet
      * <p>
      * Turn this off to force it to make more staircases and less shafts
