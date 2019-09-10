@@ -18,53 +18,73 @@
 package baritone.utils.schematic;
 
 import baritone.api.utils.ISchematic;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.bridge.game.GameSession;
+import baritone.utils.schematic.litematica.PositionUtils;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.data.BlockListReport;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.LongArrayNBT;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.nbt.NBTUtil;
+import baritone.utils.schematic.litematica.LitematicaBlockStateContainer;
+
+import java.io.File;
 
 public class Schematic implements ISchematic {
-    public final int widthX;
-    public final int heightY;
-    public final int lengthZ;
-    protected final BlockState[][][] states;
+    public int widthX;
+    public int heightY;
+    public int lengthZ;
+    protected BlockState[][][] states;
 
     public Schematic(CompoundNBT schematic) {
-        /*String type = schematic.getString("Materials");
-        if (!type.equals("Alpha")) {
-            throw new IllegalStateException("bad schematic " + type);
+        int ver = schematic.getInt("Version");
+        if (!(ver == 5)) {
+            throw new IllegalStateException("bad schematic version: " + ver);
         }
-        widthX = schematic.getInteger("Width");
-        heightY = schematic.getInteger("Height");
-        lengthZ = schematic.getInteger("Length");
-        byte[] blocks = schematic.getByteArray("Blocks");
-        byte[] metadata = schematic.getByteArray("Data");
 
-        byte[] additional = null;
-        if (schematic.hasKey("AddBlocks")) {
-            byte[] addBlocks = schematic.getByteArray("AddBlocks");
-            additional = new byte[addBlocks.length * 2];
-            for (int i = 0; i < addBlocks.length; i++) {
-                additional[i * 2 + 0] = (byte) ((addBlocks[i] >> 4) & 0xF); // lower nibble
-                additional[i * 2 + 1] = (byte) ((addBlocks[i] >> 0) & 0xF); // upper nibble
-            }
-        }
-        states = new BlockState[widthX][lengthZ][heightY];
-        for (int y = 0; y < heightY; y++) {
-            for (int z = 0; z < lengthZ; z++) {
-                for (int x = 0; x < widthX; x++) {
-                    int blockInd = (y * lengthZ + z) * widthX + x;
+        CompoundNBT regions = schematic.getCompound("Regions");
+        for (String regionKey : regions.keySet()) {
+            CompoundNBT region = regions.getCompound(regionKey);
+            // BlockPos regionPos = NBTUtil.readBlockPos(region.getCompound("Position")); Not doing this because this method expects uppercase "X", "Y", "Z" tag keys in the compound. In litematic those are lowercase.
+            int posX = region.getCompound("Position").getInt("x");
+            int posY = region.getCompound("Position").getInt("y");
+            int posZ = region.getCompound("Position").getInt("z");
+            BlockPos regionPos = new BlockPos(posX, posY, posZ);
+            // BlockPos regionSize = NBTUtil.readBlockPos(region.getCompound("Size")); Same goes for region size.
+            int sizX = region.getCompound("Size").getInt("x");
+            int sizY = region.getCompound("Size").getInt("y");
+            int sizZ = region.getCompound("Size").getInt("z");
+            BlockPos regionSize = new BlockPos(sizX, sizY, sizZ);
+            ListNBT blockStatePalette = region.getList("BlockStatePalette", 10);
+            long[] blockStateArr = region.getLongArray("BlockStates");
 
-                    int blockID = blocks[blockInd] & 0xFF;
-                    if (additional != null) {
-                        // additional is 0 through 15 inclusive since it's & 0xF above
-                        blockID |= additional[blockInd] << 8;
+
+            BlockPos posEndRel = PositionUtils.getRelativeEndPositionFromAreaSize(regionSize).add(regionPos);
+            BlockPos posMin = PositionUtils.getMinCorner(regionPos, posEndRel);
+            BlockPos posMax = PositionUtils.getMaxCorner(regionPos, posEndRel);
+            BlockPos size = posMax.subtract(posMin).add(1, 1, 1);
+            LitematicaBlockStateContainer container = LitematicaBlockStateContainer.createFrom(blockStatePalette, blockStateArr, size);
+
+            widthX = Math.abs(regionSize.getX());
+            heightY = Math.abs(regionSize.getY());
+            lengthZ = Math.abs(regionSize.getZ());
+
+            states = new BlockState[widthX][lengthZ][heightY];
+            for (int y = 0; y < heightY; y++) {
+                for (int z = 0; z < lengthZ; z++) {
+                    for (int x = 0; x < widthX; x++) {
+                        states[x][z][y] = container.get(x, y, z);
                     }
-                    Block block = Block.REGISTRY.getObjectById(blockID);
-                    int meta = metadata[blockInd] & 0xFF;
-                    states[x][z][y] = block.getStateFromMeta(meta);
                 }
             }
-        }*/
-        throw new UnsupportedOperationException("1.13 be like: numeric IDs btfo");
+        }
+        // throw new UnsupportedOperationException("1.13 be like: numeric IDs btfo");
     }
 
     @Override
