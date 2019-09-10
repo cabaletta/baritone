@@ -310,7 +310,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return true;
         }
         if (msg.startsWith("cleararea")) {
-            String suffix = msg.substring("cleararea".length());
+            String suffix = msg.substring("cleararea".length()).trim();
             BlockPos corner1;
             BlockPos corner2;
             if (suffix.isEmpty()) {
