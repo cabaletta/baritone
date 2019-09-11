@@ -49,6 +49,12 @@ public class Schematic implements ISchematic {
         }
 
         CompoundNBT regions = schematic.getCompound("Regions");
+        CompoundNBT metadata = schematic.getCompound("Metadata");
+        widthX = metadata.getCompound("EnclosingSize").getInt("x");
+        heightY = metadata.getCompound("EnclosingSize").getInt("y");
+        lengthZ = metadata.getCompound("EnclosingSize").getInt("z");
+        states = new BlockState[widthX][lengthZ][heightY];
+
         for (String regionKey : regions.keySet()) {
             CompoundNBT region = regions.getCompound(regionKey);
             // BlockPos regionPos = NBTUtil.readBlockPos(region.getCompound("Position")); Not doing this because this method expects uppercase "X", "Y", "Z" tag keys in the compound. In litematic those are lowercase.
@@ -60,26 +66,19 @@ public class Schematic implements ISchematic {
             int sizX = region.getCompound("Size").getInt("x");
             int sizY = region.getCompound("Size").getInt("y");
             int sizZ = region.getCompound("Size").getInt("z");
-            BlockPos regionSize = new BlockPos(sizX, sizY, sizZ);
+            BlockPos regionSize = new BlockPos(Math.abs(sizX), Math.abs(sizY), Math.abs(sizZ));
             ListNBT blockStatePalette = region.getList("BlockStatePalette", 10);
             long[] blockStateArr = region.getLongArray("BlockStates");
 
 
-            BlockPos posEndRel = PositionUtils.getRelativeEndPositionFromAreaSize(regionSize).add(regionPos);
+            BlockPos posEndRel = PositionUtils.getRelativeEndPositionFromAreaSize(new BlockPos(sizX, sizY, sizZ)).add(regionPos);
             BlockPos posMin = PositionUtils.getMinCorner(regionPos, posEndRel);
-            BlockPos posMax = PositionUtils.getMaxCorner(regionPos, posEndRel);
-            BlockPos size = posMax.subtract(posMin).add(1, 1, 1);
-            LitematicaBlockStateContainer container = LitematicaBlockStateContainer.createFrom(blockStatePalette, blockStateArr, size);
+            LitematicaBlockStateContainer container = LitematicaBlockStateContainer.createFrom(blockStatePalette, blockStateArr, regionSize);
 
-            widthX = Math.abs(regionSize.getX());
-            heightY = Math.abs(regionSize.getY());
-            lengthZ = Math.abs(regionSize.getZ());
-
-            states = new BlockState[widthX][lengthZ][heightY];
-            for (int y = 0; y < heightY; y++) {
-                for (int z = 0; z < lengthZ; z++) {
-                    for (int x = 0; x < widthX; x++) {
-                        states[x][z][y] = container.get(x, y, z);
+            for (int y = 0; y < regionSize.getY(); y++) {
+                for (int z = 0; z < regionSize.getZ(); z++) {
+                    for (int x = 0; x < regionSize.getX(); x++) {
+                        states[x + posMin.getX()][z + posMin.getZ()][y + posMin.getY()] = container.get(x, y, z);
                     }
                 }
             }
