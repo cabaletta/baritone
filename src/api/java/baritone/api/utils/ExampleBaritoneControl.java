@@ -241,10 +241,10 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             logDirect(success ? "Loaded" : "Unable to load");
             return true;
         }
-        if (msg.startsWith("schematica")) {
+        /* if (msg.startsWith("schematica")) {
             baritone.getBuilderProcess().buildOpenSchematic();
             return true;
-        }
+        } */
         if (msg.equals("come")) {
             customGoalProcess.setGoalAndPath(new GoalBlock(new BlockPos(Helper.mc.getRenderViewEntity())));
             logDirect("Coming");
