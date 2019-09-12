@@ -40,6 +40,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDye;
@@ -61,6 +63,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private List<BlockPos> locations;
     private int tickCount;
+    private boolean putInChest;
 
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
@@ -187,6 +190,22 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         return !stack.isEmpty() && stack.getItem().equals(Items.NETHER_WART);
     }
 
+    private boolean putDropsInChest(NonNullList invy) {
+        List<Slot> inv =ctx.player().openContainer.inventorySlots;
+        NonNullList<ItemStack> invx = invy;
+        for(int i=0;i<invx.size();i++) {
+            if (!invx.isEmpty() && PICKUP_DROPPED.contains(invx.get(i).getItem())) {
+                for (int j = 0; j < inv.size() - invx.size(); j++) {
+                    if (inv.get(j).getStack().isEmpty()) {
+                        ctx.playerController().windowClick(ctx.player().openContainer.windowId,i<9 ? inv.size() - i / 9 * 9 - 9 + i % 9: inv.size()-invx.size()+i-9,0, ClickType.QUICK_MOVE,ctx.player());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (Baritone.settings().checkInventory.value) {
@@ -219,14 +238,72 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 inventoryFull=false;
             }
 
-            if(inventoryFull){
-                logDirect("Inventory Full Cancel Farming");
-                if(Baritone.settings().goHome.value){
-                    returnhome();
+            if(putInChest){
+                if(!putDropsInChest(invy)){
+                    if(inventoryFull){
+                        ctx.player().closeScreen();
+                        if (Baritone.settings().goHome.value) {
+                            returnhome();
+                        }
+                        onLostControl();
+                        logDirect("inventory and chest are full,cancel faring");
+                    }else{
+                        ctx.player().closeScreen();
+                        putInChest=false;
+                    }
                 }
-                onLostControl();
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+
+            }
+
+            if (inventoryFull) {
+                if(baritone.settings().putDropsInChest.value){
+                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
+                    IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
+                    if(chestLoc!=null&& waypoint!=null){
+                        BlockPos chest =chestLoc.getLocation();
+                        if(waypoint.getLocation().getDistance(chest.getX(),chest.getY(),chest.getZ())<6){
+                            Goal goal =new GoalBlock(waypoint.getLocation());
+                            if(goal.isInGoal(ctx.playerFeet())&&goal.isInGoal(baritone.getPathingBehavior().pathStart())){
+                                Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
+                                if (rot.isPresent() && isSafeToCancel) {
+                                    baritone.getLookBehavior().updateTarget(rot.get(), true);
+                                    if (ctx.isLookingAt(chest) ) {
+                                        if (ctx.player().openContainer == ctx.player().inventoryContainer) {
+                                            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                                        }
+                                        else {
+                                            baritone.getInputOverrideHandler().clearAllKeys();
+                                            putInChest=true;
+                                        }
+                                    }
+                                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                                }
+                            }else{
+                                return new PathingCommand(goal,PathingCommandType.SET_GOAL_AND_PATH);
+                            }
+                        }else{
+                            logDirect("Chest not properly set please use #setchest again");
+                        }
+                    }else {
+                        logDirect("no chest set please use #setchest");
+                    }
+
+
+                }else {
+                    logDirect("Cancel Mining Inventory Full");
+                    if (Baritone.settings().goHome.value) {
+                        returnhome();
+                    }
+                    onLostControl();
+                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                }
+
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+
             }
         }
+
         ArrayList<Block> scan = new ArrayList<>();
         for (Harvest harvest : Harvest.values()) {
             scan.add(harvest.block);

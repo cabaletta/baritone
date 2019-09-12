@@ -23,7 +23,10 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.*;
+import baritone.api.utils.BlockUtils;
+import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.cache.CachedChunk;
 import baritone.cache.WorldScanner;
@@ -112,12 +115,14 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                }
                mining.removeAll(disabledMining);
            }
-            if(putInChest){
-                if(putDropsInChest(invy)){
 
-                }else{
+            if(putInChest){
+                if(!putDropsInChest(invy)){
                     if(inventoryFull){
                         ctx.player().closeScreen();
+                        if (Baritone.settings().goHome.value) {
+                            returnhome();
+                        }
                         cancel();
                         logDirect("inventory and chest are full,cancel mining");
                     }else{
@@ -131,56 +136,55 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
             }
 
-           if (inventoryFull) {
-               if(baritone.settings().putDropsInChest.value){
-                   disabledMining.addAll(mining);
-                   disabledMining= new ArrayList<>(new HashSet<>(disabledMining));
-                   IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
-                   IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
-                   if(chestLoc!=null&& waypoint!=null){
-                       BlockPos chest =chestLoc.getLocation();
-                       if(waypoint.getLocation().getDistance(chest.getX(),chest.getY(),chest.getZ())<6){
-                          Goal goal =new GoalBlock(waypoint.getLocation());
-                          if(goal.isInGoal(ctx.playerFeet())&&goal.isInGoal(baritone.getPathingBehavior().pathStart())){
-                              Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
-                              if (rot.isPresent() && isSafeToCancel) {
-                                  baritone.getLookBehavior().updateTarget(rot.get(), true);
+            if (inventoryFull) {
+                if(baritone.settings().putDropsInChest.value){
+                    disabledMining.addAll(mining);
+                    disabledMining= new ArrayList<>(new HashSet<>(disabledMining));
+                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
+                    IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
+                    if(chestLoc!=null&& waypoint!=null){
+                        BlockPos chest =chestLoc.getLocation();
+                        if(waypoint.getLocation().getDistance(chest.getX(),chest.getY(),chest.getZ())<6){
+                            Goal goal =new GoalBlock(waypoint.getLocation());
+                            if(goal.isInGoal(ctx.playerFeet())&&goal.isInGoal(baritone.getPathingBehavior().pathStart())){
+                                Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
+                                if (rot.isPresent() && isSafeToCancel) {
+                                    baritone.getLookBehavior().updateTarget(rot.get(), true);
+                                    if (ctx.isLookingAt(chest) ) {
+                                        if (ctx.player().openContainer == ctx.player().inventoryContainer) {
+                                            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                                        }
+                                        else {
+                                            baritone.getInputOverrideHandler().clearAllKeys();
+                                            putInChest=true;
+                                        }
+                                    }
+                                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                                }
+                            }else{
+                                return new PathingCommand(goal,PathingCommandType.SET_GOAL_AND_PATH);
+                            }
+                        }else{
+                            logDirect("Chest not properly set please use #setchest again");
+                        }
+                    }else {
+                        logDirect("no chest set please use #setchest");
+                    }
 
-                                  if (ctx.isLookingAt(chest) ) {
-                                      if (ctx.player().openContainer == ctx.player().inventoryContainer) {
-                                          baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                                      }
-                                      else {
-                                          baritone.getInputOverrideHandler().clearAllKeys();
-                                          putInChest=true;
-                                      }
-                                  }
-                                  return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-                              }
-                          }else{
-                              return new PathingCommand(goal,PathingCommandType.SET_GOAL_AND_PATH);
-                          }
-                       }else{
-                           logDirect("Chest not properly set please use #setchest again");
-                       }
-                   }else {
-                       logDirect("no chest set please use #setchest");
-                   }
 
+                }else {
+                    logDirect("Cancel Mining Inventory Full");
+                    if (Baritone.settings().goHome.value) {
+                        returnhome();
+                    }
+                    cancel();
+                    return null;
+                }
 
-               }else {
-                   logDirect("Cancel Mining Inventory Full");
-                   if (Baritone.settings().goHome.value) {
-                       returnhome();
-                   }
-                   cancel();
-                   return null;
-               }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
 
-               return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-
-           }
-       }
+            }
+        }
 
         if (desiredQuantity > 0) {
             Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
