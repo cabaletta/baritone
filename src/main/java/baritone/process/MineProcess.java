@@ -31,18 +31,18 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.util.NonNullList;
@@ -69,6 +69,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
+    private boolean putInChest;
 
     public MineProcess(Baritone baritone) {
         super(baritone);
@@ -106,20 +107,36 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                inventoryFull = false;
                for (Block block : mining) {
                    if (!DropsHaveSpace.contains(block.getItemDropped(mining.get(0).getDefaultState(), new Random(), 0))) {
-                           mining.remove(block);
                            disabledMining.add(block);
                    }
-
                }
-
+               mining.removeAll(disabledMining);
            }
+            if(putInChest){
+                if(putDropsInChest(invy)){
+
+                }else{
+                    if(inventoryFull){
+                        ctx.player().closeScreen();
+                        cancel();
+                        logDirect("inventory and chest are full,cancel mining");
+                    }else{
+                        ctx.player().closeScreen();
+                        mining=disabledMining;
+                        disabledMining= new ArrayList<>();
+                        putInChest=false;
+                    }
+                }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+
+            }
 
            if (inventoryFull) {
                if(baritone.settings().putDropsInChest.value){
                    disabledMining.addAll(mining);
                    disabledMining= new ArrayList<>(new HashSet<>(disabledMining));
                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
-                   IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
+                   IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
                    if(chestLoc!=null&& waypoint!=null){
                        BlockPos chest =chestLoc.getLocation();
                        if(waypoint.getLocation().getDistance(chest.getX(),chest.getY(),chest.getZ())<6){
@@ -128,11 +145,15 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                               Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
                               if (rot.isPresent() && isSafeToCancel) {
                                   baritone.getLookBehavior().updateTarget(rot.get(), true);
-                                  MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(chest));
-                                  if (ctx.isLookingAt(chest) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
-                                      baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                                      //TODO open chest put drops inside
 
+                                  if (ctx.isLookingAt(chest) ) {
+                                      if (ctx.player().openContainer == ctx.player().inventoryContainer) {
+                                          baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                                      }
+                                      else {
+                                          baritone.getInputOverrideHandler().clearAllKeys();
+                                          putInChest=true;
+                                      }
                                   }
                                   return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                               }
@@ -237,6 +258,25 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return command;
     }
 
+    private boolean putDropsInChest(NonNullList invy) {
+        List<Slot> inv =ctx.player().openContainer.inventorySlots;
+        List<Item> drops =new ArrayList<>();
+        NonNullList<ItemStack> invx = invy;
+        for(Block b:disabledMining) {
+            drops.add(b.getItemDropped(disabledMining.get(0).getDefaultState(), new Random(), 0));
+        }
+        for(int i=0;i<invx.size();i++) {
+            if (!invx.isEmpty() && drops.contains(invx.get(i).getItem())) {
+                for (int j = 0; j < inv.size() - invx.size(); j++) {
+                    if (inv.get(j).getStack().isEmpty()) {
+                        ctx.playerController().windowClick(ctx.player().openContainer.windowId,i<9 ? inv.size() - i / 9 * 9 - 9 + i % 9: inv.size()-invx.size()+i-9,0,ClickType.QUICK_MOVE,ctx.player());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
 
     @Override
@@ -497,7 +537,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public void mine(int quantity, Block... blocks) {
-        this.mining = blocks == null || blocks.length == 0 ? null : Arrays.asList(blocks);
+        putInChest=false;
+        this.mining = blocks==null || blocks.length == 0 ? null : new ArrayList<Block>(Arrays.asList(blocks));
         if (mining != null && !Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
             mining = null;
