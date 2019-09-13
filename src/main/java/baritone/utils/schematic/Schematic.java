@@ -18,30 +18,19 @@
 package baritone.utils.schematic;
 
 import baritone.api.utils.ISchematic;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.bridge.game.GameSession;
-import baritone.utils.schematic.litematica.PositionUtils;
-import net.minecraft.block.Block;
+import baritone.utils.schematic.litematica.LitematicaBlockStateContainer;
+import baritone.utils.schematic.litematica.PosUtils;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.data.BlockListReport;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.LongArrayNBT;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.nbt.NBTUtil;
-import baritone.utils.schematic.litematica.LitematicaBlockStateContainer;
 
-import java.io.File;
 
 public class Schematic implements ISchematic {
     public int widthX;
     public int heightY;
     public int lengthZ;
     protected BlockState[][][] states;
-
     public Schematic(CompoundNBT schematic) {
         int ver = schematic.getInt("Version");
         if (!(ver == 5)) {
@@ -71,9 +60,10 @@ public class Schematic implements ISchematic {
             long[] blockStateArr = region.getLongArray("BlockStates");
 
 
-            BlockPos posEndRel = PositionUtils.getRelativeEndPositionFromAreaSize(new BlockPos(sizX, sizY, sizZ)).add(regionPos);
-            BlockPos posMin = PositionUtils.getMinCorner(regionPos, posEndRel);
-            LitematicaBlockStateContainer container = LitematicaBlockStateContainer.createFrom(blockStatePalette, blockStateArr, regionSize);
+            BlockPos posEndRel = PosUtils.getRelativeEndPos(new BlockPos(sizX, sizY, sizZ)).add(regionPos);
+            BlockPos posMin = PosUtils.getMinCorner(regionPos, posEndRel);
+
+            LitematicaBlockStateContainer container = new LitematicaBlockStateContainer(regionSize, blockStatePalette, blockStateArr);
 
             for (int y = 0; y < regionSize.getY(); y++) {
                 for (int z = 0; z < regionSize.getZ(); z++) {
@@ -83,7 +73,7 @@ public class Schematic implements ISchematic {
                 }
             }
         }
-        // throw new UnsupportedOperationException("1.13 be like: numeric IDs btfo");
+        // throw new UnsupportedOperationException("1.13 be like: numeric IDs btfo"); lololololol no problem anymore ;)
     }
 
     @Override

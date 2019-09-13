@@ -20,27 +20,33 @@ package baritone.utils.schematic.litematica;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
-public class PositionUtils {
-    public static BlockPos getRelativeEndPositionFromAreaSize(Vec3i size)
+public class PosUtils {
+    public static BlockPos getRelativeEndPos(Vec3i size)
     {
         int x = size.getX();
         int y = size.getY();
         int z = size.getZ();
 
-        x = x >= 0 ? x - 1 : x + 1;
-        y = y >= 0 ? y - 1 : y + 1;
-        z = z >= 0 ? z - 1 : z + 1;
+        BlockPos result = new BlockPos(
+                x >= 0 ? x - 1 : x + 1,
+                y >= 0 ? y - 1 : y + 1,
+                z >= 0 ? z - 1 : z + 1);
 
-        return new BlockPos(x, y, z);
+        return result;
     }
     public static BlockPos getMinCorner(BlockPos pos1, BlockPos pos2)
     {
-        return new BlockPos(Math.min(pos1.getX(), pos2.getX()), Math.min(pos1.getY(), pos2.getY()), Math.min(pos1.getZ(), pos2.getZ()));
+        int minX = Math.min(pos1.getX(), pos2.getX());
+        int minY = Math.min(pos1.getY(), pos2.getY());
+        int minZ = Math.min(pos1.getZ(), pos2.getZ());
+        return new BlockPos(minX, minY, minZ);
     }
 
     public static BlockPos getMaxCorner(BlockPos pos1, BlockPos pos2)
     {
-        return new BlockPos(Math.max(pos1.getX(), pos2.getX()), Math.max(pos1.getY(), pos2.getY()), Math.max(pos1.getZ(), pos2.getZ()));
+        int maxX = Math.max(pos1.getX(), pos2.getX());
+        int maxY = Math.max(pos1.getY(), pos2.getY());
+        int maxZ = Math.max(pos1.getZ(), pos2.getZ());
+        return new BlockPos(maxX, maxY, maxZ);
     }
-
 }
