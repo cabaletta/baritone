@@ -57,7 +57,7 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
         }
     }
     private void readChunkPalette(ListNBT paletteNBT) {
-        int i = Math.max(2, MathHelper.log2DeBruijn(paletteNBT.size())); // might be causing pathing issues?
+        int i = Math.max(2, MathHelper.log2DeBruijn(paletteNBT.size()));
         if (i != this.bits) {
             this.setBits(i);
         }
