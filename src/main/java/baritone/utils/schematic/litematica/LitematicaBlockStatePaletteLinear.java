@@ -13,11 +13,11 @@ public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStateP
     private final int bits;
     private int arraySize;
 
-    LitematicaBlockStatePaletteLinear(int p_i48962_2_, ILitematicaBlockStatePaletteResizer p_i48962_3_, Function<CompoundNBT, BlockState> p_i48962_4_) {
-        this.states = new BlockState[1 << p_i48962_2_];
-        this.bits = p_i48962_2_;
-        this.resizeHandler = p_i48962_3_;
-        this.deserializer = p_i48962_4_;
+    LitematicaBlockStatePaletteLinear(int bits, ILitematicaBlockStatePaletteResizer paletteResizer, Function<CompoundNBT, BlockState> deserializer) {
+        this.states = new BlockState[1 << bits];
+        this.bits = bits;
+        this.resizeHandler = paletteResizer;
+        this.deserializer = deserializer;
     }
 
     public int idFor(BlockState state) {

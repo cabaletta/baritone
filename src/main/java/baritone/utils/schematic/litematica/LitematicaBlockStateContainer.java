@@ -7,6 +7,8 @@ import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.BitArray;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+
 import java.util.function.Function;
 
 public class LitematicaBlockStateContainer implements ILitematicaBlockStatePaletteResizer
@@ -31,39 +33,35 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
         this.readChunkPalette(paletteList);
     }
 
-    private void setBits(int bitsIn) {
-        if (bitsIn != this.bits)
-        {
-            this.bits = bitsIn;
+    private void setBits(int newBits) {
+        if (newBits != this.bits) {
+            this.bits = newBits;
 
-            if (this.bits <= 4)
-            {
-                this.bits = Math.max(2, this.bits);
-                this.palette = new LitematicaBlockStatePaletteLinear(this.bits, this, this.deserializer);
-            }
-            else
-            {
+            // Palette init
+            if (this.bits > 4) {
                 this.palette = new LitematicaBlockStatePaletteHashMap(this.bits, this, this.deserializer);
             }
-
+            else {
+                this.bits = Math.max(this.bits, 2);
+                this.palette = new LitematicaBlockStatePaletteLinear(this.bits, this, this.deserializer);
+            }
             this.palette.idFor(AIR_DEFAULT_STATE);
 
-            if (this.longArray != null)
-            {
-                this.storage = new BitArray(this.bits, this.storageSize, longArray);
-            }
-            else
-            {
+            // Storage init
+            if (this.longArray == null) {
                 this.storage = new BitArray(this.bits, this.storageSize);
+            }
+            else {
+                this.storage = new BitArray(this.bits, this.storageSize, longArray);
             }
         }
     }
-    private void readChunkPalette(ListNBT p_222642_1_) {
-        int i = Math.max(2, Integer.SIZE - Integer.numberOfLeadingZeros(p_222642_1_.size() - 1));
+    private void readChunkPalette(ListNBT paletteNBT) {
+        int i = Math.max(2, MathHelper.log2DeBruijn(paletteNBT.size())); // might be causing pathing issues?
         if (i != this.bits) {
             this.setBits(i);
         }
-        this.palette.readNBT(p_222642_1_);
+        this.palette.readNBT(paletteNBT);
     }
     private int getIndex(int x, int y, int z)
     {
@@ -76,10 +74,10 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
         BlockState state = this.palette.get(this.storage.getAt(index));
         return (state == null ? this.defaultState : state);
     }
-    public int onResize(int p_onResize_1_, BlockState p_onResize_2_) {
+    public int onResize(int bits, BlockState state) {
         BitArray bitarray = this.storage;
         ILitematicaBlockStatePalette iblockstatepalette = this.palette;
-        this.setBits(p_onResize_1_);
+        this.setBits(bits);
 
         for(int i = 0; i < bitarray.size(); ++i) {
             BlockState t = iblockstatepalette.get(bitarray.getAt(i));
@@ -88,7 +86,7 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
             }
         }
 
-        return this.palette.idFor(p_onResize_2_);
+        return this.palette.idFor(state);
     }
     protected void set(int index, BlockState state) {
         int i = this.palette.idFor(state);

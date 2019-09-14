@@ -13,9 +13,9 @@ public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockState
     private final Function<CompoundNBT, BlockState> deserializer;
     private final int bits;
 
-    LitematicaBlockStatePaletteHashMap(int bitsIn, ILitematicaBlockStatePaletteResizer paletteResizerIn, Function<CompoundNBT, BlockState> deserializerIn) {
+    LitematicaBlockStatePaletteHashMap(int bitsIn, ILitematicaBlockStatePaletteResizer paletteResizer, Function<CompoundNBT, BlockState> deserializerIn) {
         this.bits = bitsIn;
-        this.paletteResizer = paletteResizerIn;
+        this.paletteResizer = paletteResizer;
         this.deserializer = deserializerIn;
         this.statePaletteMap = new IntIdentityHashBiMap<BlockState>(1 << bitsIn);
     }
