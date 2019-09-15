@@ -27,14 +27,19 @@ import net.minecraft.util.math.BlockPos;
 
 
 public class Schematic implements ISchematic {
-    public int widthX;
-    public int heightY;
-    public int lengthZ;
-    protected BlockState[][][] states;
+    int widthX;
+    private int heightY;
+    int lengthZ;
+    BlockState[][][] states;
     public Schematic(CompoundNBT schematic) {
         int ver = schematic.getInt("Version");
         if (!(ver == 5)) {
             throw new IllegalStateException("bad schematic version: " + ver);
+        }
+
+        int dataver = schematic.getInt("MinecraftDataVersion");
+        if (dataver > 1976) {
+            throw new IllegalStateException("this schematic is only compatible with minecraft " + dataver + " and above.");
         }
 
         CompoundNBT regions = schematic.getCompound("Regions");
