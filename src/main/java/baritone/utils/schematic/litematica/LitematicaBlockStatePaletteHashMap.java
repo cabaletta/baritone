@@ -1,10 +1,10 @@
 package baritone.utils.schematic.litematica;
 
-import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.IntIdentityHashBiMap;
+
 import java.util.function.Function;
 
 public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockStatePalette {
@@ -17,7 +17,7 @@ public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockState
         this.bits = bitsIn;
         this.paletteResizer = paletteResizer;
         this.deserializer = deserializerIn;
-        this.statePaletteMap = new IntIdentityHashBiMap<IBlockState>(1 << bitsIn);
+        this.statePaletteMap = new IntIdentityHashBiMap<>(1 << bitsIn);
     }
 
     public int idFor(IBlockState state) {
