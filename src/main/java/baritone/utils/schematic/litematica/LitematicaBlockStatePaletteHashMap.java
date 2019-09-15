@@ -6,8 +6,7 @@ import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.IntIdentityHashBiMap;
 import java.util.function.Function;
 
-public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockStatePalette
-{
+public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockStatePalette {
     private final IntIdentityHashBiMap<BlockState> statePaletteMap;
     private final ILitematicaBlockStatePaletteResizer paletteResizer;
     private final Function<CompoundNBT, BlockState> deserializer;
@@ -45,6 +44,5 @@ public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockState
                 this.statePaletteMap.add(bst);
             }
         }
-
     }
 }

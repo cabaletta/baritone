@@ -5,8 +5,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import java.util.function.Function;
 
-public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStatePalette
-{
+public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStatePalette {
     private final BlockState[] states;
     private final ILitematicaBlockStatePaletteResizer resizeHandler;
     private final Function<CompoundNBT, BlockState> deserializer;
@@ -32,7 +31,8 @@ public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStateP
             this.states[j] = state;
             ++this.arraySize;
             return j;
-        } else {
+        }
+        else {
             return this.resizeHandler.onResize(this.bits + 1, state);
         }
     }
@@ -47,6 +47,7 @@ public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStateP
 
         this.arraySize = nbt.size();
     }
+
     public BlockState get(int indexKey) {
         return (indexKey >= 0 && indexKey < this.arraySize ? this.states[indexKey] : null);
     }

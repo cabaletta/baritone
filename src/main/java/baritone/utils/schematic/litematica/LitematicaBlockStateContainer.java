@@ -11,8 +11,7 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.function.Function;
 
-public class LitematicaBlockStateContainer implements ILitematicaBlockStatePaletteResizer
-{
+public class LitematicaBlockStateContainer implements ILitematicaBlockStatePaletteResizer {
 
     static final BlockState AIR_DEFAULT_STATE = Blocks.AIR.getDefaultState();
     private final Function<CompoundNBT, BlockState> deserializer;
@@ -56,6 +55,7 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
             }
         }
     }
+
     private void readChunkPalette(ListNBT paletteNBT) {
         int i = Math.max(2, MathHelper.log2DeBruijn(paletteNBT.size()));
         if (i != this.bits) {
@@ -63,10 +63,9 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
         }
         this.palette.readNBT(paletteNBT);
     }
-    private int getIndex(int x, int y, int z)
-    {
-        return (y * pos.getX() * pos.getZ()) + z * pos.getX() + x;
 
+    private int getIndex(int x, int y, int z) {
+        return (y * pos.getX() * pos.getZ()) + z * pos.getX() + x;
     }
 
     public BlockState get(int x, int y, int z) {
@@ -74,6 +73,7 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
         BlockState state = this.palette.get(this.storage.getAt(index));
         return (state == null ? this.defaultState : state);
     }
+
     public int onResize(int bits, BlockState state) {
         BitArray bitarray = this.storage;
         ILitematicaBlockStatePalette iblockstatepalette = this.palette;
@@ -85,9 +85,9 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
                 this.set(i, t);
             }
         }
-
         return this.palette.idFor(state);
     }
+
     protected void set(int index, BlockState state) {
         int i = this.palette.idFor(state);
         this.storage.setAt(index, i);
