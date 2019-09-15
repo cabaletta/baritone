@@ -78,7 +78,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.name = name;
         this.schematic = schematic;
         this.realSchematic = null;
-        this.origin = origin;
+        int x = origin.getX();
+        int y = origin.getY();
+        int z = origin.getZ();
+        if (Baritone.settings().schematicOrientationX.value) {
+            x += schematic.widthX();
+        }
+        if (Baritone.settings().schematicOrientationY.value) {
+            y += schematic.heightY();
+        }
+        if (Baritone.settings().schematicOrientationZ.value) {
+            z += schematic.lengthZ();
+        }
+        this.origin = new Vec3i(x, y, z);
         this.paused = false;
         this.layer = 0;
         this.observedCompleted = new LongOpenHashSet();

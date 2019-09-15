@@ -743,6 +743,21 @@ public final class Settings {
     public final Setting<Double> breakCorrectBlockPenaltyMultiplier = new Setting<>(10d);
 
     /**
+     * When this setting is true, build a schematic with the highest X coordinate being the origin, instead of the lowest
+     */
+    public final Setting<Boolean> schematicOrientationX = new Setting<>(false);
+
+    /**
+     * When this setting is true, build a schematic with the highest Y coordinate being the origin, instead of the lowest
+     */
+    public final Setting<Boolean> schematicOrientationY = new Setting<>(false);
+
+    /**
+     * When this setting is true, build a schematic with the highest Z coordinate being the origin, instead of the lowest
+     */
+    public final Setting<Boolean> schematicOrientationZ = new Setting<>(false);
+
+    /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
