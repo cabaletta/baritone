@@ -247,19 +247,15 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             BlockPos origin;
             try {
                 String[] coords = msg.substring("build".length()).trim().split(" ");
-                file = coords[0] + ".schematic";
+                file = coords[0] + ".litematic";
                 origin = new BlockPos(parseOrDefault(coords[1], ctx.playerFeet().x, 1), parseOrDefault(coords[2], ctx.playerFeet().y, 1), parseOrDefault(coords[3], ctx.playerFeet().z, 1));
             } catch (Exception ex) {
-                file = msg.substring(5).trim() + ".schematic";
+                file = msg.substring(5).trim() + ".litematic";
                 origin = ctx.playerFeet();
             }
             logDirect("Loading '" + file + "' to build from origin " + origin);
             boolean success = baritone.getBuilderProcess().build(file, origin);
             logDirect(success ? "Loaded" : "Unable to load");
-            return true;
-        }
-        if (msg.startsWith("schematica")) {
-            baritone.getBuilderProcess().buildOpenSchematic();
             return true;
         }
         if (msg.equals("come")) {
