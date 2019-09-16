@@ -28,9 +28,10 @@ import net.minecraft.util.math.BlockPos;
 
 public class Schematic implements ISchematic {
     int widthX;
-    private int heightY;
     int lengthZ;
     IBlockState[][][] states;
+    private int heightY;
+
     public Schematic(NBTTagCompound schematic) {
         int ver = schematic.getInt("Version");
         if (!(ver == 5)) {

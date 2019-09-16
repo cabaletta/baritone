@@ -33,6 +33,7 @@ public class PosUtils {
 
         return result;
     }
+
     public static BlockPos getMinCorner(BlockPos pos1, BlockPos pos2) {
         int minX = Math.min(pos1.getX(), pos2.getX());
         int minY = Math.min(pos1.getY(), pos2.getY());

@@ -39,8 +39,7 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
             // Palette init
             if (this.bits > 4) {
                 this.palette = new LitematicaBlockStatePaletteHashMap(this.bits, this, this.deserializer);
-            }
-            else {
+            } else {
                 this.bits = Math.max(this.bits, 2);
                 this.palette = new LitematicaBlockStatePaletteLinear(this.bits, this, this.deserializer);
             }
@@ -49,8 +48,7 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
             // Storage init
             if (this.longArray == null) {
                 this.storage = new BitArray(this.bits, this.storageSize);
-            }
-            else {
+            } else {
                 this.storage = new BitArray(this.bits, this.storageSize, longArray);
             }
         }
@@ -79,7 +77,7 @@ public class LitematicaBlockStateContainer implements ILitematicaBlockStatePalet
         ILitematicaBlockStatePalette iblockstatepalette = this.palette;
         this.setBits(bits);
 
-        for(int i = 0; i < bitarray.size(); ++i) {
+        for (int i = 0; i < bitarray.size(); ++i) {
             IBlockState t = iblockstatepalette.get(bitarray.getAt(i));
             if (t != null) {
                 this.set(i, t);

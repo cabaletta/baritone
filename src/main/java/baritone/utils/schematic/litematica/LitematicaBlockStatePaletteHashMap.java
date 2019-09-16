@@ -39,7 +39,7 @@ public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockState
     public void readNBT(NBTTagList nbt) {
         this.statePaletteMap.clear();
 
-        for(int i = 0; i < nbt.size(); ++i) {
+        for (int i = 0; i < nbt.size(); ++i) {
             IBlockState bst = this.deserializer.apply(nbt.getCompound(i));
             if (bst != LitematicaBlockStateContainer.AIR_DEFAULT_STATE) {
                 this.statePaletteMap.add(bst);

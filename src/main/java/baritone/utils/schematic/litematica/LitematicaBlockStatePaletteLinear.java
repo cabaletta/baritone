@@ -3,6 +3,7 @@ package baritone.utils.schematic.litematica;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+
 import java.util.function.Function;
 
 public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStatePalette {
@@ -20,7 +21,7 @@ public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStateP
     }
 
     public int idFor(IBlockState state) {
-        for(int i = 0; i < this.arraySize; ++i) {
+        for (int i = 0; i < this.arraySize; ++i) {
             if (this.states[i] == state) {
                 return i;
             }
@@ -31,14 +32,13 @@ public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStateP
             this.states[j] = state;
             ++this.arraySize;
             return j;
-        }
-        else {
+        } else {
             return this.resizeHandler.onResize(this.bits + 1, state);
         }
     }
 
     public void readNBT(NBTTagList nbt) {
-        for(int i = 0; i < nbt.size(); ++i) {
+        for (int i = 0; i < nbt.size(); ++i) {
             IBlockState bst = this.deserializer.apply(nbt.getCompound(i));
             if (bst != LitematicaBlockStateContainer.AIR_DEFAULT_STATE) {
                 this.states[i] = bst;
