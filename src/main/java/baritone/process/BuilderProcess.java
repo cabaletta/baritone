@@ -486,9 +486,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     private void recalcNearby(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
-        for (int dx = -5; dx <= 5; dx++) {
-            for (int dy = -5; dy <= 5; dy++) {
-                for (int dz = -5; dz <= 5; dz++) {
+        int radius = Baritone.settings().builderTickScanRadius.value;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
                     int x = center.x + dx;
                     int y = center.y + dy;
                     int z = center.z + dz;
