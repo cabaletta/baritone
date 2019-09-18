@@ -38,6 +38,10 @@ The pathing goal can be set to any of these options:
 
 And finally `GoalComposite`. `GoalComposite` is a list of other goals, any one of which satisfies the goal. For example, `mine diamond_ore` creates a `GoalComposite` of `GoalTwoBlocks`s for every diamond ore location it knows of.
 
+# Troubleshooting
+If using baritone through the Impact client, be sure to use [.b] at the beginning of the command if it doesn't seem to be working w/o it.
+
+See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
 
 # Future features
 Things it doesn't have yet
