@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  * @author leijurv
  */
 public final class Settings {
-   
+
     /**
      * Allow Baritone to break blocks
      */
@@ -776,21 +776,21 @@ public final class Settings {
      * couldn't. If you don't want it to look like you're X-Raying, turn this on
      */
     public final Setting<Boolean> legitMine = new Setting<>(false);
-    
+
     /**
-     *  Tells Baritone to go home after mining/farming
+     * Tells Baritone to go home after mining/farming
      */
     public final Setting<Boolean> goHome = new Setting<>(true);
-    
+
     /**
-     *  Tells Baritone to check if there is enough Space in the Inventory, while mining/farming
+     * Tells Baritone to check if there is enough Space in the Inventory, while mining/farming
      */
     public final Setting<Boolean> checkInventory = new Setting<>(true);
 
     /**
-     *  Tells Baritone to put the mined/farmed drops into the marked chest,if the inventory is full
+     * Tells Baritone to put the mined/farmed drops into the marked chest,if the inventory is full
      */
-    public final Setting<Boolean>  putDropsInChest = new Setting<>(true);
+    public final Setting<Boolean> putDropsInChest = new Setting<>(true);
 
 
     /**

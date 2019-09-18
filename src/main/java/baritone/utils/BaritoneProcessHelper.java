@@ -42,7 +42,7 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         return false;
     }
 
-    public void returnhome()  {
+    public void returnhome() {
         IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
         if (waypoint != null) {
             Goal goal = new GoalBlock(waypoint.getLocation());

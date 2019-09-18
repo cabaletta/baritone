@@ -82,10 +82,10 @@ public class Waypoint implements IWaypoint {
     @Override
     public String toString() {
         return String.format(
-            "%s %s %s",
-            name,
-            BetterBlockPos.from(location).toString(),
-            new Date(creationTimestamp).toString()
+                "%s %s %s",
+                name,
+                BetterBlockPos.from(location).toString(),
+                new Date(creationTimestamp).toString()
         );
     }
 
