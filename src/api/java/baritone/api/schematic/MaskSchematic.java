@@ -35,7 +35,7 @@ public abstract class MaskSchematic extends AbstractSchematic {
 
     @Override
     public boolean inSchematic(int x, int y, int z, IBlockState currentState) {
-        return partOfMask(x, y, z, currentState) && schematic.inSchematic(x, y, z, currentState);
+        return schematic.inSchematic(x, y, z, currentState) && partOfMask(x, y, z, currentState);
     }
 
     @Override

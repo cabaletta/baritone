@@ -991,7 +991,7 @@ public final class Settings {
     /**
      * Line width of the goal when rendered, in pixels
      */
-    public final Setting<Float> selectionLineWidth = new Setting<>(1F);
+    public final Setting<Float> selectionLineWidth = new Setting<>(2F);
 
     /**
      * Render selections
