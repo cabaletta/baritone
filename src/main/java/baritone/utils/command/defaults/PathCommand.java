@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.ICustomGoalProcess;
@@ -35,8 +36,8 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class PathCommand extends Command {
-    public PathCommand() {
-        super(asList("path", "goto"));
+    public PathCommand(IBaritone baritone) {
+        super(baritone, asList("path", "goto"));
     }
 
     @Override

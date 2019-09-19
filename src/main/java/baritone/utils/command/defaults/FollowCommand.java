@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.EntityClassById;
@@ -43,8 +44,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class FollowCommand extends Command {
-    public FollowCommand() {
-        super("follow");
+    public FollowCommand(IBaritone baritone) {
+        super(baritone, "follow");
     }
 
     @Override

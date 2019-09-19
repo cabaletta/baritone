@@ -17,10 +17,8 @@
 
 package baritone.api.utils.command;
 
-import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.command.execution.CommandExecution;
@@ -33,10 +31,9 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class Command implements Helper, AbstractGameEventListener {
-    protected IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
-    protected Settings settings = BaritoneAPI.getSettings();
-    protected IPlayerContext ctx = baritone.getPlayerContext();
+public abstract class Command implements Helper {
+    protected IBaritone baritone;
+    protected IPlayerContext ctx;
     protected Minecraft MC = mc;
 
     /**
@@ -49,15 +46,16 @@ public abstract class Command implements Helper, AbstractGameEventListener {
      *
      * @param names The names of this command. This is what you put after the command prefix.
      */
-    protected Command(List<String> names) {
+    protected Command(IBaritone baritone, List<String> names) {
         this.names = names.stream()
                 .map(s -> s.toLowerCase(Locale.US))
                 .collect(Collectors.toList());
-        baritone.getGameEventHandler().registerEventListener(this);
+        this.baritone = baritone;
+        this.ctx = baritone.getPlayerContext();
     }
 
-    protected Command(String name) {
-        this(Collections.singletonList(name));
+    protected Command(IBaritone baritone, String name) {
+        this(baritone, Collections.singletonList(name));
     }
 
     /**

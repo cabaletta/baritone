@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.command.Command;
@@ -28,8 +29,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ThisWayCommand extends Command {
-    public ThisWayCommand() {
-        super(asList("thisway", "forward"));
+    public ThisWayCommand(IBaritone baritone) {
+        super(baritone, asList("thisway", "forward"));
     }
 
     @Override

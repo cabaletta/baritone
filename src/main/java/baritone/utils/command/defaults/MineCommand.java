@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.command.Command;
@@ -32,8 +33,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class MineCommand extends Command {
-    public MineCommand() {
-        super("mine");
+    public MineCommand(IBaritone baritone) {
+        super(baritone, "mine");
     }
 
     @Override

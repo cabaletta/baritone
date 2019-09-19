@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
@@ -31,8 +32,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class FindCommand extends Command {
-    public FindCommand() {
-        super("find");
+    public FindCommand(IBaritone baritone) {
+        super(baritone, "find");
     }
 
     @Override

@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
@@ -27,8 +28,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class FarmCommand extends Command {
-    public FarmCommand() {
-        super("farm");
+    public FarmCommand(IBaritone baritone) {
+        super(baritone, "farm");
     }
 
     @Override

@@ -1,5 +1,6 @@
 package baritone.selection;
 
+import baritone.Baritone;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
@@ -12,8 +13,8 @@ public class SelectionManager implements ISelectionManager {
     private final LinkedList<ISelection> selections = new LinkedList<>();
     private ISelection[] selectionsArr = new ISelection[0];
 
-    public SelectionManager() {
-        new SelectionRenderer(this);
+    public SelectionManager(Baritone baritone) {
+        new SelectionRenderer(baritone, this);
     }
 
     private void resetSelectionsArr() {

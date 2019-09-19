@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.Waypoint;
@@ -49,8 +50,8 @@ import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFI
 import static java.util.Arrays.asList;
 
 public class WaypointsCommand extends Command {
-    public WaypointsCommand() {
-        super(asList("waypoints", "waypoint", "wp"));
+    public WaypointsCommand(IBaritone baritone) {
+        super(baritone, asList("waypoints", "waypoint", "wp"));
     }
 
     @Override

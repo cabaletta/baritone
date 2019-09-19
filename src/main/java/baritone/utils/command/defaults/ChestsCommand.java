@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.cache.IRememberedInventory;
 import baritone.api.utils.BetterBlockPos;
@@ -35,8 +36,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ChestsCommand extends Command {
-    public ChestsCommand() {
-        super("chests");
+    public ChestsCommand(IBaritone baritone) {
+        super(baritone, "chests");
     }
 
     @Override

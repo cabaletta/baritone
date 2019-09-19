@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
@@ -32,8 +33,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ClearareaCommand extends Command {
-    public ClearareaCommand() {
-        super("cleararea");
+    public ClearareaCommand(IBaritone baritone) {
+        super(baritone, "cleararea");
     }
 
     @Override

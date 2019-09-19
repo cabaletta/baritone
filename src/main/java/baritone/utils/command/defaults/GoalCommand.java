@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.ICustomGoalProcess;
@@ -35,8 +36,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class GoalCommand extends Command {
-    public GoalCommand() {
-        super("goal");
+    public GoalCommand(IBaritone baritone) {
+        super(baritone, "goal");
     }
 
     @Override

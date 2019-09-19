@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalAxis;
@@ -29,8 +30,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class AxisCommand extends Command {
-    public AxisCommand() {
-        super(asList("axis", "highway"));
+    public AxisCommand(IBaritone baritone) {
+        super(baritone, asList("axis", "highway"));
     }
 
     @Override

@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
@@ -36,8 +37,8 @@ import static java.util.Arrays.asList;
 public class BuildCommand extends Command {
     private static final File schematicsDir = new File(Minecraft.getMinecraft().gameDir, "schematics");
 
-    public BuildCommand() {
-        super("build");
+    public BuildCommand(IBaritone baritone) {
+        super(baritone, "build");
     }
 
     @Override

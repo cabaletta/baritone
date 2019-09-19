@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.command.Command;
@@ -32,8 +33,8 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class ComeCommand extends Command {
-    public ComeCommand() {
-        super("come");
+    public ComeCommand(IBaritone baritone) {
+        super(baritone, "come");
     }
 
     @Override

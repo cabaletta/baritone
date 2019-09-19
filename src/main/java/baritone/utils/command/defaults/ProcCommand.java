@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.IBaritoneProcess;
@@ -32,8 +33,8 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class ProcCommand extends Command {
-    public ProcCommand() {
-        super("proc");
+    public ProcCommand(IBaritone baritone) {
+        super(baritone, "proc");
     }
 
     @Override

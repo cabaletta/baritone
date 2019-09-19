@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.RelativeFile;
@@ -33,8 +34,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ExploreFilterCommand extends Command {
-    public ExploreFilterCommand() {
-        super("explorefilter");
+    public ExploreFilterCommand(IBaritone baritone) {
+        super(baritone, "explorefilter");
     }
 
     @Override

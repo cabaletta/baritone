@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.utils.command.Command;
@@ -29,8 +30,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class BlacklistCommand extends Command {
-    public BlacklistCommand() {
-        super("blacklist");
+    public BlacklistCommand(IBaritone baritone) {
+        super(baritone, "blacklist");
     }
 
     @Override

@@ -60,11 +60,6 @@ public class Baritone implements IBaritone {
         }
     }
 
-    /**
-     * Whether or not {@link Baritone#init()} has been called yet
-     */
-    private boolean initialized;
-
     private GameEventHandler gameEventHandler;
 
     private PathingBehavior pathingBehavior;
@@ -92,13 +87,6 @@ public class Baritone implements IBaritone {
 
     Baritone() {
         this.gameEventHandler = new GameEventHandler(this);
-    }
-
-    @Override
-    public synchronized void init() {
-        if (initialized) {
-            return;
-        }
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = PrimaryPlayerContext.INSTANCE;
@@ -125,13 +113,11 @@ public class Baritone implements IBaritone {
         }
 
         this.worldProvider = new WorldProvider();
-        this.selectionManager = new SelectionManager();
+        this.selectionManager = new SelectionManager(this);
 
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             this.gameEventHandler.registerEventListener(BaritoneAutoTest.INSTANCE);
         }
-
-        this.initialized = true;
     }
 
     @Override

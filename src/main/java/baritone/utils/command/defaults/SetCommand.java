@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.command.Command;
@@ -44,8 +45,8 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Stream.of;
 
 public class SetCommand extends Command {
-    public SetCommand() {
-        super(asList("set", "setting", "settings"));
+    public SetCommand(IBaritone baritone) {
+        super(baritone, asList("set", "setting", "settings"));
     }
 
     @Override

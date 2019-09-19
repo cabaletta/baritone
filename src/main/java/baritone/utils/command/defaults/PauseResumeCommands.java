@@ -17,7 +17,7 @@
 
 package baritone.utils.command.defaults;
 
-import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
@@ -39,15 +39,17 @@ import static java.util.Arrays.asList;
  * REQUEST_PAUSE} as needed.
  */
 public class PauseResumeCommands {
-    public static Command pauseCommand;
-    public static Command resumeCommand;
-    public static Command pausedCommand;
+    private final IBaritone baritone;
+    Command pauseCommand;
+    Command resumeCommand;
+    Command pausedCommand;
 
-    static {
+    public PauseResumeCommands(IBaritone baritone) {
+        this.baritone = baritone;
         // array for mutability, non-field so reflection can't touch it
         final boolean[] paused = {false};
 
-        BaritoneAPI.getProvider().getPrimaryBaritone().getPathingControlManager().registerProcess(
+        baritone.getPathingControlManager().registerProcess(
                 new IBaritoneProcess() {
                     @Override
                     public boolean isActive() {
@@ -79,7 +81,7 @@ public class PauseResumeCommands {
                 }
         );
 
-        pauseCommand = new Command("pause") {
+        pauseCommand = new Command(baritone, "pause") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);
@@ -115,7 +117,7 @@ public class PauseResumeCommands {
             }
         };
 
-        resumeCommand = new Command("resume") {
+        resumeCommand = new Command(baritone, "resume") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);
@@ -149,7 +151,7 @@ public class PauseResumeCommands {
             }
         };
 
-        pausedCommand = new Command("paused") {
+        pausedCommand = new Command(baritone, "paused") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);

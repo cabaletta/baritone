@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
@@ -30,14 +31,14 @@ public class CommandAlias extends Command {
     private final String shortDesc;
     public final String target;
 
-    public CommandAlias(List<String> names, String shortDesc, String target) {
-        super(names);
+    public CommandAlias(IBaritone baritone, List<String> names, String shortDesc, String target) {
+        super(baritone, names);
         this.shortDesc = shortDesc;
         this.target = target;
     }
 
-    public CommandAlias(String name, String shortDesc, String target) {
-        super(name);
+    public CommandAlias(IBaritone baritone, String name, String shortDesc, String target) {
+        super(baritone, name);
         this.shortDesc = shortDesc;
         this.target = target;
     }

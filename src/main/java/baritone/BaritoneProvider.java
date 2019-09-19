@@ -34,11 +34,13 @@ import java.util.List;
  */
 public final class BaritoneProvider implements IBaritoneProvider {
 
-    private final Baritone primary = new Baritone();
-    private final List<IBaritone> all = Collections.singletonList(primary);
+    private final Baritone primary;
+    private final List<IBaritone> all;
 
     {
-        DefaultCommands.COMMANDS.forEach(CommandManager.REGISTRY::register);
+        primary = new Baritone();
+        all = Collections.singletonList(primary);
+        DefaultCommands.commands(primary).forEach(CommandManager.REGISTRY::register);
         new BaritoneChatControl(primary);
     }
 

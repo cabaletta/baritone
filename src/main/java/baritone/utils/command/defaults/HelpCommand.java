@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandNotFoundException;
@@ -40,8 +41,8 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class HelpCommand extends Command {
-    public HelpCommand() {
-        super(asList("help", "?"));
+    public HelpCommand(IBaritone baritone) {
+        super(baritone, asList("help", "?"));
     }
 
     @Override

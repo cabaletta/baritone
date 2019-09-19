@@ -17,8 +17,11 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.events.RenderEvent;
+import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.schematic.*;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
@@ -54,8 +57,25 @@ public class SelCommand extends Command {
     private ISelectionManager manager = baritone.getSelectionManager();
     private BetterBlockPos pos1 = null;
 
-    public SelCommand() {
-        super(asList("sel", "selection", "s"));
+    public SelCommand(IBaritone baritone) {
+        super(baritone, asList("sel", "selection", "s"));
+        baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
+            @Override
+            public void onRenderPass(RenderEvent event) {
+                if (!Baritone.settings().renderSelectionCorners.value || pos1 == null) {
+                    return;
+                }
+
+                Color color = Baritone.settings().colorSelectionPos1.value;
+                float opacity = Baritone.settings().selectionOpacity.value;
+                float lineWidth = Baritone.settings().selectionLineWidth.value;
+                boolean ignoreDepth = Baritone.settings().renderSelectionIgnoreDepth.value;
+
+                IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
+                IRenderer.drawAABB(new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
+                IRenderer.endLines(ignoreDepth);
+            }
+        });
     }
 
     @Override
@@ -359,21 +379,5 @@ public class SelCommand extends Command {
 
             return names.toArray(new String[0]);
         }
-    }
-
-    @Override
-    public void onRenderPass(RenderEvent event) {
-        if (!settings.renderSelectionCorners.value || pos1 == null) {
-            return;
-        }
-
-        Color color = settings.colorSelectionPos1.value;
-        float opacity = settings.selectionOpacity.value;
-        float lineWidth = settings.selectionLineWidth.value;
-        boolean ignoreDepth = settings.renderSelectionIgnoreDepth.value;
-
-        IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
-        IRenderer.drawAABB(new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
-        IRenderer.endLines(ignoreDepth);
     }
 }

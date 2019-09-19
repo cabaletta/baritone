@@ -34,15 +34,6 @@ import baritone.api.utils.IPlayerContext;
 public interface IBaritone {
 
     /**
-     * Call as soon as Minecraft is ready, initializes all of the processes, behaviors, etc. This will
-     * only effectively be ran once, any additional calls are redundant because the initialization state
-     * is saved.
-     * <p>
-     * Or whenever your overeager utility client wants.
-     */
-    void init();
-
-    /**
      * @return The {@link IPathingBehavior} instance
      * @see IPathingBehavior
      */

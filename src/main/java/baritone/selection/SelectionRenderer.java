@@ -1,5 +1,6 @@
 package baritone.selection;
 
+import baritone.Baritone;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.selection.ISelection;
@@ -11,7 +12,7 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
 
     private final SelectionManager manager;
 
-    SelectionRenderer(SelectionManager manager) {
+    SelectionRenderer(Baritone baritone, SelectionManager manager) {
         this.manager = manager;
         baritone.getGameEventHandler().registerEventListener(this);
     }

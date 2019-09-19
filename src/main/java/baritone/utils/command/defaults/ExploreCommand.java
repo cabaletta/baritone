@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.command.Command;
@@ -29,8 +30,8 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ExploreCommand extends Command {
-    public ExploreCommand() {
-        super("explore");
+    public ExploreCommand(IBaritone baritone) {
+        super(baritone, "explore");
     }
 
     @Override

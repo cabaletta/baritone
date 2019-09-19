@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
@@ -29,8 +30,8 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class VersionCommand extends Command {
-    public VersionCommand() {
-        super("version");
+    public VersionCommand(IBaritone baritone) {
+        super(baritone, "version");
     }
 
     @Override

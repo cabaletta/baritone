@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalInverted;
@@ -32,8 +33,8 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class InvertCommand extends Command {
-    public InvertCommand() {
-        super("invert");
+    public InvertCommand(IBaritone baritone) {
+        super(baritone, "invert");
     }
 
     @Override

@@ -18,7 +18,6 @@
 package baritone.utils;
 
 import baritone.api.BaritoneAPI;
-import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.Helper;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -36,7 +35,6 @@ public interface IRenderer {
     Tessellator tessellator = Tessellator.getInstance();
     BufferBuilder buffer = tessellator.getBuffer();
     RenderManager renderManager = Helper.mc.getRenderManager();
-    IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
     Settings settings = BaritoneAPI.getSettings();
 
     static void glColor(Color color, float alpha) {
