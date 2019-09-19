@@ -23,7 +23,6 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
-import net.minecraft.client.Minecraft;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +34,6 @@ public abstract class Command implements Helper {
 
     protected IBaritone baritone;
     protected IPlayerContext ctx;
-    protected Minecraft MC = mc;
     /**
      * The names of this command. This is what you put after the command prefix.
      */

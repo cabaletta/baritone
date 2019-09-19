@@ -42,7 +42,7 @@ public class ExploreFilterCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(2);
-        File file = args.getDatatypePost(RelativeFile.class, MC.gameDir.getAbsoluteFile().getParentFile());
+        File file = args.getDatatypePost(RelativeFile.class, mc.gameDir.getAbsoluteFile().getParentFile());
         boolean invert = false;
         if (args.has()) {
             if (args.getString().equalsIgnoreCase("invert")) {
