@@ -408,7 +408,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.filter = filter;
         if (filter != null && !Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
-            filter = null;
+            this.mine(quantity, (BlockOptionalMetaLookup) null);
+            return;
         }
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();

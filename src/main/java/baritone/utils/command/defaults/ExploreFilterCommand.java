@@ -57,7 +57,7 @@ public class ExploreFilterCommand extends Command {
         } catch (JsonSyntaxException e) {
             throw new CommandInvalidStateException("Invalid JSON syntax");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
         logDirect(String.format("Explore filter applied. Inverted: %s", Boolean.toString(invert)));
     }
