@@ -170,6 +170,9 @@ public class WaypointsCommand extends Command {
                         throw new CommandInvalidStateException("No waypoints found");
                     case 1:
                         waypoint = waypoints[0];
+                        break;
+                    default:
+                        break;
                 }
             }
             if (waypoint == null) {

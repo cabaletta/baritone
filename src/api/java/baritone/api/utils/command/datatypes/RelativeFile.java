@@ -21,6 +21,7 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -57,26 +58,26 @@ public class RelativeFile implements IDatatypePost<File, File> {
      *
      * @param file File
      * @return Canonical file of file
-     * @author LoganDark and his hate of checked exceptions
+     * @author LoganDark
      */
-    private static File SHUT_THE_FUCK_UP_IOEXCEPTION_NOBODY_LIKES_YOU(File file) {
+    private static File getCanonicalFileUnchecked(File file) {
         try {
             return file.getCanonicalFile();
         } catch (IOException e) {
-            throw new RuntimeException("Fuck you", e);
+            throw new UncheckedIOException(e);
         }
     }
 
     public static Stream<String> tabComplete(ArgConsumer consumer, File base0) {
         // I will not make the caller deal with this, seriously
         // Tab complete code is beautiful and I'm not going to bloat it with dumb ass checked exception bullshit
-        File base = SHUT_THE_FUCK_UP_IOEXCEPTION_NOBODY_LIKES_YOU(base0);
+        File base = getCanonicalFileUnchecked(base0);
         String currentPathStringThing = consumer.getString();
         Path currentPath = FileSystems.getDefault().getPath(currentPathStringThing);
         Path basePath = currentPath.isAbsolute() ? currentPath.getRoot() : base.toPath();
         boolean useParent = !currentPathStringThing.isEmpty() && !currentPathStringThing.endsWith(File.separator);
         File currentFile = currentPath.isAbsolute() ? currentPath.toFile() : new File(base, currentPathStringThing);
-        return Arrays.stream(Objects.requireNonNull(SHUT_THE_FUCK_UP_IOEXCEPTION_NOBODY_LIKES_YOU(
+        return Arrays.stream(Objects.requireNonNull(getCanonicalFileUnchecked(
                 useParent
                         ? currentFile.getParentFile()
                         : currentFile
@@ -89,7 +90,7 @@ public class RelativeFile implements IDatatypePost<File, File> {
 
     @Override
     public File apply(File original) {
-        return SHUT_THE_FUCK_UP_IOEXCEPTION_NOBODY_LIKES_YOU(original.toPath().resolve(path).toFile());
+        return getCanonicalFileUnchecked(original.toPath().resolve(path).toFile());
     }
 
     public static File gameDir() {

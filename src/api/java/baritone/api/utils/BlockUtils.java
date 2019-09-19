@@ -41,7 +41,7 @@ public class BlockUtils {
         Block block = stringToBlockNullable(name);
 
         if (block == null) {
-            throw new NullPointerException(String.format("Invalid block name %s", name));
+            throw new IllegalArgumentException(String.format("Invalid block name %s", name));
         }
 
         return block;

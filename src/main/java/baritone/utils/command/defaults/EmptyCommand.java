@@ -34,7 +34,6 @@ public class EmptyCommand extends Command {
 
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
-        ;
     }
 
     @Override

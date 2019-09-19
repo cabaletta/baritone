@@ -106,7 +106,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             return false;
         }
         if (msg.isEmpty()) {
-            msg = "help";
+            return this.runCommand("help");
         }
         Pair<String, List<CommandArgument>> pair = CommandExecution.expand(msg);
         String command = pair.first();
