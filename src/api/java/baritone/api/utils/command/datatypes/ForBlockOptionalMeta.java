@@ -23,6 +23,7 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import java.util.stream.Stream;
 
 public class ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
+
     public final BlockOptionalMeta selector;
 
     public ForBlockOptionalMeta() {

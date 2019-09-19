@@ -53,6 +53,7 @@ import java.util.stream.Stream;
  * array.
  */
 public class TabCompleteHelper {
+
     private Stream<String> stream;
 
     public TabCompleteHelper(String[] base) {
@@ -80,7 +81,6 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper append(Stream<String> source) {
         stream = Stream.concat(stream, source);
-
         return this;
     }
 
@@ -131,7 +131,6 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper prepend(Stream<String> source) {
         stream = Stream.concat(source, stream);
-
         return this;
     }
 
@@ -178,7 +177,6 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper map(Function<String, String> transform) {
         stream = stream.map(transform);
-
         return this;
     }
 
@@ -191,7 +189,6 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper filter(Predicate<String> filter) {
         stream = stream.filter(filter);
-
         return this;
     }
 
@@ -204,7 +201,6 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper sort(Comparator<String> comparator) {
         stream = stream.sorted(comparator);
-
         return this;
     }
 

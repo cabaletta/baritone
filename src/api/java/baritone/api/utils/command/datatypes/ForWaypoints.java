@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.stream.Stream;
 
 public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
+
     private final IWaypoint[] waypoints;
 
     public ForWaypoints() {

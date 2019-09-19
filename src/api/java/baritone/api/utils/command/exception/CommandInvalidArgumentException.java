@@ -20,6 +20,7 @@ package baritone.api.utils.command.exception;
 import baritone.api.utils.command.argument.CommandArgument;
 
 public abstract class CommandInvalidArgumentException extends CommandErrorMessageException {
+
     public final CommandArgument arg;
 
     protected CommandInvalidArgumentException(CommandArgument arg, String reason) {
@@ -28,7 +29,6 @@ public abstract class CommandInvalidArgumentException extends CommandErrorMessag
                 arg.index == -1 ? "<unknown>" : Integer.toString(arg.index + 1),
                 reason
         ));
-
         this.arg = arg;
     }
 }

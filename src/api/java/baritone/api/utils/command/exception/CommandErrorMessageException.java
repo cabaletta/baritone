@@ -26,6 +26,7 @@ import java.util.List;
 import static baritone.api.utils.Helper.HELPER;
 
 public abstract class CommandErrorMessageException extends CommandException {
+
     protected CommandErrorMessageException(String reason) {
         super(reason);
     }

@@ -33,21 +33,19 @@ import java.util.stream.Stream;
 import static java.util.Objects.isNull;
 
 public class CommandExecution {
+
     /**
      * The command itself
      */
     private final Command command;
-
     /**
      * The name this command was called with
      */
     public final String label;
-
     /**
      * The arg consumer
      */
     public final ArgConsumer args;
-
     /**
      * The Baritone settings
      */
@@ -80,7 +78,6 @@ public class CommandExecution {
             e.handle(command, args.args);
         } catch (Throwable t) {
             t.printStackTrace();
-
             new CommandUnhandledException(t).handle(command, args.args);
         }
     }
@@ -91,11 +88,9 @@ public class CommandExecution {
 
     public static CommandExecution from(String label, ArgConsumer args) {
         Command command = CommandManager.getCommand(label);
-
         if (isNull(command)) {
             return null;
         }
-
         return new CommandExecution(
                 command,
                 label,

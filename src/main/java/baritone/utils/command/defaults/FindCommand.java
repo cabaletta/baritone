@@ -40,13 +40,10 @@ public class FindCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         List<Block> toFind = new ArrayList<>();
-
         while (args.has()) {
             toFind.add(args.getDatatypeFor(BlockById.class));
         }
-
         BetterBlockPos origin = ctx.playerFeet();
-
         toFind.stream()
                 .flatMap(block ->
                         ctx.worldData().getCachedWorld().getLocationsOf(

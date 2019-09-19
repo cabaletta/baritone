@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.Objects.isNull;
 
 public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
+
     private final List<EntityPlayer> players =
             BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().playerEntities;
     public final EntityPlayer player;
@@ -38,13 +39,11 @@ public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
 
     public PlayerByUsername(ArgConsumer consumer) {
         String username = consumer.getString();
-
         player = players
                 .stream()
                 .filter(s -> s.getName().equalsIgnoreCase(username))
                 .findFirst()
                 .orElse(null);
-
         if (isNull(player)) {
             throw new IllegalArgumentException("no player found by that username");
         }

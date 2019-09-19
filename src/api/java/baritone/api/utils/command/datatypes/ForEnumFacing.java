@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 public class ForEnumFacing implements IDatatypeFor<EnumFacing> {
+
     private final EnumFacing facing;
 
     public ForEnumFacing() {

@@ -68,12 +68,9 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         String msg = event.getMessage();
         String prefix = settings.prefix.value;
         boolean forceRun = msg.startsWith(FORCE_COMMAND_PREFIX);
-
         if ((settings.prefixControl.value && msg.startsWith(prefix)) || forceRun) {
             event.cancel();
-
             String commandStr = msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
-
             if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
                 new CommandNotFoundException(CommandExecution.expand(commandStr).first()).handle(null, null);
             }
@@ -86,7 +83,6 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (settings.echoCommands.value) {
             String msg = command + rest;
             String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
-
             ITextComponent component = new TextComponentString(String.format("> %s", toDisplay));
             component.getStyle()
                     .setColor(TextFormatting.WHITE)
@@ -98,7 +94,6 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                             ClickEvent.Action.RUN_COMMAND,
                             FORCE_COMMAND_PREFIX + msg
                     ));
-
             logDirect(component);
         }
     }
@@ -111,31 +106,24 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             try {
                 ((IGuiScreen) mc.currentScreen).openLink(new URI("https://www.dominos.com/en/pages/order/"));
             } catch (NullPointerException | URISyntaxException ignored) {}
-
             return false;
         }
-
         if (msg.isEmpty()) {
             msg = "help";
         }
-
         Pair<String, List<CommandArgument>> pair = CommandExecution.expand(msg);
         String command = pair.first();
         String rest = msg.substring(pair.first().length());
         ArgConsumer argc = new ArgConsumer(pair.second());
-
         if (!argc.has()) {
             Settings.Setting setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
-
             if (setting != null) {
                 logRanCommand(command, rest);
-
                 if (setting.getValueClass() == Boolean.class) {
                     CommandManager.execute(String.format("set toggle %s", setting.getName()));
                 } else {
                     CommandManager.execute(String.format("set %s", setting.getName()));
                 }
-
                 return true;
             }
         } else if (argc.hasExactlyOne()) {
@@ -143,7 +131,6 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 if (setting.getName().equals("logger")) {
                     continue;
                 }
-
                 if (setting.getName().equalsIgnoreCase(pair.first())) {
                     logRanCommand(command, rest);
                     CommandManager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
@@ -151,16 +138,12 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 }
             }
         }
-
         CommandExecution execution = CommandExecution.from(pair);
-
         if (isNull(execution)) {
             return false;
         }
-
         logRanCommand(command, rest);
         CommandManager.execute(execution);
-
         return true;
     }
 
@@ -169,30 +152,23 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (!settings.prefixControl.value) {
             return;
         }
-
         String prefix = event.prefix.get();
         String commandPrefix = settings.prefix.value;
-
         if (!prefix.startsWith(commandPrefix)) {
             return;
         }
-
         String msg = prefix.substring(commandPrefix.length());
-
         List<CommandArgument> args = CommandArgument.from(msg, true);
         Stream<String> stream = tabComplete(msg);
-
         if (args.size() == 1) {
             stream = stream.map(x -> commandPrefix + x);
         }
-
         event.completions.set(stream.toArray(String[]::new));
     }
 
     public Stream<String> tabComplete(String msg) {
         List<CommandArgument> args = CommandArgument.from(msg, true);
         ArgConsumer argc = new ArgConsumer(args);
-
         if (argc.hasAtMost(2)) {
             if (argc.hasExactly(1)) {
                 return new TabCompleteHelper()
@@ -201,26 +177,21 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                         .filterPrefix(argc.getString())
                         .stream();
             }
-
             Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
-
             if (nonNull(setting)) {
                 if (setting.getValueClass() == Boolean.class) {
                     TabCompleteHelper helper = new TabCompleteHelper();
-
                     if ((Boolean) setting.value) {
                         helper.append(Stream.of("true", "false"));
                     } else {
                         helper.append(Stream.of("false", "true"));
                     }
-
                     return helper.filterPrefix(argc.getString()).stream();
                 } else {
                     return Stream.of(SettingsUtil.settingValueToString(setting));
                 }
             }
         }
-
         return CommandManager.tabComplete(msg);
     }
 }

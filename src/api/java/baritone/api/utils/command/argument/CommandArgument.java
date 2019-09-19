@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
  * You're recommended to use {@link ArgConsumer}s to handle these. Check out {@link ArgConsumer#from(String)}
  */
 public class CommandArgument {
+
     public final int index;
     public final String value;
     public final String rawRest;
@@ -149,14 +150,11 @@ public class CommandArgument {
                     argMatcher.group(),
                     string.substring(argMatcher.start())
             ));
-
             lastEnd = argMatcher.end();
         }
-
         if (preserveEmptyLast && lastEnd < string.length()) {
             args.add(new CommandArgument(args.size(), "", ""));
         }
-
         return args;
     }
 

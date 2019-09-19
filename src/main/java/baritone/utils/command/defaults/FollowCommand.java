@@ -52,24 +52,19 @@ public class FollowCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMin(1);
-
         FollowGroup group;
         FollowList list;
         List<Entity> entities = new ArrayList<>();
         List<Class<? extends Entity>> classes = new ArrayList<>();
-
         if (args.hasExactlyOne()) {
             baritone.getFollowProcess().follow((group = args.getEnum(FollowGroup.class)).filter);
         } else {
             args.requireMin(2);
-
             group = null;
             list = args.getEnum(FollowList.class);
-
             while (args.has()) {
                 //noinspection unchecked
                 Object gotten = args.getDatatypeFor(list.datatype);
-
                 if (gotten instanceof Class) {
                     //noinspection unchecked
                     classes.add((Class<? extends Entity>) gotten);
@@ -77,19 +72,16 @@ public class FollowCommand extends Command {
                     entities.add((Entity) gotten);
                 }
             }
-
             baritone.getFollowProcess().follow(
                     classes.isEmpty()
                             ? entities::contains
                             : e -> classes.stream().anyMatch(c -> c.isInstance(e))
             );
         }
-
         if (nonNull(group)) {
             logDirect(String.format("Following all %s", group.name().toLowerCase(Locale.US)));
         } else {
             logDirect("Following these types of entities:");
-
             if (classes.isEmpty()) {
                 entities.stream()
                         .map(Entity::toString)
@@ -114,21 +106,17 @@ public class FollowCommand extends Command {
                     .stream();
         } else {
             Class<? extends IDatatype> followType;
-
             try {
                 followType = args.getEnum(FollowList.class).datatype;
             } catch (NullPointerException e) {
                 return Stream.empty();
             }
-
             while (args.has(2)) {
                 if (isNull(args.peekDatatypeOrNull(followType))) {
                     return Stream.empty();
                 }
-
                 args.get();
             }
-
             return args.tabCompleteDatatype(followType);
         }
     }
@@ -156,7 +144,6 @@ public class FollowCommand extends Command {
         PLAYERS(EntityPlayer.class::isInstance); /* ,
         FRIENDLY(entity -> entity.getAttackTarget() != HELPER.mc.player),
         HOSTILE(FRIENDLY.filter.negate()); */
-
         final Predicate<Entity> filter;
 
         FollowGroup(Predicate<Entity> filter) {
@@ -167,7 +154,6 @@ public class FollowCommand extends Command {
     private enum FollowList {
         ENTITY(EntityClassById.class),
         PLAYER(PlayerByUsername.class);
-
         final Class<? extends IDatatypeFor> datatype;
 
         FollowList(Class<? extends IDatatypeFor> datatype) {

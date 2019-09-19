@@ -21,6 +21,7 @@ package baritone.api.event.events.type;
  * @author LoganDark
  */
 public class Overrideable<T> {
+
     private T value;
     private boolean modified;
 

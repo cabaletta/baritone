@@ -37,13 +37,11 @@ public class ThisWayCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireExactly(1);
-
         GoalXZ goal = GoalXZ.fromDirection(
                 ctx.playerFeetAsVec(),
                 ctx.player().rotationYawHead,
                 args.getAs(Double.class)
         );
-
         baritone.getCustomGoalProcess().setGoal(goal);
         logDirect(String.format("Goal: %s", goal));
     }

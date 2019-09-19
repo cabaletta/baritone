@@ -24,6 +24,7 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import java.util.stream.Stream;
 
 public class RelativeGoalYLevel implements IDatatypePost<GoalYLevel, BetterBlockPos> {
+
     final RelativeCoordinate coord;
 
     public RelativeGoalYLevel() {
@@ -44,7 +45,6 @@ public class RelativeGoalYLevel implements IDatatypePost<GoalYLevel, BetterBlock
         if (consumer.hasAtMost(1)) {
             return consumer.tabCompleteDatatype(RelativeCoordinate.class);
         }
-
         return Stream.empty();
     }
 }

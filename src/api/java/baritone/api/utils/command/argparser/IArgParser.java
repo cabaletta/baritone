@@ -20,6 +20,7 @@ package baritone.api.utils.command.argparser;
 import baritone.api.utils.command.argument.CommandArgument;
 
 public interface IArgParser<T> {
+
     /**
      * @return the class of this parser.
      */
@@ -31,6 +32,7 @@ public interface IArgParser<T> {
      * @see ArgParserManager#REGISTRY
      */
     interface Stateless<T> extends IArgParser<T> {
+
         /**
          * @param arg The argument to parse.
          * @return What it was parsed into.
@@ -47,6 +49,7 @@ public interface IArgParser<T> {
      * @see ArgParserManager#REGISTRY
      */
     interface Stated<T, S> extends IArgParser<T> {
+
         Class<S> getStateKlass();
 
         /**

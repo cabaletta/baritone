@@ -18,6 +18,7 @@
 package baritone.api.utils.command.argparser;
 
 public abstract class ArgParser<T> implements IArgParser<T> {
+
     private final Class<T> klass;
 
     protected ArgParser(Class<T> klass) {
@@ -30,6 +31,7 @@ public abstract class ArgParser<T> implements IArgParser<T> {
     }
 
     public static abstract class Stated<T, S> extends ArgParser<T> implements IArgParser.Stated<T, S> {
+
         private final Class<S> stateKlass;
 
         protected Stated(Class<T> klass, Class<S> stateKlass) {

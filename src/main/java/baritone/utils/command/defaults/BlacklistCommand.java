@@ -39,11 +39,9 @@ public class BlacklistCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
         IGetToBlockProcess proc = baritone.getGetToBlockProcess();
-
         if (!proc.isActive()) {
             throw new CommandInvalidStateException("GetToBlockProcess is not currently active");
         }
-
         if (proc.blacklistClosest()) {
             logDirect("Blacklisted closest instances");
         } else {

@@ -53,27 +53,23 @@ public class SetCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         String arg = args.has() ? args.getString().toLowerCase(Locale.US) : "list";
-
         if (asList("s", "save").contains(arg)) {
             SettingsUtil.save(settings);
             logDirect("Settings saved");
             return;
         }
-
         boolean viewModified = asList("m", "mod", "modified").contains(arg);
         boolean viewAll = asList("all", "l", "list").contains(arg);
         boolean paginate = viewModified || viewAll;
         if (paginate) {
             String search = args.has() && args.peekAsOrNull(Integer.class) == null ? args.getString() : "";
             args.requireMax(1);
-
             List<? extends Settings.Setting> toPaginate =
                     (viewModified ? SettingsUtil.modifiedSettings(settings) : settings.allSettings).stream()
                             .filter(s -> !s.getName().equals("logger"))
                             .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
                             .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
                             .collect(Collectors.toList());
-
             Paginator.paginate(
                     args,
                     new Paginator<>(toPaginate),
@@ -88,35 +84,28 @@ public class SetCommand extends Command {
                                 settingTypeToString(setting)
                         ));
                         typeComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
-
                         ITextComponent hoverComponent = new TextComponentString("");
                         hoverComponent.getStyle().setColor(TextFormatting.GRAY);
                         hoverComponent.appendText(setting.getName());
                         hoverComponent.appendText(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
                         String commandSuggestion = settings.prefix.value + String.format("set %s ", setting.getName());
-
                         ITextComponent component = new TextComponentString(setting.getName());
                         component.getStyle().setColor(TextFormatting.GRAY);
                         component.appendSibling(typeComponent);
                         component.getStyle()
                                 .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
                                 .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion));
-
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + "set " + arg + " " + search
             );
-
             return;
         }
-
         args.requireMax(1);
-
         boolean resetting = arg.equalsIgnoreCase("reset");
         boolean toggling = arg.equalsIgnoreCase("toggle");
         boolean doingSomething = resetting || toggling;
-
         if (resetting) {
             if (!args.has()) {
                 logDirect("Please specify 'all' as an argument to reset to confirm you'd really like to do this");
@@ -126,41 +115,33 @@ public class SetCommand extends Command {
                 SettingsUtil.modifiedSettings(settings).forEach(Settings.Setting::reset);
                 logDirect("All settings have been reset to their default values");
                 SettingsUtil.save(settings);
-
                 return;
             }
         }
-
         if (toggling) {
             args.requireMin(1);
         }
-
         String settingName = doingSomething ? args.getString() : arg;
         Settings.Setting<?> setting = settings.allSettings.stream()
                 .filter(s -> s.getName().equalsIgnoreCase(settingName))
                 .findFirst()
                 .orElse(null);
-
         if (isNull(setting)) {
             throw new CommandInvalidTypeException(args.consumed(), "a valid setting");
         }
-
         if (!doingSomething && !args.has()) {
             logDirect(String.format("Value of setting %s:", setting.getName()));
             logDirect(settingValueToString(setting));
         } else {
             String oldValue = settingValueToString(setting);
-
             if (resetting) {
                 setting.reset();
             } else if (toggling) {
                 if (setting.getValueClass() != Boolean.class) {
                     throw new CommandInvalidTypeException(args.consumed(), "a toggleable setting", "some other setting");
                 }
-
                 //noinspection unchecked
                 ((Settings.Setting<Boolean>) setting).value ^= true;
-
                 logDirect(String.format(
                         "Toggled setting %s to %s",
                         setting.getName(),
@@ -168,7 +149,6 @@ public class SetCommand extends Command {
                 ));
             } else {
                 String newValue = args.getString();
-
                 try {
                     SettingsUtil.parseAndApply(settings, arg, newValue);
                 } catch (Throwable t) {
@@ -176,7 +156,6 @@ public class SetCommand extends Command {
                     throw new CommandInvalidTypeException(args.consumed(), "a valid value", t);
                 }
             }
-
             if (!toggling) {
                 logDirect(String.format(
                         "Successfully %s %s to %s",
@@ -185,7 +164,6 @@ public class SetCommand extends Command {
                         settingValueToString(setting)
                 ));
             }
-
             ITextComponent oldValueComponent = new TextComponentString(String.format("Old value: %s", oldValue));
             oldValueComponent.getStyle()
                     .setColor(TextFormatting.GRAY)
@@ -197,9 +175,7 @@ public class SetCommand extends Command {
                             ClickEvent.Action.RUN_COMMAND,
                             FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
                     ));
-
             logDirect(oldValueComponent);
-
             if ((setting.getName().equals("chatControl") && !(Boolean) setting.value && !settings.chatControlAnyway.value) ||
                     setting.getName().equals("chatControlAnyway") && !(Boolean) setting.value && !settings.chatControl.value) {
                 logDirect("Warning: Chat commands will no longer work. If you want to revert this change, use prefix control (if enabled) or click the old value listed above.", TextFormatting.RED);
@@ -207,7 +183,6 @@ public class SetCommand extends Command {
                 logDirect("Warning: Prefixed commands will no longer work. If you want to revert this change, use chat control (if enabled) or click the old value listed above.", TextFormatting.RED);
             }
         }
-
         SettingsUtil.save(settings);
     }
 
@@ -215,7 +190,6 @@ public class SetCommand extends Command {
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         if (args.has()) {
             String arg = args.getString();
-
             if (args.hasExactlyOne() && !asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {
                 if (arg.equalsIgnoreCase("reset")) {
                     return new TabCompleteHelper()
@@ -229,19 +203,15 @@ public class SetCommand extends Command {
                             .filterPrefix(args.getString())
                             .stream();
                 }
-
                 Settings.Setting setting = settings.byLowerName.get(arg.toLowerCase(Locale.US));
-
                 if (nonNull(setting)) {
                     if (setting.getType() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
-
                         if ((Boolean) setting.value) {
                             helper.append(of("true", "false"));
                         } else {
                             helper.append(of("false", "true"));
                         }
-
                         return helper.filterPrefix(args.getString()).stream();
                     } else {
                         return Stream.of(settingValueToString(setting));
@@ -256,7 +226,6 @@ public class SetCommand extends Command {
                         .stream();
             }
         }
-
         return Stream.empty();
     }
 

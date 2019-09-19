@@ -43,11 +43,9 @@ public class MineCommand extends Command {
         int quantity = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
-
         while (args.has()) {
             boms.add(args.getDatatypeFor(ForBlockOptionalMeta.class));
         }
-
         WorldScanner.INSTANCE.repack(ctx);
         baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
         logDirect(String.format("Mining %s", boms.toString()));

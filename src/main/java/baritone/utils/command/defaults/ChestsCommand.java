@@ -46,18 +46,14 @@ public class ChestsCommand extends Command {
         args.requireMax(0);
         Set<Map.Entry<BlockPos, IRememberedInventory>> entries =
                 ctx.worldData().getContainerMemory().getRememberedInventories().entrySet();
-
         if (entries.isEmpty()) {
             throw new CommandInvalidStateException("No remembered inventories");
         }
-
         for (Map.Entry<BlockPos, IRememberedInventory> entry : entries) {
             // betterblockpos has censoring
             BetterBlockPos pos = new BetterBlockPos(entry.getKey());
             IRememberedInventory inv = entry.getValue();
-
             logDirect(pos.toString());
-
             for (ItemStack item : inv.getContents()) {
                 ITextComponent component = item.getTextComponent();
                 component.appendText(String.format(" x %d", item.getCount()));

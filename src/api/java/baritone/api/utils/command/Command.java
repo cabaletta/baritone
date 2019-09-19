@@ -36,7 +36,6 @@ public abstract class Command implements Helper {
     protected IBaritone baritone;
     protected IPlayerContext ctx;
     protected Minecraft MC = mc;
-
     /**
      * The names of this command. This is what you put after the command prefix.
      */

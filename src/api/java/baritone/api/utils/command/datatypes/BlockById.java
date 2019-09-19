@@ -26,6 +26,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.stream.Stream;
 
 public class BlockById implements IDatatypeFor<Block> {
+
     public final Block block;
 
     public BlockById() {
@@ -34,7 +35,6 @@ public class BlockById implements IDatatypeFor<Block> {
 
     public BlockById(ArgConsumer consumer) {
         ResourceLocation id = new ResourceLocation(consumer.getString());
-
         if ((block = Block.REGISTRY.getObject(id)) == Blocks.AIR) {
             throw new IllegalArgumentException("no block found by that id");
         }

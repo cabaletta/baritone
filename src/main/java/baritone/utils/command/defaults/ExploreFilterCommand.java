@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ExploreFilterCommand extends Command {
+
     public ExploreFilterCommand(IBaritone baritone) {
         super(baritone, "explorefilter");
     }
@@ -43,7 +44,6 @@ public class ExploreFilterCommand extends Command {
         args.requireMax(2);
         File file = args.getDatatypePost(RelativeFile.class, MC.gameDir.getAbsoluteFile().getParentFile());
         boolean invert = false;
-
         if (args.has()) {
             if (args.getString().equalsIgnoreCase("invert")) {
                 invert = true;
@@ -51,7 +51,6 @@ public class ExploreFilterCommand extends Command {
                 throw new CommandInvalidTypeException(args.consumed(), "either \"invert\" or nothing");
             }
         }
-
         try {
             baritone.getExploreProcess().applyJsonFilter(file.toPath().toAbsolutePath(), invert);
         } catch (NoSuchFileException e) {
@@ -61,7 +60,6 @@ public class ExploreFilterCommand extends Command {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
         logDirect(String.format("Explore filter applied. Inverted: %s", Boolean.toString(invert)));
     }
 
@@ -70,7 +68,6 @@ public class ExploreFilterCommand extends Command {
         if (args.hasExactlyOne()) {
             return RelativeFile.tabComplete(args, RelativeFile.gameDir());
         }
-
         return Stream.empty();
     }
 

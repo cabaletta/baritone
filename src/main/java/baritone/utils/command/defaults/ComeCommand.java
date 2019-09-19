@@ -42,11 +42,9 @@ public class ComeCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
         Entity entity = MC.getRenderViewEntity();
-
         if (isNull(entity)) {
             throw new CommandInvalidStateException("render view entity is null");
         }
-
         baritone.getCustomGoalProcess().setGoalAndPath(new GoalBlock(new BlockPos(entity)));
         logDirect("Coming");
     }

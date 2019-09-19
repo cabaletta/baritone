@@ -30,7 +30,6 @@ public class CompositeSchematic extends AbstractSchematic {
 
     private void recalcArr() {
         schematicArr = schematics.toArray(new CompositeSchematicEntry[0]);
-
         for (CompositeSchematicEntry entry : schematicArr) {
             this.x = Math.max(x, entry.x + entry.schematic.widthX());
             this.y = Math.max(y, entry.y + entry.schematic.heightY());
@@ -56,7 +55,6 @@ public class CompositeSchematic extends AbstractSchematic {
                 return entry;
             }
         }
-
         return null;
     }
 
@@ -69,11 +67,9 @@ public class CompositeSchematic extends AbstractSchematic {
     @Override
     public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
         CompositeSchematicEntry entry = getSchematic(x, y, z, current);
-
         if (entry == null) {
             throw new IllegalStateException("couldn't find schematic for this position");
         }
-
         return entry.schematic.desiredState(x - entry.x, y - entry.y, z - entry.z, current, approxPlaceable);
     }
 }

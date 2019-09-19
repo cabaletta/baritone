@@ -37,7 +37,6 @@ public class ReplaceSchematic extends MaskSchematic {
         if (cache[x][y][z] == null) {
             cache[x][y][z] = filter.has(currentState);
         }
-
         return cache[x][y][z];
     }
 }

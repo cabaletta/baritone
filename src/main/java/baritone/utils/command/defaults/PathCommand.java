@@ -45,14 +45,12 @@ public class PathCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         Goal goal;
-
         if (args.has()) {
             args.requireMax(3);
             goal = args.getDatatype(RelativeGoal.class).apply(ctx.playerFeet());
         } else if (isNull(goal = customGoalProcess.getGoal())) {
             throw new CommandInvalidStateException("No goal");
         }
-
         args.requireMax(0);
         WorldScanner.INSTANCE.repack(ctx);
         customGoalProcess.setGoalAndPath(goal);
@@ -66,9 +64,7 @@ public class PathCommand extends Command {
                 if (isNull(args.peekDatatypeOrNull(RelativeCoordinate.class))) {
                     break;
                 }
-
                 args.get();
-
                 if (!args.has(2)) {
                     return new TabCompleteHelper()
                             .append("~")
@@ -77,7 +73,6 @@ public class PathCommand extends Command {
                 }
             }
         }
-
         return Stream.empty();
     }
 

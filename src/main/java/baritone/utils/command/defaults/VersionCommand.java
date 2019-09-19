@@ -38,9 +38,7 @@ public class VersionCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
-
         String version = getClass().getPackage().getImplementationVersion();
-
         if (isNull(version)) {
             throw new CommandInvalidStateException("Null version (this is normal in a dev environment)");
         } else {

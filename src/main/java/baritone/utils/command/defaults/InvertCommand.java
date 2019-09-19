@@ -41,20 +41,16 @@ public class InvertCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
-
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         Goal goal;
-
         if (isNull(goal = customGoalProcess.getGoal())) {
             throw new CommandInvalidStateException("No goal");
         }
-
         if (goal instanceof GoalInverted) {
             goal = ((GoalInverted) goal).origin;
         } else {
             goal = new GoalInverted(goal);
         }
-
         customGoalProcess.setGoal(goal);
         logDirect(String.format("Goal: %s", goal.toString()));
     }

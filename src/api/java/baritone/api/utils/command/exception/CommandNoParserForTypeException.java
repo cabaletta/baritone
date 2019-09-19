@@ -18,6 +18,7 @@
 package baritone.api.utils.command.exception;
 
 public class CommandNoParserForTypeException extends CommandErrorMessageException {
+
     public final Class<?> klass;
 
     public CommandNoParserForTypeException(Class<?> klass) {

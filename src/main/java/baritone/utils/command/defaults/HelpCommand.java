@@ -49,7 +49,6 @@ public class HelpCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(1);
-
         if (!args.has() || args.is(Integer.class)) {
             Paginator.paginate(
                     args, new Paginator<>(
@@ -61,20 +60,16 @@ public class HelpCommand extends Command {
                     command -> {
                         String names = String.join("/", command.names);
                         String name = command.names.get(0);
-
                         ITextComponent shortDescComponent = new TextComponentString(" - " + command.getShortDesc());
                         shortDescComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
-
                         ITextComponent namesComponent = new TextComponentString(names);
                         namesComponent.getStyle().setColor(TextFormatting.WHITE);
-
                         ITextComponent hoverComponent = new TextComponentString("");
                         hoverComponent.getStyle().setColor(TextFormatting.GRAY);
                         hoverComponent.appendSibling(namesComponent);
                         hoverComponent.appendText("\n" + command.getShortDesc());
                         hoverComponent.appendText("\n\nClick to view full help");
                         String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.names.get(0));
-
                         ITextComponent component = new TextComponentString(name);
                         component.getStyle().setColor(TextFormatting.GRAY);
                         component.appendSibling(shortDescComponent);
@@ -88,22 +83,18 @@ public class HelpCommand extends Command {
         } else {
             String commandName = args.getString().toLowerCase();
             Command command = getCommand(commandName);
-
             if (isNull(command)) {
                 throw new CommandNotFoundException(commandName);
             }
-
             logDirect(String.format("%s - %s", String.join(" / ", command.names), command.getShortDesc()));
             logDirect("");
             command.getLongDesc().forEach(this::logDirect);
             logDirect("");
-
             ITextComponent returnComponent = new TextComponentString("Click to return to the help menu");
             returnComponent.getStyle().setClickEvent(new ClickEvent(
                     ClickEvent.Action.RUN_COMMAND,
                     FORCE_COMMAND_PREFIX + label
             ));
-
             logDirect(returnComponent);
         }
     }
@@ -113,7 +104,6 @@ public class HelpCommand extends Command {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper().addCommands().filterPrefix(args.getString()).stream();
         }
-
         return Stream.empty();
     }
 

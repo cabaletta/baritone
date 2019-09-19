@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import static baritone.api.utils.Helper.HELPER;
 
 public class RelativeFile implements IDatatypePost<File, File> {
+
     private final Path path;
 
     public RelativeFile() {
@@ -75,7 +76,6 @@ public class RelativeFile implements IDatatypePost<File, File> {
         Path basePath = currentPath.isAbsolute() ? currentPath.getRoot() : base.toPath();
         boolean useParent = !currentPathStringThing.isEmpty() && !currentPathStringThing.endsWith(File.separator);
         File currentFile = currentPath.isAbsolute() ? currentPath.toFile() : new File(base, currentPathStringThing);
-
         return Arrays.stream(Objects.requireNonNull(SHUT_THE_FUCK_UP_IOEXCEPTION_NOBODY_LIKES_YOU(
                 useParent
                         ? currentFile.getParentFile()
@@ -94,11 +94,9 @@ public class RelativeFile implements IDatatypePost<File, File> {
 
     public static File gameDir() {
         File gameDir = HELPER.mc.gameDir.getAbsoluteFile();
-
         if (gameDir.getName().equals(".")) {
             return gameDir.getParentFile();
         }
-
         return gameDir;
     }
 }

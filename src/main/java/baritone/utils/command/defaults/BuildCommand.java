@@ -45,14 +45,11 @@ public class BuildCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         File file = args.getDatatypePost(RelativeFile.class, schematicsDir).getAbsoluteFile();
-
         if (!file.getName().toLowerCase(Locale.US).endsWith(".schematic")) {
             file = new File(file.getAbsolutePath() + ".schematic");
         }
-
         BetterBlockPos origin = ctx.playerFeet();
         BetterBlockPos buildOrigin;
-
         if (args.has()) {
             args.requireMax(3);
             buildOrigin = args.getDatatype(RelativeBlockPos.class).apply(origin);
@@ -60,13 +57,10 @@ public class BuildCommand extends Command {
             args.requireMax(0);
             buildOrigin = origin;
         }
-
         boolean success = baritone.getBuilderProcess().build(file.getName(), file, buildOrigin);
-
         if (!success) {
             throw new CommandInvalidStateException("Couldn't load the schematic");
         }
-
         logDirect(String.format("Successfully loaded schematic for building\nOrigin: %s", buildOrigin));
     }
 
@@ -76,10 +70,8 @@ public class BuildCommand extends Command {
             return RelativeFile.tabComplete(args, schematicsDir);
         } else if (args.has(2)) {
             args.get();
-
             return args.tabCompleteDatatype(RelativeBlockPos.class);
         }
-
         return Stream.empty();
     }
 

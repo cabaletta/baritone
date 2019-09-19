@@ -49,7 +49,6 @@ public class PauseResumeCommands {
         this.baritone = baritone;
         // array for mutability, non-field so reflection can't touch it
         final boolean[] paused = {false};
-
         baritone.getPathingControlManager().registerProcess(
                 new IBaritoneProcess() {
                     @Override
@@ -81,16 +80,13 @@ public class PauseResumeCommands {
                     }
                 }
         );
-
         pauseCommand = new Command(baritone, "pause") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);
-
                 if (paused[0]) {
                     throw new CommandInvalidStateException("Already paused");
                 }
-
                 paused[0] = true;
                 logDirect("Paused");
             }
@@ -117,16 +113,13 @@ public class PauseResumeCommands {
                 );
             }
         };
-
         resumeCommand = new Command(baritone, "resume") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);
-
                 if (!paused[0]) {
                     throw new CommandInvalidStateException("Not paused");
                 }
-
                 paused[0] = false;
                 logDirect("Resumed");
             }
@@ -151,12 +144,10 @@ public class PauseResumeCommands {
                 );
             }
         };
-
         pausedCommand = new Command(baritone, "paused") {
             @Override
             protected void executed(String label, ArgConsumer args, Settings settings) {
                 args.requireMax(0);
-
                 logDirect(String.format("Baritone is %spaused", paused[0] ? "" : "not "));
             }
 

@@ -32,6 +32,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class CommandManager {
+
     public static final Registry<Command> REGISTRY = new Registry<>();
 
     /**
@@ -44,7 +45,6 @@ public class CommandManager {
                 return command;
             }
         }
-
         return null;
     }
 
@@ -54,11 +54,9 @@ public class CommandManager {
 
     public static boolean execute(String string) {
         CommandExecution execution = CommandExecution.from(string);
-
         if (nonNull(execution)) {
             execution.execute();
         }
-
         return nonNull(execution);
     }
 
@@ -75,7 +73,6 @@ public class CommandManager {
         Pair<String, List<CommandArgument>> pair = CommandExecution.expand(prefix, true);
         String label = pair.first();
         List<CommandArgument> args = pair.second();
-
         if (args.isEmpty()) {
             return new TabCompleteHelper()
                     .addCommands()

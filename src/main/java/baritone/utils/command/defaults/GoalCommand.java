@@ -44,10 +44,8 @@ public class GoalCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         ICustomGoalProcess goalProcess = baritone.getCustomGoalProcess();
-
         if (args.has() && asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
-
             if (nonNull(goalProcess.getGoal())) {
                 goalProcess.setGoal(null);
                 logDirect("Cleared goal");
@@ -66,7 +64,6 @@ public class GoalCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         TabCompleteHelper helper = new TabCompleteHelper();
-
         if (args.hasExactlyOne()) {
             helper.append(Stream.of("reset", "clear", "none", "~"));
         } else {
@@ -75,16 +72,13 @@ public class GoalCommand extends Command {
                     if (isNull(args.peekDatatypeOrNull(RelativeCoordinate.class))) {
                         break;
                     }
-
                     args.get();
-
                     if (!args.has(2)) {
                         helper.append("~");
                     }
                 }
             }
         }
-
         return helper.filterPrefix(args.getString()).stream();
     }
 

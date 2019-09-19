@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import static java.util.Objects.isNull;
 
 public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlockPos> {
+
     final RelativeCoordinate x;
     final RelativeCoordinate y;
     final RelativeCoordinate z;
@@ -57,13 +58,10 @@ public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlo
                 if (isNull(consumer.peekDatatypeOrNull(RelativeCoordinate.class))) {
                     break;
                 }
-
                 consumer.get();
             }
-
             return consumer.tabCompleteDatatype(RelativeCoordinate.class);
         }
-
         return Stream.empty();
     }
 }

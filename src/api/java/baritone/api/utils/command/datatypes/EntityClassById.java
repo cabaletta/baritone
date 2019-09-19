@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.Objects.isNull;
 
 public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
+
     public final Class<? extends Entity> entity;
 
     public EntityClassById() {
@@ -36,7 +37,6 @@ public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
 
     public EntityClassById(ArgConsumer consumer) {
         ResourceLocation id = new ResourceLocation(consumer.getString());
-
         if (isNull(entity = EntityList.REGISTRY.getObject(id))) {
             throw new IllegalArgumentException("no entity found by that id");
         }

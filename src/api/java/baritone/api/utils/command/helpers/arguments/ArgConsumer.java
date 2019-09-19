@@ -55,11 +55,11 @@ import java.util.stream.Stream;
  * </ul>
  */
 public class ArgConsumer implements Cloneable {
+
     /**
      * The list of arguments in this ArgConsumer
      */
     public final LinkedList<CommandArgument> args;
-
     /**
      * The list of consumed arguments for this ArgConsumer. The most recently consumed argument is the last one
      */
@@ -361,7 +361,6 @@ public class ArgConsumer implements Cloneable {
     public <T> T peekAsOrDefault(Class<T> type, T def) {
         return peekAsOrDefault(type, def, 0);
     }
-
 
     /**
      * Tries to use a <b>stateless</b> {@link ArgParser} to parse the argument at the specified index into the specified
@@ -743,7 +742,6 @@ public class ArgConsumer implements Cloneable {
     public <T extends IDatatype> T getDatatypeOrNull(Class<T> datatype) {
         List<CommandArgument> argsSnapshot = new ArrayList<>(args);
         List<CommandArgument> consumedSnapshot = new ArrayList<>(consumed);
-
         try {
             return getDatatype(datatype);
         } catch (CommandInvalidTypeException e) {
@@ -751,7 +749,6 @@ public class ArgConsumer implements Cloneable {
             args.addAll(argsSnapshot);
             consumed.clear();
             consumed.addAll(consumedSnapshot);
-
             return null;
         }
     }
@@ -790,7 +787,6 @@ public class ArgConsumer implements Cloneable {
     public <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrDefault(Class<D> datatype, O original, T def) {
         List<CommandArgument> argsSnapshot = new ArrayList<>(args);
         List<CommandArgument> consumedSnapshot = new ArrayList<>(consumed);
-
         try {
             return getDatatypePost(datatype, original);
         } catch (CommandException e) {
@@ -798,7 +794,6 @@ public class ArgConsumer implements Cloneable {
             args.addAll(argsSnapshot);
             consumed.clear();
             consumed.addAll(consumedSnapshot);
-
             return def;
         }
     }
@@ -855,7 +850,6 @@ public class ArgConsumer implements Cloneable {
     public <T, D extends IDatatypeFor<T>> T getDatatypeForOrDefault(Class<D> datatype, T def) {
         List<CommandArgument> argsSnapshot = new ArrayList<>(args);
         List<CommandArgument> consumedSnapshot = new ArrayList<>(consumed);
-
         try {
             return getDatatypeFor(datatype);
         } catch (CommandInvalidTypeException e) {
@@ -863,7 +857,6 @@ public class ArgConsumer implements Cloneable {
             args.addAll(argsSnapshot);
             consumed.clear();
             consumed.addAll(consumedSnapshot);
-
             return def;
         }
     }
@@ -904,7 +897,6 @@ public class ArgConsumer implements Cloneable {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         } catch (CommandException ignored) {}
-
         return Stream.empty();
     }
 

@@ -43,13 +43,11 @@ public class FillSchematic extends AbstractSchematic {
         } else if (current.getBlock() != Blocks.AIR) {
             return Blocks.AIR.getDefaultState();
         }
-
         for (IBlockState placeable : approxPlaceable) {
             if (bom.matches(placeable)) {
                 return placeable;
             }
         }
-
         return bom.getAnyBlockState();
     }
 }

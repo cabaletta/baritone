@@ -33,6 +33,7 @@ import java.util.stream.StreamSupport;
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Registry<V> {
+
     /**
      * An internal linked list of all the entries that are currently registered. This is a linked list so that entries
      * can be inserted at the beginning, which means that newer entries are encountered first during iteration. This is
@@ -40,14 +41,12 @@ public class Registry<V> {
      * not just use a map.
      */
     private final Deque<V> _entries = new LinkedList<>();
-
     /**
      * A HashSet containing every entry currently registered. Entries are added to this set when something is registered
      * and removed from the set when they are unregistered. An entry being present in this set indicates that it is
      * currently registered, can be removed, and should not be reregistered until it is removed.
      */
     private final Set<V> registered = new HashSet<>();
-
     /**
      * The collection of entries that are currently in this registry. This is a collection (and not a list) because,
      * internally, entries are stored in a linked list, which is not the same as a normal list.
@@ -74,10 +73,8 @@ public class Registry<V> {
         if (!registered(entry)) {
             _entries.addFirst(entry);
             registered.add(entry);
-
             return true;
         }
-
         return false;
     }
 
@@ -91,7 +88,6 @@ public class Registry<V> {
         if (registered(entry)) {
             return;
         }
-
         _entries.remove(entry);
         registered.remove(entry);
     }

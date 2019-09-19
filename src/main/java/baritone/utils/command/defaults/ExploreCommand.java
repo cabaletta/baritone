@@ -42,11 +42,9 @@ public class ExploreCommand extends Command {
         } else {
             args.requireMax(0);
         }
-
         GoalXZ goal = args.has()
                 ? args.getDatatypePost(RelativeGoalXZ.class, ctx.playerFeet())
                 : new GoalXZ(ctx.playerFeet());
-
         baritone.getExploreProcess().explore(goal.getX(), goal.getZ());
         logDirect(String.format("Exploring from %s", goal.toString()));
     }
@@ -56,7 +54,6 @@ public class ExploreCommand extends Command {
         if (args.hasAtMost(2)) {
             return args.tabCompleteDatatype(RelativeGoalXZ.class);
         }
-
         return Stream.empty();
     }
 

@@ -31,6 +31,7 @@ import java.util.stream.Stream;
  * can create an instance for tab completion.
  */
 public interface IDatatype {
+
     /**
      * One benefit over datatypes over {@link ArgParser}s is that instead of each command trying to guess what values
      * the datatype will accept, or simply not tab completing at all, datatypes that support tab completion can provide

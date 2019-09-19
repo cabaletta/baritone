@@ -41,14 +41,11 @@ public class ProcCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
-
         IPathingControlManager pathingControlManager = baritone.getPathingControlManager();
         IBaritoneProcess process = pathingControlManager.mostRecentInControl().orElse(null);
-
         if (isNull(process)) {
             throw new CommandInvalidStateException("No process in control");
         }
-
         logDirect(String.format(
                 "Class: %s\n" +
                         "Priority: %f\n" +

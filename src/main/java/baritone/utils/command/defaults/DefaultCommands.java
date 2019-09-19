@@ -48,7 +48,6 @@ public class DefaultCommands {
                 new GcCommand(baritone),
                 new InvertCommand(baritone),
                 new ClearareaCommand(baritone),
-
                 new TunnelCommand(baritone),
                 new RenderCommand(baritone),
                 new FarmCommand(baritone),

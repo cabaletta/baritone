@@ -42,22 +42,18 @@ public class ClearareaCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         BetterBlockPos pos1 = ctx.playerFeet();
         BetterBlockPos pos2;
-
         if (args.has()) {
             args.requireMax(3);
             pos2 = args.getDatatype(RelativeBlockPos.class).apply(pos1);
         } else {
             args.requireMax(0);
-
             Goal goal = baritone.getCustomGoalProcess().getGoal();
-
             if (!(goal instanceof GoalBlock)) {
                 throw new CommandInvalidStateException("Goal is not a GoalBlock");
             } else {
                 pos2 = new BetterBlockPos(((GoalBlock) goal).getGoalPos());
             }
         }
-
         baritone.getBuilderProcess().clearArea(pos1, pos2);
         logDirect("Success");
     }

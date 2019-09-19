@@ -33,6 +33,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 
 public class Paginator<E> implements Helper {
+
     public final List<E> entries;
     public int pageSize = 8;
     public int page = 1;
@@ -47,7 +48,6 @@ public class Paginator<E> implements Helper {
 
     public Paginator<E> setPageSize(int pageSize) {
         this.pageSize = pageSize;
-
         return this;
     }
 
@@ -61,13 +61,11 @@ public class Paginator<E> implements Helper {
 
     public Paginator<E> skipPages(int pages) {
         page += pages;
-
         return this;
     }
 
     public void display(Function<E, ITextComponent> transform, String commandPrefix) {
         int offset = (page - 1) * pageSize;
-
         for (int i = offset; i < offset + pageSize; i++) {
             if (i < entries.size()) {
                 logDirect(transform.apply(entries.get(i)));
@@ -75,12 +73,9 @@ public class Paginator<E> implements Helper {
                 logDirect("--", TextFormatting.DARK_GRAY);
             }
         }
-
         boolean hasPrevPage = nonNull(commandPrefix) && validPage(page - 1);
         boolean hasNextPage = nonNull(commandPrefix) && validPage(page + 1);
-
         ITextComponent prevPageComponent = new TextComponentString("<<");
-
         if (hasPrevPage) {
             prevPageComponent.getStyle()
                     .setClickEvent(new ClickEvent(
@@ -94,9 +89,7 @@ public class Paginator<E> implements Helper {
         } else {
             prevPageComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
         }
-
         ITextComponent nextPageComponent = new TextComponentString(">>");
-
         if (hasNextPage) {
             nextPageComponent.getStyle()
                     .setClickEvent(new ClickEvent(
@@ -110,7 +103,6 @@ public class Paginator<E> implements Helper {
         } else {
             nextPageComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
         }
-
         ITextComponent pagerComponent = new TextComponentString("");
         pagerComponent.getStyle().setColor(TextFormatting.GRAY);
         pagerComponent.appendSibling(prevPageComponent);
@@ -126,12 +118,9 @@ public class Paginator<E> implements Helper {
 
     public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Runnable pre, Function<T, ITextComponent> transform, String commandPrefix) {
         int page = 1;
-
         consumer.requireMax(1);
-
         if (consumer.has()) {
             page = consumer.getAs(Integer.class);
-
             if (!pagi.validPage(page)) {
                 throw new CommandInvalidTypeException(
                         consumer.consumed(),
@@ -143,13 +132,10 @@ public class Paginator<E> implements Helper {
                 );
             }
         }
-
         pagi.skipPages(page - pagi.page);
-
         if (nonNull(pre)) {
             pre.run();
         }
-
         pagi.display(transform, commandPrefix);
     }
 

@@ -38,12 +38,10 @@ public class TunnelCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
-
         Goal goal = new GoalStrictDirection(
                 ctx.playerFeet(),
                 ctx.player().getHorizontalFacing()
         );
-
         baritone.getCustomGoalProcess().setGoal(goal);
         logDirect(String.format("Goal: %s", goal.toString()));
     }

@@ -58,14 +58,11 @@ public class WaypointsCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         Action action = args.has() ? Action.getByName(args.getString()) : Action.LIST;
-
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
         }
-
         BiFunction<IWaypoint, Action, ITextComponent> toComponent = (waypoint, _action) -> {
             ITextComponent component = new TextComponentString("");
-
             ITextComponent tagComponent = new TextComponentString(waypoint.getTag().name() + " ");
             tagComponent.getStyle().setColor(TextFormatting.GRAY);
             String name = waypoint.getName();
@@ -73,7 +70,6 @@ public class WaypointsCommand extends Command {
             nameComponent.getStyle().setColor(!name.isEmpty() ? TextFormatting.GRAY : TextFormatting.DARK_GRAY);
             ITextComponent timestamp = new TextComponentString(" @ " + new Date(waypoint.getCreationTimestamp()));
             timestamp.getStyle().setColor(TextFormatting.DARK_GRAY);
-
             component.appendSibling(tagComponent);
             component.appendSibling(nameComponent);
             component.appendSibling(timestamp);
@@ -93,24 +89,18 @@ public class WaypointsCommand extends Command {
                                     waypoint.getCreationTimestamp()
                             ))
                     );
-
             return component;
         };
-
         Function<IWaypoint, ITextComponent> transform = waypoint ->
                 toComponent.apply(waypoint, action == Action.LIST ? Action.INFO : action);
-
         if (action == Action.LIST) {
             IWaypoint.Tag tag = args.has() ? IWaypoint.Tag.getByName(args.peekString()) : null;
-
             if (tag != null) {
                 args.get();
             }
-
             IWaypoint[] waypoints = tag != null
                     ? ForWaypoints.getWaypointsByTag(tag)
                     : ForWaypoints.getWaypoints();
-
             if (waypoints.length > 0) {
                 args.requireMax(1);
                 Paginator.paginate(
@@ -140,21 +130,16 @@ public class WaypointsCommand extends Command {
             }
         } else if (action == Action.SAVE) {
             IWaypoint.Tag tag = IWaypoint.Tag.getByName(args.getString());
-
             if (tag == null) {
                 throw new CommandInvalidStateException(String.format("'%s' is not a tag ", args.consumedString()));
             }
-
             String name = args.has() ? args.getString() : "";
             BetterBlockPos pos = args.has()
                     ? args.getDatatypePost(RelativeBlockPos.class, ctx.playerFeet())
                     : ctx.playerFeet();
-
             args.requireMax(0);
-
             IWaypoint waypoint = new Waypoint(name, tag, pos);
             ForWaypoints.waypoints().addWaypoint(waypoint);
-
             ITextComponent component = new TextComponentString("Waypoint added: ");
             component.getStyle().setColor(TextFormatting.GRAY);
             component.appendSibling(toComponent.apply(waypoint, Action.INFO));
@@ -163,28 +148,23 @@ public class WaypointsCommand extends Command {
             args.requireMax(1);
             IWaypoint.Tag tag = IWaypoint.Tag.getByName(args.getString());
             IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(tag);
-
             for (IWaypoint waypoint : waypoints) {
                 ForWaypoints.waypoints().removeWaypoint(waypoint);
             }
-
             logDirect(String.format("Cleared %d waypoints", waypoints.length));
         } else {
             IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.class);
             IWaypoint waypoint = null;
-
             if (args.has() && args.peekString().equals("@")) {
                 args.requireExactly(2);
                 args.get();
                 long timestamp = args.getAs(Long.class);
-
                 for (IWaypoint iWaypoint : waypoints) {
                     if (iWaypoint.getCreationTimestamp() == timestamp) {
                         waypoint = iWaypoint;
                         break;
                     }
                 }
-
                 if (waypoint == null) {
                     throw new CommandInvalidStateException("Timestamp was specified but no waypoint was found");
                 }
@@ -196,7 +176,6 @@ public class WaypointsCommand extends Command {
                         waypoint = waypoints[0];
                 }
             }
-
             if (waypoint == null) {
                 args.requireMax(1);
                 Paginator.paginate(
@@ -273,7 +252,6 @@ public class WaypointsCommand extends Command {
                         .stream();
             } else {
                 Action action = Action.getByName(args.getString());
-
                 if (args.hasExactlyOne()) {
                     if (action == Action.LIST || action == Action.SAVE || action == Action.CLEAR) {
                         return new TabCompleteHelper()
@@ -291,7 +269,6 @@ public class WaypointsCommand extends Command {
                 }
             }
         }
-
         return Stream.empty();
     }
 
@@ -327,7 +304,6 @@ public class WaypointsCommand extends Command {
         INFO("info", "show", "i"),
         DELETE("delete", "d"),
         GOAL("goal", "goto", "g");
-
         private final String[] names;
 
         Action(String... names) {
@@ -342,17 +318,14 @@ public class WaypointsCommand extends Command {
                     }
                 }
             }
-
             return null;
         }
 
         public static String[] getAllNames() {
             Set<String> names = new HashSet<>();
-
             for (Action action : Action.values()) {
                 names.addAll(asList(action.names));
             }
-
             return names.toArray(new String[0]);
         }
     }

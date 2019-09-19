@@ -25,7 +25,9 @@ import java.util.Locale;
 import static java.util.Arrays.asList;
 
 public class DefaultArgParsers {
+
     public static class IntArgumentParser extends ArgParser<Integer> implements IArgParser.Stateless<Integer> {
+
         public static final IntArgumentParser INSTANCE = new IntArgumentParser();
 
         public IntArgumentParser() {
@@ -39,6 +41,7 @@ public class DefaultArgParsers {
     }
 
     public static class LongArgumentParser extends ArgParser<Long> implements IArgParser.Stateless<Long> {
+
         public static final LongArgumentParser INSTANCE = new LongArgumentParser();
 
         public LongArgumentParser() {
@@ -52,6 +55,7 @@ public class DefaultArgParsers {
     }
 
     public static class FloatArgumentParser extends ArgParser<Float> implements IArgParser.Stateless<Float> {
+
         public static final FloatArgumentParser INSTANCE = new FloatArgumentParser();
 
         public FloatArgumentParser() {
@@ -61,16 +65,15 @@ public class DefaultArgParsers {
         @Override
         public Float parseArg(CommandArgument arg) throws RuntimeException {
             String value = arg.value;
-
             if (!value.matches("^([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$")) {
                 throw new RuntimeException("failed float format check");
             }
-
             return Float.parseFloat(value);
         }
     }
 
     public static class DoubleArgumentParser extends ArgParser<Double> implements IArgParser.Stateless<Double> {
+
         public static final DoubleArgumentParser INSTANCE = new DoubleArgumentParser();
 
         public DoubleArgumentParser() {
@@ -80,18 +83,16 @@ public class DefaultArgParsers {
         @Override
         public Double parseArg(CommandArgument arg) throws RuntimeException {
             String value = arg.value;
-
             if (!value.matches("^([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$")) {
                 throw new RuntimeException("failed double format check");
             }
-
             return Double.parseDouble(value);
         }
     }
 
     public static class BooleanArgumentParser extends ArgParser<Boolean> implements IArgParser.Stateless<Boolean> {
-        public static final BooleanArgumentParser INSTANCE = new BooleanArgumentParser();
 
+        public static final BooleanArgumentParser INSTANCE = new BooleanArgumentParser();
         public static final List<String> TRUTHY_VALUES = asList("1", "true", "yes", "t", "y", "on", "enable");
         public static final List<String> FALSY_VALUES = asList("0", "false", "no", "f", "n", "off", "disable");
 
@@ -102,7 +103,6 @@ public class DefaultArgParsers {
         @Override
         public Boolean parseArg(CommandArgument arg) throws RuntimeException {
             String value = arg.value;
-
             if (TRUTHY_VALUES.contains(value.toLowerCase(Locale.US))) {
                 return true;
             } else if (FALSY_VALUES.contains(value.toLowerCase(Locale.US))) {

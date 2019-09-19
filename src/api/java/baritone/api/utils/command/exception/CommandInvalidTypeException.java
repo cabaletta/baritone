@@ -20,6 +20,7 @@ package baritone.api.utils.command.exception;
 import baritone.api.utils.command.argument.CommandArgument;
 
 public class CommandInvalidTypeException extends CommandInvalidArgumentException {
+
     public CommandInvalidTypeException(CommandArgument arg, String expected) {
         super(arg, String.format("Expected %s", expected));
     }

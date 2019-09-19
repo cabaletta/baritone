@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.List;
 
 public final class SchematicAdapter implements ISchematic {
+
     private final SchematicWorld schematic;
 
     public SchematicAdapter(SchematicWorld schematicWorld) {

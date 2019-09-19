@@ -25,6 +25,7 @@ import baritone.api.utils.command.registry.Registry;
 import static java.util.Objects.isNull;
 
 public class ArgParserManager {
+
     public static final Registry<ArgParser> REGISTRY = new Registry<>();
 
     static {
@@ -73,11 +74,9 @@ public class ArgParserManager {
      */
     public static <T> T parseStateless(Class<T> klass, CommandArgument arg) {
         ArgParser.Stateless<T> parser = getParserStateless(klass);
-
         if (isNull(parser)) {
             throw new CommandNoParserForTypeException(klass);
         }
-
         try {
             return parser.parseArg(arg);
         } catch (RuntimeException exc) {
@@ -98,11 +97,9 @@ public class ArgParserManager {
      */
     public static <T, S> T parseStated(Class<T> klass, Class<S> stateKlass, CommandArgument arg, S state) {
         ArgParser.Stated<T, S> parser = getParserStated(klass, stateKlass);
-
         if (isNull(parser)) {
             throw new CommandNoParserForTypeException(klass);
         }
-
         try {
             return parser.parseArg(arg, state);
         } catch (RuntimeException exc) {

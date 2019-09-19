@@ -36,9 +36,7 @@ public class GcCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
-
         System.gc();
-
         logDirect("ok called System.gc()");
     }
 

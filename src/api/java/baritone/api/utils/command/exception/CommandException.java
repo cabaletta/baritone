@@ -23,6 +23,7 @@ import baritone.api.utils.command.argument.CommandArgument;
 import java.util.List;
 
 public abstract class CommandException extends RuntimeException {
+
     protected CommandException(String reason) {
         super(reason);
     }

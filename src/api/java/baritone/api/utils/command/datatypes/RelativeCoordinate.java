@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class RelativeCoordinate implements IDatatypePost<Double, Double> {
-    public static Pattern PATTERN = Pattern.compile("^(~?)([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$");
 
+    public static Pattern PATTERN = Pattern.compile("^(~?)([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$");
     final boolean isRelative;
     final double offset;
 
@@ -37,11 +37,9 @@ public class RelativeCoordinate implements IDatatypePost<Double, Double> {
 
     public RelativeCoordinate(ArgConsumer consumer) {
         Matcher matcher = PATTERN.matcher(consumer.getString());
-
         if (!matcher.matches()) {
             throw new IllegalArgumentException("pattern doesn't match");
         }
-
         isRelative = !matcher.group(1).isEmpty();
         offset = matcher.group(2).isEmpty() ? 0 : Double.parseDouble(matcher.group(2));
     }
@@ -51,7 +49,6 @@ public class RelativeCoordinate implements IDatatypePost<Double, Double> {
         if (isRelative) {
             return origin + offset;
         }
-
         return offset;
     }
 
@@ -64,7 +61,6 @@ public class RelativeCoordinate implements IDatatypePost<Double, Double> {
         if (!consumer.has(2) && consumer.getString().matches("^(~|$)")) {
             return Stream.of("~");
         }
-
         return Stream.empty();
     }
 }
