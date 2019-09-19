@@ -24,10 +24,9 @@ import baritone.api.pathing.goals.GoalStrictDirection;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class TunnelCommand extends Command {
 
@@ -58,7 +57,7 @@ public class TunnelCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The tunnel command sets a goal that tells Baritone to mine completely straight in the direction that you're facing.",
                 "",
                 "Usage:",

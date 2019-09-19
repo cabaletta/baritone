@@ -23,10 +23,9 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class RenderCommand extends Command {
 
@@ -62,7 +61,7 @@ public class RenderCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The render command fixes glitched chunk rendering without having to reload all of them.",
                 "",
                 "Usage:",

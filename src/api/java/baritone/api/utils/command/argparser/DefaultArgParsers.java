@@ -19,10 +19,9 @@ package baritone.api.utils.command.argparser;
 
 import baritone.api.utils.command.argument.CommandArgument;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-
-import static java.util.Arrays.asList;
 
 public class DefaultArgParsers {
 
@@ -93,8 +92,8 @@ public class DefaultArgParsers {
     public static class BooleanArgumentParser extends ArgParser<Boolean> implements IArgParser.Stateless<Boolean> {
 
         public static final BooleanArgumentParser INSTANCE = new BooleanArgumentParser();
-        public static final List<String> TRUTHY_VALUES = asList("1", "true", "yes", "t", "y", "on", "enable");
-        public static final List<String> FALSY_VALUES = asList("0", "false", "no", "f", "n", "off", "disable");
+        public static final List<String> TRUTHY_VALUES = Arrays.asList("1", "true", "yes", "t", "y", "on", "enable");
+        public static final List<String> FALSY_VALUES = Arrays.asList("0", "false", "no", "f", "n", "off", "disable");
 
         public BooleanArgumentParser() {
             super(Boolean.class);
@@ -113,7 +112,7 @@ public class DefaultArgParsers {
         }
     }
 
-    public static final List<ArgParser<?>> ALL = asList(
+    public static final List<ArgParser<?>> ALL = Arrays.asList(
             IntArgumentParser.INSTANCE,
             LongArgumentParser.INSTANCE,
             FloatArgumentParser.INSTANCE,

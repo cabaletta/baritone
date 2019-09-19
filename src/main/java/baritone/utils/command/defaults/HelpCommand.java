@@ -31,18 +31,18 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
 import static baritone.api.utils.command.manager.CommandManager.getCommand;
-import static java.util.Arrays.asList;
 
 public class HelpCommand extends Command {
 
     public HelpCommand(IBaritone baritone) {
-        super(baritone, asList("help", "?"));
+        super(baritone, Arrays.asList("help", "?"));
     }
 
     @Override
@@ -113,7 +113,7 @@ public class HelpCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Using this command, you can view detailed help information on how to use certain commands of Baritone.",
                 "",
                 "Usage:",

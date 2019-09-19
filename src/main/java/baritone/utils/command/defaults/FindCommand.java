@@ -26,10 +26,9 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.block.Block;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class FindCommand extends Command {
 
@@ -71,7 +70,7 @@ public class FindCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "",
                 "",
                 "Usage:",

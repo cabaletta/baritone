@@ -31,6 +31,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -39,25 +40,23 @@ import java.util.stream.Stream;
 import static baritone.api.utils.SettingsUtil.settingTypeToString;
 import static baritone.api.utils.SettingsUtil.settingValueToString;
 import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
-import static java.util.Arrays.asList;
-import static java.util.stream.Stream.of;
 
 public class SetCommand extends Command {
 
     public SetCommand(IBaritone baritone) {
-        super(baritone, asList("set", "setting", "settings"));
+        super(baritone, Arrays.asList("set", "setting", "settings"));
     }
 
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         String arg = args.has() ? args.getString().toLowerCase(Locale.US) : "list";
-        if (asList("s", "save").contains(arg)) {
+        if (Arrays.asList("s", "save").contains(arg)) {
             SettingsUtil.save(settings);
             logDirect("Settings saved");
             return;
         }
-        boolean viewModified = asList("m", "mod", "modified").contains(arg);
-        boolean viewAll = asList("all", "l", "list").contains(arg);
+        boolean viewModified = Arrays.asList("m", "mod", "modified").contains(arg);
+        boolean viewAll = Arrays.asList("all", "l", "list").contains(arg);
         boolean paginate = viewModified || viewAll;
         if (paginate) {
             String search = args.has() && args.peekAsOrNull(Integer.class) == null ? args.getString() : "";
@@ -188,7 +187,7 @@ public class SetCommand extends Command {
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         if (args.has()) {
             String arg = args.getString();
-            if (args.hasExactlyOne() && !asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {
+            if (args.hasExactlyOne() && !Arrays.asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {
                 if (arg.equalsIgnoreCase("reset")) {
                     return new TabCompleteHelper()
                             .addModifiedSettings()
@@ -206,9 +205,9 @@ public class SetCommand extends Command {
                     if (setting.getType() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
                         if ((Boolean) setting.value) {
-                            helper.append(of("true", "false"));
+                            helper.append(Stream.of("true", "false"));
                         } else {
-                            helper.append(of("false", "true"));
+                            helper.append(Stream.of("false", "true"));
                         }
                         return helper.filterPrefix(args.getString()).stream();
                     } else {
@@ -234,7 +233,7 @@ public class SetCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Using the set command, you can manage all of Baritone's settings. Almost every aspect is controlled by these settings - go wild!",
                 "",
                 "Usage:",

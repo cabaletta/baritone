@@ -28,11 +28,10 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class BuildCommand extends Command {
 
@@ -82,7 +81,7 @@ public class BuildCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Build a schematic from a file.",
                 "",
                 "Usage:",

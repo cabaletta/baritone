@@ -24,8 +24,6 @@ import net.minecraft.item.ItemStack;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-
 public class BlockOptionalMetaLookup {
 
     private final BlockOptionalMeta[] boms;
@@ -83,7 +81,7 @@ public class BlockOptionalMetaLookup {
     }
 
     public List<BlockOptionalMeta> blocks() {
-        return asList(boms);
+        return Arrays.asList(boms);
     }
 
     @Override

@@ -32,14 +32,9 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class FollowCommand extends Command {
 
@@ -126,7 +121,7 @@ public class FollowCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The follow command tells Baritone to follow certain kinds of entities.",
                 "",
                 "Usage:",

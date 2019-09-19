@@ -27,10 +27,9 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.cache.WorldScanner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class MineCommand extends Command {
 
@@ -63,7 +62,7 @@ public class MineCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The mine command allows you to tell Baritone to search for and mine individual blocks.",
                 "",
                 "The specified blocks can be ores (which are commonly cached), or any other block.",

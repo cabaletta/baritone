@@ -29,15 +29,14 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.cache.WorldScanner;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class PathCommand extends Command {
 
     public PathCommand(IBaritone baritone) {
-        super(baritone, asList("path", "goto"));
+        super(baritone, Arrays.asList("path", "goto"));
     }
 
     @Override
@@ -82,7 +81,7 @@ public class PathCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The path command tells Baritone to head towards the current goal.",
                 "",
                 "Usage:",

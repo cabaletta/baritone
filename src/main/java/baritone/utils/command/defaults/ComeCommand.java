@@ -26,10 +26,9 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class ComeCommand extends Command {
 
@@ -60,7 +59,7 @@ public class ComeCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The come command tells Baritone to head towards your camera.",
                 "",
                 "This can be useful in hacked clients where freecam doesn't move your player position.",

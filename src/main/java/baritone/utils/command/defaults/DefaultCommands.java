@@ -22,8 +22,6 @@ import baritone.api.utils.command.Command;
 
 import java.util.*;
 
-import static java.util.Arrays.asList;
-
 public class DefaultCommands {
 
     public static List<Command> commands(IBaritone baritone) {
@@ -32,7 +30,7 @@ public class DefaultCommands {
         commands.addAll(Arrays.asList(
                 new HelpCommand(baritone),
                 new SetCommand(baritone),
-                new CommandAlias(baritone, asList("modified", "mod", "baritone", "modifiedsettings"), "List modified settings", "set modified"),
+                new CommandAlias(baritone, Arrays.asList("modified", "mod", "baritone", "modifiedsettings"), "List modified settings", "set modified"),
                 new CommandAlias(baritone, "reset", "Reset all settings or just one", "set reset"),
                 new GoalCommand(baritone),
                 new PathCommand(baritone),

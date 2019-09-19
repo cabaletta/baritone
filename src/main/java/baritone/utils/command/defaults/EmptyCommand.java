@@ -22,15 +22,14 @@ import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class EmptyCommand extends Command {
 
     public EmptyCommand(IBaritone baritone) {
-        super(baritone, asList("name1", "name2"));
+        super(baritone, Arrays.asList("name1", "name2"));
     }
 
     @Override
@@ -50,7 +49,7 @@ public class EmptyCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "",
                 "",
                 "Usage:",

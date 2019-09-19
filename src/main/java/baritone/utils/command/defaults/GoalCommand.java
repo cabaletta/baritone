@@ -28,10 +28,9 @@ import baritone.api.utils.command.datatypes.RelativeGoal;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class GoalCommand extends Command {
 
@@ -42,7 +41,7 @@ public class GoalCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         ICustomGoalProcess goalProcess = baritone.getCustomGoalProcess();
-        if (args.has() && asList("reset", "clear", "none").contains(args.peekString())) {
+        if (args.has() && Arrays.asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
             if (goalProcess.getGoal() != null) {
                 goalProcess.setGoal(null);
@@ -87,7 +86,7 @@ public class GoalCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The goal command allows you to set or clear Baritone's goal.",
                 "",
                 "Wherever a coordinate is expected, you can use ~ just like in regular Minecraft commands. Or, you can just use regular numbers.",

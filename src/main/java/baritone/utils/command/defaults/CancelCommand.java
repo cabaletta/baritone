@@ -22,15 +22,14 @@ import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class CancelCommand extends Command {
 
     public CancelCommand(IBaritone baritone) {
-        super(baritone, asList("cancel", "stop"));
+        super(baritone, Arrays.asList("cancel", "stop"));
     }
 
     @Override
@@ -52,7 +51,7 @@ public class CancelCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The cancel command tells Baritons to stop whatever it's currently doing.",
                 "",
                 "Usage:",

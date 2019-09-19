@@ -23,15 +23,14 @@ import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class ThisWayCommand extends Command {
 
     public ThisWayCommand(IBaritone baritone) {
-        super(baritone, asList("thisway", "forward"));
+        super(baritone, Arrays.asList("thisway", "forward"));
     }
 
     @Override
@@ -58,7 +57,7 @@ public class ThisWayCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Creates a GoalXZ some amount of blocks in the direction you're currently looking",
                 "",
                 "Usage:",

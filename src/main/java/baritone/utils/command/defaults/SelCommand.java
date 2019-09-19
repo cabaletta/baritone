@@ -44,14 +44,10 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3i;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class SelCommand extends Command {
 
@@ -59,7 +55,7 @@ public class SelCommand extends Command {
     private BetterBlockPos pos1 = null;
 
     public SelCommand(IBaritone baritone) {
-        super(baritone, asList("sel", "selection", "s"));
+        super(baritone, Arrays.asList("sel", "selection", "s"));
         baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
             @Override
             public void onRenderPass(RenderEvent event) {
@@ -236,7 +232,7 @@ public class SelCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The sel command allows you to manipulate Baritone's selections, similarly to WorldEdit.",
                 "",
                 "Using these selections, you can clear areas, fill them with blocks, or something else.",
@@ -296,7 +292,7 @@ public class SelCommand extends Command {
         public static String[] getAllNames() {
             Set<String> names = new HashSet<>();
             for (Action action : Action.values()) {
-                names.addAll(asList(action.names));
+                names.addAll(Arrays.asList(action.names));
             }
             return names.toArray(new String[0]);
         }
@@ -332,7 +328,7 @@ public class SelCommand extends Command {
         public static String[] getAllNames() {
             Set<String> names = new HashSet<>();
             for (TransformTarget target : TransformTarget.values()) {
-                names.addAll(asList(target.names));
+                names.addAll(Arrays.asList(target.names));
             }
             return names.toArray(new String[0]);
         }

@@ -38,21 +38,17 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
-import static java.util.Arrays.asList;
 
 public class WaypointsCommand extends Command {
 
     public WaypointsCommand(IBaritone baritone) {
-        super(baritone, asList("waypoints", "waypoint", "wp"));
+        super(baritone, Arrays.asList("waypoints", "waypoint", "wp"));
     }
 
     @Override
@@ -279,7 +275,7 @@ public class WaypointsCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The waypoint command allows you to manage Baritone's waypoints.",
                 "",
                 "Waypoints can be used to mark positions for later. Waypoints are each given a tag and an optional name.",
@@ -324,7 +320,7 @@ public class WaypointsCommand extends Command {
         public static String[] getAllNames() {
             Set<String> names = new HashSet<>();
             for (Action action : Action.values()) {
-                names.addAll(asList(action.names));
+                names.addAll(Arrays.asList(action.names));
             }
             return names.toArray(new String[0]);
         }

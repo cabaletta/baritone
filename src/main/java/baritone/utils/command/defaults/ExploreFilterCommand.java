@@ -28,10 +28,9 @@ import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
 import java.nio.file.NoSuchFileException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class ExploreFilterCommand extends Command {
 
@@ -78,7 +77,7 @@ public class ExploreFilterCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Apply an explore filter before using explore, which tells the explore process which chunks have been explored/not explored.",
                 "",
                 "The JSON file will follow this format: [{\"x\":0,\"z\":0},...]",

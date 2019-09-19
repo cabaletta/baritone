@@ -21,8 +21,6 @@ import baritone.api.utils.BetterBlockPos;
 
 import java.util.*;
 
-import static java.util.Arrays.asList;
-
 /**
  * A marker for a position in the world.
  *
@@ -129,7 +127,7 @@ public interface IWaypoint {
             Set<String> names = new HashSet<>();
 
             for (Tag tag : Tag.values()) {
-                names.addAll(asList(tag.names));
+                names.addAll(Arrays.asList(tag.names));
             }
 
             return names.toArray(new String[0]);

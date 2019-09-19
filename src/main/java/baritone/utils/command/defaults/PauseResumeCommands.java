@@ -26,10 +26,9 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 /**
  * Contains the pause, resume, and paused commands.
@@ -103,7 +102,7 @@ public class PauseResumeCommands {
 
             @Override
             public List<String> getLongDesc() {
-                return asList(
+                return Arrays.asList(
                         "The pause command tells Baritone to temporarily stop whatever it's doing.",
                         "",
                         "This can be used to pause pathing, building, following, whatever. A single use of the resume command will start it right back up again!",
@@ -136,7 +135,7 @@ public class PauseResumeCommands {
 
             @Override
             public List<String> getLongDesc() {
-                return asList(
+                return Arrays.asList(
                         "The resume command tells Baritone to resume whatever it was doing when you last used pause.",
                         "",
                         "Usage:",
@@ -163,7 +162,7 @@ public class PauseResumeCommands {
 
             @Override
             public List<String> getLongDesc() {
-                return asList(
+                return Arrays.asList(
                         "The paused command tells you if Baritone is currently paused by use of the pause command.",
                         "",
                         "Usage:",

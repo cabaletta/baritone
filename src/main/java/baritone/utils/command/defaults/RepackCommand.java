@@ -23,15 +23,14 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.cache.WorldScanner;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class RepackCommand extends Command {
 
     public RepackCommand(IBaritone baritone) {
-        super(baritone, asList("repack", "rescan"));
+        super(baritone, Arrays.asList("repack", "rescan"));
     }
 
     @Override
@@ -52,7 +51,7 @@ public class RepackCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Repack chunks around you. This basically re-caches them.",
                 "",
                 "Usage:",

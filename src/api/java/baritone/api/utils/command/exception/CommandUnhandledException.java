@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
-
 public class CommandUnhandledException extends CommandErrorMessageException {
 
     public static String getStackTrace(Throwable throwable) {
@@ -50,7 +48,7 @@ public class CommandUnhandledException extends CommandErrorMessageException {
     }
 
     public static String getFriendlierStackTrace(String stackTrace) {
-        List<String> lines = asList(stackTrace.split("\n"));
+        List<String> lines = Arrays.asList(stackTrace.split("\n"));
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
             if (line.startsWith("\tat ")) {

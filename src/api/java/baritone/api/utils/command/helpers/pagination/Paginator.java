@@ -26,10 +26,9 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-
-import static java.util.Arrays.asList;
 
 public class Paginator<E> implements Helper {
 
@@ -42,7 +41,7 @@ public class Paginator<E> implements Helper {
     }
 
     public Paginator(E... entries) {
-        this.entries = asList(entries);
+        this.entries = Arrays.asList(entries);
     }
 
     public Paginator<E> setPageSize(int pageSize) {
@@ -143,7 +142,7 @@ public class Paginator<E> implements Helper {
     }
 
     public static <T> void paginate(ArgConsumer consumer, T[] elems, Runnable pre, Function<T, ITextComponent> transform, String commandPrefix) {
-        paginate(consumer, asList(elems), pre, transform, commandPrefix);
+        paginate(consumer, Arrays.asList(elems), pre, transform, commandPrefix);
     }
 
     public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Function<T, ITextComponent> transform, String commandPrefix) {
@@ -155,7 +154,7 @@ public class Paginator<E> implements Helper {
     }
 
     public static <T> void paginate(ArgConsumer consumer, T[] elems, Function<T, ITextComponent> transform, String commandPrefix) {
-        paginate(consumer, asList(elems), null, transform, commandPrefix);
+        paginate(consumer, Arrays.asList(elems), null, transform, commandPrefix);
     }
 
     public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Runnable pre, Function<T, ITextComponent> transform) {
@@ -167,7 +166,7 @@ public class Paginator<E> implements Helper {
     }
 
     public static <T> void paginate(ArgConsumer consumer, T[] elems, Runnable pre, Function<T, ITextComponent> transform) {
-        paginate(consumer, asList(elems), pre, transform, null);
+        paginate(consumer, Arrays.asList(elems), pre, transform, null);
     }
 
     public static <T> void paginate(ArgConsumer consumer, Paginator<T> pagi, Function<T, ITextComponent> transform) {
@@ -179,6 +178,6 @@ public class Paginator<E> implements Helper {
     }
 
     public static <T> void paginate(ArgConsumer consumer, T[] elems, Function<T, ITextComponent> transform) {
-        paginate(consumer, asList(elems), null, transform, null);
+        paginate(consumer, Arrays.asList(elems), null, transform, null);
     }
 }

@@ -28,12 +28,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class ChestsCommand extends Command {
 
@@ -74,7 +73,7 @@ public class ChestsCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The chests command lists remembered inventories, I guess?",
                 "",
                 "Usage:",

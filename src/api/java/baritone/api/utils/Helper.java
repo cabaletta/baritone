@@ -25,8 +25,6 @@ import net.minecraft.util.text.TextFormatting;
 
 import java.util.Arrays;
 
-import static java.util.Arrays.asList;
-
 /**
  * @author Brady
  * @since 8/1/2018
@@ -75,7 +73,7 @@ public interface Helper {
         ITextComponent component = new TextComponentString("");
         component.appendSibling(getPrefix());
         component.appendSibling(new TextComponentString(" "));
-        asList(components).forEach(component::appendSibling);
+        Arrays.asList(components).forEach(component::appendSibling);
         Minecraft.getMinecraft().addScheduledTask(() -> BaritoneAPI.getSettings().logger.value.accept(component));
     }
 

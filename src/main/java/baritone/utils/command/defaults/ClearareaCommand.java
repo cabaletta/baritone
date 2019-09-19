@@ -27,10 +27,9 @@ import baritone.api.utils.command.datatypes.RelativeBlockPos;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class ClearareaCommand extends Command {
 
@@ -70,7 +69,7 @@ public class ClearareaCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Clear an area of all blocks.",
                 "",
                 "Usage:",

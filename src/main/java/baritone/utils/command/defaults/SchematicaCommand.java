@@ -22,10 +22,9 @@ import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class SchematicaCommand extends Command {
 
@@ -51,7 +50,7 @@ public class SchematicaCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Builds the schematica currently open in Schematica.",
                 "",
                 "Usage:",

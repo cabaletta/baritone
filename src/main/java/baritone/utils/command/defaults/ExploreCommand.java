@@ -24,10 +24,9 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.RelativeGoalXZ;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class ExploreCommand extends Command {
 
@@ -64,7 +63,7 @@ public class ExploreCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "Tell Baritone to explore randomly. If you used explorefilter before this, it will be applied.",
                 "",
                 "Usage:",

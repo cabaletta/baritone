@@ -26,10 +26,9 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 public class ProcCommand extends Command {
 
@@ -74,7 +73,7 @@ public class ProcCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return asList(
+        return Arrays.asList(
                 "The proc command provides miscellaneous information about the process currently controlling Baritone.",
                 "",
                 "You are not expected to understand this if you aren't familiar with how Baritone works.",
