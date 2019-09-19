@@ -23,6 +23,7 @@ import baritone.api.cache.IWorldProvider;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.*;
+import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.IPlayerContext;
 
@@ -127,6 +128,12 @@ public interface IBaritone {
      * @see IEventBus
      */
     IEventBus getGameEventHandler();
+
+    /**
+     * @return The {@link ISelectionManager} instance
+     * @see ISelectionManager
+     */
+    ISelectionManager getSelectionManager();
 
     /**
      * Open click

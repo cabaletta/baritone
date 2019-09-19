@@ -21,14 +21,17 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
-import baritone.api.utils.ExampleBaritoneControl;
+import baritone.api.utils.command.BaritoneChatControl;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.command.manager.CommandManager;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
+import baritone.selection.SelectionManager;
 import baritone.utils.*;
+import baritone.utils.command.defaults.DefaultCommands;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
@@ -83,6 +86,7 @@ public class Baritone implements IBaritone {
     private FarmProcess farmProcess;
 
     private PathingControlManager pathingControlManager;
+    private SelectionManager selectionManager;
 
     private IPlayerContext playerContext;
     private WorldProvider worldProvider;
@@ -109,7 +113,6 @@ public class Baritone implements IBaritone {
             memoryBehavior = new MemoryBehavior(this);
             inventoryBehavior = new InventoryBehavior(this);
             inputOverrideHandler = new InputOverrideHandler(this);
-            new ExampleBaritoneControl(this);
         }
 
         this.pathingControlManager = new PathingControlManager(this);
@@ -125,6 +128,7 @@ public class Baritone implements IBaritone {
         }
 
         this.worldProvider = new WorldProvider();
+        this.selectionManager = new SelectionManager();
 
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             this.gameEventHandler.registerEventListener(BaritoneAutoTest.INSTANCE);
@@ -201,6 +205,11 @@ public class Baritone implements IBaritone {
     @Override
     public PathingBehavior getPathingBehavior() {
         return this.pathingBehavior;
+    }
+
+    @Override
+    public SelectionManager getSelectionManager() {
+        return selectionManager;
     }
 
     @Override

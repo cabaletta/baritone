@@ -28,6 +28,7 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.OptionalInt;
@@ -132,7 +133,7 @@ public final class InventoryBehavior extends Behavior {
     }
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
-        IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z);
+        IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
         if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && maybe.equals(((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(ctx.world(), ctx.playerFeet(), EnumFacing.UP, (float) ctx.player().posX, (float) ctx.player().posY, (float) ctx.player().posZ, stack.getItem().getMetadata(stack.getMetadata()), ctx.player())))) {
             return true; // gotem
         }

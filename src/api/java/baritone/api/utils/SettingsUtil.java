@@ -121,6 +121,40 @@ public class SettingsUtil {
         return modified;
     }
 
+    /**
+     * Gets the type of a setting and returns it as a string, with package names stripped.
+     *
+     * For example, if the setting type is {@code java.util.List<java.lang.String>}, this function returns
+     * {@code List<String>}.
+     *
+     * @param setting The setting
+     * @return The type
+     */
+    public static String settingTypeToString(Settings.Setting setting) {
+        return setting.getType().getTypeName()
+            .replaceAll("(?:\\w+\\.)+(\\w+)", "$1");
+    }
+
+    public static <T> String settingValueToString(Settings.Setting<T> setting, T value) throws IllegalArgumentException {
+        Parser io = Parser.getParser(setting.getType());
+
+        if (io == null) {
+            throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting.getName());
+        }
+
+        return io.toString(new ParserContext(setting), value);
+    }
+
+    public static String settingValueToString(Settings.Setting setting) throws IllegalArgumentException {
+        //noinspection unchecked
+        return settingValueToString(setting, setting.value);
+    }
+
+    public static String settingDefaultToString(Settings.Setting setting) throws IllegalArgumentException {
+        //noinspection unchecked
+        return settingValueToString(setting, setting.defaultValue);
+    }
+
     public static String maybeCensor(int coord) {
         if (BaritoneAPI.getSettings().censorCoordinates.value) {
             return "<censored>";
@@ -133,11 +167,8 @@ public class SettingsUtil {
         if (setting.getName().equals("logger")) {
             return "logger";
         }
-        Parser io = Parser.getParser(setting.getType());
-        if (io == null) {
-            throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting.getName());
-        }
-        return setting.getName() + " " + io.toString(new ParserContext(setting), setting.value);
+
+        return setting.getName() + " " + settingValueToString(setting);
     }
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
@@ -183,6 +214,7 @@ public class SettingsUtil {
         INTEGER(Integer.class, Integer::parseInt),
         FLOAT(Float.class, Float::parseFloat),
         LONG(Long.class, Long::parseLong),
+        STRING(String.class, String::new),
         ENUMFACING(EnumFacing.class, EnumFacing::byName),
         COLOR(
                 Color.class,
