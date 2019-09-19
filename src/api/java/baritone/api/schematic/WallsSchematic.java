@@ -21,6 +21,7 @@ import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 
 public class WallsSchematic extends MaskSchematic {
+
     public WallsSchematic(ISchematic schematic) {
         super(schematic);
     }

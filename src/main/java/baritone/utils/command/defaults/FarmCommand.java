@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class FarmCommand extends Command {
+
     public FarmCommand(IBaritone baritone) {
         super(baritone, "farm");
     }

@@ -8,6 +8,7 @@ import baritone.utils.IRenderer;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
+
     public static final double SELECTION_BOX_EXPANSION = .005D;
 
     private final SelectionManager manager;

@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class SchematicaCommand extends Command {
+
     public SchematicaCommand(IBaritone baritone) {
         super(baritone, "schematica");
     }

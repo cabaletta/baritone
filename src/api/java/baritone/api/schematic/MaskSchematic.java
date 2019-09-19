@@ -23,6 +23,7 @@ import net.minecraft.block.state.IBlockState;
 import java.util.List;
 
 public abstract class MaskSchematic extends AbstractSchematic {
+
     private final ISchematic schematic;
 
     public MaskSchematic(ISchematic schematic) {

@@ -44,6 +44,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class FollowCommand extends Command {
+
     public FollowCommand(IBaritone baritone) {
         super(baritone, "follow");
     }

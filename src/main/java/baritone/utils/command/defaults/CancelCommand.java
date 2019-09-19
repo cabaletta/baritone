@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class CancelCommand extends Command {
+
     public CancelCommand(IBaritone baritone) {
         super(baritone, asList("cancel", "stop"));
     }

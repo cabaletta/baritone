@@ -54,6 +54,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class SelCommand extends Command {
+
     private ISelectionManager manager = baritone.getSelectionManager();
     private BetterBlockPos pos1 = null;
 

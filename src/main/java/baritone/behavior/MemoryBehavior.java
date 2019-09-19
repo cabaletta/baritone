@@ -255,6 +255,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     public static class EnderChestMemory {
+
         private static final Map<Path, EnderChestMemory> memory = new HashMap<>();
         private final Path enderChest;
         private List<ItemStack> contents;

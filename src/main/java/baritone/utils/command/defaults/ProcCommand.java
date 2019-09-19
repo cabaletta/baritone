@@ -33,6 +33,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class ProcCommand extends Command {
+
     public ProcCommand(IBaritone baritone) {
         super(baritone, "proc");
     }

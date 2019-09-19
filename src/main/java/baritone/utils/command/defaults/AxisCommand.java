@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class AxisCommand extends Command {
+
     public AxisCommand(IBaritone baritone) {
         super(baritone, asList("axis", "highway"));
     }

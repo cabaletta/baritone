@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class BuildCommand extends Command {
+
     private static final File schematicsDir = new File(Minecraft.getMinecraft().gameDir, "schematics");
 
     public BuildCommand(IBaritone baritone) {

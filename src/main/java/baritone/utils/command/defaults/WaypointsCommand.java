@@ -50,6 +50,7 @@ import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFI
 import static java.util.Arrays.asList;
 
 public class WaypointsCommand extends Command {
+
     public WaypointsCommand(IBaritone baritone) {
         super(baritone, asList("waypoints", "waypoint", "wp"));
     }

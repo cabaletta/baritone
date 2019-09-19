@@ -51,6 +51,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class BaritoneChatControl implements Helper, AbstractGameEventListener {
+
     public final IBaritone baritone;
     public final IPlayerContext ctx;
     public final Settings settings = BaritoneAPI.getSettings();

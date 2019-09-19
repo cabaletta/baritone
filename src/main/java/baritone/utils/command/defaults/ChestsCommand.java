@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ChestsCommand extends Command {
+
     public ChestsCommand(IBaritone baritone) {
         super(baritone, "chests");
     }

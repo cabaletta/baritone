@@ -25,6 +25,7 @@ import net.minecraft.util.EnumFacing;
  * the current selection.
  */
 public interface ISelectionManager {
+
     /**
      * Adds a new selection. The added selection is returned.
      *

@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class SaveAllCommand extends Command {
+
     public SaveAllCommand(IBaritone baritone) {
         super(baritone, "saveall");
     }

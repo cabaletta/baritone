@@ -24,6 +24,7 @@ import net.minecraft.init.Blocks;
 import java.util.List;
 
 public class FillSchematic extends AbstractSchematic {
+
     private final BlockOptionalMeta bom;
 
     public FillSchematic(int x, int y, int z, BlockOptionalMeta bom) {

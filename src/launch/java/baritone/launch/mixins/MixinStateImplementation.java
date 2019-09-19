@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(targets = "net.minecraft.block.state.BlockStateContainer$StateImplementation")
 public abstract class MixinStateImplementation {
+
     @Shadow
     @Final
     private ImmutableMap<IProperty<?>, Comparable<?>> properties;

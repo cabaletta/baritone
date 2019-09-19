@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class GcCommand extends Command {
+
     public GcCommand(IBaritone baritone) {
         super(baritone, "gc");
     }

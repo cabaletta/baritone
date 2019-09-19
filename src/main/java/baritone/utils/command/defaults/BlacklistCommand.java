@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class BlacklistCommand extends Command {
+
     public BlacklistCommand(IBaritone baritone) {
         super(baritone, "blacklist");
     }

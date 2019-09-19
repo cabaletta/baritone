@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GuiChat.class)
 public abstract class MixinGuiChat implements net.minecraft.util.ITabCompleter {
+
     @Shadow
     private TabCompleter tabCompleter;
 

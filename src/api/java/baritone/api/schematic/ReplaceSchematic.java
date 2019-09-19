@@ -22,6 +22,7 @@ import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 
 public class ReplaceSchematic extends MaskSchematic {
+
     private final BlockOptionalMetaLookup filter;
     private final Boolean[][][] cache;
 

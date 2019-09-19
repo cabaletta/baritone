@@ -23,6 +23,7 @@ import net.minecraft.block.state.IBlockState;
 import java.util.List;
 
 public class FillSchematic implements ISchematic {
+
     private final int widthX;
     private final int heightY;
     private final int lengthZ;

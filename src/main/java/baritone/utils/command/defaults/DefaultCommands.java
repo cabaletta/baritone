@@ -25,6 +25,7 @@ import java.util.*;
 import static java.util.Arrays.asList;
 
 public class DefaultCommands {
+
     public static List<Command> commands(IBaritone baritone) {
         Objects.requireNonNull(baritone);
         List<Command> commands = new ArrayList<>();

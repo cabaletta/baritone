@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(BitArray.class)
 public abstract class MixinBitArray implements IBitArray {
+
     @Shadow
     @Final
     private long[] longArray;

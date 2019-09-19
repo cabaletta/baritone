@@ -22,6 +22,7 @@ import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
 public class GoalNear implements Goal, IGoalRenderPos {
+
     private final int x;
     private final int y;
     private final int z;

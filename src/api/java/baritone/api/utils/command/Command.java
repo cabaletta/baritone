@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class Command implements Helper {
+
     protected IBaritone baritone;
     protected IPlayerContext ctx;
     protected Minecraft MC = mc;

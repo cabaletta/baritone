@@ -39,6 +39,7 @@ import static java.util.Arrays.asList;
  * REQUEST_PAUSE} as needed.
  */
 public class PauseResumeCommands {
+
     private final IBaritone baritone;
     Command pauseCommand;
     Command resumeCommand;

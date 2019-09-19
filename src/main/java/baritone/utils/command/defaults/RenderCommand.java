@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class RenderCommand extends Command {
+
     public RenderCommand(IBaritone baritone) {
         super(baritone, "render");
     }

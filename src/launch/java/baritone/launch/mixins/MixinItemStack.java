@@ -30,6 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack implements IItemStack {
+
     @Shadow
     @Final
     private Item item;

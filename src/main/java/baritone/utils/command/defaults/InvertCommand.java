@@ -33,6 +33,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class InvertCommand extends Command {
+
     public InvertCommand(IBaritone baritone) {
         super(baritone, "invert");
     }

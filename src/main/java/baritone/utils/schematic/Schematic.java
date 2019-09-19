@@ -25,6 +25,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import java.util.List;
 
 public class Schematic implements ISchematic {
+
     public final int widthX;
     public final int heightY;
     public final int lengthZ;

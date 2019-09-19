@@ -36,6 +36,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class GoalCommand extends Command {
+
     public GoalCommand(IBaritone baritone) {
         super(baritone, "goal");
     }

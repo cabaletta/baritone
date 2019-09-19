@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class SelectionManager implements ISelectionManager {
+
     private final LinkedList<ISelection> selections = new LinkedList<>();
     private ISelection[] selectionsArr = new ISelection[0];
 

@@ -24,6 +24,7 @@ import baritone.api.event.events.type.Overrideable;
  * @author LoganDark
  */
 public abstract class TabCompleteEvent extends Cancellable {
+
     public final Overrideable<String> prefix;
     public final Overrideable<String[]> completions;
 
@@ -37,12 +38,14 @@ public abstract class TabCompleteEvent extends Cancellable {
     }
 
     public static final class Pre extends TabCompleteEvent {
+
         public Pre(String prefix) {
             super(prefix, null);
         }
     }
 
     public static final class Post extends TabCompleteEvent {
+
         public Post(String prefix, String[] completions) {
             super(prefix, completions);
         }

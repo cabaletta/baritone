@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BlockUtils {
+
     private static transient Map<String, Block> resourceCache = new HashMap<>();
 
     public static String blockToString(Block block) {

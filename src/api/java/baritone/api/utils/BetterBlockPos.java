@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
  * @author leijurv
  */
 public final class BetterBlockPos extends BlockPos {
+
     public final int x;
     public final int y;
     public final int z;

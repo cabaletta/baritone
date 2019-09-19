@@ -28,6 +28,7 @@ import java.util.Arrays;
  * @since 9/23/2018
  */
 public interface IMineProcess extends IBaritoneProcess {
+
     /**
      * Begin to search for and mine the specified blocks until
      * the number of specified items to get from the blocks that

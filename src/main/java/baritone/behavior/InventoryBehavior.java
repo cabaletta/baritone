@@ -35,6 +35,7 @@ import java.util.Random;
 import java.util.function.Predicate;
 
 public final class InventoryBehavior extends Behavior {
+
     public InventoryBehavior(Baritone baritone) {
         super(baritone);
     }

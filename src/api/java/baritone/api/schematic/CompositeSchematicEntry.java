@@ -20,6 +20,7 @@ package baritone.api.schematic;
 import baritone.api.utils.ISchematic;
 
 public class CompositeSchematicEntry {
+
     public final ISchematic schematic;
     public final int x;
     public final int y;

@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class RepackCommand extends Command {
+
     public RepackCommand(IBaritone baritone) {
         super(baritone, asList("repack", "rescan"));
     }

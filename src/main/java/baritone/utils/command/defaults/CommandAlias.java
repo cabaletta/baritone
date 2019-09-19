@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class CommandAlias extends Command {
+
     private final String shortDesc;
     public final String target;
 

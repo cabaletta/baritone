@@ -58,6 +58,7 @@ import java.util.*;
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public final class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
+
     private HashSet<BetterBlockPos> incorrectPositions;
     private LongOpenHashSet observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now
     private String name;
@@ -207,6 +208,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     public static class Placement {
+
         private final int hotbarSelection;
         private final BlockPos placeAgainst;
         private final EnumFacing side;
@@ -603,6 +605,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     public static class JankyGoalComposite implements Goal {
+
         private final Goal primary;
         private final Goal fallback;
 
@@ -676,6 +679,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     public static class GoalAdjacent extends GoalGetToBlock {
+
         private boolean allowSameLevel;
         private BlockPos no;
 
@@ -708,6 +712,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     public static class GoalPlace extends GoalBlock {
+
         public GoalPlace(BlockPos placeAt) {
             super(placeAt.up());
         }
@@ -758,6 +763,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     public class BuilderCalculationContext extends CalculationContext {
+
         private final List<IBlockState> placeable;
         private final ISchematic schematic;
         private final int originX;

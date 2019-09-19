@@ -33,6 +33,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class ComeCommand extends Command {
+
     public ComeCommand(IBaritone baritone) {
         super(baritone, "come");
     }

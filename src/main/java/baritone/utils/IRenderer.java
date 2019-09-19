@@ -32,6 +32,7 @@ import java.awt.*;
 import static org.lwjgl.opengl.GL11.*;
 
 public interface IRenderer {
+
     Tessellator tessellator = Tessellator.getInstance();
     BufferBuilder buffer = tessellator.getBuffer();
     RenderManager renderManager = Helper.mc.getRenderManager();

@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import static java.util.Objects.isNull;
 
 public final class BlockOptionalMeta {
+
     private final Block block;
     private final int meta;
     private final boolean noMeta;

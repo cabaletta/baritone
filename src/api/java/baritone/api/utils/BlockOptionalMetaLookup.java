@@ -27,6 +27,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 public class BlockOptionalMetaLookup {
+
     private final BlockOptionalMeta[] boms;
 
     public BlockOptionalMetaLookup(BlockOptionalMeta... boms) {

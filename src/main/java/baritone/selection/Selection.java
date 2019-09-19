@@ -7,6 +7,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3i;
 
 public class Selection implements ISelection {
+
     private final BetterBlockPos pos1;
     private final BetterBlockPos pos2;
     private final BetterBlockPos min;

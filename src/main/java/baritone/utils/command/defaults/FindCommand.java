@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class FindCommand extends Command {
+
     public FindCommand(IBaritone baritone) {
         super(baritone, "find");
     }

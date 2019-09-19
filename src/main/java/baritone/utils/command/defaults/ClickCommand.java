@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ClickCommand extends Command {
+
     public ClickCommand(IBaritone baritone) {
         super(baritone, "click");
     }

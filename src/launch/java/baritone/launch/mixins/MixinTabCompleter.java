@@ -35,6 +35,7 @@ import static java.util.Objects.isNull;
 
 @Mixin(TabCompleter.class)
 public abstract class MixinTabCompleter implements ITabCompleter {
+
     @Shadow
     @Final
     protected GuiTextField textField;

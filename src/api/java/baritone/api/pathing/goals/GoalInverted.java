@@ -28,6 +28,7 @@ package baritone.api.pathing.goals;
  * @author LoganDark
  */
 public class GoalInverted implements Goal {
+
     public final Goal origin;
 
     public GoalInverted(Goal origin) {

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompositeSchematic extends AbstractSchematic {
+
     private final List<CompositeSchematicEntry> schematics;
     private CompositeSchematicEntry[] schematicArr;
 

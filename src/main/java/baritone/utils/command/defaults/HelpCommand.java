@@ -41,6 +41,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class HelpCommand extends Command {
+
     public HelpCommand(IBaritone baritone) {
         super(baritone, asList("help", "?"));
     }

@@ -45,6 +45,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Stream.of;
 
 public class SetCommand extends Command {
+
     public SetCommand(IBaritone baritone) {
         super(baritone, asList("set", "setting", "settings"));
     }

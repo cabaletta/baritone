@@ -30,6 +30,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
 public class VersionCommand extends Command {
+
     public VersionCommand(IBaritone baritone) {
         super(baritone, "version");
     }

@@ -48,6 +48,7 @@ import static org.lwjgl.opengl.GL11.*;
  * @since 8/9/2018
  */
 public final class PathRenderer implements IRenderer {
+
     private PathRenderer() {}
 
     public static void render(RenderEvent event, PathingBehavior behavior) {

@@ -27,6 +27,7 @@ import net.minecraft.util.math.Vec3i;
  * types of build commands, however it can be used for anything.
  */
 public interface ISelection {
+
     /**
      * @return The first corner of this selection. This is meant to preserve the user's original first corner.
      */

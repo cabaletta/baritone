@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class TunnelCommand extends Command {
+
     public TunnelCommand(IBaritone baritone) {
         super(baritone, "tunnel");
     }

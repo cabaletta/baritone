@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ForceCancelCommand extends Command {
+
     public ForceCancelCommand(IBaritone baritone) {
         super(baritone, "forcecancel");
     }

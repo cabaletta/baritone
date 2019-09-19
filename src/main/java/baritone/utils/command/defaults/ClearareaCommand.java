@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public class ClearareaCommand extends Command {
+
     public ClearareaCommand(IBaritone baritone) {
         super(baritone, "cleararea");
     }
