@@ -19,6 +19,8 @@ package baritone.utils;
 
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
+import baritone.utils.accessor.IPlayerControllerMP;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -46,8 +48,13 @@ public final class BlockBreakHelper implements Helper {
 
     public void stopBreakingBlock() {
         // The player controller will never be null, but the player can be
-        if (playerContext.player() != null) {
+        if (playerContext.player() != null && didBreakLastTick) {
+            if (((IPlayerControllerMP) mc.playerController).getCurrentBlock().getY() != -1) {
+                // insane bypass to check breaking succeeded
+                ((IPlayerControllerMP) mc.playerController).setIsHittingBlock(true);
+            }
             playerContext.playerController().resetBlockRemoving();
+            didBreakLastTick = false;
         }
     }
 
@@ -57,11 +64,17 @@ public final class BlockBreakHelper implements Helper {
         boolean isBlockTrace = trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK;
 
         if (isLeftClick && isBlockTrace) {
+            if (!didBreakLastTick) {
+                ((IPlayerControllerMP) Minecraft.getMinecraft().playerController).callSyncCurrentPlayItem();
+                Minecraft.getMinecraft().playerController.clickBlock(trace.getBlockPos(), trace.sideHit);
+                playerContext.player().swingArm(EnumHand.MAIN_HAND);
+            }
             tryBreakBlock(trace.getBlockPos(), trace.sideHit);
             didBreakLastTick = true;
         } else if (didBreakLastTick) {
             stopBreakingBlock();
             didBreakLastTick = false;
         }
+        ((IPlayerControllerMP) Minecraft.getMinecraft().playerController).setIsHittingBlock(false);
     }
 }

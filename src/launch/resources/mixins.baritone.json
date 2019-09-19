@@ -19,6 +19,7 @@
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
+    "MixinPlayerControllerMP",
     "MixinRenderChunk",
     "MixinRenderList",
     "MixinVboRenderList",

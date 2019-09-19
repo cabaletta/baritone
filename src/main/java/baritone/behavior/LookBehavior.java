@@ -72,6 +72,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     float oldPitch = ctx.player().rotationPitch;
                     float desiredPitch = this.target.getPitch();
                     ctx.player().rotationPitch = desiredPitch;
+                    ctx.player().rotationYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
+                    ctx.player().rotationPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
                     if (desiredPitch == oldPitch && !Baritone.settings().freeLook.value) {
                         nudgeToLevel();
                     }
