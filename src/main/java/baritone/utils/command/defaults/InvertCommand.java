@@ -49,7 +49,7 @@ public class InvertCommand extends Command {
         } else {
             goal = new GoalInverted(goal);
         }
-        customGoalProcess.setGoal(goal);
+        customGoalProcess.setGoalAndPath(goal);
         logDirect(String.format("Goal: %s", goal.toString()));
     }
 

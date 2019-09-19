@@ -52,7 +52,7 @@ public class CancelCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The cancel command tells Baritons to stop whatever it's currently doing.",
+                "The cancel command tells Baritone to stop whatever it's currently doing.",
                 "",
                 "Usage:",
                 "> cancel"
