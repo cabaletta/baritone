@@ -41,7 +41,7 @@ public class ComeCommand extends Command {
     @Override
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
-        Entity entity = MC.getRenderViewEntity();
+        Entity entity = mc.getRenderViewEntity();
         if (isNull(entity)) {
             throw new CommandInvalidStateException("render view entity is null");
         }

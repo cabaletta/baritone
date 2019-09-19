@@ -38,8 +38,8 @@ public class RenderCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
         BetterBlockPos origin = ctx.playerFeet();
-        int renderDistance = (MC.gameSettings.renderDistanceChunks + 1) * 16;
-        MC.renderGlobal.markBlockRangeForRenderUpdate(
+        int renderDistance = (mc.gameSettings.renderDistanceChunks + 1) * 16;
+        mc.renderGlobal.markBlockRangeForRenderUpdate(
                 origin.x - renderDistance,
                 0,
                 origin.z - renderDistance,
