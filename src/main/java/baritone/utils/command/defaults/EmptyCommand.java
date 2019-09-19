@@ -49,10 +49,10 @@ public class EmptyCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "",
-            "",
-            "Usage:",
-            "> "
+                "",
+                "",
+                "Usage:",
+                "> "
         );
     }
 }

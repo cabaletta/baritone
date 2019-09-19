@@ -53,10 +53,10 @@ public class GcCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Calls System.gc().",
-            "",
-            "Usage:",
-            "> gc"
+                "Calls System.gc().",
+                "",
+                "Usage:",
+                "> gc"
         );
     }
 }

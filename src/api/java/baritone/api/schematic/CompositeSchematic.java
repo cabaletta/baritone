@@ -51,7 +51,7 @@ public class CompositeSchematic extends AbstractSchematic {
     private CompositeSchematicEntry getSchematic(int x, int y, int z, IBlockState currentState) {
         for (CompositeSchematicEntry entry : schematicArr) {
             if (x >= entry.x && y >= entry.y && z >= entry.z &&
-                entry.schematic.inSchematic(x - entry.x, y - entry.y, z - entry.z, currentState)) {
+                    entry.schematic.inSchematic(x - entry.x, y - entry.y, z - entry.z, currentState)) {
                 return entry;
             }
         }

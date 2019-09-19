@@ -46,18 +46,18 @@ public class FindCommand extends Command {
         BetterBlockPos origin = ctx.playerFeet();
 
         toFind.stream()
-            .flatMap(block ->
-                ctx.worldData().getCachedWorld().getLocationsOf(
-                    Block.REGISTRY.getNameForObject(block).getPath(),
-                    Integer.MAX_VALUE,
-                    origin.x,
-                    origin.y,
-                    4
-                ).stream()
-            )
-            .map(BetterBlockPos::new)
-            .map(BetterBlockPos::toString)
-            .forEach(this::logDirect);
+                .flatMap(block ->
+                        ctx.worldData().getCachedWorld().getLocationsOf(
+                                Block.REGISTRY.getNameForObject(block).getPath(),
+                                Integer.MAX_VALUE,
+                                origin.x,
+                                origin.y,
+                                4
+                        ).stream()
+                )
+                .map(BetterBlockPos::new)
+                .map(BetterBlockPos::toString)
+                .forEach(this::logDirect);
     }
 
     @Override
@@ -73,10 +73,10 @@ public class FindCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "",
-            "",
-            "Usage:",
-            "> "
+                "",
+                "",
+                "Usage:",
+                "> "
         );
     }
 }

@@ -62,10 +62,10 @@ public class BlacklistCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "While, for example, mining, this command blacklists the closest block so that Baritone won't attempt to get to it.",
-            "",
-            "Usage:",
-            "> blacklist"
+                "While, for example, mining, this command blacklists the closest block so that Baritone won't attempt to get to it.",
+                "",
+                "Usage:",
+                "> blacklist"
         );
     }
 }

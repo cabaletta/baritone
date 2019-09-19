@@ -33,7 +33,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 

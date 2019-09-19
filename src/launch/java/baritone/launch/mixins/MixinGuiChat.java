@@ -32,9 +32,9 @@ public abstract class MixinGuiChat implements net.minecraft.util.ITabCompleter {
     private TabCompleter tabCompleter;
 
     @Inject(
-        method = "setCompletions",
-        at = @At("HEAD"),
-        cancellable = true
+            method = "setCompletions",
+            at = @At("HEAD"),
+            cancellable = true
     )
     private void onSetCompletions(String[] newCompl, CallbackInfo ci) {
         if (((ITabCompleter) tabCompleter).onGuiChatSetCompletions(newCompl)) {

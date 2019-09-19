@@ -33,7 +33,7 @@ import static java.util.Arrays.asList;
 
 /**
  * Contains the pause, resume, and paused commands.
- *
+ * <p>
  * This thing is scoped to hell, private so far you can't even access it using reflection, because you AREN'T SUPPOSED
  * TO USE THIS to pause and resume Baritone. Make your own process that returns {@link PathingCommandType#REQUEST_PAUSE
  * REQUEST_PAUSE} as needed.
@@ -48,35 +48,35 @@ public class PauseResumeCommands {
         final boolean[] paused = {false};
 
         BaritoneAPI.getProvider().getPrimaryBaritone().getPathingControlManager().registerProcess(
-            new IBaritoneProcess() {
-                @Override
-                public boolean isActive() {
-                    return paused[0];
-                }
+                new IBaritoneProcess() {
+                    @Override
+                    public boolean isActive() {
+                        return paused[0];
+                    }
 
-                @Override
-                public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-                }
+                    @Override
+                    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+                        return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                    }
 
-                @Override
-                public boolean isTemporary() {
-                    return true;
-                }
+                    @Override
+                    public boolean isTemporary() {
+                        return true;
+                    }
 
-                @Override
-                public void onLostControl() {}
+                    @Override
+                    public void onLostControl() {}
 
-                @Override
-                public double priority() {
-                    return DEFAULT_PRIORITY + 1;
-                }
+                    @Override
+                    public double priority() {
+                        return DEFAULT_PRIORITY + 1;
+                    }
 
-                @Override
-                public String displayName0() {
-                    return "Pause/Resume Commands";
+                    @Override
+                    public String displayName0() {
+                        return "Pause/Resume Commands";
+                    }
                 }
-            }
         );
 
         pauseCommand = new Command("pause") {
@@ -105,12 +105,12 @@ public class PauseResumeCommands {
             @Override
             public List<String> getLongDesc() {
                 return asList(
-                    "The pause command tells Baritone to temporarily stop whatever it's doing.",
-                    "",
-                    "This can be used to pause pathing, building, following, whatever. A single use of the resume command will start it right back up again!",
-                    "",
-                    "Usage:",
-                    "> pause"
+                        "The pause command tells Baritone to temporarily stop whatever it's doing.",
+                        "",
+                        "This can be used to pause pathing, building, following, whatever. A single use of the resume command will start it right back up again!",
+                        "",
+                        "Usage:",
+                        "> pause"
                 );
             }
         };
@@ -141,10 +141,10 @@ public class PauseResumeCommands {
             @Override
             public List<String> getLongDesc() {
                 return asList(
-                    "The resume command tells Baritone to resume whatever it was doing when you last used pause.",
-                    "",
-                    "Usage:",
-                    "> resume"
+                        "The resume command tells Baritone to resume whatever it was doing when you last used pause.",
+                        "",
+                        "Usage:",
+                        "> resume"
                 );
             }
         };
@@ -170,10 +170,10 @@ public class PauseResumeCommands {
             @Override
             public List<String> getLongDesc() {
                 return asList(
-                    "The paused command tells you if Baritone is currently paused by use of the pause command.",
-                    "",
-                    "Usage:",
-                    "> paused"
+                        "The paused command tells you if Baritone is currently paused by use of the pause command.",
+                        "",
+                        "Usage:",
+                        "> paused"
                 );
             }
         };

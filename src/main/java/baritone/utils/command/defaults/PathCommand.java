@@ -69,9 +69,9 @@ public class PathCommand extends Command {
 
                 if (!args.has(2)) {
                     return new TabCompleteHelper()
-                        .append("~")
-                        .filterPrefix(args.getString())
-                        .stream();
+                            .append("~")
+                            .filterPrefix(args.getString())
+                            .stream();
                 }
             }
         }
@@ -87,13 +87,13 @@ public class PathCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The path command tells Baritone to head towards the current goal.",
-            "",
-            "Usage:",
-            "> path - Start the pathing.",
-            "> path <y>",
-            "> path <x> <z>",
-            "> path <x> <y> <z> - Define the goal here"
+                "The path command tells Baritone to head towards the current goal.",
+                "",
+                "Usage:",
+                "> path - Start the pathing.",
+                "> path <y>",
+                "> path <x> <z>",
+                "> path <x> <y> <z> - Define the goal here"
         );
     }
 }

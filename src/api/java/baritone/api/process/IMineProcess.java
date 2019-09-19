@@ -92,9 +92,9 @@ public interface IMineProcess extends IBaritoneProcess {
      */
     default void mine(int quantity, Block... blocks) {
         mine(quantity, new BlockOptionalMetaLookup(
-            Arrays.stream(blocks)
-                .map(BlockOptionalMeta::new)
-                .toArray(BlockOptionalMeta[]::new)
+                Arrays.stream(blocks)
+                        .map(BlockOptionalMeta::new)
+                        .toArray(BlockOptionalMeta[]::new)
         ));
     }
 

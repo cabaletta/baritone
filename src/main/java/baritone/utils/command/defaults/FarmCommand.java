@@ -51,10 +51,10 @@ public class FarmCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The farm command starts farming nearby plants. It harvests mature crops and plants new ones.",
-            "",
-            "Usage:",
-            "> farm"
+                "The farm command starts farming nearby plants. It harvests mature crops and plants new ones.",
+                "",
+                "Usage:",
+                "> farm"
         );
     }
 }

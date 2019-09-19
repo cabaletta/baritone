@@ -123,7 +123,7 @@ public class SettingsUtil {
 
     /**
      * Gets the type of a setting and returns it as a string, with package names stripped.
-     *
+     * <p>
      * For example, if the setting type is {@code java.util.List<java.lang.String>}, this function returns
      * {@code List<String>}.
      *
@@ -132,7 +132,7 @@ public class SettingsUtil {
      */
     public static String settingTypeToString(Settings.Setting setting) {
         return setting.getType().getTypeName()
-            .replaceAll("(?:\\w+\\.)+(\\w+)", "$1");
+                .replaceAll("(?:\\w+\\.)+(\\w+)", "$1");
     }
 
     public static <T> String settingValueToString(Settings.Setting<T> setting, T value) throws IllegalArgumentException {

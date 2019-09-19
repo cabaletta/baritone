@@ -89,11 +89,11 @@ public class BuildCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Build a schematic from a file.",
-            "",
-            "Usage:",
-            "> build <filename> - Loads and builds '<filename>.schematic'",
-            "> build <filename> <x> <y> <z> - Custom position"
+                "Build a schematic from a file.",
+                "",
+                "Usage:",
+                "> build <filename> - Loads and builds '<filename>.schematic'",
+                "> build <filename> <x> <y> <z> - Custom position"
         );
     }
 }

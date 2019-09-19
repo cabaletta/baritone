@@ -36,7 +36,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

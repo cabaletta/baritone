@@ -94,16 +94,16 @@ public class GoalCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The goal command allows you to set or clear Baritone's goal.",
-            "",
-            "Wherever a coordinate is expected, you can use ~ just like in regular Minecraft commands. Or, you can just use regular numbers.",
-            "",
-            "Usage:",
-            "> goal - Set the goal to your current position",
-            "> goal <reset/clear/none> - Erase the goal",
-            "> goal <y> - Set the goal to a Y level",
-            "> goal <x> <z> - Set the goal to an X,Z position",
-            "> goal <x> <y> <z> - Set the goal to an X,Y,Z position"
+                "The goal command allows you to set or clear Baritone's goal.",
+                "",
+                "Wherever a coordinate is expected, you can use ~ just like in regular Minecraft commands. Or, you can just use regular numbers.",
+                "",
+                "Usage:",
+                "> goal - Set the goal to your current position",
+                "> goal <reset/clear/none> - Erase the goal",
+                "> goal <y> - Set the goal to a Y level",
+                "> goal <x> <z> - Set the goal to an X,Z position",
+                "> goal <x> <y> <z> - Set the goal to an X,Y,Z position"
         );
     }
 }

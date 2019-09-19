@@ -81,14 +81,14 @@ public class ExploreFilterCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Apply an explore filter before using explore, which tells the explore process which chunks have been explored/not explored.",
-            "",
-            "The JSON file will follow this format: [{\"x\":0,\"z\":0},...]",
-            "",
-            "If 'invert' is specified, the chunks listed will be considered NOT explored, rather than explored.",
-            "",
-            "Usage:",
-            "> explorefilter <path> [invert] - Load the JSON file referenced by the specified path. If invert is specified, it must be the literal word 'invert'."
+                "Apply an explore filter before using explore, which tells the explore process which chunks have been explored/not explored.",
+                "",
+                "The JSON file will follow this format: [{\"x\":0,\"z\":0},...]",
+                "",
+                "If 'invert' is specified, the chunks listed will be considered NOT explored, rather than explored.",
+                "",
+                "Usage:",
+                "> explorefilter <path> [invert] - Load the JSON file referenced by the specified path. If invert is specified, it must be the literal word 'invert'."
         );
     }
 }

@@ -50,10 +50,10 @@ public class SchematicaCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Builds the schematica currently open in Schematica.",
-            "",
-            "Usage:",
-            "> schematica"
+                "Builds the schematica currently open in Schematica.",
+                "",
+                "Usage:",
+                "> schematica"
         );
     }
 }

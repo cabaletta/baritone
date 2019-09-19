@@ -51,10 +51,10 @@ public class SaveAllCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The saveall command saves Baritone's world cache.",
-            "",
-            "Usage:",
-            "> saveall"
+                "The saveall command saves Baritone's world cache.",
+                "",
+                "Usage:",
+                "> saveall"
         );
     }
 }

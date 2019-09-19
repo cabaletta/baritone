@@ -66,44 +66,44 @@ public class SetCommand extends Command {
             args.requireMax(1);
 
             List<? extends Settings.Setting> toPaginate =
-                (viewModified ? SettingsUtil.modifiedSettings(settings) : settings.allSettings).stream()
-                    .filter(s -> !s.getName().equals("logger"))
-                    .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
-                    .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
-                    .collect(Collectors.toList());
+                    (viewModified ? SettingsUtil.modifiedSettings(settings) : settings.allSettings).stream()
+                            .filter(s -> !s.getName().equals("logger"))
+                            .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
+                            .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
+                            .collect(Collectors.toList());
 
             Paginator.paginate(
-                args,
-                new Paginator<>(toPaginate),
-                () -> logDirect(
-                    !search.isEmpty()
-                        ? String.format("All %ssettings containing the string '%s':", viewModified ? "modified " : "", search)
-                        : String.format("All %ssettings:", viewModified ? "modified " : "")
-                ),
-                setting -> {
-                    ITextComponent typeComponent = new TextComponentString(String.format(
-                        " (%s)",
-                        settingTypeToString(setting)
-                    ));
-                    typeComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
+                    args,
+                    new Paginator<>(toPaginate),
+                    () -> logDirect(
+                            !search.isEmpty()
+                                    ? String.format("All %ssettings containing the string '%s':", viewModified ? "modified " : "", search)
+                                    : String.format("All %ssettings:", viewModified ? "modified " : "")
+                    ),
+                    setting -> {
+                        ITextComponent typeComponent = new TextComponentString(String.format(
+                                " (%s)",
+                                settingTypeToString(setting)
+                        ));
+                        typeComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
 
-                    ITextComponent hoverComponent = new TextComponentString("");
-                    hoverComponent.getStyle().setColor(TextFormatting.GRAY);
-                    hoverComponent.appendText(setting.getName());
-                    hoverComponent.appendText(String.format("\nType: %s", settingTypeToString(setting)));
-                    hoverComponent.appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
-                    String commandSuggestion = settings.prefix.value + String.format("set %s ", setting.getName());
+                        ITextComponent hoverComponent = new TextComponentString("");
+                        hoverComponent.getStyle().setColor(TextFormatting.GRAY);
+                        hoverComponent.appendText(setting.getName());
+                        hoverComponent.appendText(String.format("\nType: %s", settingTypeToString(setting)));
+                        hoverComponent.appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                        String commandSuggestion = settings.prefix.value + String.format("set %s ", setting.getName());
 
-                    ITextComponent component = new TextComponentString(setting.getName());
-                    component.getStyle().setColor(TextFormatting.GRAY);
-                    component.appendSibling(typeComponent);
-                    component.getStyle()
-                        .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion));
+                        ITextComponent component = new TextComponentString(setting.getName());
+                        component.getStyle().setColor(TextFormatting.GRAY);
+                        component.appendSibling(typeComponent);
+                        component.getStyle()
+                                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
+                                .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion));
 
-                    return component;
-                },
-                FORCE_COMMAND_PREFIX + "set " + arg + " " + search
+                        return component;
+                    },
+                    FORCE_COMMAND_PREFIX + "set " + arg + " " + search
             );
 
             return;
@@ -135,9 +135,9 @@ public class SetCommand extends Command {
 
         String settingName = doingSomething ? args.getString() : arg;
         Settings.Setting<?> setting = settings.allSettings.stream()
-            .filter(s -> s.getName().equalsIgnoreCase(settingName))
-            .findFirst()
-            .orElse(null);
+                .filter(s -> s.getName().equalsIgnoreCase(settingName))
+                .findFirst()
+                .orElse(null);
 
         if (isNull(setting)) {
             throw new CommandInvalidTypeException(args.consumed(), "a valid setting");
@@ -160,9 +160,9 @@ public class SetCommand extends Command {
                 ((Settings.Setting<Boolean>) setting).value ^= true;
 
                 logDirect(String.format(
-                    "Toggled setting %s to %s",
-                    setting.getName(),
-                    Boolean.toString((Boolean) setting.value)
+                        "Toggled setting %s to %s",
+                        setting.getName(),
+                        Boolean.toString((Boolean) setting.value)
                 ));
             } else {
                 String newValue = args.getString();
@@ -177,29 +177,29 @@ public class SetCommand extends Command {
 
             if (!toggling) {
                 logDirect(String.format(
-                    "Successfully %s %s to %s",
-                    resetting ? "reset" : "set",
-                    setting.getName(),
-                    settingValueToString(setting)
+                        "Successfully %s %s to %s",
+                        resetting ? "reset" : "set",
+                        setting.getName(),
+                        settingValueToString(setting)
                 ));
             }
 
             ITextComponent oldValueComponent = new TextComponentString(String.format("Old value: %s", oldValue));
             oldValueComponent.getStyle()
-                .setColor(TextFormatting.GRAY)
-                .setHoverEvent(new HoverEvent(
-                    HoverEvent.Action.SHOW_TEXT,
-                    new TextComponentString("Click to set the setting back to this value")
-                ))
-                .setClickEvent(new ClickEvent(
-                    ClickEvent.Action.RUN_COMMAND,
-                    FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
-                ));
+                    .setColor(TextFormatting.GRAY)
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            new TextComponentString("Click to set the setting back to this value")
+                    ))
+                    .setClickEvent(new ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
+                    ));
 
             logDirect(oldValueComponent);
 
             if ((setting.getName().equals("chatControl") && !(Boolean) setting.value && !settings.chatControlAnyway.value) ||
-                setting.getName().equals("chatControlAnyway") && !(Boolean) setting.value && !settings.chatControl.value) {
+                    setting.getName().equals("chatControlAnyway") && !(Boolean) setting.value && !settings.chatControl.value) {
                 logDirect("Warning: Chat commands will no longer work. If you want to revert this change, use prefix control (if enabled) or click the old value listed above.", TextFormatting.RED);
             } else if (setting.getName().equals("prefixControl") && !(Boolean) setting.value) {
                 logDirect("Warning: Prefixed commands will no longer work. If you want to revert this change, use chat control (if enabled) or click the old value listed above.", TextFormatting.RED);
@@ -217,15 +217,15 @@ public class SetCommand extends Command {
             if (args.hasExactlyOne() && !asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {
                 if (arg.equalsIgnoreCase("reset")) {
                     return new TabCompleteHelper()
-                        .addModifiedSettings()
-                        .prepend("all")
-                        .filterPrefix(args.getString())
-                        .stream();
+                            .addModifiedSettings()
+                            .prepend("all")
+                            .filterPrefix(args.getString())
+                            .stream();
                 } else if (arg.equalsIgnoreCase("toggle")) {
                     return new TabCompleteHelper()
-                        .addToggleableSettings()
-                        .filterPrefix(args.getString())
-                        .stream();
+                            .addToggleableSettings()
+                            .filterPrefix(args.getString())
+                            .stream();
                 }
 
                 Settings.Setting setting = settings.byLowerName.get(arg.toLowerCase(Locale.US));
@@ -247,11 +247,11 @@ public class SetCommand extends Command {
                 }
             } else if (!args.has()) {
                 return new TabCompleteHelper()
-                    .addSettings()
-                    .sortAlphabetically()
-                    .prepend("list", "modified", "reset", "toggle", "save")
-                    .filterPrefix(arg)
-                    .stream();
+                        .addSettings()
+                        .sortAlphabetically()
+                        .prepend("list", "modified", "reset", "toggle", "save")
+                        .filterPrefix(arg)
+                        .stream();
             }
         }
 
@@ -266,18 +266,18 @@ public class SetCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Using the set command, you can manage all of Baritone's settings. Almost every aspect is controlled by these settings - go wild!",
-            "",
-            "Usage:",
-            "> set - Same as `set list`",
-            "> set list [page] - View all settings",
-            "> set modified [page] - View modified settings",
-            "> set <setting> - View the current value of a setting",
-            "> set <setting> <value> - Set the value of a setting",
-            "> set reset all - Reset ALL SETTINGS to their defaults",
-            "> set reset <setting> - Reset a setting to its default",
-            "> set toggle <setting> - Toggle a boolean setting",
-            "> set save - Save all settings (this is automatic tho)"
+                "Using the set command, you can manage all of Baritone's settings. Almost every aspect is controlled by these settings - go wild!",
+                "",
+                "Usage:",
+                "> set - Same as `set list`",
+                "> set list [page] - View all settings",
+                "> set modified [page] - View modified settings",
+                "> set <setting> - View the current value of a setting",
+                "> set <setting> <value> - Set the value of a setting",
+                "> set reset all - Reset ALL SETTINGS to their defaults",
+                "> set reset <setting> - Reset a setting to its default",
+                "> set toggle <setting> - Toggle a boolean setting",
+                "> set save - Save all settings (this is automatic tho)"
         );
     }
 }

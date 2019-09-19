@@ -67,9 +67,9 @@ public class GoalXZ implements Goal {
     @Override
     public String toString() {
         return String.format(
-            "GoalXZ{x=%s,z=%s}",
-            SettingsUtil.maybeCensor(x),
-            SettingsUtil.maybeCensor(z)
+                "GoalXZ{x=%s,z=%s}",
+                SettingsUtil.maybeCensor(x),
+                SettingsUtil.maybeCensor(z)
         );
     }
 

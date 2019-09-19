@@ -77,9 +77,9 @@ public class FollowCommand extends Command {
             }
 
             baritone.getFollowProcess().follow(
-                classes.isEmpty()
-                    ? entities::contains
-                    : e -> classes.stream().anyMatch(c -> c.isInstance(e))
+                    classes.isEmpty()
+                            ? entities::contains
+                            : e -> classes.stream().anyMatch(c -> c.isInstance(e))
             );
         }
 
@@ -90,14 +90,14 @@ public class FollowCommand extends Command {
 
             if (classes.isEmpty()) {
                 entities.stream()
-                    .map(Entity::toString)
-                    .forEach(this::logDirect);
+                        .map(Entity::toString)
+                        .forEach(this::logDirect);
             } else {
                 classes.stream()
-                    .map(EntityList::getKey)
-                    .map(Objects::requireNonNull)
-                    .map(ResourceLocation::toString)
-                    .forEach(this::logDirect);
+                        .map(EntityList::getKey)
+                        .map(Objects::requireNonNull)
+                        .map(ResourceLocation::toString)
+                        .forEach(this::logDirect);
             }
         }
     }
@@ -106,10 +106,10 @@ public class FollowCommand extends Command {
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
-                .append(FollowGroup.class)
-                .append(FollowList.class)
-                .filterPrefix(args.getString())
-                .stream();
+                    .append(FollowGroup.class)
+                    .append(FollowList.class)
+                    .filterPrefix(args.getString())
+                    .stream();
         } else {
             Class<? extends IDatatype> followType;
 
@@ -139,13 +139,13 @@ public class FollowCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The follow command tells Baritone to follow certain kinds of entities.",
-            "",
-            "Usage:",
-            "> follow entities - Follows all entities.",
-            "> follow entity <entity1> <entity2> <...> - Follow certain entities (for example 'skeleton', 'horse' etc.)",
-            "> follow players - Follow players",
-            "> follow player <username1> <username2> <...> - Follow certain players"
+                "The follow command tells Baritone to follow certain kinds of entities.",
+                "",
+                "Usage:",
+                "> follow entities - Follows all entities.",
+                "> follow entity <entity1> <entity2> <...> - Follow certain entities (for example 'skeleton', 'horse' etc.)",
+                "> follow players - Follow players",
+                "> follow player <username1> <username2> <...> - Follow certain players"
         );
     }
 

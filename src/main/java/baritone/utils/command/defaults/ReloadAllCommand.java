@@ -51,10 +51,10 @@ public class ReloadAllCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The reloadall command reloads Baritone's world cache.",
-            "",
-            "Usage:",
-            "> reloadall"
+                "The reloadall command reloads Baritone's world cache.",
+                "",
+                "Usage:",
+                "> reloadall"
         );
     }
 }

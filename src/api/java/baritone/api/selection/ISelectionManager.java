@@ -91,7 +91,7 @@ public interface ISelectionManager {
     /**
      * Replaces the specified {@link ISelection} with one contracted in the specified direction by the specified number
      * of blocks.
-     *
+     * <p>
      * Note that, for example, if the direction specified is UP, the bottom of the selection will be shifted up. If it
      * is DOWN, the top of the selection will be shifted down.
      *

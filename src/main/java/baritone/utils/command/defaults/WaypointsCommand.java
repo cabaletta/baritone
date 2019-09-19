@@ -76,27 +76,27 @@ public class WaypointsCommand extends Command {
             component.appendSibling(nameComponent);
             component.appendSibling(timestamp);
             component.getStyle()
-                .setHoverEvent(new HoverEvent(
-                    HoverEvent.Action.SHOW_TEXT,
-                    new TextComponentString("Click to select")
-                ))
-                .setClickEvent(new ClickEvent(
-                    ClickEvent.Action.RUN_COMMAND,
-                    String.format(
-                        "%s%s %s %s @ %d",
-                        FORCE_COMMAND_PREFIX,
-                        label,
-                        _action.names[0],
-                        waypoint.getTag().getName(),
-                        waypoint.getCreationTimestamp()
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            new TextComponentString("Click to select")
                     ))
-                );
+                    .setClickEvent(new ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format(
+                                    "%s%s %s %s @ %d",
+                                    FORCE_COMMAND_PREFIX,
+                                    label,
+                                    _action.names[0],
+                                    waypoint.getTag().getName(),
+                                    waypoint.getCreationTimestamp()
+                            ))
+                    );
 
             return component;
         };
 
         Function<IWaypoint, ITextComponent> transform = waypoint ->
-            toComponent.apply(waypoint, action == Action.LIST ? Action.INFO : action);
+                toComponent.apply(waypoint, action == Action.LIST ? Action.INFO : action);
 
         if (action == Action.LIST) {
             IWaypoint.Tag tag = args.has() ? IWaypoint.Tag.getByName(args.peekString()) : null;
@@ -106,34 +106,34 @@ public class WaypointsCommand extends Command {
             }
 
             IWaypoint[] waypoints = tag != null
-                ? ForWaypoints.getWaypointsByTag(tag)
-                : ForWaypoints.getWaypoints();
+                    ? ForWaypoints.getWaypointsByTag(tag)
+                    : ForWaypoints.getWaypoints();
 
             if (waypoints.length > 0) {
                 args.requireMax(1);
                 Paginator.paginate(
-                    args,
-                    waypoints,
-                    () -> logDirect(
-                        tag != null
-                            ? String.format("All waypoints by tag %s:", tag.name())
-                            : "All waypoints:"
-                    ),
-                    transform,
-                    String.format(
-                        "%s%s %s%s",
-                        FORCE_COMMAND_PREFIX,
-                        label,
-                        action.names[0],
-                        tag != null ? " " + tag.getName() : ""
-                    )
+                        args,
+                        waypoints,
+                        () -> logDirect(
+                                tag != null
+                                        ? String.format("All waypoints by tag %s:", tag.name())
+                                        : "All waypoints:"
+                        ),
+                        transform,
+                        String.format(
+                                "%s%s %s%s",
+                                FORCE_COMMAND_PREFIX,
+                                label,
+                                action.names[0],
+                                tag != null ? " " + tag.getName() : ""
+                        )
                 );
             } else {
                 args.requireMax(0);
                 throw new CommandInvalidStateException(
-                    tag != null
-                        ? "No waypoints found by that tag"
-                        : "No waypoints found"
+                        tag != null
+                                ? "No waypoints found by that tag"
+                                : "No waypoints found"
                 );
             }
         } else if (action == Action.SAVE) {
@@ -145,8 +145,8 @@ public class WaypointsCommand extends Command {
 
             String name = args.has() ? args.getString() : "";
             BetterBlockPos pos = args.has()
-                ? args.getDatatypePost(RelativeBlockPos.class, ctx.playerFeet())
-                : ctx.playerFeet();
+                    ? args.getDatatypePost(RelativeBlockPos.class, ctx.playerFeet())
+                    : ctx.playerFeet();
 
             args.requireMax(0);
 
@@ -198,17 +198,17 @@ public class WaypointsCommand extends Command {
             if (waypoint == null) {
                 args.requireMax(1);
                 Paginator.paginate(
-                    args,
-                    waypoints,
-                    () -> logDirect("Multiple waypoints were found:"),
-                    transform,
-                    String.format(
-                        "%s%s %s %s",
-                        FORCE_COMMAND_PREFIX,
-                        label,
-                        action.names[0],
-                        args.consumedString()
-                    )
+                        args,
+                        waypoints,
+                        () -> logDirect("Multiple waypoints were found:"),
+                        transform,
+                        String.format(
+                                "%s%s %s %s",
+                                FORCE_COMMAND_PREFIX,
+                                label,
+                                action.names[0],
+                                args.consumedString()
+                        )
                 );
             } else {
                 if (action == Action.INFO) {
@@ -216,34 +216,34 @@ public class WaypointsCommand extends Command {
                     logDirect(String.format("Position: %s", waypoint.getLocation()));
                     ITextComponent deleteComponent = new TextComponentString("Click to delete this waypoint");
                     deleteComponent.getStyle().setClickEvent(new ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
-                        String.format(
-                            "%s%s delete %s @ %d",
-                            FORCE_COMMAND_PREFIX,
-                            label,
-                            waypoint.getTag().getName(),
-                            waypoint.getCreationTimestamp()
-                        )
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format(
+                                    "%s%s delete %s @ %d",
+                                    FORCE_COMMAND_PREFIX,
+                                    label,
+                                    waypoint.getTag().getName(),
+                                    waypoint.getCreationTimestamp()
+                            )
                     ));
                     ITextComponent goalComponent = new TextComponentString("Click to set goal to this waypoint");
                     goalComponent.getStyle().setClickEvent(new ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
-                        String.format(
-                            "%s%s goal %s @ %d",
-                            FORCE_COMMAND_PREFIX,
-                            label,
-                            waypoint.getTag().getName(),
-                            waypoint.getCreationTimestamp()
-                        )
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format(
+                                    "%s%s goal %s @ %d",
+                                    FORCE_COMMAND_PREFIX,
+                                    label,
+                                    waypoint.getTag().getName(),
+                                    waypoint.getCreationTimestamp()
+                            )
                     ));
                     ITextComponent backComponent = new TextComponentString("Click to return to the waypoints list");
                     backComponent.getStyle().setClickEvent(new ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
-                        String.format(
-                            "%s%s list",
-                            FORCE_COMMAND_PREFIX,
-                            label
-                        )
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format(
+                                    "%s%s list",
+                                    FORCE_COMMAND_PREFIX,
+                                    label
+                            )
                     ));
                     logDirect(deleteComponent);
                     logDirect(goalComponent);
@@ -265,20 +265,20 @@ public class WaypointsCommand extends Command {
         if (args.has()) {
             if (args.hasExactlyOne()) {
                 return new TabCompleteHelper()
-                    .append(Action.getAllNames())
-                    .sortAlphabetically()
-                    .filterPrefix(args.getString())
-                    .stream();
+                        .append(Action.getAllNames())
+                        .sortAlphabetically()
+                        .filterPrefix(args.getString())
+                        .stream();
             } else {
                 Action action = Action.getByName(args.getString());
 
                 if (args.hasExactlyOne()) {
                     if (action == Action.LIST || action == Action.SAVE || action == Action.CLEAR) {
                         return new TabCompleteHelper()
-                            .append(IWaypoint.Tag.getAllNames())
-                            .sortAlphabetically()
-                            .filterPrefix(args.getString())
-                            .stream();
+                                .append(IWaypoint.Tag.getAllNames())
+                                .sortAlphabetically()
+                                .filterPrefix(args.getString())
+                                .stream();
                     } else {
                         return args.tabCompleteDatatype(ForWaypoints.class);
                     }
@@ -301,20 +301,20 @@ public class WaypointsCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The waypoint command allows you to manage Baritone's waypoints.",
-            "",
-            "Waypoints can be used to mark positions for later. Waypoints are each given a tag and an optional name.",
-            "",
-            "Note that the info, delete, and goal commands let you specify a waypoint by tag. If there is more than one waypoint with a certain tag, then they will let you select which waypoint you mean.",
-            "",
-            "Usage:",
-            "> wp [l/list] - List all waypoints.",
-            "> wp <s/save> <tag> - Save your current position as an unnamed waypoint with the specified tag.",
-            "> wp <s/save> <tag> <name> - Save the waypoint with the specified name.",
-            "> wp <s/save> <tag> <name> <pos> - Save the waypoint with the specified name and position.",
-            "> wp <i/info/show> <tag> - Show info on a waypoint by tag.",
-            "> wp <d/delete> <tag> - Delete a waypoint by tag.",
-            "> wp <g/goal/goto> <tag> - Set a goal to a waypoint by tag."
+                "The waypoint command allows you to manage Baritone's waypoints.",
+                "",
+                "Waypoints can be used to mark positions for later. Waypoints are each given a tag and an optional name.",
+                "",
+                "Note that the info, delete, and goal commands let you specify a waypoint by tag. If there is more than one waypoint with a certain tag, then they will let you select which waypoint you mean.",
+                "",
+                "Usage:",
+                "> wp [l/list] - List all waypoints.",
+                "> wp <s/save> <tag> - Save your current position as an unnamed waypoint with the specified tag.",
+                "> wp <s/save> <tag> <name> - Save the waypoint with the specified name.",
+                "> wp <s/save> <tag> <name> <pos> - Save the waypoint with the specified name and position.",
+                "> wp <i/info/show> <tag> - Show info on a waypoint by tag.",
+                "> wp <d/delete> <tag> - Delete a waypoint by tag.",
+                "> wp <g/goal/goto> <tag> - Set a goal to a waypoint by tag."
         );
     }
 

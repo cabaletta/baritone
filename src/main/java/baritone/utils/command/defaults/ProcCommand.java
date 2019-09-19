@@ -48,19 +48,19 @@ public class ProcCommand extends Command {
         }
 
         logDirect(String.format(
-            "Class: %s\n" +
-                "Priority: %f\n" +
-                "Temporary: %b\n" +
-                "Display name: %s\n" +
-                "Last command: %s",
-            process.getClass().getTypeName(),
-            process.priority(),
-            process.isTemporary(),
-            process.displayName(),
-            pathingControlManager
-                .mostRecentCommand()
-                .map(PathingCommand::toString)
-                .orElse("None")
+                "Class: %s\n" +
+                        "Priority: %f\n" +
+                        "Temporary: %b\n" +
+                        "Display name: %s\n" +
+                        "Last command: %s",
+                process.getClass().getTypeName(),
+                process.priority(),
+                process.isTemporary(),
+                process.displayName(),
+                pathingControlManager
+                        .mostRecentCommand()
+                        .map(PathingCommand::toString)
+                        .orElse("None")
         ));
     }
 
@@ -77,12 +77,12 @@ public class ProcCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The proc command provides miscellaneous information about the process currently controlling Baritone.",
-            "",
-            "You are not expected to understand this if you aren't familiar with how Baritone works.",
-            "",
-            "Usage:",
-            "> proc - View process information, if present"
+                "The proc command provides miscellaneous information about the process currently controlling Baritone.",
+                "",
+                "You are not expected to understand this if you aren't familiar with how Baritone works.",
+                "",
+                "Usage:",
+                "> proc - View process information, if present"
         );
     }
 }

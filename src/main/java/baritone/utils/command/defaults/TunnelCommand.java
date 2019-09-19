@@ -38,8 +38,8 @@ public class TunnelCommand extends Command {
         args.requireMax(0);
 
         Goal goal = new GoalStrictDirection(
-            ctx.playerFeet(),
-            ctx.player().getHorizontalFacing()
+                ctx.playerFeet(),
+                ctx.player().getHorizontalFacing()
         );
 
         baritone.getCustomGoalProcess().setGoal(goal);
@@ -59,10 +59,10 @@ public class TunnelCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The tunnel command sets a goal that tells Baritone to mine completely straight in the direction that you're facing.",
-            "",
-            "Usage:",
-            "> tunnel"
+                "The tunnel command sets a goal that tells Baritone to mine completely straight in the direction that you're facing.",
+                "",
+                "Usage:",
+                "> tunnel"
         );
     }
 }

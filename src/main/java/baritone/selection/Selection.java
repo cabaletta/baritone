@@ -19,21 +19,21 @@ public class Selection implements ISelection {
         this.pos2 = pos2;
 
         this.min = new BetterBlockPos(
-            Math.min(pos1.x, pos2.x),
-            Math.min(pos1.y, pos2.y),
-            Math.min(pos1.z, pos2.z)
+                Math.min(pos1.x, pos2.x),
+                Math.min(pos1.y, pos2.y),
+                Math.min(pos1.z, pos2.z)
         );
 
         this.max = new BetterBlockPos(
-            Math.max(pos1.x, pos2.x),
-            Math.max(pos1.y, pos2.y),
-            Math.max(pos1.z, pos2.z)
+                Math.max(pos1.x, pos2.x),
+                Math.max(pos1.y, pos2.y),
+                Math.max(pos1.z, pos2.z)
         );
 
         this.size = new Vec3i(
-            max.x - min.x + 1,
-            max.y - min.y + 1,
-            max.z - min.z + 1
+                max.x - min.x + 1,
+                max.y - min.y + 1,
+                max.z - min.z + 1
         );
 
         this.aabb = new AxisAlignedBB(this.min, this.max.add(1, 1, 1));
@@ -81,7 +81,7 @@ public class Selection implements ISelection {
 
     /**
      * Since it might not be immediately obvious what this does, let me explain.
-     *
+     * <p>
      * Let's say you specify EnumFacing.UP, this functions returns if pos2 is the highest BlockPos.
      * If you specify EnumFacing.DOWN, it returns if pos2 is the lowest BlockPos.
      *

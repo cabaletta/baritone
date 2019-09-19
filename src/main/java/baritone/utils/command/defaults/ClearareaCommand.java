@@ -73,11 +73,11 @@ public class ClearareaCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Clear an area of all blocks.",
-            "",
-            "Usage:",
-            "> cleararea - Clears the area marked by your current position and the current GoalBlock",
-            "> cleararea <x> <y> <z> - Custom second corner rather than your goal"
+                "Clear an area of all blocks.",
+                "",
+                "Usage:",
+                "> cleararea - Clears the area marked by your current position and the current GoalBlock",
+                "> cleararea <x> <y> <z> - Custom second corner rather than your goal"
         );
     }
 }

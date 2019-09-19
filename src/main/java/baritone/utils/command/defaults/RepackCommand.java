@@ -51,10 +51,10 @@ public class RepackCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Repack chunks around you. This basically re-caches them.",
-            "",
-            "Usage:",
-            "> repack - Repack chunks."
+                "Repack chunks around you. This basically re-caches them.",
+                "",
+                "Usage:",
+                "> repack - Repack chunks."
         );
     }
 }

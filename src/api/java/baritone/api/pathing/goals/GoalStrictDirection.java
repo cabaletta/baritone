@@ -66,12 +66,12 @@ public class GoalStrictDirection implements Goal {
     @Override
     public String toString() {
         return String.format(
-            "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",
-            SettingsUtil.maybeCensor(x),
-            SettingsUtil.maybeCensor(y),
-            SettingsUtil.maybeCensor(z),
-            SettingsUtil.maybeCensor(dx),
-            SettingsUtil.maybeCensor(dz)
+                "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",
+                SettingsUtil.maybeCensor(x),
+                SettingsUtil.maybeCensor(y),
+                SettingsUtil.maybeCensor(z),
+                SettingsUtil.maybeCensor(dx),
+                SettingsUtil.maybeCensor(dz)
         );
     }
 }

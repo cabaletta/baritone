@@ -54,10 +54,10 @@ public class ForceCancelCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Like cancel, but more forceful.",
-            "",
-            "Usage:",
-            "> forcecancel"
+                "Like cancel, but more forceful.",
+                "",
+                "Usage:",
+                "> forcecancel"
         );
     }
 }

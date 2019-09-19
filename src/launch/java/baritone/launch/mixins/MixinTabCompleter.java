@@ -21,7 +21,6 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.utils.accessor.ITabCompleter;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.TabCompleter;
 import org.spongepowered.asm.mixin.Final;
@@ -64,9 +63,9 @@ public abstract class MixinTabCompleter implements ITabCompleter {
     }
 
     @Inject(
-        method = "requestCompletions",
-        at = @At("HEAD"),
-        cancellable = true
+            method = "requestCompletions",
+            at = @At("HEAD"),
+            cancellable = true
     )
     private void onRequestCompletions(String prefix, CallbackInfo ci) {
         if (!isChatCompleter) {

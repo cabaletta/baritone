@@ -28,7 +28,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.AxisAlignedBB;
 
-import java.awt.Color;
+import java.awt.*;
 
 import static org.lwjgl.opengl.GL11.*;
 

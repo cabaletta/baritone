@@ -42,8 +42,8 @@ public class ExploreCommand extends Command {
         }
 
         GoalXZ goal = args.has()
-            ? args.getDatatypePost(RelativeGoalXZ.class, ctx.playerFeet())
-            : new GoalXZ(ctx.playerFeet());
+                ? args.getDatatypePost(RelativeGoalXZ.class, ctx.playerFeet())
+                : new GoalXZ(ctx.playerFeet());
 
         baritone.getExploreProcess().explore(goal.getX(), goal.getZ());
         logDirect(String.format("Exploring from %s", goal.toString()));
@@ -66,11 +66,11 @@ public class ExploreCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Tell Baritone to explore randomly. If you used explorefilter before this, it will be applied.",
-            "",
-            "Usage:",
-            "> explore - Explore from your current position.",
-            "> explore <x> <z> - Explore from the specified X and Z position."
+                "Tell Baritone to explore randomly. If you used explorefilter before this, it will be applied.",
+                "",
+                "Usage:",
+                "> explore - Explore from your current position.",
+                "> explore <x> <z> - Explore from the specified X and Z position."
         );
     }
 }

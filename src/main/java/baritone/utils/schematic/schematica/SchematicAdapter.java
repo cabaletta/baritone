@@ -18,7 +18,6 @@
 package baritone.utils.schematic.schematica;
 
 import baritone.api.utils.ISchematic;
-
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;

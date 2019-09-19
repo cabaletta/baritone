@@ -39,12 +39,12 @@ public class RenderCommand extends Command {
         BetterBlockPos origin = ctx.playerFeet();
         int renderDistance = (MC.gameSettings.renderDistanceChunks + 1) * 16;
         MC.renderGlobal.markBlockRangeForRenderUpdate(
-            origin.x - renderDistance,
-            0,
-            origin.z - renderDistance,
-            origin.x + renderDistance,
-            255,
-            origin.z + renderDistance
+                origin.x - renderDistance,
+                0,
+                origin.z - renderDistance,
+                origin.x + renderDistance,
+                255,
+                origin.z + renderDistance
         );
 
         logDirect("Done");
@@ -63,10 +63,10 @@ public class RenderCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The render command fixes glitched chunk rendering without having to reload all of them.",
-            "",
-            "Usage:",
-            "> render"
+                "The render command fixes glitched chunk rendering without having to reload all of them.",
+                "",
+                "Usage:",
+                "> render"
         );
     }
 }

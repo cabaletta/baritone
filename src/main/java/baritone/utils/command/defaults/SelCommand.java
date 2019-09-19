@@ -19,11 +19,7 @@ package baritone.utils.command.defaults;
 
 import baritone.api.Settings;
 import baritone.api.event.events.RenderEvent;
-import baritone.api.schematic.CompositeSchematic;
-import baritone.api.schematic.FillSchematic;
-import baritone.api.schematic.ReplaceSchematic;
-import baritone.api.schematic.ShellSchematic;
-import baritone.api.schematic.WallsSchematic;
+import baritone.api.schematic.*;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
@@ -44,7 +40,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3i;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -109,8 +105,8 @@ public class SelCommand extends Command {
             }
         } else if (action == Action.SET || action == Action.WALLS || action == Action.SHELL || action == Action.CLEARAREA || action == Action.REPLACE) {
             BlockOptionalMeta type = action == Action.CLEARAREA
-                ? new BlockOptionalMeta(Blocks.AIR)
-                : args.getDatatypeFor(ForBlockOptionalMeta.class);
+                    ? new BlockOptionalMeta(Blocks.AIR)
+                    : args.getDatatypeFor(ForBlockOptionalMeta.class);
             BlockOptionalMetaLookup replaces = null;
 
             if (action == Action.REPLACE) {
@@ -142,9 +138,9 @@ public class SelCommand extends Command {
             for (ISelection selection : selections) {
                 BetterBlockPos min = selection.min();
                 origin = new BetterBlockPos(
-                    Math.min(origin.x, min.x),
-                    Math.min(origin.y, min.y),
-                    Math.min(origin.z, min.z)
+                        Math.min(origin.x, min.x),
+                        Math.min(origin.y, min.y),
+                        Math.min(origin.z, min.z)
                 );
             }
 
@@ -204,10 +200,10 @@ public class SelCommand extends Command {
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
-                .append(Action.getAllNames())
-                .filterPrefix(args.getString())
-                .sortAlphabetically()
-                .stream();
+                    .append(Action.getAllNames())
+                    .filterPrefix(args.getString())
+                    .sortAlphabetically()
+                    .stream();
         } else {
             Action action = Action.getByName(args.getString());
 
@@ -227,10 +223,10 @@ public class SelCommand extends Command {
                 } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
                     if (args.hasExactlyOne()) {
                         return new TabCompleteHelper()
-                            .append(TransformTarget.getAllNames())
-                            .filterPrefix(args.getString())
-                            .sortAlphabetically()
-                            .stream();
+                                .append(TransformTarget.getAllNames())
+                                .filterPrefix(args.getString())
+                                .sortAlphabetically()
+                                .stream();
                     } else {
                         TransformTarget target = TransformTarget.getByName(args.getString());
 
@@ -253,29 +249,29 @@ public class SelCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The sel command allows you to manipulate Baritone's selections, similarly to WorldEdit.",
-            "",
-            "Using these selections, you can clear areas, fill them with blocks, or something else.",
-            "",
-            "The expand/contract/shift commands use a kind of selector to choose which selections to target. Supported ones are a/all, n/newest, and o/oldest.",
-            "",
-            "Usage:",
-            "> sel pos1/p1/1 - Set position 1 to your current position.",
-            "> sel pos1/p1/1 <x> <y> <z> - Set position 1 to a relative position.",
-            "> sel pos2/p2/2 - Set position 2 to your current position.",
-            "> sel pos2/p2/2 <x> <y> <z> - Set position 2 to a relative position.",
-            "",
-            "> sel clear/c - Clear the selection.",
-            "> sel undo/u - Undo the last action (setting positions, creating selections, etc.)",
-            "> sel set/fill/s/f [block] - Completely fill all selections with a block.",
-            "> sel walls/w [block] - Fill in the walls of the selection with a specified block.",
-            "> sel shell/shl [block] - The same as walls, but fills in a ceiling and floor too.",
-            "> sel cleararea/ca - Basically 'set air'.",
-            "> sel replace/r <blocks...> <with> - Replaces blocks with another block.",
-            "",
-            "> sel expand <target> <direction> <blocks> - Expand the targets.",
-            "> sel contract <target> <direction> <blocks> - Contract the targets.",
-            "> sel shift <target> <direction> <blocks> - Shift the targets (does not resize)."
+                "The sel command allows you to manipulate Baritone's selections, similarly to WorldEdit.",
+                "",
+                "Using these selections, you can clear areas, fill them with blocks, or something else.",
+                "",
+                "The expand/contract/shift commands use a kind of selector to choose which selections to target. Supported ones are a/all, n/newest, and o/oldest.",
+                "",
+                "Usage:",
+                "> sel pos1/p1/1 - Set position 1 to your current position.",
+                "> sel pos1/p1/1 <x> <y> <z> - Set position 1 to a relative position.",
+                "> sel pos2/p2/2 - Set position 2 to your current position.",
+                "> sel pos2/p2/2 <x> <y> <z> - Set position 2 to a relative position.",
+                "",
+                "> sel clear/c - Clear the selection.",
+                "> sel undo/u - Undo the last action (setting positions, creating selections, etc.)",
+                "> sel set/fill/s/f [block] - Completely fill all selections with a block.",
+                "> sel walls/w [block] - Fill in the walls of the selection with a specified block.",
+                "> sel shell/shl [block] - The same as walls, but fills in a ceiling and floor too.",
+                "> sel cleararea/ca - Basically 'set air'.",
+                "> sel replace/r <blocks...> <with> - Replaces blocks with another block.",
+                "",
+                "> sel expand <target> <direction> <blocks> - Expand the targets.",
+                "> sel contract <target> <direction> <blocks> - Contract the targets.",
+                "> sel shift <target> <direction> <blocks> - Shift the targets (does not resize)."
         );
     }
 
@@ -327,8 +323,8 @@ public class SelCommand extends Command {
 
     enum TransformTarget {
         ALL(sels -> sels, "all", "a"),
-        NEWEST(sels -> new ISelection[] {sels[sels.length - 1]}, "newest", "n"),
-        OLDEST(sels -> new ISelection[] {sels[0]}, "oldest", "o");
+        NEWEST(sels -> new ISelection[]{sels[sels.length - 1]}, "newest", "n"),
+        OLDEST(sels -> new ISelection[]{sels[0]}, "oldest", "o");
 
         private final Function<ISelection[], ISelection[]> transform;
         private final String[] names;

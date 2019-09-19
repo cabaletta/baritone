@@ -40,13 +40,13 @@ import java.util.stream.Stream;
  * <p>
  * The recommended way to use this class is:
  * <ul>
- *     <li>Create a new instance with the empty constructor</li>
- *     <li>Use {@code append}, {@code prepend} or {@code add<something>} methods to add completions</li>
- *     <li>Sort using {@link #sort(Comparator)} or {@link #sortAlphabetically()} and then filter by prefix using
- *     {@link #filterPrefix(String)}</li>
- *     <li>Get the stream using {@link #stream()}</li>
- *     <li>Pass it up to whatever's calling your tab complete function (i.e.
- *     {@link CommandManager#tabComplete(CommandExecution)} or {@link ArgConsumer#tabCompleteDatatype(Class)})</li>
+ * <li>Create a new instance with the empty constructor</li>
+ * <li>Use {@code append}, {@code prepend} or {@code add<something>} methods to add completions</li>
+ * <li>Sort using {@link #sort(Comparator)} or {@link #sortAlphabetically()} and then filter by prefix using
+ * {@link #filterPrefix(String)}</li>
+ * <li>Get the stream using {@link #stream()}</li>
+ * <li>Pass it up to whatever's calling your tab complete function (i.e.
+ * {@link CommandManager#tabComplete(CommandExecution)} or {@link ArgConsumer#tabCompleteDatatype(Class)})</li>
  * </ul>
  * <p>
  * For advanced users: if you're intercepting {@link TabCompleteEvent}s directly, use {@link #build()} instead for an

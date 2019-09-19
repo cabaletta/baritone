@@ -35,20 +35,20 @@ public class BlockOptionalMetaLookup {
 
     public BlockOptionalMetaLookup(Block... blocks) {
         this.boms = Arrays.stream(blocks)
-            .map(BlockOptionalMeta::new)
-            .toArray(BlockOptionalMeta[]::new);
+                .map(BlockOptionalMeta::new)
+                .toArray(BlockOptionalMeta[]::new);
     }
 
     public BlockOptionalMetaLookup(List<Block> blocks) {
         this.boms = blocks.stream()
-            .map(BlockOptionalMeta::new)
-            .toArray(BlockOptionalMeta[]::new);
+                .map(BlockOptionalMeta::new)
+                .toArray(BlockOptionalMeta[]::new);
     }
 
     public BlockOptionalMetaLookup(String... blocks) {
         this.boms = Arrays.stream(blocks)
-            .map(BlockOptionalMeta::new)
-            .toArray(BlockOptionalMeta[]::new);
+                .map(BlockOptionalMeta::new)
+                .toArray(BlockOptionalMeta[]::new);
     }
 
     public boolean has(Block block) {
@@ -88,8 +88,8 @@ public class BlockOptionalMetaLookup {
     @Override
     public String toString() {
         return String.format(
-            "BlockOptionalMetaLookup{%s}",
-            Arrays.toString(boms)
+                "BlockOptionalMetaLookup{%s}",
+                Arrays.toString(boms)
         );
     }
 }

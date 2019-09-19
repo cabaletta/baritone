@@ -43,7 +43,7 @@ public class ChestsCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
         Set<Map.Entry<BlockPos, IRememberedInventory>> entries =
-            ctx.worldData().getContainerMemory().getRememberedInventories().entrySet();
+                ctx.worldData().getContainerMemory().getRememberedInventories().entrySet();
 
         if (entries.isEmpty()) {
             throw new CommandInvalidStateException("No remembered inventories");
@@ -77,10 +77,10 @@ public class ChestsCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The chests command lists remembered inventories, I guess?",
-            "",
-            "Usage:",
-            "> chests"
+                "The chests command lists remembered inventories, I guess?",
+                "",
+                "Usage:",
+                "> chests"
         );
     }
 }

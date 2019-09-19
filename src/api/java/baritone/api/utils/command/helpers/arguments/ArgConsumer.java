@@ -39,19 +39,19 @@ import java.util.stream.Stream;
  * The {@link ArgConsumer} is how {@link Command}s read the arguments passed to them. This class has many benefits:
  *
  * <ul>
- *     <li>Mutability. The whole concept of the {@link ArgConsumer} is to let you gradually consume arguments in any way
- *     you'd like. You can change your consumption based on earlier arguments, for subcommands for example.</li>
- *     <li>You don't need to keep track of your consumption. The {@link ArgConsumer} keeps track of the arguments you
- *     consume so that it can throw detailed exceptions whenever something is out of the ordinary. Additionally, if you
- *     need to retrieve an argument after you've already consumed it - look no further than {@link #consumed()}!</li>
- *     <li>Easy retrieval of many different types. If you need to retrieve an instance of an int or float for example,
- *     look no further than {@link #getAs(Class)}. If you need a more powerful way of retrieving data, try out the many
- *     {@link #getDatatype(Class)} methods.</li>
- *     <li>It's very easy to throw detailed exceptions. The {@link ArgConsumer} has many different methods that can
- *     enforce the number of arguments, the type of arguments, and more, throwing different types of
- *     {@link CommandException}s if something seems off. You're recommended to do all validation and store all needed
- *     data in variables BEFORE logging any data to chat via {@link Helper#logDirect(String)}, so that the error
- *     handlers can do their job and log the error to chat.</li>
+ * <li>Mutability. The whole concept of the {@link ArgConsumer} is to let you gradually consume arguments in any way
+ * you'd like. You can change your consumption based on earlier arguments, for subcommands for example.</li>
+ * <li>You don't need to keep track of your consumption. The {@link ArgConsumer} keeps track of the arguments you
+ * consume so that it can throw detailed exceptions whenever something is out of the ordinary. Additionally, if you
+ * need to retrieve an argument after you've already consumed it - look no further than {@link #consumed()}!</li>
+ * <li>Easy retrieval of many different types. If you need to retrieve an instance of an int or float for example,
+ * look no further than {@link #getAs(Class)}. If you need a more powerful way of retrieving data, try out the many
+ * {@link #getDatatype(Class)} methods.</li>
+ * <li>It's very easy to throw detailed exceptions. The {@link ArgConsumer} has many different methods that can
+ * enforce the number of arguments, the type of arguments, and more, throwing different types of
+ * {@link CommandException}s if something seems off. You're recommended to do all validation and store all needed
+ * data in variables BEFORE logging any data to chat via {@link Helper#logDirect(String)}, so that the error
+ * handlers can do their job and log the error to chat.</li>
  * </ul>
  */
 public class ArgConsumer implements Cloneable {
@@ -913,11 +913,11 @@ public class ArgConsumer implements Cloneable {
      * into three {@link CommandArgument}s {@code "arg1"}, {@code "arg2"}, and {@code "arg3"}:
      *
      * <ul>
-     *     <li>{@code rawRest()} would return <code>arg1 arg2&nbsp;&nbsp;arg3</code></li>
-     *     <li>After calling {@link #get()}, {@code rawRest()} would return <code>arg2&nbsp;&nbsp;arg3</code> (note the
-     *     double space - it is preserved!)</li>
-     *     <li>After calling {@link #get()} again, {@code rawRest()} would return {@code "arg3"}</li>
-     *     <li>After calling {@link #get()} one last time, {@code rawRest()} would return {@code ""}</li>
+     * <li>{@code rawRest()} would return <code>arg1 arg2&nbsp;&nbsp;arg3</code></li>
+     * <li>After calling {@link #get()}, {@code rawRest()} would return <code>arg2&nbsp;&nbsp;arg3</code> (note the
+     * double space - it is preserved!)</li>
+     * <li>After calling {@link #get()} again, {@code rawRest()} would return {@code "arg3"}</li>
+     * <li>After calling {@link #get()} one last time, {@code rawRest()} would return {@code ""}</li>
      * </ul>
      *
      * @return The "raw rest" of the string.

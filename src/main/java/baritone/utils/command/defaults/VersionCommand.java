@@ -59,10 +59,10 @@ public class VersionCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The version command prints the version of Baritone you're currently running.",
-            "",
-            "Usage:",
-            "> version - View version information, if present"
+                "The version command prints the version of Baritone you're currently running.",
+                "",
+                "Usage:",
+                "> version - View version information, if present"
         );
     }
 }

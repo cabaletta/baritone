@@ -31,11 +31,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static java.util.Objects.nonNull;
@@ -89,8 +85,8 @@ public enum WorldScanner implements IWorldScanner {
                 }
             }
             if ((allUnloaded && foundChunks)
-                || (res.size() >= max
-                && (searchRadiusSq > maxSearchRadiusSq || (searchRadiusSq > 1 && foundWithinY)))
+                    || (res.size() >= max
+                    && (searchRadiusSq > maxSearchRadiusSq || (searchRadiusSq > 1 && foundWithinY)))
             ) {
                 return res;
             }

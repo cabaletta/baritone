@@ -45,16 +45,16 @@ public abstract class MixinItemStack implements IItemStack {
     }
 
     @Inject(
-        method = "<init>*",
-        at = @At("RETURN")
+            method = "<init>*",
+            at = @At("RETURN")
     )
     private void onInit(CallbackInfo ci) {
         recalculateHash();
     }
 
     @Inject(
-        method = "setItemDamage",
-        at = @At("TAIL")
+            method = "setItemDamage",
+            at = @At("TAIL")
     )
     private void onItemDamageSet(CallbackInfo ci) {
         recalculateHash();

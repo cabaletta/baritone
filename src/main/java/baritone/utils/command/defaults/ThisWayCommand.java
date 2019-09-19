@@ -37,9 +37,9 @@ public class ThisWayCommand extends Command {
         args.requireExactly(1);
 
         GoalXZ goal = GoalXZ.fromDirection(
-            ctx.playerFeetAsVec(),
-            ctx.player().rotationYawHead,
-            args.getAs(Double.class)
+                ctx.playerFeetAsVec(),
+                ctx.player().rotationYawHead,
+                args.getAs(Double.class)
         );
 
         baritone.getCustomGoalProcess().setGoal(goal);
@@ -59,10 +59,10 @@ public class ThisWayCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Creates a GoalXZ some amount of blocks in the direction you're currently looking",
-            "",
-            "Usage:",
-            "> thisway <distance> - makes a GoalXZ distance blocks in front of you"
+                "Creates a GoalXZ some amount of blocks in the direction you're currently looking",
+                "",
+                "Usage:",
+                "> thisway <distance> - makes a GoalXZ distance blocks in front of you"
         );
     }
 }

@@ -28,7 +28,6 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.OptionalInt;

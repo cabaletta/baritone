@@ -68,7 +68,7 @@ public interface ISelection {
 
     /**
      * Returns a new {@link ISelection} contracted in the specified direction by the specified number of blocks.
-     *
+     * <p>
      * Note that, for example, if the direction specified is UP, the bottom of the selection will be shifted up. If it
      * is DOWN, the top of the selection will be shifted down.
      *

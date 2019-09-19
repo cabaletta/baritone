@@ -51,10 +51,10 @@ public class ClickCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Opens click dude",
-            "",
-            "Usage:",
-            "> click"
+                "Opens click dude",
+                "",
+                "Usage:",
+                "> click"
         );
     }
 }

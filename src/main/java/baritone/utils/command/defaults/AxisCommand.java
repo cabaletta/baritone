@@ -54,10 +54,10 @@ public class AxisCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The axis command sets a goal that tells Baritone to head towards the nearest axis. That is, X=0 or Z=0.",
-            "",
-            "Usage:",
-            "> axis"
+                "The axis command sets a goal that tells Baritone to head towards the nearest axis. That is, X=0 or Z=0.",
+                "",
+                "Usage:",
+                "> axis"
         );
     }
 }

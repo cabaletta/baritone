@@ -50,38 +50,38 @@ public class HelpCommand extends Command {
 
         if (!args.has() || args.is(Integer.class)) {
             Paginator.paginate(
-                args, new Paginator<>(
-                    CommandManager.REGISTRY.descendingStream()
-                        .filter(command -> !command.hiddenFromHelp())
-                        .collect(Collectors.toList())
-                ),
-                () -> logDirect("All Baritone commands (clickable):"),
-                command -> {
-                    String names = String.join("/", command.names);
-                    String name = command.names.get(0);
+                    args, new Paginator<>(
+                            CommandManager.REGISTRY.descendingStream()
+                                    .filter(command -> !command.hiddenFromHelp())
+                                    .collect(Collectors.toList())
+                    ),
+                    () -> logDirect("All Baritone commands (clickable):"),
+                    command -> {
+                        String names = String.join("/", command.names);
+                        String name = command.names.get(0);
 
-                    ITextComponent shortDescComponent = new TextComponentString(" - " + command.getShortDesc());
-                    shortDescComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
+                        ITextComponent shortDescComponent = new TextComponentString(" - " + command.getShortDesc());
+                        shortDescComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
 
-                    ITextComponent namesComponent = new TextComponentString(names);
-                    namesComponent.getStyle().setColor(TextFormatting.WHITE);
+                        ITextComponent namesComponent = new TextComponentString(names);
+                        namesComponent.getStyle().setColor(TextFormatting.WHITE);
 
-                    ITextComponent hoverComponent = new TextComponentString("");
-                    hoverComponent.getStyle().setColor(TextFormatting.GRAY);
-                    hoverComponent.appendSibling(namesComponent);
-                    hoverComponent.appendText("\n" + command.getShortDesc());
-                    hoverComponent.appendText("\n\nClick to view full help");
-                    String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.names.get(0));
+                        ITextComponent hoverComponent = new TextComponentString("");
+                        hoverComponent.getStyle().setColor(TextFormatting.GRAY);
+                        hoverComponent.appendSibling(namesComponent);
+                        hoverComponent.appendText("\n" + command.getShortDesc());
+                        hoverComponent.appendText("\n\nClick to view full help");
+                        String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.names.get(0));
 
-                    ITextComponent component = new TextComponentString(name);
-                    component.getStyle().setColor(TextFormatting.GRAY);
-                    component.appendSibling(shortDescComponent);
-                    component.getStyle()
-                        .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, clickCommand));
-                    return component;
-                },
-                FORCE_COMMAND_PREFIX + label
+                        ITextComponent component = new TextComponentString(name);
+                        component.getStyle().setColor(TextFormatting.GRAY);
+                        component.appendSibling(shortDescComponent);
+                        component.getStyle()
+                                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
+                                .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, clickCommand));
+                        return component;
+                    },
+                    FORCE_COMMAND_PREFIX + label
             );
         } else {
             String commandName = args.getString().toLowerCase();
@@ -98,8 +98,8 @@ public class HelpCommand extends Command {
 
             ITextComponent returnComponent = new TextComponentString("Click to return to the help menu");
             returnComponent.getStyle().setClickEvent(new ClickEvent(
-                ClickEvent.Action.RUN_COMMAND,
-                FORCE_COMMAND_PREFIX + label
+                    ClickEvent.Action.RUN_COMMAND,
+                    FORCE_COMMAND_PREFIX + label
             ));
 
             logDirect(returnComponent);
@@ -123,11 +123,11 @@ public class HelpCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "Using this command, you can view detailed help information on how to use certain commands of Baritone.",
-            "",
-            "Usage:",
-            "> help - Lists all commands and their short descriptions.",
-            "> help <command> - Displays help information on a specific command."
+                "Using this command, you can view detailed help information on how to use certain commands of Baritone.",
+                "",
+                "Usage:",
+                "> help - Lists all commands and their short descriptions.",
+                "> help <command> - Displays help information on a specific command."
         );
     }
 }

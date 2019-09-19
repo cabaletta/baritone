@@ -51,10 +51,10 @@ public class CancelCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return asList(
-            "The cancel command tells Baritons to stop whatever it's currently doing.",
-            "",
-            "Usage:",
-            "> cancel"
+                "The cancel command tells Baritons to stop whatever it's currently doing.",
+                "",
+                "Usage:",
+                "> cancel"
         );
     }
 }

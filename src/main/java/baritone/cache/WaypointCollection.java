@@ -21,7 +21,6 @@ import baritone.api.cache.IWaypoint;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.cache.Waypoint;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.math.BlockPos;
 
 import java.io.*;
 import java.nio.file.Files;

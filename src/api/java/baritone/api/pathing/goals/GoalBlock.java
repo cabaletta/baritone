@@ -69,10 +69,10 @@ public class GoalBlock implements Goal, IGoalRenderPos {
     @Override
     public String toString() {
         return String.format(
-            "GoalBlock{x=%s,y=%s,z=%s}",
-            SettingsUtil.maybeCensor(x),
-            SettingsUtil.maybeCensor(y),
-            SettingsUtil.maybeCensor(z)
+                "GoalBlock{x=%s,y=%s,z=%s}",
+                SettingsUtil.maybeCensor(x),
+                SettingsUtil.maybeCensor(y),
+                SettingsUtil.maybeCensor(z)
         );
     }
 
