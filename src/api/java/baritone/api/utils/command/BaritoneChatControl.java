@@ -47,9 +47,6 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-
 public class BaritoneChatControl implements Helper, AbstractGameEventListener {
 
     public final IBaritone baritone;
@@ -139,7 +136,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             }
         }
         CommandExecution execution = CommandExecution.from(pair);
-        if (isNull(execution)) {
+        if (execution == null) {
             return false;
         }
         logRanCommand(command, rest);
@@ -178,7 +175,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                         .stream();
             }
             Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
-            if (nonNull(setting)) {
+            if (setting != null) {
                 if (setting.getValueClass() == Boolean.class) {
                     TabCompleteHelper helper = new TabCompleteHelper();
                     if ((Boolean) setting.value) {

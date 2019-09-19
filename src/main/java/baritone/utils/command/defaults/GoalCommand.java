@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 public class GoalCommand extends Command {
 
@@ -46,7 +44,7 @@ public class GoalCommand extends Command {
         ICustomGoalProcess goalProcess = baritone.getCustomGoalProcess();
         if (args.has() && asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
-            if (nonNull(goalProcess.getGoal())) {
+            if (goalProcess.getGoal() != null) {
                 goalProcess.setGoal(null);
                 logDirect("Cleared goal");
             } else {
@@ -69,7 +67,7 @@ public class GoalCommand extends Command {
         } else {
             if (args.hasAtMost(3)) {
                 while (args.has(2)) {
-                    if (isNull(args.peekDatatypeOrNull(RelativeCoordinate.class))) {
+                    if (args.peekDatatypeOrNull(RelativeCoordinate.class) == null) {
                         break;
                     }
                     args.get();

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
 
 public class Paginator<E> implements Helper {
 
@@ -73,8 +72,8 @@ public class Paginator<E> implements Helper {
                 logDirect("--", TextFormatting.DARK_GRAY);
             }
         }
-        boolean hasPrevPage = nonNull(commandPrefix) && validPage(page - 1);
-        boolean hasNextPage = nonNull(commandPrefix) && validPage(page + 1);
+        boolean hasPrevPage = commandPrefix != null && validPage(page - 1);
+        boolean hasNextPage = commandPrefix != null && validPage(page + 1);
         ITextComponent prevPageComponent = new TextComponentString("<<");
         if (hasPrevPage) {
             prevPageComponent.getStyle()
@@ -133,7 +132,7 @@ public class Paginator<E> implements Helper {
             }
         }
         pagi.skipPages(page - pagi.page);
-        if (nonNull(pre)) {
+        if (pre != null) {
             pre.run();
         }
         pagi.display(transform, commandPrefix);

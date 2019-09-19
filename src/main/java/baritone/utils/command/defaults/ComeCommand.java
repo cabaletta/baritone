@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 
 public class ComeCommand extends Command {
 
@@ -42,7 +41,7 @@ public class ComeCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
         Entity entity = mc.getRenderViewEntity();
-        if (isNull(entity)) {
+        if (entity == null) {
             throw new CommandInvalidStateException("render view entity is null");
         }
         baritone.getCustomGoalProcess().setGoalAndPath(new GoalBlock(new BlockPos(entity)));

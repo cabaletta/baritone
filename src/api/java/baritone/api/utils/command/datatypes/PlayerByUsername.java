@@ -25,8 +25,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static java.util.Objects.isNull;
-
 public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
 
     private final List<EntityPlayer> players =
@@ -44,7 +42,7 @@ public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
                 .filter(s -> s.getName().equalsIgnoreCase(username))
                 .findFirst()
                 .orElse(null);
-        if (isNull(player)) {
+        if (player == null) {
             throw new IllegalArgumentException("no player found by that username");
         }
     }

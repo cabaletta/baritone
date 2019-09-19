@@ -31,8 +31,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static java.util.Objects.isNull;
-
 @Mixin(TabCompleter.class)
 public abstract class MixinTabCompleter implements ITabCompleter {
 
@@ -105,7 +103,7 @@ public abstract class MixinTabCompleter implements ITabCompleter {
     public boolean onGuiChatSetCompletions(String[] newCompl) {
         IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
 
-        if (isNull(baritone)) {
+        if (baritone == null) {
             return false;
         }
 

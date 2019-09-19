@@ -22,8 +22,6 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
 
-import static java.util.Objects.isNull;
-
 public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlockPos> {
 
     final RelativeCoordinate x;
@@ -55,7 +53,7 @@ public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlo
     public Stream<String> tabComplete(ArgConsumer consumer) {
         if (consumer.has() && !consumer.has(4)) {
             while (consumer.has(2)) {
-                if (isNull(consumer.peekDatatypeOrNull(RelativeCoordinate.class))) {
+                if (consumer.peekDatatypeOrNull(RelativeCoordinate.class) == null) {
                     break;
                 }
                 consumer.get();

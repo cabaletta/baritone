@@ -22,8 +22,6 @@ import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.exception.CommandNoParserForTypeException;
 import baritone.api.utils.command.registry.Registry;
 
-import static java.util.Objects.isNull;
-
 public class ArgParserManager {
 
     public static final Registry<ArgParser> REGISTRY = new Registry<>();
@@ -74,7 +72,7 @@ public class ArgParserManager {
      */
     public static <T> T parseStateless(Class<T> klass, CommandArgument arg) {
         ArgParser.Stateless<T> parser = getParserStateless(klass);
-        if (isNull(parser)) {
+        if (parser == null) {
             throw new CommandNoParserForTypeException(klass);
         }
         try {
@@ -97,7 +95,7 @@ public class ArgParserManager {
      */
     public static <T, S> T parseStated(Class<T> klass, Class<S> stateKlass, CommandArgument arg, S state) {
         ArgParser.Stated<T, S> parser = getParserStated(klass, stateKlass);
-        if (isNull(parser)) {
+        if (parser == null) {
             throw new CommandNoParserForTypeException(klass);
         }
         try {

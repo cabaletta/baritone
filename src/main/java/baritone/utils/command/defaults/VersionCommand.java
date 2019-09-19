@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 
 public class VersionCommand extends Command {
 
@@ -39,7 +38,7 @@ public class VersionCommand extends Command {
     protected void executed(String label, ArgConsumer args, Settings settings) {
         args.requireMax(0);
         String version = getClass().getPackage().getImplementationVersion();
-        if (isNull(version)) {
+        if (version == null) {
             throw new CommandInvalidStateException("Null version (this is normal in a dev environment)");
         } else {
             logDirect(String.format("You are running Baritone v%s", version));

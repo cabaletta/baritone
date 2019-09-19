@@ -38,7 +38,6 @@ import java.util.stream.Stream;
 import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
 import static baritone.api.utils.command.manager.CommandManager.getCommand;
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 
 public class HelpCommand extends Command {
 
@@ -83,7 +82,7 @@ public class HelpCommand extends Command {
         } else {
             String commandName = args.getString().toLowerCase();
             Command command = getCommand(commandName);
-            if (isNull(command)) {
+            if (command == null) {
                 throw new CommandNotFoundException(commandName);
             }
             logDirect(String.format("%s - %s", String.join(" / ", command.names), command.getShortDesc()));

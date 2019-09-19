@@ -35,8 +35,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.isNull;
-
 public final class BlockOptionalMeta {
 
     private final Block block;
@@ -50,7 +48,7 @@ public final class BlockOptionalMeta {
 
     public BlockOptionalMeta(@Nonnull Block block, @Nullable Integer meta) {
         this.block = block;
-        this.noMeta = isNull(meta);
+        this.noMeta = meta == null;
         this.meta = noMeta ? 0 : meta;
         this.blockstates = getStates(block, meta);
         this.stateHashes = getStateHashes(blockstates);

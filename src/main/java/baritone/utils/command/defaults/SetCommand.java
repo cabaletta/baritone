@@ -40,8 +40,6 @@ import static baritone.api.utils.SettingsUtil.settingTypeToString;
 import static baritone.api.utils.SettingsUtil.settingValueToString;
 import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.stream.Stream.of;
 
 public class SetCommand extends Command {
@@ -126,7 +124,7 @@ public class SetCommand extends Command {
                 .filter(s -> s.getName().equalsIgnoreCase(settingName))
                 .findFirst()
                 .orElse(null);
-        if (isNull(setting)) {
+        if (setting == null) {
             throw new CommandInvalidTypeException(args.consumed(), "a valid setting");
         }
         if (!doingSomething && !args.has()) {
@@ -204,7 +202,7 @@ public class SetCommand extends Command {
                             .stream();
                 }
                 Settings.Setting setting = settings.byLowerName.get(arg.toLowerCase(Locale.US));
-                if (nonNull(setting)) {
+                if (setting != null) {
                     if (setting.getType() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
                         if ((Boolean) setting.value) {

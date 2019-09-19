@@ -28,8 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static java.util.Objects.nonNull;
-
 public class RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
 
     final RelativeCoordinate[] coords;
@@ -41,7 +39,7 @@ public class RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
     public RelativeGoal(ArgConsumer consumer) {
         List<RelativeCoordinate> coordsList = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            if (nonNull(consumer.peekDatatypeOrNull(RelativeCoordinate.class))) {
+            if (consumer.peekDatatypeOrNull(RelativeCoordinate.class) != null) {
                 coordsList.add(consumer.getDatatype(RelativeCoordinate.class));
             }
         }

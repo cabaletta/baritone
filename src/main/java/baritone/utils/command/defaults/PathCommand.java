@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 
 public class PathCommand extends Command {
 
@@ -48,7 +47,7 @@ public class PathCommand extends Command {
         if (args.has()) {
             args.requireMax(3);
             goal = args.getDatatype(RelativeGoal.class).apply(ctx.playerFeet());
-        } else if (isNull(goal = customGoalProcess.getGoal())) {
+        } else if ((goal = customGoalProcess.getGoal()) == null) {
             throw new CommandInvalidStateException("No goal");
         }
         args.requireMax(0);
@@ -61,7 +60,7 @@ public class PathCommand extends Command {
     protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
         if (args.has() && !args.has(4)) {
             while (args.has(2)) {
-                if (isNull(args.peekDatatypeOrNull(RelativeCoordinate.class))) {
+                if (args.peekDatatypeOrNull(RelativeCoordinate.class) == null) {
                     break;
                 }
                 args.get();

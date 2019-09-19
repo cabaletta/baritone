@@ -30,8 +30,6 @@ import com.mojang.realmsclient.util.Pair;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static java.util.Objects.isNull;
-
 public class CommandExecution {
 
     /**
@@ -88,7 +86,7 @@ public class CommandExecution {
 
     public static CommandExecution from(String label, ArgConsumer args) {
         Command command = CommandManager.getCommand(label);
-        if (isNull(command)) {
+        if (command == null) {
             return null;
         }
         return new CommandExecution(

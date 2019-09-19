@@ -34,8 +34,6 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static java.util.Objects.nonNull;
-
 public enum WorldScanner implements IWorldScanner {
 
     INSTANCE;
@@ -162,7 +160,7 @@ public enum WorldScanner implements IWorldScanner {
             for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
                 Chunk chunk = chunkProvider.getLoadedChunk(x, z);
 
-                if (nonNull(chunk) && !chunk.isEmpty()) {
+                if (chunk != null && !chunk.isEmpty()) {
                     queued++;
                     cachedWorld.queueForPacking(chunk);
                 }

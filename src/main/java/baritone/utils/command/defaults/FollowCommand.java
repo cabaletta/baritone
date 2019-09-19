@@ -40,8 +40,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 public class FollowCommand extends Command {
 
@@ -78,7 +76,7 @@ public class FollowCommand extends Command {
                             : e -> classes.stream().anyMatch(c -> c.isInstance(e))
             );
         }
-        if (nonNull(group)) {
+        if (group != null) {
             logDirect(String.format("Following all %s", group.name().toLowerCase(Locale.US)));
         } else {
             logDirect("Following these types of entities:");
@@ -112,7 +110,7 @@ public class FollowCommand extends Command {
                 return Stream.empty();
             }
             while (args.has(2)) {
-                if (isNull(args.peekDatatypeOrNull(followType))) {
+                if (args.peekDatatypeOrNull(followType) == null) {
                     return Stream.empty();
                 }
                 args.get();

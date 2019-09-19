@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 
 public class InvertCommand extends Command {
 
@@ -43,7 +42,7 @@ public class InvertCommand extends Command {
         args.requireMax(0);
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         Goal goal;
-        if (isNull(goal = customGoalProcess.getGoal())) {
+        if ((goal = customGoalProcess.getGoal()) == null) {
             throw new CommandInvalidStateException("No goal");
         }
         if (goal instanceof GoalInverted) {

@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 public class CommandManager {
 
@@ -54,10 +53,10 @@ public class CommandManager {
 
     public static boolean execute(String string) {
         CommandExecution execution = CommandExecution.from(string);
-        if (nonNull(execution)) {
+        if (execution != null) {
             execution.execute();
         }
-        return nonNull(execution);
+        return execution != null;
     }
 
     public static Stream<String> tabComplete(CommandExecution execution) {

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 
 public class ProcCommand extends Command {
 
@@ -43,7 +42,7 @@ public class ProcCommand extends Command {
         args.requireMax(0);
         IPathingControlManager pathingControlManager = baritone.getPathingControlManager();
         IBaritoneProcess process = pathingControlManager.mostRecentInControl().orElse(null);
-        if (isNull(process)) {
+        if (process == null) {
             throw new CommandInvalidStateException("No process in control");
         }
         logDirect(String.format(
