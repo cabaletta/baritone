@@ -23,7 +23,7 @@ import net.minecraft.util.EnumFacing;
 import java.util.List;
 
 /**
- * Basic representation of a schematic. Provides the dimensions and the desired statefor a given position relative to
+ * Basic representation of a schematic. Provides the dimensions and the desired state for a given position relative to
  * the origin.
  *
  * @author leijurv
