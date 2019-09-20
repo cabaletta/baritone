@@ -80,7 +80,6 @@ public class CommandArgument {
      * @return An instance of the specified type
      * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
-     * @see ArgParser.Stateless
      */
     public <T> T getAs(Class<T> type) {
         return ArgParserManager.parseStateless(type, this);
@@ -91,7 +90,6 @@ public class CommandArgument {
      *
      * @param type The class to parse this argument into
      * @return If the parser succeeded
-     * @see ArgParser.Stateless
      */
     public <T> boolean is(Class<T> type) {
         try {
@@ -109,7 +107,6 @@ public class CommandArgument {
      * @return An instance of the specified type
      * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
-     * @see ArgParser.Stated
      */
     @SuppressWarnings("UnusedReturnValue")
     public <T, S> T getAs(Class<T> type, Class<S> stateType, S state) {
@@ -121,7 +118,6 @@ public class CommandArgument {
      *
      * @param type The class to parse this argument into
      * @return If the parser succeeded
-     * @see ArgParser.Stated
      */
     public <T, S> boolean is(Class<T> type, Class<S> stateType, S state) {
         try {
