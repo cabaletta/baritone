@@ -68,7 +68,6 @@ public class ArgParserManager {
      * @return An instance of the specified class.
      * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
-     * @see ArgParser.Stateless
      */
     public static <T> T parseStateless(Class<T> klass, CommandArgument arg) {
         ArgParser.Stateless<T> parser = getParserStateless(klass);

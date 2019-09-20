@@ -66,7 +66,7 @@ public interface IGameEventListener {
 
     /**
      * Runs whenever the client player tries to tab complete in chat once completions have been recieved from the
-     * server. This will only be called if the {@link TabCompleteEvent.Pre#cancel()} method was not called.
+     * server. This will only be called if the {@link TabCompleteEvent#cancel()} method was not called.
      *
      * @param event The event
      */

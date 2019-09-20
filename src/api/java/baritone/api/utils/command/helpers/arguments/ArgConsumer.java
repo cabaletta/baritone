@@ -168,7 +168,7 @@ public class ArgConsumer implements Cloneable {
     /**
      * @param index The index to peek
      * @param type  The type to check for
-     * @return If an {@link ArgParser.Stateless} for the specified {@code type} would succeed in parsing the next
+     * @return If an ArgParser.Stateless for the specified {@code type} would succeed in parsing the next
      * argument
      * @throws CommandNotEnoughArgumentsException If there is less than {@code index + 1} arguments left
      * @see #peek()
@@ -180,7 +180,7 @@ public class ArgConsumer implements Cloneable {
 
     /**
      * @param type The type to check for
-     * @return If an {@link ArgParser.Stateless} for the specified {@code type} would succeed in parsing the next
+     * @return If an ArgParser.Stateless for the specified {@code type} would succeed in parsing the next
      * argument
      * @throws CommandNotEnoughArgumentsException If there is less than one argument left
      * @see #peek()
@@ -286,7 +286,6 @@ public class ArgConsumer implements Cloneable {
      * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #peekAs(Class)
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
@@ -307,7 +306,6 @@ public class ArgConsumer implements Cloneable {
      * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #peekAs(Class, int)
      * @see #peekAsOrDefault(Class, Object)
      * @see #peekAsOrNull(Class)
@@ -329,7 +327,6 @@ public class ArgConsumer implements Cloneable {
      * @param index The index to peek
      * @return An instance of the specified type, or {@code def} if it couldn't be parsed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #peekAsOrDefault(Class, Object)
      * @see #peekAs(Class, int)
      * @see #peekAsOrNull(Class, int)
@@ -353,7 +350,6 @@ public class ArgConsumer implements Cloneable {
      * @param def  The value to return if the argument can't be parsed
      * @return An instance of the specified type, or {@code def} if it couldn't be parsed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAs(Class)
      * @see #peekAsOrNull(Class)
@@ -374,7 +370,6 @@ public class ArgConsumer implements Cloneable {
      * @param index The index to peek
      * @return An instance of the specified type, or {@code null} if it couldn't be parsed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #peekAsOrNull(Class)
      * @see #peekAs(Class, int)
      * @see #peekAsOrDefault(Class, Object, int)
@@ -393,7 +388,6 @@ public class ArgConsumer implements Cloneable {
      * @param type The type to peek as
      * @return An instance of the specified type, or {@code null} if it couldn't be parsed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #peekAsOrNull(Class, int)
      * @see #peekAs(Class)
      * @see #peekAsOrDefault(Class, Object)
@@ -642,7 +636,6 @@ public class ArgConsumer implements Cloneable {
      * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #get()
      * @see #getAsOrDefault(Class, Object)
      * @see #getAsOrNull(Class)
@@ -665,7 +658,6 @@ public class ArgConsumer implements Cloneable {
      * @param def  The default value
      * @return An instance of the specified type, or {@code def} if it couldn't be parsed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #get()
      * @see #getAs(Class)
      * @see #getAsOrNull(Class)
@@ -693,7 +685,6 @@ public class ArgConsumer implements Cloneable {
      * @param type The type to peek as
      * @return An instance of the specified type, or {@code null} if it couldn't be parsed
      * @see ArgParser
-     * @see ArgParser.Stateless
      * @see #get()
      * @see #getAs(Class)
      * @see #getAsOrDefault(Class, Object)
