@@ -14,10 +14,10 @@ appearance, race, religion, or sexual identity and orientation.
 Examples of behavior that contributes to creating a positive environment
 include:
 
-* No Anime
+* No Anime (including uwu's or owo's)
 * Using welcoming and inclusive language
 * Being respectful of differing viewpoints and experiences
-* Gracefully accepting constructive criticism
+* Giving and gracefully accepting constructive criticism
 * Focusing on what is best for the community
 * Showing empathy towards other community members
 
@@ -29,7 +29,7 @@ Examples of unacceptable behavior by participants include:
 * ~~Trolling, insulting/derogatory comments, and personal or political attacks~~
 * Public or private harassment
 * Publishing others' private information, such as a physical or electronic
- address, without explicit permission
+ address, without explicit permission or consent
 * Other conduct which could reasonably be considered inappropriate in a
  professional setting
 
