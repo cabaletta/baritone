@@ -23,6 +23,7 @@ import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
@@ -37,7 +38,7 @@ public class ProcCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         args.requireMax(0);
         IPathingControlManager pathingControlManager = baritone.getPathingControlManager();
         IBaritoneProcess process = pathingControlManager.mostRecentInControl().orElse(null);

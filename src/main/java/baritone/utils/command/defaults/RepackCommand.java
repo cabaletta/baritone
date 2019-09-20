@@ -20,6 +20,7 @@ package baritone.utils.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.cache.WorldScanner;
 
@@ -34,7 +35,7 @@ public class RepackCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         args.requireMax(0);
         logDirect(String.format("Queued %d chunks for repacking", WorldScanner.INSTANCE.repack(ctx)));
     }

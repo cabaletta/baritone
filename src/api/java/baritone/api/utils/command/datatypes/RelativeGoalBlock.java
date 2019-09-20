@@ -19,6 +19,8 @@ package baritone.api.utils.command.datatypes;
 
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.command.exception.CommandException;
+import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
@@ -31,7 +33,7 @@ public class RelativeGoalBlock implements IDatatypePost<GoalBlock, BetterBlockPo
         coords = new RelativeCoordinate[0];
     }
 
-    public RelativeGoalBlock(ArgConsumer consumer) {
+    public RelativeGoalBlock(ArgConsumer consumer) throws CommandException {
         coords = new RelativeCoordinate[]{
                 consumer.getDatatype(RelativeCoordinate.class),
                 consumer.getDatatype(RelativeCoordinate.class),

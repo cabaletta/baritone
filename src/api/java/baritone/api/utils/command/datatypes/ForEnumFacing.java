@@ -17,6 +17,8 @@
 
 package baritone.api.utils.command.datatypes;
 
+import baritone.api.utils.command.exception.CommandException;
+import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.util.EnumFacing;
@@ -33,7 +35,7 @@ public class ForEnumFacing implements IDatatypeFor<EnumFacing> {
         facing = null;
     }
 
-    public ForEnumFacing(ArgConsumer consumer) {
+    public ForEnumFacing(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
         facing = EnumFacing.valueOf(consumer.getString().toUpperCase(Locale.US));
     }
 
@@ -43,7 +45,7 @@ public class ForEnumFacing implements IDatatypeFor<EnumFacing> {
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
         return new TabCompleteHelper()
                 .append(
                         Arrays.stream(EnumFacing.values())

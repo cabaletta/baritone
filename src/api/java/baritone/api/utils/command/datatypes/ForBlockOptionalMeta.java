@@ -18,6 +18,7 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.BlockOptionalMeta;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
@@ -30,7 +31,7 @@ public class ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
         selector = null;
     }
 
-    public ForBlockOptionalMeta(ArgConsumer consumer) {
+    public ForBlockOptionalMeta(ArgConsumer consumer) throws CommandException {
         selector = new BlockOptionalMeta(consumer.getString());
     }
 

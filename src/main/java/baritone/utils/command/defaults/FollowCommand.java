@@ -24,6 +24,7 @@ import baritone.api.utils.command.datatypes.EntityClassById;
 import baritone.api.utils.command.datatypes.IDatatype;
 import baritone.api.utils.command.datatypes.IDatatypeFor;
 import baritone.api.utils.command.datatypes.PlayerByUsername;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.entity.Entity;
@@ -43,7 +44,7 @@ public class FollowCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         args.requireMin(1);
         FollowGroup group;
         FollowList list;
@@ -55,7 +56,7 @@ public class FollowCommand extends Command {
             args.requireMin(2);
             group = null;
             list = args.getEnum(FollowList.class);
-            while (args.has()) {
+            while (args.hasAny()) {
                 //noinspection unchecked
                 Object gotten = args.getDatatypeFor(list.datatype);
                 if (gotten instanceof Class) {
@@ -90,7 +91,7 @@ public class FollowCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
                     .append(FollowGroup.class)

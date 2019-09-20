@@ -66,7 +66,7 @@ public class CommandArgument {
      * @see ArgConsumer#getEnum(Class)
      * @see ArgConsumer#getEnumOrNull(Class)
      */
-    public <E extends Enum<?>> E getEnum(Class<E> enumClass) {
+    public <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandInvalidTypeException {
         return Arrays.stream(enumClass.getEnumConstants())
                 .filter(e -> e.name().equalsIgnoreCase(value))
                 .findFirst()
@@ -78,10 +78,9 @@ public class CommandArgument {
      *
      * @param type The class to parse this argument into
      * @return An instance of the specified type
-     * @throws CommandNoParserForTypeException If no parser exists for that type
-     * @throws CommandInvalidTypeException     If the parsing failed
+     * @throws CommandInvalidTypeException If the parsing failed
      */
-    public <T> T getAs(Class<T> type) {
+    public <T> T getAs(Class<T> type) throws CommandInvalidTypeException {
         return ArgParserManager.parseStateless(type, this);
     }
 
@@ -105,11 +104,10 @@ public class CommandArgument {
      *
      * @param type The class to parse this argument into
      * @return An instance of the specified type
-     * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      */
     @SuppressWarnings("UnusedReturnValue")
-    public <T, S> T getAs(Class<T> type, Class<S> stateType, S state) {
+    public <T, S> T getAs(Class<T> type, Class<S> stateType, S state) throws CommandInvalidTypeException {
         return ArgParserManager.parseStated(type, stateType, this, state);
     }
 

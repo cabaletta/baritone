@@ -23,15 +23,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CommandUnhandledException extends CommandErrorMessageException {
+public class CommandUnhandledException extends RuntimeException implements ICommandException {
 
-    public static String getStackTrace(Throwable throwable) {
+    public CommandUnhandledException(Throwable cause) {
+        super(String.format(
+                "An unhandled exception has occurred:\n\n%s",
+                getFriendlierStackTrace(cause)
+        ));
+    }
+
+    private static String getStackTrace(Throwable throwable) {
         StringWriter sw = new StringWriter();
         throwable.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }
 
-    public static String getBaritoneStackTrace(String stackTrace) {
+    private static String getBaritoneStackTrace(String stackTrace) {
         List<String> lines = Arrays.stream(stackTrace.split("\n"))
                 .collect(Collectors.toList());
         int lastBaritoneLine = 0;
@@ -43,11 +50,11 @@ public class CommandUnhandledException extends CommandErrorMessageException {
         return String.join("\n", lines.subList(0, lastBaritoneLine + 1));
     }
 
-    public static String getBaritoneStackTrace(Throwable throwable) {
+    private static String getBaritoneStackTrace(Throwable throwable) {
         return getBaritoneStackTrace(getStackTrace(throwable));
     }
 
-    public static String getFriendlierStackTrace(String stackTrace) {
+    private static String getFriendlierStackTrace(String stackTrace) {
         List<String> lines = Arrays.asList(stackTrace.split("\n"));
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
@@ -64,14 +71,7 @@ public class CommandUnhandledException extends CommandErrorMessageException {
         return String.join("\n", lines);
     }
 
-    public static String getFriendlierStackTrace(Throwable throwable) {
+    private static String getFriendlierStackTrace(Throwable throwable) {
         return getFriendlierStackTrace(getBaritoneStackTrace(throwable));
-    }
-
-    public CommandUnhandledException(Throwable cause) {
-        super(String.format(
-                "An unhandled exception has occurred:\n\n%s",
-                getFriendlierStackTrace(cause)
-        ));
     }
 }

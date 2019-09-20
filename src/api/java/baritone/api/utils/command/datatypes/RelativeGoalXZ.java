@@ -19,6 +19,7 @@ package baritone.api.utils.command.datatypes;
 
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
@@ -31,7 +32,7 @@ public class RelativeGoalXZ implements IDatatypePost<GoalXZ, BetterBlockPos> {
         coords = new RelativeCoordinate[0];
     }
 
-    public RelativeGoalXZ(ArgConsumer consumer) {
+    public RelativeGoalXZ(ArgConsumer consumer) throws CommandException {
         coords = new RelativeCoordinate[]{
                 consumer.getDatatype(RelativeCoordinate.class),
                 consumer.getDatatype(RelativeCoordinate.class)

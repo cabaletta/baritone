@@ -24,6 +24,7 @@ import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.RelativeBlockPos;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
@@ -38,10 +39,10 @@ public class ClearareaCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         BetterBlockPos pos1 = ctx.playerFeet();
         BetterBlockPos pos2;
-        if (args.has()) {
+        if (args.hasAny()) {
             args.requireMax(3);
             pos2 = args.getDatatype(RelativeBlockPos.class).apply(pos1);
         } else {

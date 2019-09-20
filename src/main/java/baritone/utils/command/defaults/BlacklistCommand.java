@@ -21,6 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
@@ -35,7 +36,7 @@ public class BlacklistCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         args.requireMax(0);
         IGetToBlockProcess proc = baritone.getGetToBlockProcess();
         if (!proc.isActive()) {

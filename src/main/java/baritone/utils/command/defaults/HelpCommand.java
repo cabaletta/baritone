@@ -20,6 +20,7 @@ package baritone.utils.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandNotFoundException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.pagination.Paginator;
@@ -46,9 +47,9 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         args.requireMax(1);
-        if (!args.has() || args.is(Integer.class)) {
+        if (!args.hasAny() || args.is(Integer.class)) {
             Paginator.paginate(
                     args, new Paginator<>(
                             CommandManager.REGISTRY.descendingStream()
@@ -99,7 +100,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper().addCommands().filterPrefix(args.getString()).stream();
         }

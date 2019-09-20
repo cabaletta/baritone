@@ -17,22 +17,9 @@
 
 package baritone.api.utils.command.exception;
 
-import baritone.api.utils.command.Command;
-import baritone.api.utils.command.argument.CommandArgument;
-
-import java.util.List;
-
-public abstract class CommandException extends RuntimeException {
+public abstract class CommandException extends Exception implements ICommandException {
 
     protected CommandException(String reason) {
         super(reason);
     }
-
-    /**
-     * Called when this exception is thrown, to handle the exception.
-     *
-     * @param command The command that threw it.
-     * @param args    The arguments the command was called with.
-     */
-    public abstract void handle(Command command, List<CommandArgument> args);
 }

@@ -20,6 +20,7 @@ package baritone.api.utils.command.argparser;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.exception.CommandNoParserForTypeException;
+import baritone.api.utils.command.exception.CommandUnhandledException;
 import baritone.api.utils.command.registry.Registry;
 
 public class ArgParserManager {
@@ -66,13 +67,13 @@ public class ArgParserManager {
      * @param type  The type to try and parse the argument into.
      * @param arg   The argument to parse.
      * @return An instance of the specified class.
-     * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      */
-    public static <T> T parseStateless(Class<T> type, CommandArgument arg) {
+    public static <T> T parseStateless(Class<T> type, CommandArgument arg) throws CommandInvalidTypeException {
         ArgParser.Stateless<T> parser = getParserStateless(type);
         if (parser == null) {
-            throw new CommandNoParserForTypeException(type);
+            // TODO: Fix this scuff lol
+            throw new CommandUnhandledException(new CommandNoParserForTypeException(type));
         }
         try {
             return parser.parseArg(arg);
@@ -88,14 +89,14 @@ public class ArgParserManager {
      * @param arg   The argument to parse.
      * @param state The state to pass to the {@link ArgParser.Stated}.
      * @return An instance of the specified class.
-     * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      * @see ArgParser.Stated
      */
-    public static <T, S> T parseStated(Class<T> type, Class<S> stateKlass, CommandArgument arg, S state) {
+    public static <T, S> T parseStated(Class<T> type, Class<S> stateKlass, CommandArgument arg, S state) throws CommandInvalidTypeException {
         ArgParser.Stated<T, S> parser = getParserStated(type, stateKlass);
         if (parser == null) {
-            throw new CommandNoParserForTypeException(type);
+            // TODO: Fix this scuff lol
+            throw new CommandUnhandledException(new CommandNoParserForTypeException(type));
         }
         try {
             return parser.parseArg(arg, state);

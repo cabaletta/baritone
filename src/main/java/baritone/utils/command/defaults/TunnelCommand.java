@@ -22,6 +22,7 @@ import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalStrictDirection;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.Arrays;
@@ -35,7 +36,7 @@ public class TunnelCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         args.requireMax(0);
         Goal goal = new GoalStrictDirection(
                 ctx.playerFeet(),

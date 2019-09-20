@@ -17,6 +17,7 @@
 
 package baritone.api.utils.command.datatypes;
 
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.entity.Entity;
@@ -33,7 +34,7 @@ public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
         entity = null;
     }
 
-    public EntityClassById(ArgConsumer consumer) {
+    public EntityClassById(ArgConsumer consumer) throws CommandException {
         ResourceLocation id = new ResourceLocation(consumer.getString());
         if ((entity = EntityList.REGISTRY.getObject(id)) == null) {
             throw new IllegalArgumentException("no entity found by that id");
@@ -46,7 +47,7 @@ public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
         return new TabCompleteHelper()
                 .append(
                         EntityList.getEntityNameList()

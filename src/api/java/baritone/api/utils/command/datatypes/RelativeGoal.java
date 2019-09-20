@@ -22,6 +22,7 @@ import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
         coords = new RelativeCoordinate[0];
     }
 
-    public RelativeGoal(ArgConsumer consumer) {
+    public RelativeGoal(ArgConsumer consumer) throws CommandException {
         List<RelativeCoordinate> coordsList = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             if (consumer.peekDatatypeOrNull(RelativeCoordinate.class) != null) {

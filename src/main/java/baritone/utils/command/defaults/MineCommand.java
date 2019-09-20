@@ -23,6 +23,7 @@ import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.BlockById;
 import baritone.api.utils.command.datatypes.ForBlockOptionalMeta;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.cache.WorldScanner;
 
@@ -38,11 +39,11 @@ public class MineCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         int quantity = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
-        while (args.has()) {
+        while (args.hasAny()) {
             boms.add(args.getDatatypeFor(ForBlockOptionalMeta.class));
         }
         WorldScanner.INSTANCE.repack(ctx);

@@ -25,6 +25,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.RelativeCoordinate;
 import baritone.api.utils.command.datatypes.RelativeGoal;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 
@@ -39,9 +40,9 @@ public class GoalCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         ICustomGoalProcess goalProcess = baritone.getCustomGoalProcess();
-        if (args.has() && Arrays.asList("reset", "clear", "none").contains(args.peekString())) {
+        if (args.hasAny() && Arrays.asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
             if (goalProcess.getGoal() != null) {
                 goalProcess.setGoal(null);
@@ -59,7 +60,7 @@ public class GoalCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
         TabCompleteHelper helper = new TabCompleteHelper();
         if (args.hasExactlyOne()) {
             helper.append(Stream.of("reset", "clear", "none", "~"));

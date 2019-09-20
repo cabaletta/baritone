@@ -22,6 +22,7 @@ import baritone.api.Settings;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.BlockById;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.block.Block;
 
@@ -37,9 +38,9 @@ public class FindCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         List<Block> toFind = new ArrayList<>();
-        while (args.has()) {
+        while (args.hasAny()) {
             toFind.add(args.getDatatypeFor(BlockById.class));
         }
         BetterBlockPos origin = ctx.playerFeet();

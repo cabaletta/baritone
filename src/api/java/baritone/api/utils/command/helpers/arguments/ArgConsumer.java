@@ -77,7 +77,7 @@ public class ArgConsumer {
     /**
      * @param num The number of arguments to check for
      * @return {@code true} if there are <i>at least</i> {@code num} arguments left in this {@link ArgConsumer}
-     * @see #has()
+     * @see #hasAny()
      * @see #hasAtMost(int)
      * @see #hasExactly(int)
      */
@@ -91,7 +91,7 @@ public class ArgConsumer {
      * @see #hasAtMostOne()
      * @see #hasExactlyOne()
      */
-    public boolean has() {
+    public boolean hasAny() {
         return has(1);
     }
 
@@ -108,7 +108,7 @@ public class ArgConsumer {
 
     /**
      * @return {@code true} if there is <i>at most</i> 1 argument left in this {@link ArgConsumer}
-     * @see #has()
+     * @see #hasAny()
      * @see #hasAtMostOne()
      * @see #hasExactlyOne()
      */
@@ -128,7 +128,7 @@ public class ArgConsumer {
 
     /**
      * @return {@code true} if there is <i>exactly</i> 1 argument left in this {@link ArgConsumer}
-     * @see #has()
+     * @see #hasAny()
      * @see #hasAtMostOne()
      */
     public boolean hasExactlyOne() {
@@ -145,7 +145,7 @@ public class ArgConsumer {
      * @see #peekAs(Class, int)
      * @see #get()
      */
-    public CommandArgument peek(int index) {
+    public CommandArgument peek(int index) throws CommandNotEnoughArgumentsException {
         requireMin(index + 1);
         return args.get(index);
     }
@@ -161,7 +161,7 @@ public class ArgConsumer {
      * @see #peekDatatypePost(Class, Object)
      * @see #get()
      */
-    public CommandArgument peek() {
+    public CommandArgument peek() throws CommandNotEnoughArgumentsException {
         return peek(0);
     }
 
@@ -174,7 +174,7 @@ public class ArgConsumer {
      * @see #peek()
      * @see #getAs(Class)
      */
-    public boolean is(Class<?> type, int index) {
+    public boolean is(Class<?> type, int index) throws CommandNotEnoughArgumentsException {
         return peek(index).is(type);
     }
 
@@ -186,7 +186,7 @@ public class ArgConsumer {
      * @see #peek()
      * @see #getAs(Class)
      */
-    public boolean is(Class<?> type) {
+    public boolean is(Class<?> type) throws CommandNotEnoughArgumentsException {
         return is(type, 0);
     }
 
@@ -198,7 +198,7 @@ public class ArgConsumer {
      * @see #peek()
      * @see #peekString()
      */
-    public String peekString(int index) {
+    public String peekString(int index) throws CommandNotEnoughArgumentsException {
         return peek(index).value;
     }
 
@@ -208,7 +208,7 @@ public class ArgConsumer {
      * @see #peekString(int)
      * @see #getString()
      */
-    public String peekString() {
+    public String peekString() throws CommandNotEnoughArgumentsException {
         return peekString(0);
     }
 
@@ -222,7 +222,7 @@ public class ArgConsumer {
      * @see #getEnum(Class)
      * @see CommandArgument#getEnum(Class)
      */
-    public <E extends Enum<?>> E peekEnum(Class<E> enumClass, int index) {
+    public <E extends Enum<?>> E peekEnum(Class<E> enumClass, int index) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return peek(index).getEnum(enumClass);
     }
 
@@ -235,7 +235,7 @@ public class ArgConsumer {
      * @see #getEnum(Class)
      * @see CommandArgument#getEnum(Class)
      */
-    public <E extends Enum<?>> E peekEnum(Class<E> enumClass) {
+    public <E extends Enum<?>> E peekEnum(Class<E> enumClass) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return peekEnum(enumClass, 0);
     }
 
@@ -248,7 +248,7 @@ public class ArgConsumer {
      * @see #getEnumOrNull(Class)
      * @see CommandArgument#getEnum(Class)
      */
-    public <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass, int index) {
+    public <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass, int index) throws CommandNotEnoughArgumentsException {
         try {
             return peekEnum(enumClass, index);
         } catch (CommandInvalidTypeException e) {
@@ -264,12 +264,8 @@ public class ArgConsumer {
      * @see #getEnumOrNull(Class)
      * @see CommandArgument#getEnum(Class)
      */
-    public <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass) {
-        try {
-            return peekEnumOrNull(enumClass, 0);
-        } catch (CommandInvalidTypeException e) {
-            return null;
-        }
+    public <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass) throws CommandNotEnoughArgumentsException {
+        return peekEnumOrNull(enumClass, 0);
     }
 
     /**
@@ -283,14 +279,13 @@ public class ArgConsumer {
      * @param type  The type to peek as
      * @param index The index to peek
      * @return An instance of the specified type
-     * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      * @see ArgParser
      * @see #peekAs(Class)
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
      */
-    public <T> T peekAs(Class<T> type, int index) {
+    public <T> T peekAs(Class<T> type, int index) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return peek(index).getAs(type);
     }
 
@@ -303,14 +298,13 @@ public class ArgConsumer {
      *
      * @param type The type to peek as
      * @return An instance of the specified type
-     * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      * @see ArgParser
      * @see #peekAs(Class, int)
      * @see #peekAsOrDefault(Class, Object)
      * @see #peekAsOrNull(Class)
      */
-    public <T> T peekAs(Class<T> type) {
+    public <T> T peekAs(Class<T> type) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return peekAs(type, 0);
     }
 
@@ -331,7 +325,7 @@ public class ArgConsumer {
      * @see #peekAs(Class, int)
      * @see #peekAsOrNull(Class, int)
      */
-    public <T> T peekAsOrDefault(Class<T> type, T def, int index) {
+    public <T> T peekAsOrDefault(Class<T> type, T def, int index) throws CommandNotEnoughArgumentsException {
         try {
             return peekAs(type, index);
         } catch (CommandInvalidTypeException e) {
@@ -354,7 +348,7 @@ public class ArgConsumer {
      * @see #peekAs(Class)
      * @see #peekAsOrNull(Class)
      */
-    public <T> T peekAsOrDefault(Class<T> type, T def) {
+    public <T> T peekAsOrDefault(Class<T> type, T def) throws CommandNotEnoughArgumentsException {
         return peekAsOrDefault(type, def, 0);
     }
 
@@ -374,7 +368,7 @@ public class ArgConsumer {
      * @see #peekAs(Class, int)
      * @see #peekAsOrDefault(Class, Object, int)
      */
-    public <T> T peekAsOrNull(Class<T> type, int index) {
+    public <T> T peekAsOrNull(Class<T> type, int index) throws CommandNotEnoughArgumentsException {
         return peekAsOrDefault(type, null, index);
     }
 
@@ -392,7 +386,7 @@ public class ArgConsumer {
      * @see #peekAs(Class)
      * @see #peekAsOrDefault(Class, Object)
      */
-    public <T> T peekAsOrNull(Class<T> type) {
+    public <T> T peekAsOrNull(Class<T> type) throws CommandNotEnoughArgumentsException {
         return peekAsOrNull(type, 0);
     }
 
@@ -409,7 +403,7 @@ public class ArgConsumer {
      * @return The datatype instance
      * @see IDatatype
      */
-    public <T extends IDatatype> T peekDatatype(Class<T> datatype) {
+    public <T extends IDatatype> T peekDatatype(Class<T> datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return copy().getDatatype(datatype);
     }
 
@@ -426,7 +420,7 @@ public class ArgConsumer {
      * @return The datatype instance, or {@code null} if it throws an exception
      * @see IDatatype
      */
-    public <T extends IDatatype> T peekDatatypeOrNull(Class<T> datatype) {
+    public <T extends IDatatype> T peekDatatypeOrNull(Class<T> datatype) throws CommandNotEnoughArgumentsException {
         return copy().getDatatypeOrNull(datatype);
     }
 
@@ -444,7 +438,7 @@ public class ArgConsumer {
      * @see IDatatype
      * @see IDatatypePost
      */
-    public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(Class<D> datatype, O original) {
+    public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(Class<D> datatype, O original) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return copy().getDatatypePost(datatype, original);
     }
 
@@ -547,7 +541,7 @@ public class ArgConsumer {
      * @return The next argument
      * @throws CommandNotEnoughArgumentsException If there's less than one argument left
      */
-    public CommandArgument get() {
+    public CommandArgument get() throws CommandNotEnoughArgumentsException {
         requireMin(1);
         CommandArgument arg = args.removeFirst();
         consumed.add(arg);
@@ -561,7 +555,7 @@ public class ArgConsumer {
      * @return The value of the next argument
      * @throws CommandNotEnoughArgumentsException If there's less than one argument left
      */
-    public String getString() {
+    public String getString() throws CommandNotEnoughArgumentsException {
         return get().value;
     }
 
@@ -578,7 +572,7 @@ public class ArgConsumer {
      * @see #getEnumOrNull(Class)
      * @see CommandArgument#getEnum(Class)
      */
-    public <E extends Enum<?>> E getEnum(Class<E> enumClass) {
+    public <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return get().getEnum(enumClass);
     }
 
@@ -597,7 +591,7 @@ public class ArgConsumer {
      * @see #peekEnumOrNull(Class)
      * @see CommandArgument#getEnum(Class)
      */
-    public <E extends Enum<?>> E getEnumOrDefault(Class<E> enumClass, E def) {
+    public <E extends Enum<?>> E getEnumOrDefault(Class<E> enumClass, E def) throws CommandNotEnoughArgumentsException {
         try {
             peekEnum(enumClass);
             return getEnum(enumClass);
@@ -620,7 +614,7 @@ public class ArgConsumer {
      * @see #peekEnumOrNull(Class)
      * @see CommandArgument#getEnum(Class)
      */
-    public <E extends Enum<?>> E getEnumOrNull(Class<E> enumClass) {
+    public <E extends Enum<?>> E getEnumOrNull(Class<E> enumClass) throws CommandNotEnoughArgumentsException {
         return getEnumOrDefault(enumClass, null);
     }
 
@@ -633,7 +627,6 @@ public class ArgConsumer {
      *
      * @param type The type to peek as
      * @return An instance of the specified type
-     * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      * @see ArgParser
      * @see #get()
@@ -643,7 +636,7 @@ public class ArgConsumer {
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
      */
-    public <T> T getAs(Class<T> type) {
+    public <T> T getAs(Class<T> type) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return get().getAs(type);
     }
 
@@ -665,7 +658,7 @@ public class ArgConsumer {
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
      */
-    public <T> T getAsOrDefault(Class<T> type, T def) {
+    public <T> T getAsOrDefault(Class<T> type, T def) throws CommandNotEnoughArgumentsException {
         try {
             T val = peek().getAs(type);
             get();
@@ -692,7 +685,7 @@ public class ArgConsumer {
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
      */
-    public <T> T getAsOrNull(Class<T> type) {
+    public <T> T getAsOrNull(Class<T> type) throws CommandNotEnoughArgumentsException {
         return getAsOrDefault(type, null);
     }
 
@@ -707,11 +700,11 @@ public class ArgConsumer {
      * @return The datatype instance
      * @see IDatatype
      */
-    public <T extends IDatatype> T getDatatype(Class<T> datatype) {
+    public <T extends IDatatype> T getDatatype(Class<T> datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         try {
             return datatype.getConstructor(ArgConsumer.class).newInstance(this);
         } catch (InvocationTargetException e) {
-            throw new CommandInvalidTypeException(has() ? peek() : consumed(), datatype.getSimpleName());
+            throw new CommandInvalidTypeException(hasAny() ? peek() : consumed(), datatype.getSimpleName());
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException e) {
             throw new CommandUnhandledException(e);
         }
@@ -730,7 +723,7 @@ public class ArgConsumer {
      * @return The datatype instance, or {@code null} if it throws an exception
      * @see IDatatype
      */
-    public <T extends IDatatype> T getDatatypeOrNull(Class<T> datatype) {
+    public <T extends IDatatype> T getDatatypeOrNull(Class<T> datatype) throws CommandNotEnoughArgumentsException {
         List<CommandArgument> argsSnapshot = new ArrayList<>(args);
         List<CommandArgument> consumedSnapshot = new ArrayList<>(consumed);
         try {
@@ -756,7 +749,7 @@ public class ArgConsumer {
      * @see IDatatype
      * @see IDatatypePost
      */
-    public <T, O, D extends IDatatypePost<T, O>> T getDatatypePost(Class<D> datatype, O original) {
+    public <T, O, D extends IDatatypePost<T, O>> T getDatatypePost(Class<D> datatype, O original) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return getDatatype(datatype).apply(original);
     }
 
@@ -819,7 +812,7 @@ public class ArgConsumer {
      * @see IDatatype
      * @see IDatatypeFor
      */
-    public <T, D extends IDatatypeFor<T>> T getDatatypeFor(Class<D> datatype) {
+    public <T, D extends IDatatypeFor<T>> T getDatatypeFor(Class<D> datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return getDatatype(datatype).get();
     }
 
@@ -838,7 +831,7 @@ public class ArgConsumer {
      * @see IDatatype
      * @see IDatatypeFor
      */
-    public <T, D extends IDatatypeFor<T>> T getDatatypeForOrDefault(Class<D> datatype, T def) {
+    public <T, D extends IDatatypeFor<T>> T getDatatypeForOrDefault(Class<D> datatype, T def) throws CommandNotEnoughArgumentsException {
         List<CommandArgument> argsSnapshot = new ArrayList<>(args);
         List<CommandArgument> consumedSnapshot = new ArrayList<>(consumed);
         try {
@@ -866,7 +859,7 @@ public class ArgConsumer {
      * @see IDatatype
      * @see IDatatypeFor
      */
-    public <T, D extends IDatatypeFor<T>> T getDatatypeForOrNull(Class<D> datatype) {
+    public <T, D extends IDatatypeFor<T>> T getDatatypeForOrNull(Class<D> datatype) throws CommandNotEnoughArgumentsException {
         return getDatatypeForOrDefault(datatype, null);
     }
 
@@ -915,7 +908,7 @@ public class ArgConsumer {
      * @see #requireMax(int)
      * @see #requireExactly(int)
      */
-    public void requireMin(int min) {
+    public void requireMin(int min) throws CommandNotEnoughArgumentsException {
         if (args.size() < min) {
             throw new CommandNotEnoughArgumentsException(min + consumed.size());
         }
@@ -923,11 +916,11 @@ public class ArgConsumer {
 
     /**
      * @param max The maximum amount of arguments allowed.
-     * @throws CommandNotEnoughArgumentsException If there are more than {@code max} arguments left.
+     * @throws CommandTooManyArgumentsException If there are more than {@code max} arguments left.
      * @see #requireMin(int)
      * @see #requireExactly(int)
      */
-    public void requireMax(int max) {
+    public void requireMax(int max) throws CommandTooManyArgumentsException {
         if (args.size() > max) {
             throw new CommandTooManyArgumentsException(max + consumed.size());
         }
@@ -940,7 +933,7 @@ public class ArgConsumer {
      * @see #requireMin(int)
      * @see #requireMax(int)
      */
-    public void requireExactly(int args) {
+    public void requireExactly(int args) throws CommandException {
         requireMin(args);
         requireMax(args);
     }

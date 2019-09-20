@@ -18,6 +18,7 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.argparser.ArgParser;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidArgumentException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
@@ -44,5 +45,5 @@ public interface IDatatype {
      * @return A stream representing the strings that can be tab completed. DO NOT INCLUDE SPACES IN ANY STRINGS.
      * @see ArgConsumer#tabCompleteDatatype(Class)
      */
-    Stream<String> tabComplete(ArgConsumer consumer);
+    Stream<String> tabComplete(ArgConsumer consumer) throws CommandException;
 }

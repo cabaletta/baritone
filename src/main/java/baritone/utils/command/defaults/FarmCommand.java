@@ -20,6 +20,7 @@ package baritone.utils.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.Arrays;
@@ -33,7 +34,7 @@ public class FarmCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         args.requireMax(0);
         baritone.getFarmProcess().farm();
         logDirect("Farming");

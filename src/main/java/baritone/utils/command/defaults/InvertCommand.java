@@ -23,6 +23,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalInverted;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
@@ -37,7 +38,7 @@ public class InvertCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         args.requireMax(0);
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         Goal goal;

@@ -21,6 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.pagination.Paginator;
@@ -48,8 +49,8 @@ public class SetCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
-        String arg = args.has() ? args.getString().toLowerCase(Locale.US) : "list";
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+        String arg = args.hasAny() ? args.getString().toLowerCase(Locale.US) : "list";
         if (Arrays.asList("s", "save").contains(arg)) {
             SettingsUtil.save(settings);
             logDirect("Settings saved");
@@ -59,7 +60,7 @@ public class SetCommand extends Command {
         boolean viewAll = Arrays.asList("all", "l", "list").contains(arg);
         boolean paginate = viewModified || viewAll;
         if (paginate) {
-            String search = args.has() && args.peekAsOrNull(Integer.class) == null ? args.getString() : "";
+            String search = args.hasAny() && args.peekAsOrNull(Integer.class) == null ? args.getString() : "";
             args.requireMax(1);
             List<? extends Settings.Setting> toPaginate =
                     (viewModified ? SettingsUtil.modifiedSettings(settings) : settings.allSettings).stream()
@@ -104,7 +105,7 @@ public class SetCommand extends Command {
         boolean toggling = arg.equalsIgnoreCase("toggle");
         boolean doingSomething = resetting || toggling;
         if (resetting) {
-            if (!args.has()) {
+            if (!args.hasAny()) {
                 logDirect("Please specify 'all' as an argument to reset to confirm you'd really like to do this");
                 logDirect("ALL settings will be reset. Use the 'set modified' or 'modified' commands to see what will be reset.");
                 logDirect("Specify a setting name instead of 'all' to only reset one setting");
@@ -126,7 +127,7 @@ public class SetCommand extends Command {
         if (setting == null) {
             throw new CommandInvalidTypeException(args.consumed(), "a valid setting");
         }
-        if (!doingSomething && !args.has()) {
+        if (!doingSomething && !args.hasAny()) {
             logDirect(String.format("Value of setting %s:", setting.getName()));
             logDirect(settingValueToString(setting));
         } else {
@@ -184,8 +185,8 @@ public class SetCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
-        if (args.has()) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
+        if (args.hasAny()) {
             String arg = args.getString();
             if (args.hasExactlyOne() && !Arrays.asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {
                 if (arg.equalsIgnoreCase("reset")) {
@@ -214,7 +215,7 @@ public class SetCommand extends Command {
                         return Stream.of(settingValueToString(setting));
                     }
                 }
-            } else if (!args.has()) {
+            } else if (!args.hasAny()) {
                 return new TabCompleteHelper()
                         .addSettings()
                         .sortAlphabetically()

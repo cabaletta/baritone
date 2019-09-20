@@ -17,6 +17,8 @@
 
 package baritone.api.utils.command.datatypes;
 
+import baritone.api.utils.command.exception.CommandException;
+import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.io.File;
@@ -40,7 +42,7 @@ public class RelativeFile implements IDatatypePost<File, File> {
         path = null;
     }
 
-    public RelativeFile(ArgConsumer consumer) {
+    public RelativeFile(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
         try {
             path = FileSystems.getDefault().getPath(consumer.getString());
         } catch (InvalidPathException e) {
@@ -68,9 +70,12 @@ public class RelativeFile implements IDatatypePost<File, File> {
         }
     }
 
-    public static Stream<String> tabComplete(ArgConsumer consumer, File base0) {
+    public static Stream<String> tabComplete(ArgConsumer consumer, File base0) throws CommandException {
         // I will not make the caller deal with this, seriously
-        // Tab complete code is beautiful and I'm not going to bloat it with dumb ass checked exception bullshit
+        // Tab complete code is beautiful and I'm not going to bloat it with dumb ass checked exception bullshit -LoganDark
+
+        // lol owned -Brady
+
         File base = getCanonicalFileUnchecked(base0);
         String currentPathStringThing = consumer.getString();
         Path currentPath = FileSystems.getDefault().getPath(currentPathStringThing);

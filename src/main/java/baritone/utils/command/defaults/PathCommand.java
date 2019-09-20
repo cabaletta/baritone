@@ -24,6 +24,7 @@ import baritone.api.process.ICustomGoalProcess;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.RelativeCoordinate;
 import baritone.api.utils.command.datatypes.RelativeGoal;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
@@ -40,10 +41,10 @@ public class PathCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         Goal goal;
-        if (args.has()) {
+        if (args.hasAny()) {
             args.requireMax(3);
             goal = args.getDatatype(RelativeGoal.class).apply(ctx.playerFeet());
         } else if ((goal = customGoalProcess.getGoal()) == null) {
@@ -56,8 +57,8 @@ public class PathCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
-        if (args.has() && !args.has(4)) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
+        if (args.hasAny() && !args.has(4)) {
             while (args.has(2)) {
                 if (args.peekDatatypeOrNull(RelativeCoordinate.class) == null) {
                     break;

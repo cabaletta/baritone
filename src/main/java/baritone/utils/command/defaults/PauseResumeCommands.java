@@ -23,6 +23,7 @@ import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.command.Command;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
@@ -81,7 +82,7 @@ public class PauseResumeCommands {
         );
         pauseCommand = new Command(baritone, "pause") {
             @Override
-            protected void executed(String label, ArgConsumer args, Settings settings) {
+            protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
                 args.requireMax(0);
                 if (paused[0]) {
                     throw new CommandInvalidStateException("Already paused");
@@ -114,7 +115,7 @@ public class PauseResumeCommands {
         };
         resumeCommand = new Command(baritone, "resume") {
             @Override
-            protected void executed(String label, ArgConsumer args, Settings settings) {
+            protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
                 args.requireMax(0);
                 if (!paused[0]) {
                     throw new CommandInvalidStateException("Not paused");
@@ -145,7 +146,7 @@ public class PauseResumeCommands {
         };
         pausedCommand = new Command(baritone, "paused") {
             @Override
-            protected void executed(String label, ArgConsumer args, Settings settings) {
+            protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
                 args.requireMax(0);
                 logDirect(String.format("Baritone is %spaused", paused[0] ? "" : "not "));
             }

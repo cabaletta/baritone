@@ -27,6 +27,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.ForWaypoints;
 import baritone.api.utils.command.datatypes.RelativeBlockPos;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
@@ -52,8 +53,8 @@ public class WaypointsCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
-        Action action = args.has() ? Action.getByName(args.getString()) : Action.LIST;
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+        Action action = args.hasAny() ? Action.getByName(args.getString()) : Action.LIST;
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
         }
@@ -90,7 +91,7 @@ public class WaypointsCommand extends Command {
         Function<IWaypoint, ITextComponent> transform = waypoint ->
                 toComponent.apply(waypoint, action == Action.LIST ? Action.INFO : action);
         if (action == Action.LIST) {
-            IWaypoint.Tag tag = args.has() ? IWaypoint.Tag.getByName(args.peekString()) : null;
+            IWaypoint.Tag tag = args.hasAny() ? IWaypoint.Tag.getByName(args.peekString()) : null;
             if (tag != null) {
                 args.get();
             }
@@ -129,8 +130,8 @@ public class WaypointsCommand extends Command {
             if (tag == null) {
                 throw new CommandInvalidStateException(String.format("'%s' is not a tag ", args.consumedString()));
             }
-            String name = args.has() ? args.getString() : "";
-            BetterBlockPos pos = args.has()
+            String name = args.hasAny() ? args.getString() : "";
+            BetterBlockPos pos = args.hasAny()
                     ? args.getDatatypePost(RelativeBlockPos.class, ctx.playerFeet())
                     : ctx.playerFeet();
             args.requireMax(0);
@@ -151,7 +152,7 @@ public class WaypointsCommand extends Command {
         } else {
             IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.class);
             IWaypoint waypoint = null;
-            if (args.has() && args.peekString().equals("@")) {
+            if (args.hasAny() && args.peekString().equals("@")) {
                 args.requireExactly(2);
                 args.get();
                 long timestamp = args.getAs(Long.class);
@@ -241,8 +242,8 @@ public class WaypointsCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
-        if (args.has()) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
+        if (args.hasAny()) {
             if (args.hasExactlyOne()) {
                 return new TabCompleteHelper()
                         .append(Action.getAllNames())

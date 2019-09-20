@@ -17,6 +17,8 @@
 
 package baritone.api.utils.command.datatypes;
 
+import baritone.api.utils.command.exception.CommandException;
+import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.block.Block;
@@ -33,7 +35,7 @@ public class BlockById implements IDatatypeFor<Block> {
         block = null;
     }
 
-    public BlockById(ArgConsumer consumer) {
+    public BlockById(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
         ResourceLocation id = new ResourceLocation(consumer.getString());
         if ((block = Block.REGISTRY.getObject(id)) == Blocks.AIR) {
             throw new IllegalArgumentException("no block found by that id");
@@ -46,7 +48,7 @@ public class BlockById implements IDatatypeFor<Block> {
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
         return new TabCompleteHelper()
                 .append(
                         Block.REGISTRY.getKeys()

@@ -21,6 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
@@ -61,7 +62,7 @@ public abstract class Command implements Helper {
      *
      * @param execution The command execution to execute this command with
      */
-    public void execute(CommandExecution execution) {
+    public void execute(CommandExecution execution) throws CommandException {
         executed(execution.label, execution.args, execution.settings);
     }
 
@@ -82,13 +83,13 @@ public abstract class Command implements Helper {
     /**
      * Called when this command is executed.
      */
-    protected abstract void executed(String label, ArgConsumer args, Settings settings);
+    protected abstract void executed(String label, ArgConsumer args, Settings settings) throws CommandException;
 
     /**
      * Called when the command needs to tab complete. Return a Stream representing the entries to put in the completions
      * list.
      */
-    protected abstract Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings);
+    protected abstract Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException;
 
     /**
      * @return A <b>single-line</b> string containing a short description of this command's purpose.

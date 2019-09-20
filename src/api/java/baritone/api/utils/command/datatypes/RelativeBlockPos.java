@@ -18,6 +18,7 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
@@ -34,7 +35,7 @@ public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlo
         z = null;
     }
 
-    public RelativeBlockPos(ArgConsumer consumer) {
+    public RelativeBlockPos(ArgConsumer consumer) throws CommandException {
         x = consumer.getDatatype(RelativeCoordinate.class);
         y = consumer.getDatatype(RelativeCoordinate.class);
         z = consumer.getDatatype(RelativeCoordinate.class);
@@ -50,8 +51,8 @@ public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlo
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
-        if (consumer.has() && !consumer.has(4)) {
+    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
+        if (consumer.hasAny() && !consumer.has(4)) {
             while (consumer.has(2)) {
                 if (consumer.peekDatatypeOrNull(RelativeCoordinate.class) == null) {
                     break;

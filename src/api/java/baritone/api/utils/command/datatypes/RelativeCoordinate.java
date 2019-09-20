@@ -17,6 +17,8 @@
 
 package baritone.api.utils.command.datatypes;
 
+import baritone.api.utils.command.exception.CommandException;
+import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.util.math.MathHelper;
 
@@ -35,7 +37,7 @@ public class RelativeCoordinate implements IDatatypePost<Double, Double> {
         offset = 0;
     }
 
-    public RelativeCoordinate(ArgConsumer consumer) {
+    public RelativeCoordinate(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
         Matcher matcher = PATTERN.matcher(consumer.getString());
         if (!matcher.matches()) {
             throw new IllegalArgumentException("pattern doesn't match");
@@ -57,7 +59,7 @@ public class RelativeCoordinate implements IDatatypePost<Double, Double> {
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
         if (!consumer.has(2) && consumer.getString().matches("^(~|$)")) {
             return Stream.of("~");
         }

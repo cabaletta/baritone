@@ -20,6 +20,8 @@ package baritone.api.utils.command.datatypes;
 import baritone.api.BaritoneAPI;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.IWaypointCollection;
+import baritone.api.utils.command.exception.CommandException;
+import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 
@@ -40,7 +42,7 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
         waypoints = tag == null ? getWaypointsByName(arg) : getWaypointsByTag(tag);
     }
 
-    public ForWaypoints(ArgConsumer consumer) {
+    public ForWaypoints(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
         this(consumer.getString());
     }
 
@@ -50,7 +52,7 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
         return new TabCompleteHelper()
                 .append(getWaypointNames())
                 .sortAlphabetically()

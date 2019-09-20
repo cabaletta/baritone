@@ -33,6 +33,7 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.utils.command.datatypes.ForEnumFacing;
 import baritone.api.utils.command.datatypes.RelativeBlockPos;
+import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
@@ -75,7 +76,7 @@ public class SelCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
         Action action = Action.getByName(args.getString());
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
@@ -85,7 +86,7 @@ public class SelCommand extends Command {
                 throw new CommandInvalidStateException("Set pos1 first before using pos2");
             }
             BetterBlockPos playerPos = mc.getRenderViewEntity() != null ? BetterBlockPos.from(new BlockPos(mc.getRenderViewEntity())) : ctx.playerFeet();
-            BetterBlockPos pos = args.has() ? args.getDatatypePost(RelativeBlockPos.class, playerPos) : playerPos;
+            BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.class, playerPos) : playerPos;
             args.requireMax(0);
             if (action == Action.POS1) {
                 pos1 = pos;
@@ -186,7 +187,7 @@ public class SelCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
                     .append(Action.getAllNames())

@@ -17,22 +17,9 @@
 
 package baritone.api.utils.command.exception;
 
-import baritone.api.utils.command.Command;
-import baritone.api.utils.command.argument.CommandArgument;
-import net.minecraft.util.text.TextFormatting;
-
-import java.util.List;
-
-import static baritone.api.utils.Helper.HELPER;
-
 public abstract class CommandErrorMessageException extends CommandException {
 
     protected CommandErrorMessageException(String reason) {
         super(reason);
-    }
-
-    @Override
-    public void handle(Command command, List<CommandArgument> args) {
-        HELPER.logDirect(getMessage(), TextFormatting.RED);
     }
 }

@@ -28,6 +28,7 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.exception.CommandNotFoundException;
 import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
@@ -124,7 +125,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         String command = pair.first();
         String rest = msg.substring(pair.first().length());
         ArgConsumer argc = new ArgConsumer(pair.second());
-        if (!argc.has()) {
+        if (!argc.hasAny()) {
             Settings.Setting setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
             if (setting != null) {
                 logRanCommand(command, rest);
@@ -142,7 +143,9 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 }
                 if (setting.getName().equalsIgnoreCase(pair.first())) {
                     logRanCommand(command, rest);
-                    CommandManager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
+                    try {
+                        CommandManager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
+                    } catch (CommandNotEnoughArgumentsException ignored) {} // The operation is safe
                     return true;
                 }
             }
@@ -176,31 +179,35 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
     }
 
     public Stream<String> tabComplete(String msg) {
-        List<CommandArgument> args = CommandArgument.from(msg, true);
-        ArgConsumer argc = new ArgConsumer(args);
-        if (argc.hasAtMost(2)) {
-            if (argc.hasExactly(1)) {
-                return new TabCompleteHelper()
-                        .addCommands()
-                        .addSettings()
-                        .filterPrefix(argc.getString())
-                        .stream();
-            }
-            Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
-            if (setting != null) {
-                if (setting.getValueClass() == Boolean.class) {
-                    TabCompleteHelper helper = new TabCompleteHelper();
-                    if ((Boolean) setting.value) {
-                        helper.append(Stream.of("true", "false"));
+        try {
+            List<CommandArgument> args = CommandArgument.from(msg, true);
+            ArgConsumer argc = new ArgConsumer(args);
+            if (argc.hasAtMost(2)) {
+                if (argc.hasExactly(1)) {
+                    return new TabCompleteHelper()
+                            .addCommands()
+                            .addSettings()
+                            .filterPrefix(argc.getString())
+                            .stream();
+                }
+                Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
+                if (setting != null) {
+                    if (setting.getValueClass() == Boolean.class) {
+                        TabCompleteHelper helper = new TabCompleteHelper();
+                        if ((Boolean) setting.value) {
+                            helper.append(Stream.of("true", "false"));
+                        } else {
+                            helper.append(Stream.of("false", "true"));
+                        }
+                        return helper.filterPrefix(argc.getString()).stream();
                     } else {
-                        helper.append(Stream.of("false", "true"));
+                        return Stream.of(SettingsUtil.settingValueToString(setting));
                     }
-                    return helper.filterPrefix(argc.getString()).stream();
-                } else {
-                    return Stream.of(SettingsUtil.settingValueToString(setting));
                 }
             }
+            return CommandManager.tabComplete(msg);
+        } catch (CommandNotEnoughArgumentsException ignored) { // Shouldn't happen, the operation is safe
+            return Stream.empty();
         }
-        return CommandManager.tabComplete(msg);
     }
 }
