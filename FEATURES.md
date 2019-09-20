@@ -50,3 +50,4 @@ Things it may not ever have, from most likely to least likely =(
 - Boats
 - Horses (2x3 path instead of 1x2)
 - Elytra
+- melee combat
