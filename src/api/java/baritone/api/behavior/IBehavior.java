@@ -4,7 +4,7 @@
  * Baritone is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version. Do not buy from or resell this software to others.
  *
  * Baritone is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,3 +28,5 @@ import baritone.api.event.listener.IGameEventListener;
  * @since 9/23/2018
  */
 public interface IBehavior extends AbstractGameEventListener {}
+
+/* edited on 9/20/2019 10:35 GMT-6 by BlueBlazeTech
