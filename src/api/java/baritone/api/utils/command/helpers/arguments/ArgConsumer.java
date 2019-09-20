@@ -54,7 +54,7 @@ import java.util.stream.Stream;
  * handlers can do their job and log the error to chat.</li>
  * </ul>
  */
-public class ArgConsumer implements Cloneable {
+public class ArgConsumer {
 
     /**
      * The list of arguments in this ArgConsumer
@@ -410,7 +410,7 @@ public class ArgConsumer implements Cloneable {
      * @see IDatatype
      */
     public <T extends IDatatype> T peekDatatype(Class<T> datatype) {
-        return clone().getDatatype(datatype);
+        return copy().getDatatype(datatype);
     }
 
     /**
@@ -427,7 +427,7 @@ public class ArgConsumer implements Cloneable {
      * @see IDatatype
      */
     public <T extends IDatatype> T peekDatatypeOrNull(Class<T> datatype) {
-        return clone().getDatatypeOrNull(datatype);
+        return copy().getDatatypeOrNull(datatype);
     }
 
     /**
@@ -445,7 +445,7 @@ public class ArgConsumer implements Cloneable {
      * @see IDatatypePost
      */
     public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(Class<D> datatype, O original) {
-        return clone().getDatatypePost(datatype, original);
+        return copy().getDatatypePost(datatype, original);
     }
 
     /**
@@ -464,7 +464,7 @@ public class ArgConsumer implements Cloneable {
      * @see IDatatypePost
      */
     public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePostOrDefault(Class<D> datatype, O original, T def) {
-        return clone().getDatatypePostOrDefault(datatype, original, def);
+        return copy().getDatatypePostOrDefault(datatype, original, def);
     }
 
     /**
@@ -500,7 +500,7 @@ public class ArgConsumer implements Cloneable {
      * @see IDatatypeFor
      */
     public <T, D extends IDatatypeFor<T>> T peekDatatypeFor(Class<D> datatype) {
-        return clone().peekDatatypeFor(datatype);
+        return copy().peekDatatypeFor(datatype);
     }
 
     /**
@@ -519,7 +519,7 @@ public class ArgConsumer implements Cloneable {
      * @see IDatatypeFor
      */
     public <T, D extends IDatatypeFor<T>> T peekDatatypeForOrDefault(Class<D> datatype, T def) {
-        return clone().peekDatatypeForOrDefault(datatype, def);
+        return copy().peekDatatypeForOrDefault(datatype, def);
     }
 
     /**
@@ -975,12 +975,10 @@ public class ArgConsumer implements Cloneable {
     }
 
     /**
-     * @return A clone of this {@link ArgConsumer}. It has the same arguments (both consumed and not), but does not
+     * @return A copy of this {@link ArgConsumer}. It has the same arguments (both consumed and not), but does not
      * affect or mutate this instance. Useful for the various {@code peek} functions
      */
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
-    @Override
-    public ArgConsumer clone() {
+    public ArgConsumer copy() {
         return new ArgConsumer(args, consumed);
     }
 
