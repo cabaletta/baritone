@@ -24,7 +24,7 @@ public interface IArgParser<T> {
     /**
      * @return the class of this parser.
      */
-    Class<T> getKlass();
+    Class<T> getTarget();
 
     /**
      * A stateless argument parser is just that. It takes a {@link CommandArgument} and outputs its type.
@@ -50,7 +50,7 @@ public interface IArgParser<T> {
      */
     interface Stated<T, S> extends IArgParser<T> {
 
-        Class<S> getStateKlass();
+        Class<S> getStateType();
 
         /**
          * @param arg   The argument to parse.

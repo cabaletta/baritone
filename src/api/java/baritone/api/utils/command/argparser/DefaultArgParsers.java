@@ -25,7 +25,7 @@ import java.util.Locale;
 
 public class DefaultArgParsers {
 
-    public static class IntArgumentParser extends ArgParser<Integer> implements IArgParser.Stateless<Integer> {
+    public static class IntArgumentParser extends ArgParser.Stateless<Integer> {
 
         public static final IntArgumentParser INSTANCE = new IntArgumentParser();
 
@@ -39,7 +39,7 @@ public class DefaultArgParsers {
         }
     }
 
-    public static class LongArgumentParser extends ArgParser<Long> implements IArgParser.Stateless<Long> {
+    public static class LongArgumentParser extends ArgParser.Stateless<Long> {
 
         public static final LongArgumentParser INSTANCE = new LongArgumentParser();
 
@@ -53,7 +53,7 @@ public class DefaultArgParsers {
         }
     }
 
-    public static class FloatArgumentParser extends ArgParser<Float> implements IArgParser.Stateless<Float> {
+    public static class FloatArgumentParser extends ArgParser.Stateless<Float> {
 
         public static final FloatArgumentParser INSTANCE = new FloatArgumentParser();
 
@@ -71,7 +71,7 @@ public class DefaultArgParsers {
         }
     }
 
-    public static class DoubleArgumentParser extends ArgParser<Double> implements IArgParser.Stateless<Double> {
+    public static class DoubleArgumentParser extends ArgParser.Stateless<Double> {
 
         public static final DoubleArgumentParser INSTANCE = new DoubleArgumentParser();
 
@@ -89,7 +89,7 @@ public class DefaultArgParsers {
         }
     }
 
-    public static class BooleanArgumentParser extends ArgParser<Boolean> implements IArgParser.Stateless<Boolean> {
+    public static class BooleanArgumentParser extends ArgParser.Stateless<Boolean> {
 
         public static final BooleanArgumentParser INSTANCE = new BooleanArgumentParser();
         public static final List<String> TRUTHY_VALUES = Arrays.asList("1", "true", "yes", "t", "y", "on", "enable");

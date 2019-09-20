@@ -19,29 +19,36 @@ package baritone.api.utils.command.argparser;
 
 public abstract class ArgParser<T> implements IArgParser<T> {
 
-    private final Class<T> klass;
+    private final Class<T> target;
 
-    protected ArgParser(Class<T> klass) {
-        this.klass = klass;
+    private ArgParser(Class<T> target) {
+        this.target = target;
     }
 
     @Override
-    public Class<T> getKlass() {
-        return klass;
+    public Class<T> getTarget() {
+        return target;
+    }
+
+    public static abstract class Stateless<T> extends ArgParser<T> implements IArgParser.Stateless<T> {
+
+        public Stateless(Class<T> target) {
+            super(target);
+        }
     }
 
     public static abstract class Stated<T, S> extends ArgParser<T> implements IArgParser.Stated<T, S> {
 
-        private final Class<S> stateKlass;
+        private final Class<S> stateType;
 
-        protected Stated(Class<T> klass, Class<S> stateKlass) {
-            super(klass);
-            this.stateKlass = stateKlass;
+        protected Stated(Class<T> target, Class<S> stateType) {
+            super(target);
+            this.stateType = stateType;
         }
 
         @Override
-        public Class<S> getStateKlass() {
-            return stateKlass;
+        public Class<S> getStateType() {
+            return stateType;
         }
     }
 }

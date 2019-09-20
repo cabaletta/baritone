@@ -31,7 +31,6 @@ import java.util.stream.StreamSupport;
  * @param <V> The entry type that will be stored in this registry. This can be anything, really - preferably anything
  *            that works as a HashMap key, as that's what's used to keep track of which entries are registered or not.
  */
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Registry<V> {
 
     /**

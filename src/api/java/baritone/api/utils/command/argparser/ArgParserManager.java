@@ -31,30 +31,30 @@ public class ArgParserManager {
     }
 
     /**
-     * @param klass The class to search for.
+     * @param type The type trying to be parsed
      * @return A parser that can parse arguments into this class, if found.
      */
-    public static <T> ArgParser.Stateless<T> getParserStateless(Class<T> klass) {
+    public static <T> ArgParser.Stateless<T> getParserStateless(Class<T> type) {
         //noinspection unchecked
         return REGISTRY.descendingStream()
                 .filter(ArgParser.Stateless.class::isInstance)
                 .map(ArgParser.Stateless.class::cast)
-                .filter(parser -> parser.getKlass().isAssignableFrom(klass))
+                .filter(parser -> parser.getTarget().isAssignableFrom(type))
                 .findFirst()
                 .orElse(null);
     }
 
     /**
-     * @param klass The class to search for.
+     * @param type The type trying to be parsed
      * @return A parser that can parse arguments into this class, if found.
      */
-    public static <T, S> ArgParser.Stated<T, S> getParserStated(Class<T> klass, Class<S> stateKlass) {
+    public static <T, S> ArgParser.Stated<T, S> getParserStated(Class<T> type, Class<S> stateKlass) {
         //noinspection unchecked
         return REGISTRY.descendingStream()
                 .filter(ArgParser.Stated.class::isInstance)
                 .map(ArgParser.Stated.class::cast)
-                .filter(parser -> parser.getKlass().isAssignableFrom(klass))
-                .filter(parser -> parser.getStateKlass().isAssignableFrom(stateKlass))
+                .filter(parser -> parser.getTarget().isAssignableFrom(type))
+                .filter(parser -> parser.getStateType().isAssignableFrom(stateKlass))
                 .map(ArgParser.Stated.class::cast)
                 .findFirst()
                 .orElse(null);
@@ -63,28 +63,28 @@ public class ArgParserManager {
     /**
      * Attempt to parse the specified argument with a stateless {@link ArgParser} that outputs the specified class.
      *
-     * @param klass The class to parse the argument into.
+     * @param type  The type to try and parse the argument into.
      * @param arg   The argument to parse.
      * @return An instance of the specified class.
      * @throws CommandNoParserForTypeException If no parser exists for that type
      * @throws CommandInvalidTypeException     If the parsing failed
      */
-    public static <T> T parseStateless(Class<T> klass, CommandArgument arg) {
-        ArgParser.Stateless<T> parser = getParserStateless(klass);
+    public static <T> T parseStateless(Class<T> type, CommandArgument arg) {
+        ArgParser.Stateless<T> parser = getParserStateless(type);
         if (parser == null) {
-            throw new CommandNoParserForTypeException(klass);
+            throw new CommandNoParserForTypeException(type);
         }
         try {
             return parser.parseArg(arg);
         } catch (RuntimeException exc) {
-            throw new CommandInvalidTypeException(arg, klass.getSimpleName());
+            throw new CommandInvalidTypeException(arg, type.getSimpleName());
         }
     }
 
     /**
      * Attempt to parse the specified argument with a stated {@link ArgParser} that outputs the specified class.
      *
-     * @param klass The class to parse the argument into.
+     * @param type  The type to try and parse the argument into.
      * @param arg   The argument to parse.
      * @param state The state to pass to the {@link ArgParser.Stated}.
      * @return An instance of the specified class.
@@ -92,15 +92,15 @@ public class ArgParserManager {
      * @throws CommandInvalidTypeException     If the parsing failed
      * @see ArgParser.Stated
      */
-    public static <T, S> T parseStated(Class<T> klass, Class<S> stateKlass, CommandArgument arg, S state) {
-        ArgParser.Stated<T, S> parser = getParserStated(klass, stateKlass);
+    public static <T, S> T parseStated(Class<T> type, Class<S> stateKlass, CommandArgument arg, S state) {
+        ArgParser.Stated<T, S> parser = getParserStated(type, stateKlass);
         if (parser == null) {
-            throw new CommandNoParserForTypeException(klass);
+            throw new CommandNoParserForTypeException(type);
         }
         try {
             return parser.parseArg(arg, state);
         } catch (RuntimeException exc) {
-            throw new CommandInvalidTypeException(arg, klass.getSimpleName());
+            throw new CommandInvalidTypeException(arg, type.getSimpleName());
         }
     }
 }
