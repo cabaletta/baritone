@@ -17,8 +17,6 @@
 
 package baritone.api.utils.command.execution;
 
-import baritone.api.BaritoneAPI;
-import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.exception.CommandException;
