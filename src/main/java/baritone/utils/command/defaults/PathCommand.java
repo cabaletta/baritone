@@ -41,7 +41,7 @@ public class PathCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         Goal goal;
         if (args.hasAny()) {
@@ -57,7 +57,7 @@ public class PathCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
         if (args.hasAny() && !args.has(4)) {
             while (args.has(2)) {
                 if (args.peekDatatypeOrNull(RelativeCoordinate.class) == null) {

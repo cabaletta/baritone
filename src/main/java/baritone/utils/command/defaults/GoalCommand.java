@@ -40,7 +40,7 @@ public class GoalCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         ICustomGoalProcess goalProcess = baritone.getCustomGoalProcess();
         if (args.hasAny() && Arrays.asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
@@ -60,7 +60,7 @@ public class GoalCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
         TabCompleteHelper helper = new TabCompleteHelper();
         if (args.hasExactlyOne()) {
             helper.append(Stream.of("reset", "clear", "none", "~"));

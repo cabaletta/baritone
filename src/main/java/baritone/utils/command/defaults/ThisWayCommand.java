@@ -35,7 +35,7 @@ public class ThisWayCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         args.requireExactly(1);
         GoalXZ goal = GoalXZ.fromDirection(
                 ctx.playerFeetAsVec(),
@@ -47,7 +47,7 @@ public class ThisWayCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
         return Stream.empty();
     }
 

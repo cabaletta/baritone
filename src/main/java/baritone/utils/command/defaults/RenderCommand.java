@@ -35,7 +35,7 @@ public class RenderCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         args.requireMax(0);
         BetterBlockPos origin = ctx.playerFeet();
         int renderDistance = (mc.gameSettings.renderDistanceChunks + 1) * 16;
@@ -51,7 +51,7 @@ public class RenderCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
         return Stream.empty();
     }
 

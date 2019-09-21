@@ -43,7 +43,7 @@ public class BuildCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         File file = args.getDatatypePost(RelativeFile.class, schematicsDir).getAbsoluteFile();
         if (!file.getName().toLowerCase(Locale.US).endsWith(".schematic")) {
             file = new File(file.getAbsolutePath() + ".schematic");
@@ -65,7 +65,7 @@ public class BuildCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return RelativeFile.tabComplete(args, schematicsDir);
         } else if (args.has(2)) {

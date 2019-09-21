@@ -38,7 +38,7 @@ public class ComeCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         args.requireMax(0);
         Entity entity = mc.getRenderViewEntity();
         if (entity == null) {
@@ -49,7 +49,7 @@ public class ComeCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
         return Stream.empty();
     }
 

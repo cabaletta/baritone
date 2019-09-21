@@ -40,13 +40,11 @@ import java.util.stream.Stream;
  */
 public class PauseResumeCommands {
 
-    private final IBaritone baritone;
     Command pauseCommand;
     Command resumeCommand;
     Command pausedCommand;
 
     public PauseResumeCommands(IBaritone baritone) {
-        this.baritone = baritone;
         // array for mutability, non-field so reflection can't touch it
         final boolean[] paused = {false};
         baritone.getPathingControlManager().registerProcess(
@@ -82,7 +80,7 @@ public class PauseResumeCommands {
         );
         pauseCommand = new Command(baritone, "pause") {
             @Override
-            protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+            protected void executed(String label, ArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 if (paused[0]) {
                     throw new CommandInvalidStateException("Already paused");
@@ -92,7 +90,7 @@ public class PauseResumeCommands {
             }
 
             @Override
-            protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+            protected Stream<String> tabCompleted(String label, ArgConsumer args) {
                 return Stream.empty();
             }
 
@@ -115,7 +113,7 @@ public class PauseResumeCommands {
         };
         resumeCommand = new Command(baritone, "resume") {
             @Override
-            protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+            protected void executed(String label, ArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 if (!paused[0]) {
                     throw new CommandInvalidStateException("Not paused");
@@ -125,7 +123,7 @@ public class PauseResumeCommands {
             }
 
             @Override
-            protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+            protected Stream<String> tabCompleted(String label, ArgConsumer args) {
                 return Stream.empty();
             }
 
@@ -146,13 +144,13 @@ public class PauseResumeCommands {
         };
         pausedCommand = new Command(baritone, "paused") {
             @Override
-            protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+            protected void executed(String label, ArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 logDirect(String.format("Baritone is %spaused", paused[0] ? "" : "not "));
             }
 
             @Override
-            protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+            protected Stream<String> tabCompleted(String label, ArgConsumer args) {
                 return Stream.empty();
             }
 

@@ -45,12 +45,12 @@ public class CommandAlias extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) {
+    protected void executed(String label, ArgConsumer args) {
         CommandManager.execute(String.format("%s %s", target, args.rawRest()));
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
         return CommandManager.tabComplete(String.format("%s %s", target, args.rawRest()));
     }
 

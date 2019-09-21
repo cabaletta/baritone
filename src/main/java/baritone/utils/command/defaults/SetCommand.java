@@ -17,6 +17,7 @@
 
 package baritone.utils.command.defaults;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.SettingsUtil;
@@ -49,10 +50,10 @@ public class SetCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         String arg = args.hasAny() ? args.getString().toLowerCase(Locale.US) : "list";
         if (Arrays.asList("s", "save").contains(arg)) {
-            SettingsUtil.save(settings);
+            SettingsUtil.save(Baritone.settings());
             logDirect("Settings saved");
             return;
         }
@@ -63,7 +64,7 @@ public class SetCommand extends Command {
             String search = args.hasAny() && args.peekAsOrNull(Integer.class) == null ? args.getString() : "";
             args.requireMax(1);
             List<? extends Settings.Setting> toPaginate =
-                    (viewModified ? SettingsUtil.modifiedSettings(settings) : settings.allSettings).stream()
+                    (viewModified ? SettingsUtil.modifiedSettings(Baritone.settings()) : Baritone.settings().allSettings).stream()
                             .filter(s -> !s.getName().equals("logger"))
                             .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
                             .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
@@ -87,7 +88,7 @@ public class SetCommand extends Command {
                         hoverComponent.appendText(setting.getName());
                         hoverComponent.appendText(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
-                        String commandSuggestion = settings.prefix.value + String.format("set %s ", setting.getName());
+                        String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
                         ITextComponent component = new TextComponentString(setting.getName());
                         component.getStyle().setColor(TextFormatting.GRAY);
                         component.appendSibling(typeComponent);
@@ -110,9 +111,9 @@ public class SetCommand extends Command {
                 logDirect("ALL settings will be reset. Use the 'set modified' or 'modified' commands to see what will be reset.");
                 logDirect("Specify a setting name instead of 'all' to only reset one setting");
             } else if (args.peekString().equalsIgnoreCase("all")) {
-                SettingsUtil.modifiedSettings(settings).forEach(Settings.Setting::reset);
+                SettingsUtil.modifiedSettings(Baritone.settings()).forEach(Settings.Setting::reset);
                 logDirect("All settings have been reset to their default values");
-                SettingsUtil.save(settings);
+                SettingsUtil.save(Baritone.settings());
                 return;
             }
         }
@@ -120,7 +121,7 @@ public class SetCommand extends Command {
             args.requireMin(1);
         }
         String settingName = doingSomething ? args.getString() : arg;
-        Settings.Setting<?> setting = settings.allSettings.stream()
+        Settings.Setting<?> setting = Baritone.settings().allSettings.stream()
                 .filter(s -> s.getName().equalsIgnoreCase(settingName))
                 .findFirst()
                 .orElse(null);
@@ -148,7 +149,7 @@ public class SetCommand extends Command {
             } else {
                 String newValue = args.getString();
                 try {
-                    SettingsUtil.parseAndApply(settings, arg, newValue);
+                    SettingsUtil.parseAndApply(Baritone.settings(), arg, newValue);
                 } catch (Throwable t) {
                     t.printStackTrace();
                     throw new CommandInvalidTypeException(args.consumed(), "a valid value", t);
@@ -174,18 +175,18 @@ public class SetCommand extends Command {
                             FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
                     ));
             logDirect(oldValueComponent);
-            if ((setting.getName().equals("chatControl") && !(Boolean) setting.value && !settings.chatControlAnyway.value) ||
-                    setting.getName().equals("chatControlAnyway") && !(Boolean) setting.value && !settings.chatControl.value) {
+            if ((setting.getName().equals("chatControl") && !(Boolean) setting.value && !Baritone.settings().chatControlAnyway.value) ||
+                    setting.getName().equals("chatControlAnyway") && !(Boolean) setting.value && !Baritone.settings().chatControl.value) {
                 logDirect("Warning: Chat commands will no longer work. If you want to revert this change, use prefix control (if enabled) or click the old value listed above.", TextFormatting.RED);
             } else if (setting.getName().equals("prefixControl") && !(Boolean) setting.value) {
                 logDirect("Warning: Prefixed commands will no longer work. If you want to revert this change, use chat control (if enabled) or click the old value listed above.", TextFormatting.RED);
             }
         }
-        SettingsUtil.save(settings);
+        SettingsUtil.save(Baritone.settings());
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
         if (args.hasAny()) {
             String arg = args.getString();
             if (args.hasExactlyOne() && !Arrays.asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {
@@ -201,7 +202,7 @@ public class SetCommand extends Command {
                             .filterPrefix(args.getString())
                             .stream();
                 }
-                Settings.Setting setting = settings.byLowerName.get(arg.toLowerCase(Locale.US));
+                Settings.Setting setting = Baritone.settings().byLowerName.get(arg.toLowerCase(Locale.US));
                 if (setting != null) {
                     if (setting.getType() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();

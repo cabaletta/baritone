@@ -36,18 +36,16 @@ public class CommandExecution {
      * The command itself
      */
     private final Command command;
+
     /**
      * The name this command was called with
      */
     public final String label;
+
     /**
      * The arg consumer
      */
     public final ArgConsumer args;
-    /**
-     * The Baritone settings
-     */
-    public final Settings settings = BaritoneAPI.getSettings();
 
     public CommandExecution(Command command, String label, ArgConsumer args) {
         this.command = command;

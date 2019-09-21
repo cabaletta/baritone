@@ -36,7 +36,7 @@ public class ExploreCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         if (args.hasAny()) {
             args.requireExactly(2);
         } else {
@@ -50,7 +50,7 @@ public class ExploreCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
         if (args.hasAtMost(2)) {
             return args.tabCompleteDatatype(RelativeGoalXZ.class);
         }

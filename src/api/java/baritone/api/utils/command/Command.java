@@ -35,6 +35,7 @@ public abstract class Command implements Helper {
 
     protected IBaritone baritone;
     protected IPlayerContext ctx;
+
     /**
      * The names of this command. This is what you put after the command prefix.
      */
@@ -63,7 +64,7 @@ public abstract class Command implements Helper {
      * @param execution The command execution to execute this command with
      */
     public void execute(CommandExecution execution) throws CommandException {
-        executed(execution.label, execution.args, execution.settings);
+        executed(execution.label, execution.args);
     }
 
     /**
@@ -74,7 +75,7 @@ public abstract class Command implements Helper {
      */
     public Stream<String> tabComplete(CommandExecution execution) {
         try {
-            return tabCompleted(execution.label, execution.args, execution.settings);
+            return tabCompleted(execution.label, execution.args);
         } catch (Throwable t) {
             return Stream.empty();
         }
@@ -83,13 +84,13 @@ public abstract class Command implements Helper {
     /**
      * Called when this command is executed.
      */
-    protected abstract void executed(String label, ArgConsumer args, Settings settings) throws CommandException;
+    protected abstract void executed(String label, ArgConsumer args) throws CommandException;
 
     /**
      * Called when the command needs to tab complete. Return a Stream representing the entries to put in the completions
      * list.
      */
-    protected abstract Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException;
+    protected abstract Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException;
 
     /**
      * @return A <b>single-line</b> string containing a short description of this command's purpose.

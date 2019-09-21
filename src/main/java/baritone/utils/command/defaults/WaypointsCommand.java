@@ -53,7 +53,7 @@ public class WaypointsCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected void executed(String label, ArgConsumer args) throws CommandException {
         Action action = args.hasAny() ? Action.getByName(args.getString()) : Action.LIST;
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
@@ -242,7 +242,7 @@ public class WaypointsCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args, Settings settings) throws CommandException {
+    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
         if (args.hasAny()) {
             if (args.hasExactlyOne()) {
                 return new TabCompleteHelper()
