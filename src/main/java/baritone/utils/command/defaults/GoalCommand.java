@@ -63,7 +63,7 @@ public class GoalCommand extends Command {
     protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
         TabCompleteHelper helper = new TabCompleteHelper();
         if (args.hasExactlyOne()) {
-            helper.append(Stream.of("reset", "clear", "none", "~"));
+            helper.append("reset", "clear", "none", "~");
         } else {
             if (args.hasAtMost(3)) {
                 while (args.has(2)) {

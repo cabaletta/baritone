@@ -194,9 +194,9 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                     if (setting.getValueClass() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
                         if ((Boolean) setting.value) {
-                            helper.append(Stream.of("true", "false"));
+                            helper.append("true", "false");
                         } else {
-                            helper.append(Stream.of("false", "true"));
+                            helper.append("false", "true");
                         }
                         return helper.filterPrefix(argc.getString()).stream();
                     } else {

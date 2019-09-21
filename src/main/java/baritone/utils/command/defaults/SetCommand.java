@@ -207,9 +207,9 @@ public class SetCommand extends Command {
                     if (setting.getType() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
                         if ((Boolean) setting.value) {
-                            helper.append(Stream.of("true", "false"));
+                            helper.append("true", "false");
                         } else {
-                            helper.append(Stream.of("false", "true"));
+                            helper.append("false", "true");
                         }
                         return helper.filterPrefix(args.getString()).stream();
                     } else {
