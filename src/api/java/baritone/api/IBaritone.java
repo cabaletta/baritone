@@ -26,6 +26,7 @@ import baritone.api.process.*;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.command.manager.ICommandManager;
 
 /**
  * @author Brady
@@ -125,6 +126,12 @@ public interface IBaritone {
      * @see ISelectionManager
      */
     ISelectionManager getSelectionManager();
+
+    /**
+     * @return The {@link ICommandManager} instance
+     * @see ICommandManager
+     */
+    ICommandManager getCommandManager();
 
     /**
      * Open click

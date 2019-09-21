@@ -23,7 +23,7 @@ import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
-import baritone.api.utils.command.manager.CommandManager;
+import baritone.api.utils.command.manager.ICommandManager;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Arrays;
@@ -46,7 +46,7 @@ import java.util.stream.Stream;
  * {@link #filterPrefix(String)}</li>
  * <li>Get the stream using {@link #stream()}</li>
  * <li>Pass it up to whatever's calling your tab complete function (i.e.
- * {@link CommandManager#tabComplete(CommandExecution)} or {@link ArgConsumer#tabCompleteDatatype(Class)})</li>
+ * {@link ICommandManager#tabComplete(CommandExecution)} or {@link ArgConsumer#tabCompleteDatatype(Class)})</li>
  * </ul>
  * <p>
  * For advanced users: if you're intercepting {@link TabCompleteEvent}s directly, use {@link #build()} instead for an
@@ -253,15 +253,16 @@ public class TabCompleteHelper {
     }
 
     /**
-     * Appends every command in the {@link CommandManager#REGISTRY} to this {@link TabCompleteHelper}
+     * Appends every command in the specified {@link ICommandManager} to this {@link TabCompleteHelper}
+     *
+     * @param manager A command manager
      *
      * @return This {@link TabCompleteHelper}
      */
-    public TabCompleteHelper addCommands() {
-        return append(
-                CommandManager.REGISTRY.descendingStream()
-                        .flatMap(command -> command.names.stream())
-                        .distinct()
+    public TabCompleteHelper addCommands(ICommandManager manager) {
+        return append(manager.getRegistry().descendingStream()
+                .flatMap(command -> command.names.stream())
+                .distinct()
         );
     }
 

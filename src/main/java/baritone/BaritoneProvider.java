@@ -21,9 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.command.BaritoneChatControl;
-import baritone.api.utils.command.manager.CommandManager;
 import baritone.cache.WorldScanner;
-import baritone.utils.command.defaults.DefaultCommands;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,10 +36,11 @@ public final class BaritoneProvider implements IBaritoneProvider {
     private final List<IBaritone> all;
 
     {
-        primary = new Baritone();
-        all = Collections.singletonList(primary);
-        DefaultCommands.commands(primary).forEach(CommandManager.REGISTRY::register);
-        new BaritoneChatControl(primary);
+        this.primary = new Baritone();
+        this.all = Collections.singletonList(this.primary);
+
+        // Setup chat control, just for the primary instance
+        new BaritoneChatControl(this.primary);
     }
 
     @Override

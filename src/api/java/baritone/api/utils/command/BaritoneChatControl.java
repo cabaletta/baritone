@@ -33,7 +33,6 @@ import baritone.api.utils.command.exception.CommandNotFoundException;
 import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
-import baritone.api.utils.command.manager.CommandManager;
 import com.mojang.realmsclient.util.Pair;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -130,9 +129,9 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             if (setting != null) {
                 logRanCommand(command, rest);
                 if (setting.getValueClass() == Boolean.class) {
-                    CommandManager.execute(String.format("set toggle %s", setting.getName()));
+                    this.baritone.getCommandManager().execute(String.format("set toggle %s", setting.getName()));
                 } else {
-                    CommandManager.execute(String.format("set %s", setting.getName()));
+                    this.baritone.getCommandManager().execute(String.format("set %s", setting.getName()));
                 }
                 return true;
             }
@@ -144,18 +143,18 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 if (setting.getName().equalsIgnoreCase(pair.first())) {
                     logRanCommand(command, rest);
                     try {
-                        CommandManager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
+                        this.baritone.getCommandManager().execute(String.format("set %s %s", setting.getName(), argc.getString()));
                     } catch (CommandNotEnoughArgumentsException ignored) {} // The operation is safe
                     return true;
                 }
             }
         }
-        CommandExecution execution = CommandExecution.from(pair);
+        CommandExecution execution = CommandExecution.from(this.baritone.getCommandManager(), pair);
         if (execution == null) {
             return false;
         }
         logRanCommand(command, rest);
-        CommandManager.execute(execution);
+        this.baritone.getCommandManager().execute(execution);
         return true;
     }
 
@@ -185,7 +184,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             if (argc.hasAtMost(2)) {
                 if (argc.hasExactly(1)) {
                     return new TabCompleteHelper()
-                            .addCommands()
+                            .addCommands(this.baritone.getCommandManager())
                             .addSettings()
                             .filterPrefix(argc.getString())
                             .stream();
@@ -205,7 +204,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                     }
                 }
             }
-            return CommandManager.tabComplete(msg);
+            return this.baritone.getCommandManager().tabComplete(msg);
         } catch (CommandNotEnoughArgumentsException ignored) { // Shouldn't happen, the operation is safe
             return Stream.empty();
         }

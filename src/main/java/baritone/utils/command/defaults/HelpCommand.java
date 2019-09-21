@@ -18,14 +18,12 @@
 package baritone.utils.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandNotFoundException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.pagination.Paginator;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
-import baritone.api.utils.command.manager.CommandManager;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
@@ -38,7 +36,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
-import static baritone.api.utils.command.manager.CommandManager.getCommand;
 
 public class HelpCommand extends Command {
 
@@ -52,7 +49,7 @@ public class HelpCommand extends Command {
         if (!args.hasAny() || args.is(Integer.class)) {
             Paginator.paginate(
                     args, new Paginator<>(
-                            CommandManager.REGISTRY.descendingStream()
+                            this.baritone.getCommandManager().getRegistry().descendingStream()
                                     .filter(command -> !command.hiddenFromHelp())
                                     .collect(Collectors.toList())
                     ),
@@ -82,7 +79,7 @@ public class HelpCommand extends Command {
             );
         } else {
             String commandName = args.getString().toLowerCase();
-            Command command = getCommand(commandName);
+            Command command = this.baritone.getCommandManager().getCommand(commandName);
             if (command == null) {
                 throw new CommandNotFoundException(commandName);
             }
@@ -102,7 +99,10 @@ public class HelpCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
-            return new TabCompleteHelper().addCommands().filterPrefix(args.getString()).stream();
+            return new TabCompleteHelper()
+                    .addCommands(this.baritone.getCommandManager())
+                    .filterPrefix(args.getString())
+                    .stream();
         }
         return Stream.empty();
     }

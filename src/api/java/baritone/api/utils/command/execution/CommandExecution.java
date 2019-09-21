@@ -22,7 +22,7 @@ import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandUnhandledException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
-import baritone.api.utils.command.manager.CommandManager;
+import baritone.api.utils.command.manager.ICommandManager;
 import com.mojang.realmsclient.util.Pair;
 
 import java.util.List;
@@ -80,8 +80,8 @@ public class CommandExecution {
         return command.tabComplete(this);
     }
 
-    public static CommandExecution from(String label, ArgConsumer args) {
-        Command command = CommandManager.getCommand(label);
+    public static CommandExecution from(ICommandManager manager, String label, ArgConsumer args) {
+        Command command = manager.getCommand(label);
         if (command == null) {
             return null;
         }
@@ -92,11 +92,11 @@ public class CommandExecution {
         );
     }
 
-    public static CommandExecution from(Pair<String, List<CommandArgument>> pair) {
-        return from(pair.first(), new ArgConsumer(pair.second()));
+    public static CommandExecution from(ICommandManager manager, Pair<String, List<CommandArgument>> pair) {
+        return from(manager, pair.first(), new ArgConsumer(pair.second()));
     }
 
-    public static CommandExecution from(String string) {
-        return from(expand(string));
+    public static CommandExecution from(ICommandManager manager, String string) {
+        return from(manager, expand(string));
     }
 }
