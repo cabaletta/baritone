@@ -48,7 +48,7 @@ public class ForEnumFacing implements IDatatypeFor<EnumFacing> {
     public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
         return new TabCompleteHelper()
                 .append(
-                        Arrays.stream(EnumFacing.values())
+                        Stream.of(EnumFacing.values())
                                 .map(EnumFacing::getName)
                                 .map(String::toLowerCase)
                 )

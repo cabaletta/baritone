@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * A {@link CommandArgument} is an immutable object representing one command argument. It contains data on the index of
@@ -66,7 +67,7 @@ public class CommandArgument {
      * @see ArgConsumer#getEnumOrNull(Class)
      */
     public <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandInvalidTypeException {
-        return Arrays.stream(enumClass.getEnumConstants())
+        return Stream.of(enumClass.getEnumConstants())
                 .filter(e -> e.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new CommandInvalidTypeException(this, enumClass.getSimpleName()));

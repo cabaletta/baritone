@@ -57,7 +57,7 @@ public class TabCompleteHelper {
     private Stream<String> stream;
 
     public TabCompleteHelper(String[] base) {
-        stream = Arrays.stream(base);
+        stream = Stream.of(base);
     }
 
     public TabCompleteHelper(List<String> base) {
@@ -75,9 +75,6 @@ public class TabCompleteHelper {
      * @return This {@link TabCompleteHelper} after having appended the stream
      * @see #append(String...)
      * @see #append(Class)
-     * @see #prepend(Stream)
-     * @see #prepend(String...)
-     * @see #prepend(Class)
      */
     public TabCompleteHelper append(Stream<String> source) {
         stream = Stream.concat(stream, source);
@@ -91,9 +88,6 @@ public class TabCompleteHelper {
      * @return This {@link TabCompleteHelper} after having appended the strings
      * @see #append(Stream)
      * @see #append(Class)
-     * @see #prepend(Stream)
-     * @see #prepend(String...)
-     * @see #prepend(Class)
      */
     public TabCompleteHelper append(String... source) {
         return append(Stream.of(source));
@@ -106,13 +100,10 @@ public class TabCompleteHelper {
      * @return This {@link TabCompleteHelper} after having appended the values
      * @see #append(Stream)
      * @see #append(String...)
-     * @see #prepend(Stream)
-     * @see #prepend(String...)
-     * @see #prepend(Class)
      */
     public TabCompleteHelper append(Class<? extends Enum<?>> num) {
         return append(
-                Arrays.stream(num.getEnumConstants())
+                Stream.of(num.getEnumConstants())
                         .map(Enum::name)
                         .map(String::toLowerCase)
         );
@@ -123,9 +114,6 @@ public class TabCompleteHelper {
      *
      * @param source The stream to prepend
      * @return This {@link TabCompleteHelper} after having prepended the stream
-     * @see #append(Stream)
-     * @see #append(String...)
-     * @see #append(Class)
      * @see #prepend(String...)
      * @see #prepend(Class)
      */
@@ -154,15 +142,12 @@ public class TabCompleteHelper {
      *
      * @param num The enum to prepend the values of
      * @return This {@link TabCompleteHelper} after having prepended the values
-     * @see #append(Stream)
-     * @see #append(String...)
-     * @see #append(Class)
      * @see #prepend(Stream)
      * @see #prepend(String...)
      */
     public TabCompleteHelper prepend(Class<? extends Enum<?>> num) {
         return prepend(
-                Arrays.stream(num.getEnumConstants())
+                Stream.of(num.getEnumConstants())
                         .map(Enum::name)
                         .map(String::toLowerCase)
         );

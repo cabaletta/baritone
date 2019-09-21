@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CommandUnhandledException extends RuntimeException implements ICommandException {
 
@@ -39,7 +40,7 @@ public class CommandUnhandledException extends RuntimeException implements IComm
     }
 
     private static String getBaritoneStackTrace(String stackTrace) {
-        List<String> lines = Arrays.stream(stackTrace.split("\n"))
+        List<String> lines = Stream.of(stackTrace.split("\n"))
                 .collect(Collectors.toList());
         int lastBaritoneLine = 0;
         for (int i = 0; i < lines.size(); i++) {

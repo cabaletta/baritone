@@ -76,7 +76,7 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
     }
 
     public static String[] getWaypointNames() {
-        return Arrays.stream(getWaypoints())
+        return Stream.of(getWaypoints())
                 .map(IWaypoint::getName)
                 .filter(name -> !name.isEmpty())
                 .toArray(String[]::new);
@@ -89,7 +89,7 @@ public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
     }
 
     public static IWaypoint[] getWaypointsByName(String name) {
-        return Arrays.stream(getWaypoints())
+        return Stream.of(getWaypoints())
                 .filter(waypoint -> waypoint.getName().equalsIgnoreCase(name))
                 .toArray(IWaypoint[]::new);
     }

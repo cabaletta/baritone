@@ -82,7 +82,7 @@ public class RelativeFile implements IDatatypePost<File, File> {
         Path basePath = currentPath.isAbsolute() ? currentPath.getRoot() : base.toPath();
         boolean useParent = !currentPathStringThing.isEmpty() && !currentPathStringThing.endsWith(File.separator);
         File currentFile = currentPath.isAbsolute() ? currentPath.toFile() : new File(base, currentPathStringThing);
-        return Arrays.stream(Objects.requireNonNull(getCanonicalFileUnchecked(
+        return Stream.of(Objects.requireNonNull(getCanonicalFileUnchecked(
                 useParent
                         ? currentFile.getParentFile()
                         : currentFile

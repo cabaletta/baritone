@@ -23,6 +23,7 @@ import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class BlockOptionalMetaLookup {
 
@@ -33,7 +34,7 @@ public class BlockOptionalMetaLookup {
     }
 
     public BlockOptionalMetaLookup(Block... blocks) {
-        this.boms = Arrays.stream(blocks)
+        this.boms = Stream.of(blocks)
                 .map(BlockOptionalMeta::new)
                 .toArray(BlockOptionalMeta[]::new);
     }
@@ -45,7 +46,7 @@ public class BlockOptionalMetaLookup {
     }
 
     public BlockOptionalMetaLookup(String... blocks) {
-        this.boms = Arrays.stream(blocks)
+        this.boms = Stream.of(blocks)
                 .map(BlockOptionalMeta::new)
                 .toArray(BlockOptionalMeta[]::new);
     }
