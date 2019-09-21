@@ -127,9 +127,6 @@ public class TabCompleteHelper {
      *
      * @param source The stream to prepend
      * @return This {@link TabCompleteHelper} after having prepended the strings
-     * @see #append(Stream)
-     * @see #append(String...)
-     * @see #append(Class)
      * @see #prepend(Stream)
      * @see #prepend(Class)
      */
