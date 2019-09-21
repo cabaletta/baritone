@@ -17,11 +17,10 @@
 
 package baritone.api.utils.command.argument;
 
-import baritone.api.utils.command.argparser.ArgParser;
 import baritone.api.utils.command.argparser.ArgParserManager;
+import baritone.api.utils.command.argparser.IArgParser;
 import baritone.api.utils.command.exception.CommandInvalidArgumentException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
-import baritone.api.utils.command.exception.CommandNoParserForTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.util.EnumFacing;
 
@@ -74,7 +73,7 @@ public class CommandArgument {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse this argument into the specified class
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse this argument into the specified class
      *
      * @param type The class to parse this argument into
      * @return An instance of the specified type
@@ -85,7 +84,7 @@ public class CommandArgument {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse this argument into the specified class
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse this argument into the specified class
      *
      * @param type The class to parse this argument into
      * @return If the parser succeeded
@@ -100,7 +99,7 @@ public class CommandArgument {
     }
 
     /**
-     * Tries to use a <b>stated</b> {@link ArgParser} to parse this argument into the specified class
+     * Tries to use a <b>stated</b> {@link IArgParser} to parse this argument into the specified class
      *
      * @param type The class to parse this argument into
      * @return An instance of the specified type
@@ -112,7 +111,7 @@ public class CommandArgument {
     }
 
     /**
-     * Tries to use a <b>stated</b> {@link ArgParser} to parse this argument into the specified class
+     * Tries to use a <b>stated</b> {@link IArgParser} to parse this argument into the specified class
      *
      * @param type The class to parse this argument into
      * @return If the parser succeeded

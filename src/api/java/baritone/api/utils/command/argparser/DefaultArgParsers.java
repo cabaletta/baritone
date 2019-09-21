@@ -25,12 +25,12 @@ import java.util.Locale;
 
 public class DefaultArgParsers {
 
-    public static class IntArgumentParser extends ArgParser.Stateless<Integer> {
+    public enum IntArgumentParser implements IArgParser.Stateless<Integer> {
+        INSTANCE;
 
-        public static final IntArgumentParser INSTANCE = new IntArgumentParser();
-
-        public IntArgumentParser() {
-            super(Integer.class);
+        @Override
+        public Class<Integer> getTarget() {
+            return Integer.class;
         }
 
         @Override
@@ -39,12 +39,12 @@ public class DefaultArgParsers {
         }
     }
 
-    public static class LongArgumentParser extends ArgParser.Stateless<Long> {
+    public enum LongArgumentParser implements IArgParser.Stateless<Long> {
+        INSTANCE;
 
-        public static final LongArgumentParser INSTANCE = new LongArgumentParser();
-
-        public LongArgumentParser() {
-            super(Long.class);
+        @Override
+        public Class<Long> getTarget() {
+            return Long.class;
         }
 
         @Override
@@ -53,12 +53,12 @@ public class DefaultArgParsers {
         }
     }
 
-    public static class FloatArgumentParser extends ArgParser.Stateless<Float> {
+    public enum FloatArgumentParser implements IArgParser.Stateless<Float> {
+        INSTANCE;
 
-        public static final FloatArgumentParser INSTANCE = new FloatArgumentParser();
-
-        public FloatArgumentParser() {
-            super(Float.class);
+        @Override
+        public Class<Float> getTarget() {
+            return Float.class;
         }
 
         @Override
@@ -71,12 +71,12 @@ public class DefaultArgParsers {
         }
     }
 
-    public static class DoubleArgumentParser extends ArgParser.Stateless<Double> {
+    public enum DoubleArgumentParser implements IArgParser.Stateless<Double> {
+        INSTANCE;
 
-        public static final DoubleArgumentParser INSTANCE = new DoubleArgumentParser();
-
-        public DoubleArgumentParser() {
-            super(Double.class);
+        @Override
+        public Class<Double> getTarget() {
+            return Double.class;
         }
 
         @Override
@@ -89,14 +89,15 @@ public class DefaultArgParsers {
         }
     }
 
-    public static class BooleanArgumentParser extends ArgParser.Stateless<Boolean> {
+    public static class BooleanArgumentParser implements IArgParser.Stateless<Boolean> {
 
         public static final BooleanArgumentParser INSTANCE = new BooleanArgumentParser();
         public static final List<String> TRUTHY_VALUES = Arrays.asList("1", "true", "yes", "t", "y", "on", "enable");
         public static final List<String> FALSY_VALUES = Arrays.asList("0", "false", "no", "f", "n", "off", "disable");
 
-        public BooleanArgumentParser() {
-            super(Boolean.class);
+        @Override
+        public Class<Boolean> getTarget() {
+            return Boolean.class;
         }
 
         @Override
@@ -112,7 +113,7 @@ public class DefaultArgParsers {
         }
     }
 
-    public static final List<ArgParser<?>> ALL = Arrays.asList(
+    public static final List<IArgParser<?>> ALL = Arrays.asList(
             IntArgumentParser.INSTANCE,
             LongArgumentParser.INSTANCE,
             FloatArgumentParser.INSTANCE,

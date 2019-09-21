@@ -39,7 +39,7 @@ public interface IArgParser<T> {
          * @throws RuntimeException if you want the parsing to fail. The exception will be caught and turned into an
          *                          appropriate error.
          */
-        T parseArg(CommandArgument arg) throws RuntimeException;
+        T parseArg(CommandArgument arg) throws Exception;
     }
 
     /**
@@ -59,6 +59,6 @@ public interface IArgParser<T> {
          * @throws RuntimeException if you want the parsing to fail. The exception will be caught and turned into an
          *                          appropriate error.
          */
-        T parseArg(CommandArgument arg, S state) throws RuntimeException;
+        T parseArg(CommandArgument arg, S state) throws Exception;
     }
 }

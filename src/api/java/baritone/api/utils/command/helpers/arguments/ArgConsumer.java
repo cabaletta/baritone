@@ -19,7 +19,7 @@ package baritone.api.utils.command.helpers.arguments;
 
 import baritone.api.utils.Helper;
 import baritone.api.utils.command.Command;
-import baritone.api.utils.command.argparser.ArgParser;
+import baritone.api.utils.command.argparser.IArgParser;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.datatypes.IDatatype;
 import baritone.api.utils.command.datatypes.IDatatypeFor;
@@ -269,18 +269,18 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the argument at the specified index into the specified
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the argument at the specified index into the specified
      * class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type  The type to peek as
      * @param index The index to peek
      * @return An instance of the specified type
      * @throws CommandInvalidTypeException     If the parsing failed
-     * @see ArgParser
+     * @see IArgParser
      * @see #peekAs(Class)
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
@@ -290,16 +290,16 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the next argument into the specified class
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the specified class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type The type to peek as
      * @return An instance of the specified type
      * @throws CommandInvalidTypeException     If the parsing failed
-     * @see ArgParser
+     * @see IArgParser
      * @see #peekAs(Class, int)
      * @see #peekAsOrDefault(Class, Object)
      * @see #peekAsOrNull(Class)
@@ -309,18 +309,18 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the argument at the specified index into the specified
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the argument at the specified index into the specified
      * class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type  The type to peek as
      * @param def   The value to return if the argument can't be parsed
      * @param index The index to peek
      * @return An instance of the specified type, or {@code def} if it couldn't be parsed
-     * @see ArgParser
+     * @see IArgParser
      * @see #peekAsOrDefault(Class, Object)
      * @see #peekAs(Class, int)
      * @see #peekAsOrNull(Class, int)
@@ -334,16 +334,16 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the next argument into the specified class
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the specified class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type The type to peek as
      * @param def  The value to return if the argument can't be parsed
      * @return An instance of the specified type, or {@code def} if it couldn't be parsed
-     * @see ArgParser
+     * @see IArgParser
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAs(Class)
      * @see #peekAsOrNull(Class)
@@ -353,17 +353,17 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the argument at the specified index into the specified
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the argument at the specified index into the specified
      * class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type  The type to peek as
      * @param index The index to peek
      * @return An instance of the specified type, or {@code null} if it couldn't be parsed
-     * @see ArgParser
+     * @see IArgParser
      * @see #peekAsOrNull(Class)
      * @see #peekAs(Class, int)
      * @see #peekAsOrDefault(Class, Object, int)
@@ -373,15 +373,15 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the next argument into the specified class
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the specified class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type The type to peek as
      * @return An instance of the specified type, or {@code null} if it couldn't be parsed
-     * @see ArgParser
+     * @see IArgParser
      * @see #peekAsOrNull(Class, int)
      * @see #peekAs(Class)
      * @see #peekAsOrDefault(Class, Object)
@@ -393,8 +393,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified datatype from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
@@ -410,8 +410,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified datatype from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
@@ -427,8 +427,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
@@ -445,8 +445,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
@@ -464,8 +464,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
@@ -482,8 +482,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
@@ -500,8 +500,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
@@ -519,8 +519,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
@@ -619,16 +619,16 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the next argument into the specified class
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the specified class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type The type to peek as
      * @return An instance of the specified type
      * @throws CommandInvalidTypeException     If the parsing failed
-     * @see ArgParser
+     * @see IArgParser
      * @see #get()
      * @see #getAsOrDefault(Class, Object)
      * @see #getAsOrNull(Class)
@@ -641,16 +641,16 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the next argument into the specified class
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the specified class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type The type to peek as
      * @param def  The default value
      * @return An instance of the specified type, or {@code def} if it couldn't be parsed
-     * @see ArgParser
+     * @see IArgParser
      * @see #get()
      * @see #getAs(Class)
      * @see #getAsOrNull(Class)
@@ -669,15 +669,15 @@ public class ArgConsumer {
     }
 
     /**
-     * Tries to use a <b>stateless</b> {@link ArgParser} to parse the next argument into the specified class
+     * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the specified class
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param type The type to peek as
      * @return An instance of the specified type, or {@code null} if it couldn't be parsed
-     * @see ArgParser
+     * @see IArgParser
      * @see #get()
      * @see #getAs(Class)
      * @see #getAsOrDefault(Class, Object)
@@ -692,8 +692,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified datatype from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param datatype The datatype to get
@@ -713,8 +713,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified datatype from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
@@ -740,8 +740,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param datatype The datatype to get
@@ -756,8 +756,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
@@ -785,8 +785,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
@@ -803,8 +803,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      *
      * @param datatype The datatype to get
@@ -819,8 +819,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
@@ -848,8 +848,8 @@ public class ArgConsumer {
     /**
      * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
      * <p>
-     * A critical difference between {@link IDatatype}s and {@link ArgParser}s is how many arguments they can take.
-     * While {@link ArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
+     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
+     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
      * {@link ArgConsumer}.
      * <p>
      * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
@@ -864,7 +864,7 @@ public class ArgConsumer {
     }
 
     /**
-     * One benefit over datatypes over {@link ArgParser}s is that instead of each command trying to guess what values
+     * One benefit over datatypes over {@link IArgParser}s is that instead of each command trying to guess what values
      * the datatype will accept, or simply not tab completing at all, datatypes that support tab completion can provide
      * accurate information using the same methods used to parse arguments in the first place.
      * <p>

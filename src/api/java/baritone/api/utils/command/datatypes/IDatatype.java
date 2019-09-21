@@ -17,7 +17,7 @@
 
 package baritone.api.utils.command.datatypes;
 
-import baritone.api.utils.command.argparser.ArgParser;
+import baritone.api.utils.command.argparser.IArgParser;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidArgumentException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 public interface IDatatype {
 
     /**
-     * One benefit over datatypes over {@link ArgParser}s is that instead of each command trying to guess what values
+     * One benefit over datatypes over {@link IArgParser}s is that instead of each command trying to guess what values
      * the datatype will accept, or simply not tab completing at all, datatypes that support tab completion can provide
      * accurate information using the same methods used to parse arguments in the first place.
      * <p>
