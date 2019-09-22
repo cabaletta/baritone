@@ -18,12 +18,11 @@
 package baritone.utils.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.Settings;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.EntityClassById;
 import baritone.api.utils.command.datatypes.IDatatype;
 import baritone.api.utils.command.datatypes.IDatatypeFor;
-import baritone.api.utils.command.datatypes.PlayerByUsername;
+import baritone.api.utils.command.datatypes.NearbyPlayer;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
@@ -147,7 +146,7 @@ public class FollowCommand extends Command {
 
     private enum FollowList {
         ENTITY(EntityClassById.class),
-        PLAYER(PlayerByUsername.class);
+        PLAYER(NearbyPlayer.class);
         final Class<? extends IDatatypeFor> datatype;
 
         FollowList(Class<? extends IDatatypeFor> datatype) {

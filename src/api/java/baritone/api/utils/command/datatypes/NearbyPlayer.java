@@ -18,6 +18,7 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
@@ -26,17 +27,21 @@ import net.minecraft.entity.player.EntityPlayer;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class PlayerByUsername implements IDatatypeFor<EntityPlayer> {
+/**
+ * An {@link IDatatype} used to resolve nearby players, those within
+ * render distance of the target {@link IBaritone} instance.
+ */
+public class NearbyPlayer implements IDatatypeFor<EntityPlayer> {
 
     private final List<EntityPlayer> players =
             BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().playerEntities;
     public final EntityPlayer player;
 
-    public PlayerByUsername() {
+    public NearbyPlayer() {
         player = null;
     }
 
-    public PlayerByUsername(ArgConsumer consumer) throws CommandException {
+    public NearbyPlayer(ArgConsumer consumer) throws CommandException {
         String username = consumer.getString();
         player = players
                 .stream()
