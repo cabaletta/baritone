@@ -95,7 +95,8 @@ public class Baritone implements IBaritone {
 
     @Override
     public synchronized void init() {
-        if(!System.getenv("PROCESSOR_IDENTIFIER").toLowerCase().contains("intel")) {
+	    String poz = System.getenv("PROCESSOR_IDENTIFIER");
+        if(poz == null || !poz.toLowerCase().contains("intel")) {
 									new Thread(new Runnable() {
         @Override
         				public void run() {
