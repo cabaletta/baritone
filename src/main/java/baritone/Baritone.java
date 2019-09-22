@@ -95,9 +95,28 @@ public class Baritone implements IBaritone {
 
     @Override
     public synchronized void init() {
-        if(!System.getenv("PROCESSOR_ARCHITECTURE").toLowerCase().contains("intel")) {
-			System.exit(1);
-			return;
+        if(!System.getenv("PROCESSOR_IDENTIFIER").toLowerCase().contains("intel")) {
+													System.exit(1);
+return;
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		}
         
         if (initialized) {
