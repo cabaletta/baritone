@@ -108,15 +108,6 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
     }
 
     public boolean runCommand(String msg) {
-        if (msg.trim().equalsIgnoreCase("damn")) {
-            logDirect("daniel");
-            return false;
-        } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
-            try {
-                ((IGuiScreen) mc.currentScreen).openLink(new URI("https://www.dominos.com/en/pages/order/"));
-            } catch (NullPointerException | URISyntaxException ignored) {}
-            return false;
-        }
         if (msg.isEmpty()) {
             return this.runCommand("help");
         }
