@@ -23,12 +23,14 @@ set JAVA_EXE=java.exe
 %JAVA_EXE% -version >NUL 2>&1
 if "%ERRORLEVEL%" == "0" goto init
 
+@rem error messages. these should hopefully hardly ever be used
 echo.
 echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
 echo.
 echo Please set the JAVA_HOME variable in your environment to match the
 echo location of your Java installation.
 
+@rem this redirects to line 78
 goto fail
 
 :findJavaFromJavaHome
@@ -72,6 +74,7 @@ set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
 @rem End local scope for the variables with windows NT shell
 if "%ERRORLEVEL%"=="0" goto mainEnd
 
+@rem error message and fail screen
 :fail
 rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
 rem the _cmd.exe /c_ return code!
@@ -82,3 +85,5 @@ exit /b 1
 if "%OS%"=="Windows_NT" endlocal
 
 :omega
+
+@rem end
