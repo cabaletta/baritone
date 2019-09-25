@@ -1,0 +1,65 @@
+I really only know the basics of coding, so ill try to put what i am thinking into a code-like format. i know its a lot more complicated
+than how i am putting it here. i am just trying to map out a basic idea :)
+
+1. auto place torches (crdit to @lolfaceftw for the idea
+
+:label 1
+var lightLevel = (minecraft equivalent)
+if lightLevel < 7 (the lowest light level hostile mobs can spawn at)
+ place minecraft:torch (coordinates to place the block)
+else
+ goForward 1 (move one block forward)
+** at this point it will consult the rest of the program to determine what direction to go **
+goto 1
+-- end
+
+2. no jumping on farmland (credit to @TheGameTrain for the idea)
+
+var tilledBlock = (minecraft equivalent)
+if detect.minecraft:tilledBlock (coordinates for block directly under player)
+    set allowJump == false
+else
+    ** at this point it will consult the rest of the program to determine what direction to go **
+** here it will also go in the programmed direction, but recalculated to not allow jumping. **
+(NOTE: however. if a player needs to jump from one block, to a block one axis higher, the program will allow it.
+as doing so will not destroy the farmland.)
+** this snippet should run a few times per frame rule, even when in the air. so that when the player looses vertical momentum, it doesnt 
+land directly on a farm block. (add calculations to determine this?)
+
+3. Melee combat (credit to whoever posted this enhancement first.)
+
+%%%% this one is complicated. i will add more to it soon.
+
+var Player = (minecraft entity of specified type. for example, Player1 could be yourself, Player2 could be a teammate, etc. whereas PlayerA
+would be an enemy, as its not specified by a number, if you ran out of letters, you could use multiple. for example, PlayerAA, PlayerAB, PlayerAC,
+etc.)
+:label0
+if Player(tag) == hostile;
+    goto 1 (label one, hostile)
+else
+    goto 2 (label two, friendly)
+(*could add more labels in the future for neutral or passive mobs, such as wolves or pigmen)
+(*some animals could have two labels, for example label3A and label3B. for neutral mobs such as wolves, and once neutral but now tamed
+mobs such as dogs, respectively)
+:label1 (hostile mobs redirects to here)
+if player(tag) > certainDistance;
+    move player1 (as in your player) +1 blocks (away from target);
+    if player(tag) > certainDistance+1 (this will check to see if it is moving closer faster than it can get away)
+        equipWeapon 
+        (here will be a list of weapons with all possible enchantments. the program will determine what weapon in your inventory has the most
+        overall stats, and use said item as a weapon.)
+        (keep repeating the code until the player gets close enough to hit. then the code will redirect to 5)
+    
+else 
+    goto 4
+goto 1 (this part of the code cycles repeatedly.)
+:label4
+if player(tag) < certainDistance;
+    ** at this point it will consult the rest of the program to determine what direction to go ** (just continue doing whatever it was doing)
+else
+    if player(tag) == certainDistance;
+        ** at this point it will consult the rest of the program to determine what direction to go ** (just continue doing whatever it was doing)    
+    else goto 0 (just do the cycle again.)
+
+
+
