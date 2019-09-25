@@ -35,21 +35,27 @@ import net.minecraft.world.World;
  */
 public interface IPlayerController {
 
+    void syncHeldItem();
+
+    boolean hasBrokenBlock();
+
     boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side);
 
     void resetBlockRemoving();
 
     ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, EntityPlayer player);
 
-    void setGameType(GameType type);
-
     GameType getGameType();
-
-    default double getBlockReachDistance() {
-        return this.getGameType().isCreative() ? 5.0F : 4.5F;
-    }
 
     EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand);
 
     EnumActionResult processRightClick(EntityPlayerSP player, World world, EnumHand hand);
+
+    boolean clickBlock(BlockPos loc, EnumFacing face);
+
+    void setHittingBlock(boolean hittingBlock);
+
+    default double getBlockReachDistance() {
+        return this.getGameType().isCreative() ? 5.0F : 4.5F;
+    }
 }
