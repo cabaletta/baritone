@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 
 import static baritone.api.utils.SettingsUtil.settingTypeToString;
 import static baritone.api.utils.SettingsUtil.settingValueToString;
-import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
+import static baritone.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class SetCommand extends Command {
 

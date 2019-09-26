@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
+import static baritone.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class HelpCommand extends Command {
 

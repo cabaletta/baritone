@@ -20,7 +20,7 @@ package baritone;
 import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
-import baritone.api.utils.command.BaritoneChatControl;
+import baritone.utils.command.BaritoneChatControl;
 import baritone.cache.WorldScanner;
 
 import java.util.Collections;

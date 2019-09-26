@@ -18,7 +18,6 @@
 package baritone.utils.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.Settings;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.Waypoint;
 import baritone.api.pathing.goals.Goal;
@@ -44,7 +43,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static baritone.api.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
+import static baritone.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class WaypointsCommand extends Command {
 

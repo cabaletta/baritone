@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils.command;
+package baritone.utils.command;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
