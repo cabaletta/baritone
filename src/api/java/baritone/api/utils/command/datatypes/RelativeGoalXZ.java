@@ -30,6 +30,10 @@ public enum RelativeGoalXZ implements IDatatypePost<GoalXZ, BetterBlockPos> {
 
     @Override
     public GoalXZ apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+        if (origin == null) {
+            origin = BetterBlockPos.ORIGIN;
+        }
+
         final ArgConsumer consumer = ctx.getConsumer();
         return new GoalXZ(
                 MathHelper.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.x)),

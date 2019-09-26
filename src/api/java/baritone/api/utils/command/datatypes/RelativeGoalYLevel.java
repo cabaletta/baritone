@@ -30,6 +30,10 @@ public enum RelativeGoalYLevel implements IDatatypePost<GoalYLevel, BetterBlockP
 
     @Override
     public GoalYLevel apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+        if (origin == null) {
+            origin = BetterBlockPos.ORIGIN;
+        }
+
         return new GoalYLevel(
                 MathHelper.floor(ctx.getConsumer().getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y))
         );
