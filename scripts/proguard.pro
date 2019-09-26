@@ -17,11 +17,6 @@
 
 -keep class baritone.api.** { *; } # this is the keep api
 
-# Proguard does not know the commands framework better than I do
-# It needs its empty constructors and simple names to work correctly
--keep class baritone.api.utils.command.** { *; }
--keepclasseswithmembernames class baritone.api.utils.command.** { *; }
-
 # service provider needs these class names
 -keep class baritone.BaritoneProvider
 -keep class baritone.api.IBaritoneProvider
