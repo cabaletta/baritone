@@ -43,7 +43,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static baritone.utils.command.BaritoneChatControl.FORCE_COMMAND_PREFIX;
+import static baritone.api.utils.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class WaypointsCommand extends Command {
 

@@ -23,7 +23,6 @@ import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
-import baritone.utils.command.BaritoneChatControl;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
@@ -45,6 +44,7 @@ import java.nio.IntBuffer;
 import java.util.Collections;
 
 import static org.lwjgl.opengl.GL11.*;
+import static baritone.api.utils.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class GuiClick extends GuiScreen {
 
@@ -88,7 +88,7 @@ public class GuiClick extends GuiScreen {
                         .setColor(TextFormatting.WHITE)
                         .setClickEvent(new ClickEvent(
                                 ClickEvent.Action.RUN_COMMAND,
-                                BaritoneChatControl.FORCE_COMMAND_PREFIX + "help sel"
+                                FORCE_COMMAND_PREFIX + "help sel"
                         ));
                 Helper.HELPER.logDirect(component);
                 clickStart = null;
