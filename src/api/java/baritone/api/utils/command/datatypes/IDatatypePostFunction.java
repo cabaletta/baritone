@@ -19,7 +19,11 @@ package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
 
-public interface IDatatypeFor<T> extends IDatatype {
+/**
+ * @author Brady
+ * @since 9/26/2019
+ */
+public interface IDatatypePostFunction<T, O> {
 
-    T get(IDatatypeContext ctx) throws CommandException;
+    T apply(O original) throws CommandException;
 }

@@ -20,40 +20,29 @@ package baritone.api.utils.command.datatypes;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.stream.Stream;
 
-public class RelativeGoalBlock implements IDatatypePost<GoalBlock, BetterBlockPos> {
-
-    final RelativeCoordinate[] coords;
-
-    public RelativeGoalBlock() {
-        coords = new RelativeCoordinate[0];
-    }
-
-    public RelativeGoalBlock(ArgConsumer consumer) throws CommandException {
-        coords = new RelativeCoordinate[]{
-                consumer.getDatatype(RelativeCoordinate.class),
-                consumer.getDatatype(RelativeCoordinate.class),
-                consumer.getDatatype(RelativeCoordinate.class)
-        };
-    }
+public enum RelativeGoalBlock implements IDatatypePost<GoalBlock, BetterBlockPos> {
+    INSTANCE;
 
     @Override
-    public GoalBlock apply(BetterBlockPos origin) {
+    public GoalBlock apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+        final ArgConsumer consumer = ctx.getConsumer();
         return new GoalBlock(
-                coords[0].applyFloor(origin.x),
-                coords[1].applyFloor(origin.y),
-                coords[2].applyFloor(origin.z)
+                MathHelper.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.x)),
+                MathHelper.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y)),
+                MathHelper.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.z))
         );
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(IDatatypeContext ctx) {
+        final ArgConsumer consumer = ctx.getConsumer();
         if (consumer.hasAtMost(3)) {
-            return consumer.tabCompleteDatatype(RelativeCoordinate.class);
+            return consumer.tabCompleteDatatype(RelativeCoordinate.INSTANCE);
         }
         return Stream.empty();
     }

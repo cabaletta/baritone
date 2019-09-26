@@ -17,79 +17,64 @@
 
 package baritone.api.utils.command.datatypes;
 
-import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-public class ForWaypoints implements IDatatypeFor<IWaypoint[]> {
+public enum ForWaypoints implements IDatatypeFor<IWaypoint[]> {
+    INSTANCE;
 
-    private final IWaypoint[] waypoints;
+    @Override
+    public IWaypoint[] get(IDatatypeContext ctx) throws CommandException {
+        final String input = ctx.getConsumer().getString();
+        final IWaypoint.Tag tag = IWaypoint.Tag.getByName(input);
 
-    public ForWaypoints() {
-        waypoints = null;
-    }
-
-    public ForWaypoints(String arg) {
-        IWaypoint.Tag tag = IWaypoint.Tag.getByName(arg);
-        waypoints = tag == null ? getWaypointsByName(arg) : getWaypointsByTag(tag);
-    }
-
-    public ForWaypoints(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
-        this(consumer.getString());
+        // If the input doesn't resolve to a valid tag, resolve by name
+        return tag == null
+                ? getWaypointsByName(ctx.getBaritone(), input)
+                : getWaypointsByTag(ctx.getBaritone(), tag);
     }
 
     @Override
-    public IWaypoint[] get() {
-        return waypoints;
-    }
-
-    @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
+    public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
         return new TabCompleteHelper()
-                .append(getWaypointNames())
+                .append(getWaypointNames(ctx.getBaritone()))
                 .sortAlphabetically()
                 .prepend(IWaypoint.Tag.getAllNames())
-                .filterPrefix(consumer.getString())
+                .filterPrefix(ctx.getConsumer().getString())
                 .stream();
     }
 
-    public static IWaypointCollection waypoints() {
-        return BaritoneAPI.getProvider()
-                .getPrimaryBaritone()
-                .getWorldProvider()
-                .getCurrentWorld()
-                .getWaypoints();
+    public static IWaypointCollection waypoints(IBaritone baritone) {
+        return baritone.getWorldProvider().getCurrentWorld().getWaypoints();
     }
 
-    public static IWaypoint[] getWaypoints() {
-        return waypoints().getAllWaypoints().stream()
+    public static IWaypoint[] getWaypoints(IBaritone baritone) {
+        return waypoints(baritone).getAllWaypoints().stream()
                 .sorted(Comparator.comparingLong(IWaypoint::getCreationTimestamp).reversed())
                 .toArray(IWaypoint[]::new);
     }
 
-    public static String[] getWaypointNames() {
-        return Stream.of(getWaypoints())
+    public static String[] getWaypointNames(IBaritone baritone) {
+        return Stream.of(getWaypoints(baritone))
                 .map(IWaypoint::getName)
                 .filter(name -> !name.isEmpty())
                 .toArray(String[]::new);
     }
 
-    public static IWaypoint[] getWaypointsByTag(IWaypoint.Tag tag) {
-        return waypoints().getByTag(tag).stream()
+    public static IWaypoint[] getWaypointsByTag(IBaritone baritone, IWaypoint.Tag tag) {
+        return waypoints(baritone).getByTag(tag).stream()
                 .sorted(Comparator.comparingLong(IWaypoint::getCreationTimestamp).reversed())
                 .toArray(IWaypoint[]::new);
     }
 
-    public static IWaypoint[] getWaypointsByName(String name) {
-        return Stream.of(getWaypoints())
+    public static IWaypoint[] getWaypointsByName(IBaritone baritone, String name) {
+        return Stream.of(getWaypoints(baritone))
                 .filter(waypoint -> waypoint.getName().equalsIgnoreCase(name))
                 .toArray(IWaypoint[]::new);
     }

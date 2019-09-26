@@ -18,7 +18,6 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.util.math.MathHelper;
 
@@ -26,40 +25,37 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class RelativeCoordinate implements IDatatypePost<Double, Double> {
+public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
+    INSTANCE;
 
-    public static Pattern PATTERN = Pattern.compile("^(~?)([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$");
-    final boolean isRelative;
-    final double offset;
+    private static Pattern PATTERN = Pattern.compile("^(~?)([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$");
 
-    public RelativeCoordinate() {
-        isRelative = true;
-        offset = 0;
-    }
+    @Override
+    public Double apply(IDatatypeContext ctx, Double origin) throws CommandException {
+        if (origin == null) {
+            origin = 0.0D;
+        }
 
-    public RelativeCoordinate(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
-        Matcher matcher = PATTERN.matcher(consumer.getString());
+        System.out.println(ctx.getConsumer().args);
+        new Throwable().printStackTrace();
+
+        Matcher matcher = PATTERN.matcher(ctx.getConsumer().getString());
         if (!matcher.matches()) {
             throw new IllegalArgumentException("pattern doesn't match");
         }
-        isRelative = !matcher.group(1).isEmpty();
-        offset = matcher.group(2).isEmpty() ? 0 : Double.parseDouble(matcher.group(2));
-    }
 
-    @Override
-    public Double apply(Double origin) {
+        boolean isRelative = !matcher.group(1).isEmpty();
+        double offset = matcher.group(2).isEmpty() ? 0 : Double.parseDouble(matcher.group(2));
+
         if (isRelative) {
             return origin + offset;
         }
         return offset;
     }
 
-    public int applyFloor(double origin) {
-        return MathHelper.floor(apply(origin));
-    }
-
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
+    public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
+        final ArgConsumer consumer = ctx.getConsumer();
         if (!consumer.has(2) && consumer.getString().matches("^(~|$)")) {
             return Stream.of("~");
         }

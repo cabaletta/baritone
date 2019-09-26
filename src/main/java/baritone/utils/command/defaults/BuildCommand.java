@@ -44,7 +44,7 @@ public class BuildCommand extends Command {
 
     @Override
     protected void executed(String label, ArgConsumer args) throws CommandException {
-        File file = args.getDatatypePost(RelativeFile.class, schematicsDir).getAbsoluteFile();
+        File file = args.getDatatypePost(RelativeFile.INSTANCE, schematicsDir).getAbsoluteFile();
         if (!file.getName().toLowerCase(Locale.US).endsWith(".schematic")) {
             file = new File(file.getAbsolutePath() + ".schematic");
         }
@@ -52,7 +52,7 @@ public class BuildCommand extends Command {
         BetterBlockPos buildOrigin;
         if (args.hasAny()) {
             args.requireMax(3);
-            buildOrigin = args.getDatatype(RelativeBlockPos.class).apply(origin);
+            buildOrigin = args.getDatatypePost(RelativeBlockPos.INSTANCE, origin);
         } else {
             args.requireMax(0);
             buildOrigin = origin;
@@ -70,7 +70,7 @@ public class BuildCommand extends Command {
             return RelativeFile.tabComplete(args, schematicsDir);
         } else if (args.has(2)) {
             args.get();
-            return args.tabCompleteDatatype(RelativeBlockPos.class);
+            return args.tabCompleteDatatype(RelativeBlockPos.INSTANCE);
         }
         return Stream.empty();
     }

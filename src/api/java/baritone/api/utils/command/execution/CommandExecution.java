@@ -93,7 +93,7 @@ public class CommandExecution {
     }
 
     public static CommandExecution from(ICommandManager manager, Pair<String, List<CommandArgument>> pair) {
-        return from(manager, pair.first(), new ArgConsumer(pair.second()));
+        return from(manager, pair.first(), new ArgConsumer(manager, pair.second()));
     }
 
     public static CommandExecution from(ICommandManager manager, String string) {

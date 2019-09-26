@@ -23,36 +23,23 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.util.EnumFacing;
 
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Stream;
 
-public class ForEnumFacing implements IDatatypeFor<EnumFacing> {
+public enum ForEnumFacing implements IDatatypeFor<EnumFacing> {
+    INSTANCE;
 
-    private final EnumFacing facing;
-
-    public ForEnumFacing() {
-        facing = null;
-    }
-
-    public ForEnumFacing(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
-        facing = EnumFacing.valueOf(consumer.getString().toUpperCase(Locale.US));
+    @Override
+    public EnumFacing get(IDatatypeContext ctx) throws CommandException {
+        return EnumFacing.valueOf(ctx.getConsumer().getString().toUpperCase(Locale.US));
     }
 
     @Override
-    public EnumFacing get() {
-        return facing;
-    }
-
-    @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
+    public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
         return new TabCompleteHelper()
-                .append(
-                        Stream.of(EnumFacing.values())
-                                .map(EnumFacing::getName)
-                                .map(String::toLowerCase)
-                )
-                .filterPrefix(consumer.getString())
+                .append(Stream.of(EnumFacing.values())
+                        .map(EnumFacing::getName).map(String::toLowerCase))
+                .filterPrefix(ctx.getConsumer().getString())
                 .stream();
     }
 }

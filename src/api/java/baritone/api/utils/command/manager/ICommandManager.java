@@ -17,6 +17,7 @@
 
 package baritone.api.utils.command.manager;
 
+import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.execution.CommandExecution;
@@ -31,6 +32,8 @@ import java.util.stream.Stream;
  * @since 9/21/2019
  */
 public interface ICommandManager {
+
+    IBaritone getBaritone();
 
     Registry<Command> getRegistry();
 

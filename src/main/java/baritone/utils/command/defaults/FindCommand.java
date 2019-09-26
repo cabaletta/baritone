@@ -41,7 +41,7 @@ public class FindCommand extends Command {
     protected void executed(String label, ArgConsumer args) throws CommandException {
         List<Block> toFind = new ArrayList<>();
         while (args.hasAny()) {
-            toFind.add(args.getDatatypeFor(BlockById.class));
+            toFind.add(args.getDatatypeFor(BlockById.INSTANCE));
         }
         BetterBlockPos origin = ctx.playerFeet();
         toFind.stream()
@@ -61,7 +61,7 @@ public class FindCommand extends Command {
 
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args) {
-        return args.tabCompleteDatatype(BlockById.class);
+        return args.tabCompleteDatatype(BlockById.INSTANCE);
     }
 
     @Override

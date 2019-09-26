@@ -19,17 +19,14 @@ package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.argparser.IArgParser;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.exception.CommandInvalidArgumentException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
 
 /**
- * Since interfaces cannot enforce the presence of a constructor, it's on you to make sure there is a constructor that
- * accepts a single {@link ArgConsumer} argument. The constructor will perform all needed validation, and {@link
- * ArgConsumer#getDatatype(Class)} will handle RuntimeExceptions and translate them into {@link
- * CommandInvalidArgumentException}s. There must always be a constructor with no arguments so that {@link ArgConsumer}
- * can create an instance for tab completion.
+ * @see IDatatypeContext
+ * @see IDatatypeFor
+ * @see IDatatypePost
  */
 public interface IDatatype {
 
@@ -41,9 +38,9 @@ public interface IDatatype {
      * See {@link RelativeFile} for a very advanced example of tab completion. You wouldn't want this pasted into every
      * command that uses files - right? Right?
      *
-     * @param consumer The argument consumer to tab complete
+     * @param ctx The argument consumer to tab complete
      * @return A stream representing the strings that can be tab completed. DO NOT INCLUDE SPACES IN ANY STRINGS.
-     * @see ArgConsumer#tabCompleteDatatype(Class)
+     * @see ArgConsumer#tabCompleteDatatype(IDatatype)
      */
-    Stream<String> tabComplete(ArgConsumer consumer) throws CommandException;
+    Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException;
 }

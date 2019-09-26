@@ -17,10 +17,8 @@
 
 package baritone.api.utils.command.datatypes;
 
-import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.entity.player.EntityPlayer;
 
@@ -31,43 +29,27 @@ import java.util.stream.Stream;
  * An {@link IDatatype} used to resolve nearby players, those within
  * render distance of the target {@link IBaritone} instance.
  */
-public class NearbyPlayer implements IDatatypeFor<EntityPlayer> {
+public enum NearbyPlayer implements IDatatypeFor<EntityPlayer> {
+    INSTANCE;
 
-    private final List<EntityPlayer> players =
-            BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().playerEntities;
-    public final EntityPlayer player;
-
-    public NearbyPlayer() {
-        player = null;
-    }
-
-    public NearbyPlayer(ArgConsumer consumer) throws CommandException {
-        String username = consumer.getString();
-        player = players
-                .stream()
+    @Override
+    public EntityPlayer get(IDatatypeContext ctx) throws CommandException {
+        final String username = ctx.getConsumer().getString();
+        return getPlayers(ctx).stream()
                 .filter(s -> s.getName().equalsIgnoreCase(username))
-                .findFirst()
-                .orElse(null);
-        if (player == null) {
-            throw new IllegalArgumentException("no player found by that username");
-        }
+                .findFirst().orElse(null);
     }
 
     @Override
-    public EntityPlayer get() {
-        return player;
-    }
-
-    @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
+    public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
         return new TabCompleteHelper()
-                .append(
-                        players
-                                .stream()
-                                .map(EntityPlayer::getName)
-                )
-                .filterPrefix(consumer.getString())
+                .append(getPlayers(ctx).stream().map(EntityPlayer::getName))
+                .filterPrefix(ctx.getConsumer().getString())
                 .sortAlphabetically()
                 .stream();
+    }
+
+    private static List<EntityPlayer> getPlayers(IDatatypeContext ctx) {
+        return ctx.getBaritone().getPlayerContext().world().playerEntities;
     }
 }

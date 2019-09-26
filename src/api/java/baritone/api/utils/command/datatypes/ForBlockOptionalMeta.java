@@ -19,29 +19,19 @@ package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
 
-public class ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
+public enum ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
+    INSTANCE;
 
-    public final BlockOptionalMeta selector;
-
-    public ForBlockOptionalMeta() {
-        selector = null;
-    }
-
-    public ForBlockOptionalMeta(ArgConsumer consumer) throws CommandException {
-        selector = new BlockOptionalMeta(consumer.getString());
+    @Override
+    public BlockOptionalMeta get(IDatatypeContext ctx) throws CommandException {
+        return new BlockOptionalMeta(ctx.getConsumer().getString());
     }
 
     @Override
-    public BlockOptionalMeta get() {
-        return selector;
-    }
-
-    @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
-        return consumer.tabCompleteDatatype(BlockById.class);
+    public Stream<String> tabComplete(IDatatypeContext ctx) {
+        return ctx.getConsumer().tabCompleteDatatype(BlockById.INSTANCE);
     }
 }

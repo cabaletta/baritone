@@ -18,6 +18,7 @@
 package baritone.utils.command.manager;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.execution.CommandExecution;
@@ -43,6 +44,11 @@ public class CommandManager implements ICommandManager {
     public CommandManager(Baritone baritone) {
         this.baritone = baritone;
         DefaultCommands.commands(baritone).forEach(this.registry::register);
+    }
+
+    @Override
+    public IBaritone getBaritone() {
+        return this.baritone;
     }
 
     @Override

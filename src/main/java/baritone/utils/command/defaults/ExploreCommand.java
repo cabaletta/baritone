@@ -43,7 +43,7 @@ public class ExploreCommand extends Command {
             args.requireMax(0);
         }
         GoalXZ goal = args.hasAny()
-                ? args.getDatatypePost(RelativeGoalXZ.class, ctx.playerFeet())
+                ? args.getDatatypePost(RelativeGoalXZ.INSTANCE, ctx.playerFeet())
                 : new GoalXZ(ctx.playerFeet());
         baritone.getExploreProcess().explore(goal.getX(), goal.getZ());
         logDirect(String.format("Exploring from %s", goal.toString()));
@@ -52,7 +52,7 @@ public class ExploreCommand extends Command {
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args) {
         if (args.hasAtMost(2)) {
-            return args.tabCompleteDatatype(RelativeGoalXZ.class);
+            return args.tabCompleteDatatype(RelativeGoalXZ.INSTANCE);
         }
         return Stream.empty();
     }

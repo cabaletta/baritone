@@ -46,7 +46,7 @@ public class PathCommand extends Command {
         Goal goal;
         if (args.hasAny()) {
             args.requireMax(3);
-            goal = args.getDatatype(RelativeGoal.class).apply(ctx.playerFeet());
+            goal = args.getDatatypePost(RelativeGoal.INSTANCE, ctx.playerFeet());
         } else if ((goal = customGoalProcess.getGoal()) == null) {
             throw new CommandInvalidStateException("No goal");
         }
@@ -60,7 +60,7 @@ public class PathCommand extends Command {
     protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
         if (args.hasAny() && !args.has(4)) {
             while (args.has(2)) {
-                if (args.peekDatatypeOrNull(RelativeCoordinate.class) == null) {
+                if (args.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) == null) {
                     break;
                 }
                 args.get();

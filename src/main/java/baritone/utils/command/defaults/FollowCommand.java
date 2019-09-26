@@ -56,7 +56,6 @@ public class FollowCommand extends Command {
             group = null;
             list = args.getEnum(FollowList.class);
             while (args.hasAny()) {
-                //noinspection unchecked
                 Object gotten = args.getDatatypeFor(list.datatype);
                 if (gotten instanceof Class) {
                     //noinspection unchecked
@@ -98,7 +97,7 @@ public class FollowCommand extends Command {
                     .filterPrefix(args.getString())
                     .stream();
         } else {
-            Class<? extends IDatatype> followType;
+            IDatatypeFor followType;
             try {
                 followType = args.getEnum(FollowList.class).datatype;
             } catch (NullPointerException e) {
@@ -145,11 +144,12 @@ public class FollowCommand extends Command {
     }
 
     private enum FollowList {
-        ENTITY(EntityClassById.class),
-        PLAYER(NearbyPlayer.class);
-        final Class<? extends IDatatypeFor> datatype;
+        ENTITY(EntityClassById.INSTANCE),
+        PLAYER(NearbyPlayer.INSTANCE);
 
-        FollowList(Class<? extends IDatatypeFor> datatype) {
+        final IDatatypeFor datatype;
+
+        FollowList(IDatatypeFor datatype) {
             this.datatype = datatype;
         }
     }

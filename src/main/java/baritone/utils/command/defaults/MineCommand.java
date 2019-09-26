@@ -18,7 +18,6 @@
 package baritone.utils.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.Settings;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.BlockById;
@@ -44,7 +43,7 @@ public class MineCommand extends Command {
         args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
         while (args.hasAny()) {
-            boms.add(args.getDatatypeFor(ForBlockOptionalMeta.class));
+            boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
         }
         WorldScanner.INSTANCE.repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
@@ -53,7 +52,7 @@ public class MineCommand extends Command {
 
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args) {
-        return args.tabCompleteDatatype(BlockById.class);
+        return args.tabCompleteDatatype(BlockById.INSTANCE);
     }
 
     @Override

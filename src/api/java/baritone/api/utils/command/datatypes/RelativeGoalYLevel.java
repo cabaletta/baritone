@@ -21,30 +21,25 @@ import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.stream.Stream;
 
-public class RelativeGoalYLevel implements IDatatypePost<GoalYLevel, BetterBlockPos> {
+public enum RelativeGoalYLevel implements IDatatypePost<GoalYLevel, BetterBlockPos> {
+    INSTANCE;
 
-    final RelativeCoordinate coord;
-
-    public RelativeGoalYLevel() {
-        coord = null;
-    }
-
-    public RelativeGoalYLevel(ArgConsumer consumer) throws CommandException {
-        coord = consumer.getDatatype(RelativeCoordinate.class);
+    @Override
+    public GoalYLevel apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+        return new GoalYLevel(
+                MathHelper.floor(ctx.getConsumer().getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y))
+        );
     }
 
     @Override
-    public GoalYLevel apply(BetterBlockPos origin) {
-        return new GoalYLevel(coord.applyFloor(origin.y));
-    }
-
-    @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(IDatatypeContext ctx) {
+        final ArgConsumer consumer = ctx.getConsumer();
         if (consumer.hasAtMost(1)) {
-            return consumer.tabCompleteDatatype(RelativeCoordinate.class);
+            return consumer.tabCompleteDatatype(RelativeCoordinate.INSTANCE);
         }
         return Stream.empty();
     }

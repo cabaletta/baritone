@@ -25,7 +25,6 @@ import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
@@ -33,6 +32,7 @@ import baritone.api.utils.command.exception.CommandNotFoundException;
 import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.api.utils.command.manager.ICommandManager;
 import com.mojang.realmsclient.util.Pair;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -49,9 +49,8 @@ import java.util.stream.Stream;
 
 public class BaritoneChatControl implements Helper, AbstractGameEventListener {
 
-    public final IBaritone baritone;
-    public final IPlayerContext ctx;
-    public final Settings settings = BaritoneAPI.getSettings();
+    private static final Settings settings = BaritoneAPI.getSettings();
+    private final ICommandManager manager;
 
     /**
      * In certain cases chat components need to execute commands for you. For example, the paginator automatically runs
@@ -67,8 +66,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
     public static String FORCE_COMMAND_PREFIX = String.format("<<%s>>", UUID.randomUUID().toString());
 
     public BaritoneChatControl(IBaritone baritone) {
-        this.baritone = baritone;
-        this.ctx = baritone.getPlayerContext();
+        this.manager = baritone.getCommandManager();
         baritone.getGameEventHandler().registerEventListener(this);
     }
 
@@ -123,15 +121,15 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         Pair<String, List<CommandArgument>> pair = CommandExecution.expand(msg);
         String command = pair.first();
         String rest = msg.substring(pair.first().length());
-        ArgConsumer argc = new ArgConsumer(pair.second());
+        ArgConsumer argc = new ArgConsumer(this.manager, pair.second());
         if (!argc.hasAny()) {
             Settings.Setting setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
             if (setting != null) {
                 logRanCommand(command, rest);
                 if (setting.getValueClass() == Boolean.class) {
-                    this.baritone.getCommandManager().execute(String.format("set toggle %s", setting.getName()));
+                    this.manager.execute(String.format("set toggle %s", setting.getName()));
                 } else {
-                    this.baritone.getCommandManager().execute(String.format("set %s", setting.getName()));
+                    this.manager.execute(String.format("set %s", setting.getName()));
                 }
                 return true;
             }
@@ -143,18 +141,18 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 if (setting.getName().equalsIgnoreCase(pair.first())) {
                     logRanCommand(command, rest);
                     try {
-                        this.baritone.getCommandManager().execute(String.format("set %s %s", setting.getName(), argc.getString()));
+                        this.manager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
                     } catch (CommandNotEnoughArgumentsException ignored) {} // The operation is safe
                     return true;
                 }
             }
         }
-        CommandExecution execution = CommandExecution.from(this.baritone.getCommandManager(), pair);
+        CommandExecution execution = CommandExecution.from(this.manager, pair);
         if (execution == null) {
             return false;
         }
         logRanCommand(command, rest);
-        this.baritone.getCommandManager().execute(execution);
+        this.manager.execute(execution);
         return true;
     }
 
@@ -180,11 +178,11 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
     public Stream<String> tabComplete(String msg) {
         try {
             List<CommandArgument> args = CommandArgument.from(msg, true);
-            ArgConsumer argc = new ArgConsumer(args);
+            ArgConsumer argc = new ArgConsumer(this.manager, args);
             if (argc.hasAtMost(2)) {
                 if (argc.hasExactly(1)) {
                     return new TabCompleteHelper()
-                            .addCommands(this.baritone.getCommandManager())
+                            .addCommands(this.manager)
                             .addSettings()
                             .filterPrefix(argc.getString())
                             .stream();
@@ -204,7 +202,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                     }
                 }
             }
-            return this.baritone.getCommandManager().tabComplete(msg);
+            return this.manager.tabComplete(msg);
         } catch (CommandNotEnoughArgumentsException ignored) { // Shouldn't happen, the operation is safe
             return Stream.empty();
         }

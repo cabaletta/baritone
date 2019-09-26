@@ -17,15 +17,14 @@
 
 package baritone.api.utils.command.helpers.arguments;
 
+import baritone.api.IBaritone;
 import baritone.api.utils.Helper;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argparser.IArgParser;
 import baritone.api.utils.command.argument.CommandArgument;
-import baritone.api.utils.command.datatypes.IDatatype;
-import baritone.api.utils.command.datatypes.IDatatypeFor;
-import baritone.api.utils.command.datatypes.IDatatypePost;
-import baritone.api.utils.command.datatypes.RelativeFile;
+import baritone.api.utils.command.datatypes.*;
 import baritone.api.utils.command.exception.*;
+import baritone.api.utils.command.manager.ICommandManager;
 import net.minecraft.util.EnumFacing;
 
 import java.lang.reflect.InvocationTargetException;
@@ -57,21 +56,38 @@ import java.util.stream.Stream;
 public class ArgConsumer {
 
     /**
+     * The parent {@link ICommandManager} for this {@link ArgConsumer}. Used by {@link #context}.
+     */
+    private final ICommandManager manager;
+
+    /**
+     * The {@link IDatatypeContext} instance for this {@link ArgConsumer}, passed to
+     * datatypes when an operation is performed upon them.
+     *
+     * @see IDatatype
+     * @see IDatatypeContext
+     */
+    private final IDatatypeContext context;
+
+    /**
      * The list of arguments in this ArgConsumer
      */
     public final LinkedList<CommandArgument> args;
+
     /**
      * The list of consumed arguments for this ArgConsumer. The most recently consumed argument is the last one
      */
     public final Deque<CommandArgument> consumed;
 
-    private ArgConsumer(Deque<CommandArgument> args, Deque<CommandArgument> consumed) {
+    private ArgConsumer(ICommandManager manager, Deque<CommandArgument> args, Deque<CommandArgument> consumed) {
+        this.manager = manager;
+        this.context = this.new Context();
         this.args = new LinkedList<>(args);
         this.consumed = new LinkedList<>(consumed);
     }
 
-    public ArgConsumer(List<CommandArgument> args) {
-        this(new LinkedList<>(args), new LinkedList<>());
+    public ArgConsumer(ICommandManager manager, List<CommandArgument> args) {
+        this(manager, new LinkedList<>(args), new LinkedList<>());
     }
 
     /**
@@ -156,9 +172,6 @@ public class ArgConsumer {
      * @see #peek(int)
      * @see #peekString()
      * @see #peekAs(Class)
-     * @see #peekDatatype(Class)
-     * @see #peekDatatypeFor(Class)
-     * @see #peekDatatypePost(Class, Object)
      * @see #get()
      */
     public CommandArgument peek() throws CommandNotEnoughArgumentsException {
@@ -390,92 +403,35 @@ public class ArgConsumer {
         return peekAsOrNull(type, 0);
     }
 
-    /**
-     * Attempts to get the specified datatype from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance
-     * @see IDatatype
-     */
-    public <T extends IDatatype> T peekDatatype(Class<T> datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
-        return copy().getDatatype(datatype);
+    public <T> T peekDatatype(IDatatypeFor<T> datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+        return copy().getDatatypeFor(datatype);
     }
 
-    /**
-     * Attempts to get the specified datatype from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance, or {@code null} if it throws an exception
-     * @see IDatatype
-     */
-    public <T extends IDatatype> T peekDatatypeOrNull(Class<T> datatype) throws CommandNotEnoughArgumentsException {
-        return copy().getDatatypeOrNull(datatype);
+    public <T, O> T peekDatatype(IDatatypePost<T, O> datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+        return this.peekDatatype(datatype, null);
     }
 
-    /**
-     * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance
-     * @see IDatatype
-     * @see IDatatypePost
-     */
-    public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(Class<D> datatype, O original) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+    public <T, O> T peekDatatype(IDatatypePost<T, O> datatype, O original) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         return copy().getDatatypePost(datatype, original);
     }
 
-    /**
-     * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
-     *
-     * @param datatype The datatype to get
-     * @param def      The default value
-     * @return The datatype instance, or {@code def} if it throws an exception
-     * @see IDatatype
-     * @see IDatatypePost
-     */
-    public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePostOrDefault(Class<D> datatype, O original, T def) {
+    public <T> T peekDatatypeOrNull(IDatatypeFor<T> datatype) {
+        return copy().getDatatypeForOrNull(datatype);
+    }
+
+    public <T, O> T peekDatatypeOrNull(IDatatypePost<T, O> datatype) {
+        return copy().getDatatypePostOrNull(datatype, null);
+    }
+
+    public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(D datatype, O original) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+        return copy().getDatatypePost(datatype, original);
+    }
+
+    public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePostOrDefault(D datatype, O original, T def) {
         return copy().getDatatypePostOrDefault(datatype, original, def);
     }
 
-    /**
-     * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * Since this is a peek operation, this ArgConsumer will not be mutated by any call to this method.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance, or {@code null} if it throws an exception
-     * @see IDatatype
-     * @see IDatatypePost
-     */
-    public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePostOrNull(Class<D> datatype, O original) {
+    public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePostOrNull(D datatype, O original) {
         return peekDatatypePostOrDefault(datatype, original, null);
     }
 
@@ -689,198 +645,65 @@ public class ArgConsumer {
         return getAsOrDefault(type, null);
     }
 
-    /**
-     * Attempts to get the specified datatype from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance
-     * @see IDatatype
-     */
-    public <T extends IDatatype> T getDatatype(Class<T> datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+    public <T, O, D extends IDatatypePost<T, O>> T getDatatypePost(D datatype, O original) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
         try {
-            return datatype.getConstructor(ArgConsumer.class).newInstance(this);
-        } catch (InvocationTargetException e) {
-            throw new CommandInvalidTypeException(hasAny() ? peek() : consumed(), datatype.getSimpleName());
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException e) {
-            throw new CommandUnhandledException(e);
-        }
-    }
-
-    /**
-     * Attempts to get the specified datatype from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance, or {@code null} if it throws an exception
-     * @see IDatatype
-     */
-    public <T extends IDatatype> T getDatatypeOrNull(Class<T> datatype) throws CommandNotEnoughArgumentsException {
-        List<CommandArgument> argsSnapshot = new ArrayList<>(args);
-        List<CommandArgument> consumedSnapshot = new ArrayList<>(consumed);
-        try {
-            return getDatatype(datatype);
-        } catch (CommandInvalidTypeException e) {
-            args.clear();
-            args.addAll(argsSnapshot);
-            consumed.clear();
-            consumed.addAll(consumedSnapshot);
-            return null;
-        }
-    }
-
-    /**
-     * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance
-     * @see IDatatype
-     * @see IDatatypePost
-     */
-    public <T, O, D extends IDatatypePost<T, O>> T getDatatypePost(Class<D> datatype, O original) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
-        return getDatatype(datatype).apply(original);
-    }
-
-    /**
-     * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
-     *
-     * @param datatype The datatype to get
-     * @param def      The default value
-     * @return The datatype instance, or {@code def} if it throws an exception
-     * @see IDatatype
-     * @see IDatatypePost
-     */
-    public <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrDefault(Class<D> datatype, O original, T def) {
-        List<CommandArgument> argsSnapshot = new ArrayList<>(args);
-        List<CommandArgument> consumedSnapshot = new ArrayList<>(consumed);
-        try {
-            return getDatatypePost(datatype, original);
-        } catch (CommandException e) {
-            args.clear();
-            args.addAll(argsSnapshot);
-            consumed.clear();
-            consumed.addAll(consumedSnapshot);
-            return def;
-        }
-    }
-
-    /**
-     * Attempts to get the specified {@link IDatatypePost} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance, or {@code null} if it throws an exception
-     * @see IDatatype
-     * @see IDatatypePost
-     */
-    public <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrNull(Class<D> datatype, O original) {
-        return getDatatypePostOrDefault(datatype, original, null);
-    }
-
-    /**
-     * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance
-     * @see IDatatype
-     * @see IDatatypeFor
-     */
-    public <T, D extends IDatatypeFor<T>> T getDatatypeFor(Class<D> datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
-        return getDatatype(datatype).get();
-    }
-
-    /**
-     * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
-     *
-     * @param datatype The datatype to get
-     * @param def      The default value
-     * @return The datatype instance, or {@code def} if it throws an exception
-     * @see IDatatype
-     * @see IDatatypeFor
-     */
-    public <T, D extends IDatatypeFor<T>> T getDatatypeForOrDefault(Class<D> datatype, T def) throws CommandNotEnoughArgumentsException {
-        List<CommandArgument> argsSnapshot = new ArrayList<>(args);
-        List<CommandArgument> consumedSnapshot = new ArrayList<>(consumed);
-        try {
-            return getDatatypeFor(datatype);
-        } catch (CommandInvalidTypeException e) {
-            args.clear();
-            args.addAll(argsSnapshot);
-            consumed.clear();
-            consumed.addAll(consumedSnapshot);
-            return def;
-        }
-    }
-
-    /**
-     * Attempts to get the specified {@link IDatatypeFor} from this ArgConsumer
-     * <p>
-     * A critical difference between {@link IDatatype}s and {@link IArgParser}s is how many arguments they can take.
-     * While {@link IArgParser}s always operate on a single argument's value, {@link IDatatype}s get access to the entire
-     * {@link ArgConsumer}.
-     * <p>
-     * The state of this {@link ArgConsumer} is restored if the datatype could not be gotten.
-     *
-     * @param datatype The datatype to get
-     * @return The datatype instance, or {@code null} if it throws an exception
-     * @see IDatatype
-     * @see IDatatypeFor
-     */
-    public <T, D extends IDatatypeFor<T>> T getDatatypeForOrNull(Class<D> datatype) throws CommandNotEnoughArgumentsException {
-        return getDatatypeForOrDefault(datatype, null);
-    }
-
-    /**
-     * One benefit over datatypes over {@link IArgParser}s is that instead of each command trying to guess what values
-     * the datatype will accept, or simply not tab completing at all, datatypes that support tab completion can provide
-     * accurate information using the same methods used to parse arguments in the first place.
-     * <p>
-     * See {@link RelativeFile} for a very advanced example of tab completion. You wouldn't want this pasted into every
-     * command that uses files - right? Right?
-     *
-     * @param datatype The datatype to get tab completions from
-     * @return A stream representing the strings that can be tab completed. DO NOT INCLUDE SPACES IN ANY STRINGS.
-     * @see IDatatype#tabComplete(ArgConsumer)
-     */
-    public <T extends IDatatype> Stream<String> tabCompleteDatatype(Class<T> datatype) {
-        try {
-            return datatype.getConstructor().newInstance().tabComplete(this);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            return datatype.apply(this.context, original);
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (CommandException ignored) {}
+            throw new CommandInvalidTypeException(hasAny() ? peek() : consumed(), datatype.getClass().getSimpleName());
+        }
+    }
+
+    public <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrDefault(D datatype, O original, T _default) {
+        final List<CommandArgument> argsSnapshot = new ArrayList<>(this.args);
+        final List<CommandArgument> consumedSnapshot = new ArrayList<>(this.consumed);
+        try {
+            return this.getDatatypePost(datatype, original);
+        } catch (Exception e) {
+            this.args.clear();
+            this.args.addAll(argsSnapshot);
+            this.consumed.clear();
+            this.consumed.addAll(consumedSnapshot);
+            return _default;
+        }
+    }
+
+    public <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrNull(D datatype, O original) {
+        return this.getDatatypePostOrDefault(datatype, original, null);
+    }
+
+    public <T, D extends IDatatypeFor<T>> T getDatatypeFor(D datatype) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+        try {
+            return datatype.get(this.context);
+        } catch (Exception e) {
+            throw new CommandInvalidTypeException(hasAny() ? peek() : consumed(), datatype.getClass().getSimpleName());
+        }
+    }
+
+    public <T, D extends IDatatypeFor<T>> T getDatatypeForOrDefault(D datatype, T def) {
+        final List<CommandArgument> argsSnapshot = new ArrayList<>(this.args);
+        final List<CommandArgument> consumedSnapshot = new ArrayList<>(this.consumed);
+        try {
+            return this.getDatatypeFor(datatype);
+        } catch (Exception e) {
+            this.args.clear();
+            this.args.addAll(argsSnapshot);
+            this.consumed.clear();
+            this.consumed.addAll(consumedSnapshot);
+            return def;
+        }
+    }
+
+    public <T, D extends IDatatypeFor<T>> T getDatatypeForOrNull(D datatype) {
+        return this.getDatatypeForOrDefault(datatype, null);
+    }
+
+    public <T extends IDatatype> Stream<String> tabCompleteDatatype(T datatype) {
+        try {
+            return datatype.tabComplete(this.context);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return Stream.empty();
     }
 
@@ -972,15 +795,19 @@ public class ArgConsumer {
      * affect or mutate this instance. Useful for the various {@code peek} functions
      */
     public ArgConsumer copy() {
-        return new ArgConsumer(args, consumed);
+        return new ArgConsumer(manager, args, consumed);
     }
 
-    /**
-     * @param string The string to split
-     * @return A new {@link ArgConsumer} constructed from the specified string
-     * @see CommandArgument#from(String)
-     */
-    public static ArgConsumer from(String string) {
-        return new ArgConsumer(CommandArgument.from(string));
+    private final class Context implements IDatatypeContext {
+
+        @Override
+        public final IBaritone getBaritone() {
+            return ArgConsumer.this.manager.getBaritone();
+        }
+
+        @Override
+        public final ArgConsumer getConsumer() {
+            return ArgConsumer.this;
+        }
     }
 }

@@ -21,36 +21,27 @@ import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.stream.Stream;
 
-public class RelativeGoalXZ implements IDatatypePost<GoalXZ, BetterBlockPos> {
-
-    final RelativeCoordinate[] coords;
-
-    public RelativeGoalXZ() {
-        coords = new RelativeCoordinate[0];
-    }
-
-    public RelativeGoalXZ(ArgConsumer consumer) throws CommandException {
-        coords = new RelativeCoordinate[]{
-                consumer.getDatatype(RelativeCoordinate.class),
-                consumer.getDatatype(RelativeCoordinate.class)
-        };
-    }
+public enum RelativeGoalXZ implements IDatatypePost<GoalXZ, BetterBlockPos> {
+    INSTANCE;
 
     @Override
-    public GoalXZ apply(BetterBlockPos origin) {
+    public GoalXZ apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+        final ArgConsumer consumer = ctx.getConsumer();
         return new GoalXZ(
-                coords[0].applyFloor(origin.x),
-                coords[1].applyFloor(origin.z)
+                MathHelper.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.x)),
+                MathHelper.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y))
         );
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(IDatatypeContext ctx) {
+        final ArgConsumer consumer = ctx.getConsumer();
         if (consumer.hasAtMost(2)) {
-            return consumer.tabCompleteDatatype(RelativeCoordinate.class);
+            return consumer.tabCompleteDatatype(RelativeCoordinate.INSTANCE);
         }
         return Stream.empty();
     }

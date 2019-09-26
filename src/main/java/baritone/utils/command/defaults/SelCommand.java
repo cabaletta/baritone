@@ -86,7 +86,7 @@ public class SelCommand extends Command {
                 throw new CommandInvalidStateException("Set pos1 first before using pos2");
             }
             BetterBlockPos playerPos = mc.getRenderViewEntity() != null ? BetterBlockPos.from(new BlockPos(mc.getRenderViewEntity())) : ctx.playerFeet();
-            BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.class, playerPos) : playerPos;
+            BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos) : playerPos;
             args.requireMax(0);
             if (action == Action.POS1) {
                 pos1 = pos;
@@ -117,16 +117,16 @@ public class SelCommand extends Command {
         } else if (action == Action.SET || action == Action.WALLS || action == Action.SHELL || action == Action.CLEARAREA || action == Action.REPLACE) {
             BlockOptionalMeta type = action == Action.CLEARAREA
                     ? new BlockOptionalMeta(Blocks.AIR)
-                    : args.getDatatypeFor(ForBlockOptionalMeta.class);
+                    : args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
             BlockOptionalMetaLookup replaces = null;
             if (action == Action.REPLACE) {
                 args.requireMin(1);
                 List<BlockOptionalMeta> replacesList = new ArrayList<>();
                 replacesList.add(type);
                 while (args.has(2)) {
-                    replacesList.add(args.getDatatypeFor(ForBlockOptionalMeta.class));
+                    replacesList.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
                 }
-                type = args.getDatatypeFor(ForBlockOptionalMeta.class);
+                type = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
                 replaces = new BlockOptionalMetaLookup(replacesList.toArray(new BlockOptionalMeta[0]));
             } else {
                 args.requireMax(0);
@@ -166,7 +166,7 @@ public class SelCommand extends Command {
             if (transformTarget == null) {
                 throw new CommandInvalidStateException("Invalid transform type");
             }
-            EnumFacing direction = args.getDatatypeFor(ForEnumFacing.class);
+            EnumFacing direction = args.getDatatypeFor(ForEnumFacing.INSTANCE);
             int blocks = args.getAs(Integer.class);
             ISelection[] selections = manager.getSelections();
             if (selections.length < 1) {
@@ -199,14 +199,14 @@ public class SelCommand extends Command {
             if (action != null) {
                 if (action == Action.POS1 || action == Action.POS2) {
                     if (args.hasAtMost(3)) {
-                        return args.tabCompleteDatatype(RelativeBlockPos.class);
+                        return args.tabCompleteDatatype(RelativeBlockPos.INSTANCE);
                     }
                 } else if (action == Action.SET || action == Action.WALLS || action == Action.CLEARAREA || action == Action.REPLACE) {
                     if (args.hasExactlyOne() || action == Action.REPLACE) {
                         while (args.has(2)) {
                             args.get();
                         }
-                        return args.tabCompleteDatatype(ForBlockOptionalMeta.class);
+                        return args.tabCompleteDatatype(ForBlockOptionalMeta.INSTANCE);
                     }
                 } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
                     if (args.hasExactlyOne()) {
@@ -218,7 +218,7 @@ public class SelCommand extends Command {
                     } else {
                         TransformTarget target = TransformTarget.getByName(args.getString());
                         if (target != null && args.hasExactlyOne()) {
-                            return args.tabCompleteDatatype(ForEnumFacing.class);
+                            return args.tabCompleteDatatype(ForEnumFacing.INSTANCE);
                         }
                     }
                 }

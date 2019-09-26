@@ -24,56 +24,56 @@ import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
-
-    final RelativeCoordinate[] coords;
-
-    public RelativeGoal() {
-        coords = new RelativeCoordinate[0];
-    }
-
-    public RelativeGoal(ArgConsumer consumer) throws CommandException {
-        List<RelativeCoordinate> coordsList = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            if (consumer.peekDatatypeOrNull(RelativeCoordinate.class) != null) {
-                coordsList.add(consumer.getDatatype(RelativeCoordinate.class));
-            }
-        }
-        coords = coordsList.toArray(new RelativeCoordinate[0]);
-    }
+public enum RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
+    INSTANCE;
 
     @Override
-    public Goal apply(BetterBlockPos origin) {
-        switch (coords.length) {
+    public Goal apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+        if (origin == null) {
+            origin = BetterBlockPos.ORIGIN;
+        }
+        final ArgConsumer consumer = ctx.getConsumer();
+
+        List<IDatatypePostFunction<Double, Double>> coords = new ArrayList<>();
+        final ArgConsumer copy = consumer.copy(); // This is a hack and should be fixed in the future probably
+        for (int i = 0; i < 3; i++) {
+            if (copy.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) != null) {
+                coords.add(o -> consumer.getDatatypePost(RelativeCoordinate.INSTANCE, o));
+                copy.get(); // Consume so we actually decrement the remaining arguments
+            }
+        }
+
+        switch (coords.size()) {
             case 0:
                 return new GoalBlock(origin);
             case 1:
                 return new GoalYLevel(
-                        coords[0].applyFloor(origin.y)
+                        MathHelper.floor(coords.get(0).apply((double) origin.y))
                 );
             case 2:
                 return new GoalXZ(
-                        coords[0].applyFloor(origin.x),
-                        coords[1].applyFloor(origin.z)
+                        MathHelper.floor(coords.get(0).apply((double) origin.x)),
+                        MathHelper.floor(coords.get(1).apply((double) origin.z))
                 );
             case 3:
                 return new GoalBlock(
-                        coords[0].applyFloor(origin.x),
-                        coords[1].applyFloor(origin.y),
-                        coords[2].applyFloor(origin.z)
+                        MathHelper.floor(coords.get(0).apply((double) origin.x)),
+                        MathHelper.floor(coords.get(1).apply((double) origin.y)),
+                        MathHelper.floor(coords.get(2).apply((double) origin.z))
                 );
             default:
-                throw new IllegalStateException("Unexpected coords size: " + coords.length);
+                throw new IllegalStateException("Unexpected coords size: " + coords.size());
         }
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
-        return consumer.tabCompleteDatatype(RelativeCoordinate.class);
+    public Stream<String> tabComplete(IDatatypeContext ctx) {
+        return ctx.getConsumer().tabCompleteDatatype(RelativeCoordinate.INSTANCE);
     }
 }

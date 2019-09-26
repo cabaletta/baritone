@@ -18,7 +18,6 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.io.File;
@@ -27,31 +26,32 @@ import java.io.UncheckedIOException;
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import static baritone.api.utils.Helper.HELPER;
 
-public class RelativeFile implements IDatatypePost<File, File> {
+public enum RelativeFile implements IDatatypePost<File, File> {
+    INSTANCE;
 
-    private final Path path;
+    @Override
+    public File apply(IDatatypeContext ctx, File original) throws CommandException {
+        if (original == null) {
+            original = new File("./");
+        }
 
-    public RelativeFile() {
-        path = null;
-    }
-
-    public RelativeFile(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
+        Path path;
         try {
-            path = FileSystems.getDefault().getPath(consumer.getString());
+            path = FileSystems.getDefault().getPath(ctx.getConsumer().getString());
         } catch (InvalidPathException e) {
             throw new IllegalArgumentException("invalid path");
         }
+        return getCanonicalFileUnchecked(original.toPath().resolve(path).toFile());
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) {
+    public Stream<String> tabComplete(IDatatypeContext ctx) {
         return Stream.empty();
     }
 
@@ -91,11 +91,6 @@ public class RelativeFile implements IDatatypePost<File, File> {
                         (f.isDirectory() ? File.separator : ""))
                 .filter(s -> s.toLowerCase(Locale.US).startsWith(currentPathStringThing.toLowerCase(Locale.US)))
                 .filter(s -> !s.contains(" "));
-    }
-
-    @Override
-    public File apply(File original) {
-        return getCanonicalFileUnchecked(original.toPath().resolve(path).toFile());
     }
 
     public static File gameDir() {

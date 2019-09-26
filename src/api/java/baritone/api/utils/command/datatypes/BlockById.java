@@ -18,8 +18,6 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -27,35 +25,28 @@ import net.minecraft.util.ResourceLocation;
 
 import java.util.stream.Stream;
 
-public class BlockById implements IDatatypeFor<Block> {
+public enum BlockById implements IDatatypeFor<Block> {
+    INSTANCE;
 
-    public final Block block;
-
-    public BlockById() {
-        block = null;
-    }
-
-    public BlockById(ArgConsumer consumer) throws CommandNotEnoughArgumentsException {
-        ResourceLocation id = new ResourceLocation(consumer.getString());
+    @Override
+    public Block get(IDatatypeContext ctx) throws CommandException {
+        ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
+        Block block;
         if ((block = Block.REGISTRY.getObject(id)) == Blocks.AIR) {
             throw new IllegalArgumentException("no block found by that id");
         }
-    }
-
-    @Override
-    public Block get() {
         return block;
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
+    public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
         return new TabCompleteHelper()
                 .append(
                         Block.REGISTRY.getKeys()
                                 .stream()
                                 .map(Object::toString)
                 )
-                .filterPrefixNamespaced(consumer.getString())
+                .filterPrefixNamespaced(ctx.getConsumer().getString())
                 .sortAlphabetically()
                 .stream();
     }

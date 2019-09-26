@@ -17,7 +17,18 @@
 
 package baritone.api.utils.command.datatypes;
 
+import baritone.api.utils.command.exception.CommandException;
+
 public interface IDatatypePost<T, O> extends IDatatype {
 
-    T apply(O original);
+    /**
+     * Takes the expected input and transforms it based on the value held by {@code original}. If {@code original}
+     * is null, it is expected that the implementation of this method has a case to handle it, such that a
+     * {@link NullPointerException} will never be thrown as a result.
+     *
+     * @param ctx      The datatype context
+     * @param original The transformable value
+     * @return The transformed value
+     */
+    T apply(IDatatypeContext ctx, O original) throws CommandException;
 }

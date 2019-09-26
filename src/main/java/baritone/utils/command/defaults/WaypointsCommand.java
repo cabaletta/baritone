@@ -96,8 +96,8 @@ public class WaypointsCommand extends Command {
                 args.get();
             }
             IWaypoint[] waypoints = tag != null
-                    ? ForWaypoints.getWaypointsByTag(tag)
-                    : ForWaypoints.getWaypoints();
+                    ? ForWaypoints.getWaypointsByTag(this.baritone, tag)
+                    : ForWaypoints.getWaypoints(this.baritone);
             if (waypoints.length > 0) {
                 args.requireMax(1);
                 Paginator.paginate(
@@ -132,11 +132,11 @@ public class WaypointsCommand extends Command {
             }
             String name = args.hasAny() ? args.getString() : "";
             BetterBlockPos pos = args.hasAny()
-                    ? args.getDatatypePost(RelativeBlockPos.class, ctx.playerFeet())
+                    ? args.getDatatypePost(RelativeBlockPos.INSTANCE, ctx.playerFeet())
                     : ctx.playerFeet();
             args.requireMax(0);
             IWaypoint waypoint = new Waypoint(name, tag, pos);
-            ForWaypoints.waypoints().addWaypoint(waypoint);
+            ForWaypoints.waypoints(this.baritone).addWaypoint(waypoint);
             ITextComponent component = new TextComponentString("Waypoint added: ");
             component.getStyle().setColor(TextFormatting.GRAY);
             component.appendSibling(toComponent.apply(waypoint, Action.INFO));
@@ -144,13 +144,13 @@ public class WaypointsCommand extends Command {
         } else if (action == Action.CLEAR) {
             args.requireMax(1);
             IWaypoint.Tag tag = IWaypoint.Tag.getByName(args.getString());
-            IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(tag);
+            IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(this.baritone, tag);
             for (IWaypoint waypoint : waypoints) {
-                ForWaypoints.waypoints().removeWaypoint(waypoint);
+                ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
             }
             logDirect(String.format("Cleared %d waypoints", waypoints.length));
         } else {
-            IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.class);
+            IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
             IWaypoint waypoint = null;
             if (args.hasAny() && args.peekString().equals("@")) {
                 args.requireExactly(2);
@@ -230,7 +230,7 @@ public class WaypointsCommand extends Command {
                     logDirect(goalComponent);
                     logDirect(backComponent);
                 } else if (action == Action.DELETE) {
-                    ForWaypoints.waypoints().removeWaypoint(waypoint);
+                    ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
                     logDirect("That waypoint has successfully been deleted");
                 } else if (action == Action.GOAL) {
                     Goal goal = new GoalBlock(waypoint.getLocation());
@@ -260,12 +260,12 @@ public class WaypointsCommand extends Command {
                                 .filterPrefix(args.getString())
                                 .stream();
                     } else {
-                        return args.tabCompleteDatatype(ForWaypoints.class);
+                        return args.tabCompleteDatatype(ForWaypoints.INSTANCE);
                     }
                 } else if (args.has(3) && action == Action.SAVE) {
                     args.get();
                     args.get();
-                    return args.tabCompleteDatatype(RelativeBlockPos.class);
+                    return args.tabCompleteDatatype(RelativeBlockPos.INSTANCE);
                 }
             }
         }

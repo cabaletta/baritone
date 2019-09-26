@@ -26,35 +26,24 @@ import net.minecraft.util.ResourceLocation;
 
 import java.util.stream.Stream;
 
-public class EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
+public enum EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
+    INSTANCE;
 
-    public final Class<? extends Entity> entity;
-
-    public EntityClassById() {
-        entity = null;
-    }
-
-    public EntityClassById(ArgConsumer consumer) throws CommandException {
-        ResourceLocation id = new ResourceLocation(consumer.getString());
+    @Override
+    public Class<? extends Entity> get(IDatatypeContext ctx) throws CommandException {
+        ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
+        Class<? extends Entity> entity;
         if ((entity = EntityList.REGISTRY.getObject(id)) == null) {
             throw new IllegalArgumentException("no entity found by that id");
         }
-    }
-
-    @Override
-    public Class<? extends Entity> get() {
         return entity;
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
+    public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
         return new TabCompleteHelper()
-                .append(
-                        EntityList.getEntityNameList()
-                                .stream()
-                                .map(Object::toString)
-                )
-                .filterPrefixNamespaced(consumer.getString())
+                .append(EntityList.getEntityNameList().stream().map(Object::toString))
+                .filterPrefixNamespaced(ctx.getConsumer().getString())
                 .sortAlphabetically()
                 .stream();
     }

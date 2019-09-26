@@ -17,9 +17,31 @@
 
 package baritone.api.utils.command.datatypes;
 
-import baritone.api.utils.command.exception.CommandException;
+import baritone.api.IBaritone;
+import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
-public interface IDatatypeFor<T> extends IDatatype {
+/**
+ * Provides an {@link IDatatype} with contextual information so
+ * that it can perform the desired operation on the target level.
+ *
+ * @see IDatatype
+ *
+ * @author Brady
+ * @since 9/26/2019
+ */
+public interface IDatatypeContext {
 
-    T get(IDatatypeContext ctx) throws CommandException;
+    /**
+     * Provides the {@link IBaritone} instance that is associated with the action relating to datatype handling.
+     *
+     * @return The context {@link IBaritone} instance.
+     */
+    IBaritone getBaritone();
+
+    /**
+     * Provides the {@link ArgConsumer} to fetch input information from.
+     *
+     * @return The context {@link ArgConsumer}.
+     */
+    ArgConsumer getConsumer();
 }

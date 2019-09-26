@@ -23,43 +23,34 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.stream.Stream;
 
-public class RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlockPos> {
-
-    final RelativeCoordinate x;
-    final RelativeCoordinate y;
-    final RelativeCoordinate z;
-
-    public RelativeBlockPos() {
-        x = null;
-        y = null;
-        z = null;
-    }
-
-    public RelativeBlockPos(ArgConsumer consumer) throws CommandException {
-        x = consumer.getDatatype(RelativeCoordinate.class);
-        y = consumer.getDatatype(RelativeCoordinate.class);
-        z = consumer.getDatatype(RelativeCoordinate.class);
-    }
+public enum RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlockPos> {
+    INSTANCE;
 
     @Override
-    public BetterBlockPos apply(BetterBlockPos origin) {
+    public BetterBlockPos apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+        if (origin == null) {
+            origin = BetterBlockPos.ORIGIN;
+        }
+
+        final ArgConsumer consumer = ctx.getConsumer();
         return new BetterBlockPos(
-                x.apply((double) origin.x),
-                y.apply((double) origin.y),
-                z.apply((double) origin.z)
+                consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.x),
+                consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y),
+                consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.z)
         );
     }
 
     @Override
-    public Stream<String> tabComplete(ArgConsumer consumer) throws CommandException {
+    public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
+        final ArgConsumer consumer = ctx.getConsumer();
         if (consumer.hasAny() && !consumer.has(4)) {
             while (consumer.has(2)) {
-                if (consumer.peekDatatypeOrNull(RelativeCoordinate.class) == null) {
+                if (consumer.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) == null) {
                     break;
                 }
                 consumer.get();
             }
-            return consumer.tabCompleteDatatype(RelativeCoordinate.class);
+            return consumer.tabCompleteDatatype(RelativeCoordinate.INSTANCE);
         }
         return Stream.empty();
     }

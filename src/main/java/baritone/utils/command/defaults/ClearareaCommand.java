@@ -44,7 +44,7 @@ public class ClearareaCommand extends Command {
         BetterBlockPos pos2;
         if (args.hasAny()) {
             args.requireMax(3);
-            pos2 = args.getDatatype(RelativeBlockPos.class).apply(pos1);
+            pos2 = args.getDatatypePost(RelativeBlockPos.INSTANCE, pos1);
         } else {
             args.requireMax(0);
             Goal goal = baritone.getCustomGoalProcess().getGoal();
@@ -60,7 +60,7 @@ public class ClearareaCommand extends Command {
 
     @Override
     protected Stream<String> tabCompleted(String label, ArgConsumer args) {
-        return args.tabCompleteDatatype(RelativeBlockPos.class);
+        return args.tabCompleteDatatype(RelativeBlockPos.INSTANCE);
     }
 
     @Override
