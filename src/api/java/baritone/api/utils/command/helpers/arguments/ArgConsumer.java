@@ -22,12 +22,17 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argparser.IArgParser;
 import baritone.api.utils.command.argument.CommandArgument;
-import baritone.api.utils.command.datatypes.*;
-import baritone.api.utils.command.exception.*;
+import baritone.api.utils.command.datatypes.IDatatype;
+import baritone.api.utils.command.datatypes.IDatatypeContext;
+import baritone.api.utils.command.datatypes.IDatatypeFor;
+import baritone.api.utils.command.datatypes.IDatatypePost;
+import baritone.api.utils.command.exception.CommandException;
+import baritone.api.utils.command.exception.CommandInvalidTypeException;
+import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
+import baritone.api.utils.command.exception.CommandTooManyArgumentsException;
 import baritone.api.utils.command.manager.ICommandManager;
 import net.minecraft.util.EnumFacing;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -45,7 +50,7 @@ import java.util.stream.Stream;
  * need to retrieve an argument after you've already consumed it - look no further than {@link #consumed()}!</li>
  * <li>Easy retrieval of many different types. If you need to retrieve an instance of an int or float for example,
  * look no further than {@link #getAs(Class)}. If you need a more powerful way of retrieving data, try out the many
- * {@link #getDatatype(Class)} methods.</li>
+ * {@code getDatatype...} methods.</li>
  * <li>It's very easy to throw detailed exceptions. The {@link ArgConsumer} has many different methods that can
  * enforce the number of arguments, the type of arguments, and more, throwing different types of
  * {@link CommandException}s if something seems off. You're recommended to do all validation and store all needed

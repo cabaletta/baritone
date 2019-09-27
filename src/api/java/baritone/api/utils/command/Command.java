@@ -18,7 +18,6 @@
 package baritone.api.utils.command;
 
 import baritone.api.IBaritone;
-import baritone.api.Settings;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.command.exception.CommandException;

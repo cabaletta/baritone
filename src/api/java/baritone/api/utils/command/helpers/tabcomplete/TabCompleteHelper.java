@@ -26,7 +26,6 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.manager.ICommandManager;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;

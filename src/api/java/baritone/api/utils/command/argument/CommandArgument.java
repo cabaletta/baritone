@@ -25,7 +25,6 @@ import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import net.minecraft.util.EnumFacing;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

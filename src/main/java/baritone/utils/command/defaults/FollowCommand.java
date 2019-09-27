@@ -20,7 +20,6 @@ package baritone.utils.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.EntityClassById;
-import baritone.api.utils.command.datatypes.IDatatype;
 import baritone.api.utils.command.datatypes.IDatatypeFor;
 import baritone.api.utils.command.datatypes.NearbyPlayer;
 import baritone.api.utils.command.exception.CommandException;

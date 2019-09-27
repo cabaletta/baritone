@@ -18,7 +18,6 @@
 package baritone.utils.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.Settings;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalStrictDirection;
 import baritone.api.utils.command.Command;

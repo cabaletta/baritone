@@ -18,8 +18,6 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.util.EnumFacing;
 

@@ -19,7 +19,6 @@ package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
-import net.minecraft.util.math.MathHelper;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

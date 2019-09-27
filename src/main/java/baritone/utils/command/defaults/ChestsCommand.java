@@ -18,7 +18,6 @@
 package baritone.utils.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.Settings;
 import baritone.api.cache.IRememberedInventory;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;

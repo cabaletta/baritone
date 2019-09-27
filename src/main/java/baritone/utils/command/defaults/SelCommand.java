@@ -19,7 +19,6 @@ package baritone.utils.command.defaults;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
-import baritone.api.Settings;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.schematic.*;
@@ -46,8 +45,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
