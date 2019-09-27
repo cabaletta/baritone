@@ -19,6 +19,13 @@ package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
 
+import java.util.function.Function;
+
+/**
+ * An {@link IDatatype} which acts as a {@link Function}, in essence. The only difference
+ * is that it requires an {@link IDatatypeContext} to be provided due to the expectation that
+ * implementations of {@link IDatatype} are singletons.
+ */
 public interface IDatatypePost<T, O> extends IDatatype {
 
     /**
