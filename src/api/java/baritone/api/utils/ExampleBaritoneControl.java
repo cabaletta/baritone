@@ -511,8 +511,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                 baritone.getMineProcess().mine(quantity, block);
                 logDirect("Will mine " + quantity + " " + blockTypes[0]);
                 return true;
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
-            }
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException ex) {}
             for (String s : blockTypes) {
                 if (BlockUtils.stringToBlockNullable(s) == null) {
                     logDirect(s + " isn't a valid block name");
