@@ -17,12 +17,9 @@
 
 package baritone.api.utils.command.exception;
 
-public class CommandNoParserForTypeException extends CommandErrorMessageException {
-
-    public final Class<?> klass;
+public class CommandNoParserForTypeException extends CommandUnhandledException {
 
     public CommandNoParserForTypeException(Class<?> klass) {
         super(String.format("Could not find a handler for type %s", klass.getSimpleName()));
-        this.klass = klass;
     }
 }

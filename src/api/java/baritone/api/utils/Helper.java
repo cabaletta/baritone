@@ -37,6 +37,11 @@ public interface Helper {
      */
     Helper HELPER = new Helper() {};
 
+    /**
+     * Instance of the game
+     */
+    Minecraft mc = Minecraft.getMinecraft();
+
     static ITextComponent getPrefix() {
         // Inner text component
         ITextComponent baritone = new TextComponentString(BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
@@ -51,8 +56,6 @@ public interface Helper {
 
         return prefix;
     }
-
-    Minecraft mc = Minecraft.getMinecraft();
 
     /**
      * Send a message to chat only if chatDebug is on

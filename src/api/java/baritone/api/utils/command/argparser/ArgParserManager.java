@@ -72,8 +72,7 @@ public class ArgParserManager {
     public static <T> T parseStateless(Class<T> type, CommandArgument arg) throws CommandInvalidTypeException {
         IArgParser.Stateless<T> parser = getParserStateless(type);
         if (parser == null) {
-            // TODO: Fix this scuff lol
-            throw new CommandUnhandledException(new CommandNoParserForTypeException(type));
+            throw new CommandNoParserForTypeException(type);
         }
         try {
             return parser.parseArg(arg);
@@ -95,8 +94,7 @@ public class ArgParserManager {
     public static <T, S> T parseStated(Class<T> type, Class<S> stateKlass, CommandArgument arg, S state) throws CommandInvalidTypeException {
         IArgParser.Stated<T, S> parser = getParserStated(type, stateKlass);
         if (parser == null) {
-            // TODO: Fix this scuff lol
-            throw new CommandUnhandledException(new CommandNoParserForTypeException(type));
+            throw new CommandNoParserForTypeException(type);
         }
         try {
             return parser.parseArg(arg, state);

@@ -21,6 +21,7 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandUnhandledException;
+import baritone.api.utils.command.exception.ICommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.manager.ICommandManager;
 import com.mojang.realmsclient.util.Pair;
@@ -68,10 +69,13 @@ public class CommandExecution {
     public void execute() {
         try {
             command.execute(this);
-        } catch (CommandException e) {
-            e.handle(command, args.args);
         } catch (Throwable t) {
-            new CommandUnhandledException(t).handle(command, args.args);
+            // Create a handleable exception, wrap if needed
+            ICommandException exception = t instanceof ICommandException
+                    ? (ICommandException) t
+                    : new CommandUnhandledException(t);
+
+            exception.handle(command, args.args);
         }
     }
 
