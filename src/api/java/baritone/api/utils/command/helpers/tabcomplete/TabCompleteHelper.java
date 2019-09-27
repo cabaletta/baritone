@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.utils.SettingsUtil;
+import baritone.api.utils.command.datatypes.IDatatype;
 import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.manager.ICommandManager;
@@ -45,7 +46,7 @@ import java.util.stream.Stream;
  * {@link #filterPrefix(String)}</li>
  * <li>Get the stream using {@link #stream()}</li>
  * <li>Pass it up to whatever's calling your tab complete function (i.e.
- * {@link ICommandManager#tabComplete(CommandExecution)} or {@link ArgConsumer#tabCompleteDatatype(Class)})</li>
+ * {@link ICommandManager#tabComplete(CommandExecution)} or {@link ArgConsumer#tabCompleteDatatype(IDatatype)})</li>
  * </ul>
  * <p>
  * For advanced users: if you're intercepting {@link TabCompleteEvent}s directly, use {@link #build()} instead for an

@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  * A {@link CommandArgument} is an immutable object representing one command argument. It contains data on the index of
  * that argument, its value, and the rest of the string that argument was found in
  * <p>
- * You're recommended to use {@link ArgConsumer}s to handle these. Check out {@link ArgConsumer#from(String)}
+ * You're recommended to use {@link ArgConsumer}s to handle these.
  */
 public class CommandArgument {
 
