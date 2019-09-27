@@ -65,7 +65,7 @@ public class TabCompleteHelper {
     }
 
     public TabCompleteHelper() {
-        this(new String[0]);
+        stream = Stream.empty();
     }
 
     /**
