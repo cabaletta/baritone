@@ -35,9 +35,6 @@ public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
             origin = 0.0D;
         }
 
-        System.out.println(ctx.getConsumer().args);
-        new Throwable().printStackTrace();
-
         Matcher matcher = PATTERN.matcher(ctx.getConsumer().getString());
         if (!matcher.matches()) {
             throw new IllegalArgumentException("pattern doesn't match");
