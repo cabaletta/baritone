@@ -43,7 +43,7 @@ public class CommandManager implements ICommandManager {
 
     public CommandManager(Baritone baritone) {
         this.baritone = baritone;
-        DefaultCommands.commands(baritone).forEach(this.registry::register);
+        DefaultCommands.createAll(baritone).forEach(this.registry::register);
     }
 
     @Override

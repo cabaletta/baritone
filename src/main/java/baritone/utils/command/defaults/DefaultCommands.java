@@ -22,48 +22,49 @@ import baritone.api.utils.command.Command;
 
 import java.util.*;
 
-public class DefaultCommands {
+public final class DefaultCommands {
 
-    public static List<Command> commands(IBaritone baritone) {
+    private DefaultCommands() {}
+
+    public static List<Command> createAll(IBaritone baritone) {
         Objects.requireNonNull(baritone);
-        List<Command> commands = new ArrayList<>();
-        commands.addAll(Arrays.asList(
-                new HelpCommand(baritone),
-                new SetCommand(baritone),
-                new CommandAlias(baritone, Arrays.asList("modified", "mod", "baritone", "modifiedsettings"), "List modified settings", "set modified"),
-                new CommandAlias(baritone, "reset", "Reset all settings or just one", "set reset"),
-                new GoalCommand(baritone),
-                new PathCommand(baritone),
-                new ProcCommand(baritone),
-                new VersionCommand(baritone),
-                new RepackCommand(baritone),
-                new BuildCommand(baritone),
-                new SchematicaCommand(baritone),
-                new ComeCommand(baritone),
-                new AxisCommand(baritone),
-                new CancelCommand(baritone),
-                new ForceCancelCommand(baritone),
-                new GcCommand(baritone),
-                new InvertCommand(baritone),
-                new ClearareaCommand(baritone),
-                new TunnelCommand(baritone),
-                new RenderCommand(baritone),
-                new FarmCommand(baritone),
-                new ChestsCommand(baritone),
-                new FollowCommand(baritone),
-                new ExploreFilterCommand(baritone),
-                new ReloadAllCommand(baritone),
-                new SaveAllCommand(baritone),
-                new ExploreCommand(baritone),
-                new BlacklistCommand(baritone),
-                new FindCommand(baritone),
-                new MineCommand(baritone),
-                new ClickCommand(baritone),
-                new ThisWayCommand(baritone),
-                new WaypointsCommand(baritone),
-                new CommandAlias(baritone, "sethome", "Sets your home waypoint", "waypoints save home"),
-                new CommandAlias(baritone, "home", "Set goal to your home waypoint", "waypoints goal home"),
-                new SelCommand(baritone)
+        List<Command> commands = new ArrayList<>(Arrays.asList(
+            new HelpCommand(baritone),
+            new SetCommand(baritone),
+            new CommandAlias(baritone, Arrays.asList("modified", "mod", "baritone", "modifiedsettings"), "List modified settings", "set modified"),
+            new CommandAlias(baritone, "reset", "Reset all settings or just one", "set reset"),
+            new GoalCommand(baritone),
+            new PathCommand(baritone),
+            new ProcCommand(baritone),
+            new VersionCommand(baritone),
+            new RepackCommand(baritone),
+            new BuildCommand(baritone),
+            new SchematicaCommand(baritone),
+            new ComeCommand(baritone),
+            new AxisCommand(baritone),
+            new CancelCommand(baritone),
+            new ForceCancelCommand(baritone),
+            new GcCommand(baritone),
+            new InvertCommand(baritone),
+            new ClearareaCommand(baritone),
+            new TunnelCommand(baritone),
+            new RenderCommand(baritone),
+            new FarmCommand(baritone),
+            new ChestsCommand(baritone),
+            new FollowCommand(baritone),
+            new ExploreFilterCommand(baritone),
+            new ReloadAllCommand(baritone),
+            new SaveAllCommand(baritone),
+            new ExploreCommand(baritone),
+            new BlacklistCommand(baritone),
+            new FindCommand(baritone),
+            new MineCommand(baritone),
+            new ClickCommand(baritone),
+            new ThisWayCommand(baritone),
+            new WaypointsCommand(baritone),
+            new CommandAlias(baritone, "sethome", "Sets your home waypoint", "waypoints save home"),
+            new CommandAlias(baritone, "home", "Set goal to your home waypoint", "waypoints goal home"),
+            new SelCommand(baritone)
         ));
         PauseResumeCommands prc = new PauseResumeCommands(baritone);
         commands.add(prc.pauseCommand);
