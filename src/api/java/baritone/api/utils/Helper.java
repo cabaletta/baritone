@@ -24,6 +24,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * @author Brady
@@ -88,7 +89,7 @@ public interface Helper {
      * @param color   The color to print that message in
      */
     default void logDirect(String message, TextFormatting color) {
-        Arrays.stream(message.split("\n")).forEach(line -> {
+        Stream.of(message.split("\n")).forEach(line -> {
             ITextComponent component = new TextComponentString(line.replace("\t", "    "));
             component.getStyle().setColor(color);
             logDirect(component);

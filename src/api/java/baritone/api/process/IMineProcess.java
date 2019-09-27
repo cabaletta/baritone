@@ -21,7 +21,7 @@ import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import net.minecraft.block.Block;
 
-import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * @author Brady
@@ -93,7 +93,7 @@ public interface IMineProcess extends IBaritoneProcess {
      */
     default void mine(int quantity, Block... blocks) {
         mine(quantity, new BlockOptionalMetaLookup(
-                Arrays.stream(blocks)
+                Stream.of(blocks)
                         .map(BlockOptionalMeta::new)
                         .toArray(BlockOptionalMeta[]::new)
         ));

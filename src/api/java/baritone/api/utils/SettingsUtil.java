@@ -34,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -42,6 +41,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.minecraft.client.Minecraft.getMinecraft;
 
@@ -242,7 +242,7 @@ public class SettingsUtil {
                 Type type = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
                 Parser parser = Parser.getParser(type);
 
-                return Arrays.stream(raw.split(","))
+                return Stream.of(raw.split(","))
                         .map(s -> parser.parse(context, s))
                         .collect(Collectors.toList());
             }
@@ -301,7 +301,7 @@ public class SettingsUtil {
         }
 
         public static Parser getParser(Type type) {
-            return Arrays.stream(values())
+            return Stream.of(values())
                     .filter(parser -> parser.accepts(type))
                     .findFirst().orElse(null);
         }
