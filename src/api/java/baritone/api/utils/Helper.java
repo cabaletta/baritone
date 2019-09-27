@@ -37,8 +37,11 @@ public interface Helper {
     Helper HELPER = new Helper() {};
 
     static ITextComponent getPrefix() {
+        // Inner text component
         ITextComponent baritone = new TextComponentString(BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
         baritone.getStyle().setColor(TextFormatting.LIGHT_PURPLE);
+
+        // Outer brackets
         ITextComponent prefix = new TextComponentString("");
         prefix.getStyle().setColor(TextFormatting.DARK_PURPLE);
         prefix.appendText("[");

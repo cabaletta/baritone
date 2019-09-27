@@ -17,62 +17,10 @@
 
 package baritone.api.utils.command.exception;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 public class CommandUnhandledException extends RuntimeException implements ICommandException {
 
     public CommandUnhandledException(Throwable cause) {
-        super(String.format(
-                "An unhandled exception has occurred:\n\n%s",
-                getFriendlierStackTrace(cause)
-        ));
-    }
-
-    private static String getStackTrace(Throwable throwable) {
-        StringWriter sw = new StringWriter();
-        throwable.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
-    }
-
-    private static String getBaritoneStackTrace(String stackTrace) {
-        List<String> lines = Stream.of(stackTrace.split("\n"))
-                .collect(Collectors.toList());
-        int lastBaritoneLine = 0;
-        for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).startsWith("\tat baritone.") && lines.get(i).contains("BaritoneChatControl")) {
-                lastBaritoneLine = i;
-            }
-        }
-        return String.join("\n", lines.subList(0, lastBaritoneLine + 1));
-    }
-
-    private static String getBaritoneStackTrace(Throwable throwable) {
-        return getBaritoneStackTrace(getStackTrace(throwable));
-    }
-
-    private static String getFriendlierStackTrace(String stackTrace) {
-        List<String> lines = Arrays.asList(stackTrace.split("\n"));
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-            if (line.startsWith("\tat ")) {
-                if (line.startsWith("\tat baritone.")) {
-                    line = line.replaceFirst("^\tat [a-z.]+?([A-Z])", "\tat $1");
-                }
-                // line = line.replaceFirst("\\(([^)]+)\\)$", "\n\t  . $1");
-                line = line.replaceFirst("\\([^:]+:(\\d+)\\)$", ":$1");
-                line = line.replaceFirst("\\(Unknown Source\\)$", "");
-                lines.set(i, line);
-            }
-        }
-        return String.join("\n", lines);
-    }
-
-    private static String getFriendlierStackTrace(Throwable throwable) {
-        return getFriendlierStackTrace(getBaritoneStackTrace(throwable));
+        super("An unhandled exception occurred. The error is in your game's log, please report this at https://github.com/cabaletta/baritone/issues");
+        cause.printStackTrace();
     }
 }

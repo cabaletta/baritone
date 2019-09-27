@@ -71,7 +71,6 @@ public class CommandExecution {
         } catch (CommandException e) {
             e.handle(command, args.args);
         } catch (Throwable t) {
-            t.printStackTrace();
             new CommandUnhandledException(t).handle(command, args.args);
         }
     }

@@ -67,7 +67,7 @@ public class ArgParserManager {
      * @param type  The type to try and parse the argument into.
      * @param arg   The argument to parse.
      * @return An instance of the specified class.
-     * @throws CommandInvalidTypeException     If the parsing failed
+     * @throws CommandInvalidTypeException If the parsing failed
      */
     public static <T> T parseStateless(Class<T> type, CommandArgument arg) throws CommandInvalidTypeException {
         IArgParser.Stateless<T> parser = getParserStateless(type);
@@ -89,7 +89,7 @@ public class ArgParserManager {
      * @param arg   The argument to parse.
      * @param state The state to pass to the {@link IArgParser.Stated}.
      * @return An instance of the specified class.
-     * @throws CommandInvalidTypeException     If the parsing failed
+     * @throws CommandInvalidTypeException If the parsing failed
      * @see IArgParser.Stated
      */
     public static <T, S> T parseStated(Class<T> type, Class<S> stateKlass, CommandArgument arg, S state) throws CommandInvalidTypeException {
