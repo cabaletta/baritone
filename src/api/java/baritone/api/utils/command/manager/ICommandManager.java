@@ -20,9 +20,8 @@ package baritone.api.utils.command.manager;
 import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argument.CommandArgument;
-import baritone.api.utils.command.execution.CommandExecution;
 import baritone.api.utils.command.registry.Registry;
-import com.mojang.realmsclient.util.Pair;
+import net.minecraft.util.Tuple;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -43,13 +42,11 @@ public interface ICommandManager {
      */
     Command getCommand(String name);
 
-    void execute(CommandExecution execution);
-
     boolean execute(String string);
 
-    Stream<String> tabComplete(CommandExecution execution);
+    boolean execute(Tuple<String, List<CommandArgument>> expanded);
 
-    Stream<String> tabComplete(Pair<String, List<CommandArgument>> pair);
+    Stream<String> tabComplete(Tuple<String, List<CommandArgument>> expanded);
 
     Stream<String> tabComplete(String prefix);
 }

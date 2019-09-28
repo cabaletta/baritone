@@ -29,11 +29,11 @@ import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.exception.CommandNotFoundException;
-import baritone.api.utils.command.execution.CommandExecution;
+import baritone.api.utils.command.execution.ICommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.utils.command.manager.ICommandManager;
-import com.mojang.realmsclient.util.Pair;
+import net.minecraft.util.Tuple;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
@@ -67,7 +67,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             event.cancel();
             String commandStr = msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
             if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
-                new CommandNotFoundException(CommandExecution.expand(commandStr).first()).handle(null, null);
+                new CommandNotFoundException(ICommandExecution.expand(commandStr).getFirst()).handle(null, null);
             }
         } else if ((settings.chatControl.value || settings.chatControlAnyway.value) && runCommand(msg)) {
             event.cancel();
@@ -106,10 +106,10 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (msg.isEmpty()) {
             return this.runCommand("help");
         }
-        Pair<String, List<CommandArgument>> pair = CommandExecution.expand(msg);
-        String command = pair.first();
-        String rest = msg.substring(pair.first().length());
-        ArgConsumer argc = new ArgConsumer(this.manager, pair.second());
+        Tuple<String, List<CommandArgument>> pair = ICommandExecution.expand(msg);
+        String command = pair.getFirst();
+        String rest = msg.substring(pair.getFirst().length());
+        ArgConsumer argc = new ArgConsumer(this.manager, pair.getSecond());
         if (!argc.hasAny()) {
             Settings.Setting setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
             if (setting != null) {
@@ -126,7 +126,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 if (setting.getName().equals("logger")) {
                     continue;
                 }
-                if (setting.getName().equalsIgnoreCase(pair.first())) {
+                if (setting.getName().equalsIgnoreCase(pair.getFirst())) {
                     logRanCommand(command, rest);
                     try {
                         this.manager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
@@ -135,13 +135,13 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                 }
             }
         }
-        CommandExecution execution = CommandExecution.from(this.manager, pair);
-        if (execution == null) {
-            return false;
+
+        // If the command exists, then handle echoing the input
+        if (this.manager.getCommand(pair.getFirst()) != null) {
+            logRanCommand(command, rest);
         }
-        logRanCommand(command, rest);
-        this.manager.execute(execution);
-        return true;
+
+        return this.manager.execute(pair);
     }
 
     @Override

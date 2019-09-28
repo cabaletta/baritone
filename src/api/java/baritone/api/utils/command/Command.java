@@ -21,7 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.execution.CommandExecution;
+import baritone.api.utils.command.execution.ICommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.Collections;
@@ -62,19 +62,21 @@ public abstract class Command implements Helper {
      *
      * @param execution The command execution to execute this command with
      */
-    public void execute(CommandExecution execution) throws CommandException {
-        executed(execution.label, execution.args);
+    public final void execute(ICommandExecution execution) throws CommandException {
+        this.executed(execution.getLabel(), execution.getArguments());
     }
 
     /**
-     * Tab completes this command with the specified arguments. This won't throw any exceptions ever.
+     * Tab completes this command with the specified arguments. Any exception that is thrown by
+     * {@link #tabCompleted(String, ArgConsumer)} will be caught by this method, and then {@link Stream#empty()}
+     * will be returned.
      *
      * @param execution The command execution to tab complete
      * @return The list of completions.
      */
-    public Stream<String> tabComplete(CommandExecution execution) {
+    public final Stream<String> tabComplete(ICommandExecution execution) {
         try {
-            return tabCompleted(execution.label, execution.args);
+            return this.tabCompleted(execution.getLabel(), execution.getArguments());
         } catch (Throwable t) {
             return Stream.empty();
         }

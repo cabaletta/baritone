@@ -15,21 +15,23 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils.command.execution;
+package baritone.utils.command.execution;
 
 import baritone.api.utils.command.Command;
-import baritone.api.utils.command.argument.CommandArgument;
-import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandUnhandledException;
 import baritone.api.utils.command.exception.ICommandException;
+import baritone.api.utils.command.execution.ICommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
-import baritone.api.utils.command.manager.ICommandManager;
-import com.mojang.realmsclient.util.Pair;
+import baritone.utils.command.manager.CommandManager;
 
-import java.util.List;
 import java.util.stream.Stream;
 
-public class CommandExecution {
+/**
+ * The default, internal implementation of {@link ICommandExecution}, which is used by {@link CommandManager}
+ *
+ * @author LoganDark, Brady
+ */
+public class CommandExecution implements ICommandExecution {
 
     /**
      * The command itself
@@ -39,12 +41,12 @@ public class CommandExecution {
     /**
      * The name this command was called with
      */
-    public final String label;
+    private final String label;
 
     /**
      * The arg consumer
      */
-    public final ArgConsumer args;
+    private final ArgConsumer args;
 
     public CommandExecution(Command command, String label, ArgConsumer args) {
         this.command = command;
@@ -52,20 +54,17 @@ public class CommandExecution {
         this.args = args;
     }
 
-    public static String getLabel(String string) {
-        return string.split("\\s", 2)[0];
+    @Override
+    public String getLabel() {
+        return this.label;
     }
 
-    public static Pair<String, List<CommandArgument>> expand(String string, boolean preserveEmptyLast) {
-        String label = getLabel(string);
-        List<CommandArgument> args = CommandArgument.from(string.substring(label.length()), preserveEmptyLast);
-        return Pair.of(label, args);
+    @Override
+    public ArgConsumer getArguments() {
+        return this.args;
     }
 
-    public static Pair<String, List<CommandArgument>> expand(String string) {
-        return expand(string, false);
-    }
-
+    @Override
     public void execute() {
         try {
             command.execute(this);
@@ -79,27 +78,8 @@ public class CommandExecution {
         }
     }
 
+    @Override
     public Stream<String> tabComplete() {
         return command.tabComplete(this);
-    }
-
-    public static CommandExecution from(ICommandManager manager, String label, ArgConsumer args) {
-        Command command = manager.getCommand(label);
-        if (command == null) {
-            return null;
-        }
-        return new CommandExecution(
-                command,
-                label,
-                args
-        );
-    }
-
-    public static CommandExecution from(ICommandManager manager, Pair<String, List<CommandArgument>> pair) {
-        return from(manager, pair.first(), new ArgConsumer(manager, pair.second()));
-    }
-
-    public static CommandExecution from(ICommandManager manager, String string) {
-        return from(manager, expand(string));
     }
 }

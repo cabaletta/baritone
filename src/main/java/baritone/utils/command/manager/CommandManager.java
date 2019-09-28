@@ -21,18 +21,22 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argument.CommandArgument;
-import baritone.api.utils.command.execution.CommandExecution;
+import baritone.api.utils.command.execution.ICommandExecution;
+import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.utils.command.manager.ICommandManager;
 import baritone.api.utils.command.registry.Registry;
 import baritone.utils.command.defaults.DefaultCommands;
-import com.mojang.realmsclient.util.Pair;
+import baritone.utils.command.execution.CommandExecution;
+import net.minecraft.util.Tuple;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 
 /**
+ * The default, internal implementation of {@link ICommandManager}
+ *
  * @author Brady
  * @since 9/21/2019
  */
@@ -67,13 +71,13 @@ public class CommandManager implements ICommandManager {
     }
 
     @Override
-    public void execute(CommandExecution execution) {
-        execution.execute();
+    public boolean execute(String string) {
+        return this.execute(ICommandExecution.expand(string));
     }
 
     @Override
-    public boolean execute(String string) {
-        CommandExecution execution = CommandExecution.from(this, string);
+    public boolean execute(Tuple<String, List<CommandArgument>> expanded) {
+        ICommandExecution execution = this.from(expanded);
         if (execution != null) {
             execution.execute();
         }
@@ -81,21 +85,16 @@ public class CommandManager implements ICommandManager {
     }
 
     @Override
-    public Stream<String> tabComplete(CommandExecution execution) {
-        return execution.tabComplete();
-    }
-
-    @Override
-    public Stream<String> tabComplete(Pair<String, List<CommandArgument>> pair) {
-        CommandExecution execution = CommandExecution.from(this, pair);
-        return execution == null ? Stream.empty() : tabComplete(execution);
+    public Stream<String> tabComplete(Tuple<String, List<CommandArgument>> expanded) {
+        ICommandExecution execution = this.from(expanded);
+        return execution == null ? Stream.empty() : execution.tabComplete();
     }
 
     @Override
     public Stream<String> tabComplete(String prefix) {
-        Pair<String, List<CommandArgument>> pair = CommandExecution.expand(prefix, true);
-        String label = pair.first();
-        List<CommandArgument> args = pair.second();
+        Tuple<String, List<CommandArgument>> pair = ICommandExecution.expand(prefix, true);
+        String label = pair.getFirst();
+        List<CommandArgument> args = pair.getSecond();
         if (args.isEmpty()) {
             return new TabCompleteHelper()
                     .addCommands(this.baritone.getCommandManager())
@@ -104,5 +103,13 @@ public class CommandManager implements ICommandManager {
         } else {
             return tabComplete(pair);
         }
+    }
+
+    private ICommandExecution from(Tuple<String, List<CommandArgument>> expanded) {
+        String label = expanded.getFirst();
+        ArgConsumer args = new ArgConsumer(this, expanded.getSecond());
+
+        Command command = this.getCommand(label);
+        return command == null ? null : new CommandExecution(command, label, args);
     }
 }
