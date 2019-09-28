@@ -272,7 +272,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             if (!invx.isEmpty() && drops.contains(invx.get(i).getItem())) {
                 for (int j = 0; j < inv.size() - invx.size(); j++) {
                     if (inv.get(j).getStack().isEmpty()) {
-                        ctx.playerController().windowClick(ctx.player().openContainer.windowId, i < 9 ? inv.size() - i / 9 * 9 - 9 + i % 9 : inv.size() - invx.size() + i - 9, 0, ClickType.QUICK_MOVE, ctx.player());
+                        ctx.playerController().windowClick(ctx.player().openContainer.windowId, i < 9 ? inv.size() - 9 + i : inv.size() - invx.size() + i - 9, 0, ClickType.QUICK_MOVE, ctx.player());
                         return true;
                     }
                 }
