@@ -63,11 +63,12 @@ public final class BlockBreakHelper implements Helper {
                 ctx.player().swingArm(EnumHand.MAIN_HAND);
             }
 
+            ctx.playerController().setHittingBlock(false);
+
             didBreakLastTick = true;
         } else if (didBreakLastTick) {
             stopBreakingBlock();
             didBreakLastTick = false;
         }
-        ctx.playerController().setHittingBlock(false);
     }
 }
