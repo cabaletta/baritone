@@ -61,8 +61,8 @@ public class GoalYLevel implements Goal, ActionCosts {
     @Override
     public String toString() {
         return String.format(
-            "GoalYLevel{y=%s}",
-            SettingsUtil.maybeCensor(level)
+                "GoalYLevel{y=%s}",
+                SettingsUtil.maybeCensor(level)
         );
     }
 }

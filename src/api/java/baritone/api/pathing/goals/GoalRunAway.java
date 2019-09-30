@@ -84,9 +84,9 @@ public class GoalRunAway implements Goal {
     public String toString() {
         if (maintainY != null) {
             return String.format(
-                "GoalRunAwayFromMaintainY y=%s, %s",
-                SettingsUtil.maybeCensor(maintainY),
-                Arrays.asList(from)
+                    "GoalRunAwayFromMaintainY y=%s, %s",
+                    SettingsUtil.maybeCensor(maintainY),
+                    Arrays.asList(from)
             );
         } else {
             return "GoalRunAwayFrom" + Arrays.asList(from);

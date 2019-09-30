@@ -27,6 +27,7 @@ import baritone.pathing.calc.PathNode;
  * @author leijurv
  */
 class LinkedListOpenSet implements IOpenSet {
+
     private Node first = null;
 
     @Override
@@ -83,6 +84,7 @@ class LinkedListOpenSet implements IOpenSet {
     }
 
     public static class Node { //wrapper with next
+
         private Node nextOpen;
         private PathNode val;
     }

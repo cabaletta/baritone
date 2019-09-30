@@ -160,7 +160,7 @@ public final class MemoryBehavior extends Behavior {
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
         if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(ctx, event.getPos()) instanceof BlockBed) {
-            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, BetterBlockPos.from(event.getPos())));
         }
     }
 
@@ -255,6 +255,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     public static class EnderChestMemory {
+
         private static final Map<Path, EnderChestMemory> memory = new HashMap<>();
         private final Path enderChest;
         private List<ItemStack> contents;

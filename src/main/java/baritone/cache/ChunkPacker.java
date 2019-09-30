@@ -87,6 +87,7 @@ public final class ChunkPacker {
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         IBlockState[] blocks = new IBlockState[256];
 
+        // @formatter:off
         for (int z = 0; z < 16; z++) {
             https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
@@ -100,6 +101,7 @@ public final class ChunkPacker {
                 blocks[z << 4 | x] = Blocks.AIR.getDefaultState();
             }
         }
+        // @formatter:on
         return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
     }
 

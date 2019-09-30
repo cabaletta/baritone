@@ -38,6 +38,7 @@ import java.util.function.Function;
  * @author Avery, Brady, leijurv
  */
 public class ToolSet {
+
     /**
      * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
@@ -118,7 +119,7 @@ public class ToolSet {
             } else if (speed == highestSpeed) {
                 int cost = getMaterialCost(itemStack);
                 if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
-                    (preferSilkTouch && !bestSilkTouch && silkTouch)) {
+                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
                     highestSpeed = speed;
                     best = i;
                     lowestCost = cost;

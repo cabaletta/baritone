@@ -34,12 +34,12 @@ public final class BaritoneAPI {
     private static final Settings settings;
 
     static {
+        settings = new Settings();
+        SettingsUtil.readAndApply(settings);
+
         ServiceLoader<IBaritoneProvider> baritoneLoader = ServiceLoader.load(IBaritoneProvider.class);
         Iterator<IBaritoneProvider> instances = baritoneLoader.iterator();
         provider = instances.next();
-
-        settings = new Settings();
-        SettingsUtil.readAndApply(settings);
     }
 
     public static IBaritoneProvider getProvider() {

@@ -25,6 +25,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 
 public class BlockPlaceHelper implements Helper {
+
     private final IPlayerContext ctx;
     private int rightClickTimer;
 

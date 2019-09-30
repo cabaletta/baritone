@@ -17,12 +17,9 @@
 
 package baritone.api.cache;
 
-import net.minecraft.util.math.BlockPos;
-import org.apache.commons.lang3.ArrayUtils;
+import baritone.api.utils.BetterBlockPos;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * A marker for a position in the world.
@@ -60,7 +57,7 @@ public interface IWaypoint {
      *
      * @return The block position of this waypoint
      */
-    BlockPos getLocation();
+    BetterBlockPos getLocation();
 
     enum Tag {
 
@@ -92,20 +89,48 @@ public interface IWaypoint {
         /**
          * The names for the tag, anything that the tag can be referred to as.
          */
-        private final String[] names;
+        public final String[] names;
 
         Tag(String... names) {
             this.names = names;
         }
 
         /**
-         * Finds a tag from one of the names that could be used to identify said tag.
-         *
-         * @param name The name of the tag
-         * @return The tag, if one is found, otherwise, {@code null}
+         * @return A name that can be passed to {@link #getByName(String)} to retrieve this tag
          */
-        public static Tag fromString(String name) {
-            return TAG_LIST.stream().filter(tag -> ArrayUtils.contains(tag.names, name.toLowerCase())).findFirst().orElse(null);
+        public String getName() {
+            return names[0];
+        }
+
+        /**
+         * Gets a tag by one of its names.
+         *
+         * @param name The name to search for.
+         * @return The tag, if found, or null.
+         */
+        public static Tag getByName(String name) {
+            for (Tag action : Tag.values()) {
+                for (String alias : action.names) {
+                    if (alias.equalsIgnoreCase(name)) {
+                        return action;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * @return All tag names.
+         */
+        public static String[] getAllNames() {
+            Set<String> names = new HashSet<>();
+
+            for (Tag tag : Tag.values()) {
+                names.addAll(Arrays.asList(tag.names));
+            }
+
+            return names.toArray(new String[0]);
         }
     }
 }

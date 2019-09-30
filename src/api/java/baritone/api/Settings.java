@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -495,14 +495,19 @@ public final class Settings {
     public final Setting<Boolean> chatControl = new Setting<>(true);
 
     /**
-     * A second override over chatControl to force it on
+     * Some clients like Impact try to force chatControl to off, so here's a second setting to do it anyway
      */
-    public final Setting<Boolean> removePrefix = new Setting<>(false);
+    public final Setting<Boolean> chatControlAnyway = new Setting<>(false);
 
     /**
      * Render the path
      */
     public final Setting<Boolean> renderPath = new Setting<>(true);
+
+    /**
+     * Render the path as a line instead of a frickin thingy
+     */
+    public final Setting<Boolean> renderPathAsLine = new Setting<>(false);
 
     /**
      * Render the goal
@@ -604,20 +609,40 @@ public final class Settings {
     public final Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
 
     /**
-     * Whether or not to use the "#" command prefix
+     * Whether or not to allow you to run Baritone commands with the prefix
      */
     public final Setting<Boolean> prefixControl = new Setting<>(true);
+
+    /**
+     * The command prefix for chat control
+     */
+    public final Setting<String> prefix = new Setting<>("#");
+
+    /**
+     * Use a short Baritone prefix [B] instead of [Baritone] when logging to chat
+     */
+    public final Setting<Boolean> shortBaritonePrefix = new Setting<>(false);
+
+    /**
+     * Echo commands to chat when they are run
+     */
+    public final Setting<Boolean> echoCommands = new Setting<>(true);
+
+    /**
+     * Censor coordinates in goals and block positions
+     */
+    public final Setting<Boolean> censorCoordinates = new Setting<>(false);
+
+    /**
+     * Censor arguments to ran commands, to hide, for example, coordinates to #goal
+     */
+    public final Setting<Boolean> censorRanCommands = new Setting<>(false);
 
     /**
      * Always prefer silk touch tools over regular tools. This will not sacrifice speed, but it will always prefer silk
      * touch tools over other tools of the same speed. This includes always choosing ANY silk touch tool over your hand.
      */
     public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
-
-    /*
-     * Censor coordinates in goals and block positions
-     */
-    public final Setting<Boolean> censorCoordinates = new Setting<>(false);
 
     /**
      * Don't stop walking forward when you need to break blocks in your way
@@ -938,6 +963,51 @@ public final class Settings {
      */
     public final Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
 
+    /**
+     * The color of the goal box when it's inverted
+     */
+    public final Setting<Color> colorInvertedGoalBox = new Setting<>(Color.RED);
+
+    /**
+     * The color of all selections
+     */
+    public final Setting<Color> colorSelection = new Setting<>(Color.CYAN);
+
+    /**
+     * The color of the selection pos 1
+     */
+    public final Setting<Color> colorSelectionPos1 = new Setting<>(Color.BLACK);
+
+    /**
+     * The color of the selection pos 2
+     */
+    public final Setting<Color> colorSelectionPos2 = new Setting<>(Color.ORANGE);
+
+    /**
+     * The opacity of the selection. 0 is completely transparent, 1 is completely opaque
+     */
+    public final Setting<Float> selectionOpacity = new Setting<>(.5f);
+
+    /**
+     * Line width of the goal when rendered, in pixels
+     */
+    public final Setting<Float> selectionLineWidth = new Setting<>(2F);
+
+    /**
+     * Render selections
+     */
+    public final Setting<Boolean> renderSelection = new Setting<>(true);
+
+    /**
+     * Ignore depth when rendering selections
+     */
+    public final Setting<Boolean> renderSelectionIgnoreDepth = new Setting<>(true);
+
+    /**
+     * Render selection corners
+     */
+    public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
+
 
     /**
      * A map of lowercase setting field names to their respective setting
@@ -952,6 +1022,7 @@ public final class Settings {
     public final Map<Setting<?>, Type> settingTypes;
 
     public final class Setting<T> {
+
         public T value;
         public final T defaultValue;
         private String name;

@@ -173,6 +173,7 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
     }
 
     private interface IChunkFilter {
+
         Status isAlreadyExplored(int chunkX, int chunkZ);
 
         int countRemain();
@@ -205,6 +206,7 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
     }
 
     private class JsonChunkFilter implements IChunkFilter {
+
         private final boolean invert; // if true, the list is interpreted as a list of chunks that are NOT explored, if false, the list is interpreted as a list of chunks that ARE explored
         private final LongOpenHashSet inFilter;
         private final MyChunkPos[] positions;
@@ -257,6 +259,7 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
     }
 
     private class EitherChunk implements IChunkFilter {
+
         private final IChunkFilter a;
         private final IChunkFilter b;
 

@@ -34,6 +34,9 @@ import javax.annotation.Nonnull;
  * @author leijurv
  */
 public final class BetterBlockPos extends BlockPos {
+
+    public static final BetterBlockPos ORIGIN = new BetterBlockPos(0, 0, 0);
+
     public final int x;
     public final int y;
     public final int z;
@@ -203,10 +206,10 @@ public final class BetterBlockPos extends BlockPos {
     @Nonnull
     public String toString() {
         return String.format(
-            "BetterBlockPos{x=%s,y=%s,z=%s}",
-            SettingsUtil.maybeCensor(x),
-            SettingsUtil.maybeCensor(y),
-            SettingsUtil.maybeCensor(z)
+                "BetterBlockPos{x=%s,y=%s,z=%s}",
+                SettingsUtil.maybeCensor(x),
+                SettingsUtil.maybeCensor(y),
+                SettingsUtil.maybeCensor(z)
         );
     }
 }

@@ -32,6 +32,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.*;
 
 public class PathingControlManager implements IPathingControlManager {
+
     private final Baritone baritone;
     private final HashSet<IBaritoneProcess> processes; // unGh
     private final List<IBaritoneProcess> active;

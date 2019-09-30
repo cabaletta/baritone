@@ -26,6 +26,7 @@ import baritone.utils.BlockStateInterface;
 import net.minecraft.util.math.BlockPos;
 
 public abstract class PathBase implements IPath {
+
     @Override
     public PathBase cutoffAtLoadedChunks(Object bsi0) { // <-- cursed cursed cursed
         if (!Baritone.settings().cutoffAtLoadBoundary.value) {

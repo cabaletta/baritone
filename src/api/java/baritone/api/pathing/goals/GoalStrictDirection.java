@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
  * Dig a tunnel in a certain direction, but if you have to deviate from the path, go back to where you started
  */
 public class GoalStrictDirection implements Goal {
+
     public final int x;
     public final int y;
     public final int z;
@@ -66,12 +67,12 @@ public class GoalStrictDirection implements Goal {
     @Override
     public String toString() {
         return String.format(
-            "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",
-            SettingsUtil.maybeCensor(x),
-            SettingsUtil.maybeCensor(y),
-            SettingsUtil.maybeCensor(z),
-            SettingsUtil.maybeCensor(dx),
-            SettingsUtil.maybeCensor(dz)
+                "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",
+                SettingsUtil.maybeCensor(x),
+                SettingsUtil.maybeCensor(y),
+                SettingsUtil.maybeCensor(z),
+                SettingsUtil.maybeCensor(dx),
+                SettingsUtil.maybeCensor(dz)
         );
     }
 }

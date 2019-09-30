@@ -55,6 +55,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
     private boolean unpausedLastTick;
+    private boolean pausedThisTick;
     private boolean cancelRequested;
     private boolean calcFailedLastTick;
 
@@ -108,6 +109,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     private void tickPath() {
+        pausedThisTick = false;
         if (pauseRequestedLastTick && safeToCancel) {
             pauseRequestedLastTick = false;
             if (unpausedLastTick) {
@@ -115,6 +117,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
             }
             unpausedLastTick = false;
+            pausedThisTick = true;
             return;
         }
         unpausedLastTick = true;
@@ -277,6 +280,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     @Override
     public Goal getGoal() {
         return goal;
+    }
+
+    @Override
+    public boolean isPathing() {
+        return hasPath() && !pausedThisTick;
     }
 
     @Override
