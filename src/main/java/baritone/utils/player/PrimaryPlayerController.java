@@ -19,6 +19,7 @@ package baritone.utils.player;
 
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerController;
+import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;
@@ -43,6 +44,16 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     INSTANCE;
 
     @Override
+    public void syncHeldItem() {
+        ((IPlayerControllerMP) mc.playerController).callSyncCurrentPlayItem();
+    }
+
+    @Override
+    public boolean hasBrokenBlock() {
+        return ((IPlayerControllerMP) mc.playerController).getCurrentBlock().getY() == -1;
+    }
+
+    @Override
     public boolean onPlayerDamageBlock(BlockPos pos, EnumFacing side) {
         return mc.playerController.onPlayerDamageBlock(pos, side);
     }
@@ -58,23 +69,27 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     }
 
     @Override
-    public void setGameType(GameType type) {
-        mc.playerController.setGameType(type);
-    }
-
-    @Override
     public GameType getGameType() {
         return mc.playerController.getCurrentGameType();
     }
 
     @Override
     public EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand) {
-        // primaryplayercontroller is always in a WorldClient so this is ok
         return mc.playerController.processRightClickBlock(player, (WorldClient) world, pos, direction, vec, hand);
     }
 
     @Override
     public EnumActionResult processRightClick(EntityPlayerSP player, World world, EnumHand hand) {
         return mc.playerController.processRightClick(player, world, hand);
+    }
+
+    @Override
+    public boolean clickBlock(BlockPos loc, EnumFacing face) {
+        return mc.playerController.clickBlock(loc, face);
+    }
+
+    @Override
+    public void setHittingBlock(boolean hittingBlock) {
+        ((IPlayerControllerMP) mc.playerController).setIsHittingBlock(hittingBlock);
     }
 }

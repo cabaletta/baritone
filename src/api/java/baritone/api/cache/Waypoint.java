@@ -17,7 +17,7 @@
 
 package baritone.api.cache;
 
-import net.minecraft.util.math.BlockPos;
+import baritone.api.utils.BetterBlockPos;
 
 import java.util.Date;
 
@@ -31,9 +31,9 @@ public class Waypoint implements IWaypoint {
     private final String name;
     private final Tag tag;
     private final long creationTimestamp;
-    private final BlockPos location;
+    private final BetterBlockPos location;
 
-    public Waypoint(String name, Tag tag, BlockPos location) {
+    public Waypoint(String name, Tag tag, BetterBlockPos location) {
         this(name, tag, location, System.currentTimeMillis());
     }
 
@@ -46,7 +46,7 @@ public class Waypoint implements IWaypoint {
      * @param location          The waypoint location
      * @param creationTimestamp When the waypoint was created
      */
-    public Waypoint(String name, Tag tag, BlockPos location, long creationTimestamp) {
+    public Waypoint(String name, Tag tag, BetterBlockPos location, long creationTimestamp) {
         this.name = name;
         this.tag = tag;
         this.location = location;
@@ -55,7 +55,7 @@ public class Waypoint implements IWaypoint {
 
     @Override
     public int hashCode() {
-        return name.hashCode() + tag.hashCode() + location.hashCode(); //lol
+        return name.hashCode() ^ tag.hashCode() ^ location.hashCode() ^ Long.hashCode(creationTimestamp);
     }
 
     @Override
@@ -74,13 +74,18 @@ public class Waypoint implements IWaypoint {
     }
 
     @Override
-    public BlockPos getLocation() {
+    public BetterBlockPos getLocation() {
         return this.location;
     }
 
     @Override
     public String toString() {
-        return name + " " + location.toString() + " " + new Date(creationTimestamp).toString();
+        return String.format(
+                "%s %s %s",
+                name,
+                BetterBlockPos.from(location).toString(),
+                new Date(creationTimestamp).toString()
+        );
     }
 
     @Override

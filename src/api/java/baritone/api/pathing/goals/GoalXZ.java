@@ -18,6 +18,8 @@
 package baritone.api.pathing.goals;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -45,6 +47,11 @@ public class GoalXZ implements Goal {
         this.z = z;
     }
 
+    public GoalXZ(BetterBlockPos pos) {
+        this.x = pos.x;
+        this.z = pos.z;
+    }
+
     @Override
     public boolean isInGoal(int x, int y, int z) {
         return x == this.x && z == this.z;
@@ -59,7 +66,11 @@ public class GoalXZ implements Goal {
 
     @Override
     public String toString() {
-        return "GoalXZ{x=" + x + ",z=" + z + "}";
+        return String.format(
+                "GoalXZ{x=%s,z=%s}",
+                SettingsUtil.maybeCensor(x),
+                SettingsUtil.maybeCensor(z)
+        );
     }
 
     public static double calculate(double xDiff, double zDiff) {
@@ -87,7 +98,7 @@ public class GoalXZ implements Goal {
         float theta = (float) Math.toRadians(yaw);
         double x = origin.x - MathHelper.sin(theta) * distance;
         double z = origin.z + MathHelper.cos(theta) * distance;
-        return new GoalXZ((int) x, (int) z);
+        return new GoalXZ(MathHelper.floor(x), MathHelper.floor(z));
     }
 
     public int getX() {

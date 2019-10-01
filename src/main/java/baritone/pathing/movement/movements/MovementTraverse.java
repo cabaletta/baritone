@@ -114,7 +114,7 @@ public class MovementTraverse extends Movement {
             if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
                 return COST_INF;
             }
-            if (MovementHelper.isReplacable(destX, y - 1, destZ, destOn, context.bsi)) {
+            if (MovementHelper.isReplaceable(destX, y - 1, destZ, destOn, context.bsi)) {
                 boolean throughWater = MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1);
                 if (MovementHelper.isWater(destOn) && throughWater) {
                     // this happens when assume walk on water is true and this is a traverse in water, which isn't allowed

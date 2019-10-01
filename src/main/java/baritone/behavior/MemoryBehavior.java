@@ -24,6 +24,7 @@ import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.api.utils.BetterBlockPos;
 import baritone.cache.ContainerMemory;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
@@ -99,8 +100,8 @@ public final class MemoryBehavior extends Behavior {
 
                     TileEntityLockable lockable = (TileEntityLockable) tileEntity;
                     int size = lockable.getSizeInventory();
-                    BlockPos position = tileEntity.getPos();
-                    BlockPos adj = neighboringConnectedBlock(position);
+                    BetterBlockPos position = BetterBlockPos.from(tileEntity.getPos());
+                    BetterBlockPos adj = BetterBlockPos.from(neighboringConnectedBlock(position));
                     System.out.println(position + " " + adj);
                     if (adj != null) {
                         size *= 2; // double chest or double trapped chest
@@ -159,7 +160,7 @@ public final class MemoryBehavior extends Behavior {
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
         if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(ctx, event.getPos()) instanceof BlockBed) {
-            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, BetterBlockPos.from(event.getPos())));
         }
     }
 
@@ -239,7 +240,8 @@ public final class MemoryBehavior extends Behavior {
             this.slots = slots;
             this.type = type;
             this.pos = pos;
-            System.out.println("Future inventory created " + time + " " + slots + " " + type + " " + pos);
+            // betterblockpos has censoring
+            System.out.println("Future inventory created " + time + " " + slots + " " + type + " " + BetterBlockPos.from(pos));
         }
     }
 
@@ -253,6 +255,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     public static class EnderChestMemory {
+
         private static final Map<Path, EnderChestMemory> memory = new HashMap<>();
         private final Path enderChest;
         private List<ItemStack> contents;

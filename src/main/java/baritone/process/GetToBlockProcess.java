@@ -22,6 +22,7 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
@@ -32,7 +33,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
@@ -171,7 +175,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     }
 
     private synchronized void rescan(List<BlockPos> known, CalculationContext context) {
-        List<BlockPos> positions = MineProcess.searchWorld(context, Collections.singletonList(gettingTo), 64, known, blacklist);
+        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(gettingTo), 64, known, blacklist);
         positions.removeIf(blacklist::contains);
         knownLocations = positions;
     }

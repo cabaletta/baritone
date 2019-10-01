@@ -18,11 +18,13 @@
 package baritone.api.process;
 
 import baritone.api.utils.ISchematic;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * @author Brady
@@ -58,7 +60,16 @@ public interface IBuilderProcess extends IBaritoneProcess {
 
     void pause();
 
+    boolean isPaused();
+
     void resume();
 
     void clearArea(BlockPos corner1, BlockPos corner2);
+
+    /**
+     * @return A list of block states that are estimated to be placeable by this builder process. You can use this in
+     * schematics, for example, to pick a state that the builder process will be happy with, because any variation will
+     * cause it to give up. This is updated every tick, but only while the builder process is active.
+     */
+    List<IBlockState> getApproxPlaceable();
 }

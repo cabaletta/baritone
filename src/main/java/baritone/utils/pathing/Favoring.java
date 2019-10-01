@@ -25,6 +25,7 @@ import baritone.pathing.movement.CalculationContext;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 public final class Favoring {
+
     private final Long2DoubleOpenHashMap favorings;
 
     public Favoring(IPlayerContext ctx, IPath previous, CalculationContext context) {

@@ -39,7 +39,7 @@ public enum SchematicaHelper {
 
     public static Optional<Tuple<ISchematic, BlockPos>> getOpenSchematic() {
         return Optional.ofNullable(ClientProxy.schematic)
-            .map(world -> new Tuple<>(new SchematicAdapter(world), world.position));
+                .map(world -> new Tuple<>(new SchematicAdapter(world), world.position));
     }
 
 }

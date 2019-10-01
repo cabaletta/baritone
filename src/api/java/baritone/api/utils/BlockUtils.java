@@ -23,9 +23,9 @@ import net.minecraft.util.registry.IRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class BlockUtils {
+
     private static transient Map<String, Block> resourceCache = new HashMap<>();
 
     public static String blockToString(Block block) {
@@ -40,7 +40,11 @@ public class BlockUtils {
 
     public static Block stringToBlockRequired(String name) {
         Block block = stringToBlockNullable(name);
-        Objects.requireNonNull(block);
+
+        if (block == null) {
+            throw new IllegalArgumentException(String.format("Invalid block name %s", name));
+        }
+
         return block;
     }
 

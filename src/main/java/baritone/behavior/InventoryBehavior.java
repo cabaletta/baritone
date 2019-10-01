@@ -35,6 +35,7 @@ import java.util.Random;
 import java.util.function.Predicate;
 
 public final class InventoryBehavior extends Behavior {
+
     public InventoryBehavior(Baritone baritone) {
         super(baritone);
     }
@@ -102,7 +103,7 @@ public final class InventoryBehavior extends Behavior {
         return -1;
     }
 
-    private int bestToolAgainst(Block against, Class<? extends ItemTool> klass) {
+    private int bestToolAgainst(Block against, Class<? extends ItemTool> cla$$) {
         NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
         int bestInd = -1;
         double bestSpeed = -1;
@@ -111,7 +112,7 @@ public final class InventoryBehavior extends Behavior {
             if (stack.isEmpty()) {
                 continue;
             }
-            if (klass.isInstance(stack.getItem())) {
+            if (cla$$.isInstance(stack.getItem())) {
                 double speed = ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState()); // takes into account enchants
                 if (speed > bestSpeed) {
                     bestSpeed = speed;
@@ -132,7 +133,7 @@ public final class InventoryBehavior extends Behavior {
     }
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
-        IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z);
+        IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
         if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && maybe.equals(((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(new BlockItemUseContext(new ItemUseContext(ctx.player(), stack, ctx.playerFeet(), EnumFacing.UP, (float) ctx.player().posX, (float) ctx.player().posY, (float) ctx.player().posZ)))))) {
             return true; // gotem
         }

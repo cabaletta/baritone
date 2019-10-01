@@ -141,6 +141,13 @@ public final class Settings {
     public final Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
 
     /**
+     * Allow diagonal ascending
+     * <p>
+     * Actually pretty safe, much safer than diagonal descend tbh
+     */
+    public final Setting<Boolean> allowDiagonalAscend = new Setting<>(false);
+
+    /**
      * Allow mining the block directly beneath its feet
      * <p>
      * Turn this off to force it to make more staircases and less shafts
@@ -171,7 +178,9 @@ public final class Settings {
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
             Blocks.CHEST,
-            Blocks.TRAPPED_CHEST
+            Blocks.TRAPPED_CHEST,
+            Blocks.SIGN,
+            Blocks.WALL_SIGN
     )));
 
     /**
@@ -241,7 +250,12 @@ public final class Settings {
     /**
      * How many degrees to randomize the yaw every tick. Set to 0 to disable
      */
-    public final Setting<Double> randomLooking = new Setting<>(2d);
+    public final Setting<Double> randomLooking113 = new Setting<>(2d);
+
+    /**
+     * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable
+     */
+    public final Setting<Double> randomLooking = new Setting<>(0.01d);
 
     /**
      * This is the big A* setting.
@@ -485,14 +499,19 @@ public final class Settings {
     public final Setting<Boolean> chatControl = new Setting<>(true);
 
     /**
-     * A second override over chatControl to force it on
+     * Some clients like Impact try to force chatControl to off, so here's a second setting to do it anyway
      */
-    public final Setting<Boolean> removePrefix = new Setting<>(false);
+    public final Setting<Boolean> chatControlAnyway = new Setting<>(false);
 
     /**
      * Render the path
      */
     public final Setting<Boolean> renderPath = new Setting<>(true);
+
+    /**
+     * Render the path as a line instead of a frickin thingy
+     */
+    public final Setting<Boolean> renderPathAsLine = new Setting<>(false);
 
     /**
      * Render the goal
@@ -594,9 +613,40 @@ public final class Settings {
     public final Setting<Float> cachedChunksOpacity = new Setting<>(0.5f);
 
     /**
-     * Whether or not to use the "#" command prefix
+     * Whether or not to allow you to run Baritone commands with the prefix
      */
     public final Setting<Boolean> prefixControl = new Setting<>(true);
+
+    /**
+     * The command prefix for chat control
+     */
+    public final Setting<String> prefix = new Setting<>("#");
+
+    /**
+     * Use a short Baritone prefix [B] instead of [Baritone] when logging to chat
+     */
+    public final Setting<Boolean> shortBaritonePrefix = new Setting<>(false);
+
+    /**
+     * Echo commands to chat when they are run
+     */
+    public final Setting<Boolean> echoCommands = new Setting<>(true);
+
+    /**
+     * Censor coordinates in goals and block positions
+     */
+    public final Setting<Boolean> censorCoordinates = new Setting<>(false);
+
+    /**
+     * Censor arguments to ran commands, to hide, for example, coordinates to #goal
+     */
+    public final Setting<Boolean> censorRanCommands = new Setting<>(false);
+
+    /**
+     * Always prefer silk touch tools over regular tools. This will not sacrifice speed, but it will always prefer silk
+     * touch tools over other tools of the same speed. This includes always choosing ANY silk touch tool over your hand.
+     */
+    public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
 
     /**
      * Don't stop walking forward when you need to break blocks in your way
@@ -659,7 +709,12 @@ public final class Settings {
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
 
     /**
-     * Replant nether wart while farming
+     * Replant normal Crops while farming and leave cactus and sugarcane to regrow
+     */
+    public final Setting<Boolean> replantCrops = new Setting<>(true);
+
+    /**
+     * Replant nether wart while farming. This setting only has an effect when replantCrops is also enabled
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
 
@@ -722,9 +777,35 @@ public final class Settings {
     public final Setting<Double> breakCorrectBlockPenaltyMultiplier = new Setting<>(10d);
 
     /**
+     * When this setting is true, build a schematic with the highest X coordinate being the origin, instead of the lowest
+     */
+    public final Setting<Boolean> schematicOrientationX = new Setting<>(false);
+
+    /**
+     * When this setting is true, build a schematic with the highest Y coordinate being the origin, instead of the lowest
+     */
+    public final Setting<Boolean> schematicOrientationY = new Setting<>(false);
+
+    /**
+     * When this setting is true, build a schematic with the highest Z coordinate being the origin, instead of the lowest
+     */
+    public final Setting<Boolean> schematicOrientationZ = new Setting<>(false);
+
+    /**
+     * Distance to scan every tick for updates. Expanding this beyond player reach distance (i.e. setting it to 6 or above)
+     * is only necessary in very large schematics where rescanning the whole thing is costly.
+     */
+    public final Setting<Integer> builderTickScanRadius = new Setting<>(5);
+
+    /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
+
+    /**
+     * Trim incorrect positions too far away, helps performance but hurts reliability in very large schematics
+     */
+    public final Setting<Boolean> distanceTrim = new Setting<>(true);
 
     /**
      * Cancel the current path if the goal has changed, and the path originally ended in the goal but doesn't anymore.
@@ -886,6 +967,51 @@ public final class Settings {
      */
     public final Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
 
+    /**
+     * The color of the goal box when it's inverted
+     */
+    public final Setting<Color> colorInvertedGoalBox = new Setting<>(Color.RED);
+
+    /**
+     * The color of all selections
+     */
+    public final Setting<Color> colorSelection = new Setting<>(Color.CYAN);
+
+    /**
+     * The color of the selection pos 1
+     */
+    public final Setting<Color> colorSelectionPos1 = new Setting<>(Color.BLACK);
+
+    /**
+     * The color of the selection pos 2
+     */
+    public final Setting<Color> colorSelectionPos2 = new Setting<>(Color.ORANGE);
+
+    /**
+     * The opacity of the selection. 0 is completely transparent, 1 is completely opaque
+     */
+    public final Setting<Float> selectionOpacity = new Setting<>(.5f);
+
+    /**
+     * Line width of the goal when rendered, in pixels
+     */
+    public final Setting<Float> selectionLineWidth = new Setting<>(2F);
+
+    /**
+     * Render selections
+     */
+    public final Setting<Boolean> renderSelection = new Setting<>(true);
+
+    /**
+     * Ignore depth when rendering selections
+     */
+    public final Setting<Boolean> renderSelectionIgnoreDepth = new Setting<>(true);
+
+    /**
+     * Render selection corners
+     */
+    public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
+
 
     /**
      * A map of lowercase setting field names to their respective setting
@@ -900,6 +1026,7 @@ public final class Settings {
     public final Map<Setting<?>, Type> settingTypes;
 
     public final class Setting<T> {
+
         public T value;
         public final T defaultValue;
         private String name;
@@ -982,10 +1109,10 @@ public final class Settings {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<Setting<T>> getAllValuesByType(Class<T> klass) {
+    public <T> List<Setting<T>> getAllValuesByType(Class<T> cla$$) {
         List<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
-            if (setting.getValueClass().equals(klass)) {
+            if (setting.getValueClass().equals(cla$$)) {
                 result.add((Setting<T>) setting);
             }
         }
