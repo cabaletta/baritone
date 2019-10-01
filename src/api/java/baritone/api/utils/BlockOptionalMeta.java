@@ -30,37 +30,27 @@ import net.minecraft.util.registry.IRegistry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public final class BlockOptionalMeta {
 
     private final Block block;
-    private final int meta;
-    private final boolean noMeta;
     private final Set<IBlockState> blockstates;
     private final ImmutableSet<Integer> stateHashes;
     private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
     private static final Map<Object, Object> normalizations;
 
-    public BlockOptionalMeta(@Nonnull Block block, @Nullable Integer meta) {
+    public BlockOptionalMeta(@Nonnull Block block) {
         this.block = block;
-        this.noMeta = meta == null;
-        this.meta = noMeta ? 0 : meta;
-        this.blockstates = getStates(block, meta);
+        this.blockstates = getStates(block);
         this.stateHashes = getStateHashes(blockstates);
         this.stackHashes = getStackHashes(blockstates);
-    }
-
-    public BlockOptionalMeta(@Nonnull Block block) {
-        this(block, null);
     }
 
     public BlockOptionalMeta(@Nonnull String selector) {
@@ -71,7 +61,6 @@ public final class BlockOptionalMeta {
         }
 
         MatchResult matchResult = matcher.toMatchResult();
-        noMeta = matchResult.group(2) == null;
 
         ResourceLocation id = new ResourceLocation(matchResult.group(1));
 
@@ -80,8 +69,7 @@ public final class BlockOptionalMeta {
         }
 
         block = IRegistry.BLOCK.get(id);
-        meta = noMeta ? 0 : Integer.parseInt(matchResult.group(2));
-        blockstates = getStates(block, getMeta());
+        blockstates = getStates(block);
         stateHashes = getStateHashes(blockstates);
         stackHashes = getStackHashes(blockstates);
     }
@@ -219,14 +207,11 @@ public final class BlockOptionalMeta {
     }
 
     public static int stateMeta(IBlockState state) {
-        throw new UnsupportedOperationException();
+        return state.hashCode();
     }
 
-    private static Set<IBlockState> getStates(@Nonnull Block block, @Nullable Integer meta) {
-        throw new UnsupportedOperationException();
-        /*return block.getBlockState().getValidStates().stream()
-                .filter(blockstate -> meta == null || stateMeta(blockstate) == meta)
-                .collect(Collectors.toSet());*/
+    private static Set<IBlockState> getStates(@Nonnull Block block) {
+        return new HashSet<>(block.getStateContainer().getValidStates());
     }
 
     private static ImmutableSet<Integer> getStateHashes(Set<IBlockState> blockstates) {
@@ -255,10 +240,6 @@ public final class BlockOptionalMeta {
         return block;
     }
 
-    public Integer getMeta() {
-        return noMeta ? null : meta;
-    }
-
     public boolean matches(@Nonnull Block block) {
         return block == this.block;
     }
@@ -272,16 +253,14 @@ public final class BlockOptionalMeta {
         //noinspection ConstantConditions
         int hash = ((IItemStack) (Object) stack).getBaritoneHash();
 
-        if (noMeta) {
             hash -= stack.getDamage();
-        }
 
         return stackHashes.contains(hash);
     }
 
     @Override
     public String toString() {
-        return String.format("BlockOptionalMeta{block=%s,meta=%s}", block, getMeta());
+        return String.format("BlockOptionalMeta{block=%s}", block);
     }
 
     public IBlockState getAnyBlockState() {
