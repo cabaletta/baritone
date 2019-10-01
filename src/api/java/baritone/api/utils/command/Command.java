@@ -21,7 +21,6 @@ import baritone.api.IBaritone;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.execution.ICommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 
 import java.util.Collections;
@@ -58,40 +57,15 @@ public abstract class Command implements Helper {
     }
 
     /**
-     * Executes this command with the specified arguments.
-     *
-     * @param execution The command execution to execute this command with
-     */
-    public final void execute(ICommandExecution execution) throws CommandException {
-        this.executed(execution.getLabel(), execution.getArguments());
-    }
-
-    /**
-     * Tab completes this command with the specified arguments. Any exception that is thrown by
-     * {@link #tabCompleted(String, ArgConsumer)} will be caught by this method, and then {@link Stream#empty()}
-     * will be returned.
-     *
-     * @param execution The command execution to tab complete
-     * @return The list of completions.
-     */
-    public final Stream<String> tabComplete(ICommandExecution execution) {
-        try {
-            return this.tabCompleted(execution.getLabel(), execution.getArguments());
-        } catch (Throwable t) {
-            return Stream.empty();
-        }
-    }
-
-    /**
      * Called when this command is executed.
      */
-    protected abstract void executed(String label, ArgConsumer args) throws CommandException;
+    public abstract void execute(String label, ArgConsumer args) throws CommandException;
 
     /**
      * Called when the command needs to tab complete. Return a Stream representing the entries to put in the completions
      * list.
      */
-    protected abstract Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException;
+    public abstract Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException;
 
     /**
      * @return A <b>single-line</b> string containing a short description of this command's purpose.

@@ -50,7 +50,7 @@ public class SetCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, ArgConsumer args) throws CommandException {
         String arg = args.hasAny() ? args.getString().toLowerCase(Locale.US) : "list";
         if (Arrays.asList("s", "save").contains(arg)) {
             SettingsUtil.save(Baritone.settings());
@@ -186,7 +186,7 @@ public class SetCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
         if (args.hasAny()) {
             String arg = args.getString();
             if (args.hasExactlyOne() && !Arrays.asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {

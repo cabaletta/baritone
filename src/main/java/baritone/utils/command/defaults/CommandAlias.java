@@ -43,12 +43,12 @@ public class CommandAlias extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args) {
+    public void execute(String label, ArgConsumer args) {
         this.baritone.getCommandManager().execute(String.format("%s %s", target, args.rawRest()));
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, ArgConsumer args) {
         return this.baritone.getCommandManager().tabComplete(String.format("%s %s", target, args.rawRest()));
     }
 

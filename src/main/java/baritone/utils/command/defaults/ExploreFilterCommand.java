@@ -39,7 +39,7 @@ public class ExploreFilterCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, ArgConsumer args) throws CommandException {
         args.requireMax(2);
         File file = args.getDatatypePost(RelativeFile.INSTANCE, mc.gameDir.getAbsoluteFile().getParentFile());
         boolean invert = false;
@@ -63,7 +63,7 @@ public class ExploreFilterCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return RelativeFile.tabComplete(args, RelativeFile.gameDir());
         }

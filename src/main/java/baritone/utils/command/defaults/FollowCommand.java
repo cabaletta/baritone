@@ -42,7 +42,7 @@ public class FollowCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, ArgConsumer args) throws CommandException {
         args.requireMin(1);
         FollowGroup group;
         FollowList list;
@@ -88,7 +88,7 @@ public class FollowCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
                     .append(FollowGroup.class)

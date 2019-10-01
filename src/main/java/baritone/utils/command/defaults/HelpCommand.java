@@ -44,7 +44,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, ArgConsumer args) throws CommandException {
         args.requireMax(1);
         if (!args.hasAny() || args.is(Integer.class)) {
             Paginator.paginate(
@@ -97,7 +97,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
                     .addCommands(this.baritone.getCommandManager())

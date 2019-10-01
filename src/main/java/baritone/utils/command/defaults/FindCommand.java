@@ -37,7 +37,7 @@ public class FindCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, ArgConsumer args) throws CommandException {
         List<Block> toFind = new ArrayList<>();
         while (args.hasAny()) {
             toFind.add(args.getDatatypeFor(BlockById.INSTANCE));
@@ -59,7 +59,7 @@ public class FindCommand extends Command {
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, ArgConsumer args) {
         return args.tabCompleteDatatype(BlockById.INSTANCE);
     }
 

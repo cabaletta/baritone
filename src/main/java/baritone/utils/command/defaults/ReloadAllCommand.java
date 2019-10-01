@@ -33,14 +33,14 @@ public class ReloadAllCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, ArgConsumer args) throws CommandException {
         args.requireMax(0);
         ctx.worldData().getCachedWorld().reloadAllFromDisk();
         logDirect("Reloaded");
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, ArgConsumer args) {
         return Stream.empty();
     }
 

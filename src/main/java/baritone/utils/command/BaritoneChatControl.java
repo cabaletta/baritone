@@ -29,10 +29,10 @@ import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.command.argument.CommandArgument;
 import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.exception.CommandNotFoundException;
-import baritone.api.utils.command.execution.ICommandExecution;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.utils.command.manager.ICommandManager;
+import baritone.utils.command.manager.CommandManager;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -67,7 +67,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             event.cancel();
             String commandStr = msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
             if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
-                new CommandNotFoundException(ICommandExecution.expand(commandStr).getFirst()).handle(null, null);
+                new CommandNotFoundException(CommandManager.expand(commandStr).getFirst()).handle(null, null);
             }
         } else if ((settings.chatControl.value || settings.chatControlAnyway.value) && runCommand(msg)) {
             event.cancel();
@@ -106,7 +106,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (msg.isEmpty()) {
             return this.runCommand("help");
         }
-        Tuple<String, List<CommandArgument>> pair = ICommandExecution.expand(msg);
+        Tuple<String, List<CommandArgument>> pair = CommandManager.expand(msg);
         String command = pair.getFirst();
         String rest = msg.substring(pair.getFirst().length());
         ArgConsumer argc = new ArgConsumer(this.manager, pair.getSecond());

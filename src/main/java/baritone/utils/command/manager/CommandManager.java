@@ -21,13 +21,13 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.argument.CommandArgument;
-import baritone.api.utils.command.execution.ICommandExecution;
+import baritone.api.utils.command.exception.CommandUnhandledException;
+import baritone.api.utils.command.exception.ICommandException;
 import baritone.api.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.utils.command.manager.ICommandManager;
 import baritone.api.utils.command.registry.Registry;
 import baritone.utils.command.defaults.DefaultCommands;
-import baritone.utils.command.execution.CommandExecution;
 import net.minecraft.util.Tuple;
 
 import java.util.List;
@@ -72,12 +72,12 @@ public class CommandManager implements ICommandManager {
 
     @Override
     public boolean execute(String string) {
-        return this.execute(ICommandExecution.expand(string));
+        return this.execute(expand(string));
     }
 
     @Override
     public boolean execute(Tuple<String, List<CommandArgument>> expanded) {
-        ICommandExecution execution = this.from(expanded);
+        ExecutionWrapper execution = this.from(expanded);
         if (execution != null) {
             execution.execute();
         }
@@ -86,13 +86,13 @@ public class CommandManager implements ICommandManager {
 
     @Override
     public Stream<String> tabComplete(Tuple<String, List<CommandArgument>> expanded) {
-        ICommandExecution execution = this.from(expanded);
+        ExecutionWrapper execution = this.from(expanded);
         return execution == null ? Stream.empty() : execution.tabComplete();
     }
 
     @Override
     public Stream<String> tabComplete(String prefix) {
-        Tuple<String, List<CommandArgument>> pair = ICommandExecution.expand(prefix, true);
+        Tuple<String, List<CommandArgument>> pair = expand(prefix, true);
         String label = pair.getFirst();
         List<CommandArgument> args = pair.getSecond();
         if (args.isEmpty()) {
@@ -105,11 +105,54 @@ public class CommandManager implements ICommandManager {
         }
     }
 
-    private ICommandExecution from(Tuple<String, List<CommandArgument>> expanded) {
+    private ExecutionWrapper from(Tuple<String, List<CommandArgument>> expanded) {
         String label = expanded.getFirst();
         ArgConsumer args = new ArgConsumer(this, expanded.getSecond());
 
         Command command = this.getCommand(label);
-        return command == null ? null : new CommandExecution(command, label, args);
+        return command == null ? null : new ExecutionWrapper(command, label, args);
+    }
+
+    private static Tuple<String, List<CommandArgument>> expand(String string, boolean preserveEmptyLast) {
+        String label = string.split("\\s", 2)[0];
+        List<CommandArgument> args = CommandArgument.from(string.substring(label.length()), preserveEmptyLast);
+        return new Tuple<>(label, args);
+    }
+
+    public static Tuple<String, List<CommandArgument>> expand(String string) {
+        return expand(string, false);
+    }
+
+    private static final class ExecutionWrapper {
+        private Command command;
+        private String label;
+        private ArgConsumer args;
+
+        private ExecutionWrapper(Command command, String label, ArgConsumer args) {
+            this.command = command;
+            this.label = label;
+            this.args = args;
+        }
+
+        private void execute() {
+            try {
+                this.command.execute(this.label, this.args);
+            } catch (Throwable t) {
+                // Create a handleable exception, wrap if needed
+                ICommandException exception = t instanceof ICommandException
+                        ? (ICommandException) t
+                        : new CommandUnhandledException(t);
+
+                exception.handle(command, args.args);
+            }
+        }
+
+        private Stream<String> tabComplete() {
+            try {
+                return this.command.tabComplete(this.label, this.args);
+            } catch (Throwable t) {
+                return Stream.empty();
+            }
+        }
     }
 }

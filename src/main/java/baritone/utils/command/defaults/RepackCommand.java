@@ -34,13 +34,13 @@ public class RepackCommand extends Command {
     }
 
     @Override
-    protected void executed(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, ArgConsumer args) throws CommandException {
         args.requireMax(0);
         logDirect(String.format("Queued %d chunks for repacking", WorldScanner.INSTANCE.repack(ctx)));
     }
 
     @Override
-    protected Stream<String> tabCompleted(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, ArgConsumer args) {
         return Stream.empty();
     }
 

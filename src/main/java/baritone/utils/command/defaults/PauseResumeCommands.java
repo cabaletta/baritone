@@ -79,7 +79,7 @@ public class PauseResumeCommands {
         );
         pauseCommand = new Command(baritone, "pause") {
             @Override
-            protected void executed(String label, ArgConsumer args) throws CommandException {
+            public void execute(String label, ArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 if (paused[0]) {
                     throw new CommandInvalidStateException("Already paused");
@@ -89,7 +89,7 @@ public class PauseResumeCommands {
             }
 
             @Override
-            protected Stream<String> tabCompleted(String label, ArgConsumer args) {
+            public Stream<String> tabComplete(String label, ArgConsumer args) {
                 return Stream.empty();
             }
 
@@ -112,7 +112,7 @@ public class PauseResumeCommands {
         };
         resumeCommand = new Command(baritone, "resume") {
             @Override
-            protected void executed(String label, ArgConsumer args) throws CommandException {
+            public void execute(String label, ArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 if (!paused[0]) {
                     throw new CommandInvalidStateException("Not paused");
@@ -122,7 +122,7 @@ public class PauseResumeCommands {
             }
 
             @Override
-            protected Stream<String> tabCompleted(String label, ArgConsumer args) {
+            public Stream<String> tabComplete(String label, ArgConsumer args) {
                 return Stream.empty();
             }
 
@@ -143,13 +143,13 @@ public class PauseResumeCommands {
         };
         pausedCommand = new Command(baritone, "paused") {
             @Override
-            protected void executed(String label, ArgConsumer args) throws CommandException {
+            public void execute(String label, ArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 logDirect(String.format("Baritone is %spaused", paused[0] ? "" : "not "));
             }
 
             @Override
-            protected Stream<String> tabCompleted(String label, ArgConsumer args) {
+            public Stream<String> tabComplete(String label, ArgConsumer args) {
                 return Stream.empty();
             }
 
