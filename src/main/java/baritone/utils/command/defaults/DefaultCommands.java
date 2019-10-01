@@ -46,7 +46,6 @@ public final class DefaultCommands {
             new ForceCancelCommand(baritone),
             new GcCommand(baritone),
             new InvertCommand(baritone),
-            new ClearareaCommand(baritone),
             new TunnelCommand(baritone),
             new RenderCommand(baritone),
             new FarmCommand(baritone),
