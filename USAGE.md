@@ -1,87 +1,87 @@
-(assuming you already have Baritone [set up](SETUP.md))
+(assuming you awweady have Bawitonye [set up](SETUP.md))
 
-# Prefix
+# Pwefix
 
-Baritone's chat control prefix is `#` by default. In Impact, you can also use `.b` as a prefix. (for example, `.b click` instead of `#click`)
+Bawitonye's chat contwow pwefix is `#` by defauwt. In Impact, you can awso use `.b` as a pwefix. (fow exampwe, `.b cwick` instead of `#cwick`)
 
-Baritone commands can also by default be typed in the chatbox. However if you make a typo, like typing "gola 10000 10000" instead of "goal" it goes into public chat, which is bad, so using `#` is suggested.
+Bawitonye commands can awso by defauwt be typed in the chatbox. Howevew if you make a typo, wike typing "gowa 10000 10000" instead of "goaw" it goes into pubwic chat, which is bad, so using `#` is suggested.
 
-To disable direct chat control (with no prefix), turn off the `chatControl` setting. To disable chat control with the `#` prefix, turn off the `prefixControl` setting. In Impact, `.b` cannot be disabled. Be careful that you don't leave yourself with all control methods disabled (if you do, reset your settings by deleting the file `minecraft/baritone/settings.txt` and relaunching).
+To disabwe diwect chat contwow (with nyo pwefix), tuwn off the `chatContwow` setting. To disabwe chat contwow with the `#` pwefix, tuwn off the `pwefixContwow` setting. In Impact, `.b` cannyot be disabwed. Be cawefuw that you don't weave youwsewf with aww contwow methods disabwed (if you do, weset youw settings by deweting the fiwe `minyecwaft/bawitonye/settings.txt` and wewaunching).
 
 # Commands
 
-**All** of these commands may need a prefix before them, as above ^.
+**Aww** of these commands may nyeed a pwefix befowe them, as abuv ^.
 
-`help` for (rudimentary) help. You can see what it says [here](https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/utils/ExampleBaritoneControl.java#L47).
+`hewp` fow (wudimentawy) hewp. You can see what it says [hewe](https://github.com/cabawetta/bawitonye/bwob/mastew/swc/api/java/bawitonye/api/utiws/ExampweBawitonyeContwow.java#W47).
 
-To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
+To toggwe a boowean setting, just say its nyame in chat (fow exampwe saying `awwowBweak` toggwes whethew Bawitonye wiww considew bweaking bwocks). Fow a nyumewic setting, say its nyame then the nyew vawue (wike `pwimawyTimeoutMS 250`). It's case insensitive. To weset a setting to its defauwt vawue, say `acceptabweThwowawayItems weset`. To weset aww settings, say `weset`. To see aww settings that have been modified fwom theiw defauwt vawues, say `modified`.
 
-Some common examples:
-- `thisway 1000` then `path` to go in the direction you're facing for a thousand blocks
-- `goal x y z` or `goal x z` or `goal y`, then `path` to set a goal to a certain coordinate then path to it
-- `goto x y z` or `goto x z` or `goto y` to go to a certain coordinate (in a single step, starts going immediately)
-- `goal` to set the goal to your player's feet
-- `goal clear` to clear the goal
-- `cancel` or `stop` to stop everything
-- `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
-- `mine diamond_ore iron_ore` to mine diamond ore or iron ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.) An amount of blocks can also be specified, for example, `mine diamond_ore 64`.
-- `click` to click your destination on the screen. Right click path to on top of the block, left click to path into it (either at foot level or eye level), and left click and drag to clear all blocks from an area.
-- `follow playerName` to follow a player. `followplayers` to follow any players in range (combine with Kill Aura for a fun time). `followentities` to follow any entities. `followentity pig` to follow entities of a specific type.
-- `save waypointName` to save a waypoint. `goto waypointName` to go to it.
-- `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
-- `schematica` to build the schematic that is currently open in schematica
-- `tunnel` to dig just straight ahead and make a tunnel
-- `farm` to automatically harvest, replant, or bone meal crops
-- `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
-- `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
-- `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
-- `version` to get the version of Baritone you're running
-- `damn` daniel
-
-
-New commands:
-- `sel` to manage selections
-- some others
+Some common exampwes:
+- `thisway 1000` then `path` to go in the diwection you'we facing fow a thousand bwocks
+- `goaw x y z` ow `goaw x z` ow `goaw y`, then `path` to set a goaw to a cewtain coowdinyate then path to it
+- `goto x y z` ow `goto x z` ow `goto y` to go to a cewtain coowdinyate (in a singwe step, stawts going immediatewy)
+- `goaw` to set the goaw to youw pwayew's feet
+- `goaw cweaw` to cweaw the goaw
+- `cancew` ow `stop` to stop evewything
+- `goto powtaw` ow `goto endew_chest` ow `goto bwock_type` to go to a bwock. (in Impact, `.goto` is an awias fow `.b goto` fow the most pawt)
+- `minye diamond_owe iwon_owe` to minye diamond owe ow iwon owe (tuwn on the setting `wegitMinye` to onwy minye owes that it can actuawwy see. It wiww expwowe wandomwy awound y=11 untiw it finds them.) An amount of bwocks can awso be specified, fow exampwe, `minye diamond_owe 64`.
+- `cwick` to cwick youw destinyation on the scween. Wight cwick path to on top of the bwock, weft cwick to path into it (eithew at foot wevew ow eye wevew), and weft cwick and dwag to cweaw aww bwocks fwom an awea.
+- `fowwow pwayewNyame` to fowwow a pwayew. `fowwowpwayews` to fowwow any pwayews in wange (combinye with Kiww Auwa fow a fun time). `fowwowentities` to fowwow any entities. `fowwowentity pig` to fowwow entities of a specific type.
+- `save waypointNyame` to save a waypoint. `goto waypointNyame` to go to it.
+- `buiwd` to buiwd a schematic. `buiwd bwah` wiww woad `schematics/bwah.schematic` and buiwd it with the owigin being youw pwayew feet. `buiwd bwah x y z` to set the owigin. Any of those can be wewative to youw pwayew (`~ 69 ~-420` wouwd buiwd at x=pwayew x, y=69, z=pwayew z-420).
+- `schematica` to buiwd the schematic that is cuwwentwy open in schematica
+- `tunnyew` to dig just stwaight ahead and make a tunnyew
+- `fawm` to automaticawwy hawvest, wepwant, ow bonye meaw cwops
+- `axis` to go to an axis ow diagonyaw axis at y=120 (`axisHeight` is a configuwabwe setting, defauwts to 120).
+- `expwowe x z` to expwowe the wowwd fwom the owigin of x,z. Weave out x and z to defauwt to pwayew feet. This wiww continyuawwy path towawds the cwosest chunk to the owigin that it's nyevew seen befowe. `expwowefiwtew fiwtew.json` with optionyaw invewt can be used to woad in a wist of chunks to woad.
+- `invewt` to invewt the cuwwent goaw and path. This gets as faw away fwom it as possibwe, instead of as cwose as possibwe. Fow exampwe, do `goaw` then `invewt` to wun as faw as possibwe fwom whewe you'we standing at the stawt.
+- `vewsion` to get the vewsion of Bawitonye you'we wunnying
+- `damn` danyiew
 
 
-For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/utils/ExampleBaritoneControl.java).
-
-All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/baritone/api/Settings.html#field.detail">here</a>.
-
-There are about a hundred settings, but here are some fun / interesting / important ones that you might want to look at changing in normal usage of Baritone. The documentation for each can be found at the above links.
-- `allowBreak`
-- `allowSprint`
-- `allowPlace`
-- `allowParkour`
-- `allowParkourPlace`
-- `blockPlacementPenalty`
-- `renderCachedChunks` (and `cachedChunksOpacity`) <-- very fun but you need a beefy computer
-- `avoidance` (avoidance of mobs / mob spawners)
-- `legitMine`
-- `followRadius`
-- `backfill` (fill in tunnels behind you)
-- `buildInLayers`
-- `buildRepeatDistance` and `buildRepeatDirection`
-- `worldExploringChunkOffset`
-- `acceptableThrowawayItems`
-- `blocksToAvoidBreaking`
+Nyew commands:
+- `sew` to manyage sewections
+- some othews
 
 
+Fow the west of the commands, you can take a wook at the code [hewe](https://github.com/cabawetta/bawitonye/bwob/mastew/swc/api/java/bawitonye/api/utiws/ExampweBawitonyeContwow.java).
+
+Aww the settings and documentation awe <a hwef="https://github.com/cabawetta/bawitonye/bwob/mastew/swc/api/java/bawitonye/api/Settings.java">hewe</a>. If you find HTMW easiew to wead than Javadoc, you can wook <a hwef="https://bawitonye.weijuwv.com/bawitonye/api/Settings.htmw#fiewd.detaiw">hewe</a>.
+
+Thewe awe about a hundwed settings, but hewe awe some fun / intewesting / impowtant onyes that you might want to wook at changing in nyowmaw usage of Bawitonye. The documentation fow each can be found at the abuv winks.
+- `awwowBweak`
+- `awwowSpwint`
+- `awwowPwace`
+- `awwowPawkouw`
+- `awwowPawkouwPwace`
+- `bwockPwacementPenyawty`
+- `wendewCachedChunks` (and `cachedChunksOpacity`) <-- vewy fun but you nyeed a beefy computew
+- `avoidance` (avoidance of mobs / mob spawnyews)
+- `wegitMinye`
+- `fowwowWadius`
+- `backfiww` (fiww in tunnyews behind you)
+- `buiwdInWayews`
+- `buiwdWepeatDistance` and `buiwdWepeatDiwection`
+- `wowwdExpwowingChunkOffset`
+- `acceptabweThwowawayItems`
+- `bwocksToAvoidBweaking`
 
 
-# Troubleshooting / common issues
-
-## Why doesn't Baritone respond to any of my chat commands?
-This could be one of many things.
-
-First, make sure it's actually installed. An easy way to check is seeing if it created the folder `baritone` in your Minecraft folder.
-
-Second, make sure that you're using the prefix properly, and that chat control is enabled in the way you expect.
-
-For example, Impact disables direct chat control. (i.e. anything typed in chat without a prefix will be ignored and sent publicly). **This is a saved setting**, so if you run Impact once, `chatControl` will be off from then on, **even in other clients**.
-So you'll need to use the `#` prefix or edit `baritone/settings.txt` in your Minecraft folder to undo that (specifically, remove the line `chatControl false` then restart your client).
 
 
-## Why can I do `.goto x z` in Impact but nowhere else? Why can I do `-path to x z` in KAMI but nowhere else?
-These are custom commands that they added; those aren't from Baritone.
-The equivalent you're looking for is `goal x z` then `path`.
+# Twoubweshooting / common issues
+
+## Why doesn't Bawitonye wespond to any of my chat commands?
+This couwd be onye of many things.
+
+Fiwst, make suwe it's actuawwy instawwed. An easy way to check is seeing if it cweated the fowdew `bawitonye` in youw Minyecwaft fowdew.
+
+Second, make suwe that you'we using the pwefix pwopewwy, and that chat contwow is enyabwed in the way you expect.
+
+Fow exampwe, Impact disabwes diwect chat contwow. (i.e. anything typed in chat without a pwefix wiww be ignyowed and sent pubwicwy). **This is a saved setting**, so if you wun Impact once, `chatContwow` wiww be off fwom then on, **even in othew cwients**.
+So you'ww nyeed to use the `#` pwefix ow edit `bawitonye/settings.txt` in youw Minyecwaft fowdew to undo that (specificawwy, wemuv the winye `chatContwow fawse` then westawt youw cwient).
+
+
+## Why can I do `.goto x z` in Impact but nyowhewe ewse? Why can I do `-path to x z` in KAMI but nyowhewe ewse?
+These awe custom commands that they added; those awen't fwom Bawitonye.
+The equivawent you'we wooking fow is `goaw x z` then `path`.

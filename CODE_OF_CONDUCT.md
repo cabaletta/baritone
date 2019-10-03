@@ -1,83 +1,83 @@
-# Contributor Covenant Code of Conduct
+# Contwibutow Cuvnyant Code of Conduct
 
-## Our Pledge
+## Ouw Pwedge
 
-In the interest of fostering an open and welcoming environment, we as
-contributors and maintainers pledge to making participation in our project and
-our community a harassment-free experience for everyone, regardless of age, body
-size, disability, ethnicity, sex characteristics, gender identity and expression,
-level of experience, education, socio-economic status, nationality, personal
-appearance, race, religion, or sexual identity and orientation.
+In the intewest of fostewing an open and wewcoming enviwonment, we as
+contwibutows and maintainyews pwedge to making pawticipation in ouw pwoject and
+ouw communyity a hawassment-fwee expewience fow evewyonye, wegawdwess of age, body
+size, disabiwity, ethnyicity, sex chawactewistics, gendew identity and expwession,
+wevew of expewience, education, socio-econyomic status, nyationyawity, pewsonyaw
+appeawance, wace, wewigion, ow sexuaw identity and owientation.
 
-## Our Standards
+## Ouw Standawds
 
-Examples of behavior that contributes to creating a positive environment
-include:
+Exampwes of behaviow that contwibutes to cweating a positive enviwonment
+incwude:
 
-* No Anime (including uwu's or owo's)
-* Using welcoming and inclusive language
-* Being respectful of differing viewpoints and experiences
-* Giving and gracefully accepting constructive criticism
-* Focusing on what is best for the community
-* Showing empathy towards other community members
+* incwude uwu's and owo's
+* Using wewcoming and incwusive wanguage
+* Being wespectfuw of diffewing viewpoints and expewiences
+* Giving and gwacefuwwy accepting constwuctive cwiticism
+* Focusing on what is best fow the communyity
+* Showing empathy towawds othew communyity membews
 
-Examples of unacceptable behavior by participants include:
+Exampwes of unyacceptabwe behaviow by pawticipants incwude:
 
-* Anime
-* The use of sexualized language or imagery and unwelcome sexual attention or
+* Anyime
+* The use of sexuawized wanguage ow imagewy and unwewcome sexuaw attention ow
  advances
-* ~~Trolling, insulting/derogatory comments, and personal or political attacks~~
-* Public or private harassment
-* Publishing others' private information, such as a physical or electronic
- address, without explicit permission or consent
-* Other conduct which could reasonably be considered inappropriate in a
- professional setting
+* ~~Twowwing, insuwting/dewogatowy comments, and pewsonyaw ow powiticaw attacks~~
+* Pubwic ow pwivate hawassment
+* Pubwishing othews' pwivate infowmation, such as a physicaw ow ewectwonyic
+ addwess, without expwicit pewmission ow consent
+* Othew conduct which couwd weasonyabwy be considewed inyappwopwiate in a
+ pwofessionyaw setting
 
-## Our Responsibilities
+## Ouw Wesponsibiwities
 
-Project maintainers are responsible for clarifying the standards of acceptable
-behavior and are expected to take appropriate and fair corrective action in
-response to any instances of unacceptable behavior.
+Pwoject maintainyews awe wesponsibwe fow cwawifying the standawds of acceptabwe
+behaviow and awe expected to take appwopwiate and faiw cowwective action in
+wesponse to any instances of unyacceptabwe behaviow.
 
-Project maintainers have the right and responsibility to remove, edit, or
-reject comments, commits, code, wiki edits, issues, and other contributions
-that are not aligned to this Code of Conduct, or to ban temporarily or
-permanently any contributor for other behaviors that they deem inappropriate,
-threatening, offensive, or harmful.
+Pwoject maintainyews have the wight and wesponsibiwity to wemuv, edit, ow
+weject comments, commits, code, wiki edits, issues, and othew contwibutions
+that awe nyot awignyed to this Code of Conduct, ow to ban tempowawiwy ow
+pewmanyentwy any contwibutow fow othew behaviows that they deem inyappwopwiate,
+thweatenying, offensive, ow hawmfuw.
 
-Project maintainers have the right and responsibility to immediately remove
-without any sort of dispute any issues or pull requests that do not align
-with their corresponding templates. Absolutely no leniancy shall be accepted
-with these terms.
+Pwoject maintainyews have the wight and wesponsibiwity to immediatewy wemuv
+without any sowt of dispute any issues ow puww wequests that do nyot awign
+with theiw cowwesponding tempwates. Absowutewy nyo wenyiancy shaww be accepted
+with these tewms.
 
 ## Scope
 
-This Code of Conduct applies both within project spaces and in public spaces
-when an individual is representing the project or its community. Examples of
-representing a project or community include using an official project e-mail
-address, posting via an official social media account, or acting as an appointed
-representative at an online or offline event. Representation of a project may be
-further defined and clarified by project maintainers.
+This Code of Conduct appwies both within pwoject spaces and in pubwic spaces
+when an individuaw is wepwesenting the pwoject ow its communyity. Exampwes of
+wepwesenting a pwoject ow communyity incwude using an officiaw pwoject e-maiw
+addwess, posting via an officiaw sociaw media account, ow acting as an appointed
+wepwesentative at an onwinye ow offwinye event. Wepwesentation of a pwoject may be
+fuwthew definyed and cwawified by pwoject maintainyews.
 
-## Enforcement
+## Enfowcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting the project team at complaints@leijurv.com. All
-complaints will be reviewed and investigated and will result in a response that
-is deemed necessary and appropriate to the circumstances. The project team is
-obligated to maintain confidentiality with regard to the reporter of an incident.
-Further details of specific enforcement policies may be posted separately.
+Instances of abusive, hawassing, ow othewwise unyacceptabwe behaviow may be
+wepowted by contacting the pwoject team at compwaints@weijuwv.com. Aww
+compwaints wiww be weviewed and investigated and wiww wesuwt in a wesponse that
+is deemed nyecessawy and appwopwiate to the ciwcumstances. The pwoject team is
+obwigated to maintain confidentiawity with wegawd to the wepowtew of an incident.
+Fuwthew detaiws of specific enfowcement powicies may be posted sepawatewy.
 
-Project maintainers who do not follow or enforce the Code of Conduct in good
-faith may face temporary or permanent repercussions as determined by other
-members of the project's leadership.
+Pwoject maintainyews who do nyot fowwow ow enfowce the Code of Conduct in good
+faith may face tempowawy ow pewmanyent wepewcussions as detewminyed by othew
+membews of the pwoject's weadewship.
 
-## Attribution
+## Attwibution
 
-This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 1.4,
-available at https://www.contributor-covenant.org/version/1/4/code-of-conduct.html
+This Code of Conduct is adapted fwom the [Contwibutow Cuvnyant][homepage], vewsion 1.4,
+avaiwabwe at https://www.contwibutow-cuvnyant.owg/vewsion/1/4/code-of-conduct.htmw
 
-[homepage]: https://www.contributor-covenant.org
+[homepage]: https://www.contwibutow-cuvnyant.owg
 
-For answers to common questions about this code of conduct, see
-https://www.contributor-covenant.org/faq
+Fow answews to common questions about this code of conduct, see
+https://www.contwibutow-cuvnyant.owg/faq
