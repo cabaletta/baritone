@@ -27,7 +27,6 @@ import baritone.api.event.events.type.EventState;
 import baritone.api.utils.BetterBlockPos;
 import baritone.cache.ContainerMemory;
 import baritone.utils.BlockStateInterface;
-import cabaletta.comms.upward.MessageEchestConfirmed;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
 import net.minecraft.init.Blocks;
@@ -38,7 +37,6 @@ import net.minecraft.network.play.client.CPacketCloseWindow;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.network.play.server.SPacketCloseWindow;
 import net.minecraft.network.play.server.SPacketOpenWindow;
-import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityLockable;
 import net.minecraft.util.EnumFacing;
@@ -170,13 +168,6 @@ public final class MemoryBehavior extends Behavior {
                     System.out.println("RECEIVED GUARANTEED ECHEST CONTENTS" + meme.getItemStacks());
                 }
             }*/
-
-            if (p instanceof SPacketSetSlot) {
-                SPacketSetSlot slot = (SPacketSetSlot) p;
-                if (slot.getSlot() < 27 && enderChestWindowId != null && slot.getWindowId() == enderChestWindowId) {
-                    baritone.getControllerBehavior().trySend(new MessageEchestConfirmed(slot.getSlot(), ControllerBehavior.describe(slot.getStack())));
-                }
-            }
         }
     }
 

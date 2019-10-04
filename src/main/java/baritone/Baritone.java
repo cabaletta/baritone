@@ -86,7 +86,7 @@ public class Baritone implements IBaritone {
 
     public BlockStateInterface bsi;
 
-    Baritone(IPlayerContext playerContext) {
+    public Baritone(IPlayerContext playerContext) {
         this.gameEventHandler = new GameEventHandler(this);
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!

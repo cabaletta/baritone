@@ -17,11 +17,11 @@
 
 package baritone.bot.handler;
 
+import baritone.api.utils.Helper;
 import baritone.bot.BaritoneUser;
 import baritone.bot.spec.BotPlayerController;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
-import baritone.utils.Helper;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;

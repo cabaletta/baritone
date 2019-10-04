@@ -54,8 +54,7 @@ public class BaritoneUser implements IBaritoneUser {
         this.manager = manager;
         this.networkManager = networkManager;
         this.session = session;
-        this.baritone = new Baritone(new BotPlayerContext(this)); // OPPA GANGNAM STYLE
-        this.baritone.init(); // actually massive iq
+        this.baritone = new Baritone(new BotPlayerContext(this));
     }
 
     public void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient) {
