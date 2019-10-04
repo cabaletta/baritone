@@ -21,6 +21,7 @@ import baritone.api.cache.IWorldScanner;
 import net.minecraft.client.entity.EntityPlayerSP;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Provides the present {@link IBaritone} instances
@@ -57,7 +58,7 @@ public interface IBaritoneProvider {
      */
     default IBaritone getBaritoneForPlayer(EntityPlayerSP player) {
         for (IBaritone baritone : getAllBaritones()) {
-            if (player.equals(baritone.getPlayerContext().player())) {
+            if (Objects.equals(player, baritone.getPlayerContext().player())) {
                 return baritone;
             }
         }
