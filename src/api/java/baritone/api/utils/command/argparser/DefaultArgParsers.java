@@ -17,7 +17,7 @@
 
 package baritone.api.utils.command.argparser;
 
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,8 +34,8 @@ public class DefaultArgParsers {
         }
 
         @Override
-        public Integer parseArg(CommandArgument arg) throws RuntimeException {
-            return Integer.parseInt(arg.value);
+        public Integer parseArg(ICommandArgument arg) throws RuntimeException {
+            return Integer.parseInt(arg.getValue());
         }
     }
 
@@ -48,8 +48,8 @@ public class DefaultArgParsers {
         }
 
         @Override
-        public Long parseArg(CommandArgument arg) throws RuntimeException {
-            return Long.parseLong(arg.value);
+        public Long parseArg(ICommandArgument arg) throws RuntimeException {
+            return Long.parseLong(arg.getValue());
         }
     }
 
@@ -62,8 +62,8 @@ public class DefaultArgParsers {
         }
 
         @Override
-        public Float parseArg(CommandArgument arg) throws RuntimeException {
-            String value = arg.value;
+        public Float parseArg(ICommandArgument arg) throws RuntimeException {
+            String value = arg.getValue();
             if (!value.matches("^([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$")) {
                 throw new IllegalArgumentException("failed float format check");
             }
@@ -80,8 +80,8 @@ public class DefaultArgParsers {
         }
 
         @Override
-        public Double parseArg(CommandArgument arg) throws RuntimeException {
-            String value = arg.value;
+        public Double parseArg(ICommandArgument arg) throws RuntimeException {
+            String value = arg.getValue();
             if (!value.matches("^([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$")) {
                 throw new IllegalArgumentException("failed double format check");
             }
@@ -101,8 +101,8 @@ public class DefaultArgParsers {
         }
 
         @Override
-        public Boolean parseArg(CommandArgument arg) throws RuntimeException {
-            String value = arg.value;
+        public Boolean parseArg(ICommandArgument arg) throws RuntimeException {
+            String value = arg.getValue();
             if (TRUTHY_VALUES.contains(value.toLowerCase(Locale.US))) {
                 return true;
             } else if (FALSY_VALUES.contains(value.toLowerCase(Locale.US))) {

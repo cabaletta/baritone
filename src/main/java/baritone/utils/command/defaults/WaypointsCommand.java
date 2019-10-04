@@ -29,7 +29,7 @@ import baritone.api.utils.command.datatypes.RelativeBlockPos;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.api.utils.command.helpers.pagination.Paginator;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.util.text.ITextComponent;
@@ -52,7 +52,7 @@ public class WaypointsCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         Action action = args.hasAny() ? Action.getByName(args.getString()) : Action.LIST;
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
@@ -241,7 +241,7 @@ public class WaypointsCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasAny()) {
             if (args.hasExactlyOne()) {
                 return new TabCompleteHelper()

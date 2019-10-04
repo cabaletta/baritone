@@ -23,7 +23,7 @@ import baritone.api.utils.command.datatypes.EntityClassById;
 import baritone.api.utils.command.datatypes.IDatatypeFor;
 import baritone.api.utils.command.datatypes.NearbyPlayer;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -42,7 +42,7 @@ public class FollowCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMin(1);
         FollowGroup group;
         FollowList list;
@@ -88,7 +88,7 @@ public class FollowCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
                     .append(FollowGroup.class)

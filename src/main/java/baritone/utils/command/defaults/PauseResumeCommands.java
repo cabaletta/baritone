@@ -24,7 +24,7 @@ import baritone.api.process.PathingCommandType;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -79,7 +79,7 @@ public class PauseResumeCommands {
         );
         pauseCommand = new Command(baritone, "pause") {
             @Override
-            public void execute(String label, ArgConsumer args) throws CommandException {
+            public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 if (paused[0]) {
                     throw new CommandInvalidStateException("Already paused");
@@ -89,7 +89,7 @@ public class PauseResumeCommands {
             }
 
             @Override
-            public Stream<String> tabComplete(String label, ArgConsumer args) {
+            public Stream<String> tabComplete(String label, IArgConsumer args) {
                 return Stream.empty();
             }
 
@@ -112,7 +112,7 @@ public class PauseResumeCommands {
         };
         resumeCommand = new Command(baritone, "resume") {
             @Override
-            public void execute(String label, ArgConsumer args) throws CommandException {
+            public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 if (!paused[0]) {
                     throw new CommandInvalidStateException("Not paused");
@@ -122,7 +122,7 @@ public class PauseResumeCommands {
             }
 
             @Override
-            public Stream<String> tabComplete(String label, ArgConsumer args) {
+            public Stream<String> tabComplete(String label, IArgConsumer args) {
                 return Stream.empty();
             }
 
@@ -143,13 +143,13 @@ public class PauseResumeCommands {
         };
         pausedCommand = new Command(baritone, "paused") {
             @Override
-            public void execute(String label, ArgConsumer args) throws CommandException {
+            public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 logDirect(String.format("Baritone is %spaused", paused[0] ? "" : "not "));
             }
 
             @Override
-            public Stream<String> tabComplete(String label, ArgConsumer args) {
+            public Stream<String> tabComplete(String label, IArgConsumer args) {
                 return Stream.empty();
             }
 

@@ -20,7 +20,7 @@ package baritone.utils.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.cache.WorldScanner;
 
 import java.util.Arrays;
@@ -34,13 +34,13 @@ public class RepackCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         logDirect(String.format("Queued %d chunks for repacking", WorldScanner.INSTANCE.repack(ctx)));
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, IArgConsumer args) {
         return Stream.empty();
     }
 

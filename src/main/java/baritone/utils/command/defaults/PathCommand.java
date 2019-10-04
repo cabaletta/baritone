@@ -25,7 +25,7 @@ import baritone.api.utils.command.datatypes.RelativeCoordinate;
 import baritone.api.utils.command.datatypes.RelativeGoal;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.cache.WorldScanner;
 
@@ -40,7 +40,7 @@ public class PathCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         Goal goal;
         if (args.hasAny()) {
@@ -56,7 +56,7 @@ public class PathCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasAny() && !args.has(4)) {
             while (args.has(2)) {
                 if (args.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) == null) {

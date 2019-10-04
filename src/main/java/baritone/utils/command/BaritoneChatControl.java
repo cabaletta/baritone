@@ -26,12 +26,13 @@ import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.api.utils.SettingsUtil;
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 import baritone.api.utils.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.command.exception.CommandNotFoundException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.utils.command.manager.ICommandManager;
+import baritone.utils.command.argument.CommandArguments;
 import baritone.utils.command.manager.CommandManager;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.text.ITextComponent;
@@ -106,7 +107,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (msg.isEmpty()) {
             return this.runCommand("help");
         }
-        Tuple<String, List<CommandArgument>> pair = CommandManager.expand(msg);
+        Tuple<String, List<ICommandArgument>> pair = CommandManager.expand(msg);
         String command = pair.getFirst();
         String rest = msg.substring(pair.getFirst().length());
         ArgConsumer argc = new ArgConsumer(this.manager, pair.getSecond());
@@ -155,7 +156,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             return;
         }
         String msg = prefix.substring(commandPrefix.length());
-        List<CommandArgument> args = CommandArgument.from(msg, true);
+        List<ICommandArgument> args = CommandArguments.from(msg, true);
         Stream<String> stream = tabComplete(msg);
         if (args.size() == 1) {
             stream = stream.map(x -> commandPrefix + x);
@@ -165,7 +166,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
 
     public Stream<String> tabComplete(String msg) {
         try {
-            List<CommandArgument> args = CommandArgument.from(msg, true);
+            List<ICommandArgument> args = CommandArguments.from(msg, true);
             ArgConsumer argc = new ArgConsumer(this.manager, args);
             if (argc.hasAtMost(2)) {
                 if (argc.hasExactly(1)) {

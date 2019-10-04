@@ -18,7 +18,7 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,7 +51,7 @@ public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
 
     @Override
     public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
-        final ArgConsumer consumer = ctx.getConsumer();
+        final IArgConsumer consumer = ctx.getConsumer();
         if (!consumer.has(2) && consumer.getString().matches("^(~|$)")) {
             return Stream.of("~");
         }

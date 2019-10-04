@@ -17,10 +17,9 @@
 
 package baritone.api.utils.command.argparser;
 
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.exception.CommandNoParserForTypeException;
-import baritone.api.utils.command.exception.CommandUnhandledException;
 import baritone.api.utils.command.registry.Registry;
 
 public class ArgParserManager {
@@ -69,7 +68,7 @@ public class ArgParserManager {
      * @return An instance of the specified class.
      * @throws CommandInvalidTypeException If the parsing failed
      */
-    public static <T> T parseStateless(Class<T> type, CommandArgument arg) throws CommandInvalidTypeException {
+    public static <T> T parseStateless(Class<T> type, ICommandArgument arg) throws CommandInvalidTypeException {
         IArgParser.Stateless<T> parser = getParserStateless(type);
         if (parser == null) {
             throw new CommandNoParserForTypeException(type);
@@ -91,7 +90,7 @@ public class ArgParserManager {
      * @throws CommandInvalidTypeException If the parsing failed
      * @see IArgParser.Stated
      */
-    public static <T, S> T parseStated(Class<T> type, Class<S> stateKlass, CommandArgument arg, S state) throws CommandInvalidTypeException {
+    public static <T, S> T parseStated(Class<T> type, Class<S> stateKlass, ICommandArgument arg, S state) throws CommandInvalidTypeException {
         IArgParser.Stated<T, S> parser = getParserStated(type, stateKlass);
         if (parser == null) {
             throw new CommandNoParserForTypeException(type);

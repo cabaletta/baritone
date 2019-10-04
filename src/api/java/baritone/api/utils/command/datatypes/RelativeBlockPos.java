@@ -19,7 +19,7 @@ package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 
 import java.util.stream.Stream;
 
@@ -32,7 +32,7 @@ public enum RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBloc
             origin = BetterBlockPos.ORIGIN;
         }
 
-        final ArgConsumer consumer = ctx.getConsumer();
+        final IArgConsumer consumer = ctx.getConsumer();
         return new BetterBlockPos(
                 consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.x),
                 consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y),
@@ -42,7 +42,7 @@ public enum RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBloc
 
     @Override
     public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
-        final ArgConsumer consumer = ctx.getConsumer();
+        final IArgConsumer consumer = ctx.getConsumer();
         if (consumer.hasAny() && !consumer.has(4)) {
             while (consumer.has(2)) {
                 if (consumer.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) == null) {

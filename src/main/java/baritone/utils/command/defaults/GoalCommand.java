@@ -25,7 +25,7 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.RelativeCoordinate;
 import baritone.api.utils.command.datatypes.RelativeGoal;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 
 import java.util.Arrays;
@@ -39,7 +39,7 @@ public class GoalCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         ICustomGoalProcess goalProcess = baritone.getCustomGoalProcess();
         if (args.hasAny() && Arrays.asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
@@ -59,7 +59,7 @@ public class GoalCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         TabCompleteHelper helper = new TabCompleteHelper();
         if (args.hasExactlyOne()) {
             helper.append("reset", "clear", "none", "~");

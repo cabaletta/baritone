@@ -18,7 +18,7 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,7 +70,7 @@ public enum RelativeFile implements IDatatypePost<File, File> {
         }
     }
 
-    public static Stream<String> tabComplete(ArgConsumer consumer, File base0) throws CommandException {
+    public static Stream<String> tabComplete(IArgConsumer consumer, File base0) throws CommandException {
         // I will not make the caller deal with this, seriously
         // Tab complete code is beautiful and I'm not going to bloat it with dumb ass checked exception bullshit -LoganDark
 

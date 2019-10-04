@@ -21,7 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +34,7 @@ public class ThisWayCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireExactly(1);
         GoalXZ goal = GoalXZ.fromDirection(
                 ctx.playerFeetAsVec(),
@@ -46,7 +46,7 @@ public class ThisWayCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, IArgConsumer args) {
         return Stream.empty();
     }
 

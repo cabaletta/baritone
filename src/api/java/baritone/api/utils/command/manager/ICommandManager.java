@@ -19,7 +19,7 @@ package baritone.api.utils.command.manager;
 
 import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 import baritone.api.utils.command.registry.Registry;
 import net.minecraft.util.Tuple;
 
@@ -44,9 +44,9 @@ public interface ICommandManager {
 
     boolean execute(String string);
 
-    boolean execute(Tuple<String, List<CommandArgument>> expanded);
+    boolean execute(Tuple<String, List<ICommandArgument>> expanded);
 
-    Stream<String> tabComplete(Tuple<String, List<CommandArgument>> expanded);
+    Stream<String> tabComplete(Tuple<String, List<ICommandArgument>> expanded);
 
     Stream<String> tabComplete(String prefix);
 }

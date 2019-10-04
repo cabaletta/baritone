@@ -17,16 +17,16 @@
 
 package baritone.api.utils.command.exception;
 
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 
 public abstract class CommandInvalidArgumentException extends CommandErrorMessageException {
 
-    public final CommandArgument arg;
+    public final ICommandArgument arg;
 
-    protected CommandInvalidArgumentException(CommandArgument arg, String reason) {
+    protected CommandInvalidArgumentException(ICommandArgument arg, String reason) {
         super(String.format(
                 "Error at argument #%s: %s",
-                arg.index == -1 ? "<unknown>" : Integer.toString(arg.index + 1),
+                arg.getIndex() == -1 ? "<unknown>" : Integer.toString(arg.getIndex() + 1),
                 reason
         ));
         this.arg = arg;

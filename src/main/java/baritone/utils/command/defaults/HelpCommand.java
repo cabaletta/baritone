@@ -21,7 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandNotFoundException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.api.utils.command.helpers.pagination.Paginator;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.util.text.ITextComponent;
@@ -44,7 +44,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(1);
         if (!args.hasAny() || args.is(Integer.class)) {
             Paginator.paginate(
@@ -97,7 +97,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
                     .addCommands(this.baritone.getCommandManager())

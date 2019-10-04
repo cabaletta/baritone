@@ -24,7 +24,7 @@ import baritone.api.utils.command.datatypes.RelativeBlockPos;
 import baritone.api.utils.command.datatypes.RelativeFile;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -42,7 +42,7 @@ public class BuildCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         File file = args.getDatatypePost(RelativeFile.INSTANCE, schematicsDir).getAbsoluteFile();
         if (!file.getName().toLowerCase(Locale.US).endsWith(".schematic")) {
             file = new File(file.getAbsolutePath() + ".schematic");
@@ -64,7 +64,7 @@ public class BuildCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return RelativeFile.tabComplete(args, schematicsDir);
         } else if (args.has(2)) {

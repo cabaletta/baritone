@@ -24,7 +24,7 @@ import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.api.utils.command.helpers.pagination.Paginator;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.util.text.ITextComponent;
@@ -50,7 +50,7 @@ public class SetCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         String arg = args.hasAny() ? args.getString().toLowerCase(Locale.US) : "list";
         if (Arrays.asList("s", "save").contains(arg)) {
             SettingsUtil.save(Baritone.settings());
@@ -186,7 +186,7 @@ public class SetCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasAny()) {
             String arg = args.getString();
             if (args.hasExactlyOne() && !Arrays.asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {

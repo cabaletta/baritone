@@ -20,7 +20,7 @@ package baritone.api.utils.command.datatypes;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.stream.Stream;
@@ -34,7 +34,7 @@ public enum RelativeGoalXZ implements IDatatypePost<GoalXZ, BetterBlockPos> {
             origin = BetterBlockPos.ORIGIN;
         }
 
-        final ArgConsumer consumer = ctx.getConsumer();
+        final IArgConsumer consumer = ctx.getConsumer();
         return new GoalXZ(
                 MathHelper.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.x)),
                 MathHelper.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y))
@@ -43,7 +43,7 @@ public enum RelativeGoalXZ implements IDatatypePost<GoalXZ, BetterBlockPos> {
 
     @Override
     public Stream<String> tabComplete(IDatatypeContext ctx) {
-        final ArgConsumer consumer = ctx.getConsumer();
+        final IArgConsumer consumer = ctx.getConsumer();
         if (consumer.hasAtMost(2)) {
             return consumer.tabCompleteDatatype(RelativeCoordinate.INSTANCE);
         }

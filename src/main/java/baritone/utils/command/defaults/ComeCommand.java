@@ -22,7 +22,7 @@ import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
@@ -37,7 +37,7 @@ public class ComeCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         Entity entity = mc.getRenderViewEntity();
         if (entity == null) {
@@ -48,7 +48,7 @@ public class ComeCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, IArgConsumer args) {
         return Stream.empty();
     }
 

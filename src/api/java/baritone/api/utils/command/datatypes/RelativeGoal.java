@@ -23,7 +23,7 @@ import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
@@ -38,10 +38,10 @@ public enum RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
         if (origin == null) {
             origin = BetterBlockPos.ORIGIN;
         }
-        final ArgConsumer consumer = ctx.getConsumer();
+        final IArgConsumer consumer = ctx.getConsumer();
 
         List<IDatatypePostFunction<Double, Double>> coords = new ArrayList<>();
-        final ArgConsumer copy = consumer.copy(); // This is a hack and should be fixed in the future probably
+        final IArgConsumer copy = consumer.copy(); // This is a hack and should be fixed in the future probably
         for (int i = 0; i < 3; i++) {
             if (copy.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) != null) {
                 coords.add(o -> consumer.getDatatypePost(RelativeCoordinate.INSTANCE, o));

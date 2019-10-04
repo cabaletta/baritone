@@ -22,7 +22,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.BlockById;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import net.minecraft.block.Block;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class FindCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         List<Block> toFind = new ArrayList<>();
         while (args.hasAny()) {
             toFind.add(args.getDatatypeFor(BlockById.INSTANCE));
@@ -59,7 +59,7 @@ public class FindCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, IArgConsumer args) {
         return args.tabCompleteDatatype(BlockById.INSTANCE);
     }
 

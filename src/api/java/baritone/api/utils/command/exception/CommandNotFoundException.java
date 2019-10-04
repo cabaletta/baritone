@@ -18,7 +18,7 @@
 package baritone.api.utils.command.exception;
 
 import baritone.api.utils.command.Command;
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class CommandNotFoundException extends CommandException {
     }
 
     @Override
-    public void handle(Command command, List<CommandArgument> args) {
+    public void handle(Command command, List<ICommandArgument> args) {
         HELPER.logDirect(getMessage());
     }
 }

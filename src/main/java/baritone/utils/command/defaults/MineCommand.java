@@ -23,7 +23,7 @@ import baritone.api.utils.command.Command;
 import baritone.api.utils.command.datatypes.BlockById;
 import baritone.api.utils.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.cache.WorldScanner;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class MineCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         int quantity = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
@@ -51,7 +51,7 @@ public class MineCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, IArgConsumer args) {
         return args.tabCompleteDatatype(BlockById.INSTANCE);
     }
 

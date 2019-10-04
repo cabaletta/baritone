@@ -20,13 +20,14 @@ package baritone.utils.command.manager;
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 import baritone.api.utils.command.exception.CommandUnhandledException;
 import baritone.api.utils.command.exception.ICommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.utils.command.helpers.arguments.ArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.utils.command.manager.ICommandManager;
 import baritone.api.utils.command.registry.Registry;
+import baritone.utils.command.argument.CommandArguments;
 import baritone.utils.command.defaults.DefaultCommands;
 import net.minecraft.util.Tuple;
 
@@ -76,7 +77,7 @@ public class CommandManager implements ICommandManager {
     }
 
     @Override
-    public boolean execute(Tuple<String, List<CommandArgument>> expanded) {
+    public boolean execute(Tuple<String, List<ICommandArgument>> expanded) {
         ExecutionWrapper execution = this.from(expanded);
         if (execution != null) {
             execution.execute();
@@ -85,16 +86,16 @@ public class CommandManager implements ICommandManager {
     }
 
     @Override
-    public Stream<String> tabComplete(Tuple<String, List<CommandArgument>> expanded) {
+    public Stream<String> tabComplete(Tuple<String, List<ICommandArgument>> expanded) {
         ExecutionWrapper execution = this.from(expanded);
         return execution == null ? Stream.empty() : execution.tabComplete();
     }
 
     @Override
     public Stream<String> tabComplete(String prefix) {
-        Tuple<String, List<CommandArgument>> pair = expand(prefix, true);
+        Tuple<String, List<ICommandArgument>> pair = expand(prefix, true);
         String label = pair.getFirst();
-        List<CommandArgument> args = pair.getSecond();
+        List<ICommandArgument> args = pair.getSecond();
         if (args.isEmpty()) {
             return new TabCompleteHelper()
                     .addCommands(this.baritone.getCommandManager())
@@ -105,7 +106,7 @@ public class CommandManager implements ICommandManager {
         }
     }
 
-    private ExecutionWrapper from(Tuple<String, List<CommandArgument>> expanded) {
+    private ExecutionWrapper from(Tuple<String, List<ICommandArgument>> expanded) {
         String label = expanded.getFirst();
         ArgConsumer args = new ArgConsumer(this, expanded.getSecond());
 
@@ -113,13 +114,13 @@ public class CommandManager implements ICommandManager {
         return command == null ? null : new ExecutionWrapper(command, label, args);
     }
 
-    private static Tuple<String, List<CommandArgument>> expand(String string, boolean preserveEmptyLast) {
+    private static Tuple<String, List<ICommandArgument>> expand(String string, boolean preserveEmptyLast) {
         String label = string.split("\\s", 2)[0];
-        List<CommandArgument> args = CommandArgument.from(string.substring(label.length()), preserveEmptyLast);
+        List<ICommandArgument> args = CommandArguments.from(string.substring(label.length()), preserveEmptyLast);
         return new Tuple<>(label, args);
     }
 
-    public static Tuple<String, List<CommandArgument>> expand(String string) {
+    public static Tuple<String, List<ICommandArgument>> expand(String string) {
         return expand(string, false);
     }
 
@@ -143,7 +144,7 @@ public class CommandManager implements ICommandManager {
                         ? (ICommandException) t
                         : new CommandUnhandledException(t);
 
-                exception.handle(command, args.args);
+                exception.handle(command, args.getArgs());
             }
         }
 

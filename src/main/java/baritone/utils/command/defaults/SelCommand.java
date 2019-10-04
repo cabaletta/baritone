@@ -35,7 +35,7 @@ import baritone.api.utils.command.datatypes.RelativeBlockPos;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import baritone.api.utils.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.utils.IRenderer;
 import net.minecraft.init.Blocks;
@@ -75,7 +75,7 @@ public class SelCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         Action action = Action.getByName(args.getString());
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
@@ -186,7 +186,7 @@ public class SelCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
                     .append(Action.getAllNames())

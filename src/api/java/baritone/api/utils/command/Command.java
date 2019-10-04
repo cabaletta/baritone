@@ -21,7 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 
 import java.util.Collections;
 import java.util.List;
@@ -59,13 +59,13 @@ public abstract class Command implements Helper {
     /**
      * Called when this command is executed.
      */
-    public abstract void execute(String label, ArgConsumer args) throws CommandException;
+    public abstract void execute(String label, IArgConsumer args) throws CommandException;
 
     /**
      * Called when the command needs to tab complete. Return a Stream representing the entries to put in the completions
      * list.
      */
-    public abstract Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException;
+    public abstract Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException;
 
     /**
      * @return A <b>single-line</b> string containing a short description of this command's purpose.

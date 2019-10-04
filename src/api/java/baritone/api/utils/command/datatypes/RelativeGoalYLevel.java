@@ -20,7 +20,7 @@ package baritone.api.utils.command.datatypes;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.command.exception.CommandException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.stream.Stream;
@@ -41,7 +41,7 @@ public enum RelativeGoalYLevel implements IDatatypePost<GoalYLevel, BetterBlockP
 
     @Override
     public Stream<String> tabComplete(IDatatypeContext ctx) {
-        final ArgConsumer consumer = ctx.getConsumer();
+        final IArgConsumer consumer = ctx.getConsumer();
         if (consumer.hasAtMost(1)) {
             return consumer.tabCompleteDatatype(RelativeCoordinate.INSTANCE);
         }

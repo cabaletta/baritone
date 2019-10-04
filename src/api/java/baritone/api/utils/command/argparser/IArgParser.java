@@ -17,7 +17,7 @@
 
 package baritone.api.utils.command.argparser;
 
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 
 public interface IArgParser<T> {
 
@@ -27,7 +27,7 @@ public interface IArgParser<T> {
     Class<T> getTarget();
 
     /**
-     * A stateless argument parser is just that. It takes a {@link CommandArgument} and outputs its type.
+     * A stateless argument parser is just that. It takes a {@link ICommandArgument} and outputs its type.
      *
      * @see ArgParserManager#REGISTRY
      */
@@ -39,11 +39,11 @@ public interface IArgParser<T> {
          * @throws RuntimeException if you want the parsing to fail. The exception will be caught and turned into an
          *                          appropriate error.
          */
-        T parseArg(CommandArgument arg) throws Exception;
+        T parseArg(ICommandArgument arg) throws Exception;
     }
 
     /**
-     * A stated argument parser is similar to a stateless one. It also takes a {@link CommandArgument}, but it also
+     * A stated argument parser is similar to a stateless one. It also takes a {@link ICommandArgument}, but it also
      * takes a second argument that can be any type, referred to as the state.
      *
      * @see ArgParserManager#REGISTRY
@@ -59,6 +59,6 @@ public interface IArgParser<T> {
          * @throws RuntimeException if you want the parsing to fail. The exception will be caught and turned into an
          *                          appropriate error.
          */
-        T parseArg(CommandArgument arg, S state) throws Exception;
+        T parseArg(ICommandArgument arg, S state) throws Exception;
     }
 }

@@ -17,23 +17,23 @@
 
 package baritone.api.utils.command.exception;
 
-import baritone.api.utils.command.argument.CommandArgument;
+import baritone.api.utils.command.argument.ICommandArgument;
 
 public class CommandInvalidTypeException extends CommandInvalidArgumentException {
 
-    public CommandInvalidTypeException(CommandArgument arg, String expected) {
+    public CommandInvalidTypeException(ICommandArgument arg, String expected) {
         super(arg, String.format("Expected %s", expected));
     }
 
-    public CommandInvalidTypeException(CommandArgument arg, String expected, Throwable cause) {
+    public CommandInvalidTypeException(ICommandArgument arg, String expected, Throwable cause) {
         super(arg, String.format("Expected %s.\nMore details: %s", expected, cause.getMessage()));
     }
 
-    public CommandInvalidTypeException(CommandArgument arg, String expected, String got) {
+    public CommandInvalidTypeException(ICommandArgument arg, String expected, String got) {
         super(arg, String.format("Expected %s, but got %s instead", expected, got));
     }
 
-    public CommandInvalidTypeException(CommandArgument arg, String expected, String got, Throwable cause) {
+    public CommandInvalidTypeException(ICommandArgument arg, String expected, String got, Throwable cause) {
         super(arg, String.format("Expected %s, but got %s instead.\nMore details: %s", expected, got, cause.getMessage()));
     }
 }

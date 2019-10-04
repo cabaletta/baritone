@@ -23,7 +23,7 @@ import baritone.api.utils.command.datatypes.RelativeFile;
 import baritone.api.utils.command.exception.CommandException;
 import baritone.api.utils.command.exception.CommandInvalidStateException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
@@ -39,7 +39,7 @@ public class ExploreFilterCommand extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(2);
         File file = args.getDatatypePost(RelativeFile.INSTANCE, mc.gameDir.getAbsoluteFile().getParentFile());
         boolean invert = false;
@@ -63,7 +63,7 @@ public class ExploreFilterCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return RelativeFile.tabComplete(args, RelativeFile.gameDir());
         }

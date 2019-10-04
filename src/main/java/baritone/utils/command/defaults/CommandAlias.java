@@ -19,7 +19,7 @@ package baritone.utils.command.defaults;
 
 import baritone.api.IBaritone;
 import baritone.api.utils.command.Command;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,12 +43,12 @@ public class CommandAlias extends Command {
     }
 
     @Override
-    public void execute(String label, ArgConsumer args) {
+    public void execute(String label, IArgConsumer args) {
         this.baritone.getCommandManager().execute(String.format("%s %s", target, args.rawRest()));
     }
 
     @Override
-    public Stream<String> tabComplete(String label, ArgConsumer args) {
+    public Stream<String> tabComplete(String label, IArgConsumer args) {
         return this.baritone.getCommandManager().tabComplete(String.format("%s %s", target, args.rawRest()));
     }
 

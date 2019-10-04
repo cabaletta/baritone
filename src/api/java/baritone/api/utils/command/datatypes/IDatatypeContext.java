@@ -18,7 +18,7 @@
 package baritone.api.utils.command.datatypes;
 
 import baritone.api.IBaritone;
-import baritone.api.utils.command.helpers.arguments.ArgConsumer;
+import baritone.api.utils.command.helpers.arguments.IArgConsumer;
 
 /**
  * Provides an {@link IDatatype} with contextual information so
@@ -39,9 +39,9 @@ public interface IDatatypeContext {
     IBaritone getBaritone();
 
     /**
-     * Provides the {@link ArgConsumer} to fetch input information from.
+     * Provides the {@link IArgConsumer}} to fetch input information from.
      *
-     * @return The context {@link ArgConsumer}.
+     * @return The context {@link IArgConsumer}}.
      */
-    ArgConsumer getConsumer();
+    IArgConsumer getConsumer();
 }
