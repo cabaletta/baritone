@@ -37,7 +37,26 @@ public interface IPathingBehavior extends IBehavior {
      *
      * @return The estimated remaining ticks in the current segment.
      */
-    Optional<Double> ticksRemainingInSegment();
+    default Optional<Double> ticksRemainingInSegment() {
+        return ticksRemainingInSegment(true);
+    }
+
+    /**
+     * Returns the estimated remaining ticks in the current pathing
+     * segment. Given that the return type is an optional, {@link Optional#empty()}
+     * will be returned in the case that there is no current segment being pathed.
+     *
+     * @param includeCurrentMovement whether or not to include the entirety of the cost of the currently executing movement in the total
+     * @return The estimated remaining ticks in the current segment.
+     */
+    default Optional<Double> ticksRemainingInSegment(boolean includeCurrentMovement) {
+        IPathExecutor current = getCurrent();
+        if (current == null) {
+            return Optional.empty();
+        }
+        int start = includeCurrentMovement ? current.getPosition() : current.getPosition() + 1;
+        return Optional.of(current.getPath().ticksRemainingFrom(start));
+    }
 
     /**
      * @return The current pathing goal
@@ -45,9 +64,19 @@ public interface IPathingBehavior extends IBehavior {
     Goal getGoal();
 
     /**
-     * @return Whether or not a path is currently being executed.
+     * @return Whether or not a path is currently being executed. This will be false if there's currently a pause.
+     * @see #hasPath()
      */
     boolean isPathing();
+
+    /**
+     * @return If there is a current path. Note that the path is not necessarily being executed, for example when there
+     * is a pause in effect.
+     * @see #isPathing()
+     */
+    default boolean hasPath() {
+        return getCurrent() != null;
+    }
 
     /**
      * Cancels the pathing behavior or the current path calculation, and all processes that could be controlling path.
@@ -58,6 +87,13 @@ public interface IPathingBehavior extends IBehavior {
      * PathingBehavior might be in the middle of an uncancelable action like a parkour jump
      */
     boolean cancelEverything();
+
+    /**
+     * PLEASE never call this
+     * <p>
+     * If cancelEverything was like "kill" this is "sudo kill -9". Or shutting off your computer.
+     */
+    void forceCancel();
 
     /**
      * Returns the current path, from the current path executor, if there is one.

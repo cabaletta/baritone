@@ -38,6 +38,7 @@ import java.util.function.Function;
  * @author Avery, Brady, leijurv
  */
 public class ToolSet {
+
     /**
      * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
@@ -55,7 +56,7 @@ public class ToolSet {
         breakStrengthCache = new HashMap<>();
         this.player = player;
 
-        if (Baritone.settings().considerPotionEffects.get()) {
+        if (Baritone.settings().considerPotionEffects.value) {
             double amplifier = potionAmplifier();
             Function<Double, Double> amplify = x -> amplifier * x;
             backendCalculation = amplify.compose(this::getBestDestructionTime);
@@ -65,10 +66,10 @@ public class ToolSet {
     }
 
     /**
-     * Using the best tool on the hotbar, how long would it take to mine this block
+     * Using the best tool on the hotbar, how fast we can mine this block
      *
      * @param state the blockstate to be mined
-     * @return how long it would take in ticks
+     * @return the speed of how fast we'll mine it. 1/(time in ticks)
      */
     public double getStrVsBlock(IBlockState state) {
         return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation);
@@ -90,30 +91,39 @@ public class ToolSet {
         }
     }
 
+    public boolean hasSilkTouch(ItemStack stack) {
+        return EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
+    }
+
     /**
      * Calculate which tool on the hotbar is best for mining
      *
      * @param b the blockstate to be mined
      * @return A byte containing the index in the tools array that worked best
      */
-    public byte getBestSlot(Block b) {
+    public byte getBestSlot(Block b, boolean preferSilkTouch) {
         byte best = 0;
-        double value = Double.NEGATIVE_INFINITY;
-        int materialCost = Integer.MIN_VALUE;
+        double highestSpeed = Double.NEGATIVE_INFINITY;
+        int lowestCost = Integer.MIN_VALUE;
+        boolean bestSilkTouch = false;
         IBlockState blockState = b.getDefaultState();
         for (byte i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
-            double v = calculateSpeedVsBlock(itemStack, blockState);
-            if (v > value) {
-                value = v;
+            double speed = calculateSpeedVsBlock(itemStack, blockState);
+            boolean silkTouch = hasSilkTouch(itemStack);
+            if (speed > highestSpeed) {
+                highestSpeed = speed;
                 best = i;
-                materialCost = getMaterialCost(itemStack);
-            } else if (v == value) {
-                int c = getMaterialCost(itemStack);
-                if (c < materialCost) {
-                    value = v;
+                lowestCost = getMaterialCost(itemStack);
+                bestSilkTouch = silkTouch;
+            } else if (speed == highestSpeed) {
+                int cost = getMaterialCost(itemStack);
+                if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
+                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
+                    highestSpeed = speed;
                     best = i;
-                    materialCost = c;
+                    lowestCost = cost;
+                    bestSilkTouch = silkTouch;
                 }
             }
         }
@@ -127,14 +137,19 @@ public class ToolSet {
      * @return A double containing the destruction ticks with the best tool
      */
     private double getBestDestructionTime(Block b) {
-        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b));
-        return calculateSpeedVsBlock(stack, b.getDefaultState());
+        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b, false));
+        return calculateSpeedVsBlock(stack, b.getDefaultState()) * avoidanceMultiplier(b);
+    }
+
+    private double avoidanceMultiplier(Block b) {
+        return Baritone.settings().blocksToAvoidBreaking.value.contains(b) ? 0.1 : 1;
     }
 
     /**
      * Calculates how long would it take to mine the specified block given the best tool
      * in this toolset is used. A negative value is returned if the specified block is unbreakable.
      *
+     * @param item  the item to mine it with
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */

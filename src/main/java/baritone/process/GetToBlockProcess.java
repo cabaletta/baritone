@@ -18,13 +18,11 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalComposite;
-import baritone.api.pathing.goals.GoalGetToBlock;
-import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.*;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
@@ -36,25 +34,31 @@ import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
+public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
     private Block gettingTo;
     private List<BlockPos> knownLocations;
+    private List<BlockPos> blacklist; // locations we failed to calc to
+    private BlockPos start;
 
     private int tickCount = 0;
+    private int arrivalTickCount = 0;
 
     public GetToBlockProcess(Baritone baritone) {
-        super(baritone, 2);
+        super(baritone);
     }
 
     @Override
     public void getToBlock(Block block) {
         onLostControl();
         gettingTo = block;
+        start = ctx.playerFeet();
+        blacklist = new ArrayList<>();
+        arrivalTickCount = 0;
         rescan(new ArrayList<>(), new CalculationContext(baritone));
     }
 
@@ -64,62 +68,126 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     @Override
-    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+    public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (knownLocations == null) {
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
         if (knownLocations.isEmpty()) {
+            if (Baritone.settings().exploreForBlocks.value && !calcFailed) {
+                return new PathingCommand(new GoalRunAway(1, start) {
+                    @Override
+                    public boolean isInGoal(int x, int y, int z) {
+                        return false;
+                    }
+                }, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+            }
             logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
             if (isSafeToCancel) {
                 onLostControl();
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
+        Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (calcFailed) {
-            logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
-            if (isSafeToCancel) {
-                onLostControl();
+            if (Baritone.settings().blacklistClosestOnFailure.value) {
+                logDirect("Unable to find any path to " + gettingTo + ", blacklisting presumably unreachable closest instances...");
+                blacklistClosest();
+                return onTick(false, isSafeToCancel); // gamer moment
+            } else {
+                logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
+                if (isSafeToCancel) {
+                    onLostControl();
+                }
+                return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
-            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
-        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.get();
+        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             List<BlockPos> current = new ArrayList<>(knownLocations);
             CalculationContext context = new CalculationContext(baritone, true);
             Baritone.getExecutor().execute(() -> rescan(current, context));
         }
-        Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
-        if (goal.isInGoal(ctx.playerFeet()) && isSafeToCancel) {
+        if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart()) && isSafeToCancel) {
             // we're there
             if (rightClickOnArrival(gettingTo)) {
                 if (rightClick()) {
                     onLostControl();
+                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
             } else {
                 onLostControl();
+                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
         }
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
 
+    // blacklist the closest block and its adjacent blocks
+    public synchronized boolean blacklistClosest() {
+        List<BlockPos> newBlacklist = new ArrayList<>();
+        knownLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(newBlacklist::add);
+        outer:
+        while (true) {
+            for (BlockPos known : knownLocations) {
+                for (BlockPos blacklist : newBlacklist) {
+                    if (areAdjacent(known, blacklist)) { // directly adjacent
+                        newBlacklist.add(known);
+                        knownLocations.remove(known);
+                        continue outer;
+                    }
+                }
+            }
+            // i can't do break; (codacy gets mad), and i can't do if(true){break}; (codacy gets mad)
+            // so i will do this
+            switch (newBlacklist.size()) {
+                default:
+                    break outer;
+            }
+        }
+        logDebug("Blacklisting unreachable locations " + newBlacklist);
+        blacklist.addAll(newBlacklist);
+        return !newBlacklist.isEmpty();
+    }
+
+    // safer than direct double comparison from distanceSq
+    private boolean areAdjacent(BlockPos posA, BlockPos posB) {
+        int diffX = Math.abs(posA.getX() - posB.getX());
+        int diffY = Math.abs(posA.getY() - posB.getY());
+        int diffZ = Math.abs(posA.getZ() - posB.getZ());
+        return (diffX + diffY + diffZ) == 1;
+    }
+
     @Override
-    public void onLostControl() {
+    public synchronized void onLostControl() {
         gettingTo = null;
         knownLocations = null;
+        start = null;
+        blacklist = null;
         baritone.getInputOverrideHandler().clearAllKeys();
     }
 
     @Override
-    public String displayName() {
-        return "Get To Block " + gettingTo;
+    public String displayName0() {
+        if (knownLocations.isEmpty()) {
+            return "Exploring randomly to find " + gettingTo + ", no known locations";
+        }
+        return "Get To " + gettingTo + ", " + knownLocations.size() + " known locations";
     }
 
-    private void rescan(List<BlockPos> known, CalculationContext context) {
-        knownLocations = MineProcess.searchWorld(context, Collections.singletonList(gettingTo), 64, known);
+    private synchronized void rescan(List<BlockPos> known, CalculationContext context) {
+        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(gettingTo), 64, known, blacklist);
+        positions.removeIf(blacklist::contains);
+        knownLocations = positions;
     }
 
     private Goal createGoal(BlockPos pos) {
-        return walkIntoInsteadOfAdjacent(gettingTo) ? new GoalTwoBlocks(pos) : new GoalGetToBlock(pos);
+        if (walkIntoInsteadOfAdjacent(gettingTo)) {
+            return new GoalTwoBlocks(pos);
+        }
+        if (blockOnTopMustBeRemoved(gettingTo) && baritone.bsi.get0(pos.up()).isBlockNormalCube()) {
+            return new GoalBlock(pos.up());
+        }
+        return new GoalGetToBlock(pos);
     }
 
     private boolean rightClick() {
@@ -134,6 +202,10 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
                         return true;
                     }
                 }
+                if (arrivalTickCount++ > 20) {
+                    logDirect("Right click timed out");
+                    return true;
+                }
                 return false; // trying to right click, will do it next tick or so
             }
         }
@@ -142,16 +214,24 @@ public class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBl
     }
 
     private boolean walkIntoInsteadOfAdjacent(Block block) {
-        if (!Baritone.settings().enterPortal.get()) {
+        if (!Baritone.settings().enterPortal.value) {
             return false;
         }
         return block == Blocks.PORTAL;
     }
 
     private boolean rightClickOnArrival(Block block) {
-        if (!Baritone.settings().rightClickContainerOnArrival.get()) {
+        if (!Baritone.settings().rightClickContainerOnArrival.value) {
             return false;
         }
         return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
+    }
+
+    private boolean blockOnTopMustBeRemoved(Block block) {
+        if (!rightClickOnArrival(block)) { // only if we plan to actually open it on arrival
+            return false;
+        }
+        // only these chests; you can open a crafting table or furnace even with a block on top
+        return block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
     }
 }

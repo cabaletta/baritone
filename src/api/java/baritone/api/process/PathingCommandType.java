@@ -51,5 +51,10 @@ public enum PathingCommandType {
      * <p>
      * Cancel the current path if the goals are not equal
      */
-    FORCE_REVALIDATE_GOAL_AND_PATH
+    FORCE_REVALIDATE_GOAL_AND_PATH,
+
+    /**
+     * Go and ask the next process what to do
+     */
+    DEFER
 }

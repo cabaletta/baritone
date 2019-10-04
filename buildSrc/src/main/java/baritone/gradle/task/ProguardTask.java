@@ -60,6 +60,8 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private List<String> requiredLibraries;
 
+    private File mixin;
+
     @TaskAction
     protected void exec() throws Exception {
         super.verifyArtifacts();
@@ -80,7 +82,7 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.artifactUnoptimizedPath);
         }
 
-        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString());
+        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString(), Optional.empty());
     }
 
     private void downloadProguard() throws Exception {
@@ -175,9 +177,15 @@ public class ProguardTask extends BaritoneGradleTask {
             // Find the library jar file, and copy it to tempLibraries
             for (File file : pair.getLeft().files(pair.getRight())) {
                 if (file.getName().startsWith(lib)) {
+                    if (lib.contains("mixin")) {
+                        mixin = file;
+                    }
                     Files.copy(file.toPath(), getTemporaryFile("tempLibraries/" + lib + ".jar"), REPLACE_EXISTING);
                 }
             }
+        }
+        if (mixin == null) {
+            throw new IllegalStateException("Unable to find mixin jar");
         }
     }
 
@@ -266,12 +274,14 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private void proguardApi() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString(), Optional.empty());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgeApiPath.toString(), Optional.of(mixin));
     }
 
     private void proguardStandalone() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString(), Optional.empty());
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgeStandalonePath.toString(), Optional.of(mixin));
     }
 
     private void cleanup() {
@@ -300,8 +310,8 @@ public class ProguardTask extends BaritoneGradleTask {
                 .start();
 
         // We can't do output inherit process I/O with gradle for some reason and have it work, so we have to do this
-        this.printOutputLog(p.getInputStream());
-        this.printOutputLog(p.getErrorStream());
+        this.printOutputLog(p.getInputStream(), System.out);
+        this.printOutputLog(p.getErrorStream(), System.err);
 
         // Halt the current thread until the process is complete, if the exit code isn't 0, throw an exception
         int exitCode = p.waitFor();
@@ -310,12 +320,12 @@ public class ProguardTask extends BaritoneGradleTask {
         }
     }
 
-    private void printOutputLog(InputStream stream) {
+    private void printOutputLog(InputStream stream, PrintStream outerr) {
         new Thread(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
+                    outerr.println(line);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

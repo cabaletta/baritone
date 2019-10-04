@@ -19,15 +19,12 @@ package baritone.api.utils;
 
 import baritone.api.behavior.IBehavior;
 import baritone.api.utils.input.Input;
-import net.minecraft.client.settings.KeyBinding;
 
 /**
  * @author Brady
  * @since 11/12/2018
  */
 public interface IInputOverrideHandler extends IBehavior {
-
-    Boolean isInputForcedDown(KeyBinding key);
 
     boolean isInputForcedDown(Input input);
 

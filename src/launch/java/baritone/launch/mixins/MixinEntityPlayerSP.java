@@ -19,11 +19,11 @@ package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
-import baritone.api.behavior.IPathingBehavior;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.SprintStateEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.behavior.LookBehavior;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerCapabilities;
@@ -46,12 +46,12 @@ public class MixinEntityPlayerSP {
             cancellable = true
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
-        ChatEvent event = new ChatEvent((EntityPlayerSP) (Object) this, msg);
-        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            System.out.println("Sending chat event to baritone " + ibaritone);
-            ibaritone.getGameEventHandler().onSendChatMessage(event);
+        ChatEvent event = new ChatEvent(msg);
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone == null) {
+            return;
         }
-        //BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onSendChatMessage(event);
+        baritone.getGameEventHandler().onSendChatMessage(event);
         if (event.isCancelled()) {
             ci.cancel();
         }
@@ -67,7 +67,10 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPreUpdate(CallbackInfo ci) {
-        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.PRE));
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone != null) {
+            baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
+        }
     }
 
     @Inject(
@@ -80,7 +83,10 @@ public class MixinEntityPlayerSP {
             )
     )
     private void onPostUpdate(CallbackInfo ci) {
-        BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent((EntityPlayerSP) (Object) this, EventState.POST));
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone != null) {
+            baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
+        }
     }
 
     @Redirect(
@@ -91,8 +97,11 @@ public class MixinEntityPlayerSP {
             )
     )
     private boolean isAllowFlying(PlayerCapabilities capabilities) {
-        IPathingBehavior pathingBehavior = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getPathingBehavior();
-        return !pathingBehavior.isPathing() && capabilities.allowFlying;
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone == null) {
+            return capabilities.allowFlying;
+        }
+        return !baritone.getPathingBehavior().isPathing() && capabilities.allowFlying;
     }
 
     @Redirect(
@@ -103,9 +112,32 @@ public class MixinEntityPlayerSP {
             )
     )
     private boolean isKeyDown(KeyBinding keyBinding) {
-        EntityPlayerSP self = (EntityPlayerSP) (Object) this;
-        SprintStateEvent event = new SprintStateEvent(self);
-        BaritoneAPI.getProvider().getBaritoneForPlayer(self).getGameEventHandler().onPlayerSprintState(event);
-        return event.getState() == null ? keyBinding.isKeyDown() : event.getState();
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone == null) {
+            return keyBinding.isKeyDown();
+        }
+        SprintStateEvent event = new SprintStateEvent();
+        baritone.getGameEventHandler().onPlayerSprintState(event);
+        if (event.getState() != null) {
+            return event.getState();
+        }
+        if (baritone != BaritoneAPI.getProvider().getPrimaryBaritone()) {
+            // hitting control shouldn't make all bots sprint
+            return false;
+        }
+        return keyBinding.isKeyDown();
+    }
+
+    @Inject(
+            method = "updateRidden",
+            at = @At(
+                    value = "HEAD"
+            )
+    )
+    private void updateRidden(CallbackInfo cb) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone != null) {
+            ((LookBehavior) baritone.getLookBehavior()).pig();
+        }
     }
 }

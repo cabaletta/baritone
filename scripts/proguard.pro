@@ -12,14 +12,16 @@
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
+# lwjgl is weird
+-dontwarn org.lwjgl.**
+
 -keep class baritone.api.** { *; } # this is the keep api
 
 # service provider needs these class names
 -keep class baritone.BaritoneProvider
 -keep class baritone.api.IBaritoneProvider
 
-# hack
--keep class baritone.utils.ExampleBaritoneControl { *; } # have to include this string to remove this keep in the standalone build: # this is the keep api
+-keep class baritone.api.utils.MyChunkPos { *; } # even in standalone we need to keep this for gson reflect
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
@@ -28,6 +30,11 @@
 
 # need to keep mixin names
 -keep class baritone.launch.** { *; }
+
+#try to keep usage of schematica in separate classes
+-keep class baritone.utils.schematic.schematica.**
+#proguard doesnt like it when it cant find our fake schematica classes
+-dontwarn baritone.utils.schematic.schematica.**
 
 # copy all necessary libraries into tempLibraries to build
 

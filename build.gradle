@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.0.0-hotfix-2'
+version '1.2.9'
 
 buildscript {
     repositories {
@@ -48,15 +48,20 @@ apply plugin: 'org.spongepowered.mixin'
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
+    options.encoding = "UTF-8" // allow emoji in comments :^)
 }
 
 sourceSets {
-    comms {}
-    main {
-        compileClasspath += comms.compileClasspath + comms.output
-    }
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+    }
+
+    schematica_api {
+        compileClasspath += main.compileClasspath
+    }
+
+    main {
+        compileClasspath += schematica_api.output
     }
 }
 
@@ -98,19 +103,31 @@ dependencies {
 }
 
 mixin {
-    defaultObfuscationEnv notch
+    defaultObfuscationEnv searge
     add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
 
 javadoc {
+    options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
+    options.linkSource true
+    options.encoding "UTF-8" // allow emoji in comments :^)
     source = sourceSets.api.allJava
-    classpath = sourceSets.api.compileClasspath
+    classpath += sourceSets.api.compileClasspath
 }
 
 jar {
-    from sourceSets.comms.output, sourceSets.launch.output, sourceSets.api.output
+    from sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+
+    manifest {
+        attributes(
+                'MixinConfigs': 'mixins.baritone.json',
+
+                'Implementation-Title': 'Baritone',
+                'Implementation-Version': version
+        )
+    }
 }
 
 task proguard(type: ProguardTask) {
@@ -121,4 +138,3 @@ task proguard(type: ProguardTask) {
 task createDist(type: CreateDistTask, dependsOn: proguard)
 
 build.finalizedBy(createDist)
-

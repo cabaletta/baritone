@@ -25,8 +25,8 @@ import baritone.api.event.events.PathEvent;
  * <p>
  * Differences between a baritone process and a behavior:
  * <ul>
- *   <li>Only one baritone process can be active at a time</li>
- *   <li>PathingBehavior can only be controlled by a process</li>
+ * <li>Only one baritone process can be active at a time</li>
+ * <li>PathingBehavior can only be controlled by a process</li>
  * </ul>
  * <p>
  * That's it actually
@@ -34,6 +34,16 @@ import baritone.api.event.events.PathEvent;
  * @author leijurv
  */
 public interface IBaritoneProcess {
+
+    /**
+     * Default priority. Most normal processes should have this value.
+     * <p>
+     * Some examples of processes that should have different values might include some kind of automated mob avoidance
+     * that would be temporary and would forcefully take control. Same for something that pauses pathing for auto eat, etc.
+     * <p>
+     * The value is -1 beacuse that's what Impact 4.5's beta auto walk returns and I want to tie with it.
+     */
+    double DEFAULT_PRIORITY = -1;
 
     /**
      * Would this process like to be in control?
@@ -82,12 +92,23 @@ public interface IBaritoneProcess {
      *
      * @return A double representing the priority
      */
-    double priority();
+    default double priority() {
+        return DEFAULT_PRIORITY;
+    }
 
     /**
      * Returns a user-friendly name for this process. Suitable for a HUD.
      *
      * @return A display name that's suitable for a HUD
      */
-    String displayName();
+    default String displayName() {
+        if (!isActive()) {
+            // i love it when impcat's scuffed HUD calls displayName for inactive processes for 1 tick too long
+            // causing NPEs when the displayname relies on fields that become null when inactive
+            return "INACTIVE";
+        }
+        return displayName0();
+    }
+
+    String displayName0();
 }

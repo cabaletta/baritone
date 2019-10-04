@@ -53,4 +53,9 @@ public class PathingCommand {
         this.goal = goal;
         this.commandType = commandType;
     }
+
+    @Override
+    public String toString() {
+        return commandType + " " + goal;
+    }
 }

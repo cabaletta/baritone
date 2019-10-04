@@ -1,1 +1,0 @@
-Impact 4.4 is out. See <a href="INSTALL.md">INSTALL.md</a>

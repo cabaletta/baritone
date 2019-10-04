@@ -26,6 +26,7 @@ import baritone.utils.pathing.PathBase;
 import java.util.*;
 
 public class SplicedPath extends PathBase {
+
     private final List<BetterBlockPos> path;
 
     private final List<IMovement> movements;

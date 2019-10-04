@@ -23,6 +23,7 @@ import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.bot.IBaritoneUser;
 import baritone.bot.UserManager;
+import baritone.utils.command.BaritoneChatControl;
 import baritone.cache.WorldScanner;
 import baritone.utils.player.PrimaryPlayerContext;
 
@@ -35,7 +36,14 @@ import java.util.List;
  */
 public final class BaritoneProvider implements IBaritoneProvider {
 
-    private final Baritone primary = new Baritone(PrimaryPlayerContext.INSTANCE);
+    private final Baritone primary;
+
+    {
+        this.primary = new Baritone(PrimaryPlayerContext.INSTANCE);
+
+        // Setup chat control, just for the primary instance
+        new BaritoneChatControl(this.primary);
+    }
 
     @Override
     public IBaritone getPrimaryBaritone() {

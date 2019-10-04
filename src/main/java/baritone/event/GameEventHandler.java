@@ -23,8 +23,9 @@ import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.bot.UserManager;
+import baritone.api.utils.Helper;
 import baritone.cache.WorldProvider;
-import baritone.utils.Helper;
+import baritone.utils.BlockStateInterface;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -48,15 +49,20 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     @Override
     public final void onTick(TickEvent event) {
+        if (event.getType() == TickEvent.Type.IN) {
+            try {
+                baritone.bsi = new BlockStateInterface(baritone.getPlayerContext(), true);
+            } catch (Exception ex) {
+                baritone.bsi = null;
+            }
+        } else {
+            baritone.bsi = null;
+        }
         listeners.forEach(l -> l.onTick(event));
     }
 
     @Override
     public final void onPlayerUpdate(PlayerUpdateEvent event) {
-        // TODO temporary bot event call prevention
-        if (event.getPlayer() != baritone.getPlayerContext().player())
-            return;
-
         listeners.forEach(l -> l.onPlayerUpdate(event));
     }
 
@@ -66,6 +72,16 @@ public final class GameEventHandler implements IEventBus, Helper {
         Objects.requireNonNull(UserManager.INSTANCE);
 
         listeners.forEach(l -> l.onSendChatMessage(event));
+    }
+
+    @Override
+    public void onPreTabComplete(TabCompleteEvent.Pre event) {
+        listeners.forEach(l -> l.onPreTabComplete(event));
+    }
+
+    @Override
+    public void onPostTabComplete(TabCompleteEvent.Post event) {
+        listeners.forEach(l -> l.onPostTabComplete(event));
     }
 
     @Override
@@ -127,10 +143,6 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
-        // TODO temporary bot event call prevention
-        if (event.getPlayer() != baritone.getPlayerContext().player())
-            return;
-
         listeners.forEach(l -> l.onPlayerRotationMove(event));
     }
 

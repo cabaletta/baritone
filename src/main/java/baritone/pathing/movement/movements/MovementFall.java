@@ -30,6 +30,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.pathing.MutableMoveResult;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -38,11 +39,12 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class MovementFall extends Movement {
 
@@ -63,6 +65,16 @@ public class MovementFall extends Movement {
         return result.cost;
     }
 
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        Set<BetterBlockPos> set = new HashSet<>();
+        set.add(src);
+        for (int y = src.y - dest.y; y >= 0; y--) {
+            set.add(dest.up(y));
+        }
+        return set;
+    }
+
     private boolean willPlaceBucket() {
         CalculationContext context = new CalculationContext(baritone);
         MutableMoveResult result = new MutableMoveResult();
@@ -77,9 +89,11 @@ public class MovementFall extends Movement {
         }
 
         BlockPos playerFeet = ctx.playerFeet();
-        Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest));
+        Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
         Rotation targetRotation = null;
-        if (!MovementHelper.isWater(ctx, dest) && willPlaceBucket() && !playerFeet.equals(dest)) {
+        Block destBlock = ctx.world().getBlockState(dest).getBlock();
+        boolean isWater = destBlock == Blocks.WATER || destBlock == Blocks.FLOWING_WATER;
+        if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
             if (!InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().provider.isNether()) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
@@ -89,8 +103,7 @@ public class MovementFall extends Movement {
 
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
-                RayTraceResult trace = ctx.objectMouseOver();
-                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && (trace.getBlockPos().equals(dest) || trace.getBlockPos().equals(dest.down()))) {
+                if (ctx.isLookingAt(dest) || ctx.isLookingAt(dest.down())) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }
@@ -100,8 +113,8 @@ public class MovementFall extends Movement {
         } else {
             state.setTarget(new MovementTarget(toDest, false));
         }
-        if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || MovementHelper.isWater(ctx, dest))) { // 0.094 because lilypads
-            if (MovementHelper.isWater(ctx, dest)) {
+        if (playerFeet.equals(dest) && (ctx.player().posY - playerFeet.getY() < 0.094 || isWater)) { // 0.094 because lilypads
+            if (isWater) { // only match water, not flowing water (which we cannot pick up with a bucket)
                 if (InventoryPlayer.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_EMPTY))) {
                     ctx.player().inventory.currentItem = ctx.player().inventory.getSlotFor(STACK_BUCKET_EMPTY);
                     if (ctx.player().motionY >= 0) {
@@ -132,13 +145,13 @@ public class MovementFall extends Movement {
             double dist = Math.abs(avoid.getX() * (destCenter.x - avoid.getX() / 2.0 - ctx.player().posX)) + Math.abs(avoid.getZ() * (destCenter.z - avoid.getZ() / 2.0 - ctx.player().posZ));
             if (dist < 0.6) {
                 state.setInput(Input.MOVE_FORWARD, true);
-            } else {
+            } else if (!ctx.player().onGround) {
                 state.setInput(Input.SNEAK, false);
             }
         }
         if (targetRotation == null) {
             Vec3d destCenterOffset = new Vec3d(destCenter.x + 0.125 * avoid.getX(), destCenter.y, destCenter.z + 0.125 * avoid.getZ());
-            state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), destCenterOffset), false));
+            state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), destCenterOffset, ctx.playerRotations()), false));
         }
         return state;
     }

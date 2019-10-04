@@ -18,14 +18,14 @@
 package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.cache.Waypoint;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.api.utils.BetterBlockPos;
 import baritone.cache.ContainerMemory;
-import baritone.cache.Waypoint;
-import baritone.pathing.movement.CalculationContext;
 import baritone.utils.BlockStateInterface;
 import cabaletta.comms.upward.MessageEchestConfirmed;
 import net.minecraft.block.Block;
@@ -51,6 +51,8 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
+ * doesn't work for horse inventories :^)
+ *
  * @author Brady
  * @since 8/6/2018
  */
@@ -66,6 +68,9 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onTick(TickEvent event) {
+        if (!Baritone.settings().containerMemory.value) {
+            return;
+        }
         if (event.getType() == TickEvent.Type.OUT) {
             enderChestWindowId = null;
             futureInventories.clear();
@@ -81,6 +86,9 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onSendPacket(PacketEvent event) {
+        if (!Baritone.settings().containerMemory.value) {
+            return;
+        }
         Packet p = event.getPacket();
 
         if (event.getState() == EventState.PRE) {
@@ -95,8 +103,8 @@ public final class MemoryBehavior extends Behavior {
 
                     TileEntityLockable lockable = (TileEntityLockable) tileEntity;
                     int size = lockable.getSizeInventory();
-                    BlockPos position = tileEntity.getPos();
-                    BlockPos adj = neighboringConnectedBlock(position);
+                    BetterBlockPos position = BetterBlockPos.from(tileEntity.getPos());
+                    BetterBlockPos adj = BetterBlockPos.from(neighboringConnectedBlock(position));
                     System.out.println(position + " " + adj);
                     if (adj != null) {
                         size *= 2; // double chest or double trapped chest
@@ -110,7 +118,6 @@ public final class MemoryBehavior extends Behavior {
             }
 
             if (p instanceof CPacketCloseWindow) {
-                updateInventory();
                 getCurrent().save();
             }
 
@@ -123,6 +130,9 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public synchronized void onReceivePacket(PacketEvent event) {
+        if (!Baritone.settings().containerMemory.value) {
+            return;
+        }
         Packet p = event.getPacket();
 
         if (event.getState() == EventState.PRE) {
@@ -150,7 +160,6 @@ public final class MemoryBehavior extends Behavior {
             }
 
             if (p instanceof SPacketCloseWindow) {
-                updateInventory();
                 getCurrent().save();
             }
 
@@ -178,7 +187,7 @@ public final class MemoryBehavior extends Behavior {
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
         if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(ctx, event.getPos()) instanceof BlockBed) {
-            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, BetterBlockPos.from(event.getPos())));
         }
     }
 
@@ -189,6 +198,9 @@ public final class MemoryBehavior extends Behavior {
 
 
     private void updateInventory() {
+        if (!Baritone.settings().containerMemory.value) {
+            return;
+        }
         int windowId = ctx.player().openContainer.windowId;
         if (enderChestWindowId != null) {
             if (windowId == enderChestWindowId) {
@@ -211,7 +223,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     private BlockPos neighboringConnectedBlock(BlockPos in) {
-        BlockStateInterface bsi = new CalculationContext(baritone).bsi;
+        BlockStateInterface bsi = baritone.bsi;
         Block block = bsi.get0(in).getBlock();
         if (block != Blocks.TRAPPED_CHEST && block != Blocks.CHEST) {
             return null; // other things that have contents, but can be placed adjacent without combining
@@ -255,7 +267,8 @@ public final class MemoryBehavior extends Behavior {
             this.slots = slots;
             this.type = type;
             this.pos = pos;
-            System.out.println("Future inventory created " + time + " " + slots + " " + type + " " + pos);
+            // betterblockpos has censoring
+            System.out.println("Future inventory created " + time + " " + slots + " " + type + " " + BetterBlockPos.from(pos));
         }
     }
 
@@ -269,6 +282,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     public static class EnderChestMemory {
+
         private static final Map<Path, EnderChestMemory> memory = new HashMap<>();
         private final Path enderChest;
         private List<ItemStack> contents;

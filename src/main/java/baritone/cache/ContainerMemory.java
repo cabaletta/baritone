@@ -17,6 +17,7 @@
 
 package baritone.cache;
 
+import baritone.Baritone;
 import baritone.api.cache.IContainerMemory;
 import baritone.api.cache.IRememberedInventory;
 import baritone.api.utils.IPlayerContext;
@@ -28,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -44,6 +46,8 @@ public class ContainerMemory implements IContainerMemory {
         this.saveTo = saveTo;
         try {
             read(Files.readAllBytes(saveTo));
+        } catch (NoSuchFileException ignored) {
+            inventories.clear();
         } catch (Exception ex) {
             ex.printStackTrace();
             inventories.clear();
@@ -69,6 +73,9 @@ public class ContainerMemory implements IContainerMemory {
     }
 
     public synchronized void save() throws IOException {
+        if (!Baritone.settings().containerMemory.value) {
+            return;
+        }
         ByteBuf buf = Unpooled.buffer(0, Integer.MAX_VALUE);
         PacketBuffer out = new PacketBuffer(buf);
         out.writeInt(inventories.size());

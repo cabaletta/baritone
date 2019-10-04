@@ -17,15 +17,12 @@
 
 package baritone.cache;
 
+import baritone.api.utils.BlockUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDoublePlant;
-import net.minecraft.block.BlockFlower;
-import net.minecraft.block.BlockTallGrass;
+import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
@@ -38,8 +35,6 @@ import java.util.*;
  * @since 8/3/2018
  */
 public final class ChunkPacker {
-
-    private static final Map<String, Block> resourceCache = new HashMap<>();
 
     private ChunkPacker() {}
 
@@ -73,12 +68,12 @@ public final class ChunkPacker {
                         for (int x = 0; x < 16; x++) {
                             int index = CachedChunk.getPositionIndex(x, y, z);
                             IBlockState state = bsc.get(x, y1, z);
-                            boolean[] bits = getPathingBlockType(state).getBits();
+                            boolean[] bits = getPathingBlockType(state, chunk, x, y, z).getBits();
                             bitSet.set(index, bits[0]);
                             bitSet.set(index + 1, bits[1]);
                             Block block = state.getBlock();
                             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
-                                String name = blockToString(block);
+                                String name = BlockUtils.blockToString(block);
                                 specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
                             }
                         }
@@ -92,6 +87,7 @@ public final class ChunkPacker {
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         IBlockState[] blocks = new IBlockState[256];
 
+        // @formatter:off
         for (int z = 0; z < 16; z++) {
             https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
@@ -105,31 +101,37 @@ public final class ChunkPacker {
                 blocks[z << 4 | x] = Blocks.AIR.getDefaultState();
             }
         }
+        // @formatter:on
         return new CachedChunk(chunk.x, chunk.z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
     }
 
-    public static String blockToString(Block block) {
-        ResourceLocation loc = Block.REGISTRY.getNameForObject(block);
-        String name = loc.getPath(); // normally, only write the part after the minecraft:
-        if (!loc.getNamespace().equals("minecraft")) {
-            // Baritone is running on top of forge with mods installed, perhaps?
-            name = loc.toString(); // include the namespace with the colon
-        }
-        return name;
-    }
 
-    public static Block stringToBlock(String name) {
-        return resourceCache.computeIfAbsent(name, n -> Block.getBlockFromName(n.contains(":") ? n : "minecraft:" + n));
-    }
-
-    private static PathingBlockType getPathingBlockType(IBlockState state) {
+    private static PathingBlockType getPathingBlockType(IBlockState state, Chunk chunk, int x, int y, int z) {
         Block block = state.getBlock();
-        if (block == Blocks.WATER && !MovementHelper.isFlowing(state)) {
+        if (block == Blocks.WATER || block == Blocks.FLOWING_WATER) {
             // only water source blocks are plausibly usable, flowing water should be avoid
+            // FLOWING_WATER is a waterfall, it doesn't really matter and caching it as AVOID just makes it look wrong
+            if (MovementHelper.possiblyFlowing(state)) {
+                return PathingBlockType.AVOID;
+            }
+            if (
+                    (x != 15 && MovementHelper.possiblyFlowing(chunk.getBlockState(x + 1, y, z)))
+                            || (x != 0 && MovementHelper.possiblyFlowing(chunk.getBlockState(x - 1, y, z)))
+                            || (z != 15 && MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z + 1)))
+                            || (z != 0 && MovementHelper.possiblyFlowing(chunk.getBlockState(x, y, z - 1)))
+            ) {
+                return PathingBlockType.AVOID;
+            }
+            if (x == 0 || x == 15 || z == 0 || z == 15) {
+                if (BlockLiquid.getSlopeAngle(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4), state.getMaterial(), state) == -1000.0F) {
+                    return PathingBlockType.WATER;
+                }
+                return PathingBlockType.AVOID;
+            }
             return PathingBlockType.WATER;
         }
 
-        if (MovementHelper.avoidWalkingInto(block) || block == Blocks.FLOWING_WATER || MovementHelper.isBottomSlab(state)) {
+        if (MovementHelper.avoidWalkingInto(block) || MovementHelper.isBottomSlab(state)) {
             return PathingBlockType.AVOID;
         }
         // We used to do an AABB check here

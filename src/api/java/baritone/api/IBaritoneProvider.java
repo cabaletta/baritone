@@ -22,9 +22,12 @@ import baritone.api.cache.IWorldScanner;
 import net.minecraft.client.entity.EntityPlayerSP;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
- * @author Leijurv
+ * Provides the present {@link IBaritone} instances
+ *
+ * @author leijurv
  */
 public interface IBaritoneProvider {
 
@@ -48,18 +51,19 @@ public interface IBaritoneProvider {
 
     /**
      * Provides the {@link IBaritone} instance for a given {@link EntityPlayerSP}. This will likely be
-     * replaced with {@code #getBaritoneForUser(IBaritoneUser)} when {@code bot-system} is merged.
+     * replaced with or be overloaded in addition to {@code #getBaritoneForUser(IBaritoneUser)} when
+     * {@code bot-system} is merged into {@code master}.
      *
      * @param player The player
      * @return The {@link IBaritone} instance.
      */
     default IBaritone getBaritoneForPlayer(EntityPlayerSP player) {
         for (IBaritone baritone : getAllBaritones()) {
-            if (player.equals(baritone.getPlayerContext().player())) {
+            if (Objects.equals(player, baritone.getPlayerContext().player())) {
                 return baritone;
             }
         }
-        throw new IllegalStateException("No baritone for player " + player);
+        return null;
     }
 
     /**

@@ -1,65 +1,72 @@
 # Baritone
-[![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone)
-[![Release](https://img.shields.io/github/release/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/releases)
-[![License](https://img.shields.io/badge/license-LGPL--3.0-green.svg)](LICENSE)
+[![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone/)
+[![Release](https://img.shields.io/github/release/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/releases/)
+[![License](https://img.shields.io/badge/license-LGPL--3.0%20with%20anime%20exception-green.svg)](LICENSE)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
-[![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone)
+[![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone/)
+[![GitHub All Releases](https://img.shields.io/github/downloads/cabaletta/baritone/total.svg)](https://github.com/cabaletta/baritone/releases/)
+[![Minecraft](https://img.shields.io/badge/MC-1.12.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/master/)
+[![Minecraft](https://img.shields.io/badge/MC-1.13.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.13.2/)
+[![Minecraft](https://img.shields.io/badge/MC-1.14.4-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.14.4/)
+[![Code of Conduct](https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat)](https://github.com/cabaletta/baritone/blob/master/CODE_OF_CONDUCT.md)
 [![Known Vulnerabilities](https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle)](https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/cabaletta/baritone/issues)
-[![Minecraft](https://img.shields.io/badge/MC-1.12.2-green.svg)](https://minecraft.gamepedia.com/1.12.2)
-[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.0.0--hotfix--4-brightgreen.svg)](https://impactdevelopment.github.io/)
-[![KAMI integration](https://img.shields.io/badge/KAMI%20integration-v1.0.0-orange.svg)](https://github.com/zeroeightysix/KAMI/)
-[![Asuna integration](https://img.shields.io/badge/Asuna%20integration-v1.0.0-orange.svg)](https://github.com/EmotionalLove/Asuna/)
-[![Future integration](https://img.shields.io/badge/Future%20integration-%3F%3F%3F-red.svg)](https://futureclient.net/)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/cabaletta/baritone/issues/)
+[![Issues](https://img.shields.io/github/issues/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/issues/)
+[![GitHub issues-closed](https://img.shields.io/github/issues-closed/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/issues?q=is%3Aissue+is%3Aclosed)
+[![Pull Requests](https://img.shields.io/github/issues-pr/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/pulls/)
+![Code size](https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg)
+![GitHub repo size](https://img.shields.io/github/repo-size/cabaletta/baritone.svg)
+![Lines of Code](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
+[![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
+[![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
+[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.8%20/%20v1.3.4%20/%20v1.4.1-brightgreen.svg)](https://impactclient.net/)
+[![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg)](https://github.com/fr1kin/ForgeHax/)
+[![Aristois add-on integration](https://img.shields.io/badge/Aristois%20add--on%20integration-v1.3.4%20/%20v1.4.1-green.svg)](https://gitlab.com/emc-mods-indrit/baritone_api)
+[![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-master%3F-green.svg)](https://wweclient.com/)
+[![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
+[![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com/)
+[![forthebadge](https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg)](http://forthebadge.com/)
 
 A Minecraft pathfinder bot. 
 
-Baritone is the pathfinding system used in [Impact](https://impactdevelopment.github.io/) since 4.4. There's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Baritone's integration into Impact. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
+Baritone is the pathfinding system used in [Impact](https://impactclient.net/) since 4.4. There's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Baritone's integration into Impact. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
+
+The easiest way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the v1.2.* forge api jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+
+For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1). Or [with optifine](https://github.com/cabaletta/baritone/issues/797).
 
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
-the original version of the bot for Minecraft 1.8, rebuilt for 1.12.2. Baritone focuses on reliability and particularly performance (it's over [29x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
+the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 and 1.13.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
+
+Have committed at least once a day from Aug 1 2018 to Aug 1 2019.
+
+1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
+
+# Getting Started
 
 Here are some links to help to get started:
 
 - [Features](FEATURES.md)
 
-- [Installation](INSTALL.md)
+- [Installation & setup](SETUP.md)
 
-# Setup
+- [API Javadocs](https://baritone.leijurv.com/)
 
-## Command Line
-On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
+- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
 
-Running Baritone:
+- [Usage (chat control)](USAGE.md)
 
-```
-$ gradlew runClient
-```
+# API
 
-Building Baritone:
-```
-$ gradlew build
-```
+The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
+Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
+jar.
 
-To replace out Impact 4.4's Baritone build with a customized one, switch to the `impact4.4-compat` branch, build Baritone as above then copy `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.0.0/baritone-api-1.0.0.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.4/1.12.2-Impact_4.4.json`, find the line `"name": "cabaletta:baritone-api:1.0.0"`, remove the comma from the end, and entirely remove the line that's immediately after (starts with `"url"`). 
-
-## IntelliJ's Gradle UI
-- Open the project in IntelliJ as a Gradle project
-- Run the Gradle tasks `setupDecompWorkspace` then `genIntellijRuns`
-- Refresh the Gradle project (or, to be safe, just restart IntelliJ)
-- Select the "Minecraft Client" launch config
-- In `Edit Configurations...` you may need to select `baritone_launch` for `Use classpath of module:`.
-
-# Chat control
-[Defined Here](src/main/java/baritone/utils/ExampleBaritoneControl.java)
-
-Quick start example: `thisway 1000` or `goal 70` to set the goal, `path` to actually start pathing. Also try `mine diamond_ore`. `cancel` to cancel.
-
-# API example
+Below is an example of basic usage for changing some settings, and then pathing to a X/Z goal.
 
 ```
 BaritoneAPI.getSettings().allowSprint.value = true;
-BaritoneAPI.getSettings().pathTimeoutMS.value = 2000L;
+BaritoneAPI.getSettings().primaryTimeoutMS.value = 2000L;
 
 BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalXZ(10000, 20000));
 ```
@@ -68,11 +75,11 @@ BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAnd
 
 ## Can I use Baritone as a library in my custom utility client?
 
-Sure! (As long as usage is in compliance with the LGPL 3 License)
+That's what it's for, sure! (As long as usage is in compliance with the LGPL 3.0 License)
 
 ## How is it so fast?
 
-Magic. (Hours of [Leijurv](https://github.com/leijurv) enduring excruciating pain)
+Magic. (Hours of [leijurv](https://github.com/leijurv/) enduring excruciating pain)
 
 ## Why is it called Baritone?
 
