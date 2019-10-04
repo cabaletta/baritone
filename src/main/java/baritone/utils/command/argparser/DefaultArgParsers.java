@@ -15,8 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils.command.argparser;
+package baritone.utils.command.argparser;
 
+import baritone.api.utils.command.argparser.IArgParser;
 import baritone.api.utils.command.argument.ICommandArgument;
 
 import java.util.Arrays;

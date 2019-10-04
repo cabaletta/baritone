@@ -28,8 +28,6 @@ public interface IArgParser<T> {
 
     /**
      * A stateless argument parser is just that. It takes a {@link ICommandArgument} and outputs its type.
-     *
-     * @see ArgParserManager#REGISTRY
      */
     interface Stateless<T> extends IArgParser<T> {
 
@@ -45,8 +43,6 @@ public interface IArgParser<T> {
     /**
      * A stated argument parser is similar to a stateless one. It also takes a {@link ICommandArgument}, but it also
      * takes a second argument that can be any type, referred to as the state.
-     *
-     * @see ArgParserManager#REGISTRY
      */
     interface Stated<T, S> extends IArgParser<T> {
 

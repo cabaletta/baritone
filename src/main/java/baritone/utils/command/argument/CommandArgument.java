@@ -17,9 +17,8 @@
 
 package baritone.utils.command.argument;
 
-import baritone.api.utils.command.argparser.ArgParserManager;
+import baritone.utils.command.argparser.ArgParserManager;
 import baritone.api.utils.command.argument.ICommandArgument;
-import baritone.api.utils.command.exception.CommandInvalidArgumentException;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 
 import java.util.stream.Stream;
@@ -66,7 +65,7 @@ class CommandArgument implements ICommandArgument {
 
     @Override
     public <T> T getAs(Class<T> type) throws CommandInvalidTypeException {
-        return ArgParserManager.parseStateless(type, this);
+        return ArgParserManager.INSTANCE.parseStateless(type, this);
     }
 
     @Override
@@ -82,7 +81,7 @@ class CommandArgument implements ICommandArgument {
     @SuppressWarnings("UnusedReturnValue")
     @Override
     public <T, S> T getAs(Class<T> type, Class<S> stateType, S state) throws CommandInvalidTypeException {
-        return ArgParserManager.parseStated(type, stateType, this, state);
+        return ArgParserManager.INSTANCE.parseStated(type, stateType, this, state);
     }
 
     @Override

@@ -15,28 +15,28 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils.command.argparser;
+package baritone.utils.command.argparser;
 
+import baritone.api.utils.command.argparser.IArgParser;
+import baritone.api.utils.command.argparser.IArgParserManager;
 import baritone.api.utils.command.argument.ICommandArgument;
 import baritone.api.utils.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.command.exception.CommandNoParserForTypeException;
 import baritone.api.utils.command.registry.Registry;
 
-public class ArgParserManager {
+public enum ArgParserManager implements IArgParserManager {
+    INSTANCE;
 
-    public static final Registry<IArgParser> REGISTRY = new Registry<>();
+    public final Registry<IArgParser> registry = new Registry<>();
 
-    static {
-        DefaultArgParsers.ALL.forEach(REGISTRY::register);
+    ArgParserManager() {
+        DefaultArgParsers.ALL.forEach(this.registry::register);
     }
 
-    /**
-     * @param type The type trying to be parsed
-     * @return A parser that can parse arguments into this class, if found.
-     */
-    public static <T> IArgParser.Stateless<T> getParserStateless(Class<T> type) {
+    @Override
+    public <T> IArgParser.Stateless<T> getParserStateless(Class<T> type) {
         //noinspection unchecked
-        return REGISTRY.descendingStream()
+        return this.registry.descendingStream()
                 .filter(IArgParser.Stateless.class::isInstance)
                 .map(IArgParser.Stateless.class::cast)
                 .filter(parser -> parser.getTarget().isAssignableFrom(type))
@@ -44,13 +44,10 @@ public class ArgParserManager {
                 .orElse(null);
     }
 
-    /**
-     * @param type The type trying to be parsed
-     * @return A parser that can parse arguments into this class, if found.
-     */
-    public static <T, S> IArgParser.Stated<T, S> getParserStated(Class<T> type, Class<S> stateKlass) {
+    @Override
+    public <T, S> IArgParser.Stated<T, S> getParserStated(Class<T> type, Class<S> stateKlass) {
         //noinspection unchecked
-        return REGISTRY.descendingStream()
+        return this.registry.descendingStream()
                 .filter(IArgParser.Stated.class::isInstance)
                 .map(IArgParser.Stated.class::cast)
                 .filter(parser -> parser.getTarget().isAssignableFrom(type))
@@ -60,16 +57,9 @@ public class ArgParserManager {
                 .orElse(null);
     }
 
-    /**
-     * Attempt to parse the specified argument with a stateless {@link IArgParser} that outputs the specified class.
-     *
-     * @param type  The type to try and parse the argument into.
-     * @param arg   The argument to parse.
-     * @return An instance of the specified class.
-     * @throws CommandInvalidTypeException If the parsing failed
-     */
-    public static <T> T parseStateless(Class<T> type, ICommandArgument arg) throws CommandInvalidTypeException {
-        IArgParser.Stateless<T> parser = getParserStateless(type);
+    @Override
+    public <T> T parseStateless(Class<T> type, ICommandArgument arg) throws CommandInvalidTypeException {
+        IArgParser.Stateless<T> parser = this.getParserStateless(type);
         if (parser == null) {
             throw new CommandNoParserForTypeException(type);
         }
@@ -80,18 +70,9 @@ public class ArgParserManager {
         }
     }
 
-    /**
-     * Attempt to parse the specified argument with a stated {@link IArgParser} that outputs the specified class.
-     *
-     * @param type  The type to try and parse the argument into.
-     * @param arg   The argument to parse.
-     * @param state The state to pass to the {@link IArgParser.Stated}.
-     * @return An instance of the specified class.
-     * @throws CommandInvalidTypeException If the parsing failed
-     * @see IArgParser.Stated
-     */
-    public static <T, S> T parseStated(Class<T> type, Class<S> stateKlass, ICommandArgument arg, S state) throws CommandInvalidTypeException {
-        IArgParser.Stated<T, S> parser = getParserStated(type, stateKlass);
+    @Override
+    public <T, S> T parseStated(Class<T> type, Class<S> stateKlass, ICommandArgument arg, S state) throws CommandInvalidTypeException {
+        IArgParser.Stated<T, S> parser = this.getParserStated(type, stateKlass);
         if (parser == null) {
             throw new CommandNoParserForTypeException(type);
         }
@@ -100,5 +81,10 @@ public class ArgParserManager {
         } catch (Exception exc) {
             throw new CommandInvalidTypeException(arg, type.getSimpleName());
         }
+    }
+
+    @Override
+    public Registry<IArgParser> getRegistry() {
+        return this.registry;
     }
 }
