@@ -42,9 +42,7 @@ public interface IPlayerContext {
 
     IWorldData worldData();
 
-    default RayTraceResult objectMouseOver() {
-        return playerController().objectMouseOver();
-    }
+    RayTraceResult objectMouseOver();
 
     default BetterBlockPos playerFeet() {
         // TODO find a better way to deal with soul sand!!!!!

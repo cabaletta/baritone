@@ -25,7 +25,6 @@ import net.minecraft.block.BlockStructure;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
@@ -33,10 +32,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketClickWindow;
 import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 
@@ -48,7 +48,6 @@ public class BotPlayerController implements IPlayerController {
 
     private final IBaritoneUser user;
     private GameType gameType;
-    private RayTraceResult objectMouseOver;
 
     private BlockPos currentBlock;
     private ItemStack currentHittingItem;
@@ -130,21 +129,7 @@ public class BotPlayerController implements IPlayerController {
     }
 
     @Override
-    public RayTraceResult objectMouseOver() {
-        Entity entity = this.user.getEntity();
-
-        if (entity != null) {
-            double blockReachDistance = getBlockReachDistance();
-            this.objectMouseOver = entity.rayTrace(blockReachDistance, 1.0F);
-
-            // TODO: Entity collision
-            // This doesn't matter atm because the bot worlds don't even contain entities
-        }
-
-        return this.objectMouseOver;
-    }
-
-    private boolean clickBlock(BlockPos pos, EnumFacing side) {
+    public boolean clickBlock(BlockPos pos, EnumFacing side) {
         EntityPlayerSP player = this.user.getEntity();
         World world = player.world;
 
@@ -243,12 +228,33 @@ public class BotPlayerController implements IPlayerController {
         return pos.equals(this.currentBlock) && itemUnchanged;
     }
 
-    private void syncHeldItem() {
+    @Override
+    public void syncHeldItem() {
         int heldItemClient = this.user.getEntity().inventory.currentItem;
 
         if (heldItemClient != this.heldItemServer) {
             this.heldItemServer = heldItemClient;
             this.user.getEntity().connection.sendPacket(new CPacketHeldItemChange(this.heldItemServer));
         }
+    }
+
+    @Override
+    public boolean hasBrokenBlock() {
+        return this.currentBlock.getY() == -1;
+    }
+
+    @Override
+    public EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand) {
+        throw new AbstractMethodError("Lol");
+    }
+
+    @Override
+    public EnumActionResult processRightClick(EntityPlayerSP player, World world, EnumHand hand) {
+        throw new AbstractMethodError("Lol");
+    }
+
+    @Override
+    public void setHittingBlock(boolean hittingBlock) {
+        this.hittingBlock = hittingBlock;
     }
 }
