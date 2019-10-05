@@ -26,8 +26,7 @@ import java.util.stream.Stream;
 
 public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
     INSTANCE;
-
-    private static Pattern PATTERN = Pattern.compile("^(~?)([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)|)$");
+    private static Pattern PATTERN = Pattern.compile("^(~?)([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)([k-k]?)|)$");
 
     @Override
     public Double apply(IDatatypeContext ctx, Double origin) throws CommandException {
@@ -41,7 +40,15 @@ public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
         }
 
         boolean isRelative = !matcher.group(1).isEmpty();
-        double offset = matcher.group(2).isEmpty() ? 0 : Double.parseDouble(matcher.group(2));
+
+        double offset = matcher.group(2).isEmpty() ? 0 : Double.parseDouble(matcher.group(2).replaceAll("k", ""));
+
+        if (matcher.group(2).contains("k")) {
+            String newString = matcher.group(2).replaceAll("k", "");
+            double convertedNumber = Double.parseDouble(newString);
+            convertedNumber = convertedNumber * 1000;
+            offset = convertedNumber;
+        }
 
         if (isRelative) {
             return origin + offset;
