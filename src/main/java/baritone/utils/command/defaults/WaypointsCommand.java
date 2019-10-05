@@ -48,7 +48,7 @@ import static baritone.api.utils.command.IBaritoneChatControl.FORCE_COMMAND_PREF
 public class WaypointsCommand extends Command {
 
     public WaypointsCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("waypoints", "waypoint", "wp"));
+        super(baritone, "waypoints", "waypoint", "wp");
     }
 
     @Override

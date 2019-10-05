@@ -241,7 +241,7 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addCommands(ICommandManager manager) {
         return append(manager.getRegistry().descendingStream()
-                .flatMap(command -> command.names.stream())
+                .flatMap(command -> command.getNames().stream())
                 .distinct()
         );
     }

@@ -37,23 +37,19 @@ public abstract class Command implements Helper {
     /**
      * The names of this command. This is what you put after the command prefix.
      */
-    public final List<String> names;
+    protected final List<String> names;
 
     /**
      * Creates a new Baritone control command.
      *
      * @param names The names of this command. This is what you put after the command prefix.
      */
-    protected Command(IBaritone baritone, List<String> names) {
-        this.names = names.stream()
+    protected Command(IBaritone baritone, String... names) {
+        this.names = Collections.unmodifiableList(Stream.of(names)
                 .map(s -> s.toLowerCase(Locale.US))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
-    }
-
-    protected Command(IBaritone baritone, String name) {
-        this(baritone, Collections.singletonList(name));
     }
 
     /**
@@ -82,5 +78,9 @@ public abstract class Command implements Helper {
      */
     public boolean hiddenFromHelp() {
         return false;
+    }
+
+    public final List<String> getNames() {
+        return this.names;
     }
 }

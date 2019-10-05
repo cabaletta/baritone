@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 public class AxisCommand extends Command {
 
     public AxisCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("axis", "highway"));
+        super(baritone, "axis", "highway");
     }
 
     @Override

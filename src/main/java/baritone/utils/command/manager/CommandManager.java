@@ -64,7 +64,7 @@ public class CommandManager implements ICommandManager {
     @Override
     public Command getCommand(String name) {
         for (Command command : this.registry.entries) {
-            if (command.names.contains(name.toLowerCase(Locale.US))) {
+            if (command.getNames().contains(name.toLowerCase(Locale.US))) {
                 return command;
             }
         }

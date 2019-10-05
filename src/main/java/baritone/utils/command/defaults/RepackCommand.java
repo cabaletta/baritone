@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 public class RepackCommand extends Command {
 
     public RepackCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("repack", "rescan"));
+        super(baritone, "repack", "rescan");
     }
 
     @Override

@@ -36,7 +36,7 @@ import java.util.stream.Stream;
 public class PathCommand extends Command {
 
     public PathCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("path", "goto"));
+        super(baritone, "path", "goto");
     }
 
     @Override

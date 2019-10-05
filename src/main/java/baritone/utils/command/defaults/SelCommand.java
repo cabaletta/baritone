@@ -56,7 +56,7 @@ public class SelCommand extends Command {
     private BetterBlockPos pos1 = null;
 
     public SelCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("sel", "selection", "s"));
+        super(baritone, "sel", "selection", "s");
         baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
             @Override
             public void onRenderPass(RenderEvent event) {

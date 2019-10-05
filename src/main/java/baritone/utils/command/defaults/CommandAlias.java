@@ -31,7 +31,7 @@ public class CommandAlias extends Command {
     public final String target;
 
     public CommandAlias(IBaritone baritone, List<String> names, String shortDesc, String target) {
-        super(baritone, names);
+        super(baritone, names.toArray(new String[0]));
         this.shortDesc = shortDesc;
         this.target = target;
     }

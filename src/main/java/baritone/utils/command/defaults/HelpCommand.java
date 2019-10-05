@@ -40,7 +40,7 @@ import static baritone.api.utils.command.IBaritoneChatControl.FORCE_COMMAND_PREF
 public class HelpCommand extends Command {
 
     public HelpCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("help", "?"));
+        super(baritone, "help", "?");
     }
 
     @Override
@@ -55,8 +55,8 @@ public class HelpCommand extends Command {
                     ),
                     () -> logDirect("All Baritone commands (clickable):"),
                     command -> {
-                        String names = String.join("/", command.names);
-                        String name = command.names.get(0);
+                        String names = String.join("/", command.getNames());
+                        String name = command.getNames().get(0);
                         ITextComponent shortDescComponent = new TextComponentString(" - " + command.getShortDesc());
                         shortDescComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
                         ITextComponent namesComponent = new TextComponentString(names);
@@ -66,7 +66,7 @@ public class HelpCommand extends Command {
                         hoverComponent.appendSibling(namesComponent);
                         hoverComponent.appendText("\n" + command.getShortDesc());
                         hoverComponent.appendText("\n\nClick to view full help");
-                        String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.names.get(0));
+                        String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.getNames().get(0));
                         ITextComponent component = new TextComponentString(name);
                         component.getStyle().setColor(TextFormatting.GRAY);
                         component.appendSibling(shortDescComponent);
@@ -83,7 +83,7 @@ public class HelpCommand extends Command {
             if (command == null) {
                 throw new CommandNotFoundException(commandName);
             }
-            logDirect(String.format("%s - %s", String.join(" / ", command.names), command.getShortDesc()));
+            logDirect(String.format("%s - %s", String.join(" / ", command.getNames()), command.getShortDesc()));
             logDirect("");
             command.getLongDesc().forEach(this::logDirect);
             logDirect("");

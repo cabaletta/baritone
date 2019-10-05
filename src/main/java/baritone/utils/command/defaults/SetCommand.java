@@ -46,7 +46,7 @@ import static baritone.api.utils.command.IBaritoneChatControl.FORCE_COMMAND_PREF
 public class SetCommand extends Command {
 
     public SetCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("set", "setting", "settings"));
+        super(baritone, "set", "setting", "settings");
     }
 
     @Override

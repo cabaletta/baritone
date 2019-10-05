@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 public class ThisWayCommand extends Command {
 
     public ThisWayCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("thisway", "forward"));
+        super(baritone, "thisway", "forward");
     }
 
     @Override

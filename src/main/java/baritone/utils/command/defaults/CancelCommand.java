@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 public class CancelCommand extends Command {
 
     public CancelCommand(IBaritone baritone) {
-        super(baritone, Arrays.asList("cancel", "stop"));
+        super(baritone, "cancel", "stop");
     }
 
     @Override
