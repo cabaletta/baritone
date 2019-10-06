@@ -20,8 +20,10 @@ package baritone;
 import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
-import baritone.utils.command.BaritoneChatControl;
+import baritone.api.command.ICommandSystem;
+import baritone.command.BaritoneChatControl;
 import baritone.cache.WorldScanner;
+import baritone.command.CommandSystem;
 
 import java.util.Collections;
 import java.util.List;
@@ -56,5 +58,10 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public IWorldScanner getWorldScanner() {
         return WorldScanner.INSTANCE;
+    }
+
+    @Override
+    public ICommandSystem getCommandSystem() {
+        return CommandSystem.INSTANCE;
     }
 }

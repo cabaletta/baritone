@@ -803,6 +803,14 @@ public final class Settings {
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
 
     /**
+     * While mining, wait this number of milliseconds after mining an ore to see if it will drop an item
+     * instead of immediately going onto the next one
+     * <p>
+     * Thanks Louca
+     */
+    public final Setting<Long> mineDropLoiterDurationMSThanksLouca = new Setting<>(250L);
+
+    /**
      * Trim incorrect positions too far away, helps performance but hurts reliability in very large schematics
      */
     public final Setting<Boolean> distanceTrim = new Setting<>(true);
