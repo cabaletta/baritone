@@ -44,10 +44,7 @@ public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
         double offset = matcher.group(2).isEmpty() ? 0 : Double.parseDouble(matcher.group(2).replaceAll("k", ""));
 
         if (matcher.group(2).contains("k")) {
-            String newString = matcher.group(2).replaceAll("k", "");
-            double convertedNumber = Double.parseDouble(newString);
-            convertedNumber = convertedNumber * 1000;
-            offset = convertedNumber;
+            offset *= 1000;
         }
 
         if (isRelative) {
