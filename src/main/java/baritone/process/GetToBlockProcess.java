@@ -33,10 +33,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
@@ -175,7 +172,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     }
 
     private synchronized void rescan(List<BlockPos> known, CalculationContext context) {
-        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(gettingTo), 64, known, blacklist);
+        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(gettingTo), 64, known, blacklist, Collections.emptyList());
         positions.removeIf(blacklist::contains);
         knownLocations = positions;
     }
