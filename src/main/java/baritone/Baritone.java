@@ -29,7 +29,7 @@ import baritone.event.GameEventHandler;
 import baritone.process.*;
 import baritone.selection.SelectionManager;
 import baritone.utils.*;
-import baritone.utils.command.manager.CommandManager;
+import baritone.command.manager.CommandManager;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 

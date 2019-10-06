@@ -18,8 +18,8 @@
 package baritone.api;
 
 import baritone.api.cache.IWorldScanner;
-import baritone.api.utils.command.Command;
-import baritone.api.utils.command.ICommandSystem;
+import baritone.api.command.Command;
+import baritone.api.command.ICommandSystem;
 import net.minecraft.client.entity.EntityPlayerSP;
 
 import java.util.List;

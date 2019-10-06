@@ -44,7 +44,7 @@ import java.nio.IntBuffer;
 import java.util.Collections;
 
 import static org.lwjgl.opengl.GL11.*;
-import static baritone.api.utils.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class GuiClick extends GuiScreen {
 
