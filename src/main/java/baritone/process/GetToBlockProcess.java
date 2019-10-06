@@ -22,6 +22,7 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -37,7 +38,7 @@ import java.util.*;
 
 public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
-    private Block gettingTo;
+    private BlockOptionalMeta gettingTo;
     private List<BlockPos> knownLocations;
     private List<BlockPos> blacklist; // locations we failed to calc to
     private BlockPos start;
@@ -50,7 +51,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     }
 
     @Override
-    public void getToBlock(Block block) {
+    public void getToBlock(BlockOptionalMeta block) {
         onLostControl();
         gettingTo = block;
         start = ctx.playerFeet();
@@ -106,7 +107,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         }
         if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart()) && isSafeToCancel) {
             // we're there
-            if (rightClickOnArrival(gettingTo)) {
+            if (rightClickOnArrival(gettingTo.getBlock())) {
                 if (rightClick()) {
                     onLostControl();
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -178,10 +179,10 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     }
 
     private Goal createGoal(BlockPos pos) {
-        if (walkIntoInsteadOfAdjacent(gettingTo)) {
+        if (walkIntoInsteadOfAdjacent(gettingTo.getBlock())) {
             return new GoalTwoBlocks(pos);
         }
-        if (blockOnTopMustBeRemoved(gettingTo) && baritone.bsi.get0(pos.up()).isBlockNormalCube()) {
+        if (blockOnTopMustBeRemoved(gettingTo.getBlock()) && baritone.bsi.get0(pos.up()).isBlockNormalCube()) {
             return new GoalBlock(pos.up());
         }
         return new GoalGetToBlock(pos);
