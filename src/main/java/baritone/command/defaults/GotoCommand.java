@@ -48,7 +48,7 @@ public class GotoCommand extends Command {
             baritone.getCustomGoalProcess().setGoalAndPath(goal);
             return;
         }
-
+        args.requireMax(1);
         BlockOptionalMeta destination = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
         baritone.getGetToBlockProcess().getToBlock(destination);
     }
