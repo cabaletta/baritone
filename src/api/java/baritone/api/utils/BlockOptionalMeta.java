@@ -29,13 +29,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class BlockOptionalMeta {
 
@@ -224,16 +222,15 @@ public final class BlockOptionalMeta {
 
     private static ImmutableSet<Integer> getStackHashes(Set<IBlockState> blockstates) {
         //noinspection ConstantConditions
-        /*return ImmutableSet.copyOf(
+        return ImmutableSet.copyOf(
                 blockstates.stream()
                         .map(state -> new ItemStack(
-                                state.getBlock().getItemDropped(state, ctx.world(), null, 0),
-                                state.getBlock().(state)
+                                state.getBlock().getItemDropped(state, null, null, 0).asItem(),
+                                1
                         ))
                         .map(stack -> ((IItemStack) (Object) stack).getBaritoneHash())
                         .toArray(Integer[]::new)
-        );*/
-        return ImmutableSet.of();
+        );
     }
 
     public Block getBlock() {
@@ -253,7 +250,7 @@ public final class BlockOptionalMeta {
         //noinspection ConstantConditions
         int hash = ((IItemStack) (Object) stack).getBaritoneHash();
 
-            hash -= stack.getDamage();
+        hash -= stack.getDamage();
 
         return stackHashes.contains(hash);
     }
