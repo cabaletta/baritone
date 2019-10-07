@@ -36,7 +36,7 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.utils.IRenderer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;

@@ -30,7 +30,7 @@ import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.command.exception.CommandNotFoundException;
 import baritone.command.argument.ArgConsumer;
-import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.manager.ICommandManager;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;

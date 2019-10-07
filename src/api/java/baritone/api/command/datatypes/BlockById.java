@@ -17,7 +17,7 @@
 
 package baritone.api.command.datatypes;
 
-import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.exception.CommandException;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;

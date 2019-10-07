@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.command.helpers.tabcomplete;
+package baritone.api.command.helpers;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
