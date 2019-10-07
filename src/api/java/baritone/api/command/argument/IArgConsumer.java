@@ -17,7 +17,7 @@
 
 package baritone.api.command.argument;
 
-import baritone.api.command.Command;
+import baritone.api.command.ICommand;
 import baritone.api.command.exception.CommandTooManyArgumentsException;
 import baritone.api.utils.Helper;
 import baritone.api.command.argparser.IArgParser;
@@ -34,7 +34,7 @@ import java.util.LinkedList;
 import java.util.stream.Stream;
 
 /**
- * The {@link IArgConsumer} is how {@link Command}s read the arguments passed to them. This class has many benefits:
+ * The {@link IArgConsumer} is how {@link ICommand}s read the arguments passed to them. This class has many benefits:
  *
  * <ul>
  * <li>Mutability. The whole concept of the {@link IArgConsumer}} is to let you gradually consume arguments in any way

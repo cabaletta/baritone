@@ -19,6 +19,7 @@ package baritone.command.defaults;
 
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
+import baritone.api.command.ICommand;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandNotFoundException;
 import baritone.api.command.argument.IArgConsumer;
@@ -79,7 +80,7 @@ public class HelpCommand extends Command {
             );
         } else {
             String commandName = args.getString().toLowerCase();
-            Command command = this.baritone.getCommandManager().getCommand(commandName);
+            ICommand command = this.baritone.getCommandManager().getCommand(commandName);
             if (command == null) {
                 throw new CommandNotFoundException(commandName);
             }

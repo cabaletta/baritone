@@ -18,10 +18,7 @@
 package baritone.api.command;
 
 import baritone.api.IBaritone;
-import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
-import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +26,19 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class Command implements Helper {
+/**
+ * A default implementation of {@link ICommand} which provides easy access to the
+ * command's bound {@link IBaritone} instance, {@link IPlayerContext} and an easy
+ * way to provide multiple valid command execution names through the default constructor.
+ * <p>
+ * So basically, you should use it because it provides a small amount of boilerplate,
+ * but you're not forced to use it.
+ *
+ * @see ICommand
+ *
+ * @author LoganDark
+ */
+public abstract class Command implements ICommand {
 
     protected IBaritone baritone;
     protected IPlayerContext ctx;
@@ -52,34 +61,7 @@ public abstract class Command implements Helper {
         this.ctx = baritone.getPlayerContext();
     }
 
-    /**
-     * Called when this command is executed.
-     */
-    public abstract void execute(String label, IArgConsumer args) throws CommandException;
-
-    /**
-     * Called when the command needs to tab complete. Return a Stream representing the entries to put in the completions
-     * list.
-     */
-    public abstract Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException;
-
-    /**
-     * @return A <b>single-line</b> string containing a short description of this command's purpose.
-     */
-    public abstract String getShortDesc();
-
-    /**
-     * @return A list of lines that will be printed by the help command when the user wishes to view them.
-     */
-    public abstract List<String> getLongDesc();
-
-    /**
-     * @return {@code true} if this command should be hidden from the help menu
-     */
-    public boolean hiddenFromHelp() {
-        return false;
-    }
-
+    @Override
     public final List<String> getNames() {
         return this.names;
     }

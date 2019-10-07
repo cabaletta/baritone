@@ -18,7 +18,7 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.command.Command;
+import baritone.api.command.ICommand;
 
 import java.util.*;
 
@@ -26,9 +26,9 @@ public final class DefaultCommands {
 
     private DefaultCommands() {}
 
-    public static List<Command> createAll(IBaritone baritone) {
+    public static List<ICommand> createAll(IBaritone baritone) {
         Objects.requireNonNull(baritone);
-        List<Command> commands = new ArrayList<>(Arrays.asList(
+        List<ICommand> commands = new ArrayList<>(Arrays.asList(
             new HelpCommand(baritone),
             new SetCommand(baritone),
             new CommandAlias(baritone, Arrays.asList("modified", "mod", "baritone", "modifiedsettings"), "List modified settings", "set modified"),
