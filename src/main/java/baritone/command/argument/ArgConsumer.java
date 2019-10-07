@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.command.helpers.arguments;
+package baritone.command.argument;
 
 import baritone.api.IBaritone;
 import baritone.api.command.argument.ICommandArgument;
@@ -27,9 +27,8 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.command.exception.CommandTooManyArgumentsException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.manager.ICommandManager;
-import baritone.command.argument.CommandArguments;
 
 import java.util.ArrayList;
 import java.util.Deque;

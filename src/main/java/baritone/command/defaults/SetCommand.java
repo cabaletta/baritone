@@ -24,7 +24,7 @@ import baritone.api.utils.SettingsUtil;
 import baritone.api.command.Command;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidTypeException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.pagination.Paginator;
 import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.util.text.ITextComponent;

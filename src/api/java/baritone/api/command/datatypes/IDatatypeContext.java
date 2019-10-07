@@ -18,7 +18,7 @@
 package baritone.api.command.datatypes;
 
 import baritone.api.IBaritone;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 
 /**
  * Provides an {@link IDatatype} with contextual information so

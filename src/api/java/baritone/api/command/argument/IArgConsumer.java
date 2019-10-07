@@ -15,13 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.command.helpers.arguments;
+package baritone.api.command.argument;
 
 import baritone.api.command.Command;
 import baritone.api.command.exception.CommandTooManyArgumentsException;
 import baritone.api.utils.Helper;
 import baritone.api.command.argparser.IArgParser;
-import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.datatypes.IDatatype;
 import baritone.api.command.datatypes.IDatatypeFor;
 import baritone.api.command.datatypes.IDatatypePost;

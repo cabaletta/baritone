@@ -23,7 +23,7 @@ import baritone.api.command.Command;
 import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.exception.CommandUnhandledException;
 import baritone.api.command.exception.ICommandException;
-import baritone.command.helpers.arguments.ArgConsumer;
+import baritone.command.argument.ArgConsumer;
 import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
 import baritone.api.command.manager.ICommandManager;
 import baritone.api.command.registry.Registry;

@@ -23,7 +23,7 @@ import baritone.api.command.datatypes.EntityClassById;
 import baritone.api.command.datatypes.IDatatypeFor;
 import baritone.api.command.datatypes.NearbyPlayer;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
