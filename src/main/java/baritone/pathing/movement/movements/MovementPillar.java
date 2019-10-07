@@ -57,7 +57,8 @@ public class MovementPillar extends Movement {
     }
 
     public static double cost(CalculationContext context, int x, int y, int z) {
-        Block from = context.get(x, y, z).getBlock();
+        IBlockState fromState = context.get(x, y, z);
+        Block from = fromState.getBlock();
         boolean ladder = from == Blocks.LADDER || from == Blocks.VINE;
         IBlockState fromDown = context.get(x, y - 1, z);
         if (!ladder) {
@@ -86,7 +87,7 @@ public class MovementPillar extends Movement {
         double placeCost = 0;
         if (!ladder) {
             // we need to place a block where we started to jump on it
-            placeCost = context.costOfPlacingAt(x, y, z);
+            placeCost = context.costOfPlacingAt(x, y, z, fromState);
             if (placeCost >= COST_INF) {
                 return COST_INF;
             }

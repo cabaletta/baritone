@@ -376,7 +376,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (block instanceof BlockLiquid) {
                 return COST_INF;
             }
-            double mult = context.breakCostMultiplierAt(x, y, z);
+            double mult = context.breakCostMultiplierAt(x, y, z, state);
             if (mult >= COST_INF) {
                 return COST_INF;
             }

@@ -19,13 +19,15 @@ package baritone.api;
 
 import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
+import baritone.api.command.Command;
+import baritone.api.command.ICommandSystem;
 import net.minecraft.client.entity.EntityPlayerSP;
 
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Provides the present {@link IBaritone} instances
+ * Provides the present {@link IBaritone} instances, as well as non-baritone instance related APIs.
  *
  * @author leijurv
  */
@@ -78,4 +80,12 @@ public interface IBaritoneProvider {
      * @return The {@link IUserManager} instance.
      */
     IUserManager getUserManager();
+
+    /**
+     * Returns the {@link ICommandSystem} instance. This is not bound to a specific {@link IBaritone}
+     * instance because {@link ICommandSystem} itself controls global behavior for {@link Command}s.
+     *
+     * @return The {@link ICommandSystem} instance.
+     */
+    ICommandSystem getCommandSystem();
 }

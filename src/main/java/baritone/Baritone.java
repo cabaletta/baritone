@@ -25,11 +25,11 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
+import baritone.command.manager.CommandManager;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
 import baritone.selection.SelectionManager;
 import baritone.utils.*;
-import baritone.utils.command.manager.CommandManager;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;

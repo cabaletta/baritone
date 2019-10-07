@@ -791,11 +791,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
 
         @Override
-        public double costOfPlacingAt(int x, int y, int z) {
+        public double costOfPlacingAt(int x, int y, int z, IBlockState current) {
             if (isPossiblyProtected(x, y, z) || !worldBorder.canPlaceAt(x, z)) { // make calculation fail properly if we can't build
                 return COST_INF;
             }
-            IBlockState sch = getSchematic(x, y, z, bsi.get0(x, y, z));
+            IBlockState sch = getSchematic(x, y, z, current);
             if (sch != null) {
                 // TODO this can return true even when allowPlace is off.... is that an issue?
                 if (sch.getBlock() == Blocks.AIR) {
@@ -825,11 +825,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
 
         @Override
-        public double breakCostMultiplierAt(int x, int y, int z) {
+        public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
             if (!allowBreak || isPossiblyProtected(x, y, z)) {
                 return COST_INF;
             }
-            IBlockState sch = getSchematic(x, y, z, bsi.get0(x, y, z));
+            IBlockState sch = getSchematic(x, y, z, current);
             if (sch != null) {
                 if (sch.getBlock() == Blocks.AIR) {
                     // it should be air

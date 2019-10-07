@@ -26,7 +26,7 @@ import baritone.api.process.*;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.command.manager.ICommandManager;
+import baritone.api.command.manager.ICommandManager;
 
 /**
  * @author Brady

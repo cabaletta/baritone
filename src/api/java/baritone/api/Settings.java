@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -797,6 +797,14 @@ public final class Settings {
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
+
+    /**
+     * While mining, wait this number of milliseconds after mining an ore to see if it will drop an item
+     * instead of immediately going onto the next one
+     * <p>
+     * Thanks Louca
+     */
+    public final Setting<Long> mineDropLoiterDurationMSThanksLouca = new Setting<>(250L);
 
     /**
      * Trim incorrect positions too far away, helps performance but hurts reliability in very large schematics
