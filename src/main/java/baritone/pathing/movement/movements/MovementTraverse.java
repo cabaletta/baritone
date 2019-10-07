@@ -120,7 +120,7 @@ public class MovementTraverse extends Movement {
                     // this happens when assume walk on water is true and this is a traverse in water, which isn't allowed
                     return COST_INF;
                 }
-                double placeCost = context.costOfPlacingAt(destX, y - 1, destZ);
+                double placeCost = context.costOfPlacingAt(destX, y - 1, destZ, destOn);
                 if (placeCost >= COST_INF) {
                     return COST_INF;
                 }
