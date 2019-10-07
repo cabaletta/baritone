@@ -19,9 +19,7 @@ package baritone.utils;
 
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
-import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 
@@ -31,34 +29,43 @@ import net.minecraft.util.math.RayTraceResult;
  */
 public final class BlockBreakHelper implements Helper {
 
+    private final IPlayerContext ctx;
     private boolean didBreakLastTick;
 
-    private final IPlayerContext playerContext;
-
-    public BlockBreakHelper(IPlayerContext playerContext) {
-        this.playerContext = playerContext;
-    }
-
-    private void tryBreakBlock(BlockPos pos, Direction side) {
-        if (playerContext.playerController().onPlayerDamageBlock(pos, side)) {
-            playerContext.player().swingArm(Hand.MAIN_HAND);
-        }
+    BlockBreakHelper(IPlayerContext ctx) {
+        this.ctx = ctx;
     }
 
     public void stopBreakingBlock() {
         // The player controller will never be null, but the player can be
-        if (playerContext.player() != null) {
-            playerContext.playerController().resetBlockRemoving();
+        if (ctx.player() != null && didBreakLastTick) {
+            if (!ctx.playerController().hasBrokenBlock()) {
+                // insane bypass to check breaking succeeded
+                ctx.playerController().setHittingBlock(true);
+            }
+            ctx.playerController().resetBlockRemoving();
+            didBreakLastTick = false;
         }
     }
 
-
     public void tick(boolean isLeftClick) {
-        RayTraceResult trace = playerContext.objectMouseOver();
+        RayTraceResult trace = ctx.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.getType() == RayTraceResult.Type.BLOCK;
 
         if (isLeftClick && isBlockTrace) {
-            tryBreakBlock(((BlockRayTraceResult) trace).getPos(), ((BlockRayTraceResult) trace).getFace());
+            if (!didBreakLastTick) {
+                ctx.playerController().syncHeldItem();
+                ctx.playerController().clickBlock(((BlockRayTraceResult) trace).getPos(), ((BlockRayTraceResult) trace).getFace());
+                ctx.player().swingArm(Hand.MAIN_HAND);
+            }
+
+            // Attempt to break the block
+            if (ctx.playerController().onPlayerDamageBlock(((BlockRayTraceResult) trace).getPos(), ((BlockRayTraceResult) trace).getFace())) {
+                ctx.player().swingArm(Hand.MAIN_HAND);
+            }
+
+            ctx.playerController().setHittingBlock(false);
+
             didBreakLastTick = true;
         } else if (didBreakLastTick) {
             stopBreakingBlock();

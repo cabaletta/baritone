@@ -23,6 +23,7 @@ import baritone.api.process.PathingCommandType;
 import baritone.pathing.movement.CalculationContext;
 
 public class PathingCommandContext extends PathingCommand {
+
     public final CalculationContext desiredCalcContext;
 
     public PathingCommandContext(Goal goal, PathingCommandType commandType, CalculationContext context) {

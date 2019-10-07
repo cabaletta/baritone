@@ -59,8 +59,8 @@ public class MapArtSchematic extends Schematic {
     }
 
     @Override
-    public boolean inSchematic(int x, int y, int z) {
+    public boolean inSchematic(int x, int y, int z, BlockState currentState) {
         // in map art, we only care about coordinates in or above the art
-        return super.inSchematic(x, y, z) && y >= heightMap[x][z];
+        return super.inSchematic(x, y, z, currentState) && y >= heightMap[x][z];
     }
 }

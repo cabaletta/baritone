@@ -153,7 +153,7 @@ public class MovementParkour extends Movement {
             return;
         }
         BlockState toReplace = context.get(destX, y - 1, destZ);
-        if (!MovementHelper.isReplacable(destX, y - 1, destZ, toReplace, context.bsi)) {
+        if (!MovementHelper.isReplaceable(destX, y - 1, destZ, toReplace, context.bsi)) {
             return;
         }
         if (!checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {

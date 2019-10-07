@@ -29,7 +29,6 @@ import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -85,7 +84,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
                 .filter(this::followable)
                 .filter(this.filter)
                 .distinct()
-                .collect(Collectors.toCollection(ArrayList::new));
+                .collect(Collectors.toList());
     }
 
     @Override

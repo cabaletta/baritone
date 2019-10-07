@@ -20,6 +20,7 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.api.cache.Waypoint;
 import baritone.api.event.events.BlockInteractEvent;
+import baritone.api.utils.BetterBlockPos;
 import baritone.cache.ContainerMemory;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.BedBlock;
@@ -28,7 +29,11 @@ import net.minecraft.item.ItemStack;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 
 /**
  * doesn't work for horse inventories :^)
@@ -45,7 +50,7 @@ public final class MemoryBehavior extends Behavior {
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
         if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(ctx, event.getPos()) instanceof BedBlock) {
-            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, event.getPos()));
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, BetterBlockPos.from(event.getPos())));
         }
     }
 
@@ -60,6 +65,7 @@ public final class MemoryBehavior extends Behavior {
     }
 
     public static class EnderChestMemory {
+
         private static final Map<Path, EnderChestMemory> memory = new HashMap<>();
         private final Path enderChest;
         private List<ItemStack> contents;

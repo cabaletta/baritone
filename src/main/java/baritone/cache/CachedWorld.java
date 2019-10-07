@@ -288,6 +288,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     private class PackerThread implements Runnable {
+
         public void run() {
             while (true) {
                 // TODO: Add CachedWorld unloading to remove the redundancy of having this

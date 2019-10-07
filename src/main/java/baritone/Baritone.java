@@ -21,14 +21,15 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
-import baritone.api.utils.ExampleBaritoneControl;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
+import baritone.selection.SelectionManager;
 import baritone.utils.*;
+import baritone.command.manager.CommandManager;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
@@ -60,11 +61,6 @@ public class Baritone implements IBaritone {
         }
     }
 
-    /**
-     * Whether or not {@link Baritone#init()} has been called yet
-     */
-    private boolean initialized;
-
     private GameEventHandler gameEventHandler;
 
     private PathingBehavior pathingBehavior;
@@ -83,6 +79,8 @@ public class Baritone implements IBaritone {
     private FarmProcess farmProcess;
 
     private PathingControlManager pathingControlManager;
+    private SelectionManager selectionManager;
+    private CommandManager commandManager;
 
     private IPlayerContext playerContext;
     private WorldProvider worldProvider;
@@ -91,13 +89,6 @@ public class Baritone implements IBaritone {
 
     Baritone() {
         this.gameEventHandler = new GameEventHandler(this);
-    }
-
-    @Override
-    public synchronized void init() {
-        if (initialized) {
-            return;
-        }
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = PrimaryPlayerContext.INSTANCE;
@@ -109,7 +100,6 @@ public class Baritone implements IBaritone {
             memoryBehavior = new MemoryBehavior(this);
             inventoryBehavior = new InventoryBehavior(this);
             inputOverrideHandler = new InputOverrideHandler(this);
-            new ExampleBaritoneControl(this);
         }
 
         this.pathingControlManager = new PathingControlManager(this);
@@ -125,12 +115,12 @@ public class Baritone implements IBaritone {
         }
 
         this.worldProvider = new WorldProvider();
+        this.selectionManager = new SelectionManager(this);
+        this.commandManager = new CommandManager(this);
 
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             this.gameEventHandler.registerEventListener(BaritoneAutoTest.INSTANCE);
         }
-
-        this.initialized = true;
     }
 
     @Override
@@ -204,6 +194,11 @@ public class Baritone implements IBaritone {
     }
 
     @Override
+    public SelectionManager getSelectionManager() {
+        return selectionManager;
+    }
+
+    @Override
     public WorldProvider getWorldProvider() {
         return this.worldProvider;
     }
@@ -211,6 +206,11 @@ public class Baritone implements IBaritone {
     @Override
     public IEventBus getGameEventHandler() {
         return this.gameEventHandler;
+    }
+
+    @Override
+    public CommandManager getCommandManager() {
+        return this.commandManager;
     }
 
     @Override

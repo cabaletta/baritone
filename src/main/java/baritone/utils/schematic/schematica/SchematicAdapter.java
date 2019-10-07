@@ -18,12 +18,14 @@
 package baritone.utils.schematic.schematica;
 
 import baritone.api.utils.ISchematic;
-
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.List;
+
 public final class SchematicAdapter implements ISchematic {
+
     private final SchematicWorld schematic;
 
     public SchematicAdapter(SchematicWorld schematicWorld) {
@@ -31,7 +33,7 @@ public final class SchematicAdapter implements ISchematic {
     }
 
     @Override
-    public BlockState desiredState(int x, int y, int z) {
+    public BlockState desiredState(int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
         return schematic.getSchematic().getBlockState(new BlockPos(x, y, z));
     }
 

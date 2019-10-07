@@ -22,6 +22,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 
+import javax.annotation.Nonnull;
+
 /**
  * A better BlockPos that has fewer hash collisions (and slightly more performant offsets)
  * <p>
@@ -32,6 +34,9 @@ import net.minecraft.util.math.Vec3i;
  * @author leijurv
  */
 public final class BetterBlockPos extends BlockPos {
+
+    public static final BetterBlockPos ORIGIN = new BetterBlockPos(0, 0, 0);
+
     public final int x;
     public final int y;
     public final int z;
@@ -49,6 +54,20 @@ public final class BetterBlockPos extends BlockPos {
 
     public BetterBlockPos(BlockPos pos) {
         this(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    /**
+     * Like constructor but returns null if pos is null, good if you just need to possibly censor coordinates
+     *
+     * @param pos The BlockPos, possibly null, to convert
+     * @return A BetterBlockPos or null if pos was null
+     */
+    public static BetterBlockPos from(BlockPos pos) {
+        if (pos == null) {
+            return null;
+        }
+
+        return new BetterBlockPos(pos);
     }
 
     @Override
@@ -181,5 +200,16 @@ public final class BetterBlockPos extends BlockPos {
     @Override
     public BetterBlockPos west(int amt) {
         return amt == 0 ? this : new BetterBlockPos(x - amt, y, z);
+    }
+
+    @Override
+    @Nonnull
+    public String toString() {
+        return String.format(
+                "BetterBlockPos{x=%s,y=%s,z=%s}",
+                SettingsUtil.maybeCensor(x),
+                SettingsUtil.maybeCensor(y),
+                SettingsUtil.maybeCensor(z)
+        );
     }
 }

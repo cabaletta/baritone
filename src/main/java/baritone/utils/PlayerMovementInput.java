@@ -21,6 +21,7 @@ import baritone.api.utils.input.Input;
 import net.minecraft.util.MovementInput;
 
 public class PlayerMovementInput extends MovementInput {
+
     private final InputOverrideHandler handler;
 
     PlayerMovementInput(InputOverrideHandler handler) {

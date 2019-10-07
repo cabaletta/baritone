@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Avoidance {
+
     private final int centerX;
     private final int centerY;
     private final int centerZ;

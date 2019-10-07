@@ -21,7 +21,10 @@ import baritone.api.utils.ISchematic;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 
+import java.util.List;
+
 public class Schematic implements ISchematic {
+
     public final int widthX;
     public final int heightY;
     public final int lengthZ;
@@ -68,7 +71,7 @@ public class Schematic implements ISchematic {
     }
 
     @Override
-    public BlockState desiredState(int x, int y, int z) {
+    public BlockState desiredState(int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
         return states[x][z][y];
     }
 

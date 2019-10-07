@@ -17,7 +17,7 @@
 
 package baritone.launch.mixins;
 
-import baritone.process.MineProcess;
+import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.loot.LootContext;
@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LootContext.Builder.class)
 public class MixinLootContext {
+
     @Redirect(
             method = "build",
             at = @At(
@@ -51,7 +52,7 @@ public class MixinLootContext {
     )
     private LootTableManager getLootTableManager(MinecraftServer server) {
         if (server == null) {
-            return MineProcess.getManager();
+            return BlockOptionalMeta.getManager();
         }
         return server.getLootTableManager();
     }

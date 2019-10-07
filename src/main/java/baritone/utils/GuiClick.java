@@ -28,7 +28,10 @@ import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -37,6 +40,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Collections;
 
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 import static org.lwjgl.opengl.GL11.*;
 
 public class GuiClick extends Screen implements Helper {
@@ -83,7 +87,16 @@ public class GuiClick extends Screen implements Helper {
     public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
         if (mouseButton == 0) {
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
-                ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).getBuilderProcess().clearArea(clickStart, currentMouseOver);
+                BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
+                BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
+                ITextComponent component = new StringTextComponent("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
+                component.getStyle()
+                        .setColor(TextFormatting.WHITE)
+                        .setClickEvent(new ClickEvent(
+                                ClickEvent.Action.RUN_COMMAND,
+                                FORCE_COMMAND_PREFIX + "help sel"
+                        ));
+                Helper.HELPER.logDirect(component);
                 clickStart = null;
             } else {
                 BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(currentMouseOver));
@@ -120,7 +133,7 @@ public class GuiClick extends Screen implements Helper {
                 GlStateManager.disableDepthTest();
                 BetterBlockPos a = new BetterBlockPos(currentMouseOver);
                 BetterBlockPos b = new BetterBlockPos(clickStart);
-                PathRenderer.drawAABB(new AxisAlignedBB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
+                IRenderer.drawAABB(new AxisAlignedBB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
                 GlStateManager.enableDepthTest();
 
                 GlStateManager.depthMask(true);

@@ -23,23 +23,16 @@ import baritone.api.cache.IWorldProvider;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.*;
+import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.command.manager.ICommandManager;
 
 /**
  * @author Brady
  * @since 9/29/2018
  */
 public interface IBaritone {
-
-    /**
-     * Call as soon as Minecraft is ready, initializes all of the processes, behaviors, etc. This will
-     * only effectively be ran once, any additional calls are redundant because the initialization state
-     * is saved.
-     * <p>
-     * Or whenever your overeager utility client wants.
-     */
-    void init();
 
     /**
      * @return The {@link IPathingBehavior} instance
@@ -127,6 +120,18 @@ public interface IBaritone {
      * @see IEventBus
      */
     IEventBus getGameEventHandler();
+
+    /**
+     * @return The {@link ISelectionManager} instance
+     * @see ISelectionManager
+     */
+    ISelectionManager getSelectionManager();
+
+    /**
+     * @return The {@link ICommandManager} instance
+     * @see ICommandManager
+     */
+    ICommandManager getCommandManager();
 
     /**
      * Open click

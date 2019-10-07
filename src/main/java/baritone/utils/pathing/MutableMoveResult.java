@@ -25,6 +25,7 @@ import baritone.api.pathing.movement.ActionCosts;
  * @author leijurv
  */
 public final class MutableMoveResult {
+
     public int x;
     public int y;
     public int z;

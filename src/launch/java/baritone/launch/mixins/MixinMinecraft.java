@@ -17,7 +17,6 @@
 
 package baritone.launch.mixins;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.BlockInteractEvent;
@@ -59,7 +58,7 @@ public class MixinMinecraft {
             at = @At("RETURN")
     )
     private void postInit(CallbackInfo ci) {
-        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).init();
+        BaritoneAPI.getProvider().getPrimaryBaritone();
     }
 
     @Inject(

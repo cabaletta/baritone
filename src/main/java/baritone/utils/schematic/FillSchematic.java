@@ -19,23 +19,26 @@ package baritone.utils.schematic;
 
 import baritone.api.utils.ISchematic;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 
-public class AirSchematic implements ISchematic {
+import java.util.List;
+
+public class FillSchematic implements ISchematic {
 
     private final int widthX;
     private final int heightY;
     private final int lengthZ;
+    private final BlockState state;
 
-    public AirSchematic(int widthX, int heightY, int lengthZ) {
+    public FillSchematic(int widthX, int heightY, int lengthZ, BlockState state) {
         this.widthX = widthX;
         this.heightY = heightY;
         this.lengthZ = lengthZ;
+        this.state = state;
     }
 
     @Override
-    public BlockState desiredState(int x, int y, int z) {
-        return Blocks.AIR.getDefaultState();
+    public BlockState desiredState(int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
+        return state;
     }
 
     @Override

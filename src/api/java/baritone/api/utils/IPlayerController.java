@@ -26,7 +26,6 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 
@@ -36,21 +35,27 @@ import net.minecraft.world.World;
  */
 public interface IPlayerController {
 
+    void syncHeldItem();
+
+    boolean hasBrokenBlock();
+
     boolean onPlayerDamageBlock(BlockPos pos, Direction side);
 
     void resetBlockRemoving();
 
     ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player);
 
-    void setGameType(GameType type);
-
     GameType getGameType();
-
-    default double getBlockReachDistance() {
-        return this.getGameType().isCreative() ? 5.0F : 4.5F;
-    }
 
     ActionResultType processRightClickBlock(ClientPlayerEntity player, World world, Hand hand, BlockRayTraceResult result);
 
     ActionResultType processRightClick(ClientPlayerEntity player, World world, Hand hand);
+
+    boolean clickBlock(BlockPos loc, Direction face);
+
+    void setHittingBlock(boolean hittingBlock);
+
+    default double getBlockReachDistance() {
+        return this.getGameType().isCreative() ? 5.0F : 4.5F;
+    }
 }

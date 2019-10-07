@@ -71,6 +71,16 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
+    public void onPreTabComplete(TabCompleteEvent.Pre event) {
+        listeners.forEach(l -> l.onPreTabComplete(event));
+    }
+
+    @Override
+    public void onPostTabComplete(TabCompleteEvent.Post event) {
+        listeners.forEach(l -> l.onPostTabComplete(event));
+    }
+
+    @Override
     public final void onChunkEvent(ChunkEvent event) {
         EventState state = event.getState();
         ChunkEvent.Type type = event.getType();

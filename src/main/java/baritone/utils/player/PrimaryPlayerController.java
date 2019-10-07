@@ -19,6 +19,7 @@ package baritone.utils.player;
 
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerController;
+import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
@@ -32,6 +33,7 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 
+
 /**
  * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
  *
@@ -41,6 +43,16 @@ import net.minecraft.world.World;
 public enum PrimaryPlayerController implements IPlayerController, Helper {
 
     INSTANCE;
+
+    @Override
+    public void syncHeldItem() {
+        ((IPlayerControllerMP) mc.playerController).callSyncCurrentPlayItem();
+    }
+
+    @Override
+    public boolean hasBrokenBlock() {
+        return ((IPlayerControllerMP) mc.playerController).getCurrentBlock().getY() == -1;
+    }
 
     @Override
     public boolean onPlayerDamageBlock(BlockPos pos, Direction side) {
@@ -58,11 +70,6 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     }
 
     @Override
-    public void setGameType(GameType type) {
-        mc.playerController.setGameType(type);
-    }
-
-    @Override
     public GameType getGameType() {
         return mc.playerController.getCurrentGameType();
     }
@@ -76,5 +83,15 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     @Override
     public ActionResultType processRightClick(ClientPlayerEntity player, World world, Hand hand) {
         return mc.playerController.processRightClick(player, world, hand);
+    }
+
+    @Override
+    public boolean clickBlock(BlockPos loc, Direction face) {
+        return mc.playerController.clickBlock(loc, face);
+    }
+
+    @Override
+    public void setHittingBlock(boolean hittingBlock) {
+        ((IPlayerControllerMP) mc.playerController).setIsHittingBlock(hittingBlock);
     }
 }
