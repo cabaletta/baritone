@@ -17,8 +17,8 @@
 
 package baritone.api.command;
 
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
 import baritone.api.utils.Helper;
 
 import java.util.List;
