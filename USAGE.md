@@ -65,6 +65,8 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `worldExploringChunkOffset`
 - `acceptableThrowawayItems`
 - `blocksToAvoidBreaking`
+- `mineScanDroppedItems`
+- `allowDiagonalAscend`
 
 
 
