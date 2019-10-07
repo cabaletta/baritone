@@ -135,7 +135,7 @@ public class CalculationContext {
         return get(x, y, z).getBlock();
     }
 
-    public double costOfPlacingAt(int x, int y, int z) {
+    public double costOfPlacingAt(int x, int y, int z, BlockState current) {
         if (!hasThrowaway) { // only true if allowPlace is true, see constructor
             return COST_INF;
         }
@@ -149,7 +149,7 @@ public class CalculationContext {
         return placeBlockCost;
     }
 
-    public double breakCostMultiplierAt(int x, int y, int z) {
+    public double breakCostMultiplierAt(int x, int y, int z, BlockState current) {
         if (!allowBreak) {
             return COST_INF;
         }

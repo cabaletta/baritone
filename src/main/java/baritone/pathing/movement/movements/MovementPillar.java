@@ -85,7 +85,7 @@ public class MovementPillar extends Movement {
         double placeCost = 0;
         if (!ladder) {
             // we need to place a block where we started to jump on it
-            placeCost = context.costOfPlacingAt(x, y, z);
+            placeCost = context.costOfPlacingAt(x, y, z, fromState);
             if (placeCost >= COST_INF) {
                 return COST_INF;
             }
