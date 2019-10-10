@@ -146,11 +146,11 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
     }
 
     @Override
-    public void onPreTabComplete(TabCompleteEvent.Pre event) {
+    public void onPreTabComplete(TabCompleteEvent event) {
         if (!settings.prefixControl.value) {
             return;
         }
-        String prefix = event.prefix.get();
+        String prefix = event.prefix;
         String commandPrefix = settings.prefix.value;
         if (!prefix.startsWith(commandPrefix)) {
             return;
@@ -161,7 +161,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (args.size() == 1) {
             stream = stream.map(x -> commandPrefix + x);
         }
-        event.completions.set(stream.toArray(String[]::new));
+        event.completions = stream.toArray(String[]::new);
     }
 
     public Stream<String> tabComplete(String msg) {
