@@ -23,7 +23,7 @@ import baritone.api.command.datatypes.RelativeFile;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.command.exception.CommandInvalidTypeException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import com.google.gson.JsonSyntaxException;
 
 import java.io.File;

@@ -18,7 +18,7 @@
 package baritone.api;
 
 import baritone.api.cache.IWorldScanner;
-import baritone.api.command.Command;
+import baritone.api.command.ICommand;
 import baritone.api.command.ICommandSystem;
 import net.minecraft.client.entity.EntityPlayerSP;
 
@@ -77,7 +77,7 @@ public interface IBaritoneProvider {
 
     /**
      * Returns the {@link ICommandSystem} instance. This is not bound to a specific {@link IBaritone}
-     * instance because {@link ICommandSystem} itself controls global behavior for {@link Command}s.
+     * instance because {@link ICommandSystem} itself controls global behavior for {@link ICommand}s.
      *
      * @return The {@link ICommandSystem} instance.
      */

@@ -25,8 +25,6 @@ import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.IBlockStatePalette;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(BlockStateContainer.class)
 public abstract class MixinBlockStateContainer implements IBlockStateContainer {
@@ -36,20 +34,6 @@ public abstract class MixinBlockStateContainer implements IBlockStateContainer {
 
     @Shadow
     protected IBlockStatePalette<IBlockState> palette;
-
-    @Override
-    @Accessor
-    public abstract BitArray getStorage();
-
-    @Override
-    @Accessor
-    public abstract IBlockStatePalette getPalette();
-
-    @Override
-    @Unique
-    public IBlockState getFast(int index) {
-        return palette.get(((IBitArray) storage).getAtFast(index));
-    }
 
     @Override
     public IBlockState getAtPalette(int index) {

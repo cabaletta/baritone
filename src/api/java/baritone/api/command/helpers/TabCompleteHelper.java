@@ -15,13 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.command.helpers.tabcomplete;
+package baritone.api.command.helpers;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.utils.SettingsUtil;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.manager.ICommandManager;
 import net.minecraft.util.ResourceLocation;
 

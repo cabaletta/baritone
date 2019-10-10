@@ -43,30 +43,6 @@ public abstract class MixinBitArray implements IBitArray {
     @Final
     private int arraySize;
 
-    /**
-     * why did mojang divide by 64 instead of shifting right by 6 (2^6=64)?
-     * why did mojang modulo by 64 instead of ANDing with 63?
-     * also removed validation check
-     *
-     * @author LoganDark
-     */
-    @Override
-    @Unique
-    public int getAtFast(int index) {
-        final int b = bitsPerEntry;
-        final long mev = maxEntryValue;
-        final int i = index * b;
-        final int j = i >> 6;
-        final int l = i & 63;
-        final int k = ((index + 1) * b - 1) >> 6;
-
-        if (j == k) {
-            return (int) (this.longArray[j] >>> l & mev);
-        } else {
-            return (int) ((this.longArray[j] >>> l | longArray[k] << (64 - l)) & mev);
-        }
-    }
-
     @Override
     @Unique
     public int[] toArray() {

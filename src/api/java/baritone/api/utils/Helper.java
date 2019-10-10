@@ -27,6 +27,9 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 /**
+ * An ease-of-access interface to provide the {@link Minecraft} game instance,
+ * chat and console logging mechanisms, and the Baritone chat prefix.
+ *
  * @author Brady
  * @since 8/1/2018
  */
