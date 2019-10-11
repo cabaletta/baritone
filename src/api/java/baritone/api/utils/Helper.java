@@ -69,7 +69,7 @@ public interface Helper {
      */
     default void messageToast(ITextComponent title, ITextComponent message){
         GuiToast guitoast = Minecraft.getMinecraft().getToastGui();
-        BaritoneToast.addOrUpdate(guitoast, title, message, 10000); // If needed later, a showtime input can be passed
+        BaritoneToast.addOrUpdate(guitoast, title, message, 5000); // If needed later, a showtime input can be passed
     }
 
     /**
