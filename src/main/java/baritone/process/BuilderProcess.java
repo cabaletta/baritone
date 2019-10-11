@@ -111,7 +111,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     @Override
-    public boolean build(String name, File schematic, Vec3i origin) {
+    public boolean build(String name, File schematic, BetterBlockPos origin) {
         NBTTagCompound tag;
         try (FileInputStream fileIn = new FileInputStream(schematic)) {
             tag = CompressedStreamTools.readCompressed(fileIn);

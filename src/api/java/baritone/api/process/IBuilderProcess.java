@@ -17,6 +17,7 @@
 
 package baritone.api.process;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.ISchematic;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -49,9 +50,9 @@ public interface IBuilderProcess extends IBaritoneProcess {
      * @param origin    The origin position of the schematic being built
      * @return Whether or not the schematic was able to load from file
      */
-    boolean build(String name, File schematic, Vec3i origin);
+    boolean build(String name, File schematic, BetterBlockPos origin);
 
-    default boolean build(String schematicFile, BlockPos origin) {
+    default boolean build(String schematicFile, BetterBlockPos origin) {
         File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
         return build(schematicFile, file, origin);
     }
