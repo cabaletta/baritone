@@ -19,6 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.toasts.GuiToast;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
@@ -58,6 +59,41 @@ public interface Helper {
         prefix.appendText("]");
 
         return prefix;
+    }
+
+    /**
+     * Send a message to the toaster to show it as a popup
+     *
+     * @param title The title to display in popup as textcomponent
+     * @param message The message to display in popup as textcomponent
+     */
+    default void messageToast(ITextComponent title, ITextComponent message){
+        GuiToast guitoast = Minecraft.getMinecraft().getToastGui();
+        BaritoneToast.addOrUpdate(guitoast, title, message, 10000); // If needed later, a showtime input can be passed
+    }
+
+    /**
+     * Send a message to the toaster to show it as a popup
+     *
+     * @param title The title to display in popup (in default, baritone prefix)
+     * @param message The message to display in popup
+     */
+    default void messageToast(String title, String message){
+        ITextComponent titleLine = new TextComponentString(title);
+        ITextComponent subtitle = new TextComponentString(message);
+        messageToast(titleLine,subtitle);
+    }
+
+    /**
+     * Send a message to the toaster to show it as a popup
+     * Send components to popup with the [Baritone] prefix (title)
+     *
+     * @param message The message to display in popup
+     */
+    default void messageToast(String message){
+        ITextComponent title = Helper.getPrefix();
+        ITextComponent subtitle = new TextComponentString(message);
+        messageToast(title,subtitle);
     }
 
     /**
