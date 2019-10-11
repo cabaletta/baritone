@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.utils;
+package baritone.api.schematic;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;

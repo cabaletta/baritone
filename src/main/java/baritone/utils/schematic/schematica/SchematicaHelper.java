@@ -17,7 +17,7 @@
 
 package baritone.utils.schematic.schematica;
 
-import baritone.api.utils.ISchematic;
+import baritone.api.schematic.ISchematic;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import net.minecraft.util.Tuple;
