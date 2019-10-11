@@ -18,8 +18,8 @@
 package baritone.api.command.datatypes;
 
 import baritone.api.IBaritone;
-import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.ITextComponent;
 
@@ -37,7 +37,7 @@ public enum NearbyPlayer implements IDatatypeFor<EntityPlayer> {
     public EntityPlayer get(IDatatypeContext ctx) throws CommandException {
         final String username = ctx.getConsumer().getString();
         return getPlayers(ctx).stream()
-                .filter(s -> s.getName().toString().equalsIgnoreCase(username))
+                .filter(s -> s.getName().getString().equalsIgnoreCase(username))
                 .findFirst().orElse(null);
     }
 
