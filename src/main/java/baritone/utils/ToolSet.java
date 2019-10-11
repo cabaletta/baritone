@@ -99,15 +99,15 @@ public class ToolSet {
      * Calculate which tool on the hotbar is best for mining
      *
      * @param b the blockstate to be mined
-     * @return A byte containing the index in the tools array that worked best
+     * @return An int containing the index in the tools array that worked best
      */
-    public byte getBestSlot(Block b, boolean preferSilkTouch) {
-        byte best = 0;
+    public int getBestSlot(Block b, boolean preferSilkTouch) {
+        int best = 0;
         double highestSpeed = Double.NEGATIVE_INFINITY;
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
         IBlockState blockState = b.getDefaultState();
-        for (byte i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
