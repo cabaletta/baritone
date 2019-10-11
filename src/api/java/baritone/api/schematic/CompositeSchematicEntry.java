@@ -17,8 +17,6 @@
 
 package baritone.api.schematic;
 
-import baritone.api.utils.ISchematic;
-
 public class CompositeSchematicEntry {
 
     public final ISchematic schematic;

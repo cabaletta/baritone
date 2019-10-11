@@ -17,7 +17,7 @@
 
 package baritone.api.utils;
 
-import baritone.api.accessor.IItemStack;
+import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.IProperty;

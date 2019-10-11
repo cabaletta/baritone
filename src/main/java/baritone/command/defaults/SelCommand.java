@@ -27,7 +27,7 @@ import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.api.utils.ISchematic;
+import baritone.api.schematic.ISchematic;
 import baritone.api.command.Command;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.datatypes.ForEnumFacing;

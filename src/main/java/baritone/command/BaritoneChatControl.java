@@ -20,7 +20,7 @@ package baritone.command;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.api.accessor.IGuiScreen;
+import baritone.utils.accessor.IGuiScreen;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.event.listener.AbstractGameEventListener;

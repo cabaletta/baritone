@@ -17,7 +17,7 @@
 
 package baritone.launch.mixins;
 
-import baritone.api.accessor.IItemStack;
+import baritone.api.utils.accessor.IItemStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
