@@ -79,7 +79,9 @@ public class MixinGuiChat {
             if (event.completions.length == 0) {
                 this.pendingSuggestions = Suggestions.empty();
             } else {
-                int offset = this.inputField.getText().endsWith(" ") ? this.inputField.getCursorPosition() : 0;
+                int offset = this.inputField.getText().endsWith(" ")
+                        ? this.inputField.getCursorPosition()
+                        : this.inputField.getText().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
 
                 List<Suggestion> suggestionList = Stream.of(event.completions)
                         .map(s -> new Suggestion(StringRange.between(offset, offset + s.length()), s))
