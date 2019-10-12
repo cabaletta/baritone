@@ -1,86 +1,86 @@
-# Baritone
-[![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone/)
-[![Release](https://img.shields.io/github/release/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/releases/)
-[![License](https://img.shields.io/badge/license-LGPL--3.0%20with%20anime%20exception-green.svg)](LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
-[![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone/)
-[![GitHub All Releases](https://img.shields.io/github/downloads/cabaletta/baritone/total.svg)](https://github.com/cabaletta/baritone/releases/)
-[![Minecraft](https://img.shields.io/badge/MC-1.12.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/master/)
-[![Minecraft](https://img.shields.io/badge/MC-1.13.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.13.2/)
-[![Minecraft](https://img.shields.io/badge/MC-1.14.4-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.14.4/)
-[![Code of Conduct](https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat)](https://github.com/cabaletta/baritone/blob/master/CODE_OF_CONDUCT.md)
-[![Known Vulnerabilities](https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle)](https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/cabaletta/baritone/issues/)
-[![Issues](https://img.shields.io/github/issues/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/issues/)
-[![GitHub issues-closed](https://img.shields.io/github/issues-closed/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/issues?q=is%3Aissue+is%3Aclosed)
-[![Pull Requests](https://img.shields.io/github/issues-pr/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/pulls/)
-![Code size](https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg)
-![GitHub repo size](https://img.shields.io/github/repo-size/cabaletta/baritone.svg)
-![Lines of Code](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
-[![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
-[![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
-[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.8%20/%20v1.3.4%20/%20v1.4.1-brightgreen.svg)](https://impactclient.net/)
-[![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg)](https://github.com/fr1kin/ForgeHax/)
-[![Aristois add-on integration](https://img.shields.io/badge/Aristois%20add--on%20integration-v1.3.4%20/%20v1.4.1-green.svg)](https://gitlab.com/emc-mods-indrit/baritone_api)
-[![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-master%3F-green.svg)](https://wweclient.com/)
-[![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
-[![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com/)
-[![forthebadge](https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg)](http://forthebadge.com/)
+# Bawitonye
+[ ^w^ [Buiwd Status](https://twavis-ci.com/cabawetta/bawitonye.svg?bwanch=mastew)](https://twavis-ci.com/cabawetta/bawitonye/)
+[ ^w^ [Wewease](https://img.shiewds.io/github/wewease/cabawetta/bawitonye.svg)](https://github.com/cabawetta/bawitonye/weweases/)
+[ ^w^ [Wicense](https://img.shiewds.io/badge/wicense-WGPW--3.0%20with%20anyime%20exception-gween.svg)](WICENSE)
+[ ^w^ [Codacy Badge](https://api.codacy.com/pwoject/badge/Gwade/a73d037823b64a5faf597a18d71e3400)](https://www.codacy.com/app/weijuwv/bawitonye?utm_souwce=github.com&amp;utm_medium=wefewwaw&amp;utm_content=cabawetta/bawitonye&amp;utm_campaign=Badge_Gwade)
+[ ^w^ [HitCount](http://hits.dwyw.com/cabawetta/bawitonye.svg)](http://hits.dwyw.com/cabawetta/bawitonye/)
+[ ^w^ [GitHub Aww Weweases](https://img.shiewds.io/github/downwoads/cabawetta/bawitonye/totaw.svg)](https://github.com/cabawetta/bawitonye/weweases/)
+[ ^w^ [Minyecwaft](https://img.shiewds.io/badge/MC-1.12.2-bwightgween.svg)](https://github.com/cabawetta/bawitonye/twee/mastew/)
+[ ^w^ [Minyecwaft](https://img.shiewds.io/badge/MC-1.13.2-bwightgween.svg)](https://github.com/cabawetta/bawitonye/twee/1.13.2/)
+[ ^w^ [Minyecwaft](https://img.shiewds.io/badge/MC-1.14.4-bwightgween.svg)](https://github.com/cabawetta/bawitonye/twee/1.14.4/)
+[ ^w^ [Code of Conduct](https://img.shiewds.io/badge/%E2%9D%A4-code%20of%20conduct-bwue.svg?stywe=fwat)](https://github.com/cabawetta/bawitonye/bwob/mastew/CODE_OF_CONDUCT.md)
+[ ^w^ [Knyown Vuwnyewabiwities](https://snyk.io/test/github/cabawetta/bawitonye/badge.svg?tawgetFiwe=buiwd.gwadwe)](https://snyk.io/test/github/cabawetta/bawitonye?tawgetFiwe=buiwd.gwadwe)
+[ ^w^ [Contwibutions wewcome](https://img.shiewds.io/badge/contwibutions-wewcome-bwightgween.svg?stywe=fwat)](https://github.com/cabawetta/bawitonye/issues/)
+[ ^w^ [Issues](https://img.shiewds.io/github/issues/cabawetta/bawitonye.svg)](https://github.com/cabawetta/bawitonye/issues/)
+[ ^w^ [GitHub issues-cwosed](https://img.shiewds.io/github/issues-cwosed/cabawetta/bawitonye.svg)](https://github.com/cabawetta/bawitonye/issues?q=is%3Aissue+is%3Acwosed)
+[ ^w^ [Puww Wequests](https://img.shiewds.io/github/issues-pw/cabawetta/bawitonye.svg)](https://github.com/cabawetta/bawitonye/puwws/)
+ ^w^ [Code size](https://img.shiewds.io/github/wanguages/code-size/cabawetta/bawitonye.svg)
+ ^w^ [GitHub wepo size](https://img.shiewds.io/github/wepo-size/cabawetta/bawitonye.svg)
+ ^w^ [Winyes of Code](https://tokei.ws/b1/github/cabawetta/bawitonye?categowy=code)
+[ ^w^ [GitHub contwibutows](https://img.shiewds.io/github/contwibutows/cabawetta/bawitonye.svg)](https://github.com/cabawetta/bawitonye/gwaphs/contwibutows/)
+[ ^w^ [GitHub commits](https://img.shiewds.io/github/commits-since/cabawetta/bawitonye/v1.0.0.svg)](https://github.com/cabawetta/bawitonye/commit/)
+[ ^w^ [Impact integwation](https://img.shiewds.io/badge/Impact%20integwation-v1.2.8%20/%20v1.3.4%20/%20v1.4.1-bwightgween.svg)](https://impactcwient.nyet/)
+[ ^w^ [FowgeHax integwation](https://img.shiewds.io/badge/FowgeHax%20%22integwation%22-scuffed-yewwow.svg)](https://github.com/fw1kin/FowgeHax/)
+[ ^w^ [Awistois add-on integwation](https://img.shiewds.io/badge/Awistois%20add--on%20integwation-v1.3.4%20/%20v1.4.1-gween.svg)](https://gitwab.com/emc-mods-indwit/bawitonye_api)
+[ ^w^ [WWE integwation](https://img.shiewds.io/badge/WWE%20%22integwation%22-mastew%3F-gween.svg)](https://wwecwient.com/)
+[ ^w^ [Futuwe integwation](https://img.shiewds.io/badge/Futuwe%20integwation-Soon™%3F%3F%3F-wed.svg)](https://futuwecwient.nyet/)
+[ ^w^ [fowthebadge](https://fowthebadge.com/images/badges/buiwt-with-swag.svg)](http://fowthebadge.com/)
+[ ^w^ [fowthebadge](https://fowthebadge.com/images/badges/mom-made-pizza-wowws.svg)](http://fowthebadge.com/)
 
-A Minecraft pathfinder bot. 
+A Minyecwaft pathfindew bot. 
 
-Baritone is the pathfinding system used in [Impact](https://impactclient.net/) since 4.4. There's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Baritone's integration into Impact. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
+Bawitonye is the pathfinding system used in [Impact](https://impactcwient.nyet/) since 4.4. Thewe's a [showcase video](https://www.youtube.com/watch?v=yI8hgW_m6dQ) made by @Adovin#3153 on Bawitonye's integwation into Impact. [Hewe's](https://www.youtube.com/watch?v=StquF69-_wI) a video I made showing off what it can do.
 
-The easiest way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the v1.2.* forge api jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+The easiest way to instaww Bawitonye is to instaww [Impact](https://impactcwient.nyet/), which comes with Bawitonye. The second easiest way (fow 1.12.2 onwy) is to instaww the v1.2.* fowge api jaw fwom [weweases](https://github.com/cabawetta/bawitonye/weweases). Othewwise, see [Instawwation & setup](SETUP.md). Once Bawitonye is instawwed, wook [hewe](USAGE.md) fow instwuctions on how to use it.
 
-For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1). Or [with optifine](https://github.com/cabaletta/baritone/issues/797).
+Fow 1.14.4, [cwick hewe](https://www.dwopbox.com/s/wkmw3hjokd3qv0m/1.14.4-Bawitonye.zip?dw=1). Ow [with optifinye](https://github.com/cabawetta/bawitonye/issues/797).
 
-This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
-the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 and 1.13.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
+This pwoject is an updated vewsion of [MinyeBot](https://github.com/weijuwv/MinyeBot/),
+the owiginyaw vewsion of the bot fow Minyecwaft 1.8.9, webuiwt fow 1.12.2 and 1.13.2. Bawitonye focuses on wewiabiwity and pawticuwawwy pewfowmance (it's uvw [30x fastew](https://github.com/cabawetta/bawitonye/puww/180#issuecomment-423822928) than MinyeBot at cawcuwating paths).
 
-Have committed at least once a day from Aug 1 2018 to Aug 1 2019.
+Have committed at weast once a day fwom Aug 1 2018 to Aug 1 2019.
 
-1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
+1Weijuwv3DWTwGAfmmiTphjhXWvQiHg7K2
 
-# Getting Started
+# Getting Stawted
 
-Here are some links to help to get started:
+Hewe awe some winks to hewp to get stawted:
 
-- [Features](FEATURES.md)
+- [Featuwes](FEATUWES.md)
 
-- [Installation & setup](SETUP.md)
+- [Instawwation & setup](SETUP.md)
 
-- [API Javadocs](https://baritone.leijurv.com/)
+- [API Javadocs](https://bawitonye.weijuwv.com/)
 
-- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
+- [Settings](https://bawitonye.weijuwv.com/bawitonye/api/Settings.htmw#fiewd.detaiw)
 
-- [Usage (chat control)](USAGE.md)
+- [Usage (chat contwow)](USAGE.md)
 
 # API
 
-The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
-Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
-jar.
+The API is heaviwy documented, you can find the Javadocs fow the watest wewease [hewe](https://bawitonye.weijuwv.com/).
+Pwease nyote that usage of anything wocated outside of the ``bawitonye.api`` package is nyot suppowted by the API wewease
+jaw.
 
-Below is an example of basic usage for changing some settings, and then pathing to a X/Z goal.
+Bewow is an exampwe of basic usage fow changing some settings, and then pathing to a X/Z goaw.
 
 ```
-BaritoneAPI.getSettings().allowSprint.value = true;
-BaritoneAPI.getSettings().primaryTimeoutMS.value = 2000L;
+BawitonyeAPI.getSettings().awwowSpwint.vawue = twue;
+BawitonyeAPI.getSettings().pwimawyTimeoutMS.vawue = 2000W;
 
-BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalXZ(10000, 20000));
+BawitonyeAPI.getPwovidew().getPwimawyBawitonye().getCustomGoawPwocess().setGoawAndPath(nyew GoawXZ(10000, 20000));
 ```
 
 # FAQ
 
-## Can I use Baritone as a library in my custom utility client?
+## Can I use Bawitonye as a wibwawy in my custom utiwity cwient?
 
-That's what it's for, sure! (As long as usage is in compliance with the LGPL 3.0 License)
+That's what it's fow, suwe ^w^  (As wong as usage is in compwiance with the WGPW 3.0 Wicense)
 
 ## How is it so fast?
 
-Magic. (Hours of [leijurv](https://github.com/leijurv/) enduring excruciating pain)
+Magic. (Houws of [weijuwv](https://github.com/weijuwv/) enduwing excwuciating pain)
 
-## Why is it called Baritone?
+## Why is it cawwed Bawitonye?
 
-It's named for FitMC's deep sultry voice. 
+It's nyamed fow FitMC's deep suwtwy voice. 
