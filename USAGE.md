@@ -8,6 +8,12 @@ Baritone commands can also by default be typed in the chatbox. However if you ma
 
 To disable direct chat control (with no prefix), turn off the `chatControl` setting. To disable chat control with the `#` prefix, turn off the `prefixControl` setting. In Impact, `.b` cannot be disabled. Be careful that you don't leave yourself with all control methods disabled (if you do, reset your settings by deleting the file `minecraft/baritone/settings.txt` and relaunching).
 
+# For Baritone 1.2.10+, 1.3.5+, 1.4.2+
+
+Lots of the commands have changed, BUT `#help` is improved vastly (its clickable!).
+
+Try `#help` I promise it won't just send you back here =)
+
 # Commands
 
 **All** of these commands may need a prefix before them, as above ^.
@@ -37,12 +43,6 @@ Some common examples:
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
 - `version` to get the version of Baritone you're running
 - `damn` daniel
-
-
-New commands:
-- `sel` to manage selections
-- some others
-
 
 For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/utils/ExampleBaritoneControl.java).
 
