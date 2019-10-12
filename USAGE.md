@@ -10,7 +10,7 @@ To disable direct chat control (with no prefix), turn off the `chatControl` sett
 
 # For Baritone 1.2.10+, 1.3.5+, 1.4.2+
 
-Lots of the commands have changed, BUT `#help` is improved vastly (its clickable!).
+Lots of the commands have changed, BUT `#help` is improved vastly (its clickable! commands have tab completion! oh my!).
 
 Try `#help` I promise it won't just send you back here =)
 
