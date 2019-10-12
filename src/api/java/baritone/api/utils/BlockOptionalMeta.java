@@ -17,7 +17,7 @@
 
 package baritone.api.utils;
 
-import baritone.api.accessor.IItemStack;
+import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import net.minecraft.block.*;

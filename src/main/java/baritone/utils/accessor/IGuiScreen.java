@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.accessor;
+package baritone.utils.accessor;
 
 import java.net.URI;
 

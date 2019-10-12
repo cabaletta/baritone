@@ -15,12 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.command.helpers.pagination;
+package baritone.api.command.helpers;
 
 import baritone.api.utils.Helper;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidTypeException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;

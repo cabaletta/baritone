@@ -17,7 +17,7 @@
 
 package baritone.launch.mixins;
 
-import baritone.api.accessor.IGuiScreen;
+import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;

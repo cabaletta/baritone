@@ -17,7 +17,6 @@
 
 package baritone.api.schematic;
 
-import baritone.api.utils.ISchematic;
 import net.minecraft.block.BlockState;
 
 public class ShellSchematic extends MaskSchematic {

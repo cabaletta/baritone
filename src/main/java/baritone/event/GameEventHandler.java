@@ -71,13 +71,8 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
-    public void onPreTabComplete(TabCompleteEvent.Pre event) {
+    public void onPreTabComplete(TabCompleteEvent event) {
         listeners.forEach(l -> l.onPreTabComplete(event));
-    }
-
-    @Override
-    public void onPostTabComplete(TabCompleteEvent.Post event) {
-        listeners.forEach(l -> l.onPostTabComplete(event));
     }
 
     @Override

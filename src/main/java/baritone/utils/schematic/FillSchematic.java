@@ -17,7 +17,7 @@
 
 package baritone.utils.schematic;
 
-import baritone.api.utils.ISchematic;
+import baritone.api.schematic.ISchematic;
 import net.minecraft.block.BlockState;
 
 import java.util.List;

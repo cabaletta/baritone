@@ -261,6 +261,10 @@ public class MovementTraverse extends Movement {
             BlockPos against = positionsToBreak[0];
             if (feet.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
                 against = destDown.getBlock() == Blocks.VINE ? MovementPillar.getAgainst(new CalculationContext(baritone), dest.down()) : dest.offset(destDown.get(LadderBlock.FACING).getOpposite());
+                if (against == null) {
+                    logDirect("Unable to climb vines. Consider disabling allowVines.");
+                    return state.setStatus(MovementStatus.UNREACHABLE);
+                }
             }
             MovementHelper.moveTowards(ctx, state, against);
             return state;

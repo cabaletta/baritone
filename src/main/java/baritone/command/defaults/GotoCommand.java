@@ -24,7 +24,7 @@ import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.datatypes.RelativeCoordinate;
 import baritone.api.command.datatypes.RelativeGoal;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;

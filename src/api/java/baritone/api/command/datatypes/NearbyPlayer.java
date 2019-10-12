@@ -19,7 +19,7 @@ package baritone.api.command.datatypes;
 
 import baritone.api.IBaritone;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 

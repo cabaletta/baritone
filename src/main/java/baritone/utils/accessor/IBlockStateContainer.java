@@ -18,15 +18,8 @@
 package baritone.utils.accessor;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.util.BitArray;
-import net.minecraft.world.chunk.IBlockStatePalette;
 
 public interface IBlockStateContainer {
-    IBlockStatePalette getPalette();
-
-    BitArray getStorage();
-
-    BlockState getFast(int index);
 
     BlockState getAtPalette(int index);
 

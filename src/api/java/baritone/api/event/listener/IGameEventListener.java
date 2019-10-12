@@ -60,15 +60,7 @@ public interface IGameEventListener {
      *
      * @param event The event
      */
-    void onPreTabComplete(TabCompleteEvent.Pre event);
-
-    /**
-     * Runs whenever the client player tries to tab complete in chat once completions have been recieved from the
-     * server. This will only be called if the {@link TabCompleteEvent#cancel()} method was not called.
-     *
-     * @param event The event
-     */
-    void onPostTabComplete(TabCompleteEvent.Post event);
+    void onPreTabComplete(TabCompleteEvent event);
 
     /**
      * Runs before and after whenever a chunk is either loaded, unloaded, or populated.

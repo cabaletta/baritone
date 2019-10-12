@@ -17,7 +17,7 @@
 
 package baritone.api.command.datatypes;
 
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.command.exception.CommandException;

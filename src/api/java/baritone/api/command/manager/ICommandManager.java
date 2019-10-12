@@ -18,7 +18,7 @@
 package baritone.api.command.manager;
 
 import baritone.api.IBaritone;
-import baritone.api.command.Command;
+import baritone.api.command.ICommand;
 import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.registry.Registry;
 import net.minecraft.util.Tuple;
@@ -34,13 +34,13 @@ public interface ICommandManager {
 
     IBaritone getBaritone();
 
-    Registry<Command> getRegistry();
+    Registry<ICommand> getRegistry();
 
     /**
      * @param name The command name to search for.
      * @return The command, if found.
      */
-    Command getCommand(String name);
+    ICommand getCommand(String name);
 
     boolean execute(String string);
 

@@ -23,7 +23,7 @@ import baritone.api.command.Command;
 import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.cache.WorldScanner;
 
 import java.util.ArrayList;

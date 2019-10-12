@@ -154,7 +154,7 @@ public final class InventoryBehavior extends Behavior {
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
         ClientPlayerEntity p = ctx.player();
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
-        for (byte i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);
             // this usage of settings() is okay because it's only called once during pathing
             // (while creating the CalculationContext at the very beginning)
@@ -174,7 +174,7 @@ public final class InventoryBehavior extends Behavior {
             // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
             // so we need to select in the main hand something that doesn't right click
             // so not a shovel, not a hoe, not a block, etc
-            for (byte i = 0; i < 9; i++) {
+            for (int i = 0; i < 9; i++) {
                 ItemStack item = inv.get(i);
                 if (item.isEmpty() || item.getItem() instanceof PickaxeItem) {
                     if (select) {

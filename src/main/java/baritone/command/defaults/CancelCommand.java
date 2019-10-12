@@ -20,7 +20,7 @@ package baritone.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 
 import java.util.Arrays;
 import java.util.List;

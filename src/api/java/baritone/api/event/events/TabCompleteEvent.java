@@ -23,31 +23,13 @@ import baritone.api.event.events.type.Overrideable;
 /**
  * @author LoganDark
  */
-public abstract class TabCompleteEvent extends Cancellable {
+public final class TabCompleteEvent extends Cancellable {
 
-    public final Overrideable<String> prefix;
-    public final Overrideable<String[]> completions;
+    public final String prefix;
+    public String[] completions;
 
-    TabCompleteEvent(String prefix, String[] completions) {
-        this.prefix = new Overrideable<>(prefix);
-        this.completions = new Overrideable<>(completions);
-    }
-
-    public boolean wasModified() {
-        return prefix.wasModified() || completions.wasModified();
-    }
-
-    public static final class Pre extends TabCompleteEvent {
-
-        public Pre(String prefix) {
-            super(prefix, null);
-        }
-    }
-
-    public static final class Post extends TabCompleteEvent {
-
-        public Post(String prefix, String[] completions) {
-            super(prefix, completions);
-        }
+    public TabCompleteEvent(String prefix) {
+        this.prefix = prefix;
+        this.completions = null;
     }
 }
