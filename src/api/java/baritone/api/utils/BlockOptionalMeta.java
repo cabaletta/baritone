@@ -21,7 +21,6 @@ import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import net.minecraft.block.*;
-import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resources.*;
@@ -296,10 +295,7 @@ public final class BlockOptionalMeta {
         return manager;
     }
 
-    private static List<Item> drops(Block b) {
-        if (!Minecraft.getInstance().isOnExecutionThread()) {
-            throw new IllegalStateException();
-        }
+    private static synchronized List<Item> drops(Block b) {
         return drops.computeIfAbsent(b, block -> {
             ResourceLocation lootTableLocation = block.getLootTable();
             if (lootTableLocation == LootTables.EMPTY) {
