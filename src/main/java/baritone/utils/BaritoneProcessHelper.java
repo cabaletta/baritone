@@ -18,9 +18,13 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.cache.IWaypoint;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
+
 
 public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
 
@@ -36,5 +40,16 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
     @Override
     public boolean isTemporary() {
         return false;
+    }
+
+    public void returnhome() {
+        IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
+        if (waypoint != null) {
+            Goal goal = new GoalBlock(waypoint.getLocation());
+            baritone.getCustomGoalProcess().setGoalAndPath(goal);
+        } else {
+            logDirect("No recent waypoint found, can't return home");
+        }
+
     }
 }

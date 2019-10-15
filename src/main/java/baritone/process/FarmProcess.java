@@ -18,12 +18,15 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.cache.IWaypoint;
+import baritone.api.cache.Waypoint;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -37,20 +40,21 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.function.Predicate;
 
 public final class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
@@ -59,6 +63,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private List<BlockPos> locations;
     private int tickCount;
+    private boolean putInChest;
 
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
@@ -99,6 +104,26 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     public void farm() {
         active = true;
         locations = null;
+    }
+
+    public void selectChest() {
+        BetterBlockPos player = ctx.playerFeet();
+        Optional<BlockPos> blockPos = ctx.getSelectedBlock();
+        if (blockPos.isPresent()) {
+            if (player.getDistance(blockPos.get().getX(), blockPos.get().getY(), blockPos.get().getZ()) < 6) {
+                Block block = ctx.world().getBlockState(blockPos.get()).getBlock();
+                if (block.equals(Blocks.CHEST) || block.equals(Blocks.ENDER_CHEST) || block.equals(Blocks.TRAPPED_CHEST)) {
+                    baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.CHEST, blockPos.get()));
+                    baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.USECHEST, player));
+                } else {
+                    logDirect("Block is not a Chest");
+                }
+            } else {
+                logDirect("Block is not in Range");
+            }
+        } else {
+            logDirect("Please look at a chest");
+        }
     }
 
     private enum Harvest {
@@ -166,8 +191,119 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         return !stack.isEmpty() && stack.getItem().equals(Items.NETHER_WART);
     }
 
+    private boolean putDropsInChest(NonNullList invy) {
+        List<Slot> inv = ctx.player().openContainer.inventorySlots;
+        NonNullList<ItemStack> invx = invy;
+        for (int i = 0; i < invx.size(); i++) {
+            if (!invx.isEmpty() && PICKUP_DROPPED.contains(invx.get(i).getItem())) {
+                for (int j = 0; j < inv.size() - invx.size(); j++) {
+                    if (inv.get(j).getStack().isEmpty()) {
+                        ctx.playerController().windowClick(ctx.player().openContainer.windowId, i < 9 ? inv.size() - 9 + i : inv.size() - invx.size() + i - 9, 0, ClickType.QUICK_MOVE, ctx.player());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        if (Baritone.settings().checkInventory.value) {
+            boolean inventoryFull = true;
+            NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
+            HashMap<Item, ItemStack> smallestStack = new HashMap<>();
+            for (ItemStack stack : invy) {
+                if (stack.isEmpty()) {
+                    inventoryFull = false;
+                    break;
+                }
+                if (PICKUP_DROPPED.contains(stack.getItem())) {
+                    if (smallestStack.containsKey(stack.getItem())) {
+                        if (stack.getCount() < smallestStack.get(stack.getItem()).getCount()) {
+                            smallestStack.put(stack.getItem(), stack);
+                        }
+                    } else {
+                        smallestStack.put(stack.getItem(), stack);
+                    }
+
+                }
+
+            }
+            boolean allDropsHaveSpace = true;
+            for (ItemStack stack : smallestStack.values()) {
+                if (stack.getCount() == stack.getMaxStackSize())
+                    allDropsHaveSpace = false;
+            }
+            if (allDropsHaveSpace) {
+                inventoryFull = false;
+            }
+
+            if (putInChest) {
+                if (!putDropsInChest(invy)) {
+                    if (inventoryFull) {
+                        ctx.player().closeScreen();
+                        if (Baritone.settings().goHome.value) {
+                            returnhome();
+                        }
+                        onLostControl();
+                        logDirect("inventory and chest are full,cancel faring");
+                    } else {
+                        ctx.player().closeScreen();
+                        putInChest = false;
+                    }
+                }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+
+            }
+
+            if (inventoryFull) {
+                if (baritone.settings().putDropsInChest.value) {
+                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
+                    IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
+                    if (chestLoc != null && waypoint != null) {
+                        BlockPos chest = chestLoc.getLocation();
+                        if (waypoint.getLocation().getDistance(chest.getX(), chest.getY(), chest.getZ()) < 6) {
+                            Goal goal = new GoalBlock(waypoint.getLocation());
+                            if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart())) {
+                                Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
+                                if (rot.isPresent() && isSafeToCancel) {
+                                    baritone.getLookBehavior().updateTarget(rot.get(), true);
+                                    if (ctx.isLookingAt(chest)) {
+                                        if (ctx.player().openContainer == ctx.player().inventoryContainer) {
+                                            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                                        } else {
+                                            baritone.getInputOverrideHandler().clearAllKeys();
+                                            putInChest = true;
+                                        }
+                                    }
+                                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                                }
+                            } else {
+                                return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+                            }
+                        } else {
+                            logDirect("Chest not properly set please use #setchest again");
+                        }
+                    } else {
+                        logDirect("no chest set please use #setchest");
+                    }
+
+
+                } else {
+                    logDirect("Cancel Mining Inventory Full");
+                    if (Baritone.settings().goHome.value) {
+                        returnhome();
+                    }
+                    onLostControl();
+                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                }
+
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+
+            }
+        }
+
         ArrayList<Block> scan = new ArrayList<>();
         for (Harvest harvest : Harvest.values()) {
             scan.add(harvest.block);
@@ -183,6 +319,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             Baritone.getExecutor().execute(() -> locations = WorldScanner.INSTANCE.scanChunkRadius(ctx, scan, 256, 10, 10));
         }
         if (locations == null) {
+
+
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
         List<BlockPos> toBreak = new ArrayList<>();
@@ -225,6 +363,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                 }
+
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
@@ -240,6 +379,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                     if (ctx.isLookingAt(pos)) {
                         baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                     }
+
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
             }
@@ -251,6 +391,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
+
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
@@ -258,6 +399,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         if (calcFailed) {
             logDirect("Farm failed");
             onLostControl();
+            if (Baritone.settings().goHome.value) {
+                returnhome();
+            }
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
 
