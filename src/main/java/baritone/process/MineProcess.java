@@ -23,10 +23,7 @@ import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BlockUtils;
-import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.cache.CachedChunk;
 import baritone.cache.WorldScanner;
@@ -46,7 +43,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+
 import net.minecraft.util.NonNullList;
 
 import java.util.*;
@@ -67,6 +64,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private List<Block> disabledMining = new ArrayList<>();
     private List<BlockPos> knownOreLocations;
     private List<BlockPos> blacklist; // inaccessible
+    private Map<BlockPos, Long> anticipatedDrops;
     private BlockPos branchPoint;
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
@@ -79,7 +77,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public boolean isActive() {
-        return mining != null;
+        return filter != null;
     }
 
     @Override
@@ -95,9 +93,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     break;
                 }
                 List<Item> miningDrops = new ArrayList<Item>();
-                for (Block block : mining) {
+                for (BlockOptionalMeta block : filter.blocks()) {
 
-                    miningDrops.add(block.getItemDropped(mining.get(0).getDefaultState(), new Random(), 0));
+                    miningDrops.add(block.getBlock().getItemDropped(filter.blocks().get(0).getBlock().getDefaultState(), new Random(), 0));
                 }
 
                 if (miningDrops.contains(stack.getItem()) && stack.getMaxStackSize() != stack.getCount()) {
@@ -107,12 +105,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             }
             if (inventoryFull && !DropsHaveSpace.isEmpty()) {
                 inventoryFull = false;
-                for (Block block : mining) {
-                    if (!DropsHaveSpace.contains(block.getItemDropped(mining.get(0).getDefaultState(), new Random(), 0))) {
-                        disabledMining.add(block);
+                for (BlockOptionalMeta block : filter.blocks()) {
+                    if (!DropsHaveSpace.contains(block.getBlock().getItemDropped(filter.blocks().get(0).getBlock().getDefaultState(), new Random(), 0))) {
+                        disabledMining.add(block.getBlock());
                     }
                 }
-                mining.removeAll(disabledMining);
             }
 
             if (putInChest) {
@@ -126,7 +123,6 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                         logDirect("inventory and chest are full,cancel mining");
                     } else {
                         ctx.player().closeScreen();
-                        mining = disabledMining;
                         disabledMining = new ArrayList<>();
                         putInChest = false;
                     }
@@ -137,8 +133,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
             if (inventoryFull) {
                 if (baritone.settings().putDropsInChest.value) {
-                    disabledMining.addAll(mining);
-                    disabledMining = new ArrayList<>(new HashSet<>(disabledMining));
+                    filter.blocks().forEach(b-> disabledMining.add(b.getBlock()));
                     IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
                     IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
                     if (chestLoc != null && waypoint != null) {
@@ -185,11 +180,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
 
         if (desiredQuantity > 0) {
-            Item item = mining.get(0).getItemDropped(mining.get(0).getDefaultState(), new Random(), 0);
-            int curr = ctx.player().inventory.mainInventory.stream().filter(stack -> item.equals(stack.getItem())).mapToInt(ItemStack::getCount).sum();
-            System.out.println("Currently have " + curr + " " + item);
+            int curr = ctx.player().inventory.mainInventory.stream()
+                    .filter(stack -> filter.has(stack))
+                    .mapToInt(ItemStack::getCount).sum();
+            System.out.println("Currently have " + curr + " valid items");
             if (curr >= desiredQuantity) {
-                logDirect("Have " + curr + " " + item.getItemStackDisplayName(new ItemStack(item, 1)));
+                logDirect("Have " + curr + " valid items");
                 cancel();
                 return null;
             }
@@ -312,6 +308,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             CalculationContext context = new CalculationContext(baritone);
             List<BlockPos> locs2 = prune(context, new ArrayList<>(locs), filter, ORE_LOCATIONS_COUNT, blacklist, droppedItemsScan());
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
+            locs2.removeIf(pos-> disabledMining.contains(ctx.world().getBlockState(pos).getBlock()));
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2, context)).toArray(Goal[]::new));
             knownOreLocations = locs2;
             return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
@@ -363,6 +360,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             cancel();
             return;
         }
+        locs.removeIf(pos-> disabledMining.contains(ctx.world().getBlockState(pos).getBlock()));
         knownOreLocations = locs;
     }
 

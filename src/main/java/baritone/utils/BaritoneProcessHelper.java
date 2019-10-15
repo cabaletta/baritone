@@ -25,7 +25,6 @@ import baritone.api.process.IBaritoneProcess;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 
-
 public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
 
     protected final Baritone baritone;
