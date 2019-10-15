@@ -14,11 +14,17 @@ Lots of the commands have changed, BUT `#help` is improved vastly (its clickable
 
 Try `#help` I promise it won't just send you back here =)
 
+"wtf where is cleararea" -> look at `#help sel`
+
+"wtf where is goto death, goto waypoint" -> look at `#help wp`
+
+just look at `#help` lmao
+
 # Commands
 
 **All** of these commands may need a prefix before them, as above ^.
 
-`help` for (rudimentary) help. You can see what it says [here](https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/utils/ExampleBaritoneControl.java#L47).
+`help`
 
 To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
 
