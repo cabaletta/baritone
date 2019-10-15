@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -1021,6 +1021,11 @@ public final class Settings {
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
+
+  /**
+   * Character sequence for command chaining.
+   */
+  public final Setting<String> chainCommandSequence = new Setting<>("&");
 
     /**
      * A list of all settings

@@ -20,20 +20,20 @@ package baritone.command;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.utils.accessor.IGuiScreen;
+import baritone.api.command.argument.ICommandArgument;
+import baritone.api.command.exception.CommandNotEnoughArgumentsException;
+import baritone.api.command.exception.CommandNotFoundException;
+import baritone.api.command.helpers.TabCompleteHelper;
+import baritone.api.command.manager.ICommandManager;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.api.utils.SettingsUtil;
-import baritone.api.command.argument.ICommandArgument;
-import baritone.api.command.exception.CommandNotEnoughArgumentsException;
-import baritone.api.command.exception.CommandNotFoundException;
 import baritone.command.argument.ArgConsumer;
-import baritone.api.command.helpers.TabCompleteHelper;
-import baritone.api.command.manager.ICommandManager;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
+import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -61,17 +61,22 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
-        String msg = event.getMessage();
-        String prefix = settings.prefix.value;
-        boolean forceRun = msg.startsWith(FORCE_COMMAND_PREFIX);
-        if ((settings.prefixControl.value && msg.startsWith(prefix)) || forceRun) {
-            event.cancel();
-            String commandStr = msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
-            if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
-                new CommandNotFoundException(CommandManager.expand(commandStr).getFirst()).handle(null, null);
+        String originalMessage = event.getMessage();
+        String[] messagePieces = originalMessage.split(settings.chainCommandSequence.value);
+
+        for (String msg : messagePieces) {
+            msg = msg.trim();
+            String prefix = settings.prefix.value;
+            boolean forceRun = msg.startsWith(FORCE_COMMAND_PREFIX);
+            if ((settings.prefixControl.value && msg.startsWith(prefix)) || forceRun) {
+                event.cancel();
+                String commandStr = msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
+                if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
+                    new CommandNotFoundException(CommandManager.expand(commandStr).getFirst()).handle(null, null);
+                }
+            } else if ((settings.chatControl.value || settings.chatControlAnyway.value) && runCommand(msg)) {
+                event.cancel();
             }
-        } else if ((settings.chatControl.value || settings.chatControlAnyway.value) && runCommand(msg)) {
-            event.cancel();
         }
     }
 
