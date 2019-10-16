@@ -53,7 +53,6 @@ public class SetChestCommand extends Command {
                 if (block.equals(Blocks.CHEST) || block.equals(Blocks.ENDER_CHEST) || block.equals(Blocks.TRAPPED_CHEST)) {
                     baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.CHEST, new BetterBlockPos(blockPos.get())));
                     baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.USECHEST, player));
-                    
                     logDirect("Chest selected at " + x + " " + y + " " + z);
                 } else {
                     logDirect("Block is not a Chest");

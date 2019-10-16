@@ -60,6 +60,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     private List<BlockPos> locations;
     private int tickCount;
     private boolean usingChest;
+    private boolean noGoal=false;
 
     private static final BlockOptionalMetaLookup FILTER = new BlockOptionalMetaLookup(Arrays.asList(Harvest.values())
         .stream()
@@ -185,7 +186,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 Set<ItemStack> notFullStacks = notFullStacks(validDrops);
                 blacklistBlocks = getBlacklistBlocks(notFullStacks, FILTER);
 
-                if(notFullStacks.isEmpty()) {
+                if(notFullStacks.isEmpty()||noGoal) {
                     result = gotoChest(isSafeToCancel);
                     
                     usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
@@ -199,9 +200,10 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                             returnhome();
                         }
                         onLostControl();
-                        logDirect("Inventory and chest are full; no more mining.");
+                        logDirect("Inventory and chest are full; no more farming.");
                     }
                     usingChest = false;
+                    noGoal=false;
                 }
             }
 
@@ -339,6 +341,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 }
             }
         }
+        noGoal=goalz.isEmpty();
         return new PathingCommand(new GoalComposite(goalz.toArray(new Goal[0])), PathingCommandType.SET_GOAL_AND_PATH);
     }
 
