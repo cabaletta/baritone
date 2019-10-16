@@ -18,7 +18,6 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.cache.IWaypoint;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
@@ -38,13 +37,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-
-import net.minecraft.util.NonNullList;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -61,7 +56,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private static final int ORE_LOCATIONS_COUNT = 64;
 
     private BlockOptionalMetaLookup filter;
-    private List<Block> disabledMining = new ArrayList<>();
+    private Set<Item> validDrops;
+    private BlockOptionalMetaLookup blacklistBlocks;
     private List<BlockPos> knownOreLocations;
     private List<BlockPos> blacklist; // inaccessible
     private Map<BlockPos, Long> anticipatedDrops;
@@ -69,7 +65,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
-    private boolean putInChest;
+    private boolean usingChest = false;
 
     public MineProcess(Baritone baritone) {
         super(baritone);
@@ -83,100 +79,36 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (Baritone.settings().checkInventory.value) {
-            boolean inventoryFull = true;
-            NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-            List<Item> DropsHaveSpace = new ArrayList<Item>();
-            for (ItemStack stack : invy) {
+            boolean invFull = isInventoryFull();
+            blacklistBlocks = new BlockOptionalMetaLookup();
 
-                if (stack.isEmpty()) {
-                    inventoryFull = false;
-                    break;
-                }
-                List<Item> miningDrops = new ArrayList<Item>();
-                for (BlockOptionalMeta block : filter.blocks()) {
+            PathingCommand result = null;
 
-                    miningDrops.add(block.getBlock().getItemDropped(filter.blocks().get(0).getBlock().getDefaultState(), new Random(), 0));
-                }
+            if(invFull) {
+                Set<ItemStack> notFullStacks = notFullStacks(validDrops);
+                blacklistBlocks = getBlacklistBlocks(notFullStacks, filter);
 
-                if (miningDrops.contains(stack.getItem()) && stack.getMaxStackSize() != stack.getCount()) {
-                    DropsHaveSpace.add(stack.getItem());
-                }
-
-            }
-            if (inventoryFull && !DropsHaveSpace.isEmpty()) {
-                inventoryFull = false;
-                for (BlockOptionalMeta block : filter.blocks()) {
-                    if (!DropsHaveSpace.contains(block.getBlock().getItemDropped(filter.blocks().get(0).getBlock().getDefaultState(), new Random(), 0))) {
-                        disabledMining.add(block.getBlock());
-                    }
+                if(notFullStacks.isEmpty()) {
+                    result = gotoChest(isSafeToCancel);
+                    
+                    usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
                 }
             }
-
-            if (putInChest) {
-                if (!putDropsInChest(invy)) {
-                    if (inventoryFull) {
-                        ctx.player().closeScreen();
+            if(usingChest) {
+                if (putInventoryInChest(validDrops)) {
+                    ctx.player().closeScreen();
+                    if (invFull) {
                         if (Baritone.settings().goHome.value) {
                             returnhome();
                         }
                         cancel();
-                        logDirect("inventory and chest are full,cancel mining");
-                    } else {
-                        ctx.player().closeScreen();
-                        disabledMining = new ArrayList<>();
-                        putInChest = false;
+                        logDirect("Inventory and chest are full; no more mining.");
                     }
+                    usingChest = false;
                 }
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-
             }
 
-            if (inventoryFull) {
-                if (baritone.settings().putDropsInChest.value) {
-                    filter.blocks().forEach(b-> disabledMining.add(b.getBlock()));
-                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
-                    IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
-                    if (chestLoc != null && waypoint != null) {
-                        BlockPos chest = chestLoc.getLocation();
-                        if (waypoint.getLocation().getDistance(chest.getX(), chest.getY(), chest.getZ()) < 6) {
-                            Goal goal = new GoalBlock(waypoint.getLocation());
-                            if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart())) {
-                                Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
-                                if (rot.isPresent() && isSafeToCancel) {
-                                    baritone.getLookBehavior().updateTarget(rot.get(), true);
-                                    if (ctx.isLookingAt(chest)) {
-                                        if (ctx.player().openContainer == ctx.player().inventoryContainer) {
-                                            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                                        } else {
-                                            baritone.getInputOverrideHandler().clearAllKeys();
-                                            putInChest = true;
-                                        }
-                                    }
-                                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-                                }
-                            } else {
-                                return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
-                            }
-                        } else {
-                            logDirect("Chest not properly set please use #setchest again");
-                        }
-                    } else {
-                        logDirect("no chest set please use #setchest");
-                    }
-
-
-                } else {
-                    logDirect("Cancel Mining Inventory Full");
-                    if (Baritone.settings().goHome.value) {
-                        returnhome();
-                    }
-                    cancel();
-                    return null;
-                }
-
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-
-            }
+            if(result != null) return result;
         }
 
         if (desiredQuantity > 0) {
@@ -253,27 +185,6 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return command;
     }
 
-    private boolean putDropsInChest(NonNullList invy) {
-        List<Slot> inv = ctx.player().openContainer.inventorySlots;
-        List<Item> drops = new ArrayList<>();
-        NonNullList<ItemStack> invx = invy;
-        for (Block b : disabledMining) {
-            drops.add(b.getItemDropped(disabledMining.get(0).getDefaultState(), new Random(), 0));
-        }
-        for (int i = 0; i < invx.size(); i++) {
-            if (!invx.isEmpty() && drops.contains(invx.get(i).getItem())) {
-                for (int j = 0; j < inv.size() - invx.size(); j++) {
-                    if (inv.get(j).getStack().isEmpty()) {
-                        ctx.playerController().windowClick(ctx.player().openContainer.windowId, i < 9 ? inv.size() - 9 + i : inv.size() - invx.size() + i - 9, 0, ClickType.QUICK_MOVE, ctx.player());
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-
     private void updateLoucaSystem() {
         Map<BlockPos, Long> copy = new HashMap<>(anticipatedDrops);
         ctx.getSelectedBlock().ifPresent(pos -> {
@@ -308,7 +219,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             CalculationContext context = new CalculationContext(baritone);
             List<BlockPos> locs2 = prune(context, new ArrayList<>(locs), filter, ORE_LOCATIONS_COUNT, blacklist, droppedItemsScan());
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
-            locs2.removeIf(pos-> disabledMining.contains(ctx.world().getBlockState(pos).getBlock()));
+            locs2.removeIf(pos-> blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock()));
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2, context)).toArray(Goal[]::new));
             knownOreLocations = locs2;
             return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
@@ -360,7 +271,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             cancel();
             return;
         }
-        locs.removeIf(pos-> disabledMining.contains(ctx.world().getBlockState(pos).getBlock()));
+        locs.removeIf(pos-> blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock()));
         knownOreLocations = locs;
     }
 
@@ -446,7 +357,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         for (Entity entity : ctx.world().loadedEntityList) {
             if (entity instanceof EntityItem) {
                 EntityItem ei = (EntityItem) entity;
-                if (filter.has(ei.getItem())) {
+                if (filter.has(ei.getItem()) && !blacklistBlocks.has(ei.getItem())) {
                     ret.add(new BlockPos(entity));
                 }
             }
@@ -563,20 +474,34 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public void mine(int quantity, BlockOptionalMetaLookup filter) {
-        putInChest = false;
+        usingChest = false;
         this.filter = filter;
         if (filter != null && !Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
             this.mine(quantity, (BlockOptionalMetaLookup) null);
             return;
         }
+
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
         this.blacklist = new ArrayList<>();
+        this.validDrops = new HashSet<>();
         this.branchPoint = null;
         this.branchPointRunaway = null;
         this.anticipatedDrops = new HashMap<>();
+        this.validDrops = new HashSet<>();
+        this.blacklistBlocks = new BlockOptionalMetaLookup();
         if (filter != null) {
+            for(BlockOptionalMeta bom : filter.blocks()) {
+                Block block = bom.getBlock();
+
+                Item item = block.getItemDropped(block.getDefaultState(), new Random(), 0);
+                Item ore = Item.getItemFromBlock(block);
+
+                this.validDrops.add(item);
+                this.validDrops.add(ore);
+            }
+
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
     }

@@ -18,15 +18,13 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.cache.IWaypoint;
-import baritone.api.cache.Waypoint;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -40,30 +38,33 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public final class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
 
     private boolean active;
 
+    private BlockOptionalMetaLookup blacklistBlocks;
     private List<BlockPos> locations;
     private int tickCount;
-    private boolean putInChest;
+    private boolean usingChest;
+
+    private static final BlockOptionalMetaLookup FILTER = new BlockOptionalMetaLookup(Arrays.asList(Harvest.values())
+        .stream()
+        .map(harvest -> harvest.block)
+        .collect(Collectors.toList()));
 
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
@@ -171,117 +172,40 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         return !stack.isEmpty() && stack.getItem().equals(Items.NETHER_WART);
     }
 
-    private boolean putDropsInChest(NonNullList invy) {
-        List<Slot> inv = ctx.player().openContainer.inventorySlots;
-        NonNullList<ItemStack> invx = invy;
-        for (int i = 0; i < invx.size(); i++) {
-            if (!invx.isEmpty() && PICKUP_DROPPED.contains(invx.get(i).getItem())) {
-                for (int j = 0; j < inv.size() - invx.size(); j++) {
-                    if (inv.get(j).getStack().isEmpty()) {
-                        ctx.playerController().windowClick(ctx.player().openContainer.windowId, i < 9 ? inv.size() - 9 + i : inv.size() - invx.size() + i - 9, 0, ClickType.QUICK_MOVE, ctx.player());
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (Baritone.settings().checkInventory.value) {
-            boolean inventoryFull = true;
-            NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-            HashMap<Item, ItemStack> smallestStack = new HashMap<>();
-            for (ItemStack stack : invy) {
-                if (stack.isEmpty()) {
-                    inventoryFull = false;
-                    break;
+            Set<Item> validDrops = new HashSet<Item>(PICKUP_DROPPED);
+            boolean invFull = isInventoryFull();
+            blacklistBlocks = new BlockOptionalMetaLookup();
+
+            PathingCommand result = null;
+
+            if(invFull) {
+                Set<ItemStack> notFullStacks = notFullStacks(validDrops);
+                blacklistBlocks = getBlacklistBlocks(notFullStacks, FILTER);
+
+                if(notFullStacks.isEmpty()) {
+                    result = gotoChest(isSafeToCancel);
+                    
+                    usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
                 }
-                if (PICKUP_DROPPED.contains(stack.getItem())) {
-                    if (smallestStack.containsKey(stack.getItem())) {
-                        if (stack.getCount() < smallestStack.get(stack.getItem()).getCount()) {
-                            smallestStack.put(stack.getItem(), stack);
-                        }
-                    } else {
-                        smallestStack.put(stack.getItem(), stack);
-                    }
-
-                }
-
             }
-            boolean allDropsHaveSpace = true;
-            for (ItemStack stack : smallestStack.values()) {
-                if (stack.getCount() == stack.getMaxStackSize())
-                    allDropsHaveSpace = false;
-            }
-            if (allDropsHaveSpace) {
-                inventoryFull = false;
-            }
-
-            if (putInChest) {
-                if (!putDropsInChest(invy)) {
-                    if (inventoryFull) {
-                        ctx.player().closeScreen();
+            if(usingChest) {
+                if (putInventoryInChest(validDrops)) {
+                    ctx.player().closeScreen();
+                    if (invFull) {
                         if (Baritone.settings().goHome.value) {
                             returnhome();
                         }
                         onLostControl();
-                        logDirect("inventory and chest are full,cancel faring");
-                    } else {
-                        ctx.player().closeScreen();
-                        putInChest = false;
+                        logDirect("Inventory and chest are full; no more mining.");
                     }
+                    usingChest = false;
                 }
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-
             }
 
-            if (inventoryFull) {
-                if (baritone.settings().putDropsInChest.value) {
-                    IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
-                    IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
-                    if (chestLoc != null && waypoint != null) {
-                        BlockPos chest = chestLoc.getLocation();
-                        if (waypoint.getLocation().getDistance(chest.getX(), chest.getY(), chest.getZ()) < 6) {
-                            Goal goal = new GoalBlock(waypoint.getLocation());
-                            if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart())) {
-                                Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
-                                if (rot.isPresent() && isSafeToCancel) {
-                                    baritone.getLookBehavior().updateTarget(rot.get(), true);
-                                    if (ctx.isLookingAt(chest)) {
-                                        if (ctx.player().openContainer == ctx.player().inventoryContainer) {
-                                            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                                        } else {
-                                            baritone.getInputOverrideHandler().clearAllKeys();
-                                            putInChest = true;
-                                        }
-                                    }
-                                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-                                }
-                            } else {
-                                return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
-                            }
-                        } else {
-                            logDirect("Chest not properly set please use #setchest again");
-                        }
-                    } else {
-                        logDirect("no chest set please use #setchest");
-                    }
-
-
-                } else {
-                    logDirect("Cancel Mining Inventory Full");
-                    if (Baritone.settings().goHome.value) {
-                        returnhome();
-                    }
-                    onLostControl();
-                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-                }
-
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-
-            }
+            if(result != null) return result;
         }
 
         ArrayList<Block> scan = new ArrayList<>();
@@ -323,7 +247,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 continue;
             }
             if (readyForHarvest(ctx.world(), pos, state)) {
-                toBreak.add(pos);
+                if(!blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock())) {
+                    toBreak.add(pos);
+                }
                 continue;
             }
             if (state.getBlock() instanceof IGrowable) {
@@ -407,7 +333,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         for (Entity entity : ctx.world().loadedEntityList) {
             if (entity instanceof EntityItem && entity.onGround) {
                 EntityItem ei = (EntityItem) entity;
-                if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {
+                if (PICKUP_DROPPED.contains(ei.getItem().getItem()) && !blacklistBlocks.has(ei.getItem())) {
                     // +0.1 because of farmland's 0.9375 dummy height lol
                     goalz.add(new GoalBlock(new BlockPos(entity.posX, entity.posY + 0.1, entity.posZ)));
                 }
