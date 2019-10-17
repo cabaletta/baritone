@@ -94,18 +94,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
                 }
             }
-            if(usingChest) {
-                if (putInventoryInChest(validDrops)) {
-                    ctx.player().closeScreen();
-                    if (invFull) {
-                        if (Baritone.settings().goHome.value) {
-                            returnhome();
-                        }
-                        cancel();
-                        logDirect("Inventory and chest are full; no more mining.");
+            if(usingChest && putInventoryInChest(validDrops)) {
+                ctx.player().closeScreen();
+                if (invFull) {
+                    if (Baritone.settings().goHome.value) {
+                        returnhome();
                     }
-                    usingChest = false;
+                    cancel();
+                    logDirect("Inventory and chest are full; no more mining.");
                 }
+                usingChest = false;
             }
 
             if(result != null) return result;
