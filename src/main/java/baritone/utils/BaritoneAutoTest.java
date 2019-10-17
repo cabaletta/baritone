@@ -29,6 +29,7 @@ import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.GameType;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
@@ -102,6 +103,15 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             // the ingame pause menu gui doesn't actually pause our game
             if (mc.isSingleplayer() && !mc.getIntegratedServer().getPublic()) {
                 mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false);
+            }
+
+            //disables mobspawning and removes all hostile mobs
+            if(event.getCount()==150) {
+                mc.getIntegratedServer().worlds[0].getGameRules().setOrCreateGameRule("doMobSpawning", "false");
+                mc.getIntegratedServer().setDifficultyForAllWorlds(EnumDifficulty.PEACEFUL);
+            }
+            if(event.getCount()==160) {
+                mc.getIntegratedServer().setDifficultyForAllWorlds(EnumDifficulty.NORMAL);
             }
 
             // For the first 200 ticks, wait for the world to generate
