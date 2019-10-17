@@ -20,7 +20,6 @@ version '1.3.5'
 
 buildscript {
     repositories {
-        jcenter()
         maven {
             name = 'forge'
             url = 'http://files.minecraftforge.net/maven'
@@ -29,6 +28,7 @@ buildscript {
             name = 'impactdevelopment-repo'
             url = 'https://impactdevelopment.github.io/maven/'
         }
+        jcenter()
     }
 
     dependencies {
