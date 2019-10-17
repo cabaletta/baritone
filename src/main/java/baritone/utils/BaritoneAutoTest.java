@@ -29,9 +29,7 @@ import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameType;
-import net.minecraft.world.WorldSettings;
-import net.minecraft.world.WorldType;
+import net.minecraft.world.*;
 
 /**
  * Responsible for automatically testing Baritone's pathing algorithm by automatically creating a world with a specific
@@ -85,15 +83,21 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         if (mc.currentScreen instanceof GuiMainMenu) {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
-            WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.getByName("survival"), true, false, WorldType.DEFAULT);
+            WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.SURVIVAL, true, false, WorldType.DEFAULT);
             mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
         }
 
-        // If the integrated server is launched and the world has initialized, set the spawn point
-        // to our defined starting position
-        if (mc.getIntegratedServer() != null && mc.getIntegratedServer().worlds[0] != null) {
-            mc.getIntegratedServer().worlds[0].setSpawnPoint(STARTING_POSITION);
-            mc.getIntegratedServer().worlds[0].getGameRules().setOrCreateGameRule("spawnRadius", "0");
+        // If the integrated server is running, set the difficulty to peaceful
+        if (mc.getIntegratedServer() != null) {
+            mc.getIntegratedServer().setDifficultyForAllWorlds(EnumDifficulty.PEACEFUL);
+
+            for (final WorldServer world : mc.getIntegratedServer().worlds) {
+                // If the world has initialized, set the spawn point to our defined starting position
+                if (world != null) {
+                    world.setSpawnPoint(STARTING_POSITION);
+                    world.getGameRules().setOrCreateGameRule("spawnRadius", "0");
+                }
+            }
         }
 
         if (event.getType() == TickEvent.Type.IN) { // If we're in-game
@@ -101,7 +105,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             // Force the integrated server to share the world to LAN so that
             // the ingame pause menu gui doesn't actually pause our game
             if (mc.isSingleplayer() && !mc.getIntegratedServer().getPublic()) {
-                mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false);
+                mc.getIntegratedServer().shareToLAN(GameType.SURVIVAL, false);
             }
 
             // For the first 200 ticks, wait for the world to generate
