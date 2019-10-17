@@ -60,7 +60,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     private List<BlockPos> locations;
     private int tickCount;
     private boolean usingChest;
-    private boolean noGoal=false;
+    private boolean noGoal = false;
 
     private static final BlockOptionalMetaLookup FILTER = new BlockOptionalMetaLookup(Arrays.asList(Harvest.values())
         .stream()
@@ -192,19 +192,17 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                     usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
                 }
             }
-            if(usingChest) {
-                if (putInventoryInChest(validDrops)) {
-                    ctx.player().closeScreen();
-                    if (invFull) {
-                        if (Baritone.settings().goHome.value) {
-                            returnhome();
-                        }
-                        onLostControl();
-                        logDirect("Inventory and chest are full; no more farming.");
+            if(usingChest && putInventoryInChest(validDrops)) {
+                ctx.player().closeScreen();
+                if (invFull) {
+                    if (Baritone.settings().goHome.value) {
+                        returnhome();
                     }
-                    usingChest = false;
-                    noGoal=false;
+                    onLostControl();
+                    logDirect("Inventory and chest are full; no more farming.");
                 }
+                usingChest = false;
+                noGoal = false;
             }
 
             if(result != null) return result;
@@ -341,7 +339,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 }
             }
         }
-        noGoal=goalz.isEmpty();
+        noGoal = goalz.isEmpty();
         return new PathingCommand(new GoalComposite(goalz.toArray(new Goal[0])), PathingCommandType.SET_GOAL_AND_PATH);
     }
 
