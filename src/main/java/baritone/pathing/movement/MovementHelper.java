@@ -35,6 +35,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.IBlockAccess;
 
 import java.util.Optional;
 
@@ -132,27 +133,29 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return block == Blocks.WATER || block == Blocks.FLOWING_WATER;
         }
-        // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
-        // has already been accounted for above
-        // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
-        return block.isPassable(null, BlockPos.ORIGIN);
+
+        return block.isPassable(bsi.world, bsi.isPassableBlockPos.setPos(x, y, z));
     }
 
     /**
      * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
      * not including water, and not including ladders or vines or cobwebs (they slow us down)
      *
-     * @param context Calculation context to provide block state lookup
-     * @param x       The block's x position
-     * @param y       The block's y position
-     * @param z       The block's z position
+     * @param bsi Block State Interface to provide block state lookup
+     * @param x   The block's x position
+     * @param y   The block's y position
+     * @param z   The block's z position
      * @return Whether or not the block at the specified position
      */
-    static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
-        return fullyPassable(context.get(x, y, z));
+    static boolean fullyPassable(BlockStateInterface bsi, int x, int y, int z) {
+        return fullyPassable(bsi.world, bsi.isPassableBlockPos.setPos(x, y, z), bsi.get0(x, y, z));
     }
 
-    static boolean fullyPassable(IBlockState state) {
+    static boolean fullyPassable(IPlayerContext ctx, BlockPos pos) {
+        return fullyPassable(ctx.world(), pos, ctx.world().getBlockState(pos));
+    }
+
+    static boolean fullyPassable(IBlockAccess world, BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) { // early return for most common case
             return true;
@@ -174,7 +177,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
-        return block.isPassable(null, null);
+        return block.isPassable(world, pos);
     }
 
     static boolean isReplaceable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
