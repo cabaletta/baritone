@@ -141,14 +141,18 @@ public interface MovementHelper extends ActionCosts, Helper {
      * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
      * not including water, and not including ladders or vines or cobwebs (they slow us down)
      *
-     * @param bsi Block State Interface to provide block state lookup
-     * @param x   The block's x position
-     * @param y   The block's y position
-     * @param z   The block's z position
+     * @param context Calculation context to provide block state lookup
+     * @param x       The block's x position
+     * @param y       The block's y position
+     * @param z       The block's z position
      * @return Whether or not the block at the specified position
      */
-    static boolean fullyPassable(BlockStateInterface bsi, int x, int y, int z) {
-        return fullyPassable(bsi.world, bsi.isPassableBlockPos.setPos(x, y, z), bsi.get0(x, y, z));
+    static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
+        return fullyPassable(
+                context.bsi.world,
+                context.bsi.isPassableBlockPos.setPos(x, y, z),
+                context.bsi.get0(x, y, z)
+        );
     }
 
     static boolean fullyPassable(IPlayerContext ctx, BlockPos pos) {
