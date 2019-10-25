@@ -17,6 +17,7 @@
 
 package baritone.pathing.calc;
 
+import baritone.Baritone;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
@@ -25,6 +26,7 @@ import baritone.api.utils.Helper;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
+import baritone.pathing.movement.movements.MovementStraight;
 import baritone.pathing.path.CutoffPath;
 import baritone.utils.pathing.PathBase;
 
@@ -75,21 +77,67 @@ class Path extends PathBase {
         this.movements = new ArrayList<>();
         this.goal = goal;
         this.context = context;
-        PathNode current = end;
-        LinkedList<BetterBlockPos> tempPath = new LinkedList<>();
-        LinkedList<PathNode> tempNodes = new LinkedList<>();
+
         // Repeatedly inserting to the beginning of an arraylist is O(n^2)
         // Instead, do it into a linked list, then convert at the end
-        while (current != null) {
-            tempNodes.addFirst(current);
-            tempPath.addFirst(new BetterBlockPos(current.x, current.y, current.z));
-            current = current.previous;
-        }
+        LinkedList<BetterBlockPos> tempPath = new LinkedList<>();
+        LinkedList<PathNode> tempNodes = new LinkedList<>();
+
+        insertAndSimplifyNodesAndPath(tempPath, tempNodes, end, goal, context);
+
         // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
         // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         // to performantly do that conversion since it knows the length.
         this.path = new ArrayList<>(tempPath);
         this.nodes = new ArrayList<>(tempNodes);
+    }
+
+    private static void insertAndSimplifyNodesAndPath(LinkedList<BetterBlockPos> tempPath, LinkedList<PathNode> tempNodes, PathNode end, Goal goal, CalculationContext context) {
+        PathNode straightSrcNode = null;
+        BetterBlockPos straightDest = null;
+        double straightDestCost = Movement.COST_INF;
+
+        PathNode current = end;
+        while (current != null) {
+            BetterBlockPos currentPos = current.getPosition();
+
+            boolean shouldCompress = false;
+
+            // optimise the path by compressing movements into a single straight movement if possible
+            if (straightDest != null && currentPos.y == straightDest.y) {
+                // make sure that the cost is equal or lower
+                MovementStraight straight = new MovementStraight(context.baritone, currentPos, straightDest.x, straightDest.z);
+                if (straight.calculateCost(context) < Movement.COST_INF /*straightDestCost - current.cost*/) {
+                    shouldCompress = true;
+                }
+            }
+
+            if (shouldCompress) {
+                straightSrcNode = current;
+            } else {
+                if (straightSrcNode != null) {
+                    // only add the last node, not all of the nodes in between
+                    tempNodes.addFirst(straightSrcNode);
+                    tempPath.addFirst(straightSrcNode.getPosition());
+                }
+
+                tempNodes.addFirst(current);
+                tempPath.addFirst(currentPos);
+
+                straightSrcNode = null;
+                straightDest = currentPos;
+                straightDestCost = current.cost;
+            }
+
+            current = current.previous;
+        }
+
+        // don't forget the last one
+        if (straightSrcNode != null) {
+            // same as above
+            tempNodes.addFirst(straightSrcNode);
+            tempPath.addFirst(straightSrcNode.getPosition());
+        }
     }
 
     @Override
@@ -113,17 +161,35 @@ class Path extends PathBase {
         return false;
     }
 
-    private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double cost) {
+    private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double costFromNode) {
+        MovementStraight straightMovement = null;
+        double straightMovementCost = Movement.COST_INF;
+
+        // no support for favoring yet
+        if (!Baritone.settings().avoidance.value && src.y == dest.y) {
+            straightMovement = new MovementStraight(context.baritone, src, dest.x, dest.z);
+            straightMovementCost = straightMovement.calculateCost(context);
+            straightMovement.override(straightMovementCost);
+        }
+
         for (Moves moves : Moves.values()) {
             Movement move = moves.apply0(context, src);
             if (move.getDest().equals(dest)) {
-                // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
-                // however, taking into account possible favoring that could skew the node cost, we really want the stricter limit of the two
-                // so we take the minimum of the path node cost difference, and the calculated cost
-                move.override(Math.min(move.calculateCost(context), cost));
-                return move;
+                double moveCost = Math.min(move.calculateCost(context), costFromNode);
+                if (moveCost < straightMovementCost || straightMovement == null) {
+                    // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
+                    // however, taking into account possible favoring that could skew the node cost, we really want the stricter limit of the two
+                    // so we take the minimum of the path node cost difference, and the calculated cost
+                    move.override(moveCost);
+                    return move;
+                }
             }
         }
+
+        if (straightMovement != null) {
+            return straightMovement;
+        }
+
         // this is no longer called from bestPathSoFar, now it's in postprocessing
         Helper.HELPER.logDebug("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
         return null;

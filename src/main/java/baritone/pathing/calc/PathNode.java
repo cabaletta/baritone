@@ -104,4 +104,8 @@ public final class PathNode {
 
         return x == other.x && y == other.y && z == other.z;
     }
+
+    public BetterBlockPos getPosition() {
+        return new BetterBlockPos(x, y, z);
+    }
 }
