@@ -104,10 +104,10 @@ class Path extends PathBase {
             boolean shouldCompress = false;
 
             // optimise the path by compressing movements into a single straight movement if possible
-            if (straightDest != null && currentPos.y == straightDest.y) {
+            if (straightDest != null) {
                 // make sure that the cost is equal or lower
-                MovementStraight straight = new MovementStraight(context.baritone, currentPos, straightDest.x, straightDest.z);
-                if (straight.calculateCost(context) < Movement.COST_INF /*straightDestCost - current.cost*/) {
+                MovementStraight straight = new MovementStraight(context.baritone, currentPos, straightDest);
+                if (straight.calculateCost(context) < Movement.COST_INF/*straightDestCost - current.cost*/) {
                     shouldCompress = true;
                 }
             }
@@ -162,32 +162,26 @@ class Path extends PathBase {
     }
 
     private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double costFromNode) {
-        MovementStraight straightMovement = null;
-        double straightMovementCost = Movement.COST_INF;
-
         // no support for favoring yet
-        if (!Baritone.settings().avoidance.value && src.y == dest.y) {
-            straightMovement = new MovementStraight(context.baritone, src, dest.x, dest.z);
-            straightMovementCost = straightMovement.calculateCost(context);
-            straightMovement.override(straightMovementCost);
+        if (!Baritone.settings().avoidance.value) {
+            // try straight first to simplify path
+            MovementStraight straight = new MovementStraight(context.baritone, src, dest);
+            double cost = straight.calculateCost(context);
+            if (cost < Movement.COST_INF) {
+                straight.override(cost);
+                return straight;
+            }
         }
 
         for (Moves moves : Moves.values()) {
             Movement move = moves.apply0(context, src);
             if (move.getDest().equals(dest)) {
-                double moveCost = Math.min(move.calculateCost(context), costFromNode);
-                if (moveCost < straightMovementCost || straightMovement == null) {
-                    // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
-                    // however, taking into account possible favoring that could skew the node cost, we really want the stricter limit of the two
-                    // so we take the minimum of the path node cost difference, and the calculated cost
-                    move.override(moveCost);
-                    return move;
-                }
+                // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
+                // however, taking into account possible favoring that could skew the node cost, we really want the stricter limit of the two
+                // so we take the minimum of the path node cost difference, and the calculated cost
+                move.override(Math.min(move.calculateCost(context), costFromNode));
+                return move;
             }
-        }
-
-        if (straightMovement != null) {
-            return straightMovement;
         }
 
         // this is no longer called from bestPathSoFar, now it's in postprocessing

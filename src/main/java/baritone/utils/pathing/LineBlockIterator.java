@@ -17,19 +17,22 @@
 
 package baritone.utils.pathing;
 
+/**
+ * A helper to get a list of coordinates to "blocks" that touch a line in 2D.
+ */
 public final class LineBlockIterator {
 
     private final int startX, startY;
     private final int dirX, dirY;
     private final int mode, maxIter;
-    private final int otherAxisDelta;
+    private final double otherAxisDelta;
 
     private int i = -1;
 
     public int currX, currY;
 
     // Sometimes, one iteration can yield two blocks because the point is
-    // decimal so it corresponds to two blocks.
+    // not integer so it corresponds to two blocks.
     private int nextX, nextY;
     private boolean hasNextBeforeIter = false;
 
@@ -43,22 +46,28 @@ public final class LineBlockIterator {
         int deltaX = x2 - x1;
         int deltaY = y2 - y1;
 
+        int absDeltaX = Math.abs(deltaX);
+        int absDeltaY = Math.abs(deltaY);
+
         // We use the axis with the largest difference as a basis to find
         // points to make sure that we hit all possible points.
-        maxIter = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+        maxIter = Math.max(absDeltaX, absDeltaY);
 
-        if (deltaX == 0) {
+        if (absDeltaX == 0) {
             mode = 0;
             otherAxisDelta = 0; // unused
-        } else if (deltaY == 0) {
+        } else if (absDeltaY == 0) {
             mode = 1;
             otherAxisDelta = 0; // unused
+        } else if (absDeltaX == absDeltaY) {
+            mode = 2;
+            otherAxisDelta = 0; // unused
         } else {
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                mode = 2;
+            if (Math.abs(absDeltaX) > Math.abs(absDeltaY)) {
+                mode = 3;
                 otherAxisDelta = deltaY;
             } else {
-                mode = 3;
+                mode = 4;
                 otherAxisDelta = deltaX;
             }
         }
@@ -82,11 +91,14 @@ public final class LineBlockIterator {
         } else if (mode == 1) {
             currX = startX + i * dirX;
             currY = startY;
+        } else if (mode == 2) {
+            currX = startX + i;
+            currY = startY + i;
         } else {
-            double delta = (double) i / (double) maxIter * (double) otherAxisDelta;
+            double delta = (double) i / (double) maxIter * otherAxisDelta;
 
             // see comment in constructor
-            if (mode == 2) {
+            if (mode == 3) {
                 currX = startX + i * dirX;
                 nextX = startX + i * dirX;
                 currY = startY + (int) Math.floor(delta);
@@ -95,7 +107,7 @@ public final class LineBlockIterator {
                 if (currY != nextY) {
                     hasNextBeforeIter = true;
                 }
-            } else if (mode == 3) {
+            } else if (mode == 4) {
                 currX = startX + (int) Math.floor(delta);
                 nextX = startX + (int) Math.ceil(delta);
                 currY = startY + i * dirY;

@@ -35,13 +35,12 @@ import java.util.Set;
 
 public final class MovementStraight extends Movement {
 
-    public MovementStraight(IBaritone baritone, BetterBlockPos src, int destX, int destZ) {
-        super(baritone, src, new BetterBlockPos(destX, src.y, destZ), new BetterBlockPos[]{});
+    public MovementStraight(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
+        super(baritone, src, dest, new BetterBlockPos[]{});
     }
 
     // for now we only support blocks with the normal walk cost
-    private boolean isGoodForWalk(CalculationContext context, int x, int z) {
-        int y = src.y - 1;
+    private boolean isGoodForWalk(CalculationContext context, int x, int y, int z) {
         IBlockState state = context.get(x, y, z);
         Block block = state.getBlock();
         return MovementHelper.canWalkOn(context.bsi, x, y, z, state) &&
@@ -49,17 +48,42 @@ public final class MovementStraight extends Movement {
                 block != Blocks.SOUL_SAND;
     }
 
-    private LineBlockIterator getLineBlockIterator() {
+    private LineBlockIterator getHorizontalLineIterator() {
         return new LineBlockIterator(src.x, src.z, dest.x, dest.z);
     }
 
     private boolean checkIfPossible(CalculationContext context) {
-        LineBlockIterator iterator = getLineBlockIterator();
+        // can only fall and there must be a block under the player
+        if (dest.y > src.y || src.y < 1) {
+            return false;
+        }
+
+        int y = src.y;
+
+        LineBlockIterator iterator = getHorizontalLineIterator();
         while (iterator.next()) {
-            if (!isGoodForWalk(context, iterator.currX, iterator.currY) ||
-                    !MovementHelper.canWalkThrough(context.bsi, iterator.currX, src.y, iterator.currY) ||
-                    !MovementHelper.canWalkThrough(context.bsi, iterator.currX, src.y + 1, iterator.currY)) {
+            if (!MovementHelper.canWalkThrough(context.bsi, iterator.currX, y, iterator.currY) ||
+                    !MovementHelper.canWalkThrough(context.bsi, iterator.currX, y + 1, iterator.currY)) {
                 return false;
+            }
+
+            // Make sure that we can walk on the path, and if we can't, then
+            // try again but after falling down:
+            // ______
+            // [][][]\
+            // [][][]|____
+            // [][][][][][]
+            while (!isGoodForWalk(context, iterator.currX, y - 1, iterator.currY)) {
+                y--;
+
+                if (y < 1) {
+                    return false;
+                }
+
+                // make sure that we can fall
+                if (!MovementHelper.canWalkThrough(context.bsi, iterator.currX, y, iterator.currY)) {
+                    return false;
+                }
             }
         }
 
@@ -75,16 +99,25 @@ public final class MovementStraight extends Movement {
         double xDiff = dest.x - src.x;
         double zDiff = dest.z - src.z;
         double dist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
-        return dist * WALK_ONE_BLOCK_COST;
+        double cost = dist * WALK_ONE_BLOCK_COST;
+
+        if (context.canSprint) {
+            cost *= SPRINT_MULTIPLIER;
+        }
+
+        return cost;
     }
 
     @Override
     protected Set<BetterBlockPos> calculateValidPositions() {
         HashSet<BetterBlockPos> positions = new HashSet<>();
 
-        LineBlockIterator iterator = getLineBlockIterator();
+        LineBlockIterator iterator = getHorizontalLineIterator();
         while (iterator.next()) {
-            positions.add(new BetterBlockPos(iterator.currX, src.y, iterator.currY));
+            // TODO: only add the valid positions to use less memory
+            for (int y = dest.y; y <= src.y; y++) {
+                positions.add(new BetterBlockPos(iterator.currX, y, iterator.currY));
+            }
         }
 
         return positions;
@@ -92,7 +125,12 @@ public final class MovementStraight extends Movement {
 
     @Override
     protected boolean prepared(MovementState state) {
-        return super.prepared(state) && ctx.playerFeet().y == src.y;
+        if (!super.prepared(state)) {
+            return false;
+        }
+
+        // TODO: check if the path is still possible
+        return ctx.player().posY >= dest.y;
     }
 
     @Override
@@ -103,8 +141,17 @@ public final class MovementStraight extends Movement {
             if (ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             } else {
-                state.setInput(Input.SPRINT, true);
-                MovementHelper.moveTowards(ctx, state, dest);
+                if (ctx.player().onGround) {
+                    state.setInput(Input.SPRINT, false);
+                    MovementHelper.moveTowards(ctx, state, dest);
+                } else {
+                    // Wait until we fall to prevent ending on blocks in the air
+                    // that were not expected.
+                    // TODO: improve this because it doesn't always work
+                    state.setInput(Input.MOVE_FORWARD, false)
+                            .setInput(Input.SPRINT, false)
+                            .setTarget(new MovementState.MovementTarget());
+                }
             }
         }
 
