@@ -30,10 +30,7 @@ import baritone.pathing.movement.movements.MovementStraight;
 import baritone.pathing.path.CutoffPath;
 import baritone.utils.pathing.PathBase;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * A node based implementation of IPath
@@ -41,6 +38,8 @@ import java.util.List;
  * @author leijurv
  */
 class Path extends PathBase {
+
+    private static final double STRAIGHT_BETTER_THRESHOLD = 0.95;
 
     /**
      * The start position of this path
@@ -64,81 +63,45 @@ class Path extends PathBase {
 
     private final Goal goal;
 
-    private final int numNodes;
+    private final int totalNodeCount;
 
     private final CalculationContext context;
 
     private volatile boolean verified;
 
-    Path(PathNode start, PathNode end, int numNodes, Goal goal, CalculationContext context) {
+    Path(PathNode start, PathNode end, int totalNodeCount, Goal goal, CalculationContext context) {
         this.start = new BetterBlockPos(start.x, start.y, start.z);
         this.end = new BetterBlockPos(end.x, end.y, end.z);
-        this.numNodes = numNodes;
+        this.totalNodeCount = totalNodeCount;
         this.movements = new ArrayList<>();
         this.goal = goal;
         this.context = context;
-
-        // Repeatedly inserting to the beginning of an arraylist is O(n^2)
-        // Instead, do it into a linked list, then convert at the end
-        LinkedList<BetterBlockPos> tempPath = new LinkedList<>();
-        LinkedList<PathNode> tempNodes = new LinkedList<>();
-
-        insertAndSimplifyNodesAndPath(tempPath, tempNodes, end, goal, context);
-
-        // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
-        // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
-        // to performantly do that conversion since it knows the length.
-        this.path = new ArrayList<>(tempPath);
-        this.nodes = new ArrayList<>(tempNodes);
+        int pathNodeCount = countNodesBackwards(end);
+        this.path = new ArrayList<>(pathNodeCount);
+        this.nodes = new ArrayList<>(pathNodeCount);
+        this.insertNodesAndPath(end, pathNodeCount);
     }
 
-    private static final double STRAIGHT_BETTER_THRESHOLD = 0.95;
+    private static int countNodesBackwards(PathNode end) {
+        int count = 0;
+        while (end != null) {
+            end = end.previous;
+            count++;
+        }
+        return count;
+    }
 
-    private static void insertAndSimplifyNodesAndPath(LinkedList<BetterBlockPos> tempPath, LinkedList<PathNode> tempNodes, PathNode end, Goal goal, CalculationContext context) {
-        PathNode straightSrcNode = null;
-        BetterBlockPos straightDest = null;
-        double straightDestCost = Movement.COST_INF;
-
-        PathNode current = end;
-        while (current != null) {
-            BetterBlockPos currentPos = current.getPosition();
-
-            boolean shouldCompress = false;
-
-            // optimise the path by compressing movements into a single straight movement if possible
-            if (straightDest != null) {
-                // make sure that the cost is equal or lower
-                MovementStraight straight = new MovementStraight(context.baritone, currentPos, straightDest);
-                if (straight.calculateCost(context) * STRAIGHT_BETTER_THRESHOLD < straightDestCost - current.cost) {
-                    shouldCompress = true;
-                }
-            }
-
-            if (shouldCompress) {
-                straightSrcNode = current;
-            } else {
-                if (straightSrcNode != null) {
-                    // only add the last node, not all of the nodes in between
-                    tempNodes.addFirst(straightSrcNode);
-                    tempPath.addFirst(straightSrcNode.getPosition());
-                }
-
-                tempNodes.addFirst(current);
-                tempPath.addFirst(currentPos);
-
-                straightSrcNode = null;
-                straightDest = currentPos;
-                straightDestCost = current.cost;
-            }
-
-            current = current.previous;
+    private void insertNodesAndPath(PathNode end, int count) {
+        for (int i = 0; i < count; i++) {
+            this.path.add(null);
+            this.nodes.add(null);
         }
 
-        // don't forget the last one
-        if (straightSrcNode != null) {
-            // same as above
-            tempNodes.addFirst(straightSrcNode);
-            tempPath.addFirst(straightSrcNode.getPosition());
+        // fill backwards
+        while (--count >= 0) {
+            this.path.set(count, end.getPosition());
+            this.nodes.set(count, end);
+            end = end.previous;
         }
     }
 
@@ -163,28 +126,90 @@ class Path extends PathBase {
         return false;
     }
 
-    private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double costFromNode) {
+    private double getStraightMovementCost(BetterBlockPos src, BetterBlockPos dest) {
+        MovementStraight movement = new MovementStraight(context.baritone, src, dest);
+        return movement.calculateCost(context);
+    }
+
+    private boolean simplificationHelper(ArrayList<Movement> list, BetterBlockPos src, BetterBlockPos dest) {
+        if (dest == null) {
+            return true;
+        }
+        MovementStraight simplified = new MovementStraight(context.baritone, src, dest);
+        double cost = simplified.calculateCost(context);
+        if (cost >= Movement.COST_INF) {
+            Helper.HELPER.logDebug("straight movement became impossible during simplification?!");
+            return false;
+        }
+        simplified.override(cost);
+        list.add(simplified);
+        return true;
+    }
+
+    private void simplifyMovements() {
+        ArrayList<Movement> tmp = new ArrayList<>();
+        BetterBlockPos straightSrc = null, straightDest = null;
+        double nonStraightCost = 0.0;
+        for (Movement move : movements) {
+            BetterBlockPos moveDest = move.getDest();
+            nonStraightCost += move.getCost();
+            if (straightSrc != null && getStraightMovementCost(straightSrc, moveDest) * STRAIGHT_BETTER_THRESHOLD <= nonStraightCost) {
+                straightDest = moveDest;
+            } else {
+                if (!simplificationHelper(tmp, straightSrc, straightDest)) {
+                    return;
+                }
+                nonStraightCost = 0.0;
+                straightSrc = moveDest;
+                straightDest = null;
+                tmp.add(move);
+            }
+        }
+        if (!simplificationHelper(tmp, straightSrc, straightDest)) {
+            return;
+        }
+        movements.clear();
+        movements.addAll(tmp);
+    }
+
+    private void recreateNodesAndPathFromMovements() {
+        if (this.movements.isEmpty()) {
+            throw new IllegalStateException();
+        }
+        this.nodes.clear();
+        this.path.clear();
+        PathNode previous = null;
+        for (int i = -1; i < this.movements.size(); i++) {
+            BetterBlockPos pos;
+            double cost;
+            if (i == -1) {
+                pos = this.movements.get(0).getSrc();
+                cost = 0.0;
+            } else {
+                Movement movement = this.movements.get(i);
+                pos = movement.getDest();
+                cost = movement.getCost();
+            }
+            PathNode node = new PathNode(pos.x, pos.y, pos.z, goal);
+            node.cost = cost;
+            node.previous = previous;
+            previous = node;
+            this.nodes.add(node);
+            this.path.add(pos);
+        }
+    }
+
+    private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double originalCost) {
         for (Moves moves : Moves.values()) {
             Movement move = moves.apply0(context, src);
             if (move.getDest().equals(dest)) {
                 // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
                 // however, taking into account possible favoring that could skew the node cost, we really want the stricter limit of the two
                 // so we take the minimum of the path node cost difference, and the calculated cost
-                move.override(Math.min(move.calculateCost(context), costFromNode));
+                move.override(Math.min(move.calculateCost(context), originalCost));
                 return move;
             }
         }
-
-        // no support for favoring yet
-        if (!Baritone.settings().avoidance.value) {
-            MovementStraight straight = new MovementStraight(context.baritone, src, dest);
-            double cost = straight.calculateCost(context);
-            if (cost < Movement.COST_INF) {
-                straight.override(cost);
-                return straight;
-            }
-        }
-
         // this is no longer called from bestPathSoFar, now it's in postprocessing
         Helper.HELPER.logDebug("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
         return null;
@@ -197,6 +222,10 @@ class Path extends PathBase {
         }
         verified = true;
         boolean failed = assembleMovements();
+        if (Baritone.settings().experimentalSimplifyPath.value && !Baritone.settings().avoidance.value) {
+            simplifyMovements();
+            recreateNodesAndPathFromMovements();
+        }
         movements.forEach(m -> m.checkLoadedChunk(context));
 
         if (failed) { // at least one movement became impossible during calculation
@@ -226,7 +255,7 @@ class Path extends PathBase {
 
     @Override
     public int getNumNodesConsidered() {
-        return numNodes;
+        return totalNodeCount;
     }
 
     @Override

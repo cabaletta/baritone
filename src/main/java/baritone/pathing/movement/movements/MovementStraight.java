@@ -47,25 +47,15 @@ public final class MovementStraight extends Movement {
 
     private static final double RECENTER_DIST_THRESHOLD_SQR = 0.3 * 0.3;
 
-    // When the distance to the target is smaller than this, then we must
+    // When the input heuristic is smaller than this, then we must
     // stop sprinting to prevent overshooting the target.
-    private static final double CAN_STILL_SPRINT_DIST_SQR = 2.5 * 2.5;
-
-    // Same as above but for walking because we need to stop a little bit
-    // before the fall because of momentum.
-    private static final double CAN_STILL_WALK_DIST_SQR = 0.1 * 0.1;
+    private static final double CAN_STILL_SPRINT_THRESHOLD = 1.5 * 1.5;
 
     private static final double IGNORE_FALL_BOX_MIN_DIST_SQR = 4.0 * 4.0;
-
-    private static final double CANCEL_MOMENTUM_THRESHOLD_SQR = 0.05 * 0.05;
-
-    // TODO: only go toward the fall box when we're close enough
 
     // If not null, then the player must stay within this box
     // for the next fall until they touch the ground.
     private HorizontalIntAABB nextFallBox = null;
-
-    private boolean movedBackToCancelMomentum = false;
 
     public MovementStraight(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
         super(baritone, src, dest, new BetterBlockPos[]{});
@@ -102,7 +92,7 @@ public final class MovementStraight extends Movement {
         double distRemainingXZSqr = srcXZ.distanceToSqr(destXZ);
 
         Vector2 dirXZ = destXZ.minus(srcXZ).normalize();
-        Vector2 predictionIncrementXZ = dirXZ.times(0.5);
+        Vector2 predictionIncrementXZ = dirXZ.times(0.1);
 
         // predict the next positions
         for (int i = 0; i < 2000; i++) {
@@ -123,8 +113,8 @@ public final class MovementStraight extends Movement {
                     (int) Math.ceil(predictedAABB.maxZ)
             );
 
-            for (int x = simplerAABB.minX; x <= simplerAABB.maxX; x++) {
-                for (int z = simplerAABB.minY; z <= simplerAABB.maxY; z++) {
+            for (int x = simplerAABB.minX; x < simplerAABB.maxX; x++) {
+                for (int z = simplerAABB.minY; z < simplerAABB.maxY; z++) {
                     if (!MovementHelper.fullyPassable(context, x, feetY, z) ||
                             !MovementHelper.fullyPassable(context, x, feetY + 1, z)) {
                         return false;
@@ -260,10 +250,10 @@ public final class MovementStraight extends Movement {
                     double distRemainingXZSqr = playerPosXZ.distanceToSqr(destXZ);
 
                     Vector2 dirXZ = destXZ.minus(playerPosXZ).normalize();
-                    Vector2 predictionIncrementXZ = dirXZ.times(0.5);
+                    Vector2 predictionIncrementXZ = dirXZ.times(0.1);
 
                     // predict the next few positions
-                    for (int i = 0; i < 20; i++) {
+                    for (int i = 0; i < 80; i++) {
                         Vector2 delta = predictionIncrementXZ.times(i);
 
                         // don't go further than required!
@@ -327,7 +317,7 @@ public final class MovementStraight extends Movement {
 
     /**
      * Move toward the destination. If a fall box is present, then make sure to
-     * go stay inside of it.
+     * go and stay inside of it.
      *
      * @param state movement state
      */
@@ -335,7 +325,6 @@ public final class MovementStraight extends Movement {
         if (nextFallBox == null) {
             state.setInput(Input.SPRINT, true);
             MovementHelper.moveTowards(ctx, state, dest);
-            movedBackToCancelMomentum = false; // reset flag
             return;
         }
 
@@ -343,42 +332,36 @@ public final class MovementStraight extends Movement {
 
         Optional<Vector2> maybeMovement = nextFallBox.getShortestMovementToEnter(player.getEntityBoundingBox());
         if (!maybeMovement.isPresent()) {
-            // We're in the box so don't move and try to cancel the momentum
-            // in order to stay in it.
-            state.setInput(Input.SPRINT, false);
-            if (!movedBackToCancelMomentum && new Vector2(player.motionX, player.motionZ).magnitudeSqr() >= CANCEL_MOMENTUM_THRESHOLD_SQR) {
-                state.setInput(Input.MOVE_BACK, true);
-                movedBackToCancelMomentum = true;
-            } else {
-                state.setInput(Input.MOVE_BACK, false);
-            }
+            // We're in the box so don't move in order to stay inside.
+            state.setInput(Input.SPRINT, false)
+                    .setInput(Input.MOVE_FORWARD, false);
             return;
-        } else {
-            movedBackToCancelMomentum = false; // reset flag
         }
 
         Vector2 movement = maybeMovement.get();
-
-        double horizontalDistSqr = movement.magnitudeSqr();
+        double movementMagnitudeSqr = movement.magnitudeSqr();
 
         // Only try to go precisely to it if it is close enough.
         // If it is far, then going to the destination will get us closer to
         // it anyways because it is in our path so we can just go in the direction
         // of the destination.
-        if (horizontalDistSqr > IGNORE_FALL_BOX_MIN_DIST_SQR) {
+        if (movementMagnitudeSqr > IGNORE_FALL_BOX_MIN_DIST_SQR) {
             state.setInput(Input.SPRINT, true);
             MovementHelper.moveTowards(ctx, state, dest);
             return;
         }
 
-        if (horizontalDistSqr < CAN_STILL_WALK_DIST_SQR) {
+        double inputHeuristic = Math.sqrt(movementMagnitudeSqr) -
+                new Vector2(player.motionX, player.motionZ).magnitude();
+
+        if (inputHeuristic < 0.0) {
             // wait for the momentum to bring us in the hole
             state.setInput(Input.SPRINT, false)
                     .setInput(Input.MOVE_FORWARD, false);
             return;
         }
 
-        boolean canSprint = horizontalDistSqr >= CAN_STILL_SPRINT_DIST_SQR;
+        boolean canSprint = inputHeuristic >= CAN_STILL_SPRINT_THRESHOLD;
 
         state
                 // go inside the box
@@ -400,8 +383,8 @@ public final class MovementStraight extends Movement {
     }
 
     private static WillFallResult willFall(HorizontalIntAABB playerAABB, int floorBlockY, BlockStateInterface bsi) {
-        for (int x = playerAABB.minX; x <= playerAABB.maxX; x++) {
-            for (int z = playerAABB.minY; z <= playerAABB.maxY; z++) {
+        for (int x = playerAABB.minX; x < playerAABB.maxX; x++) {
+            for (int z = playerAABB.minY; z < playerAABB.maxY; z++) {
                 if (canWalkOn(bsi, x, floorBlockY, z)) {
                     // player is supported by at least one block
                     return WillFallResult.NO;
@@ -421,7 +404,6 @@ public final class MovementStraight extends Movement {
     public void reset() {
         super.reset();
         nextFallBox = null;
-        movedBackToCancelMomentum = false;
     }
 
 }

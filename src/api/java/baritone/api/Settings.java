@@ -1016,6 +1016,11 @@ public final class Settings {
      */
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
+    /**
+     * Try to simplify path using straight movements at post process
+     */
+    public final Setting<Boolean> experimentalSimplifyPath = new Setting<>(false);
+
 
     /**
      * A map of lowercase setting field names to their respective setting

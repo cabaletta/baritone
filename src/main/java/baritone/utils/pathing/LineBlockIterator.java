@@ -92,8 +92,8 @@ public final class LineBlockIterator {
             currX = startX + i * dirX;
             currY = startY;
         } else if (mode == 2) {
-            currX = startX + i;
-            currY = startY + i;
+            currX = startX + i * dirX;
+            currY = startY + i * dirY;
         } else {
             double delta = (double) i / (double) maxIter * otherAxisDelta;
 
