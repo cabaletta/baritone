@@ -92,6 +92,8 @@ class Path extends PathBase {
         this.nodes = new ArrayList<>(tempNodes);
     }
 
+    private static final double STRAIGHT_BETTER_THRESHOLD = 0.95;
+
     private static void insertAndSimplifyNodesAndPath(LinkedList<BetterBlockPos> tempPath, LinkedList<PathNode> tempNodes, PathNode end, Goal goal, CalculationContext context) {
         PathNode straightSrcNode = null;
         BetterBlockPos straightDest = null;
@@ -107,7 +109,7 @@ class Path extends PathBase {
             if (straightDest != null) {
                 // make sure that the cost is equal or lower
                 MovementStraight straight = new MovementStraight(context.baritone, currentPos, straightDest);
-                if (straight.calculateCost(context) < Movement.COST_INF/*straightDestCost - current.cost*/) {
+                if (straight.calculateCost(context) * STRAIGHT_BETTER_THRESHOLD < straightDestCost - current.cost) {
                     shouldCompress = true;
                 }
             }
@@ -162,17 +164,6 @@ class Path extends PathBase {
     }
 
     private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double costFromNode) {
-        // no support for favoring yet
-        if (!Baritone.settings().avoidance.value) {
-            // try straight first to simplify path
-            MovementStraight straight = new MovementStraight(context.baritone, src, dest);
-            double cost = straight.calculateCost(context);
-            if (cost < Movement.COST_INF) {
-                straight.override(cost);
-                return straight;
-            }
-        }
-
         for (Moves moves : Moves.values()) {
             Movement move = moves.apply0(context, src);
             if (move.getDest().equals(dest)) {
@@ -181,6 +172,16 @@ class Path extends PathBase {
                 // so we take the minimum of the path node cost difference, and the calculated cost
                 move.override(Math.min(move.calculateCost(context), costFromNode));
                 return move;
+            }
+        }
+
+        // no support for favoring yet
+        if (!Baritone.settings().avoidance.value) {
+            MovementStraight straight = new MovementStraight(context.baritone, src, dest);
+            double cost = straight.calculateCost(context);
+            if (cost < Movement.COST_INF) {
+                straight.override(cost);
+                return straight;
             }
         }
 
