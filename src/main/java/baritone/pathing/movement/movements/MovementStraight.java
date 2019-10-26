@@ -55,6 +55,8 @@ public final class MovementStraight extends Movement {
     // before the fall because of momentum.
     private static final double CAN_STILL_WALK_DIST_SQR = 0.1 * 0.1;
 
+    private static final double IGNORE_FALL_BOX_MIN_DIST_SQR = 4.0 * 4.0;
+
     private static final double CANCEL_MOMENTUM_THRESHOLD_SQR = 0.05 * 0.05;
 
     // TODO: only go toward the fall box when we're close enough
@@ -89,61 +91,77 @@ public final class MovementStraight extends Movement {
             return false;
         }
 
-        // must end up on a block (let's be conservative for now)
-        if (!canWalkOn(context.bsi, dest.x, dest.y - 1, dest.z)) {
-            return false;
-        }
+        Vector2 srcXZ = new Vector2((double) src.x + 0.5, (double) src.z + 0.5);
+        Vector2 destXZ = new Vector2((double) dest.x + 0.5, (double) dest.z + 0.5);
+        int feetY = src.y;
 
-        int y = src.y;
+        AxisAlignedBB playerRelativeAABB = ctx.player()
+                .getEntityBoundingBox()
+                .offset(ctx.playerFeetAsVec().scale(-1.0));
 
-        // TODO: better
-        LineBlockIterator iterator = getHorizontalLineIterator();
-        while (iterator.next()) {
-            if (!MovementHelper.fullyPassable(context, iterator.currX, y, iterator.currY) ||
-                    !MovementHelper.fullyPassable(context, iterator.currX, y + 1, iterator.currY)) {
-                return false;
+        double distRemainingXZSqr = srcXZ.distanceToSqr(destXZ);
+
+        Vector2 dirXZ = destXZ.minus(srcXZ).normalize();
+        Vector2 predictionIncrementXZ = dirXZ.times(0.5);
+
+        // predict the next positions
+        for (int i = 0; i < 2000; i++) {
+            Vector2 delta = predictionIncrementXZ.times(i);
+
+            // don't go further than required!
+            if (delta.magnitudeSqr() > distRemainingXZSqr) {
+                break;
             }
 
-            // Make sure that we can walk on the path, and if we can't, then
-            // try again but after falling down:
-            // ______
-            // [][][]\
-            // [][][]|____
-            // [][][][][][]
-            while (!canWalkOn(context.bsi, iterator.currX, y - 1, iterator.currY)) {
-                y--;
+            Vector2 predictedPosXZ = srcXZ.plus(delta);
+            AxisAlignedBB predictedAABB = playerRelativeAABB
+                    .offset(predictedPosXZ.x, feetY, predictedPosXZ.y);
+            HorizontalIntAABB simplerAABB = new HorizontalIntAABB(
+                    (int) Math.floor(predictedAABB.minX),
+                    (int) Math.floor(predictedAABB.minZ),
+                    (int) Math.ceil(predictedAABB.maxX),
+                    (int) Math.ceil(predictedAABB.maxZ)
+            );
 
-                if (y < 1) {
+            for (int x = simplerAABB.minX; x <= simplerAABB.maxX; x++) {
+                for (int z = simplerAABB.minY; z <= simplerAABB.maxY; z++) {
+                    if (!MovementHelper.fullyPassable(context, x, feetY, z) ||
+                            !MovementHelper.fullyPassable(context, x, feetY + 1, z)) {
+                        return false;
+                    }
+                }
+            }
+
+            boolean isDestXZ = dest.x == (int) Math.floor(predictedPosXZ.x) &&
+                    dest.z == (int) Math.floor(predictedPosXZ.y);
+
+            // Loop until we find something that the player can land on if they
+            // are falling or just the feet block if they aren't.
+            while (true) {
+                // Whatever the block is, we don't care if we arrived at the
+                // destination. It's the next movement's job to ensure that it
+                // supports it.
+                if (isDestXZ && feetY == dest.y) {
+                    return true;
+                }
+
+                WillFallResult willFallResult = willFall(simplerAABB, feetY - 1, context.bsi);
+                if (willFallResult == WillFallResult.NO) {
+                    break;
+                } else if (willFallResult == WillFallResult.UNSUPPORTED_TERRAIN) {
                     return false;
                 }
 
-                // make sure that we can fall
-                if (!MovementHelper.fullyPassable(context, iterator.currX, y, iterator.currY)) {
+                feetY--;
+
+                if (feetY < dest.y) {
+                    // stuck below destination
                     return false;
                 }
             }
         }
 
-        // can't go up yet
-        if (y < dest.y) {
-            return false;
-        }
-
-        // last part is falling to the destination
-        while (y > dest.y) {
-            y--;
-
-            if (y < 1) {
-                return false;
-            }
-
-            // make sure that we can fall
-            if (!MovementHelper.fullyPassable(context, dest.x, y, dest.z)) {
-                return false;
-            }
-        }
-
-        return true;
+        return false;
     }
 
     @Override
@@ -152,18 +170,18 @@ public final class MovementStraight extends Movement {
             return COST_INF;
         }
 
-        // TODO: better
         double xDiff = dest.x - src.x;
         double zDiff = dest.z - src.z;
         double dist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
+
         double cost = dist * WALK_ONE_BLOCK_COST;
 
         if (context.canSprint) {
             cost *= SPRINT_MULTIPLIER;
         }
 
-        // return cost;
-        return 0.0;
+        // TODO: fall
+        return cost;
     }
 
     @Override
@@ -242,7 +260,7 @@ public final class MovementStraight extends Movement {
                     double distRemainingXZSqr = playerPosXZ.distanceToSqr(destXZ);
 
                     Vector2 dirXZ = destXZ.minus(playerPosXZ).normalize();
-                    Vector2 predictionIncrementXZ = dirXZ.times(0.4);
+                    Vector2 predictionIncrementXZ = dirXZ.times(0.5);
 
                     // predict the next few positions
                     for (int i = 0; i < 20; i++) {
@@ -268,7 +286,7 @@ public final class MovementStraight extends Movement {
                         if (willFallResult == WillFallResult.NO) {
                             // continue looping until we find a fall
                             continue;
-                        } else if (willFallResult == WillFallResult.UNEXPECTED_TERRAIN) {
+                        } else if (willFallResult == WillFallResult.UNSUPPORTED_TERRAIN) {
                             return state.setStatus(MovementStatus.UNREACHABLE);
                         }
 
@@ -282,7 +300,7 @@ public final class MovementStraight extends Movement {
                             }
 
                             willFallResult = willFall(simplerAABB, floorBlockY, bsi);
-                            if (willFallResult == WillFallResult.UNEXPECTED_TERRAIN) {
+                            if (willFallResult == WillFallResult.UNSUPPORTED_TERRAIN) {
                                 return state.setStatus(MovementStatus.UNREACHABLE);
                             }
                         }
@@ -343,6 +361,16 @@ public final class MovementStraight extends Movement {
 
         double horizontalDistSqr = movement.magnitudeSqr();
 
+        // Only try to go precisely to it if it is close enough.
+        // If it is far, then going to the destination will get us closer to
+        // it anyways because it is in our path so we can just go in the direction
+        // of the destination.
+        if (horizontalDistSqr > IGNORE_FALL_BOX_MIN_DIST_SQR) {
+            state.setInput(Input.SPRINT, true);
+            MovementHelper.moveTowards(ctx, state, dest);
+            return;
+        }
+
         if (horizontalDistSqr < CAN_STILL_WALK_DIST_SQR) {
             // wait for the momentum to bring us in the hole
             state.setInput(Input.SPRINT, false)
@@ -368,7 +396,7 @@ public final class MovementStraight extends Movement {
     private enum WillFallResult {
         YES,
         NO,
-        UNEXPECTED_TERRAIN,
+        UNSUPPORTED_TERRAIN,
     }
 
     private static WillFallResult willFall(HorizontalIntAABB playerAABB, int floorBlockY, BlockStateInterface bsi) {
@@ -379,10 +407,9 @@ public final class MovementStraight extends Movement {
                     return WillFallResult.NO;
                 }
 
-                // This should not happen because the cost calculation will
-                // return an infinite cost. We don't handle this case yet.
+                // We don't handle weird blocks yet.
                 if (!MovementHelper.fullyPassable(bsi.get0(x, floorBlockY, z))) {
-                    return WillFallResult.UNEXPECTED_TERRAIN;
+                    return WillFallResult.UNSUPPORTED_TERRAIN;
                 }
             }
         }
