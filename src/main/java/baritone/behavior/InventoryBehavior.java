@@ -18,6 +18,7 @@
 package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.Settings;
 import baritone.api.event.events.TickEvent;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
@@ -120,7 +121,7 @@ public final class InventoryBehavior extends Behavior {
                 }
             }
         }
-        return bestInd;
+        return  bestInd;
     }
 
     public boolean hasGenericThrowaway() {

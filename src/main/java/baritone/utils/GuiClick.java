@@ -31,6 +31,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -82,9 +83,13 @@ public class GuiClick extends GuiScreen {
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
-                ITextComponent component = new TextComponentString("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
+                Helper.HELPER.logDirect("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
+                ITextComponent component = new TextComponentString("Or just click here");
+                ITextComponent hoverComponent = new TextComponentString("Click me to run the command");
+                hoverComponent.getStyle().setColor(TextFormatting.GRAY);
                 component.getStyle()
                         .setColor(TextFormatting.WHITE)
+                        .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
                         .setClickEvent(new ClickEvent(
                                 ClickEvent.Action.RUN_COMMAND,
                                 FORCE_COMMAND_PREFIX + "help sel"

@@ -120,7 +120,11 @@ public class ToolSet {
                 }
             }
         }
-        return best;
+        if(Baritone.settings().autoTool.value){
+            return best;
+        }else{
+            return player.inventory.currentItem;
+        }
     }
 
     /**

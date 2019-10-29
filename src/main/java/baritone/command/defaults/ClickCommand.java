@@ -36,7 +36,7 @@ public class ClickCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         baritone.openClick();
-        logDirect("aight dude");
+        logToast("Click GUI Opened");
     }
 
     @Override
