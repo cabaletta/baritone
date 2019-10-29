@@ -20,8 +20,8 @@ package baritone.api;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
@@ -178,9 +178,7 @@ public final class Settings {
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
             Blocks.CHEST,
-            Blocks.TRAPPED_CHEST,
-            Blocks.SIGN,
-            Blocks.WALL_SIGN
+            Blocks.TRAPPED_CHEST
     )));
 
     /**
@@ -486,6 +484,22 @@ public final class Settings {
      * Fill in blocks behind you
      */
     public final Setting<Boolean> backfill = new Setting<>(false);
+
+    /**
+     * Change tool depending on what block you are breaking
+     */
+    public final Setting<Boolean> autoTool = new Setting<>(true);
+
+
+    /**
+     * Shows popup message in the upper right corner, such as when you make an advancement
+     */
+    public final Setting<Boolean> allowToast = new Setting<>(true);
+
+    /**
+     * The time of how long the message in pop-up message is shown, if below 1000L (1sec), just disable it instead...
+     */
+    public final Setting<Long> toastTimer = new Setting<>(5000L);
 
     /**
      * Print all the debug messages to chat
