@@ -111,6 +111,41 @@ public enum WorldScanner implements IWorldScanner {
         return res;
     }
 
+    @Override
+    public int repack(IPlayerContext ctx) {
+        return this.repack(ctx, 40);
+    }
+
+    @Override
+    public int repack(IPlayerContext ctx, int range) {
+        IChunkProvider chunkProvider = ctx.world().getChunkProvider();
+        ICachedWorld cachedWorld = ctx.worldData().getCachedWorld();
+
+        BetterBlockPos playerPos = ctx.playerFeet();
+
+        int playerChunkX = playerPos.getX() >> 4;
+        int playerChunkZ = playerPos.getZ() >> 4;
+
+        int minX = playerChunkX - range;
+        int minZ = playerChunkZ - range;
+        int maxX = playerChunkX + range;
+        int maxZ = playerChunkZ + range;
+
+        int queued = 0;
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                Chunk chunk = chunkProvider.getChunk(x, z, false, false);
+
+                if (chunk != null && !chunk.isEmpty()) {
+                    queued++;
+                    cachedWorld.queueForPacking(chunk);
+                }
+            }
+        }
+
+        return queued;
+    }
+
     private boolean scanChunkInto(int chunkX, int chunkZ, Chunk chunk, BlockOptionalMetaLookup filter, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY, int[] coordinateIterationOrder) {
         ChunkSection[] chunkInternalStorageArray = chunk.getSections();
         boolean foundWithinY = false;
@@ -146,27 +181,5 @@ public enum WorldScanner implements IWorldScanner {
             }
         }
         return foundWithinY;
-    }
-
-    public int repack(IPlayerContext ctx) {
-        IChunkProvider chunkProvider = ctx.world().getChunkProvider();
-        ICachedWorld cachedWorld = ctx.worldData().getCachedWorld();
-
-        BetterBlockPos playerPos = ctx.playerFeet();
-        int playerChunkX = playerPos.getX() >> 4;
-        int playerChunkZ = playerPos.getZ() >> 4;
-        int queued = 0;
-        for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
-            for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
-                Chunk chunk = chunkProvider.getChunk(x, z, false, false);
-
-                if (chunk != null && !chunk.isEmpty()) {
-                    queued++;
-                    cachedWorld.queueForPacking(chunk);
-                }
-            }
-        }
-
-        return queued;
     }
 }
