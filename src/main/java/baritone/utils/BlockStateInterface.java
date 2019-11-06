@@ -43,8 +43,9 @@ public class BlockStateInterface {
 
     private final Long2ObjectMap<Chunk> loadedChunks;
     private final WorldData worldData;
-    public final IBlockAccess world;
+    protected final IBlockAccess world;
     public final BlockPos.MutableBlockPos isPassableBlockPos;
+    public final IBlockAccess access;
 
     private Chunk prev = null;
     private CachedRegion prevCached = null;
@@ -75,6 +76,7 @@ public class BlockStateInterface {
             throw new IllegalStateException();
         }
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
+        this.access = new BlockStateInterfaceAccessWrapper(this);
     }
 
     public boolean worldContainsLoadedChunk(int blockX, int blockZ) {

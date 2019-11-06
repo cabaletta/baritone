@@ -134,7 +134,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return block == Blocks.WATER || block == Blocks.FLOWING_WATER;
         }
 
-        return block.isPassable(bsi.world, bsi.isPassableBlockPos.setPos(x, y, z));
+        return block.isPassable(bsi.access, bsi.isPassableBlockPos.setPos(x, y, z));
     }
 
     /**
@@ -149,7 +149,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
         return fullyPassable(
-                context.bsi.world,
+                context.bsi.access,
                 context.bsi.isPassableBlockPos.setPos(x, y, z),
                 context.bsi.get0(x, y, z)
         );
@@ -159,7 +159,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return fullyPassable(ctx.world(), pos, ctx.world().getBlockState(pos));
     }
 
-    static boolean fullyPassable(IBlockAccess world, BlockPos pos, IBlockState state) {
+    static boolean fullyPassable(IBlockAccess access, BlockPos pos, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) { // early return for most common case
             return true;
@@ -181,7 +181,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
-        return block.isPassable(world, pos);
+        return block.isPassable(access, pos);
     }
 
     static boolean isReplaceable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
