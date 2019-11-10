@@ -234,7 +234,7 @@ public final class Settings {
     /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
      * <p>
-     * This helps with speed at >=20m/s
+     * This helps with speed exceeding 20m/s
      */
     public final Setting<Boolean> overshootTraverse = new Setting<>(true);
 
