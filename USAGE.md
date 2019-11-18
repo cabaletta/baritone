@@ -16,7 +16,7 @@ Try `#help` I promise it won't just send you back here =)
 
 "wtf where is cleararea" -> look at `#help sel`
 
-"wtf where is goto death, goto waypoint" -> look at `#help wp`
+"wtf where is goto death, goto waypoint" -> look at `#help wp` (a "tag" is like "home" (created automatically on right clicking a bed) or "death" (created automatically on death) or "user" (has to be created manually)). So you might want `#wp save user coolbiome` then, to set the goal `#wp goal coolbiome` then `#path` to path to it. For death, `#wp goal death` (remember stuff is clickable!).
 
 just look at `#help` lmao
 

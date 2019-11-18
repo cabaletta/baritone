@@ -234,7 +234,7 @@ public final class Settings {
     /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
      * <p>
-     * This helps with speed at >=20m/s
+     * This helps with speed exceeding 20m/s
      */
     public final Setting<Boolean> overshootTraverse = new Setting<>(true);
 
@@ -247,6 +247,11 @@ public final class Settings {
      * How many ticks between right clicks are allowed. Default in game is 4
      */
     public final Setting<Integer> rightClickSpeed = new Setting<>(4);
+
+    /**
+     * Block reach distance
+     */
+    public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
 
     /**
      * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable

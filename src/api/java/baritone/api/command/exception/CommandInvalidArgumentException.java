@@ -23,12 +23,21 @@ public abstract class CommandInvalidArgumentException extends CommandErrorMessag
 
     public final ICommandArgument arg;
 
-    protected CommandInvalidArgumentException(ICommandArgument arg, String reason) {
-        super(String.format(
+    protected CommandInvalidArgumentException(ICommandArgument arg, String message) {
+        super(formatMessage(arg, message));
+        this.arg = arg;
+    }
+
+    protected CommandInvalidArgumentException(ICommandArgument arg, String message, Throwable cause) {
+        super(formatMessage(arg, message), cause);
+        this.arg = arg;
+    }
+
+    private static String formatMessage(ICommandArgument arg, String message) {
+        return String.format(
                 "Error at argument #%s: %s",
                 arg.getIndex() == -1 ? "<unknown>" : Integer.toString(arg.getIndex() + 1),
-                reason
-        ));
-        this.arg = arg;
+                message
+        );
     }
 }
