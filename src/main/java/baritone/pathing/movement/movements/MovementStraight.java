@@ -216,24 +216,9 @@ public final class MovementStraight extends Movement {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
 
-            // check player's position compared to the line from src to dest
             Vector2 srcXZ = new Vector2((double) src.x + 0.5, (double) src.z + 0.5);
             Vector2 destXZ = new Vector2((double) dest.x + 0.5, (double) dest.z + 0.5);
             Vector2 playerPosXZ = new Vector2(player.posX, player.posZ);
-            Vector2 closestPointXZ = MathUtils.getClosestPointOnSegment(srcXZ, destXZ, playerPosXZ);
-
-            // recenter?
-            if (playerPosXZ.distanceToSqr(closestPointXZ) >= RECENTER_DIST_THRESHOLD_SQR) {
-                return state
-                        .setTarget(new MovementState.MovementTarget(
-                                new Rotation(RotationUtils.calcRotationFromVec3d(playerFeet,
-                                        new Vec3d(closestPointXZ.x, player.posY, closestPointXZ.y),
-                                        ctx.playerRotations()).getYaw(), ctx.player().rotationPitch),
-                                false
-                        ))
-                        .setInput(Input.MOVE_FORWARD, true)
-                        .setInput(Input.SPRINT, true);
-            }
 
             // find the next fall
             if (player.onGround) {
@@ -309,25 +294,38 @@ public final class MovementStraight extends Movement {
                 }
             }
 
-            moveTowardDestinationButStayInFallBox(state);
+            if (nextFallBox == null) {
+                Vector2 closestPointXZ = MathUtils.getClosestPointOnSegment(srcXZ, destXZ, playerPosXZ);
+
+                // recenter?
+                if (playerPosXZ.distanceToSqr(closestPointXZ) >= RECENTER_DIST_THRESHOLD_SQR) {
+                    return state
+                            .setTarget(new MovementState.MovementTarget(
+                                    new Rotation(RotationUtils.calcRotationFromVec3d(playerFeet,
+                                            new Vec3d(closestPointXZ.x, player.posY, closestPointXZ.y),
+                                            ctx.playerRotations()).getYaw(), ctx.player().rotationPitch),
+                                    false
+                            ))
+                            .setInput(Input.MOVE_FORWARD, true)
+                            .setInput(Input.SPRINT, true);
+                } else {
+                    state.setInput(Input.SPRINT, true);
+                    MovementHelper.moveTowards(ctx, state, dest);
+                }
+            } else {
+                moveTowardDestinationButStayInFallBox(state);
+            }
         }
 
         return state;
     }
 
     /**
-     * Move toward the destination. If a fall box is present, then make sure to
-     * go and stay inside of it.
+     * Move toward the destination but stays inside the fall box.
      *
      * @param state movement state
      */
     private void moveTowardDestinationButStayInFallBox(MovementState state) {
-        if (nextFallBox == null) {
-            state.setInput(Input.SPRINT, true);
-            MovementHelper.moveTowards(ctx, state, dest);
-            return;
-        }
-
         EntityPlayerSP player = ctx.player();
 
         Optional<Vector2> maybeMovement = nextFallBox.getShortestMovementToEnter(player.getEntityBoundingBox());
@@ -391,7 +389,7 @@ public final class MovementStraight extends Movement {
                 }
 
                 // We don't handle weird blocks yet.
-                if (!MovementHelper.fullyPassable(bsi.get0(x, floorBlockY, z))) {
+                if (bsi.get0(x, floorBlockY, z).getBlock() != Blocks.AIR) {
                     return WillFallResult.UNSUPPORTED_TERRAIN;
                 }
             }
