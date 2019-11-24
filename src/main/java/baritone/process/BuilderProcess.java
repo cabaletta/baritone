@@ -26,7 +26,10 @@ import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.schematic.ISchematic;
-import baritone.api.utils.*;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -69,6 +72,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private int ticks;
     private boolean paused;
     private int layer;
+    private int numRepeats;
     private List<IBlockState> approxPlaceable;
 
     public BuilderProcess(Baritone baritone) {
@@ -95,6 +99,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.origin = new Vec3i(x, y, z);
         this.paused = false;
         this.layer = 0;
+        this.numRepeats = 0;
         this.observedCompleted = new LongOpenHashSet();
     }
 
@@ -391,7 +396,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 return onTick(calcFailed, isSafeToCancel);
             }
             Vec3i repeat = Baritone.settings().buildRepeat.value;
-            if (repeat.equals(new Vec3i(0, 0, 0))) {
+            int max = Baritone.settings().buildRepeatCount.value;
+            numRepeats++;
+            if (repeat.equals(new Vec3i(0, 0, 0)) || (max != -1 && numRepeats >= max)) {
                 logDirect("Done building");
                 onLostControl();
                 return null;
@@ -731,6 +738,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         schematic = null;
         realSchematic = null;
         layer = 0;
+        numRepeats = 0;
         paused = false;
         observedCompleted = null;
     }
