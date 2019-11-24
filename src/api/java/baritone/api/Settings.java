@@ -744,6 +744,11 @@ public final class Settings {
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
 
     /**
+     * How many times to buildrepeat. -1 for infinite.
+     */
+    public final Setting<Integer> buildRepeatCount = new Setting<>(-1);
+
+    /**
      * Allow standing above a block while mining it, in BuilderProcess
      * <p>
      * Experimental
