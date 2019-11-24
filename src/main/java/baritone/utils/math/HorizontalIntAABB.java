@@ -26,7 +26,10 @@ import java.util.Optional;
  */
 public class HorizontalIntAABB {
 
-    public int minX, minY, maxX, maxY;
+    public int minX;
+    public int minY;
+    public int maxX;
+    public int maxY;
 
     public HorizontalIntAABB(int minX, int minY, int maxX, int maxY) {
         this.minX = minX;

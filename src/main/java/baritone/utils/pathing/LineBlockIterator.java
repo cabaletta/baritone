@@ -22,18 +22,26 @@ package baritone.utils.pathing;
  */
 public final class LineBlockIterator {
 
-    private final int startX, startY;
-    private final int dirX, dirY;
-    private final int mode, maxIter;
+    private final int startX;
+    private final int startY;
+
+    private final int dirX;
+    private final int dirY;
+
+    private final int mode;
+    private final int maxIter;
+
     private final double otherAxisDelta;
 
     private int i = -1;
 
-    public int currX, currY;
+    public int currX;
+    public int currY;
 
     // Sometimes, one iteration can yield two blocks because the point is
     // not integer so it corresponds to two blocks.
-    private int nextX, nextY;
+    private int nextX;
+    private int nextY;
     private boolean hasNextBeforeIter = false;
 
     public LineBlockIterator(int x1, int y1, int x2, int y2) {

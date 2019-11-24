@@ -19,7 +19,8 @@ package baritone.utils.math;
 
 public class Vector2 {
 
-    public double x, y;
+    public double x;
+    public double y;
 
     public Vector2() {
         this(0.0, 0.0);

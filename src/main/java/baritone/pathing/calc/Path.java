@@ -84,8 +84,9 @@ class Path extends PathBase {
 
     private static int countNodesBackwards(PathNode end) {
         int count = 0;
-        while (end != null) {
-            end = end.previous;
+        PathNode current = end;
+        while (current != null) {
+            current = current.previous;
             count++;
         }
         return count;
@@ -98,10 +99,11 @@ class Path extends PathBase {
         }
 
         // fill backwards
+        PathNode current = end;
         while (--count >= 0) {
-            this.path.set(count, end.getPosition());
-            this.nodes.set(count, end);
-            end = end.previous;
+            this.path.set(count, current.getPosition());
+            this.nodes.set(count, current);
+            current = current.previous;
         }
     }
 
@@ -148,7 +150,8 @@ class Path extends PathBase {
 
     private void simplifyMovements() {
         ArrayList<Movement> tmp = new ArrayList<>();
-        BetterBlockPos straightSrc = null, straightDest = null;
+        BetterBlockPos straightSrc = null;
+        BetterBlockPos straightDest = null;
         double nonStraightCost = 0.0;
         for (Movement move : movements) {
             BetterBlockPos moveDest = move.getDest();
