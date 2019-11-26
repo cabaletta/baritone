@@ -85,14 +85,14 @@ public final class FallHelper {
 
         BlockStateInterface bsi = new BlockStateInterface(ctx);
 
-        int floorBlockY = (int) Math.floor(playerFeet.y - 1.0);
+        int feetBlockY = (int) Math.floor(playerFeet.y);
 
         // predict the next few positions
         GridCollisionIterator collisionIterator = new GridCollisionIterator(player.width, playerPosXZ, destXZ);
         for (int i = 0; i < 10 && collisionIterator.hasNext(); i++) {
             IntAABB2 playerAABB = collisionIterator.next();
 
-            WillFallResult willFallResult = willFall(playerAABB, floorBlockY, bsi);
+            WillFallResult willFallResult = willFall(playerAABB, feetBlockY - 1, bsi);
             if (willFallResult == WillFallResult.NO) {
                 // continue looping until we find a fall
                 continue;
@@ -100,61 +100,46 @@ public final class FallHelper {
                 return new NextFallResult(false);
             }
 
-            // Loop until we find something that the player can land on.
-            while (willFallResult == WillFallResult.YES) {
-                floorBlockY--;
-
-                if (floorBlockY < 0) {
-                    // fall into void?
-                    return new NextFallResult(false);
-                }
-
-                willFallResult = willFall(playerAABB, floorBlockY, bsi);
-                if (willFallResult == WillFallResult.UNSUPPORTED_TERRAIN) {
-                    return new NextFallResult(false);
-                }
-            }
-
-            // We know that there are all blocks on this AABB are
-            // fully passable because we just did the simulation,
-            // so if the player stays there, then they will be able
-            // to fall without hitting any block during the path.
-            // TODO: try to extend this box as much as possible to
-            //  limit constraints by checking for blocks
-            //  around too
-            return new NextFallResult(playerAABB, floorBlockY);
+            return getLandingBlock(playerAABB, feetBlockY, bsi)
+                    .map(b -> new NextFallResult(playerAABB, b))
+                    .orElseGet(() -> {
+                        // void or unsupported blocks
+                        return new NextFallResult(false);
+                    });
         }
 
         return new NextFallResult(true);
     }
 
+    static Optional<Integer> getLandingBlock(BetterBlockPos start, BlockStateInterface bsi) {
+        return getLandingBlock(new IntAABB2(start.x, start.z, start.x + 1, start.z + 1), start.y, bsi);
+    }
+
     /**
-     * Gets the block that the player will land on after a fall.
-     * If any unsupported blocks are encountered, returns
+     * Gets the Y coordinate of the block that the player will land on after a
+     * fall. If any unsupported blocks are encountered, returns
      * {@code Optional.empty()}.
      *
-     * @param start - the starting fall position
-     * @param bsi - the BSI
-     * @return the block that will player will land on
+     * @param playerAABB - the player's bounding box
+     * @param startY - the current player's Y position
+     * @return the Y coordinate of the block that will player will land on
      */
-    static Optional<BetterBlockPos> getLandingBlock(BetterBlockPos start, BlockStateInterface bsi) {
-        BetterBlockPos current = start.down();
+    static Optional<Integer> getLandingBlock(IntAABB2 playerAABB, int startY, BlockStateInterface bsi) {
+        int currentY = startY;
 
-        while (true) {
-            FallHelper.WillFallResult result = FallHelper.willFall(current, bsi);
+        while (currentY >= 0) {
+            FallHelper.WillFallResult result = FallHelper.willFall(playerAABB, currentY - 1, bsi);
             if (result == FallHelper.WillFallResult.NO) {
-                return Optional.of(current);
+                return Optional.of(currentY);
             } else if (result == FallHelper.WillFallResult.UNSUPPORTED_TERRAIN) {
                 return Optional.empty();
             }
 
-            current = current.down();
-
-            if (current.y < 0) {
-                // fall into void?
-                return Optional.empty();
-            }
+            currentY--;
         }
+
+        // fall into void?
+        return Optional.empty();
     }
 
     static final class NextFallResult {

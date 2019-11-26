@@ -20,9 +20,7 @@ package baritone.utils.pathing;
 import baritone.utils.math.IntAABB2;
 import baritone.utils.math.Vector2;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Let's say that you have a 2D grid of squares with size 1 and you have

@@ -147,17 +147,14 @@ public final class MovementStraight extends Movement {
             return COST_INF;
         }
 
-        double xDiff = dest.x - src.x;
-        double zDiff = dest.z - src.z;
-        double dist = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
-
-        double cost = dist * WALK_ONE_BLOCK_COST;
+        double xyDist = new Vector2(dest.x - src.x, dest.z - src.z).magnitude();
+        double cost = xyDist * WALK_ONE_BLOCK_COST;
 
         if (context.canSprint) {
             cost *= SPRINT_MULTIPLIER;
         }
 
-        // TODO: fall
+        // TODO: add fall cost
         return cost;
     }
 
@@ -249,6 +246,7 @@ public final class MovementStraight extends Movement {
     }
 
     private void extendFallBox(IntAABB2 fallBox, int fallStartY, int fallEndY) {
+        // TODO: make this better
         extendFallBoxHelper(fallBox, fallStartY, fallEndY, 0, -1);
         extendFallBoxHelper(fallBox, fallStartY, fallEndY, -1, 0);
         extendFallBoxHelper(fallBox, fallStartY, fallEndY, 0, 1);
@@ -259,7 +257,7 @@ public final class MovementStraight extends Movement {
         int x = (incrementX >= 0 ? fallBox.maxX : fallBox.minX) + incrementX;
         int z = (incrementZ >= 0 ? fallBox.maxY : fallBox.minY) + incrementZ;
 
-        if (canContinueAfterFall(x, z, fallStartY, fallEndY)) {
+        if (canFallAndContinueToDestination(x, z, fallStartY, fallEndY)) {
             if (incrementX > 0) {
                 fallBox.maxX += incrementX;
             } else if (incrementX < 0) {
@@ -274,18 +272,19 @@ public final class MovementStraight extends Movement {
         }
     }
 
-    private boolean canContinueAfterFall(int x, int z, int fallStartY, int fallEndY) {
+    private boolean canFallAndContinueToDestination(int x, int z, int fallStartY, int maxFallEndY) {
         BlockStateInterface bsi = new BlockStateInterface(ctx);
 
         // make sure that the whole column is fully passable
-        for (int y = fallEndY; y <= fallStartY; y++) {
+        for (int y = maxFallEndY; y <= fallStartY; y++) {
             FallHelper.WillFallResult result = FallHelper.willFall(new BetterBlockPos(x, y, z), bsi);
             if (result != FallHelper.WillFallResult.YES) {
                 return false;
             }
         }
 
-        if (!FallHelper.getLandingBlock(new BetterBlockPos(x, fallEndY, z), bsi).isPresent()) {
+        if (!FallHelper.getLandingBlock(new BetterBlockPos(x, maxFallEndY, z), bsi).isPresent()) {
+            // void or unsupported blocks
             return false;
         }
 
