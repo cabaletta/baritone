@@ -43,7 +43,7 @@ public final class MovementStraight extends Movement {
     // When the input heuristic is smaller than this, then we must
     // stop sprinting/start sneaking to prevent overshooting the target.
     private static final double CAN_SPRINT_THRESHOLD = 1.5 * 1.5;
-    private static final double CAN_WALK_THRESHOLD = 0.1 * 0.1;
+    private static final double CAN_WALK_THRESHOLD = 0.3 * 0.3;
 
     private static final double IGNORE_FALL_BOX_MIN_DIST_SQR = 4.0 * 4.0;
 
@@ -174,9 +174,14 @@ public final class MovementStraight extends Movement {
                 }
             }
 
-            if (validFallBox != null) {
+            if (!player.onGround && validFallBox != null) {
                 moveTowardsDestinationButStayInFallBox(state);
             } else {
+                // TODO: When we will extend the fall box, then sometimes the
+                //  player will land on another block that the block predicted
+                //  in calculateCost so we will have to do as if we started
+                //  another path again so we will have to change srcXZ here
+                //  to be the new source from the fall box.
                 Vector2 closestPointXZ = GeometryHelper.getClosestPointOnSegment(srcXZ, destXZ, playerPosXZ);
 
                 if (playerPosXZ.distanceToSqr(closestPointXZ) >= RECENTER_DIST_THRESHOLD_SQR) {
