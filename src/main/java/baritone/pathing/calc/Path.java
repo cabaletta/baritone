@@ -20,6 +20,7 @@ package baritone.pathing.calc;
 import baritone.Baritone;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
@@ -156,7 +157,8 @@ class Path extends PathBase {
         for (Movement move : movements) {
             BetterBlockPos moveDest = move.getDest();
             nonStraightCost += move.getCost();
-            if (getStraightMovementCost(straightSrc, moveDest) * STRAIGHT_BETTER_THRESHOLD <= nonStraightCost) {
+            double straightCost = getStraightMovementCost(straightSrc, moveDest);
+            if (straightCost < ActionCosts.COST_INF && straightCost * STRAIGHT_BETTER_THRESHOLD <= nonStraightCost) {
                 straightDest = moveDest;
             } else {
                 if (!simplificationHelper(tmp, straightSrc, straightDest)) {
