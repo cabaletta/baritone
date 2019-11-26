@@ -37,7 +37,7 @@ import java.util.Iterator;
  * See the images in the `doc/GridCollisionIterator` directory for a graphical
  * explanation.
  */
-final class GridCollisionIterator implements Iterator<GridCollisionIterator.CollisionData> {
+public final class GridCollisionIterator implements Iterator<GridCollisionIterator.CollisionData> {
 
     private static final double INCREMENT_MAGNITUDE = 0.1;
 
@@ -49,7 +49,7 @@ final class GridCollisionIterator implements Iterator<GridCollisionIterator.Coll
 
     private CollisionData nextCollision;
 
-    GridCollisionIterator(double slideSquareSize, Vector2 start, Vector2 end) {
+    public GridCollisionIterator(double slideSquareSize, Vector2 start, Vector2 end) {
         if (slideSquareSize > 1.0) {
             throw new IllegalArgumentException("sliding square must be smaller than other squares");
         }
@@ -114,7 +114,7 @@ final class GridCollisionIterator implements Iterator<GridCollisionIterator.Coll
         return new CollisionData(collidingSquares, pos);
     }
 
-    static final class CollisionData {
+    public static final class CollisionData {
         private final IntAABB2 collidingSquares;
         private final Vector2 position;
 

@@ -29,7 +29,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Optional;
 
-final class FallHelper {
+public final class FallHelper {
 
     public static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z) {
         IBlockState state = bsi.get0(x, y, z);
@@ -41,7 +41,7 @@ final class FallHelper {
                 state.getBlock().slipperiness == 0.6F;
     }
 
-    static WillFallResult willFall(BetterBlockPos floorBlockPos, BlockStateInterface bsi) {
+    public static WillFallResult willFall(BetterBlockPos floorBlockPos, BlockStateInterface bsi) {
         if (canWalkOn(bsi, floorBlockPos.x, floorBlockPos.y, floorBlockPos.z)) {
             // player is supported by at least one block
             return WillFallResult.NO;
@@ -57,7 +57,7 @@ final class FallHelper {
         return WillFallResult.YES;
     }
 
-    static WillFallResult willFall(IntAABB2 playerAABB, int floorBlockY, BlockStateInterface bsi) {
+    public static WillFallResult willFall(IntAABB2 playerAABB, int floorBlockY, BlockStateInterface bsi) {
         for (int x = playerAABB.minX; x < playerAABB.maxX; x++) {
             for (int z = playerAABB.minY; z < playerAABB.maxY; z++) {
                 WillFallResult result = willFall(new BetterBlockPos(x, floorBlockY, z), bsi);
@@ -76,7 +76,7 @@ final class FallHelper {
         UNSUPPORTED_TERRAIN,
     }
 
-    static NextFallResult findNextFall(IPlayerContext ctx, BetterBlockPos dest) {
+    public static NextFallResult findNextFall(IPlayerContext ctx, BetterBlockPos dest) {
         Vec3d playerFeet = ctx.playerFeetAsVec();
 
         PathSimulator pathSimulator = new PathSimulator(playerFeet, dest, new BlockStateInterface(ctx));
@@ -98,7 +98,7 @@ final class FallHelper {
         return new NextFallResult(pathPart.getFallBox(), pathPart.getEndY() - 1);
     }
 
-    static Optional<Integer> getLandingBlock(BetterBlockPos start, BlockStateInterface bsi) {
+    public static Optional<Integer> getLandingBlock(BetterBlockPos start, BlockStateInterface bsi) {
         return getLandingBlock(new IntAABB2(start.x, start.z, start.x + 1, start.z + 1), start.y, bsi);
     }
 
@@ -111,7 +111,7 @@ final class FallHelper {
      * @param startY - the current player's Y position
      * @return the Y coordinate of the block that will player will land on
      */
-    static Optional<Integer> getLandingBlock(IntAABB2 playerAABB, int startY, BlockStateInterface bsi) {
+    public static Optional<Integer> getLandingBlock(IntAABB2 playerAABB, int startY, BlockStateInterface bsi) {
         int currentY = startY - 1;
 
         while (currentY >= 0) {
@@ -129,7 +129,7 @@ final class FallHelper {
         return Optional.empty();
     }
 
-    static final class NextFallResult {
+    public static final class NextFallResult {
         private final boolean isPathStillValid;
         private final IntAABB2 fallBox;
         private final int floorBlockY;
@@ -146,16 +146,16 @@ final class FallHelper {
             this.floorBlockY = floorBlockY;
         }
 
-        boolean isPathStillValid() {
+        public boolean isPathStillValid() {
             return isPathStillValid;
         }
 
-        Optional<IntAABB2> getFallBox() {
+        public Optional<IntAABB2> getFallBox() {
             assertValid();
             return Optional.ofNullable(fallBox);
         }
 
-        int getFloorBlockY() {
+        public int getFloorBlockY() {
             assertValid();
             if (fallBox == null) {
                 throw new IllegalStateException("no fall but tried to get the floor block Y");

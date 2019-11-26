@@ -27,9 +27,9 @@ import net.minecraft.util.math.Vec3d;
 import java.util.Iterator;
 import java.util.Optional;
 
-final class PathSimulator implements Iterator<PathSimulator.PathPart> {
+public final class PathSimulator implements Iterator<PathSimulator.PathPart> {
 
-    static final double PLAYER_AABB_SIZE = 0.6;
+    public static final double PLAYER_AABB_SIZE = 0.6;
 
     private final BlockStateInterface bsi;
 
@@ -40,7 +40,7 @@ final class PathSimulator implements Iterator<PathSimulator.PathPart> {
 
     private PathPart nextPart = null;
 
-    PathSimulator(Vec3d start, BetterBlockPos dest, BlockStateInterface bsi) {
+    public PathSimulator(Vec3d start, BetterBlockPos dest, BlockStateInterface bsi) {
         this.bsi = bsi;
 
         // remove 0.1 to be conservative when looking for falls
@@ -156,7 +156,7 @@ final class PathSimulator implements Iterator<PathSimulator.PathPart> {
      * does not need to fall to complete this part, then {@code startY == endY}
      * and {@code fallBox == null}.
      */
-    static final class PathPart {
+    public static final class PathPart {
         private final double moveLength;
         private final int startY;
         private final int endY;
@@ -183,27 +183,27 @@ final class PathSimulator implements Iterator<PathSimulator.PathPart> {
             return new PathPart();
         }
 
-        double getMoveLength() {
+        public double getMoveLength() {
             assertPossible();
             return moveLength;
         }
 
-        int getStartY() {
+        public int getStartY() {
             assertPossible();
             return startY;
         }
 
-        int getEndY() {
+        public int getEndY() {
             assertPossible();
             return endY;
         }
 
-        IntAABB2 getFallBox() {
+        public IntAABB2 getFallBox() {
             assertPossible();
             return fallBox;
         }
 
-        boolean isImpossible() {
+        public boolean isImpossible() {
             return isImpossible;
         }
 
