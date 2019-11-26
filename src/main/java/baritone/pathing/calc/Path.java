@@ -150,13 +150,13 @@ class Path extends PathBase {
 
     private void simplifyMovements() {
         ArrayList<Movement> tmp = new ArrayList<>();
-        BetterBlockPos straightSrc = null;
+        BetterBlockPos straightSrc = movements.get(0).getSrc();
         BetterBlockPos straightDest = null;
         double nonStraightCost = 0.0;
         for (Movement move : movements) {
             BetterBlockPos moveDest = move.getDest();
             nonStraightCost += move.getCost();
-            if (straightSrc != null && getStraightMovementCost(straightSrc, moveDest) * STRAIGHT_BETTER_THRESHOLD <= nonStraightCost) {
+            if (getStraightMovementCost(straightSrc, moveDest) * STRAIGHT_BETTER_THRESHOLD <= nonStraightCost) {
                 straightDest = moveDest;
             } else {
                 if (!simplificationHelper(tmp, straightSrc, straightDest)) {
