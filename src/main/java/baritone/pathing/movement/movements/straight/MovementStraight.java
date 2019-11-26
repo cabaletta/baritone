@@ -249,8 +249,9 @@ public final class MovementStraight extends Movement {
 
         if (inputHeuristic < 0.0) {
             // wait for the momentum to bring us in the hole
-            state.setInput(Input.SPRINT, false)
-                    .setInput(Input.MOVE_FORWARD, false);
+            state.setInput(Input.MOVE_FORWARD, false)
+                    .setInput(Input.SPRINT, false)
+                    .setInput(Input.SNEAK, false);
             return;
         }
 
