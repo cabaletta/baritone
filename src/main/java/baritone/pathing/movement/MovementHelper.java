@@ -148,10 +148,14 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @return Whether or not the block at the specified position
      */
     static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
+        return fullyPassable(context.bsi, x, y, z);
+    }
+
+    static boolean fullyPassable(BlockStateInterface bsi, int x, int y, int z) {
         return fullyPassable(
-                context.bsi.access,
-                context.bsi.isPassableBlockPos.setPos(x, y, z),
-                context.bsi.get0(x, y, z)
+                bsi.access,
+                bsi.isPassableBlockPos.setPos(x, y, z),
+                bsi.get0(x, y, z)
         );
     }
 

@@ -17,23 +17,23 @@
 
 package baritone.utils.math;
 
-public class MathUtils {
+public class GeometryHelper {
 
     // from https://stackoverflow.com/a/9557244.
-    public static Vector2 getClosestPointOnSegment(Vector2 lineA, Vector2 lineB, Vector2 point) {
-        Vector2 ap = point.minus(lineA);
-        Vector2 ab = lineB.minus(lineA);
+    public static Vector2 getClosestPointOnSegment(Vector2 a, Vector2 b, Vector2 point) {
+        Vector2 ap = point.minus(a);
+        Vector2 ab = b.minus(a);
 
         double magnitudeABSqr = ab.magnitudeSqr();
         double abDotAP = ab.dot(ap);
 
         double distance = abDotAP / magnitudeABSqr;
         if (distance <= 0.0) {
-            return lineA;
+            return a;
         } else if (distance >= 1.0) {
-            return lineB;
+            return b;
         } else {
-            return lineA.plus(ab.times(distance));
+            return a.plus(ab.times(distance));
         }
     }
 

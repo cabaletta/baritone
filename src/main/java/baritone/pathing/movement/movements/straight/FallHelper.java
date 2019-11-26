@@ -22,7 +22,6 @@ import baritone.api.utils.IPlayerContext;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.math.IntAABB2;
 import baritone.utils.math.Vector2;
-import baritone.utils.pathing.GridCollisionIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -31,7 +30,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Optional;
 
-public final class FallHelper {
+final class FallHelper {
 
     public static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z) {
         IBlockState state = bsi.get0(x, y, z);
@@ -90,7 +89,7 @@ public final class FallHelper {
         // predict the next few positions
         GridCollisionIterator collisionIterator = new GridCollisionIterator(player.width, playerPosXZ, destXZ);
         for (int i = 0; i < 10 && collisionIterator.hasNext(); i++) {
-            IntAABB2 playerAABB = collisionIterator.next();
+            IntAABB2 playerAABB = collisionIterator.next().getCollidingSquares();
 
             WillFallResult willFallResult = willFall(playerAABB, feetBlockY - 1, bsi);
             if (willFallResult == WillFallResult.NO) {
@@ -154,7 +153,7 @@ public final class FallHelper {
         }
 
         private NextFallResult(IntAABB2 fallBox, int floorBlockY) {
-            this.isPathStillValid = false;
+            this.isPathStillValid = true;
             this.fallBox = fallBox;
             this.floorBlockY = floorBlockY;
         }
@@ -164,15 +163,22 @@ public final class FallHelper {
         }
 
         Optional<IntAABB2> getFallBox() {
+            assertValid();
             return Optional.ofNullable(fallBox);
         }
 
         int getFloorBlockY() {
+            assertValid();
             if (fallBox == null) {
                 throw new IllegalStateException("no fall but tried to get the floor block Y");
             }
-
             return this.floorBlockY;
+        }
+
+        private void assertValid() {
+            if (!isPathStillValid) {
+                throw new IllegalStateException("path is invalid");
+            }
         }
     }
 

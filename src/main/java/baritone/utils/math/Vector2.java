@@ -17,6 +17,9 @@
 
 package baritone.utils.math;
 
+import baritone.api.utils.BetterBlockPos;
+import net.minecraft.util.math.Vec3d;
+
 public class Vector2 {
 
     public double x;
@@ -29,6 +32,14 @@ public class Vector2 {
     public Vector2(double x, double y) {
         this.x = x;
         this.y = y;
+    }
+
+    public static Vector2 fromXZ(Vec3d vec) {
+        return new Vector2(vec.x, vec.z);
+    }
+
+    public static Vector2 fromXZ(BetterBlockPos pos) {
+        return new Vector2(pos.x + 0.5, pos.z + 0.5);
     }
 
     public Vector2 plus(Vector2 other) {
@@ -61,6 +72,10 @@ public class Vector2 {
 
     public double distanceToSqr(Vector2 other) {
         return other.minus(this).magnitudeSqr();
+    }
+
+    public double distanceTo(Vector2 other) {
+        return Math.sqrt(distanceToSqr(other));
     }
 
     public double dot(Vector2 other) {

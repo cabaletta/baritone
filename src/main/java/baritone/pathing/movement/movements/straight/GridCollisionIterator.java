@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.pathing;
+package baritone.pathing.movement.movements.straight;
 
 import baritone.utils.math.IntAABB2;
 import baritone.utils.math.Vector2;
@@ -37,19 +37,19 @@ import java.util.Iterator;
  * See the images in the `doc/GridCollisionIterator` directory for a graphical
  * explanation.
  */
-public final class GridCollisionIterator implements Iterator<IntAABB2> {
+final class GridCollisionIterator implements Iterator<GridCollisionIterator.CollisionData> {
 
     private static final double INCREMENT_MAGNITUDE = 0.1;
 
     private final double slideSquareSize;
-    private Vector2 currentPos;
+    private Vector2 nextPos;
     private Vector2 increment;
     private final Vector2 end;
     private int remaining;
 
-    private IntAABB2 nextCollisions;
+    private CollisionData nextCollision;
 
-    public GridCollisionIterator(double slideSquareSize, Vector2 start, Vector2 end) {
+    GridCollisionIterator(double slideSquareSize, Vector2 start, Vector2 end) {
         if (slideSquareSize > 1.0) {
             throw new IllegalArgumentException("sliding square must be smaller than other squares");
         }
@@ -60,62 +60,76 @@ public final class GridCollisionIterator implements Iterator<IntAABB2> {
 
         // TODO: find a safer and faster way to do this than this ugly
         //  brute-force which will sometimes miss collisions
-        currentPos = start;
+        nextPos = start;
         increment = startToEnd.normalize().times(INCREMENT_MAGNITUDE);
         this.end = end;
         remaining = (int) Math.floor(startToEnd.magnitude() / INCREMENT_MAGNITUDE) + 1;
 
-        prepareNext(null);
+        prepareNext();
     }
 
     @Override
     public boolean hasNext() {
-        return nextCollisions != null;
+        return nextCollision != null;
     }
 
     @Override
-    public IntAABB2 next() {
+    public CollisionData next() {
         if (!hasNext()) {
             throw new IllegalStateException("iterator has already ended");
         }
 
-        IntAABB2 toReturn = nextCollisions;
-        prepareNext(toReturn);
+        CollisionData toReturn = nextCollision;
+        prepareNext();
         return toReturn;
     }
 
-    private void prepareNext(IntAABB2 current) {
-        IntAABB2 collisions;
+    private void prepareNext() {
+        IntAABB2 currentCollidingSquares = nextCollision == null ? null : nextCollision.collidingSquares;
 
-        // Loop until either the iterator has ended or we found a change in
-        // the collisions because the square has moved enough.
-        while (true) {
+        // loop until we find a new set of colliding squares
+        do {
             if (remaining <= 0) {
-                nextCollisions = null;
+                nextCollision = null;
                 break;
             } else if (remaining == 1) {
-                collisions = getCollisionsAtPosition(end);
+                nextCollision = getCollisionAtPosition(end);
             } else {
-                collisions = getCollisionsAtPosition(currentPos);
-                currentPos = currentPos.plus(increment);
+                nextCollision = getCollisionAtPosition(nextPos);
+                nextPos = nextPos.plus(increment);
             }
 
             remaining--;
-
-            if (!collisions.equals(current)) {
-                nextCollisions = collisions;
-                break;
-            }
-        }
+        } while (nextCollision.collidingSquares.equals(currentCollidingSquares));
     }
 
-    private IntAABB2 getCollisionsAtPosition(Vector2 pos) {
-        return new IntAABB2(
+    private CollisionData getCollisionAtPosition(Vector2 pos) {
+        IntAABB2 collidingSquares = new IntAABB2(
                 (int) Math.floor(pos.x - slideSquareSize / 2.0),
                 (int) Math.floor(pos.y - slideSquareSize / 2.0),
                 (int) Math.ceil(pos.x + slideSquareSize / 2.0),
                 (int) Math.ceil(pos.y + slideSquareSize / 2.0)
         );
+
+        return new CollisionData(collidingSquares, pos);
+    }
+
+    static final class CollisionData {
+        private final IntAABB2 collidingSquares;
+        private final Vector2 position;
+
+        private CollisionData(IntAABB2 collidingSquares, Vector2 position) {
+            this.collidingSquares = collidingSquares;
+            this.position = position;
+        }
+
+        public IntAABB2 getCollidingSquares() {
+            return collidingSquares;
+        }
+
+        public Vector2 getPosition() {
+            return position;
+        }
     }
 
 }

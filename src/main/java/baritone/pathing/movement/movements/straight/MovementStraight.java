@@ -29,7 +29,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.math.IntAABB2;
-import baritone.utils.math.MathUtils;
+import baritone.utils.math.GeometryHelper;
 import baritone.utils.math.Vector2;
 import baritone.utils.pathing.LineBlockIterator;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -58,115 +58,65 @@ public final class MovementStraight extends Movement {
         super(baritone, src, dest, new BetterBlockPos[]{});
     }
 
-    private LineBlockIterator getHorizontalLineIterator() {
-        return new LineBlockIterator(src.x, src.z, dest.x, dest.z);
-    }
-
-    private boolean checkIfPossible(CalculationContext context) {
-        // can only fall and there must be a block under the player
-        if (dest.y > src.y || src.y < 1) {
-            return false;
-        }
-
-        Vector2 srcXZ = new Vector2((double) src.x + 0.5, (double) src.z + 0.5);
-        Vector2 destXZ = new Vector2((double) dest.x + 0.5, (double) dest.z + 0.5);
-        int feetY = src.y;
-
-        AxisAlignedBB playerRelativeAABB = ctx.player()
-                .getEntityBoundingBox()
-                .offset(ctx.playerFeetAsVec().scale(-1.0));
-
-        double distRemainingXZSqr = srcXZ.distanceToSqr(destXZ);
-
-        Vector2 dirXZ = destXZ.minus(srcXZ).normalize();
-        Vector2 predictionIncrementXZ = dirXZ.times(0.1);
-
-        // predict the next positions
-        for (int i = 0; i < 2000; i++) {
-            Vector2 delta = predictionIncrementXZ.times(i);
-
-            // don't go further than required!
-            if (delta.magnitudeSqr() > distRemainingXZSqr) {
-                break;
-            }
-
-            Vector2 predictedPosXZ = srcXZ.plus(delta);
-            AxisAlignedBB predictedAABB = playerRelativeAABB
-                    .offset(predictedPosXZ.x, feetY, predictedPosXZ.y);
-            IntAABB2 simplerAABB = new IntAABB2(
-                    (int) Math.floor(predictedAABB.minX),
-                    (int) Math.floor(predictedAABB.minZ),
-                    (int) Math.ceil(predictedAABB.maxX),
-                    (int) Math.ceil(predictedAABB.maxZ)
-            );
-
-            for (int x = simplerAABB.minX; x < simplerAABB.maxX; x++) {
-                for (int z = simplerAABB.minY; z < simplerAABB.maxY; z++) {
-                    if (!MovementHelper.fullyPassable(context, x, feetY, z) ||
-                            !MovementHelper.fullyPassable(context, x, feetY + 1, z)) {
-                        return false;
-                    }
-                }
-            }
-
-            boolean isDestXZ = dest.x == (int) Math.floor(predictedPosXZ.x) &&
-                    dest.z == (int) Math.floor(predictedPosXZ.y);
-
-            // Loop until we find something that the player can land on if they
-            // are falling or just the feet block if they aren't.
-            while (true) {
-                // Whatever the block is, we don't care if we arrived at the
-                // destination. It's the next movement's job to ensure that it
-                // supports it.
-                if (isDestXZ && feetY == dest.y) {
-                    return true;
-                }
-
-                FallHelper.WillFallResult willFallResult = FallHelper.willFall(simplerAABB, feetY - 1, context.bsi);
-                if (willFallResult == FallHelper.WillFallResult.NO) {
-                    break;
-                } else if (willFallResult == FallHelper.WillFallResult.UNSUPPORTED_TERRAIN) {
-                    return false;
-                }
-
-                feetY--;
-
-                if (feetY < dest.y) {
-                    // stuck below destination
-                    return false;
-                }
-            }
-        }
-
-        return false;
-    }
-
     @Override
     public double calculateCost(CalculationContext context) {
-        if (!checkIfPossible(context)) {
+        // can only fall, not jump yet
+        if (dest.y > src.y) {
             return COST_INF;
         }
 
-        double xyDist = new Vector2(dest.x - src.x, dest.z - src.z).magnitude();
-        double cost = xyDist * WALK_ONE_BLOCK_COST;
-
-        if (context.canSprint) {
-            cost *= SPRINT_MULTIPLIER;
+        // There must be a block under the player because we often check for
+        // it.
+        if (src.y < 1) {
+            return COST_INF;
         }
 
-        // TODO: add fall cost
-        return cost;
+        PathSimulator pathSimulator = new PathSimulator(new Vec3d(src.x + 0.5, src.y, src.z + 0.5), dest, context.bsi);
+
+        double totalCost = 0;
+
+        while (pathSimulator.hasNext()) {
+            PathSimulator.PathPart part = pathSimulator.next();
+
+            if (part.isImpossible()) {
+                return COST_INF;
+            }
+
+            double moveCost = part.getMoveLength() * WALK_ONE_BLOCK_COST;
+            if (context.canSprint) {
+                moveCost *= SPRINT_MULTIPLIER;
+            }
+            totalCost += moveCost;
+
+            if (part.getEndY() != part.getStartY()) {
+                int fallDistance = part.getEndY() - part.getStartY();
+                int index = Math.max(fallDistance, FALL_N_BLOCKS_COST.length - 1);
+                totalCost += FALL_N_BLOCKS_COST[index];
+            }
+        }
+
+        return totalCost;
     }
 
     @Override
     protected Set<BetterBlockPos> calculateValidPositions() {
         HashSet<BetterBlockPos> positions = new HashSet<>();
 
-        LineBlockIterator iterator = getHorizontalLineIterator();
-        while (iterator.next()) {
-            // TODO: only add the valid positions to use less memory
+        GridCollisionIterator iterator =
+                new GridCollisionIterator(PathSimulator.PLAYER_AABB_SIZE,
+                        this.getSrcXZ(),
+                        this.getDestXZ());
+        while (iterator.hasNext()) {
+            IntAABB2 groundBlocks = iterator.next().getCollidingSquares();
+
+            // TODO: Some of these positions will never be reached because the
+            //  player will be standing on some terrain. Remove them.
             for (int y = dest.y; y <= src.y; y++) {
-                positions.add(new BetterBlockPos(iterator.currX, y, iterator.currY));
+                for (int x = groundBlocks.minX; x <= groundBlocks.maxX; x++) {
+                    for (int z = groundBlocks.minY; z <= groundBlocks.maxY; z++) {
+                        positions.add(new BetterBlockPos(x, y, z));
+                    }
+                }
             }
         }
 
@@ -211,13 +161,15 @@ public final class MovementStraight extends Movement {
                 if (player.posY > dest.y) {
                     FallHelper.NextFallResult result = FallHelper.findNextFall(ctx, dest);
 
+                    if (!result.isPathStillValid()) {
+                        return state.setStatus(MovementStatus.UNREACHABLE);
+                    }
+
                     Optional<IntAABB2> maybeFallBox = result.getFallBox();
                     if (maybeFallBox.isPresent()) {
                         IntAABB2 fallBox = maybeFallBox.get();
                         extendFallBox(fallBox, playerFeet.y, result.getFloorBlockY() + 1);
                         validFallBox = fallBox;
-                    } else if (!result.isPathStillValid()) {
-                        return state.setStatus(MovementStatus.UNREACHABLE);
                     }
                 }
             }
@@ -225,7 +177,7 @@ public final class MovementStraight extends Movement {
             if (validFallBox != null) {
                 moveTowardsDestinationButStayInFallBox(state);
             } else {
-                Vector2 closestPointXZ = MathUtils.getClosestPointOnSegment(srcXZ, destXZ, playerPosXZ);
+                Vector2 closestPointXZ = GeometryHelper.getClosestPointOnSegment(srcXZ, destXZ, playerPosXZ);
 
                 if (playerPosXZ.distanceToSqr(closestPointXZ) >= RECENTER_DIST_THRESHOLD_SQR) {
                     // recenter on line
@@ -352,6 +304,10 @@ public final class MovementStraight extends Movement {
                 ))
                 .setInput(Input.MOVE_FORWARD, true)
                 .setInput(Input.SPRINT, canSprint);
+    }
+
+    private Vector2 getSrcXZ() {
+        return new Vector2((double) src.x + 0.5, (double) src.z + 0.5);
     }
 
     private Vector2 getDestXZ() {
