@@ -41,8 +41,9 @@ public final class MovementStraight extends Movement {
     private static final double RECENTER_DIST_THRESHOLD_SQR = 0.1 * 0.1;
 
     // When the input heuristic is smaller than this, then we must
-    // stop sprinting to prevent overshooting the target.
-    private static final double CAN_STILL_SPRINT_THRESHOLD = 1.5 * 1.5;
+    // stop sprinting/start sneaking to prevent overshooting the target.
+    private static final double CAN_SPRINT_THRESHOLD = 1.5 * 1.5;
+    private static final double CAN_WALK_THRESHOLD = 0.1 * 0.1;
 
     private static final double IGNORE_FALL_BOX_MIN_DIST_SQR = 4.0 * 4.0;
 
@@ -248,7 +249,8 @@ public final class MovementStraight extends Movement {
             return;
         }
 
-        boolean canSprint = inputHeuristic >= CAN_STILL_SPRINT_THRESHOLD;
+        boolean canSprint = inputHeuristic >= CAN_SPRINT_THRESHOLD;
+        boolean shouldSneak = inputHeuristic < CAN_WALK_THRESHOLD;
 
         state
                 .setTarget(new MovementState.MovementTarget(
@@ -259,7 +261,8 @@ public final class MovementStraight extends Movement {
                         ).getYaw(), ctx.player().rotationPitch), false
                 ))
                 .setInput(Input.MOVE_FORWARD, true)
-                .setInput(Input.SPRINT, canSprint);
+                .setInput(Input.SPRINT, canSprint)
+                .setInput(Input.SNEAK, shouldSneak);
     }
 
     private Vector2 getSrcXZ() {

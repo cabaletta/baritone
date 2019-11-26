@@ -43,7 +43,10 @@ final class PathSimulator implements Iterator<PathSimulator.PathPart> {
     PathSimulator(Vec3d start, BetterBlockPos dest, BlockStateInterface bsi) {
         this.bsi = bsi;
 
-        blockCollisionIterator = new GridCollisionIterator(PLAYER_AABB_SIZE,
+        // remove 0.1 to be conservative when looking for falls
+        // TODO: the problem is that we need to do the opposite (add 0.1) to be
+        //  conservative when looking for walls
+        blockCollisionIterator = new GridCollisionIterator(PLAYER_AABB_SIZE - 0.1,
                 Vector2.fromXZ(start),
                 new Vector2(dest.x + 0.5, dest.z + 0.5));
         currentY = (int) Math.floor(start.y);
@@ -92,8 +95,8 @@ final class PathSimulator implements Iterator<PathSimulator.PathPart> {
 
             IntAABB2 collidingBlocks = next.getCollidingSquares();
 
-            for (int x = collidingBlocks.minX; x <= collidingBlocks.maxX; x++) {
-                for (int z = collidingBlocks.minY; z <= collidingBlocks.maxY; z++) {
+            for (int x = collidingBlocks.minX; x < collidingBlocks.maxX; x++) {
+                for (int z = collidingBlocks.minY; z < collidingBlocks.maxY; z++) {
                     if (!MovementHelper.fullyPassable(bsi, x, currentY, z) ||
                         !MovementHelper.fullyPassable(bsi, x, currentY + 1, z)) {
                         // a wall is blocking the path
@@ -122,12 +125,11 @@ final class PathSimulator implements Iterator<PathSimulator.PathPart> {
             int landingBlockY = maybeLandingBlock.get();
             int feetBlockY = landingBlockY + 1;
 
-            boolean isDestXZ =
-                    Math.floor(currentXZ.x) == dest.x &&
-                    Math.floor(currentXZ.y) == dest.z;
+            boolean isInDestXZ = Math.abs(currentXZ.x - dest.x) < PLAYER_AABB_SIZE &&
+                    Math.abs(currentXZ.y - dest.z) < PLAYER_AABB_SIZE;
 
             if (feetBlockY < dest.y) {
-                if (isDestXZ) {
+                if (isInDestXZ) {
                     // cut the path to the destination
                     feetBlockY = dest.y;
                 } else {

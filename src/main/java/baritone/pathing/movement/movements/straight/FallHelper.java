@@ -22,10 +22,8 @@ import baritone.api.utils.IPlayerContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.math.IntAABB2;
-import baritone.utils.math.Vector2;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.Vec3d;
 
@@ -114,10 +112,10 @@ final class FallHelper {
      * @return the Y coordinate of the block that will player will land on
      */
     static Optional<Integer> getLandingBlock(IntAABB2 playerAABB, int startY, BlockStateInterface bsi) {
-        int currentY = startY;
+        int currentY = startY - 1;
 
         while (currentY >= 0) {
-            FallHelper.WillFallResult result = FallHelper.willFall(playerAABB, currentY - 1, bsi);
+            FallHelper.WillFallResult result = FallHelper.willFall(playerAABB, currentY, bsi);
             if (result == FallHelper.WillFallResult.NO) {
                 return Optional.of(currentY);
             } else if (result == FallHelper.WillFallResult.UNSUPPORTED_TERRAIN) {
