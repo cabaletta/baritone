@@ -19,6 +19,7 @@ package baritone.pathing.movement.movements.straight;
 
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
+import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.math.IntAABB2;
 import baritone.utils.math.Vector2;
@@ -48,8 +49,10 @@ final class FallHelper {
             return WillFallResult.NO;
         }
 
-        // We don't handle weird blocks yet.
-        if (bsi.get0(floorBlockPos.x, floorBlockPos.y, floorBlockPos.z).getBlock() != Blocks.AIR) {
+        // We only support either completely full blocks or fully passable
+        // blocks for now. We don't support blocks like trapdoors or fences
+        // that have a modified hit box.
+        if (!MovementHelper.fullyPassable(bsi, floorBlockPos.x, floorBlockPos.y, floorBlockPos.z)) {
             return WillFallResult.UNSUPPORTED_TERRAIN;
         }
 

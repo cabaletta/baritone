@@ -89,8 +89,11 @@ public final class MovementStraight extends Movement {
             totalCost += moveCost;
 
             if (part.getEndY() != part.getStartY()) {
-                int fallDistance = part.getEndY() - part.getStartY();
-                int index = Math.max(fallDistance, FALL_N_BLOCKS_COST.length - 1);
+                int fallDistance = part.getStartY() - part.getEndY();
+                if (fallDistance < 0) {
+                    throw new IllegalStateException("path went up");
+                }
+                int index = Math.min(fallDistance, FALL_N_BLOCKS_COST.length - 1);
                 totalCost += FALL_N_BLOCKS_COST[index];
             }
         }
