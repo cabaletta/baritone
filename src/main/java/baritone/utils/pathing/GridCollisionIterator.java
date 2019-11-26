@@ -49,6 +49,8 @@ public final class GridCollisionIterator implements Iterator<IntAABB2> {
     private final Vector2 end;
     private int remaining;
 
+    private IntAABB2 nextCollisions;
+
     public GridCollisionIterator(double slideSquareSize, Vector2 start, Vector2 end) {
         if (slideSquareSize > 1.0) {
             throw new IllegalArgumentException("sliding square must be smaller than other squares");
@@ -64,27 +66,49 @@ public final class GridCollisionIterator implements Iterator<IntAABB2> {
         increment = startToEnd.normalize().times(INCREMENT_MAGNITUDE);
         this.end = end;
         remaining = (int) Math.floor(startToEnd.magnitude() / INCREMENT_MAGNITUDE) + 1;
+
+        prepareNext(null);
     }
 
     @Override
     public boolean hasNext() {
-        return remaining > 0;
+        return nextCollisions != null;
     }
 
     @Override
     public IntAABB2 next() {
-        if (remaining == 0) {
+        if (!hasNext()) {
             throw new IllegalStateException("iterator has already ended");
         }
 
-        if (remaining == 1) {
-            return getCollisionsAtPosition(end);
-        }
+        IntAABB2 toReturn = nextCollisions;
+        prepareNext(toReturn);
+        return toReturn;
+    }
 
-        IntAABB2 collisions = getCollisionsAtPosition(currentPos);
-        currentPos = currentPos.plus(increment);
-        remaining--;
-        return collisions;
+    private void prepareNext(IntAABB2 current) {
+        IntAABB2 collisions;
+
+        // Loop until either the iterator has ended or we found a change in
+        // the collisions because the square has moved enough.
+        while (true) {
+            if (remaining <= 0) {
+                nextCollisions = null;
+                break;
+            } else if (remaining == 1) {
+                collisions = getCollisionsAtPosition(end);
+            } else {
+                collisions = getCollisionsAtPosition(currentPos);
+                currentPos = currentPos.plus(increment);
+            }
+
+            remaining--;
+
+            if (!collisions.equals(current)) {
+                nextCollisions = collisions;
+                break;
+            }
+        }
     }
 
     private IntAABB2 getCollisionsAtPosition(Vector2 pos) {
