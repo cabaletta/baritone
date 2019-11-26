@@ -25,15 +25,12 @@ import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.math.IntAABB2;
 import baritone.utils.math.GeometryHelper;
 import baritone.utils.math.Vector2;
-import baritone.utils.pathing.LineBlockIterator;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashSet;
