@@ -26,7 +26,7 @@ import baritone.api.utils.Helper;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
-import baritone.pathing.movement.movements.MovementStraight;
+import baritone.pathing.movement.movements.straight.MovementStraight;
 import baritone.pathing.path.CutoffPath;
 import baritone.utils.pathing.PathBase;
 

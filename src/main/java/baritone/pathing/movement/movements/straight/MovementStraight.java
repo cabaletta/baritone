@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.pathing.movement.movements;
+package baritone.pathing.movement.movements.straight;
 
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
@@ -28,14 +28,11 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.math.HorizontalIntAABB;
+import baritone.utils.math.IntAABB2;
 import baritone.utils.math.MathUtils;
 import baritone.utils.math.Vector2;
 import baritone.utils.pathing.LineBlockIterator;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 
@@ -55,20 +52,10 @@ public final class MovementStraight extends Movement {
 
     // If not null, then the player must stay within this box
     // for the next fall until they touch the ground.
-    private HorizontalIntAABB nextFallBox = null;
+    private IntAABB2 validFallBox = null;
 
     public MovementStraight(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
         super(baritone, src, dest, new BetterBlockPos[]{});
-    }
-
-    private static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z) {
-        IBlockState state = bsi.get0(x, y, z);
-        Block block = state.getBlock();
-
-        // be conservative for now
-        return block != Blocks.AIR &&
-                state.isFullCube() &&
-                state.getBlock().slipperiness == 0.6F;
     }
 
     private LineBlockIterator getHorizontalLineIterator() {
@@ -106,7 +93,7 @@ public final class MovementStraight extends Movement {
             Vector2 predictedPosXZ = srcXZ.plus(delta);
             AxisAlignedBB predictedAABB = playerRelativeAABB
                     .offset(predictedPosXZ.x, feetY, predictedPosXZ.y);
-            HorizontalIntAABB simplerAABB = new HorizontalIntAABB(
+            IntAABB2 simplerAABB = new IntAABB2(
                     (int) Math.floor(predictedAABB.minX),
                     (int) Math.floor(predictedAABB.minZ),
                     (int) Math.ceil(predictedAABB.maxX),
@@ -135,10 +122,10 @@ public final class MovementStraight extends Movement {
                     return true;
                 }
 
-                WillFallResult willFallResult = willFall(simplerAABB, feetY - 1, context.bsi);
-                if (willFallResult == WillFallResult.NO) {
+                FallHelper.WillFallResult willFallResult = FallHelper.willFall(simplerAABB, feetY - 1, context.bsi);
+                if (willFallResult == FallHelper.WillFallResult.NO) {
                     break;
-                } else if (willFallResult == WillFallResult.UNSUPPORTED_TERRAIN) {
+                } else if (willFallResult == FallHelper.WillFallResult.UNSUPPORTED_TERRAIN) {
                     return false;
                 }
 
@@ -210,146 +197,141 @@ public final class MovementStraight extends Movement {
 
         if (state.getStatus() == MovementStatus.RUNNING) {
             EntityPlayerSP player = ctx.player();
-            Vec3d playerFeet = ctx.playerFeetAsVec();
+            BetterBlockPos playerFeet = ctx.playerFeet();
 
-            if (ctx.playerFeet().equals(dest)) {
+            if (playerFeet.equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
 
             Vector2 srcXZ = new Vector2((double) src.x + 0.5, (double) src.z + 0.5);
-            Vector2 destXZ = new Vector2((double) dest.x + 0.5, (double) dest.z + 0.5);
+            Vector2 destXZ = this.getDestXZ();
             Vector2 playerPosXZ = new Vector2(player.posX, player.posZ);
 
             // find the next fall
             if (player.onGround) {
-                nextFallBox = null;
+                validFallBox = null;
 
-                // is there one?
                 if (player.posY > dest.y) {
-                    BlockStateInterface bsi = new BlockStateInterface(ctx);
+                    FallHelper.NextFallResult result = FallHelper.findNextFall(ctx, dest);
 
-                    AxisAlignedBB playerRelativeAABB = player
-                            .getEntityBoundingBox()
-                            .offset(playerFeet.scale(-1.0));
-
-                    double distRemainingXZSqr = playerPosXZ.distanceToSqr(destXZ);
-
-                    Vector2 dirXZ = destXZ.minus(playerPosXZ).normalize();
-                    Vector2 predictionIncrementXZ = dirXZ.times(0.1);
-
-                    // predict the next few positions
-                    for (int i = 0; i < 80; i++) {
-                        Vector2 delta = predictionIncrementXZ.times(i);
-
-                        // don't go further than required!
-                        if (delta.magnitudeSqr() > distRemainingXZSqr) {
-                            break;
-                        }
-
-                        Vector2 predictedPosXZ = playerPosXZ.plus(delta);
-                        AxisAlignedBB predictedAABB = playerRelativeAABB
-                                .offset(predictedPosXZ.x, playerFeet.y, predictedPosXZ.y);
-                        int floorBlockY = (int) Math.floor(predictedAABB.minY - 1.0);
-                        HorizontalIntAABB simplerAABB = new HorizontalIntAABB(
-                                (int) Math.floor(predictedAABB.minX),
-                                (int) Math.floor(predictedAABB.minZ),
-                                (int) Math.ceil(predictedAABB.maxX),
-                                (int) Math.ceil(predictedAABB.maxZ)
-                        );
-
-                        WillFallResult willFallResult = willFall(simplerAABB, floorBlockY, bsi);
-                        if (willFallResult == WillFallResult.NO) {
-                            // continue looping until we find a fall
-                            continue;
-                        } else if (willFallResult == WillFallResult.UNSUPPORTED_TERRAIN) {
-                            return state.setStatus(MovementStatus.UNREACHABLE);
-                        }
-
-                        // Loop until we find something that the player can land on.
-                        while (willFallResult == WillFallResult.YES) {
-                            floorBlockY--;
-
-                            if (floorBlockY < 0) {
-                                // fall into void?
-                                return state.setStatus(MovementStatus.UNREACHABLE);
-                            }
-
-                            willFallResult = willFall(simplerAABB, floorBlockY, bsi);
-                            if (willFallResult == WillFallResult.UNSUPPORTED_TERRAIN) {
-                                return state.setStatus(MovementStatus.UNREACHABLE);
-                            }
-                        }
-
-                        // We know that there are all blocks on this AABB are
-                        // fully passable because we just did the simulation,
-                        // so if the player stays there, then they will be able
-                        // to fall without hitting any block during the path.
-                        // TODO: try to extend this box as much as possible to
-                        //  limit constraints by checking for blocks
-                        //  around too
-                        nextFallBox = simplerAABB;
-
-                        break;
+                    Optional<IntAABB2> maybeFallBox = result.getFallBox();
+                    if (maybeFallBox.isPresent()) {
+                        IntAABB2 fallBox = maybeFallBox.get();
+                        extendFallBox(fallBox, playerFeet.y, result.getFloorBlockY() + 1);
+                        validFallBox = fallBox;
+                    } else if (!result.isPathStillValid()) {
+                        return state.setStatus(MovementStatus.UNREACHABLE);
                     }
                 }
             }
 
-            if (nextFallBox == null) {
+            if (validFallBox != null) {
+                moveTowardsDestinationButStayInFallBox(state);
+            } else {
                 Vector2 closestPointXZ = MathUtils.getClosestPointOnSegment(srcXZ, destXZ, playerPosXZ);
 
-                // recenter?
                 if (playerPosXZ.distanceToSqr(closestPointXZ) >= RECENTER_DIST_THRESHOLD_SQR) {
-                    return state
-                            .setTarget(new MovementState.MovementTarget(
-                                    new Rotation(RotationUtils.calcRotationFromVec3d(playerFeet,
-                                            new Vec3d(closestPointXZ.x, player.posY, closestPointXZ.y),
-                                            ctx.playerRotations()).getYaw(), ctx.player().rotationPitch),
-                                    false
-                            ))
-                            .setInput(Input.MOVE_FORWARD, true)
-                            .setInput(Input.SPRINT, true);
+                    // recenter on line
+                    moveTowards(state, closestPointXZ);
                 } else {
-                    state.setInput(Input.SPRINT, true);
-                    MovementHelper.moveTowards(ctx, state, dest);
+                    moveTowards(state, destXZ);
                 }
-            } else {
-                moveTowardDestinationButStayInFallBox(state);
             }
         }
 
         return state;
     }
 
+    @Override
+    public void reset() {
+        super.reset();
+        validFallBox = null;
+    }
+
+    private void extendFallBox(IntAABB2 fallBox, int fallStartY, int fallEndY) {
+        extendFallBoxHelper(fallBox, fallStartY, fallEndY, 0, -1);
+        extendFallBoxHelper(fallBox, fallStartY, fallEndY, -1, 0);
+        extendFallBoxHelper(fallBox, fallStartY, fallEndY, 0, 1);
+        extendFallBoxHelper(fallBox, fallStartY, fallEndY, 1, 0);
+    }
+
+    private void extendFallBoxHelper(IntAABB2 fallBox, int fallStartY, int fallEndY, int incrementX, int incrementZ) {
+        int x = (incrementX >= 0 ? fallBox.maxX : fallBox.minX) + incrementX;
+        int z = (incrementZ >= 0 ? fallBox.maxY : fallBox.minY) + incrementZ;
+
+        if (canContinueAfterFall(x, z, fallStartY, fallEndY)) {
+            if (incrementX > 0) {
+                fallBox.maxX += incrementX;
+            } else if (incrementX < 0) {
+                fallBox.minX += incrementX;
+            }
+
+            if (incrementZ > 0) {
+                fallBox.maxY += incrementZ;
+            } else if (incrementZ < 0) {
+                fallBox.minY += incrementZ;
+            }
+        }
+    }
+
+    private boolean canContinueAfterFall(int x, int z, int fallStartY, int fallEndY) {
+        BlockStateInterface bsi = new BlockStateInterface(ctx);
+
+        // make sure that the whole column is fully passable
+        for (int y = fallEndY; y <= fallStartY; y++) {
+            FallHelper.WillFallResult result = FallHelper.willFall(new BetterBlockPos(x, y, z), bsi);
+            if (result != FallHelper.WillFallResult.YES) {
+                return false;
+            }
+        }
+
+        if (!FallHelper.getLandingBlock(new BetterBlockPos(x, fallEndY, z), bsi).isPresent()) {
+            return false;
+        }
+
+        // TODO: check if the path is possible from the landing block
+        return true;
+    }
+
     /**
-     * Move toward the destination but stays inside the fall box.
+     * Move towards the destination but stays inside the fall box.
      *
      * @param state movement state
      */
-    private void moveTowardDestinationButStayInFallBox(MovementState state) {
+    private void moveTowardsDestinationButStayInFallBox(MovementState state) {
         EntityPlayerSP player = ctx.player();
 
-        Optional<Vector2> maybeMovement = nextFallBox.getShortestMovementToEnter(player.getEntityBoundingBox());
-        if (!maybeMovement.isPresent()) {
-            // We're in the box so don't move in order to stay inside.
-            state.setInput(Input.SPRINT, false)
-                    .setInput(Input.MOVE_FORWARD, false);
-            return;
+        Vector2 target = this.getDestXZ();
+
+        Optional<Vector2> maybeEnterMovement = validFallBox.getShortestMovementToEnter(player.getEntityBoundingBox());
+        if (maybeEnterMovement.isPresent()) {
+            Vector2 movement = maybeEnterMovement.get();
+            double movementMagnitudeSqr = movement.magnitudeSqr();
+
+            // Only try to go precisely to it if it is close enough because we
+            // are not sure if the path works otherwise because we didn't
+            // predict the path to go to the fall box but the path to go
+            // towards the destination.
+            // TODO: remove this hack
+            if (movementMagnitudeSqr <= IGNORE_FALL_BOX_MIN_DIST_SQR) {
+                Vector2 playerPosXZ = new Vector2(player.posX, player.posZ);
+                target = playerPosXZ.plus(movement);
+            }
+        } else {
+            // We're in the box so we can try to move towards the destination
+            // but we have to stay inside of it.
+            target = validFallBox.clampPointInsideWithMargin(target, player.width + 0.1);
         }
 
-        Vector2 movement = maybeMovement.get();
-        double movementMagnitudeSqr = movement.magnitudeSqr();
+        moveTowards(state, target);
+    }
 
-        // Only try to go precisely to it if it is close enough.
-        // If it is far, then going to the destination will get us closer to
-        // it anyways because it is in our path so we can just go in the direction
-        // of the destination.
-        if (movementMagnitudeSqr > IGNORE_FALL_BOX_MIN_DIST_SQR) {
-            state.setInput(Input.SPRINT, true);
-            MovementHelper.moveTowards(ctx, state, dest);
-            return;
-        }
+    private void moveTowards(MovementState state, Vector2 target) {
+        EntityPlayerSP player = ctx.player();
+        Vector2 playerPosXZ = new Vector2(player.posX, player.posZ);
+        Vector2 playerToTarget = target.minus(playerPosXZ);
 
-        double inputHeuristic = Math.sqrt(movementMagnitudeSqr) -
+        double inputHeuristic = playerToTarget.magnitude() -
                 new Vector2(player.motionX, player.motionZ).magnitude();
 
         if (inputHeuristic < 0.0) {
@@ -362,11 +344,10 @@ public final class MovementStraight extends Movement {
         boolean canSprint = inputHeuristic >= CAN_STILL_SPRINT_THRESHOLD;
 
         state
-                // go inside the box
                 .setTarget(new MovementState.MovementTarget(
                         new Rotation(RotationUtils.calcRotationFromVec3d(
                                 new Vec3d(0.0, 0.0, 0.0),
-                                new Vec3d(movement.x, 0.0, movement.y),
+                                new Vec3d(playerToTarget.x, 0.0, playerToTarget.y),
                                 ctx.playerRotations()
                         ).getYaw(), ctx.player().rotationPitch), false
                 ))
@@ -374,34 +355,8 @@ public final class MovementStraight extends Movement {
                 .setInput(Input.SPRINT, canSprint);
     }
 
-    private enum WillFallResult {
-        YES,
-        NO,
-        UNSUPPORTED_TERRAIN,
-    }
-
-    private static WillFallResult willFall(HorizontalIntAABB playerAABB, int floorBlockY, BlockStateInterface bsi) {
-        for (int x = playerAABB.minX; x < playerAABB.maxX; x++) {
-            for (int z = playerAABB.minY; z < playerAABB.maxY; z++) {
-                if (canWalkOn(bsi, x, floorBlockY, z)) {
-                    // player is supported by at least one block
-                    return WillFallResult.NO;
-                }
-
-                // We don't handle weird blocks yet.
-                if (bsi.get0(x, floorBlockY, z).getBlock() != Blocks.AIR) {
-                    return WillFallResult.UNSUPPORTED_TERRAIN;
-                }
-            }
-        }
-
-        return WillFallResult.YES;
-    }
-
-    @Override
-    public void reset() {
-        super.reset();
-        nextFallBox = null;
+    private Vector2 getDestXZ() {
+        return new Vector2((double) dest.x + 0.5, (double) dest.z + 0.5);
     }
 
 }

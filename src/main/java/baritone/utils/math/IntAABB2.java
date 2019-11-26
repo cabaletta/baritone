@@ -24,25 +24,18 @@ import java.util.Optional;
 /**
  * An axis aligned bounding box in 2 dimensions with integers.
  */
-public class HorizontalIntAABB {
+public class IntAABB2 {
 
     public int minX;
     public int minY;
     public int maxX;
     public int maxY;
 
-    public HorizontalIntAABB(int minX, int minY, int maxX, int maxY) {
+    public IntAABB2(int minX, int minY, int maxX, int maxY) {
         this.minX = minX;
         this.minY = minY;
         this.maxX = maxX;
         this.maxY = maxY;
-    }
-
-    public Vector2 clampPointInside(Vector2 vec) {
-        return new Vector2(
-                clamp(vec.x, minX, maxX),
-                clamp(vec.y, minY, maxY)
-        );
     }
 
     /**
@@ -68,7 +61,7 @@ public class HorizontalIntAABB {
                 new Vector2(movingBox.maxX, movingBox.maxZ),
         };
 
-        double largestDistSqr = -1.0;
+        double largestDistSqr = Double.NEGATIVE_INFINITY;
         Vector2 moveVector = null;
 
         // The edge that is the furthest to this box will help us know the
@@ -78,21 +71,55 @@ public class HorizontalIntAABB {
         for (Vector2 edge : edges) {
             Vector2 closestPointToEdge = clampPointInside(edge);
             double distSqr = edge.distanceToSqr(closestPointToEdge);
-            if (distSqr > largestDistSqr) {
+            if (moveVector == null || distSqr > largestDistSqr) {
                 moveVector = closestPointToEdge.minus(edge);
                 largestDistSqr = distSqr;
             }
         }
 
-        if (moveVector == null) {
-            throw new IllegalStateException("what?!");
+        return Optional.of(moveVector);
+    }
+
+    public Vector2 clampPointInsideWithMargin(Vector2 vec, double margin) {
+        if (margin > maxX - minX || margin > maxY - minY) {
+            throw new IllegalArgumentException("impossible");
         }
 
-        return Optional.of(moveVector);
+        if (vec.x + margin > maxX) {
+            vec.x = maxX - margin;
+        } else if (vec.x - margin < minX) {
+            vec.x = minX + margin;
+        }
+
+        if (vec.y + margin > maxY) {
+            vec.y = maxY - margin;
+        } else if (vec.y - margin < minY) {
+            vec.y = minY + margin;
+        }
+
+        return vec;
+    }
+
+    private Vector2 clampPointInside(Vector2 vec) {
+        return new Vector2(
+                clamp(vec.x, minX, maxX),
+                clamp(vec.y, minY, maxY)
+        );
     }
 
     private static double clamp(double val, double min, double max) {
         return Math.min(Math.max(val, min), max);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (other == null || getClass() != other.getClass()) return false;
+        IntAABB2 otherBox = (IntAABB2) other;
+        return minX == otherBox.minX &&
+                minY == otherBox.minY &&
+                maxX == otherBox.maxX &&
+                maxY == otherBox.maxY;
     }
 
 }
