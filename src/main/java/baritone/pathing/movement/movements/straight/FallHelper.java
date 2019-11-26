@@ -60,8 +60,8 @@ final class FallHelper {
     }
 
     static WillFallResult willFall(IntAABB2 playerAABB, int floorBlockY, BlockStateInterface bsi) {
-        for (int x = playerAABB.minX; x <= playerAABB.maxX; x++) {
-            for (int z = playerAABB.minY; z <= playerAABB.maxY; z++) {
+        for (int x = playerAABB.minX; x < playerAABB.maxX; x++) {
+            for (int z = playerAABB.minY; z < playerAABB.maxY; z++) {
                 WillFallResult result = willFall(new BetterBlockPos(x, floorBlockY, z), bsi);
                 if (result == WillFallResult.NO || result == WillFallResult.UNSUPPORTED_TERRAIN) {
                     return result;
