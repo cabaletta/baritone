@@ -38,10 +38,6 @@ public class Vector2 {
         return new Vector2(vec.x, vec.z);
     }
 
-    public static Vector2 fromXZ(BetterBlockPos pos) {
-        return new Vector2(pos.x + 0.5, pos.z + 0.5);
-    }
-
     public Vector2 plus(Vector2 other) {
         return new Vector2(x + other.x, y + other.y);
     }

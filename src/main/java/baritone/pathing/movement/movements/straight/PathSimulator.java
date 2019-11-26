@@ -45,7 +45,7 @@ final class PathSimulator implements Iterator<PathSimulator.PathPart> {
 
         blockCollisionIterator = new GridCollisionIterator(PLAYER_AABB_SIZE,
                 Vector2.fromXZ(start),
-                Vector2.fromXZ(dest));
+                new Vector2(dest.x + 0.5, dest.z + 0.5));
         currentY = (int) Math.floor(start.y);
         this.dest = dest;
 
