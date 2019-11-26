@@ -79,38 +79,25 @@ final class FallHelper {
     }
 
     static NextFallResult findNextFall(IPlayerContext ctx, BetterBlockPos dest) {
-        EntityPlayerSP player = ctx.player();
         Vec3d playerFeet = ctx.playerFeetAsVec();
 
-        Vector2 destXZ = new Vector2((double) dest.x + 0.5, (double) dest.z + 0.5);
-        Vector2 playerPosXZ = new Vector2(player.posX, player.posZ);
+        PathSimulator pathSimulator = new PathSimulator(playerFeet, dest, new BlockStateInterface(ctx));
 
-        BlockStateInterface bsi = new BlockStateInterface(ctx);
-
-        int feetBlockY = (int) Math.floor(playerFeet.y);
-
-        // predict the next few positions
-        GridCollisionIterator collisionIterator = new GridCollisionIterator(player.width, playerPosXZ, destXZ);
-        for (int i = 0; i < 10 && collisionIterator.hasNext(); i++) {
-            IntAABB2 playerAABB = collisionIterator.next().getCollidingSquares();
-
-            WillFallResult willFallResult = willFall(playerAABB, feetBlockY - 1, bsi);
-            if (willFallResult == WillFallResult.NO) {
-                // continue looping until we find a fall
-                continue;
-            } else if (willFallResult == WillFallResult.UNSUPPORTED_TERRAIN) {
-                return new NextFallResult(false);
-            }
-
-            return getLandingBlock(playerAABB, feetBlockY, bsi)
-                    .map(b -> new NextFallResult(playerAABB, b))
-                    .orElseGet(() -> {
-                        // void or unsupported blocks
-                        return new NextFallResult(false);
-                    });
+        if (!pathSimulator.hasNext()) {
+            return new NextFallResult(true);
         }
 
-        return new NextFallResult(true);
+        PathSimulator.PathPart pathPart = pathSimulator.next();
+
+        if (pathPart.isImpossible()) {
+            return new NextFallResult(false);
+        }
+
+        if (pathPart.getStartY() == pathPart.getEndY()) {
+            return new NextFallResult(true);
+        }
+
+        return new NextFallResult(pathPart.getFallBox(), pathPart.getEndY() - 1);
     }
 
     static Optional<Integer> getLandingBlock(BetterBlockPos start, BlockStateInterface bsi) {
