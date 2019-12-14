@@ -196,7 +196,7 @@ public final class Settings {
     /**
      * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
      */
-    public final Setting<Boolean> buildIgnoreExisting = new Setting<>(true);
+    public final Setting<Boolean> buildIgnoreExisting = new Setting<>(false);
 
     /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
