@@ -185,6 +185,20 @@ public final class Settings {
     )));
 
     /**
+     * A list of blocks to be treated as if they're air.
+     * <p>
+     * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
+     */
+    public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
+     * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
+     */
+    public final Setting<Boolean> buildIgnoreExisting = new Setting<>(true);
+
+    /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
      * <p>
      * I.E. it will never trigger cascading sand / gravel falls

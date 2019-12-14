@@ -764,11 +764,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private boolean valid(IBlockState current, IBlockState desired) {
+        if (desired == null) {
+            return true;
+        }
         // TODO more complicated comparison logic I guess
         if (current.getBlock() instanceof BlockLiquid && Baritone.settings().okIfWater.value) {
             return true;
         }
-        return desired == null || current.equals(desired);
+        if (desired.getBlock() instanceof BlockAir && Baritone.settings().buildIgnoreBlocks.value.contains(current.getBlock())) {
+            return true;
+        }
+        if (!(current.getBlock() instanceof BlockAir) && Baritone.settings().buildIgnoreExisting.value) {
+            return true;
+        }
+        return current.equals(desired);
     }
 
     public class BuilderCalculationContext extends CalculationContext {
