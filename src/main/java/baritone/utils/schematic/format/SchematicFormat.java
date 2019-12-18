@@ -65,6 +65,6 @@ public enum SchematicFormat {
     public static Optional<SchematicFormat> getByExtension(String extension) {
         return extension == null || extension.isEmpty()
             ? Optional.empty()
-            : Stream.of(values()).filter(format -> format.extension.equals(extension)).findFirst();
+            : Stream.of(values()).filter(format -> format.extension.equalsIgnoreCase(extension)).findFirst();
     }
 }

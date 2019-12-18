@@ -812,6 +812,12 @@ public final class Settings {
     public final Setting<Boolean> schematicOrientationZ = new Setting<>(false);
 
     /**
+     * The fallback used by the build command when no extension is specified. This may be useful if schematics of a
+     * particular format are used often, and the user does not wish to have to specify the extension with every usage.
+     */
+    public final Setting<String> schematicFallbackExtension = new Setting<>("schematic");
+
+    /**
      * Distance to scan every tick for updates. Expanding this beyond player reach distance (i.e. setting it to 6 or above)
      * is only necessary in very large schematics where rescanning the whole thing is costly.
      */
