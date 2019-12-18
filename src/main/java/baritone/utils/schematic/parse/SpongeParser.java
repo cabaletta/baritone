@@ -106,7 +106,7 @@ public enum SpongeParser implements ISchematicParser {
                 if (buffer.readableBytes() > 0) {
                     blockData[i] = buffer.readVarInt();
                 } else {
-                    throw new IllegalArgumentException("Not enough");
+                    throw new IllegalArgumentException("Buffer has no remaining bytes");
                 }
             }
 
@@ -114,7 +114,12 @@ public enum SpongeParser implements ISchematicParser {
                 for (int z = 0; z < this.z; z++) {
                     for (int x = 0; x < this.x; x++) {
                         int index = (y * this.z + z) * this.x + x;
-                        this.states[x][z][y] = palette.get(blockData[index]);
+                        IBlockState state = palette.get(blockData[index]);
+                        if (state == null) {
+                            throw new IllegalArgumentException("Invalid Palette Index " + index);
+                        }
+
+                        this.states[x][z][y] = state;
                     }
                 }
             }
