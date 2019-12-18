@@ -15,36 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.schematic;
+package baritone.utils.schematic.parse;
 
-public abstract class AbstractSchematic implements ISchematic {
+import baritone.api.schematic.ISchematic;
 
-    protected int x;
-    protected int y;
-    protected int z;
+import java.io.IOException;
+import java.io.InputStream;
 
-    public AbstractSchematic() {
-        this(0, 0, 0);
-    }
+/**
+ * @author Brady
+ * @since 12/13/2019
+ */
+public interface ISchematicParser {
 
-    public AbstractSchematic(int x, int y, int z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
-    @Override
-    public int widthX() {
-        return x;
-    }
-
-    @Override
-    public int heightY() {
-        return y;
-    }
-
-    @Override
-    public int lengthZ() {
-        return z;
-    }
+    ISchematic parse(InputStream input) throws IOException;
 }

@@ -178,18 +178,22 @@ public final class BlockOptionalMeta {
         normalizations = Collections.unmodifiableMap(_normalizations);
     }
 
-    private static <C extends Comparable<C>, P extends IProperty<C>> P castToIProperty(Object value) {
+    public static <C extends Comparable<C>, P extends IProperty<C>> P castToIProperty(Object value) {
         //noinspection unchecked
         return (P) value;
     }
 
-    private static <C extends Comparable<C>, P extends IProperty<C>> C castToIPropertyValue(P iproperty, Object value) {
+    public static <C extends Comparable<C>, P extends IProperty<C>> C castToIPropertyValue(P iproperty, Object value) {
         //noinspection unchecked
         return (C) value;
     }
 
     public static IBlockState normalize(IBlockState state) {
         IBlockState newState = state;
+
+        // TODO: Can the state not be normalized by simply doing...?
+        // return state.getBlock().getDefaultState();
+        // ???
 
         for (IProperty<?> property : state.getProperties().keySet()) {
             Class<?> valueClass = property.getValueClass();

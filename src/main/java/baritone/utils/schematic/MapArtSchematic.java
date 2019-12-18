@@ -17,24 +17,29 @@
 
 package baritone.utils.schematic;
 
+import baritone.api.schematic.AbstractSchematic;
+import baritone.api.schematic.ISchematic;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
 
-public class MapArtSchematic extends Schematic {
+public class MapArtSchematic extends AbstractSchematic {
 
+    private final ISchematic child;
     private final int[][] heightMap;
 
-    public MapArtSchematic(NBTTagCompound schematic) {
-        super(schematic);
-        heightMap = new int[widthX][lengthZ];
+    public MapArtSchematic(ISchematic schematic) {
+        super(schematic.widthX(), schematic.heightY(), schematic.lengthZ());
+        this.child = schematic;
 
-        for (int x = 0; x < widthX; x++) {
-            for (int z = 0; z < lengthZ; z++) {
-                IBlockState[] column = states[x][z];
+        heightMap = new int[schematic.widthX()][schematic.lengthZ()];
+
+        for (int x = 0; x < schematic.widthX(); x++) {
+            for (int z = 0; z < schematic.lengthZ(); z++) {
+                IBlockState[] column = /*states[x][z]*/null;
 
                 OptionalInt lowestBlockY = lastIndexMatching(column, state -> !(state.getBlock() instanceof BlockAir));
                 if (lowestBlockY.isPresent()) {
@@ -44,7 +49,6 @@ public class MapArtSchematic extends Schematic {
                     System.out.println("Letting it be whatever");
                     heightMap[x][z] = 256;
                 }
-
             }
         }
     }
@@ -62,5 +66,25 @@ public class MapArtSchematic extends Schematic {
     public boolean inSchematic(int x, int y, int z, IBlockState currentState) {
         // in map art, we only care about coordinates in or above the art
         return super.inSchematic(x, y, z, currentState) && y >= heightMap[x][z];
+    }
+
+    @Override
+    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
+        return this.child.desiredState(x, y, z, current, approxPlaceable);
+    }
+
+    @Override
+    public int widthX() {
+        return this.child.widthX();
+    }
+
+    @Override
+    public int heightY() {
+        return this.child.heightY();
+    }
+
+    @Override
+    public int lengthZ() {
+        return this.child.lengthZ();
     }
 }
