@@ -100,7 +100,7 @@ public enum SpongeParser implements ISchematicParser {
             int[] blockData = new int[this.x * this.y * this.z];
             int offset = 0;
             for (int i = 0; i < blockData.length; i++) {
-                if (offset >= blockData.length) {
+                if (offset >= rawBlockData.length) {
                     throw new IllegalArgumentException("No remaining bytes in BlockData for complete schematic");
                 }
 
@@ -150,11 +150,9 @@ public enum SpongeParser implements ISchematicParser {
 
                 this.properties.keySet().stream().sorted(String::compareTo).forEachOrdered(key -> {
                     IProperty<?> property = block.getBlockState().getProperty(key);
-                    if (property == null) {
-                        throw new IllegalArgumentException("Invalid property");
+                    if (property != null) {
+                        this.blockState = setPropertyValue(this.blockState, property, this.properties.get(key));
                     }
-
-                    this.blockState = setPropertyValue(this.blockState, property, this.properties.get(key));
                 });
             }
             return this.blockState;

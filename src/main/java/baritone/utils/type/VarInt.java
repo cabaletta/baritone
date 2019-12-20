@@ -57,7 +57,7 @@ public final class VarInt {
     private static byte[] serialize0(int value) {
         ByteList bytes = new ByteArrayList();
 
-        while ((value & 0xFF) != 0) {
+        while ((value & 0x80) != 0) {
             bytes.add((byte) (value & 0x7F | 0x80));
             value >>>= 7;
         }
