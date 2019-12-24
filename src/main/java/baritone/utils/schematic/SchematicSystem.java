@@ -17,34 +17,35 @@
 
 package baritone.utils.schematic;
 
-import baritone.api.schematic.AbstractSchematic;
-import baritone.api.schematic.IStaticSchematic;
-import net.minecraft.block.state.IBlockState;
+import baritone.api.command.registry.Registry;
+import baritone.api.schematic.ISchematicSystem;
+import baritone.api.schematic.format.ISchematicFormat;
+import baritone.utils.schematic.format.DefaultSchematicFormats;
 
-import java.util.List;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
- * Default implementation of {@link IStaticSchematic}
- *
  * @author Brady
- * @since 12/23/2019
+ * @since 12/24/2019
  */
-public class StaticSchematic extends AbstractSchematic implements IStaticSchematic {
+public enum SchematicSystem implements ISchematicSystem {
+    INSTANCE;
 
-    protected IBlockState[][][] states;
+    private final Registry<ISchematicFormat> registry = new Registry<>();
 
-    @Override
-    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
-        return this.states[x][z][y];
+    SchematicSystem() {
+        Arrays.stream(DefaultSchematicFormats.values()).forEach(this.registry::register);
     }
 
     @Override
-    public IBlockState getDirect(int x, int y, int z) {
-        return this.states[x][z][y];
+    public Registry<ISchematicFormat> getRegistry() {
+        return this.registry;
     }
 
     @Override
-    public IBlockState[] getColumn(int x, int z) {
-        return this.states[x][z];
+    public Optional<ISchematicFormat> getByFile(File file) {
+        return this.registry.stream().filter(format -> format.isFileType(file)).findFirst();
     }
 }

@@ -27,6 +27,8 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.schematic.FillSchematic;
 import baritone.api.schematic.ISchematic;
+import baritone.api.schematic.IStaticSchematic;
+import baritone.api.schematic.format.ISchematicFormat;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
@@ -39,8 +41,7 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
-import baritone.utils.schematic.StaticSchematic;
-import baritone.utils.schematic.format.SchematicFormat;
+import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockAir;
@@ -116,7 +117,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     @Override
     public boolean build(String name, File schematic, Vec3i origin) {
-        Optional<SchematicFormat> format = SchematicFormat.getByFile(schematic);
+        Optional<ISchematicFormat> format = SchematicSystem.INSTANCE.getByFile(schematic);
         if (!format.isPresent()) {
             return false;
         }
@@ -130,7 +131,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
 
         if (Baritone.settings().mapArtMode.value) {
-            parsed = new MapArtSchematic((StaticSchematic) parsed);
+            parsed = new MapArtSchematic((IStaticSchematic) parsed);
         }
 
         build(name, parsed, origin);

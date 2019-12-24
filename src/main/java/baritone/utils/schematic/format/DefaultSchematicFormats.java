@@ -17,20 +17,21 @@
 
 package baritone.utils.schematic.format;
 
-import baritone.utils.schematic.parse.ISchematicParser;
+import baritone.api.schematic.format.ISchematicFormat;
+import baritone.api.schematic.parse.ISchematicParser;
 import baritone.utils.schematic.parse.MCEditParser;
 import baritone.utils.schematic.parse.SpongeParser;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
+ * Default implementations of {@link ISchematicFormat}
+ *
  * @author Brady
  * @since 12/13/2019
  */
-public enum SchematicFormat {
+public enum DefaultSchematicFormats implements ISchematicFormat {
 
     /**
      * The MCEdit schematic specification. Commonly denoted by the ".schematic" file extension.
@@ -47,24 +48,18 @@ public enum SchematicFormat {
     private final String extension;
     private final ISchematicParser parser;
 
-    SchematicFormat(String extension, ISchematicParser parser) {
+    DefaultSchematicFormats(String extension, ISchematicParser parser) {
         this.extension = extension;
         this.parser = parser;
     }
 
+    @Override
     public final ISchematicParser getParser() {
         return this.parser;
     }
 
-    public static Optional<SchematicFormat> getByFile(File schematic) {
-        // TODO: Better identification
-        // Maybe peek file contents and make a safe determination?
-        return getByExtension(FilenameUtils.getExtension(schematic.getAbsolutePath()));
-    }
-
-    public static Optional<SchematicFormat> getByExtension(String extension) {
-        return extension == null || extension.isEmpty()
-            ? Optional.empty()
-            : Stream.of(values()).filter(format -> format.extension.equalsIgnoreCase(extension)).findFirst();
+    @Override
+    public boolean isFileType(File file) {
+        return this.extension.equalsIgnoreCase(FilenameUtils.getExtension(file.getAbsolutePath()));
     }
 }

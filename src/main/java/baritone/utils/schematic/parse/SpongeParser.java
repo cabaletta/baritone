@@ -17,8 +17,9 @@
 
 package baritone.utils.schematic.parse;
 
+import baritone.api.schematic.parse.ISchematicParser;
 import baritone.utils.schematic.StaticSchematic;
-import baritone.utils.schematic.format.SchematicFormat;
+import baritone.utils.schematic.format.DefaultSchematicFormats;
 import baritone.utils.type.VarInt;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.minecraft.block.Block;
@@ -37,7 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * An implementation of {@link ISchematicParser} for {@link SchematicFormat#SPONGE}
+ * An implementation of {@link ISchematicParser} for {@link DefaultSchematicFormats#SPONGE}
  *
  * @author Brady
  * @since 12/16/2019

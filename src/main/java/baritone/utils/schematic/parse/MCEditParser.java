@@ -17,8 +17,9 @@
 
 package baritone.utils.schematic.parse;
 
+import baritone.api.schematic.parse.ISchematicParser;
 import baritone.utils.schematic.StaticSchematic;
-import baritone.utils.schematic.format.SchematicFormat;
+import baritone.utils.schematic.format.DefaultSchematicFormats;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -28,7 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * An implementation of {@link ISchematicParser} for {@link SchematicFormat#MCEDIT}
+ * An implementation of {@link ISchematicParser} for {@link DefaultSchematicFormats#MCEDIT}
  *
  * @author Brady
  * @since 12/16/2019
