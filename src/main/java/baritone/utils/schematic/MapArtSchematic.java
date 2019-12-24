@@ -17,46 +17,16 @@
 
 package baritone.utils.schematic;
 
-import baritone.api.schematic.ISchematic;
 import baritone.api.schematic.MaskSchematic;
-import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
-
-import java.util.OptionalInt;
-import java.util.function.Predicate;
 
 public class MapArtSchematic extends MaskSchematic {
 
     private final int[][] heightMap;
 
-    public MapArtSchematic(ISchematic schematic) {
+    public MapArtSchematic(StaticSchematic schematic) {
         super(schematic);
-
-        heightMap = new int[schematic.widthX()][schematic.lengthZ()];
-
-        for (int x = 0; x < schematic.widthX(); x++) {
-            for (int z = 0; z < schematic.lengthZ(); z++) {
-                IBlockState[] column = /*states[x][z]*/null;
-
-                OptionalInt lowestBlockY = lastIndexMatching(column, state -> !(state.getBlock() instanceof BlockAir));
-                if (lowestBlockY.isPresent()) {
-                    heightMap[x][z] = lowestBlockY.getAsInt();
-                } else {
-                    System.out.println("Column " + x + "," + z + " has no blocks, but it's apparently map art? wtf");
-                    System.out.println("Letting it be whatever");
-                    heightMap[x][z] = 256;
-                }
-            }
-        }
-    }
-
-    private static <T> OptionalInt lastIndexMatching(T[] arr, Predicate<? super T> predicate) {
-        for (int y = arr.length - 1; y >= 0; y--) {
-            if (predicate.test(arr[y])) {
-                return OptionalInt.of(y);
-            }
-        }
-        return OptionalInt.empty();
+        this.heightMap = schematic.getHeightMap();
     }
 
     @Override

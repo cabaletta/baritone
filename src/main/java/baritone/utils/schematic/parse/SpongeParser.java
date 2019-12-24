@@ -17,8 +17,7 @@
 
 package baritone.utils.schematic.parse;
 
-import baritone.api.schematic.AbstractSchematic;
-import baritone.api.schematic.ISchematic;
+import baritone.utils.schematic.StaticSchematic;
 import baritone.utils.schematic.format.SchematicFormat;
 import baritone.utils.type.VarInt;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
@@ -32,7 +31,6 @@ import net.minecraft.util.ResourceLocation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -48,7 +46,7 @@ public enum SpongeParser implements ISchematicParser {
     INSTANCE;
 
     @Override
-    public ISchematic parse(InputStream input) throws IOException {
+    public StaticSchematic parse(InputStream input) throws IOException {
         NBTTagCompound nbt = CompressedStreamTools.readCompressed(input);
         int version = nbt.getInteger("Version");
         switch (version) {
@@ -56,7 +54,7 @@ public enum SpongeParser implements ISchematicParser {
             case 2:
                 return new SpongeSchematic(nbt);
             default:
-                throw new UnsupportedOperationException("Unsupported Version of the a Sponge Schematic");
+                throw new UnsupportedOperationException("Unsupported Version of a Sponge Schematic");
         }
     }
 
@@ -64,12 +62,8 @@ public enum SpongeParser implements ISchematicParser {
      * Implementation of the Sponge Schematic Format supporting both V1 and V2. (For the current
      * use case, there is no difference between reading a V1 and V2 schematic).
      */
-    private static final class SpongeSchematic extends AbstractSchematic {
+    private static final class SpongeSchematic extends StaticSchematic {
 
-        /**
-         * Block states for this schematic stored in [x, z, y] indexing order
-         */
-        private IBlockState[][][] states;
 
         SpongeSchematic(NBTTagCompound nbt) {
             this.x = nbt.getInteger("Width");
@@ -122,11 +116,6 @@ public enum SpongeParser implements ISchematicParser {
                     }
                 }
             }
-        }
-
-        @Override
-        public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
-            return this.states[x][z][y];
         }
     }
 

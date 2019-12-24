@@ -17,7 +17,7 @@
 
 package baritone.utils.schematic.parse;
 
-import baritone.api.schematic.ISchematic;
+import baritone.utils.schematic.StaticSchematic;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,5 +28,5 @@ import java.io.InputStream;
  */
 public interface ISchematicParser {
 
-    ISchematic parse(InputStream input) throws IOException;
+    StaticSchematic parse(InputStream input) throws IOException;
 }

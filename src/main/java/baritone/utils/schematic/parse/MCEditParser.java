@@ -17,8 +17,7 @@
 
 package baritone.utils.schematic.parse;
 
-import baritone.api.schematic.AbstractSchematic;
-import baritone.api.schematic.ISchematic;
+import baritone.utils.schematic.StaticSchematic;
 import baritone.utils.schematic.format.SchematicFormat;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -27,7 +26,6 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 /**
  * An implementation of {@link ISchematicParser} for {@link SchematicFormat#MCEDIT}
@@ -39,13 +37,11 @@ public enum MCEditParser implements ISchematicParser {
     INSTANCE;
 
     @Override
-    public ISchematic parse(InputStream input) throws IOException {
+    public StaticSchematic parse(InputStream input) throws IOException {
         return new MCEditSchematic(CompressedStreamTools.readCompressed(input));
     }
 
-    private static final class MCEditSchematic extends AbstractSchematic {
-
-        private final IBlockState[][][] states;
+    private static final class MCEditSchematic extends StaticSchematic {
 
         MCEditSchematic(NBTTagCompound schematic) {
             String type = schematic.getString("Materials");
@@ -84,11 +80,6 @@ public enum MCEditParser implements ISchematicParser {
                     }
                 }
             }
-        }
-
-        @Override
-        public final IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
-            return this.states[x][z][y];
         }
     }
 }

@@ -39,6 +39,7 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
+import baritone.utils.schematic.StaticSchematic;
 import baritone.utils.schematic.format.SchematicFormat;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -129,7 +130,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
 
         if (Baritone.settings().mapArtMode.value) {
-            parsed = new MapArtSchematic(parsed);
+            parsed = new MapArtSchematic((StaticSchematic) parsed);
         }
 
         build(name, parsed, origin);
