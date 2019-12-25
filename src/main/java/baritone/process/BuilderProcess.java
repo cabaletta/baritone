@@ -141,9 +141,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     @Override
     public void buildOpenSchematic() {
         if (SchematicaHelper.isSchematicaPresent()) {
-            Optional<Tuple<ISchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
+            Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
-                this.build(schematic.get().getFirst().toString(), schematic.get().getFirst(), schematic.get().getSecond());
+                IStaticSchematic s = schematic.get().getFirst();
+                this.build(
+                        schematic.get().getFirst().toString(),
+                        Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s,
+                        schematic.get().getSecond()
+                );
             } else {
                 logDirect("No schematic currently open");
             }
