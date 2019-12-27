@@ -124,7 +124,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
         ISchematic parsed;
         try {
-            parsed = format.get().getParser().parse(new FileInputStream(schematic));
+            parsed = format.get().parse(new FileInputStream(schematic));
         } catch (Exception e) {
             e.printStackTrace();
             return false;

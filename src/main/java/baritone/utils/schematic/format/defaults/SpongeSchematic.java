@@ -15,22 +15,17 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.schematic.parse;
+package baritone.utils.schematic.format.defaults;
 
-import baritone.api.schematic.parse.ISchematicParser;
 import baritone.utils.schematic.StaticSchematic;
-import baritone.utils.schematic.format.DefaultSchematicFormats;
 import baritone.utils.type.VarInt;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -38,83 +33,59 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * An implementation of {@link ISchematicParser} for {@link DefaultSchematicFormats#SPONGE}
- *
  * @author Brady
- * @since 12/16/2019
+ * @since 12/27/2019
  */
-public enum SpongeParser implements ISchematicParser {
-    INSTANCE;
+public final class SpongeSchematic extends StaticSchematic {
 
-    @Override
-    public StaticSchematic parse(InputStream input) throws IOException {
-        NBTTagCompound nbt = CompressedStreamTools.readCompressed(input);
-        int version = nbt.getInteger("Version");
-        switch (version) {
-            case 1:
-            case 2:
-                return new SpongeSchematic(nbt);
-            default:
-                throw new UnsupportedOperationException("Unsupported Version of a Sponge Schematic");
+    public SpongeSchematic(NBTTagCompound nbt) {
+        this.x = nbt.getInteger("Width");
+        this.y = nbt.getInteger("Height");
+        this.z = nbt.getInteger("Length");
+        this.states = new IBlockState[this.x][this.z][this.y];
+
+        Int2ObjectArrayMap<IBlockState> palette = new Int2ObjectArrayMap<>();
+        NBTTagCompound paletteTag = nbt.getCompoundTag("Palette");
+        for (String tag : paletteTag.getKeySet()) {
+            int index = paletteTag.getInteger(tag);
+
+            SerializedBlockState serializedState = SerializedBlockState.getFromString(tag);
+            if (serializedState == null) {
+                throw new IllegalArgumentException("Unable to parse palette tag");
+            }
+
+            IBlockState state = serializedState.deserialize();
+            if (state == null) {
+                throw new IllegalArgumentException("Unable to deserialize palette tag");
+            }
+
+            palette.put(index, state);
         }
-    }
 
-    /**
-     * Implementation of the Sponge Schematic Format supporting both V1 and V2. (For the current
-     * use case, there is no difference between reading a V1 and V2 schematic).
-     */
-    private static final class SpongeSchematic extends StaticSchematic {
-
-
-        SpongeSchematic(NBTTagCompound nbt) {
-            this.x = nbt.getInteger("Width");
-            this.y = nbt.getInteger("Height");
-            this.z = nbt.getInteger("Length");
-            this.states = new IBlockState[this.x][this.z][this.y];
-
-            Int2ObjectArrayMap<IBlockState> palette = new Int2ObjectArrayMap<>();
-            NBTTagCompound paletteTag = nbt.getCompoundTag("Palette");
-            for (String tag : paletteTag.getKeySet()) {
-                int index = paletteTag.getInteger(tag);
-
-                SerializedBlockState serializedState = SerializedBlockState.getFromString(tag);
-                if (serializedState == null) {
-                    throw new IllegalArgumentException("Unable to parse palette tag");
-                }
-
-                IBlockState state = serializedState.deserialize();
-                if (state == null) {
-                    throw new IllegalArgumentException("Unable to deserialize palette tag");
-                }
-
-                palette.put(index, state);
+        // BlockData is stored as an NBT byte[], however, the actual data that is represented is a varint[]
+        byte[] rawBlockData = nbt.getByteArray("BlockData");
+        int[] blockData = new int[this.x * this.y * this.z];
+        int offset = 0;
+        for (int i = 0; i < blockData.length; i++) {
+            if (offset >= rawBlockData.length) {
+                throw new IllegalArgumentException("No remaining bytes in BlockData for complete schematic");
             }
 
-            // BlockData is stored as an NBT byte[], however, the actual data that is represented is a varint[]
-            byte[] rawBlockData = nbt.getByteArray("BlockData");
-            int[] blockData = new int[this.x * this.y * this.z];
-            int offset = 0;
-            for (int i = 0; i < blockData.length; i++) {
-                if (offset >= rawBlockData.length) {
-                    throw new IllegalArgumentException("No remaining bytes in BlockData for complete schematic");
-                }
+            VarInt varInt = VarInt.read(rawBlockData, offset);
+            blockData[i] = varInt.getValue();
+            offset += varInt.getSize();
+        }
 
-                VarInt varInt = VarInt.read(rawBlockData, offset);
-                blockData[i] = varInt.getValue();
-                offset += varInt.getSize();
-            }
-
-            for (int y = 0; y < this.y; y++) {
-                for (int z = 0; z < this.z; z++) {
-                    for (int x = 0; x < this.x; x++) {
-                        int index = (y * this.z + z) * this.x + x;
-                        IBlockState state = palette.get(blockData[index]);
-                        if (state == null) {
-                            throw new IllegalArgumentException("Invalid Palette Index " + index);
-                        }
-
-                        this.states[x][z][y] = state;
+        for (int y = 0; y < this.y; y++) {
+            for (int z = 0; z < this.z; z++) {
+                for (int x = 0; x < this.x; x++) {
+                    int index = (y * this.z + z) * this.x + x;
+                    IBlockState state = palette.get(blockData[index]);
+                    if (state == null) {
+                        throw new IllegalArgumentException("Invalid Palette Index " + index);
                     }
+
+                    this.states[x][z][y] = state;
                 }
             }
         }
