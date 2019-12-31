@@ -18,13 +18,13 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
+import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.command.Command;
-import baritone.api.command.exception.CommandException;
-import baritone.api.command.exception.CommandInvalidStateException;
-import baritone.api.command.argument.IArgConsumer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,14 +37,14 @@ import java.util.stream.Stream;
  * TO USE THIS to pause and resume Baritone. Make your own process that returns {@link PathingCommandType#REQUEST_PAUSE
  * REQUEST_PAUSE} as needed.
  */
-public class PauseResumeCommands {
+public class ExecutionControlCommands {
 
     Command pauseCommand;
     Command resumeCommand;
     Command pausedCommand;
     Command cancelCommand;
 
-    public PauseResumeCommands(IBaritone baritone) {
+    public ExecutionControlCommands(IBaritone baritone) {
         // array for mutability, non-field so reflection can't touch it
         final boolean[] paused = {false};
         baritone.getPathingControlManager().registerProcess(
@@ -65,7 +65,8 @@ public class PauseResumeCommands {
                     }
 
                     @Override
-                    public void onLostControl() {}
+                    public void onLostControl() {
+                    }
 
                     @Override
                     public double priority() {
