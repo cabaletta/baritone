@@ -85,7 +85,7 @@ public final class VarInt {
             }
 
             // Most significant bit denotes another byte is to be read.
-            if ((b & 0x80) != 0x80) {
+            if ((b & 0x80) == 0) {
                 break;
             }
         }
