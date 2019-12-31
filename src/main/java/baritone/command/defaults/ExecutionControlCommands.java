@@ -42,6 +42,7 @@ public class PauseResumeCommands {
     Command pauseCommand;
     Command resumeCommand;
     Command pausedCommand;
+    Command cancelCommand;
 
     public PauseResumeCommands(IBaritone baritone) {
         // array for mutability, non-field so reflection can't touch it
@@ -166,6 +167,37 @@ public class PauseResumeCommands {
                         "",
                         "Usage:",
                         "> paused"
+                );
+            }
+        };
+        cancelCommand = new Command(baritone, "cancel", "stop") {
+            @Override
+            public void execute(String label, IArgConsumer args) throws CommandException {
+                args.requireMax(0);
+                if (paused[0]) {
+                    paused[0] = false;
+                }
+                baritone.getPathingBehavior().cancelEverything();
+                logDirect("ok canceled");
+            }
+
+            @Override
+            public Stream<String> tabComplete(String label, IArgConsumer args) {
+                return Stream.empty();
+            }
+
+            @Override
+            public String getShortDesc() {
+                return "Cancel what Baritone is currently doing";
+            }
+
+            @Override
+            public List<String> getLongDesc() {
+                return Arrays.asList(
+                        "The cancel command tells Baritone to stop whatever it's currently doing.",
+                        "",
+                        "Usage:",
+                        "> cancel"
                 );
             }
         };
