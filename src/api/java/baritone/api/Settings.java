@@ -184,6 +184,20 @@ public final class Settings {
     )));
 
     /**
+     * A list of blocks to be treated as if they're air.
+     * <p>
+     * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
+     */
+    public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
+     * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
+     */
+    public final Setting<Boolean> buildIgnoreExisting = new Setting<>(false);
+
+    /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
      * <p>
      * I.E. it will never trigger cascading sand / gravel falls
@@ -233,7 +247,7 @@ public final class Settings {
     /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
      * <p>
-     * This helps with speed at >=20m/s
+     * This helps with speed exceeding 20m/s
      */
     public final Setting<Boolean> overshootTraverse = new Setting<>(true);
 
@@ -251,6 +265,11 @@ public final class Settings {
      * How many degrees to randomize the yaw every tick. Set to 0 to disable
      */
     public final Setting<Double> randomLooking113 = new Setting<>(2d);
+
+    /**
+     * Block reach distance
+     */
+    public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
 
     /**
      * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable
@@ -741,6 +760,11 @@ public final class Settings {
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
+
+    /**
+     * How many times to buildrepeat. -1 for infinite.
+     */
+    public final Setting<Integer> buildRepeatCount = new Setting<>(-1);
 
     /**
      * Allow standing above a block while mining it, in BuilderProcess

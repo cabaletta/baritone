@@ -465,7 +465,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
             for (int y = next.getDest().y; y <= movement.getSrc().y + 1; y++) {
                 BlockPos chk = new BlockPos(next.getDest().x, y, next.getDest().z);
-                if (!MovementHelper.fullyPassable(ctx.world().getBlockState(chk))) {
+                if (!MovementHelper.fullyPassable(ctx, chk)) {
                     break outer;
                 }
             }
@@ -490,7 +490,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         // we are centered
         BlockPos headBonk = current.getSrc().subtract(current.getDirection()).up(2);
-        if (MovementHelper.fullyPassable(ctx.world().getBlockState(headBonk))) {
+        if (MovementHelper.fullyPassable(ctx, headBonk)) {
             return true;
         }
         // wait 0.3
@@ -523,7 +523,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 if (x == 1) {
                     chk = chk.add(current.getDirection());
                 }
-                if (!MovementHelper.fullyPassable(ctx.world().getBlockState(chk))) {
+                if (!MovementHelper.fullyPassable(ctx, chk)) {
                     return false;
                 }
             }
