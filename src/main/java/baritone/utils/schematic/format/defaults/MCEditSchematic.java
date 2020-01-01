@@ -15,34 +15,35 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.schematic;
+package baritone.utils.schematic.format.defaults;
 
-import baritone.api.schematic.ISchematic;
+import baritone.utils.schematic.StaticSchematic;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.datafix.fixes.ItemIntIDToString;
+import net.minecraft.util.registry.IRegistry;
 
-import java.util.List;
+/**
+ * @author Brady
+ * @since 12/27/2019
+ */
+public final class MCEditSchematic extends StaticSchematic {
 
-public class Schematic implements ISchematic {
-
-    public final int widthX;
-    public final int heightY;
-    public final int lengthZ;
-    protected final IBlockState[][][] states;
-
-    public Schematic(NBTTagCompound schematic) {
-        /*String type = schematic.getString("Materials");
+    public MCEditSchematic(NBTTagCompound schematic) {
+        String type = schematic.getString("Materials");
         if (!type.equals("Alpha")) {
             throw new IllegalStateException("bad schematic " + type);
         }
-        widthX = schematic.getInteger("Width");
-        heightY = schematic.getInteger("Height");
-        lengthZ = schematic.getInteger("Length");
+        this.x = schematic.getInt("Width");
+        this.y = schematic.getInt("Height");
+        this.z = schematic.getInt("Length");
         byte[] blocks = schematic.getByteArray("Blocks");
-        byte[] metadata = schematic.getByteArray("Data");
+//        byte[] metadata = schematic.getByteArray("Data");
 
         byte[] additional = null;
-        if (schematic.hasKey("AddBlocks")) {
+        if (schematic.contains("AddBlocks")) {
             byte[] addBlocks = schematic.getByteArray("AddBlocks");
             additional = new byte[addBlocks.length * 2];
             for (int i = 0; i < addBlocks.length; i++) {
@@ -50,43 +51,23 @@ public class Schematic implements ISchematic {
                 additional[i * 2 + 1] = (byte) ((addBlocks[i] >> 0) & 0xF); // upper nibble
             }
         }
-        states = new IBlockState[widthX][lengthZ][heightY];
-        for (int y = 0; y < heightY; y++) {
-            for (int z = 0; z < lengthZ; z++) {
-                for (int x = 0; x < widthX; x++) {
-                    int blockInd = (y * lengthZ + z) * widthX + x;
+        this.states = new IBlockState[this.x][this.z][this.y];
+        for (int y = 0; y < this.y; y++) {
+            for (int z = 0; z < this.z; z++) {
+                for (int x = 0; x < this.x; x++) {
+                    int blockInd = (y * this.z + z) * this.x + x;
 
                     int blockID = blocks[blockInd] & 0xFF;
                     if (additional != null) {
                         // additional is 0 through 15 inclusive since it's & 0xF above
                         blockID |= additional[blockInd] << 8;
                     }
-                    Block block = Block.REGISTRY.getObjectById(blockID);
-                    int meta = metadata[blockInd] & 0xFF;
-                    states[x][z][y] = block.getStateFromMeta(meta);
+                    Block block = IRegistry.BLOCK.get(ResourceLocation.tryCreate(ItemIntIDToString.getItem(blockID)));
+//                    int meta = metadata[blockInd] & 0xFF;
+//                    this.states[x][z][y] = block.getStateFromMeta(meta);
+                    this.states[x][z][y] = block.getDefaultState();
                 }
             }
-        }*/
-        throw new UnsupportedOperationException("1.13 be like: numeric IDs btfo");
-    }
-
-    @Override
-    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
-        return states[x][z][y];
-    }
-
-    @Override
-    public int widthX() {
-        return widthX;
-    }
-
-    @Override
-    public int heightY() {
-        return heightY;
-    }
-
-    @Override
-    public int lengthZ() {
-        return lengthZ;
+        }
     }
 }

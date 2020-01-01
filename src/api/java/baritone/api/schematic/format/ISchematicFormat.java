@@ -15,36 +15,31 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.schematic;
+package baritone.api.schematic.format;
 
-public abstract class AbstractSchematic implements ISchematic {
+import baritone.api.schematic.ISchematic;
+import baritone.api.schematic.IStaticSchematic;
 
-    protected int x;
-    protected int y;
-    protected int z;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
-    public AbstractSchematic() {
-        this(0, 0, 0);
-    }
+/**
+ * The base of a {@link ISchematic} file format
+ *
+ * @author Brady
+ * @since 12/23/2019
+ */
+public interface ISchematicFormat {
 
-    public AbstractSchematic(int x, int y, int z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+    /**
+     * @return The parser for creating schematics of this format
+     */
+    IStaticSchematic parse(InputStream input) throws IOException;
 
-    @Override
-    public int widthX() {
-        return x;
-    }
-
-    @Override
-    public int heightY() {
-        return y;
-    }
-
-    @Override
-    public int lengthZ() {
-        return z;
-    }
+    /**
+     * @param file The file to check against
+     * @return Whether or not the specified file matches this schematic format
+     */
+    boolean isFileType(File file);
 }

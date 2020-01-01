@@ -162,16 +162,27 @@ public final class BlockOptionalMeta {
         normalizations = Collections.unmodifiableMap(_normalizations);
     }
 
-    private static <C extends Comparable<C>, P extends IProperty<C>> P castToIProperty(Object value) {
+    public static <C extends Comparable<C>, P extends IProperty<C>> P castToIProperty(Object value) {
         //noinspection unchecked
         return (P) value;
     }
 
-    private static <C extends Comparable<C>, P extends IProperty<C>> C castToIPropertyValue(P iproperty, Object value) {
+    public static <C extends Comparable<C>, P extends IProperty<C>> C castToIPropertyValue(P iproperty, Object value) {
         //noinspection unchecked
         return (C) value;
     }
 
+    /**
+     * Normalizes the specified blockstate by setting meta-affecting properties which
+     * are not being targeted by the meta parameter to their default values.
+     * <p>
+     * For example, block variant/color is the primary target for the meta value, so properties
+     * such as rotation/facing direction will be set to default values in order to nullify
+     * the effect that they have on the state's meta value.
+     *
+     * @param state The state to normalize
+     * @return The normalized block state
+     */
     public static IBlockState normalize(IBlockState state) {
         IBlockState newState = state;
 
@@ -204,6 +215,15 @@ public final class BlockOptionalMeta {
         return newState;
     }
 
+    /**
+     * Evaluate the target meta value for the specified state. The target meta value is
+     * most often that which is influenced by the variant/color property of the block state.
+     * 
+     * @see #normalize(IBlockState) 
+     * 
+     * @param state The state to check
+     * @return The target meta of the state
+     */
     public static int stateMeta(IBlockState state) {
         return state.hashCode();
     }
