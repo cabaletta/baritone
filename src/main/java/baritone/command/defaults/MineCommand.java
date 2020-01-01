@@ -71,7 +71,7 @@ public class MineCommand extends Command {
                 "",
                 "Usage:",
                 "> mine diamond_ore - Mines all diamonds it can find.",
-                "> mine redstone_ore lit_redstone_ore - Mines redstone ore.",
+                "> mine redstone_ore iron_ore - Mines redstone ore and iron ore.",
                 "> mine log:0 - Mines only oak logs."
         );
     }
