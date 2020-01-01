@@ -15,15 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.command.exception;
+package baritone.api.schematic;
 
-public abstract class CommandException extends Exception implements ICommandException {
+import baritone.api.command.registry.Registry;
+import baritone.api.schematic.format.ISchematicFormat;
 
-    protected CommandException(String reason) {
-        super(reason);
-    }
+import java.io.File;
+import java.util.Optional;
 
-    protected CommandException(String reason, Throwable cause) {
-        super(reason, cause);
-    }
+/**
+ * @author Brady
+ * @since 12/23/2019
+ */
+public interface ISchematicSystem {
+
+    /**
+     * @return The registry of supported schematic formats
+     */
+    Registry<ISchematicFormat> getRegistry();
+
+    /**
+     * Attempts to find an {@link ISchematicFormat} that supports the specified schematic file.
+     *
+     * @param file A schematic file
+     * @return The corresponding format for the file, {@link Optional#empty()} if no candidates were found.
+     */
+    Optional<ISchematicFormat> getByFile(File file);
 }

@@ -21,6 +21,7 @@ import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommand;
 import baritone.api.command.ICommandSystem;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import baritone.api.schematic.ISchematicSystem;
 
 import java.util.List;
 import java.util.Objects;
@@ -82,4 +83,9 @@ public interface IBaritoneProvider {
      * @return The {@link ICommandSystem} instance.
      */
     ICommandSystem getCommandSystem();
+
+    /**
+     * @return The {@link ISchematicSystem} instance.
+     */
+    ISchematicSystem getSchematicSystem();
 }

@@ -24,9 +24,6 @@ import net.minecraft.block.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resources.*;
-import net.minecraft.state.IProperty;
-import net.minecraft.state.properties.*;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
@@ -36,7 +33,6 @@ import net.minecraft.world.storage.loot.*;
 import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,7 +45,6 @@ public final class BlockOptionalMeta {
     private final ImmutableSet<Integer> stateHashes;
     private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
-    private static final Map<Object, Object> normalizations;
     private static LootTableManager manager;
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
@@ -79,142 +74,6 @@ public final class BlockOptionalMeta {
         blockstates = getStates(block);
         stateHashes = getStateHashes(blockstates);
         stackHashes = getStackHashes(blockstates);
-    }
-
-    static {
-        Map<Object, Object> _normalizations = new HashMap<>();
-        Consumer<Enum> put = instance -> _normalizations.put(instance.getClass(), instance);
-        put.accept(Direction.NORTH);
-        put.accept(Direction.Axis.Y);
-        put.accept(Half.BOTTOM);
-        put.accept(StairsShape.STRAIGHT);
-        put.accept(AttachFace.FLOOR);
-        put.accept(DoubleBlockHalf.UPPER);
-        put.accept(SlabType.BOTTOM);
-        put.accept(DoorHingeSide.LEFT);
-        put.accept(BedPart.HEAD);
-        put.accept(RailShape.NORTH_SOUTH);
-        _normalizations.put(BannerBlock.ROTATION, 0);
-        _normalizations.put(BedBlock.OCCUPIED, false);
-        _normalizations.put(BrewingStandBlock.HAS_BOTTLE[0], false);
-        _normalizations.put(BrewingStandBlock.HAS_BOTTLE[1], false);
-        _normalizations.put(BrewingStandBlock.HAS_BOTTLE[2], false);
-        _normalizations.put(AbstractButtonBlock.POWERED, false);
-        // _normalizations.put(BlockCactus.AGE, 0);
-        // _normalizations.put(BlockCauldron.LEVEL, 0);
-        // _normalizations.put(BlockChorusFlower.AGE, 0);
-        _normalizations.put(ChorusPlantBlock.NORTH, false);
-        _normalizations.put(ChorusPlantBlock.EAST, false);
-        _normalizations.put(ChorusPlantBlock.SOUTH, false);
-        _normalizations.put(ChorusPlantBlock.WEST, false);
-        _normalizations.put(ChorusPlantBlock.UP, false);
-        _normalizations.put(ChorusPlantBlock.DOWN, false);
-        // _normalizations.put(BlockCocoa.AGE, 0);
-        // _normalizations.put(BlockCrops.AGE, 0);
-        _normalizations.put(SnowyDirtBlock.SNOWY, false);
-        _normalizations.put(DoorBlock.OPEN, false);
-        _normalizations.put(DoorBlock.POWERED, false);
-        // _normalizations.put(BlockFarmland.MOISTURE, 0);
-        _normalizations.put(FenceBlock.NORTH, false);
-        _normalizations.put(FenceBlock.EAST, false);
-        _normalizations.put(FenceBlock.WEST, false);
-        _normalizations.put(FenceBlock.SOUTH, false);
-        // _normalizations.put(BlockFenceGate.POWERED, false);
-        // _normalizations.put(BlockFenceGate.IN_WALL, false);
-        _normalizations.put(FireBlock.AGE, 0);
-        _normalizations.put(FireBlock.NORTH, false);
-        _normalizations.put(FireBlock.EAST, false);
-        _normalizations.put(FireBlock.SOUTH, false);
-        _normalizations.put(FireBlock.WEST, false);
-        _normalizations.put(FireBlock.UP, false);
-        // _normalizations.put(BlockFrostedIce.AGE, 0);
-        _normalizations.put(GrassBlock.SNOWY, false);
-        // _normalizations.put(BlockHopper.ENABLED, true);
-        // _normalizations.put(BlockLever.POWERED, false);
-        // _normalizations.put(BlockLiquid.LEVEL, 0);
-        // _normalizations.put(BlockMycelium.SNOWY, false);
-        // _normalizations.put(BlockNetherWart.AGE, false);
-        _normalizations.put(LeavesBlock.DISTANCE, false);
-        // _normalizations.put(BlockLeaves.DECAYABLE, false);
-        // _normalizations.put(BlockObserver.POWERED, false);
-        _normalizations.put(PaneBlock.NORTH, false);
-        _normalizations.put(PaneBlock.EAST, false);
-        _normalizations.put(PaneBlock.WEST, false);
-        _normalizations.put(PaneBlock.SOUTH, false);
-        // _normalizations.put(BlockPistonBase.EXTENDED, false);
-        // _normalizations.put(BlockPressurePlate.POWERED, false);
-        // _normalizations.put(BlockPressurePlateWeighted.POWER, false);
-        // _normalizations.put(BlockRailDetector.POWERED, false);
-        // _normalizations.put(BlockRailPowered.POWERED, false);
-        _normalizations.put(RedstoneWireBlock.NORTH, false);
-        _normalizations.put(RedstoneWireBlock.EAST, false);
-        _normalizations.put(RedstoneWireBlock.SOUTH, false);
-        _normalizations.put(RedstoneWireBlock.WEST, false);
-        // _normalizations.put(BlockReed.AGE, false);
-        _normalizations.put(SaplingBlock.STAGE, 0);
-        _normalizations.put(StandingSignBlock.ROTATION, 0);
-        _normalizations.put(StemBlock.AGE, 0);
-        _normalizations.put(TripWireBlock.NORTH, false);
-        _normalizations.put(TripWireBlock.EAST, false);
-        _normalizations.put(TripWireBlock.WEST, false);
-        _normalizations.put(TripWireBlock.SOUTH, false);
-        _normalizations.put(VineBlock.NORTH, false);
-        _normalizations.put(VineBlock.EAST, false);
-        _normalizations.put(VineBlock.SOUTH, false);
-        _normalizations.put(VineBlock.WEST, false);
-        _normalizations.put(VineBlock.UP, false);
-        _normalizations.put(WallBlock.UP, false);
-        _normalizations.put(WallBlock.NORTH, false);
-        _normalizations.put(WallBlock.EAST, false);
-        _normalizations.put(WallBlock.WEST, false);
-        _normalizations.put(WallBlock.SOUTH, false);
-        normalizations = Collections.unmodifiableMap(_normalizations);
-    }
-
-    private static <C extends Comparable<C>, P extends IProperty<C>> P castToIProperty(Object value) {
-        //noinspection unchecked
-        return (P) value;
-    }
-
-    private static <C extends Comparable<C>, P extends IProperty<C>> C castToIPropertyValue(P iproperty, Object value) {
-        //noinspection unchecked
-        return (C) value;
-    }
-
-    public static BlockState normalize(BlockState state) {
-        BlockState newState = state;
-
-        for (IProperty<?> property : state.getProperties()) {
-            Class<?> valueClass = property.getValueClass();
-            if (normalizations.containsKey(property)) {
-                try {
-                    newState = newState.with(
-                            castToIProperty(property),
-                            castToIPropertyValue(property, normalizations.get(property))
-                    );
-                } catch (IllegalArgumentException ignored) {}
-            } else if (normalizations.containsKey(state.get(property))) {
-                try {
-                    newState = newState.with(
-                            castToIProperty(property),
-                            castToIPropertyValue(property, normalizations.get(state.get(property)))
-                    );
-                } catch (IllegalArgumentException ignored) {}
-            } else if (normalizations.containsKey(valueClass)) {
-                try {
-                    newState = newState.with(
-                            castToIProperty(property),
-                            castToIPropertyValue(property, normalizations.get(valueClass))
-                    );
-                } catch (IllegalArgumentException ignored) {}
-            }
-        }
-
-        return newState;
-    }
-
-    public static int stateMeta(BlockState state) {
-        return state.hashCode();
     }
 
     private static Set<BlockState> getStates(@Nonnull Block block) {

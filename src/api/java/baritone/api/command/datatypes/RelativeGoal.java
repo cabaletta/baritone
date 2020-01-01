@@ -38,38 +38,26 @@ public enum RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
         if (origin == null) {
             origin = BetterBlockPos.ORIGIN;
         }
+
         final IArgConsumer consumer = ctx.getConsumer();
 
-        List<IDatatypePostFunction<Double, Double>> coords = new ArrayList<>();
-        final IArgConsumer copy = consumer.copy(); // This is a hack and should be fixed in the future probably
-        for (int i = 0; i < 3; i++) {
-            if (copy.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) != null) {
-                coords.add(o -> consumer.getDatatypePost(RelativeCoordinate.INSTANCE, o));
-                copy.get(); // Consume so we actually decrement the remaining arguments
-            }
+        GoalBlock goalBlock = consumer.peekDatatypePostOrNull(RelativeGoalBlock.INSTANCE, origin);
+        if (goalBlock != null) {
+            return goalBlock;
         }
 
-        switch (coords.size()) {
-            case 0:
-                return new GoalBlock(origin);
-            case 1:
-                return new GoalYLevel(
-                        MathHelper.floor(coords.get(0).apply((double) origin.y))
-                );
-            case 2:
-                return new GoalXZ(
-                        MathHelper.floor(coords.get(0).apply((double) origin.x)),
-                        MathHelper.floor(coords.get(1).apply((double) origin.z))
-                );
-            case 3:
-                return new GoalBlock(
-                        MathHelper.floor(coords.get(0).apply((double) origin.x)),
-                        MathHelper.floor(coords.get(1).apply((double) origin.y)),
-                        MathHelper.floor(coords.get(2).apply((double) origin.z))
-                );
-            default:
-                throw new IllegalStateException("Unexpected coords size: " + coords.size());
+        GoalXZ goalXZ = consumer.peekDatatypePostOrNull(RelativeGoalXZ.INSTANCE, origin);
+        if (goalXZ != null) {
+            return goalXZ;
         }
+
+        GoalYLevel goalYLevel = consumer.peekDatatypePostOrNull(RelativeGoalYLevel.INSTANCE, origin);
+        if (goalYLevel != null) {
+            return goalYLevel;
+        }
+
+        // when the user doesn't input anything, default to the origin
+        return new GoalBlock(origin);
     }
 
     @Override

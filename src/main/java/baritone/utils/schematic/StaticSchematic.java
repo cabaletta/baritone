@@ -17,42 +17,34 @@
 
 package baritone.utils.schematic;
 
-import baritone.api.schematic.ISchematic;
+import baritone.api.schematic.AbstractSchematic;
+import baritone.api.schematic.IStaticSchematic;
 import net.minecraft.block.BlockState;
 
 import java.util.List;
 
-public class FillSchematic implements ISchematic {
+/**
+ * Default implementation of {@link IStaticSchematic}
+ *
+ * @author Brady
+ * @since 12/23/2019
+ */
+public class StaticSchematic extends AbstractSchematic implements IStaticSchematic {
 
-    private final int widthX;
-    private final int heightY;
-    private final int lengthZ;
-    private final BlockState state;
-
-    public FillSchematic(int widthX, int heightY, int lengthZ, BlockState state) {
-        this.widthX = widthX;
-        this.heightY = heightY;
-        this.lengthZ = lengthZ;
-        this.state = state;
-    }
+    protected BlockState[][][] states;
 
     @Override
     public BlockState desiredState(int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
-        return state;
+        return this.states[x][z][y];
     }
 
     @Override
-    public int widthX() {
-        return widthX;
+    public BlockState getDirect(int x, int y, int z) {
+        return this.states[x][z][y];
     }
 
     @Override
-    public int heightY() {
-        return heightY;
-    }
-
-    @Override
-    public int lengthZ() {
-        return lengthZ;
+    public BlockState[] getColumn(int x, int z) {
+        return this.states[x][z];
     }
 }

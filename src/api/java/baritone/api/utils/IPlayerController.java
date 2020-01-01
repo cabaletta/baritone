@@ -20,6 +20,7 @@ package baritone.api.utils;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.ClickType;
+import baritone.api.BaritoneAPI;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
@@ -56,6 +57,6 @@ public interface IPlayerController {
     void setHittingBlock(boolean hittingBlock);
 
     default double getBlockReachDistance() {
-        return this.getGameType().isCreative() ? 5.0F : 4.5F;
+        return this.getGameType().isCreative() ? 5.0F : BaritoneAPI.getSettings().blockReachDistance.value;
     }
 }

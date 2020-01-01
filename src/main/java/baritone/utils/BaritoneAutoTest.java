@@ -31,13 +31,13 @@ import net.minecraft.client.settings.AmbientOcclusionStatus;
 import net.minecraft.client.settings.CloudOption;
 import net.minecraft.client.settings.ParticleStatus;
 import net.minecraft.client.tutorial.TutorialSteps;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.HTTPUtil;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameType;
-import net.minecraft.world.WorldSettings;
-import net.minecraft.world.WorldType;
+import net.minecraft.world.*;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,7 +95,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         if (mc.currentScreen instanceof MainMenuScreen) {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
-            WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.getByName("survival"), true, false, WorldType.DEFAULT);
+            WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.SURVIVAL, true, false, WorldType.DEFAULT);
             mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
         }
 
@@ -104,6 +104,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         // If the integrated server is launched and the world has initialized, set the spawn point
         // to our defined starting position
         if (server != null && server.getWorld(DimensionType.OVERWORLD) != null) {
+            server.setDifficultyForAllWorlds(Difficulty.PEACEFUL, true);
             if (mc.player == null) {
                 server.execute(() -> {
                     server.getWorld(DimensionType.OVERWORLD).setSpawnPoint(STARTING_POSITION);
@@ -113,6 +114,17 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
                         throw new IllegalStateException(result + "");
                     }
                 });
+                for (final ServerWorld world : mc.getIntegratedServer().getWorlds()) {
+                    // If the world has initialized, set the spawn point to our defined starting position
+                    if (world != null) {
+                        // I would rather do this than try to mess with poz
+                        CompoundNBT nbt = world.getGameRules().write();
+                        nbt.putString("spawnRadius", "0");
+                        world.getGameRules().read(nbt);
+
+                        world.setSpawnPoint(STARTING_POSITION);
+                    }
+                }
             }
         }
 
@@ -121,7 +133,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             // Force the integrated server to share the world to LAN so that
             // the ingame pause menu gui doesn't actually pause our game
             if (mc.isSingleplayer() && !mc.getIntegratedServer().getPublic()) {
-                mc.getIntegratedServer().shareToLAN(GameType.getByName("survival"), false, HTTPUtil.getSuitableLanPort());
+                mc.getIntegratedServer().shareToLAN(GameType.SURVIVAL, false, HTTPUtil.getSuitableLanPort());
             }
 
             // For the first 200 ticks, wait for the world to generate
@@ -163,5 +175,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         }
     }
 
-    private BaritoneAutoTest() {}
+    private BaritoneAutoTest() {
+    }
 }
