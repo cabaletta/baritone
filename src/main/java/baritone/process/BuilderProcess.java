@@ -25,7 +25,10 @@ import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.schematic.FillSchematic;
 import baritone.api.schematic.ISchematic;
+import baritone.api.schematic.IStaticSchematic;
+import baritone.api.schematic.format.ISchematicFormat;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
@@ -37,9 +40,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
-import baritone.utils.schematic.FillSchematic;
 import baritone.utils.schematic.MapArtSchematic;
-import baritone.utils.schematic.Schematic;
+import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockAir;
@@ -48,15 +50,12 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.*;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.*;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -118,27 +117,38 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     @Override
     public boolean build(String name, File schematic, Vec3i origin) {
-        NBTTagCompound tag;
-        try (FileInputStream fileIn = new FileInputStream(schematic)) {
-            tag = CompressedStreamTools.readCompressed(fileIn);
-        } catch (IOException e) {
+        Optional<ISchematicFormat> format = SchematicSystem.INSTANCE.getByFile(schematic);
+        if (!format.isPresent()) {
+            return false;
+        }
+
+        ISchematic parsed;
+        try {
+            parsed = format.get().parse(new FileInputStream(schematic));
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-        //noinspection ConstantConditions
-        if (tag == null) {
-            return false;
+
+        if (Baritone.settings().mapArtMode.value) {
+            parsed = new MapArtSchematic((IStaticSchematic) parsed);
         }
-        build(name, parse(tag), origin);
+
+        build(name, parsed, origin);
         return true;
     }
 
     @Override
     public void buildOpenSchematic() {
         if (SchematicaHelper.isSchematicaPresent()) {
-            Optional<Tuple<ISchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
+            Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
-                this.build(schematic.get().getFirst().toString(), schematic.get().getFirst(), schematic.get().getSecond());
+                IStaticSchematic s = schematic.get().getFirst();
+                this.build(
+                        schematic.get().getFirst().toString(),
+                        Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s,
+                        schematic.get().getSecond()
+                );
             } else {
                 logDirect("No schematic currently open");
             }
@@ -158,10 +168,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     @Override
     public List<IBlockState> getApproxPlaceable() {
         return new ArrayList<>(approxPlaceable);
-    }
-
-    private static ISchematic parse(NBTTagCompound schematic) {
-        return Baritone.settings().mapArtMode.value ? new MapArtSchematic(schematic) : new Schematic(schematic);
     }
 
     @Override

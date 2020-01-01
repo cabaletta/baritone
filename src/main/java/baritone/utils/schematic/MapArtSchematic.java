@@ -17,24 +17,34 @@
 
 package baritone.utils.schematic;
 
+import baritone.api.schematic.IStaticSchematic;
+import baritone.api.schematic.MaskSchematic;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.OptionalInt;
 import java.util.function.Predicate;
 
-public class MapArtSchematic extends Schematic {
+public class MapArtSchematic extends MaskSchematic {
 
     private final int[][] heightMap;
 
-    public MapArtSchematic(NBTTagCompound schematic) {
+    public MapArtSchematic(IStaticSchematic schematic) {
         super(schematic);
-        heightMap = new int[widthX][lengthZ];
+        this.heightMap = generateHeightMap(schematic);
+    }
 
-        for (int x = 0; x < widthX; x++) {
-            for (int z = 0; z < lengthZ; z++) {
-                IBlockState[] column = states[x][z];
+    @Override
+    protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {
+        return y >= this.heightMap[x][z];
+    }
+
+    private static int[][] generateHeightMap(IStaticSchematic schematic) {
+        int[][] heightMap = new int[schematic.widthX()][schematic.lengthZ()];
+
+        for (int x = 0; x < schematic.widthX(); x++) {
+            for (int z = 0; z < schematic.lengthZ(); z++) {
+                IBlockState[] column = schematic.getColumn(x, z);
 
                 OptionalInt lowestBlockY = lastIndexMatching(column, state -> !(state.getBlock() instanceof BlockAir));
                 if (lowestBlockY.isPresent()) {
@@ -44,9 +54,9 @@ public class MapArtSchematic extends Schematic {
                     System.out.println("Letting it be whatever");
                     heightMap[x][z] = 256;
                 }
-
             }
         }
+        return heightMap;
     }
 
     private static <T> OptionalInt lastIndexMatching(T[] arr, Predicate<? super T> predicate) {
@@ -56,11 +66,5 @@ public class MapArtSchematic extends Schematic {
             }
         }
         return OptionalInt.empty();
-    }
-
-    @Override
-    public boolean inSchematic(int x, int y, int z, IBlockState currentState) {
-        // in map art, we only care about coordinates in or above the art
-        return super.inSchematic(x, y, z, currentState) && y >= heightMap[x][z];
     }
 }

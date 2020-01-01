@@ -17,34 +17,28 @@
 
 package baritone.api.schematic;
 
-public abstract class AbstractSchematic implements ISchematic {
+import baritone.api.command.registry.Registry;
+import baritone.api.schematic.format.ISchematicFormat;
 
-    protected int x;
-    protected int y;
-    protected int z;
+import java.io.File;
+import java.util.Optional;
 
-    public AbstractSchematic() {
-        this(0, 0, 0);
-    }
+/**
+ * @author Brady
+ * @since 12/23/2019
+ */
+public interface ISchematicSystem {
 
-    public AbstractSchematic(int x, int y, int z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+    /**
+     * @return The registry of supported schematic formats
+     */
+    Registry<ISchematicFormat> getRegistry();
 
-    @Override
-    public int widthX() {
-        return x;
-    }
-
-    @Override
-    public int heightY() {
-        return y;
-    }
-
-    @Override
-    public int lengthZ() {
-        return z;
-    }
+    /**
+     * Attempts to find an {@link ISchematicFormat} that supports the specified schematic file.
+     *
+     * @param file A schematic file
+     * @return The corresponding format for the file, {@link Optional#empty()} if no candidates were found.
+     */
+    Optional<ISchematicFormat> getByFile(File file);
 }

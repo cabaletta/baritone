@@ -21,9 +21,11 @@ import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
+import baritone.api.schematic.ISchematicSystem;
 import baritone.command.BaritoneChatControl;
 import baritone.cache.WorldScanner;
 import baritone.command.CommandSystem;
+import baritone.utils.schematic.SchematicSystem;
 
 import java.util.Collections;
 import java.util.List;
@@ -63,5 +65,10 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public ICommandSystem getCommandSystem() {
         return CommandSystem.INSTANCE;
+    }
+
+    @Override
+    public ISchematicSystem getSchematicSystem() {
+        return SchematicSystem.INSTANCE;
     }
 }
