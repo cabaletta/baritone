@@ -19,7 +19,6 @@
     "MixinEntityLivingBase",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
-    "MixinGuiChat",
     "MixinGuiScreen",
     "MixinItemStack",
     "MixinMinecraft",

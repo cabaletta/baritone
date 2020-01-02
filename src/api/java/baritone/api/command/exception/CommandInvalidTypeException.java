@@ -26,7 +26,7 @@ public class CommandInvalidTypeException extends CommandInvalidArgumentException
     }
 
     public CommandInvalidTypeException(ICommandArgument arg, String expected, Throwable cause) {
-        super(arg, String.format("Expected %s.\nMore details: %s", expected, cause.getMessage()));
+        super(arg, String.format("Expected %s", expected), cause);
     }
 
     public CommandInvalidTypeException(ICommandArgument arg, String expected, String got) {
@@ -34,6 +34,6 @@ public class CommandInvalidTypeException extends CommandInvalidArgumentException
     }
 
     public CommandInvalidTypeException(ICommandArgument arg, String expected, String got, Throwable cause) {
-        super(arg, String.format("Expected %s, but got %s instead.\nMore details: %s", expected, got, cause.getMessage()));
+        super(arg, String.format("Expected %s, but got %s instead", expected, got), cause);
     }
 }

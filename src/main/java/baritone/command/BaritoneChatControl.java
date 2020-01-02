@@ -20,7 +20,7 @@ package baritone.command;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.api.accessor.IGuiScreen;
+import baritone.utils.accessor.IGuiScreen;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
@@ -29,8 +29,8 @@ import baritone.api.utils.SettingsUtil;
 import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.command.exception.CommandNotFoundException;
-import baritone.command.helpers.arguments.ArgConsumer;
-import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.command.argument.ArgConsumer;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.manager.ICommandManager;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
@@ -146,11 +146,11 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
     }
 
     @Override
-    public void onPreTabComplete(TabCompleteEvent.Pre event) {
+    public void onPreTabComplete(TabCompleteEvent event) {
         if (!settings.prefixControl.value) {
             return;
         }
-        String prefix = event.prefix.get();
+        String prefix = event.prefix;
         String commandPrefix = settings.prefix.value;
         if (!prefix.startsWith(commandPrefix)) {
             return;
@@ -161,7 +161,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (args.size() == 1) {
             stream = stream.map(x -> commandPrefix + x);
         }
-        event.completions.set(stream.toArray(String[]::new));
+        event.completions = stream.toArray(String[]::new);
     }
 
     public Stream<String> tabComplete(String msg) {

@@ -20,7 +20,7 @@ package baritone.api.command.datatypes;
 import baritone.api.IBaritone;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.IWaypointCollection;
-import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.exception.CommandException;
 
 import java.util.Comparator;

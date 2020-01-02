@@ -17,7 +17,7 @@
 
 package baritone.api.command.datatypes;
 
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 
 import java.util.regex.Matcher;

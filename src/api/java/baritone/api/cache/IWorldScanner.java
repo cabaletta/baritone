@@ -77,10 +77,20 @@ public interface IWorldScanner {
     }
 
     /**
-     * Repacks 40 chunks around the player.
+     * Overload of {@link #repack(IPlayerContext, int)} where the value of the {@code range} parameter is {@code 40}.
      *
-     * @param ctx The player context for that player.
-     * @return The number of chunks queued for repacking.
+     * @param ctx The player, describing the origin
+     * @return The amount of chunks successfully queued for repacking
      */
     int repack(IPlayerContext ctx);
+
+    /**
+     * Queues the chunks in a square formation around the specified player, using the specified
+     * range, which represents 1/2 the square's dimensions, where the player is in the center.
+     *
+     * @param ctx The player, describing the origin
+     * @param range The range to repack
+     * @return The amount of chunks successfully queued for repacking
+     */
+    int repack(IPlayerContext ctx, int range);
 }

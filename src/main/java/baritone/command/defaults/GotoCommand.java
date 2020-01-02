@@ -24,7 +24,7 @@ import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.datatypes.RelativeCoordinate;
 import baritone.api.command.datatypes.RelativeGoal;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.helpers.arguments.IArgConsumer;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
@@ -41,9 +41,13 @@ public class GotoCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        if (args.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) != null) { // if we have a numeric first argument...
+        // If we have a numeric first argument, then parse arguments as coordinates.
+        // Note: There is no reason to want to go where you're already at so there
+        // is no need to handle the case of empty arguments.
+        if (args.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) != null) {
+            args.requireMax(3);
             BetterBlockPos origin = baritone.getPlayerContext().playerFeet();
-            Goal goal = args.getDatatypePostOrNull(RelativeGoal.INSTANCE, origin);
+            Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             logDirect(String.format("Going to: %s", goal.toString()));
             baritone.getCustomGoalProcess().setGoalAndPath(goal);
             return;

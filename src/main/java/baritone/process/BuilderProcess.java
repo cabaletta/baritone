@@ -25,7 +25,14 @@ import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.*;
+import baritone.api.schematic.FillSchematic;
+import baritone.api.schematic.ISchematic;
+import baritone.api.schematic.IStaticSchematic;
+import baritone.api.schematic.format.ISchematicFormat;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -33,9 +40,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
-import baritone.utils.schematic.FillSchematic;
 import baritone.utils.schematic.MapArtSchematic;
-import baritone.utils.schematic.Schematic;
+import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockAir;
@@ -44,15 +50,12 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.*;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.*;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -68,6 +71,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private int ticks;
     private boolean paused;
     private int layer;
+    private int numRepeats;
     private List<IBlockState> approxPlaceable;
 
     public BuilderProcess(Baritone baritone) {
@@ -94,6 +98,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.origin = new Vec3i(x, y, z);
         this.paused = false;
         this.layer = 0;
+        this.numRepeats = 0;
         this.observedCompleted = new LongOpenHashSet();
     }
 
@@ -112,27 +117,38 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     @Override
     public boolean build(String name, File schematic, Vec3i origin) {
-        NBTTagCompound tag;
-        try (FileInputStream fileIn = new FileInputStream(schematic)) {
-            tag = CompressedStreamTools.readCompressed(fileIn);
-        } catch (IOException e) {
+        Optional<ISchematicFormat> format = SchematicSystem.INSTANCE.getByFile(schematic);
+        if (!format.isPresent()) {
+            return false;
+        }
+
+        ISchematic parsed;
+        try {
+            parsed = format.get().parse(new FileInputStream(schematic));
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-        //noinspection ConstantConditions
-        if (tag == null) {
-            return false;
+
+        if (Baritone.settings().mapArtMode.value) {
+            parsed = new MapArtSchematic((IStaticSchematic) parsed);
         }
-        build(name, parse(tag), origin);
+
+        build(name, parsed, origin);
         return true;
     }
 
     @Override
     public void buildOpenSchematic() {
         if (SchematicaHelper.isSchematicaPresent()) {
-            Optional<Tuple<ISchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
+            Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
-                this.build(schematic.get().getFirst().toString(), schematic.get().getFirst(), schematic.get().getSecond());
+                IStaticSchematic s = schematic.get().getFirst();
+                this.build(
+                        schematic.get().getFirst().toString(),
+                        Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s,
+                        schematic.get().getSecond()
+                );
             } else {
                 logDirect("No schematic currently open");
             }
@@ -152,10 +168,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     @Override
     public List<IBlockState> getApproxPlaceable() {
         return new ArrayList<>(approxPlaceable);
-    }
-
-    private static ISchematic parse(NBTTagCompound schematic) {
-        return Baritone.settings().mapArtMode.value ? new MapArtSchematic(schematic) : new Schematic(schematic);
     }
 
     @Override
@@ -390,7 +402,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 return onTick(calcFailed, isSafeToCancel);
             }
             Vec3i repeat = Baritone.settings().buildRepeat.value;
-            if (repeat.equals(new Vec3i(0, 0, 0))) {
+            int max = Baritone.settings().buildRepeatCount.value;
+            numRepeats++;
+            if (repeat.equals(new Vec3i(0, 0, 0)) || (max != -1 && numRepeats >= max)) {
                 logDirect("Done building");
                 onLostControl();
                 return null;
@@ -730,6 +744,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         schematic = null;
         realSchematic = null;
         layer = 0;
+        numRepeats = 0;
         paused = false;
         observedCompleted = null;
     }
@@ -755,11 +770,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private boolean valid(IBlockState current, IBlockState desired) {
+        if (desired == null) {
+            return true;
+        }
         // TODO more complicated comparison logic I guess
         if (current.getBlock() instanceof BlockLiquid && Baritone.settings().okIfWater.value) {
             return true;
         }
-        return desired == null || current.equals(desired);
+        if (desired.getBlock() instanceof BlockAir && Baritone.settings().buildIgnoreBlocks.value.contains(current.getBlock())) {
+            return true;
+        }
+        if (!(current.getBlock() instanceof BlockAir) && Baritone.settings().buildIgnoreExisting.value) {
+            return true;
+        }
+        return current.equals(desired);
     }
 
     public class BuilderCalculationContext extends CalculationContext {

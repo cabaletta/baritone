@@ -19,12 +19,12 @@ package baritone.command.manager;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
-import baritone.api.command.Command;
+import baritone.api.command.ICommand;
 import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.exception.CommandUnhandledException;
 import baritone.api.command.exception.ICommandException;
-import baritone.command.helpers.arguments.ArgConsumer;
-import baritone.api.command.helpers.tabcomplete.TabCompleteHelper;
+import baritone.command.argument.ArgConsumer;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.manager.ICommandManager;
 import baritone.api.command.registry.Registry;
 import baritone.command.argument.CommandArguments;
@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  */
 public class CommandManager implements ICommandManager {
 
-    private final Registry<Command> registry = new Registry<>();
+    private final Registry<ICommand> registry = new Registry<>();
     private final Baritone baritone;
 
     public CommandManager(Baritone baritone) {
@@ -57,13 +57,13 @@ public class CommandManager implements ICommandManager {
     }
 
     @Override
-    public Registry<Command> getRegistry() {
+    public Registry<ICommand> getRegistry() {
         return this.registry;
     }
 
     @Override
-    public Command getCommand(String name) {
-        for (Command command : this.registry.entries) {
+    public ICommand getCommand(String name) {
+        for (ICommand command : this.registry.entries) {
             if (command.getNames().contains(name.toLowerCase(Locale.US))) {
                 return command;
             }
@@ -110,7 +110,7 @@ public class CommandManager implements ICommandManager {
         String label = expanded.getFirst();
         ArgConsumer args = new ArgConsumer(this, expanded.getSecond());
 
-        Command command = this.getCommand(label);
+        ICommand command = this.getCommand(label);
         return command == null ? null : new ExecutionWrapper(command, label, args);
     }
 
@@ -125,11 +125,11 @@ public class CommandManager implements ICommandManager {
     }
 
     private static final class ExecutionWrapper {
-        private Command command;
+        private ICommand command;
         private String label;
         private ArgConsumer args;
 
-        private ExecutionWrapper(Command command, String label, ArgConsumer args) {
+        private ExecutionWrapper(ICommand command, String label, ArgConsumer args) {
             this.command = command;
             this.label = label;
             this.args = args;

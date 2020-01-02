@@ -22,6 +22,10 @@ import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.registry.Registry;
 
 /**
+ * Used to retrieve {@link IArgParser} instances from the registry, by their target class.
+ * It can be assumed that a {@link IArgParser} exists for {@link Integer}, {@link Long},
+ * {@link Float}, {@link Double} and {@link Boolean}.
+ *
  * @author Brady
  * @since 10/4/2019
  */
