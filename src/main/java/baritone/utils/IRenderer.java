@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.utils.Helper;
 import baritone.utils.accessor.IEntityRenderManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -28,7 +29,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 import java.awt.*;
 
-import static org.lwjgl.opengl.GL11.GL_LINES;
+import static org.lwjgl.opengl.GL11.*;
 
 public interface IRenderer {
 
@@ -37,24 +38,23 @@ public interface IRenderer {
     IEntityRenderManager renderManager = (IEntityRenderManager) Helper.mc.getRenderManager();
     Settings settings = BaritoneAPI.getSettings();
 
-    //FIXME this entire class
     static void glColor(Color color, float alpha) {
         float[] colorComponents = color.getColorComponents(null);
-        //GlStateManager.color4f(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
+        RenderSystem.color4f(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
     }
 
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
-        /*GlStateManager.enableBlend();
-        GlStateManager.disableLighting();
-        GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        RenderSystem.enableBlend();
+        RenderSystem.disableLighting();
+        RenderSystem.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         glColor(color, alpha);
-        GlStateManager.lineWidth(lineWidth);
-        GlStateManager.disableTexture();
-        GlStateManager.depthMask(false);
+        RenderSystem.lineWidth(lineWidth);
+        RenderSystem.disableTexture();
+        RenderSystem.depthMask(false);
 
         if (ignoreDepth) {
-            GlStateManager.disableDepthTest();
-        }*/
+            RenderSystem.disableDepthTest();
+        }
     }
 
     static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
@@ -62,14 +62,14 @@ public interface IRenderer {
     }
 
     static void endLines(boolean ignoredDepth) {
-        /*if (ignoredDepth) {
-            GlStateManager.enableDepthTest();
+        if (ignoredDepth) {
+            RenderSystem.enableDepthTest();
         }
 
-        GlStateManager.depthMask(true);
-        GlStateManager.enableTexture();
-        GlStateManager.enableLighting();
-        GlStateManager.disableBlend();*/
+        RenderSystem.depthMask(true);
+        RenderSystem.enableTexture();
+        RenderSystem.enableLighting();
+        RenderSystem.disableBlend();
     }
 
     static void drawAABB(AxisAlignedBB aabb) {

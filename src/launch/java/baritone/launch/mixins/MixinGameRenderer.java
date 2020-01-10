@@ -20,6 +20,7 @@ package baritone.launch.mixins;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,14 +31,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinGameRenderer {
 
     @Inject(
-            method = "updateCameraAndRender",
+            method = "func_228378_a_",
             at = @At(
                     value = "INVOKE_STRING",
                     target = "Lnet/minecraft/profiler/IProfiler;endStartSection(Ljava/lang/String;)V",
                     args = {"ldc=hand"}
             )
     )
-    private void renderWorldPass(float partialTicks, long finishTimeNano, boolean idfk, CallbackInfo ci) {
+    private void renderWorldPass(float partialTicks, long finishTimeNano, MatrixStack idfk, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
         }
