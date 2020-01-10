@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.4.4'
+version '1.5.0'
 
 buildscript {
     repositories {
@@ -82,7 +82,7 @@ task sourceJar(type: Jar, dependsOn: classes) {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20190814-1.14.3'
+    mappings channel: 'snapshot', version: '20190719-1.14.3'
     reobfMappings 'notch'
 
     runs {
@@ -138,7 +138,7 @@ repositories {
 }
 
 dependencies {
-    minecraft 'com.github.ImpactDevelopment:Vanilla:1.14.4'
+    minecraft 'com.github.ImpactDevelopment:Vanilla:1.15.1'
 
     runtime launchCompile('net.minecraft:launchwrapper:1.12') {
         exclude module: 'lwjgl'

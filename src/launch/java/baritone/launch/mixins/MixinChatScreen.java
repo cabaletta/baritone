@@ -45,7 +45,7 @@ public class MixinChatScreen {
 
     @Shadow
     protected TextFieldWidget inputField;
-
+/*
     @Shadow
     @Final
     protected List<String> commandUsage;
@@ -95,5 +95,5 @@ public class MixinChatScreen {
                 this.pendingSuggestions.complete(suggestions);
             }
         }
-    }
+    }*/
 }

@@ -18,22 +18,22 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IBitArray;
-import baritone.utils.accessor.IBlockStateContainer;
+import baritone.utils.accessor.IPalettedContainer;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.BitArray;
-import net.minecraft.world.chunk.BlockStateContainer;
-import net.minecraft.world.chunk.IBlockStatePalette;
+import net.minecraft.util.palette.IPalette;
+import net.minecraft.util.palette.PalettedContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(BlockStateContainer.class)
-public abstract class MixinBlockStateContainer implements IBlockStateContainer {
+@Mixin(PalettedContainer.class)
+public abstract class MixinPalettedContainer implements IPalettedContainer {
 
     @Shadow
     protected BitArray storage;
 
     @Shadow
-    protected IBlockStatePalette<BlockState> palette;
+    protected IPalette<BlockState> palette;
 
     @Override
     public BlockState getAtPalette(int index) {

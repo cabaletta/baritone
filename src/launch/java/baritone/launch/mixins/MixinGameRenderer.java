@@ -30,14 +30,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinGameRenderer {
 
     @Inject(
-            method = "updateCameraAndRender(FJ)V",
+            method = "updateCameraAndRender",
             at = @At(
                     value = "INVOKE_STRING",
                     target = "Lnet/minecraft/profiler/IProfiler;endStartSection(Ljava/lang/String;)V",
                     args = {"ldc=hand"}
             )
     )
-    private void renderWorldPass(float partialTicks, long finishTimeNano, CallbackInfo ci) {
+    private void renderWorldPass(float partialTicks, long finishTimeNano, boolean idfk, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
         }

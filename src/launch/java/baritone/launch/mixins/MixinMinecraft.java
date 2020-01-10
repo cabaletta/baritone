@@ -19,7 +19,6 @@ package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
-import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
@@ -28,10 +27,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockRayTraceResult;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,7 +34,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.function.BiFunction;
 
@@ -56,7 +50,7 @@ public class MixinMinecraft {
     public ClientWorld world;
 
     @Inject(
-            method = "init",
+            method = "<init>",
             at = @At("RETURN")
     )
     private void postInit(CallbackInfo ci) {
@@ -64,11 +58,8 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "init",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/client/Minecraft.startTimerHackThread()V"
-            )
+            method = "startTimerHackThread",
+            at = @At("HEAD")
     )
     private void preInit(CallbackInfo ci) {
         BaritoneAutoTest.INSTANCE.onPreInit();
@@ -147,7 +138,7 @@ public class MixinMinecraft {
         // allow user input is only the primary baritone
         return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.passEvents;
     }
-
+/*
     @Inject(
             method = "rightClickMouse",
             at = @At(
@@ -159,5 +150,5 @@ public class MixinMinecraft {
     private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack, BlockRayTraceResult raytrace, int i, ActionResultType enumactionresult) {
         // rightClickMouse is only for the main player
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(raytrace.getPos(), BlockInteractEvent.Type.USE));
-    }
+    }*/
 }

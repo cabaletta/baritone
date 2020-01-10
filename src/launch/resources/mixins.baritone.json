@@ -9,7 +9,6 @@
   },
   "client": [
     "MixinBitArray",
-    "MixinBlockStateContainer",
     "MixinChatScreen",
     "MixinChunkArray",
     "MixinClientChunkProvider",
@@ -23,6 +22,7 @@
     "MixinLootContext",
     "MixinMinecraft",
     "MixinNetworkManager",
+    "MixinPalettedContainer",
     "MixinPlayerController",
     "MixinScreen"
   ]

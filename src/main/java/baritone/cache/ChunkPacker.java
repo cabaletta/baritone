@@ -23,7 +23,7 @@ import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.chunk.BlockStateContainer;
+import net.minecraft.util.palette.PalettedContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 
@@ -59,7 +59,7 @@ public final class ChunkPacker {
                     // since a bitset is initialized to all zero, and air is saved as zeros
                     continue;
                 }
-                BlockStateContainer<BlockState> bsc = extendedblockstorage.getData();
+                PalettedContainer<BlockState> bsc = extendedblockstorage.getData();
                 int yReal = y0 << 4;
                 // the mapping of BlockStateContainer.getIndex from xyz to index is y << 8 | z << 4 | x;
                 // for better cache locality, iterate in that order

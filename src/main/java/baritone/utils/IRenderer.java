@@ -40,11 +40,11 @@ public interface IRenderer {
 
     static void glColor(Color color, float alpha) {
         float[] colorComponents = color.getColorComponents(null);
-        GlStateManager.color4f(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
+        //GlStateManager.color4f(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
     }
 
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
-        GlStateManager.enableBlend();
+        /*GlStateManager.enableBlend();
         GlStateManager.disableLighting();
         GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         glColor(color, alpha);
@@ -54,7 +54,7 @@ public interface IRenderer {
 
         if (ignoreDepth) {
             GlStateManager.disableDepthTest();
-        }
+        }*/
     }
 
     static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
@@ -62,14 +62,14 @@ public interface IRenderer {
     }
 
     static void endLines(boolean ignoredDepth) {
-        if (ignoredDepth) {
+        /*if (ignoredDepth) {
             GlStateManager.enableDepthTest();
         }
 
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture();
         GlStateManager.enableLighting();
-        GlStateManager.disableBlend();
+        GlStateManager.disableBlend();*/
     }
 
     static void drawAABB(AxisAlignedBB aabb) {
@@ -77,32 +77,32 @@ public interface IRenderer {
 
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
         // bottom
-        buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
         // top
-        buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
         // corners
-        buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
+        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
         tessellator.draw();
     }
 

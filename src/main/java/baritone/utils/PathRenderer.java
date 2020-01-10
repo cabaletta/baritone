@@ -185,13 +185,13 @@ public final class PathRenderer implements IRenderer, Helper {
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
         buffer.begin(renderPathAsFrickinThingy ? GL_LINE_STRIP : GL_LINES, DefaultVertexFormats.POSITION);
-        buffer.pos(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).endVertex();
-        buffer.pos(x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ).endVertex();
+        buffer.func_225582_a_(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).endVertex();
+        buffer.func_225582_a_(x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ).endVertex();
 
         if (renderPathAsFrickinThingy) {
-            buffer.pos(x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ).endVertex();
-            buffer.pos(x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ).endVertex();
-            buffer.pos(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).endVertex();
+            buffer.func_225582_a_(x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ).endVertex();
+            buffer.func_225582_a_(x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ).endVertex();
+            buffer.func_225582_a_(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).endVertex();
         }
     }
 
@@ -247,10 +247,10 @@ public final class PathRenderer implements IRenderer, Helper {
 
                 Helper.mc.getTextureManager().bindTexture(TEXTURE_BEACON_BEAM);
                 if (settings.renderGoalIgnoreDepth.value) {
-                    GlStateManager.disableDepthTest();
+                    //GlStateManager.disableDepthTest();
                 }
 
-                BeaconTileEntityRenderer.renderBeamSegment(
+               /* BeaconTileEntityRenderer.renderBeamSegment(
                         goalPos.getX() - renderPosX,
                         -renderPosY,
                         goalPos.getZ() - renderPosZ,
@@ -264,10 +264,10 @@ public final class PathRenderer implements IRenderer, Helper {
                         // Arguments filled by the private method lol
                         0.2D,
                         0.25D
-                );
+                );*/
 
                 if (settings.renderGoalIgnoreDepth.value) {
-                    GlStateManager.enableDepthTest();
+                    //GlStateManager.enableDepthTest();
                 }
 
                 glPopAttrib();
@@ -293,10 +293,10 @@ public final class PathRenderer implements IRenderer, Helper {
             return;
         } else if (goal instanceof GoalYLevel) {
             GoalYLevel goalpos = (GoalYLevel) goal;
-            minX = player.posX - settings.yLevelBoxSize.value - renderPosX;
-            minZ = player.posZ - settings.yLevelBoxSize.value - renderPosZ;
-            maxX = player.posX + settings.yLevelBoxSize.value - renderPosX;
-            maxZ = player.posZ + settings.yLevelBoxSize.value - renderPosZ;
+            minX = player.getPositionVec().x - settings.yLevelBoxSize.value - renderPosX;
+            minZ = player.getPositionVec().z - settings.yLevelBoxSize.value - renderPosZ;
+            maxX = player.getPositionVec().x + settings.yLevelBoxSize.value - renderPosX;
+            maxZ = player.getPositionVec().z + settings.yLevelBoxSize.value - renderPosZ;
             minY = ((GoalYLevel) goal).level - renderPosY;
             maxY = minY + 2;
             y1 = 1 + y + goalpos.level - renderPosY;
@@ -312,14 +312,14 @@ public final class PathRenderer implements IRenderer, Helper {
 
 
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
-        buffer.pos(minX, minY, minZ).endVertex();
-        buffer.pos(minX, maxY, minZ).endVertex();
-        buffer.pos(maxX, minY, minZ).endVertex();
-        buffer.pos(maxX, maxY, minZ).endVertex();
-        buffer.pos(maxX, minY, maxZ).endVertex();
-        buffer.pos(maxX, maxY, maxZ).endVertex();
-        buffer.pos(minX, minY, maxZ).endVertex();
-        buffer.pos(minX, maxY, maxZ).endVertex();
+        buffer.func_225582_a_(minX, minY, minZ).endVertex();
+        buffer.func_225582_a_(minX, maxY, minZ).endVertex();
+        buffer.func_225582_a_(maxX, minY, minZ).endVertex();
+        buffer.func_225582_a_(maxX, maxY, minZ).endVertex();
+        buffer.func_225582_a_(maxX, minY, maxZ).endVertex();
+        buffer.func_225582_a_(maxX, maxY, maxZ).endVertex();
+        buffer.func_225582_a_(minX, minY, maxZ).endVertex();
+        buffer.func_225582_a_(minX, maxY, maxZ).endVertex();
         tessellator.draw();
 
         IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
@@ -328,10 +328,10 @@ public final class PathRenderer implements IRenderer, Helper {
     private static void renderHorizontalQuad(double minX, double maxX, double minZ, double maxZ, double y) {
         if (y != 0) {
             buffer.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
-            buffer.pos(minX, y, minZ).endVertex();
-            buffer.pos(maxX, y, minZ).endVertex();
-            buffer.pos(maxX, y, maxZ).endVertex();
-            buffer.pos(minX, y, maxZ).endVertex();
+            buffer.func_225582_a_(minX, y, minZ).endVertex();
+            buffer.func_225582_a_(maxX, y, minZ).endVertex();
+            buffer.func_225582_a_(maxX, y, maxZ).endVertex();
+            buffer.func_225582_a_(minX, y, maxZ).endVertex();
             tessellator.draw();
         }
     }

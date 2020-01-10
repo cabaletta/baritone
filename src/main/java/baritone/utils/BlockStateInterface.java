@@ -44,7 +44,7 @@ public class BlockStateInterface {
     private final ClientChunkProvider provider;
     private final WorldData worldData;
     protected final IBlockReader world;
-    public final BlockPos.MutableBlockPos isPassableBlockPos;
+    public final BlockPos.Mutable isPassableBlockPos;
     public final IBlockReader access;
 
     private Chunk prev = null;
@@ -74,7 +74,7 @@ public class BlockStateInterface {
         if (!Minecraft.getInstance().isOnExecutionThread()) {
             throw new IllegalStateException();
         }
-        this.isPassableBlockPos = new BlockPos.MutableBlockPos();
+        this.isPassableBlockPos = new BlockPos.Mutable();
         this.access = new BlockStateInterfaceAccessWrapper(this);
     }
 

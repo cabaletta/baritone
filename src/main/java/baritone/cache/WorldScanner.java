@@ -22,7 +22,7 @@ import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.IPlayerContext;
-import baritone.utils.accessor.IBlockStateContainer;
+import baritone.utils.accessor.IPalettedContainer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.util.math.BlockPos;
@@ -30,7 +30,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.AbstractChunkProvider;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.IChunk;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -156,7 +155,7 @@ public enum WorldScanner implements IWorldScanner {
                 continue;
             }
             int yReal = y0 << 4;
-            IBlockStateContainer bsc = (IBlockStateContainer) section.getData();
+            IPalettedContainer bsc = (IPalettedContainer) section.getData();
             // storageArray uses an optimized algorithm that's faster than getAt
             // creating this array and then using getAtPalette is faster than even getFast(int index)
             int[] storage = bsc.storageArray();

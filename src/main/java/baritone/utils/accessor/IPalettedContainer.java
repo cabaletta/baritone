@@ -19,7 +19,7 @@ package baritone.utils.accessor;
 
 import net.minecraft.block.BlockState;
 
-public interface IBlockStateContainer {
+public interface IPalettedContainer {
 
     BlockState getAtPalette(int index);
 

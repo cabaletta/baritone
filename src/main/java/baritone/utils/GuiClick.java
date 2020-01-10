@@ -23,25 +23,19 @@ import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
-import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Collections;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
-import static org.lwjgl.opengl.GL11.*;
 
 public class GuiClick extends Screen implements Helper {
 
@@ -67,20 +61,21 @@ public class GuiClick extends Screen implements Helper {
     public void render(int mouseX, int mouseY, float partialTicks) {
         double mx = mc.mouseHelper.getMouseX();
         double my = mc.mouseHelper.getMouseY();
-        my = mc.mainWindow.getHeight() - my;
+
+        /*my = mc.mainWindow.getHeight() - my;
         my *= mc.mainWindow.getFramebufferHeight() / (double) mc.mainWindow.getHeight();
         mx *= mc.mainWindow.getFramebufferWidth() / (double) mc.mainWindow.getWidth();
         Vec3d near = toWorld(mx, my, 0);
         Vec3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
         if (near != null && far != null) {
             ///
-            Vec3d viewerPos = new Vec3d(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
+            Vec3d viewerPos = new Vec3d(PathRenderer.getPositionVec().x(), PathRenderer.getPositionVec().y(), PathRenderer.getPositionVec().z());
             ClientPlayerEntity player = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().player();
             RayTraceResult result = player.world.rayTraceBlocks(new RayTraceContext(near.add(viewerPos), far.add(viewerPos), RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, player));
             if (result != null && result.getType() == RayTraceResult.Type.BLOCK) {
                 currentMouseOver = ((BlockRayTraceResult) result).getPos();
             }
-        }
+        }*/
     }
 
     @Override
@@ -115,7 +110,7 @@ public class GuiClick extends Screen implements Helper {
     }
 
     public void onRender() {
-        GlStateManager.getMatrix(GL_MODELVIEW_MATRIX, (FloatBuffer) MODELVIEW.clear());
+        /*GlStateManager.getMatrix(GL_MODELVIEW_MATRIX, (FloatBuffer) MODELVIEW.clear());
         GlStateManager.getMatrix(GL_PROJECTION_MATRIX, (FloatBuffer) PROJECTION.clear());
         GL11.glGetIntegerv(GL_VIEWPORT, (IntBuffer) VIEWPORT.clear());
 
@@ -140,7 +135,7 @@ public class GuiClick extends Screen implements Helper {
                 GlStateManager.enableTexture();
                 GlStateManager.disableBlend();
             }
-        }
+        }*/
     }
 
     private Vec3d toWorld(double x, double y, double z) {
