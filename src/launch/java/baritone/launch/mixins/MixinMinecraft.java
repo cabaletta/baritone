@@ -138,6 +138,7 @@ public class MixinMinecraft {
         // allow user input is only the primary baritone
         return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.passEvents;
     }
+    //FIXME stupid LVT
 /*
     @Inject(
             method = "rightClickMouse",

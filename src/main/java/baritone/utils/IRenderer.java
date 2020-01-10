@@ -21,7 +21,6 @@ import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.utils.Helper;
 import baritone.utils.accessor.IEntityRenderManager;
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -29,7 +28,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 import java.awt.*;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_LINES;
 
 public interface IRenderer {
 
@@ -38,6 +37,7 @@ public interface IRenderer {
     IEntityRenderManager renderManager = (IEntityRenderManager) Helper.mc.getRenderManager();
     Settings settings = BaritoneAPI.getSettings();
 
+    //FIXME this entire class
     static void glColor(Color color, float alpha) {
         float[] colorComponents = color.getColorComponents(null);
         //GlStateManager.color4f(colorComponents[0], colorComponents[1], colorComponents[2], alpha);

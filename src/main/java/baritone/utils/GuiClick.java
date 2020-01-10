@@ -61,7 +61,7 @@ public class GuiClick extends Screen implements Helper {
     public void render(int mouseX, int mouseY, float partialTicks) {
         double mx = mc.mouseHelper.getMouseX();
         double my = mc.mouseHelper.getMouseY();
-
+//FIXME this entire class
         /*my = mc.mainWindow.getHeight() - my;
         my *= mc.mainWindow.getFramebufferHeight() / (double) mc.mainWindow.getHeight();
         mx *= mc.mainWindow.getFramebufferWidth() / (double) mc.mainWindow.getWidth();
@@ -110,6 +110,7 @@ public class GuiClick extends Screen implements Helper {
     }
 
     public void onRender() {
+        //FIXME
         /*GlStateManager.getMatrix(GL_MODELVIEW_MATRIX, (FloatBuffer) MODELVIEW.clear());
         GlStateManager.getMatrix(GL_PROJECTION_MATRIX, (FloatBuffer) PROJECTION.clear());
         GL11.glGetIntegerv(GL_VIEWPORT, (IntBuffer) VIEWPORT.clear());

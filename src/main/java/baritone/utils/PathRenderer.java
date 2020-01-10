@@ -26,9 +26,7 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.tileentity.BeaconTileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
@@ -247,9 +245,10 @@ public final class PathRenderer implements IRenderer, Helper {
 
                 Helper.mc.getTextureManager().bindTexture(TEXTURE_BEACON_BEAM);
                 if (settings.renderGoalIgnoreDepth.value) {
+                    // FIXME
                     //GlStateManager.disableDepthTest();
                 }
-
+//FIXME
                /* BeaconTileEntityRenderer.renderBeamSegment(
                         goalPos.getX() - renderPosX,
                         -renderPosY,
@@ -267,6 +266,7 @@ public final class PathRenderer implements IRenderer, Helper {
                 );*/
 
                 if (settings.renderGoalIgnoreDepth.value) {
+                    //FIXME
                     //GlStateManager.enableDepthTest();
                 }
 

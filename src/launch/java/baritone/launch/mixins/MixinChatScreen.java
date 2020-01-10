@@ -45,6 +45,7 @@ public class MixinChatScreen {
 
     @Shadow
     protected TextFieldWidget inputField;
+    //FIXME
 /*
     @Shadow
     @Final
