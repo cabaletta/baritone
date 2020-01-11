@@ -9,7 +9,7 @@
   },
   "client": [
     "MixinBitArray",
-    "MixinChatScreen",
+    "MixinCommandSuggestionHelper",
     "MixinChunkArray",
     "MixinClientChunkProvider",
     "MixinClientPlayerEntity",

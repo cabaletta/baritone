@@ -22,7 +22,7 @@ import baritone.api.event.events.TabCompleteEvent;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
-import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.client.gui.CommandSuggestionHelper;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,28 +40,28 @@ import java.util.stream.Stream;
  * @author Brady
  * @since 10/9/2019
  */
-@Mixin(ChatScreen.class)
-public class MixinChatScreen {
+@Mixin(CommandSuggestionHelper.class)
+public class MixinCommandSuggestionHelper {
 
-    @Shadow
-    protected TextFieldWidget inputField;
-    //FIXME
-/*
     @Shadow
     @Final
-    protected List<String> commandUsage;
+    private TextFieldWidget field_228095_d_;
 
     @Shadow
-    private CompletableFuture<Suggestions> pendingSuggestions;
+    @Final
+    private List<String> field_228103_l_;
+
+    @Shadow
+    private CompletableFuture<Suggestions> field_228107_p_;
 
     @Inject(
-            method = "updateSuggestion",
+            method = "func_228111_a_",
             at = @At("HEAD"),
             cancellable = true
     )
     private void preUpdateSuggestion(CallbackInfo ci) {
         // Anything that is present in the input text before the cursor position
-        String prefix = this.inputField.getText().substring(0, Math.min(this.inputField.getText().length(), this.inputField.getCursorPosition()));
+        String prefix = this.field_228095_d_.getText().substring(0, Math.min(this.field_228095_d_.getText().length(), this.field_228095_d_.getCursorPosition()));
 
         TabCompleteEvent event = new TabCompleteEvent(prefix);
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onPreTabComplete(event);
@@ -75,14 +75,14 @@ public class MixinChatScreen {
             ci.cancel();
 
             // TODO: Support populating the command usage
-            this.commandUsage.clear();
+            this.field_228103_l_.clear();
 
             if (event.completions.length == 0) {
-                this.pendingSuggestions = Suggestions.empty();
+                this.field_228107_p_ = Suggestions.empty();
             } else {
-                int offset = this.inputField.getText().endsWith(" ")
-                        ? this.inputField.getCursorPosition()
-                        : this.inputField.getText().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
+                int offset = this.field_228095_d_.getText().endsWith(" ")
+                        ? this.field_228095_d_.getCursorPosition()
+                        : this.field_228095_d_.getText().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
 
                 List<Suggestion> suggestionList = Stream.of(event.completions)
                         .map(s -> new Suggestion(StringRange.between(offset, offset + s.length()), s))
@@ -92,9 +92,9 @@ public class MixinChatScreen {
                         StringRange.between(offset, offset + suggestionList.stream().mapToInt(s -> s.getText().length()).max().orElse(0)),
                         suggestionList);
 
-                this.pendingSuggestions = new CompletableFuture<>();
-                this.pendingSuggestions.complete(suggestions);
+                this.field_228107_p_ = new CompletableFuture<>();
+                this.field_228107_p_.complete(suggestions);
             }
         }
-    }*/
+    }
 }
