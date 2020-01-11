@@ -21,8 +21,10 @@ import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.utils.Helper;
 import baritone.utils.accessor.IEntityRenderManager;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -72,41 +74,42 @@ public interface IRenderer {
         RenderSystem.disableBlend();
     }
 
-    static void drawAABB(AxisAlignedBB aabb) {
+    static void drawAABB(MatrixStack stack, AxisAlignedBB aabb) {
         AxisAlignedBB toDraw = aabb.offset(-renderManager.renderPosX(), -renderManager.renderPosY(), -renderManager.renderPosZ());
 
+        Matrix4f matrix4f = stack.func_227866_c_().func_227870_a_();
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
         // bottom
-        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();
         // top
-        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.minZ).endVertex();
         // corners
-        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.minZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
-        buffer.func_225582_a_(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.minZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.maxZ).endVertex();
+        buffer.func_227888_a_(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.maxZ).endVertex();
         tessellator.draw();
     }
 
-    static void drawAABB(AxisAlignedBB aabb, double expand) {
-        drawAABB(aabb.grow(expand, expand, expand));
+    static void drawAABB(MatrixStack stack, AxisAlignedBB aabb, double expand) {
+        drawAABB(stack, aabb.grow(expand, expand, expand));
     }
 }

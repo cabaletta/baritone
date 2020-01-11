@@ -23,6 +23,7 @@ import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
@@ -115,7 +116,7 @@ public class GuiClick extends Screen implements Helper {
         return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
-    public void onRender() {
+    public void onRender(MatrixStack stack) {
         glGetFloatv(GL_MODELVIEW_MATRIX, (FloatBuffer) MODELVIEW.clear());
         glGetFloatv(GL_PROJECTION_MATRIX, (FloatBuffer) PROJECTION.clear());
         glGetIntegerv(GL_VIEWPORT, (IntBuffer) VIEWPORT.clear());
@@ -123,7 +124,7 @@ public class GuiClick extends Screen implements Helper {
         if (currentMouseOver != null) {
             Entity e = mc.getRenderViewEntity();
             // drawSingleSelectionBox WHEN?
-            PathRenderer.drawManySelectionBoxes(e, Collections.singletonList(currentMouseOver), Color.CYAN);
+            PathRenderer.drawManySelectionBoxes(stack, e, Collections.singletonList(currentMouseOver), Color.CYAN);
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 RenderSystem.enableBlend();
                 RenderSystem.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
@@ -134,7 +135,7 @@ public class GuiClick extends Screen implements Helper {
                 RenderSystem.disableDepthTest();
                 BetterBlockPos a = new BetterBlockPos(currentMouseOver);
                 BetterBlockPos b = new BetterBlockPos(clickStart);
-                IRenderer.drawAABB(new AxisAlignedBB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
+                IRenderer.drawAABB(stack, new AxisAlignedBB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
                 RenderSystem.enableDepthTest();
 
                 RenderSystem.depthMask(true);

@@ -17,6 +17,8 @@
 
 package baritone.api.event.events;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+
 /**
  * @author Brady
  * @since 8/5/2018
@@ -28,8 +30,11 @@ public final class RenderEvent {
      */
     private final float partialTicks;
 
-    public RenderEvent(float partialTicks) {
+    private final MatrixStack matrixStack;
+
+    public RenderEvent(float partialTicks, MatrixStack matrixStack) {
         this.partialTicks = partialTicks;
+        this.matrixStack = matrixStack;
     }
 
     /**
@@ -37,5 +42,9 @@ public final class RenderEvent {
      */
     public final float getPartialTicks() {
         return this.partialTicks;
+    }
+
+    public final MatrixStack getMatrixStack() {
+        return this.matrixStack;
     }
 }

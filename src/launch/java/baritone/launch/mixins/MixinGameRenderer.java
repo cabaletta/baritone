@@ -38,9 +38,9 @@ public class MixinGameRenderer {
                     args = {"ldc=hand"}
             )
     )
-    private void renderWorldPass(float partialTicks, long finishTimeNano, MatrixStack idfk, CallbackInfo ci) {
+    private void renderWorldPass(float partialTicks, long finishTimeNano, MatrixStack matrixStack, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, matrixStack));
         }
     }
 }
