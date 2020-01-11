@@ -254,24 +254,26 @@ public final class PathRenderer implements IRenderer, Helper {
                     RenderSystem.disableDepthTest();
                 }
 
-                // FIXME
-                /*
-                BeaconTileEntityRenderer.renderBeamSegment(
-                        goalPos.getX() - renderPosX,
-                        -renderPosY,
-                        goalPos.getZ() - renderPosZ,
+                stack.func_227860_a_(); // push
+                stack.func_227861_a_(goalPos.getX() - renderPosX, -renderPosY, goalPos.getZ() - renderPosZ); // translate
+
+                BeaconTileEntityRenderer.func_228842_a_(
+                        stack,
+                        mc.func_228019_au_().func_228489_c_(),
+                        TEXTURE_BEACON_BEAM,
                         partialTicks,
-                        1.0,
+                        1.0F,
                         player.world.getGameTime(),
                         0,
                         256,
                         color.getColorComponents(null),
 
                         // Arguments filled by the private method lol
-                        0.2D,
-                        0.25D
+                        0.2F,
+                        0.25F
                 );
-                 */
+
+                stack.func_227865_b_(); // pop
 
                 if (settings.renderGoalIgnoreDepth.value) {
                     RenderSystem.enableDepthTest();
