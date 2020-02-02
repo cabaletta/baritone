@@ -22,6 +22,7 @@
 [![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.10%20/%20v1.3.5%20/%20v1.4.3-brightgreen.svg)](https://impactclient.net/)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg)](https://github.com/fr1kin/ForgeHax/)
 [![Aristois add-on integration](https://img.shields.io/badge/Aristois%20add--on%20integration-v1.3.4%20/%20v1.4.1-green.svg)](https://gitlab.com/emc-mods-indrit/baritone_api)
+[![rootNET integration](https://img.shields.io/badge/rootNET%20integration-v1.2.11-green.svg)](https://rootnet.dev/)
 [![WWE integration](https://img.shields.io/badge/WWE%20%22integration%22-master%3F-green.svg)](https://wweclient.com/)
 [![Future integration](https://img.shields.io/badge/Future%20integration-Soon™%3F%3F%3F-red.svg)](https://futureclient.net/)
 [![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com/)
