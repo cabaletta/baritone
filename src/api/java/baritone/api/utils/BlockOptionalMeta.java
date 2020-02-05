@@ -28,7 +28,6 @@ import net.minecraft.resources.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.storage.loot.*;
 
 import javax.annotation.Nonnull;
@@ -47,6 +46,7 @@ public final class BlockOptionalMeta {
     private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
     private static LootTableManager manager;
+    private static LootPredicateManager predicate = new LootPredicateManager();
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
     public BlockOptionalMeta(@Nonnull Block block) {
@@ -65,13 +65,7 @@ public final class BlockOptionalMeta {
 
         MatchResult matchResult = matcher.toMatchResult();
 
-        ResourceLocation id = new ResourceLocation(matchResult.group(1));
-
-        if (!Registry.BLOCK.containsKey(id)) {
-            throw new IllegalArgumentException("Invalid block ID");
-        }
-
-        block = Registry.BLOCK.getValue(id).orElse(null);
+        block = BlockUtils.stringToBlockRequired(matchResult.group(1));
         blockstates = getStates(block);
         stateHashes = getStateHashes(blockstates);
         stackHashes = getStackHashes(blockstates);
@@ -144,7 +138,7 @@ public final class BlockOptionalMeta {
             rpl.reloadPacksFromFinders();
             IResourcePack thePack = ((ResourcePackInfo) rpl.getAllPacks().iterator().next()).getResourcePack();
             IReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(ResourcePackType.SERVER_DATA, null);
-            manager = new LootTableManager(new LootPredicateManager());
+            manager = new LootTableManager(predicate);
             resourceManager.addReloadListener(manager);
             try {
                 resourceManager.reloadResourcesAndThen(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), Collections.singletonList(thePack), CompletableFuture.completedFuture(Unit.INSTANCE)).get();
@@ -153,6 +147,10 @@ public final class BlockOptionalMeta {
             }
         }
         return manager;
+    }
+
+    public static LootPredicateManager getPredicateManager() {
+        return predicate;
     }
 
     private static synchronized List<Item> drops(Block b) {

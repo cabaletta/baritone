@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -957,6 +957,11 @@ public final class Settings {
      * {@link Setting#value};
      */
     public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getInstance().ingameGUI.getChatGUI()::printChatMessage);
+
+    /**
+     * Print out ALL command exceptions as a stack trace to stdout, even simple syntax errors
+     */
+    public final Setting<Boolean> verboseCommandExceptions = new Setting<>(false);
 
     /**
      * The size of the box that is rendered when the current goal is a GoalYLevel
