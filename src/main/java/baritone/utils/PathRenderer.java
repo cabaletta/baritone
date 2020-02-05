@@ -181,7 +181,7 @@ public final class PathRenderer implements IRenderer, Helper {
 
 
     public static void drawLine(MatrixStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
-        Matrix4f matrix4f = stack.func_227866_c_().func_227870_a_();
+        Matrix4f matrix4f = stack.getLast().getPositionMatrix();
 
         double vpX = posX();
         double vpY = posY();
@@ -189,13 +189,13 @@ public final class PathRenderer implements IRenderer, Helper {
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
         buffer.begin(renderPathAsFrickinThingy ? GL_LINE_STRIP : GL_LINES, DefaultVertexFormats.POSITION);
-        buffer.func_227888_a_(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
-        buffer.func_227888_a_(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.5D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
+        buffer.pos(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
+        buffer.pos(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.5D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
 
         if (renderPathAsFrickinThingy) {
-            buffer.func_227888_a_(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.53D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
-            buffer.func_227888_a_(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.53D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
-            buffer.func_227888_a_(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
+            buffer.pos(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.53D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
+            buffer.pos(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.53D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
+            buffer.pos(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
         }
     }
 
@@ -254,12 +254,12 @@ public final class PathRenderer implements IRenderer, Helper {
                     RenderSystem.disableDepthTest();
                 }
 
-                stack.func_227860_a_(); // push
-                stack.func_227861_a_(goalPos.getX() - renderPosX, -renderPosY, goalPos.getZ() - renderPosZ); // translate
+                stack.push(); // push
+                stack.translate(goalPos.getX() - renderPosX, -renderPosY, goalPos.getZ() - renderPosZ); // translate
 
-                BeaconTileEntityRenderer.func_228842_a_(
+                BeaconTileEntityRenderer.renderBeamSegment(
                         stack,
-                        mc.func_228019_au_().func_228489_c_(),
+                        mc.getRenderTypeBuffers().getBufferSource(),
                         TEXTURE_BEACON_BEAM,
                         partialTicks,
                         1.0F,
@@ -273,7 +273,7 @@ public final class PathRenderer implements IRenderer, Helper {
                         0.25F
                 );
 
-                stack.func_227865_b_(); // pop
+                stack.pop(); // pop
 
                 if (settings.renderGoalIgnoreDepth.value) {
                     RenderSystem.enableDepthTest();
@@ -319,16 +319,16 @@ public final class PathRenderer implements IRenderer, Helper {
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y1);
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y2);
 
-        Matrix4f matrix4f = stack.func_227866_c_().func_227870_a_();
+        Matrix4f matrix4f = stack.getLast().getPositionMatrix();
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
-        buffer.func_227888_a_(matrix4f, (float) minX, (float) minY, (float) minZ).endVertex();
-        buffer.func_227888_a_(matrix4f, (float) minX, (float) maxY, (float) minZ).endVertex();
-        buffer.func_227888_a_(matrix4f, (float) maxX, (float) minY, (float) minZ).endVertex();
-        buffer.func_227888_a_(matrix4f, (float) maxX, (float) maxY, (float) minZ).endVertex();
-        buffer.func_227888_a_(matrix4f, (float) maxX, (float) minY, (float) maxZ).endVertex();
-        buffer.func_227888_a_(matrix4f, (float) maxX, (float) maxY, (float) maxZ).endVertex();
-        buffer.func_227888_a_(matrix4f, (float) minX, (float) minY, (float) maxZ).endVertex();
-        buffer.func_227888_a_(matrix4f, (float) minX, (float) maxY, (float) maxZ).endVertex();
+        buffer.pos(matrix4f, (float) minX, (float) minY, (float) minZ).endVertex();
+        buffer.pos(matrix4f, (float) minX, (float) maxY, (float) minZ).endVertex();
+        buffer.pos(matrix4f, (float) maxX, (float) minY, (float) minZ).endVertex();
+        buffer.pos(matrix4f, (float) maxX, (float) maxY, (float) minZ).endVertex();
+        buffer.pos(matrix4f, (float) maxX, (float) minY, (float) maxZ).endVertex();
+        buffer.pos(matrix4f, (float) maxX, (float) maxY, (float) maxZ).endVertex();
+        buffer.pos(matrix4f, (float) minX, (float) minY, (float) maxZ).endVertex();
+        buffer.pos(matrix4f, (float) minX, (float) maxY, (float) maxZ).endVertex();
         tessellator.draw();
 
         IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
@@ -336,12 +336,12 @@ public final class PathRenderer implements IRenderer, Helper {
 
     private static void renderHorizontalQuad(MatrixStack stack, double minX, double maxX, double minZ, double maxZ, double y) {
         if (y != 0) {
-            Matrix4f matrix4f = stack.func_227866_c_().func_227870_a_();
+            Matrix4f matrix4f = stack.getLast().getPositionMatrix();
             buffer.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
-            buffer.func_227888_a_(matrix4f, (float) minX, (float) y, (float) minZ).endVertex();
-            buffer.func_227888_a_(matrix4f, (float) maxX, (float) y, (float) minZ).endVertex();
-            buffer.func_227888_a_(matrix4f, (float) maxX, (float) y, (float) maxZ).endVertex();
-            buffer.func_227888_a_(matrix4f, (float) minX, (float) y, (float) maxZ).endVertex();
+            buffer.pos(matrix4f, (float) minX, (float) y, (float) minZ).endVertex();
+            buffer.pos(matrix4f, (float) maxX, (float) y, (float) minZ).endVertex();
+            buffer.pos(matrix4f, (float) maxX, (float) y, (float) maxZ).endVertex();
+            buffer.pos(matrix4f, (float) minX, (float) y, (float) maxZ).endVertex();
             tessellator.draw();
         }
     }

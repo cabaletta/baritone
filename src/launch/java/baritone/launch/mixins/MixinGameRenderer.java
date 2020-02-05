@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinGameRenderer {
 
     @Inject(
-            method = "func_228378_a_",
+            method = "renderWorld",
             at = @At(
                     value = "INVOKE_STRING",
                     target = "Lnet/minecraft/profiler/IProfiler;endStartSection(Ljava/lang/String;)V",

@@ -24,7 +24,6 @@ import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.Screen;
@@ -69,9 +68,9 @@ public class GuiClick extends Screen implements Helper {
         double mx = mc.mouseHelper.getMouseX();
         double my = mc.mouseHelper.getMouseY();
 
-        my = mc.func_228018_at_().getHeight() - my;
-        my *= mc.func_228018_at_().getFramebufferHeight() / (double) mc.func_228018_at_().getHeight();
-        mx *= mc.func_228018_at_().getFramebufferWidth() / (double) mc.func_228018_at_().getWidth();
+        my = mc.getMainWindow().getHeight() - my;
+        my *= mc.getMainWindow().getFramebufferHeight() / (double) mc.getMainWindow().getHeight();
+        mx *= mc.getMainWindow().getFramebufferWidth() / (double) mc.getMainWindow().getWidth();
         Vec3d near = toWorld(mx, my, 0);
         Vec3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
         if (near != null && far != null) {
