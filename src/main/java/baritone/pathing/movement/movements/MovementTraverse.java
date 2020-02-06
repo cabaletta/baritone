@@ -286,7 +286,7 @@ public class MovementTraverse extends Movement {
             }
             switch (p) {
                 case READY_TO_PLACE: {
-                    if (ctx.player().movementInput.field_228350_h_ || Baritone.settings().assumeSafeWalk.value) {
+                    if (ctx.player().isCrouching() || Baritone.settings().assumeSafeWalk.value) {
                         state.setInput(Input.CLICK_RIGHT, true);
                     }
                     return state;

@@ -176,7 +176,7 @@ public class MovementAscend extends Movement {
             ticksWithoutPlacement++;
             if (MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), false) == PlaceResult.READY_TO_PLACE) {
                 state.setInput(Input.SNEAK, true);
-                if (ctx.player().movementInput.field_228350_h_) {
+                if (ctx.player().isCrouching()) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }

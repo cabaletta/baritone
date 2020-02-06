@@ -251,7 +251,7 @@ public class MovementPillar extends Movement {
                     state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (ctx.player().movementInput.field_228350_h_ && (ctx.isLookingAt(src.down()) || ctx.isLookingAt(src)) && ctx.player().getPositionVec().y > dest.getY() + 0.1) {
+                } else if (ctx.player().isCrouching() && (ctx.isLookingAt(src.down()) || ctx.isLookingAt(src)) && ctx.player().getPositionVec().y > dest.getY() + 0.1) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }
