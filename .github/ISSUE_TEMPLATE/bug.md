@@ -20,6 +20,7 @@ You can find your logs in `%appdata%/.minecraft/logs/` (Windows) or `/Library/Ap
 Add your steps to reproduce the issue/bug experienced here.
 
 ## Final checklist
+- [x] I know how to properly use check boxes 
 - [ ] I have included the version of Minecraft I'm running, baritone's version and forge mods (if used).
 - [ ] I have included logs, exceptions and / or steps to reproduce the issue.
 - [ ] I have not used any OwO's or UwU's in this issue.
