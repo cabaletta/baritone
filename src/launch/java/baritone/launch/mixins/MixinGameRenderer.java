@@ -21,11 +21,14 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
@@ -36,11 +39,12 @@ public class MixinGameRenderer {
                     value = "INVOKE_STRING",
                     target = "Lnet/minecraft/profiler/IProfiler;endStartSection(Ljava/lang/String;)V",
                     args = {"ldc=hand"}
-            )
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void renderWorldPass(float partialTicks, long finishTimeNano, MatrixStack matrixStack, CallbackInfo ci) {
+    private void renderWorldPass(float partialTicks, long finishTimeNano, MatrixStack modelViewMatrix, CallbackInfo ci, boolean flag, ActiveRenderInfo activerenderinfo, MatrixStack projectionMatrix, float f, Matrix4f matrix4f) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, matrixStack));
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, modelViewMatrix, projectionMatrix));
         }
     }
 }

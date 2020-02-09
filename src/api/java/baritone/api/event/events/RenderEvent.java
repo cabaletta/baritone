@@ -30,11 +30,12 @@ public final class RenderEvent {
      */
     private final float partialTicks;
 
-    private final MatrixStack matrixStack;
+    private final MatrixStack modelViewStack, projectionStack;
 
-    public RenderEvent(float partialTicks, MatrixStack matrixStack) {
+    public RenderEvent(float partialTicks, MatrixStack modelViewStack, MatrixStack projectionStack) {
         this.partialTicks = partialTicks;
-        this.matrixStack = matrixStack;
+        this.modelViewStack = modelViewStack;
+        this.projectionStack = projectionStack;
     }
 
     /**
@@ -44,7 +45,11 @@ public final class RenderEvent {
         return this.partialTicks;
     }
 
-    public final MatrixStack getMatrixStack() {
-        return this.matrixStack;
+    public final MatrixStack getModelViewStack() {
+        return this.modelViewStack;
+    }
+
+    public final MatrixStack getProjectionStack() {
+        return this.projectionStack;
     }
 }

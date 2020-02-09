@@ -68,7 +68,7 @@ public class SelCommand extends Command {
                 float lineWidth = Baritone.settings().selectionLineWidth.value;
                 boolean ignoreDepth = Baritone.settings().renderSelectionIgnoreDepth.value;
                 IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
-                IRenderer.drawAABB(event.getMatrixStack(), new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
+                IRenderer.drawAABB(event.getModelViewStack(), new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
                 IRenderer.endLines(ignoreDepth);
             }
         });
