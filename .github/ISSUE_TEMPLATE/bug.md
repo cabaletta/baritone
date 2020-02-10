@@ -14,7 +14,13 @@ Baritone version:
 Forge mods (if used): 
 
 ## Exception, error or logs
-You can find your logs in `%appdata%/.minecraft/logs/` (Windows) or `/Library/Application\ Support/minecraft/logs` (Mac).
+Please find your `latest.log` or `debug.log` in this folder and attach it to the issue
+
+Linux: `~/.minecraft/logs/`
+
+Windows: `%appdata%/.minecraft/logs/`
+
+Mac: `/Library/Application\ Support/minecraft/logs/`
 
 ## How to reproduce
 Add your steps to reproduce the issue/bug experienced here.
