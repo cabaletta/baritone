@@ -20,7 +20,7 @@ Linux: `~/.minecraft/logs/`
 
 Windows: `%appdata%/.minecraft/logs/`
 
-Mac:`/Library/Application\ Support/minecraft/logs/`
+Mac: `/Library/Application\ Support/minecraft/logs/`
 
 ## How to reproduce
 Add your steps to reproduce the issue/bug experienced here.
