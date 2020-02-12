@@ -218,7 +218,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
             logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
             logDebug("No path found =(");
             if (Baritone.settings().desktopNotifications.value)
-                NotificationHelper.notification("Baritone", "No path found =(", true);
+                NotificationHelper.notify("Baritone", "No path found =(", true);
         }
         return Optional.empty();
     }
