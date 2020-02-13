@@ -77,7 +77,7 @@ public interface IRenderer {
     static void drawAABB(MatrixStack stack, AxisAlignedBB aabb) {
         AxisAlignedBB toDraw = aabb.offset(-renderManager.renderPosX(), -renderManager.renderPosY(), -renderManager.renderPosZ());
 
-        Matrix4f matrix4f = stack.getLast().getPositionMatrix();
+        Matrix4f matrix4f = stack.getLast().getMatrix();
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
         // bottom
         buffer.pos(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();

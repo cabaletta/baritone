@@ -181,7 +181,7 @@ public final class PathRenderer implements IRenderer, Helper {
 
 
     public static void drawLine(MatrixStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
-        Matrix4f matrix4f = stack.getLast().getPositionMatrix();
+        Matrix4f matrix4f = stack.getLast().getMatrix();
 
         double vpX = posX();
         double vpY = posY();
@@ -319,7 +319,7 @@ public final class PathRenderer implements IRenderer, Helper {
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y1);
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y2);
 
-        Matrix4f matrix4f = stack.getLast().getPositionMatrix();
+        Matrix4f matrix4f = stack.getLast().getMatrix();
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
         buffer.pos(matrix4f, (float) minX, (float) minY, (float) minZ).endVertex();
         buffer.pos(matrix4f, (float) minX, (float) maxY, (float) minZ).endVertex();
@@ -336,7 +336,7 @@ public final class PathRenderer implements IRenderer, Helper {
 
     private static void renderHorizontalQuad(MatrixStack stack, double minX, double maxX, double minZ, double maxZ, double y) {
         if (y != 0) {
-            Matrix4f matrix4f = stack.getLast().getPositionMatrix();
+            Matrix4f matrix4f = stack.getLast().getMatrix();
             buffer.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
             buffer.pos(matrix4f, (float) minX, (float) y, (float) minZ).endVertex();
             buffer.pos(matrix4f, (float) maxX, (float) y, (float) minZ).endVertex();

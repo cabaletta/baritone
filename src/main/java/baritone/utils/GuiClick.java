@@ -111,8 +111,8 @@ public class GuiClick extends Screen implements Helper {
     }
 
     public void onRender(MatrixStack modelViewStack, MatrixStack projectionStack) {
-        this.projectionViewMatrix = projectionStack.getLast().getPositionMatrix().copy();
-        this.projectionViewMatrix.multiply(modelViewStack.getLast().getPositionMatrix());
+        this.projectionViewMatrix = projectionStack.getLast().getMatrix().copy();
+        this.projectionViewMatrix.mul(modelViewStack.getLast().getMatrix());
         this.projectionViewMatrix.invert();
 
         if (currentMouseOver != null) {
