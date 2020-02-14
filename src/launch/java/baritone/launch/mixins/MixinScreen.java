@@ -29,5 +29,5 @@ public abstract class MixinScreen implements IGuiScreen {
 
     @Override
     @Invoker("openLink")
-    public abstract void openLink(URI url);
+    public abstract void openLinkInvoker(URI url);
 }

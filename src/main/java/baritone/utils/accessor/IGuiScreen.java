@@ -21,5 +21,5 @@ import java.net.URI;
 
 public interface IGuiScreen {
 
-    void openLink(URI url);
+    void openLinkInvoker(URI url);
 }
