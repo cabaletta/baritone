@@ -74,7 +74,7 @@ public final class PathRenderer implements IRenderer, Helper {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
         if (Helper.mc.currentScreen instanceof GuiClick) {
-            ((GuiClick) Helper.mc.currentScreen).onRender(event.getModelViewStack(), event.getProjectionStack());
+            ((GuiClick) Helper.mc.currentScreen).onRender(event.getModelViewStack(), event.getProjectionMatrix());
         }
 
         int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getId();

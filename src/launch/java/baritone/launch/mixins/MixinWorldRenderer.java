@@ -21,30 +21,28 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
 import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.client.renderer.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(GameRenderer.class)
-public class MixinGameRenderer {
+/**
+ * @author Brady
+ * @since 2/13/2020
+ */
+@Mixin(WorldRenderer.class)
+public class MixinWorldRenderer {
 
     @Inject(
-            method = "renderWorld",
-            at = @At(
-                    value = "INVOKE_STRING",
-                    target = "Lnet/minecraft/profiler/IProfiler;endStartSection(Ljava/lang/String;)V",
-                    args = {"ldc=hand"}
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD
+            method = "updateCameraAndRender",
+            at = @At("RETURN"),
+            locals = LocalCapture.CAPTURE_FAILSOFT
     )
-    private void renderWorldPass(float partialTicks, long finishTimeNano, MatrixStack modelViewMatrix, CallbackInfo ci, boolean flag, ActiveRenderInfo activerenderinfo, MatrixStack projectionMatrix, float f, Matrix4f matrix4f) {
+    private void onStartHand(MatrixStack matrixStackIn, float partialTicks, long finishTimeNano, boolean drawBlockOutline, ActiveRenderInfo activeRenderInfoIn, GameRenderer gameRendererIn, LightTexture lightmapIn, Matrix4f projectionIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, modelViewMatrix, projectionMatrix));
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, matrixStackIn, projectionIn));
         }
     }
 }

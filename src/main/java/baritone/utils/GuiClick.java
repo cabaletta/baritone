@@ -110,8 +110,8 @@ public class GuiClick extends Screen implements Helper {
         return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
-    public void onRender(MatrixStack modelViewStack, MatrixStack projectionStack) {
-        this.projectionViewMatrix = projectionStack.getLast().getMatrix().copy();
+    public void onRender(MatrixStack modelViewStack, Matrix4f projectionMatrix) {
+        this.projectionViewMatrix = projectionMatrix.copy();
         this.projectionViewMatrix.mul(modelViewStack.getLast().getMatrix());
         this.projectionViewMatrix.invert();
 
@@ -144,8 +144,8 @@ public class GuiClick extends Screen implements Helper {
             return null;
         }
 
-        x /= mc.getMainWindow().getWidth();
-        y /= mc.getMainWindow().getHeight();
+        x /= mc.getMainWindow().getFramebufferWidth();
+        y /= mc.getMainWindow().getFramebufferHeight();
         x = x * 2 - 1;
         y = y * 2 - 1;
 

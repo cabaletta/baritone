@@ -9,14 +9,13 @@
   },
   "client": [
     "MixinBitArray",
-    "MixinCommandSuggestionHelper",
     "MixinChunkArray",
     "MixinClientChunkProvider",
     "MixinClientPlayerEntity",
     "MixinClientPlayNetHandler",
+    "MixinCommandSuggestionHelper",
     "MixinEntity",
     "MixinEntityRenderManager",
-    "MixinGameRenderer",
     "MixinItemStack",
     "MixinLivingEntity",
     "MixinLootContext",
@@ -24,6 +23,7 @@
     "MixinNetworkManager",
     "MixinPalettedContainer",
     "MixinPlayerController",
-    "MixinScreen"
+    "MixinScreen",
+    "MixinWorldRenderer"
   ]
 }

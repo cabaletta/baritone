@@ -18,6 +18,7 @@
 package baritone.api.event.events;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.Matrix4f;
 
 /**
  * @author Brady
@@ -30,12 +31,13 @@ public final class RenderEvent {
      */
     private final float partialTicks;
 
-    private final MatrixStack modelViewStack, projectionStack;
+    private final Matrix4f projectionMatrix;
+    private final MatrixStack modelViewStack;
 
-    public RenderEvent(float partialTicks, MatrixStack modelViewStack, MatrixStack projectionStack) {
+    public RenderEvent(float partialTicks, MatrixStack modelViewStack, Matrix4f projectionMatrix) {
         this.partialTicks = partialTicks;
         this.modelViewStack = modelViewStack;
-        this.projectionStack = projectionStack;
+        this.projectionMatrix = projectionMatrix;
     }
 
     /**
@@ -45,11 +47,11 @@ public final class RenderEvent {
         return this.partialTicks;
     }
 
-    public final MatrixStack getModelViewStack() {
+    public MatrixStack getModelViewStack() {
         return this.modelViewStack;
     }
 
-    public final MatrixStack getProjectionStack() {
-        return this.projectionStack;
+    public Matrix4f getProjectionMatrix() {
+        return this.projectionMatrix;
     }
 }
