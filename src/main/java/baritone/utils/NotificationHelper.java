@@ -18,26 +18,50 @@
 package baritone.utils;
 
 import java.awt.*;
+import java.io.IOException;
 
 public class NotificationHelper {
-    public static void notify(String title, String text, boolean error) {
+    public static void notify(String text, boolean error) {
+        if (System.getProperty("os.name").contains("Linux"))
+            linux(text);
+        else
+            notification(text, error);
+    }
+
+    public static void notification(String text, boolean error) {
         try {
             SystemTray tray = SystemTray.getSystemTray();
             Image image = Toolkit.getDefaultToolkit().createImage("");
+            // Replace with some logo
 
-            TrayIcon trayIcon = new TrayIcon(image, title);
+            TrayIcon trayIcon = new TrayIcon(image, "Baritone");
             trayIcon.setImageAutoSize(true);
-            trayIcon.setToolTip(title);
+            trayIcon.setToolTip("Baritone");
             tray.add(trayIcon);
 
-            // Display Notification
             if(error)
-                trayIcon.displayMessage(title, text, TrayIcon.MessageType.ERROR);
+                trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.ERROR);
             else
-                trayIcon.displayMessage(title, text, TrayIcon.MessageType.INFO);
+                trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.INFO);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /*
+     * The only way to display notifications on linux is to use the java-gnome library, or send notify-send to shell with a ProcessBuilder
+     * Unfortunately the java-gnome library is licenced under the GPL, see: (https://en.wikipedia.org/wiki/Java-gnome)
+     */
+
+    public static void linux(String text) {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command("notify-send", "-a", "Baritone", text);
+        try {
+            processBuilder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
