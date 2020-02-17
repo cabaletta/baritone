@@ -47,11 +47,19 @@ You can verify whether or not it worked by running `.b version` in chat (only va
 ## Command Line
 On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 
+If you have errors with a package missing please make sure you have setup your environment, and are using Oracle JDK 8.
+
 Setting up the Environment:
 
 ```
 $ gradlew setupDecompWorkspace
 $ gradlew --refresh-dependencies
+```
+
+Building Baritone: 
+
+```
+$ gradlew build
 ```
 
 Running Baritone:
@@ -86,16 +94,6 @@ For information on how to build baritone, see [Building Baritone](#building-bari
 - In `Edit Configurations...` you need to select `baritone_launch` for `Use classpath of module:`.
   
   ![Image](https://i.imgur.com/hrLhG9u.png)
-
-# Building
-
-Make sure that you have properly [setup](#setup) the environment before trying to build it.
-
-## Command Line
-
-```
-$ gradlew build
-```
 
 ## IntelliJ
 
