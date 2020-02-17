@@ -175,6 +175,7 @@ public final class Settings {
      * Blocks that Baritone is not allowed to break
      */
     public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList( // TODO can this be a HashSet or ImmutableSet?
+            Blocks.BED,
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
             Blocks.LIT_FURNACE,
