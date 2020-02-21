@@ -29,23 +29,28 @@ public class NotificationHelper {
     }
 
     public static void notification(String text, boolean error) {
-        try {
-            SystemTray tray = SystemTray.getSystemTray();
-            Image image = Toolkit.getDefaultToolkit().createImage("");
-            // Replace with some logo
+        if (SystemTray.isSupported()) {
+            try {
+                SystemTray tray = SystemTray.getSystemTray();
+                Image image = Toolkit.getDefaultToolkit().createImage("");
+                // Replace with some logo
 
-            TrayIcon trayIcon = new TrayIcon(image, "Baritone");
-            trayIcon.setImageAutoSize(true);
-            trayIcon.setToolTip("Baritone");
-            tray.add(trayIcon);
+                TrayIcon trayIcon = new TrayIcon(image, "Baritone");
+                trayIcon.setImageAutoSize(true);
+                trayIcon.setToolTip("Baritone");
+                tray.add(trayIcon);
 
-            if(error)
-                trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.ERROR);
-            else
-                trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.INFO);
+                if(error)
+                    trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.ERROR);
+                else
+                    trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.INFO);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        else {
+            System.out.println("SystemTray is not supported");
         }
     }
 
