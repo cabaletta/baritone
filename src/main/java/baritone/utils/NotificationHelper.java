@@ -60,12 +60,9 @@ public class NotificationHelper {
         }
     }
 
-    /*
-     * The only way to display notifications on linux is to use the java-gnome library,
-     * or send notify-send to shell with a ProcessBuilder. Unfortunately the java-gnome
-     * library is licenced under the GPL, see (https://en.wikipedia.org/wiki/Java-gnome)
-     */
-
+    // The only way to display notifications on linux is to use the java-gnome library,
+    // or send notify-send to shell with a ProcessBuilder. Unfortunately the java-gnome
+    // library is licenced under the GPL, see (https://en.wikipedia.org/wiki/Java-gnome)
     public static void linux(String text) {
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command("notify-send", "-a", "Baritone", text);
