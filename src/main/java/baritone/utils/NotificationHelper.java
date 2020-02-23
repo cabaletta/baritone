@@ -20,12 +20,20 @@ package baritone.utils;
 import java.awt.*;
 import java.io.IOException;
 
+/**
+ * This class is not called from the main game thread.
+ * Do not refer to any Minecraft classes, it wouldn't be thread safe.
+ *
+ * @author aUniqueUser
+ */
 public class NotificationHelper {
+
     public static void notify(String text, boolean error) {
-        if (System.getProperty("os.name").contains("Linux"))
+        if (System.getProperty("os.name").contains("Linux")) {
             linux(text);
-        else
+        } else {
             notification(text, error);
+        }
     }
 
     public static void notification(String text, boolean error) {
@@ -33,30 +41,29 @@ public class NotificationHelper {
             try {
                 SystemTray tray = SystemTray.getSystemTray();
                 Image image = Toolkit.getDefaultToolkit().createImage("");
-                // Replace with some logo
 
                 TrayIcon trayIcon = new TrayIcon(image, "Baritone");
                 trayIcon.setImageAutoSize(true);
                 trayIcon.setToolTip("Baritone");
                 tray.add(trayIcon);
 
-                if(error)
+                if (error) {
                     trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.ERROR);
-                else
+                } else {
                     trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.INFO);
-            }
-            catch (Exception e) {
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        else {
+        } else {
             System.out.println("SystemTray is not supported");
         }
     }
 
     /*
-     * The only way to display notifications on linux is to use the java-gnome library, or send notify-send to shell with a ProcessBuilder
-     * Unfortunately the java-gnome library is licenced under the GPL, see: (https://en.wikipedia.org/wiki/Java-gnome)
+     * The only way to display notifications on linux is to use the java-gnome library,
+     * or send notify-send to shell with a ProcessBuilder. Unfortunately the java-gnome
+     * library is licenced under the GPL, see (https://en.wikipedia.org/wiki/Java-gnome)
      */
 
     public static void linux(String text) {
@@ -67,6 +74,5 @@ public class NotificationHelper {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }
