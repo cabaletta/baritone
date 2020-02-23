@@ -58,6 +58,10 @@ Here are some links to help to get started:
 
 - [Usage (chat control)](USAGE.md)
 
+## Stars over time
+
+[![Stargazers over time](https://starchart.cc/cabaletta/baritone.svg)](https://starchart.cc/cabaletta/baritone)
+
 # API
 
 The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
