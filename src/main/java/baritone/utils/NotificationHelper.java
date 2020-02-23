@@ -17,6 +17,8 @@
 
 package baritone.utils;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import java.awt.*;
 import java.io.IOException;
 
@@ -28,30 +30,32 @@ import java.io.IOException;
  */
 public class NotificationHelper {
 
+    private static TrayIcon trayIcon;
+
     public static void notify(String text, boolean error) {
-        if (System.getProperty("os.name").contains("Linux")) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            windows(text, error);
+        } else if (SystemUtils.IS_OS_MAC_OSX) {
+            mac(text);
+        } else if (SystemUtils.IS_OS_LINUX) {
             linux(text);
-        } else {
-            notification(text, error);
         }
     }
 
-    public static void notification(String text, boolean error) {
+    private static void windows(String text, boolean error) {
         if (SystemTray.isSupported()) {
             try {
-                SystemTray tray = SystemTray.getSystemTray();
-                Image image = Toolkit.getDefaultToolkit().createImage("");
+                if (trayIcon == null) {
+                    SystemTray tray = SystemTray.getSystemTray();
+                    Image image = Toolkit.getDefaultToolkit().createImage("");
 
-                TrayIcon trayIcon = new TrayIcon(image, "Baritone");
-                trayIcon.setImageAutoSize(true);
-                trayIcon.setToolTip("Baritone");
-                tray.add(trayIcon);
-
-                if (error) {
-                    trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.ERROR);
-                } else {
-                    trayIcon.displayMessage("Baritone", text, TrayIcon.MessageType.INFO);
+                    trayIcon = new TrayIcon(image, "Baritone");
+                    trayIcon.setImageAutoSize(true);
+                    trayIcon.setToolTip("Baritone");
+                    tray.add(trayIcon);
                 }
+
+                trayIcon.displayMessage("Baritone", text, error ? TrayIcon.MessageType.ERROR : TrayIcon.MessageType.INFO);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -60,10 +64,20 @@ public class NotificationHelper {
         }
     }
 
+    private static void mac(String text) {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command("osascript", "-e", "display notification \"" + text + "\" with title \"Baritone\"");
+        try {
+            processBuilder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     // The only way to display notifications on linux is to use the java-gnome library,
     // or send notify-send to shell with a ProcessBuilder. Unfortunately the java-gnome
     // library is licenced under the GPL, see (https://en.wikipedia.org/wiki/Java-gnome)
-    public static void linux(String text) {
+    private static void linux(String text) {
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command("notify-send", "-a", "Baritone", text);
         try {
