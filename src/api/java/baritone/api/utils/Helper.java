@@ -49,7 +49,7 @@ public interface Helper {
     static ITextComponent getPrefix() {
         // Inner text component
         final Calendar now = Calendar.getInstance();
-        final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) == 1;
+        final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) <= 3;
         ITextComponent baritone = new TextComponentString(BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : (xd ? "Baritoe" : "Baritone"));
         baritone.getStyle().setColor(TextFormatting.LIGHT_PURPLE);
 
