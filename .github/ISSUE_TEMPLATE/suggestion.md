@@ -16,4 +16,5 @@ If applicable, what settings/customizability should be offered to tweak the func
 Describe how your suggestion would improve Baritone, or the reason behind it being added.
 
 ## Final checklist
+- [x] I know how to properly use check boxes 
 - [ ] I have not used any OwO's or UwU's in this issue.

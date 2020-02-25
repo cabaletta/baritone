@@ -523,9 +523,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         return Block.isOpaque(state.getCollisionShape(null, null));
     }
 
-    static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown) {
+    static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak) {
         IPlayerContext ctx = baritone.getPlayerContext();
-        Optional<Rotation> direct = RotationUtils.reachable(ctx, placeAt); // we assume that if there is a block there, it must be replacable
+        Optional<Rotation> direct = RotationUtils.reachable(ctx, placeAt, wouldSneak); // we assume that if there is a block there, it must be replacable
         boolean found = false;
         if (direct.isPresent()) {
             state.setTarget(new MovementState.MovementTarget(direct.get(), true));
@@ -543,7 +543,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 double faceY = (placeAt.getY() + against1.getY() + 0.5D) * 0.5D;
                 double faceZ = (placeAt.getZ() + against1.getZ() + 1.0D) * 0.5D;
                 Rotation place = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
-                RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance());
+                RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance(), wouldSneak);
                 if (res != null && res.getType() == RayTraceResult.Type.BLOCK && ((BlockRayTraceResult) res).getPos().equals(against1) && ((BlockRayTraceResult) res).getPos().offset(((BlockRayTraceResult) res).getFace()).equals(placeAt)) {
                     state.setTarget(new MovementState.MovementTarget(place, true));
                     found = true;
@@ -561,11 +561,17 @@ public interface MovementHelper extends ActionCosts, Helper {
             Direction side = ((BlockRayTraceResult) ctx.objectMouseOver()).getFace();
             // only way for selectedBlock.equals(placeAt) to be true is if it's replacable
             if (selectedBlock.equals(placeAt) || (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.offset(side).equals(placeAt))) {
+                if (wouldSneak) {
+                    state.setInput(Input.SNEAK, true);
+                }
                 ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
                 return PlaceResult.READY_TO_PLACE;
             }
         }
         if (found) {
+            if (wouldSneak) {
+                state.setInput(Input.SNEAK, true);
+            }
             ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
             return PlaceResult.ATTEMPTING;
         }
