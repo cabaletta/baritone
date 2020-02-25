@@ -249,9 +249,9 @@ public class MovementParkour extends Movement {
             if (ctx.player().getPositionVec().y - ctx.playerFeet().getY() < 0.094) { // lilypads
                 state.setStatus(MovementStatus.SUCCESS);
             }
-        } else if (!ctx.playerFeet().equals(src)) {
+        } else if (!ctx.playerFeet().equals(src)) {,,
             if (ctx.playerFeet().equals(src.offset(direction)) || ctx.player().getPositionVec().y - src.y > 0.0001) {
-                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true) == PlaceResult.READY_TO_PLACE) {
+                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true, false) == PlaceResult.READY_TO_PLACE) {
                     // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
                     state.setInput(Input.CLICK_RIGHT, true);
                 }

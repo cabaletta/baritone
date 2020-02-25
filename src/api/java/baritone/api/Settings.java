@@ -1053,6 +1053,10 @@ public final class Settings {
      */
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
+    /**
+     * Desktop Notifications
+     */
+    public final Setting<Boolean> desktopNotifications = new Setting<>(false);
 
     /**
      * A map of lowercase setting field names to their respective setting

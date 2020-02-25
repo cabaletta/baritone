@@ -74,7 +74,7 @@ public final class BackfillProcess extends BaritoneProcessHelper {
         baritone.getInputOverrideHandler().clearAllKeys();
         for (BlockPos toPlace : toFillIn()) {
             MovementState fake = new MovementState();
-            switch (MovementHelper.attemptToPlaceABlock(fake, baritone, toPlace, false)) {
+            switch (MovementHelper.attemptToPlaceABlock(fake, baritone, toPlace, false, false)) {
                 case NO_OPTION:
                     continue;
                 case READY_TO_PLACE:
