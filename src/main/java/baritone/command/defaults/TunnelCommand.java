@@ -41,16 +41,18 @@ public class TunnelCommand extends Command {
         args.requireMax(3);
         if (args.hasExactly(3)) {
             boolean cont = true;
-            int depth = Integer.parseInt(args.getArgs().get(0).getValue());
-            int height = Integer.parseInt(args.getArgs().get(1).getValue());
-            int width = Integer.parseInt(args.getArgs().get(2).getValue());
+            int height = Integer.parseInt(args.getArgs().get(0).getValue());
+            int width = Integer.parseInt(args.getArgs().get(1).getValue());
+            int depth = Integer.parseInt(args.getArgs().get(2).getValue());
 
-            if (width < 1 || height < 2 || depth < 1) {
-                logDirect("Width and depth must at least be 1 block; Height must at least be 2 blocks");
+            if (width < 1 || height < 2 || depth < 1 || height > 255) {
+                logDirect("Width and depth must at least be 1 block; Height must at least be 2 blocks, and cannot be greater than the build limit.");
                 cont = false;
             }
 
             if (cont) {
+                height--;
+                width--;
                 BlockPos corner1;
                 BlockPos corner2;
                 EnumFacing enumFacing = ctx.player().getHorizontalFacing();
@@ -75,7 +77,7 @@ public class TunnelCommand extends Command {
                     default:
                         throw new IllegalStateException("Unexpected value: " + enumFacing);
                 }
-                logDirect(String.format("Creating a tunnel %s block(s) deep, %s block(s) wide, and %s block(s) high", depth, width, height));
+                logDirect(String.format("Creating a tunnel %s block(s) high, %s block(s) wide, and %s block(s) deep", height+1, width+1, depth));
                 baritone.getBuilderProcess().clearArea(corner1, corner2);
             }
         } else {
