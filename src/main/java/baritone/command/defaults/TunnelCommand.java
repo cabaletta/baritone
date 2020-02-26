@@ -41,21 +41,21 @@ public class TunnelCommand extends Command {
         args.requireMax(3);
         if (args.hasExactly(3)) {
             boolean cont = true;
-            int depth = Integer.parseInt(args.peekString(0));
-            int height = Integer.parseInt(args.peekString(1))-1;
-            int width = Integer.parseInt(args.peekString(2))-1;
+            int depth = Integer.parseInt(args.getArgs().get(0).getValue());
+            int height = Integer.parseInt(args.getArgs().get(1).getValue());
+            int width = Integer.parseInt(args.getArgs().get(2).getValue());
 
-            if (width < 1 || height < 2) {
-                logDirect("Width must at least be 1 block, Height must at least be 2 blocks");
+            if (width < 1 || height < 2 || depth < 1) {
+                logDirect("Width and depth must at least be 1 block; Height must at least be 2 blocks");
                 cont = false;
             }
 
             if (cont) {
                 BlockPos corner1;
                 BlockPos corner2;
-                EnumFacing enumfacing = ctx.player().getHorizontalFacing();
+                EnumFacing enumFacing = ctx.player().getHorizontalFacing();
                 int addition = ((width % 2 == 0) ? 0 : 1);
-                switch (enumfacing) {
+                switch (enumFacing) {
                     case EAST:
                         corner1 = new BlockPos(ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z - width / 2);
                         corner2 = new BlockPos(ctx.playerFeet().x + depth, ctx.playerFeet().y + height, ctx.playerFeet().z + width / 2 + addition);
@@ -73,8 +73,9 @@ public class TunnelCommand extends Command {
                         corner2 = new BlockPos(ctx.playerFeet().x - width / 2, ctx.playerFeet().y + height, ctx.playerFeet().z + depth);
                         break;
                     default:
-                        throw new IllegalStateException("Unexpected value: " + enumfacing);
+                        throw new IllegalStateException("Unexpected value: " + enumFacing);
                 }
+                logDirect(String.format("Creating a tunnel %s block(s) deep, %s block(s) wide, and %s block(s) high", depth, width, height));
                 baritone.getBuilderProcess().clearArea(corner1, corner2);
             }
         } else {
