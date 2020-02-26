@@ -51,7 +51,8 @@ public class TunnelCommand extends Command {
             }
 
             if (cont) {
-                BlockPos corner1 = null, corner2 = null;
+                BlockPos corner1;
+                BlockPos corner2;
                 EnumFacing enumfacing = ctx.player().getHorizontalFacing();
                 int addition = ((width % 2 == 0) ? 0 : 1);
                 switch (enumfacing) {
@@ -71,6 +72,8 @@ public class TunnelCommand extends Command {
                         corner1 = new BlockPos(ctx.playerFeet().x + width / 2 + addition, ctx.playerFeet().y, ctx.playerFeet().z);
                         corner2 = new BlockPos(ctx.playerFeet().x - width / 2, ctx.playerFeet().y + height, ctx.playerFeet().z + depth);
                         break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + enumfacing);
                 }
                 baritone.getBuilderProcess().clearArea(corner1, corner2);
             }
