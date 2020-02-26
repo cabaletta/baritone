@@ -41,7 +41,7 @@ public class TunnelCommand extends Command {
         args.requireMax(3);
         if (args.hasExactly(3)) {
             boolean cont = true;
-            int depth = Integer.parseInt(args.peekString(0))-1;
+            int depth = Integer.parseInt(args.peekString(0));
             int height = Integer.parseInt(args.peekString(1))-1;
             int width = Integer.parseInt(args.peekString(2))-1;
 
