@@ -18,11 +18,13 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
+import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.exception.CommandException;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalStrictDirection;
-import baritone.api.command.Command;
-import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,13 +38,50 @@ public class TunnelCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        args.requireMax(0);
-        Goal goal = new GoalStrictDirection(
-                ctx.playerFeet(),
-                ctx.player().getHorizontalFacing()
-        );
-        baritone.getCustomGoalProcess().setGoalAndPath(goal);
-        logDirect(String.format("Goal: %s", goal.toString()));
+        args.requireMax(3);
+        if (args.hasExactly(3)) {
+            boolean cont = true;
+            int depth = Integer.parseInt(args.peekString(0))-1;
+            int height = Integer.parseInt(args.peekString(1))-1;
+            int width = Integer.parseInt(args.peekString(2))-1;
+
+            if (width < 1 || height < 2) {
+                logDirect("Width must at least be 1 block, Height must at least be 2 blocks");
+                cont = false;
+            }
+
+            if (cont) {
+                BlockPos corner1 = null, corner2 = null;
+                EnumFacing enumfacing = ctx.player().getHorizontalFacing();
+                int addition = ((width % 2 == 0) ? 0 : 1);
+                switch (enumfacing) {
+                    case EAST:
+                        corner1 = new BlockPos(ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z - width / 2);
+                        corner2 = new BlockPos(ctx.playerFeet().x + depth, ctx.playerFeet().y + height, ctx.playerFeet().z + width / 2 + addition);
+                        break;
+                    case WEST:
+                        corner1 = new BlockPos(ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z + width / 2 + addition);
+                        corner2 = new BlockPos(ctx.playerFeet().x - depth, ctx.playerFeet().y + height, ctx.playerFeet().z - width / 2);
+                        break;
+                    case NORTH:
+                        corner1 = new BlockPos(ctx.playerFeet().x - width / 2, ctx.playerFeet().y, ctx.playerFeet().z);
+                        corner2 = new BlockPos(ctx.playerFeet().x + width / 2 + addition, ctx.playerFeet().y + height, ctx.playerFeet().z - depth);
+                        break;
+                    case SOUTH:
+                        corner1 = new BlockPos(ctx.playerFeet().x + width / 2 + addition, ctx.playerFeet().y, ctx.playerFeet().z);
+                        corner2 = new BlockPos(ctx.playerFeet().x - width / 2, ctx.playerFeet().y + height, ctx.playerFeet().z + depth);
+                        break;
+                }
+                baritone.getBuilderProcess().clearArea(corner1, corner2);
+            }
+        } else {
+            Goal goal = new GoalStrictDirection(
+                    ctx.playerFeet(),
+                    ctx.player().getHorizontalFacing()
+            );
+            baritone.getCustomGoalProcess().setGoalAndPath(goal);
+            logDirect(String.format("Goal: %s", goal.toString()));
+        }
     }
 
     @Override
@@ -61,7 +100,8 @@ public class TunnelCommand extends Command {
                 "The tunnel command sets a goal that tells Baritone to mine completely straight in the direction that you're facing.",
                 "",
                 "Usage:",
-                "> tunnel"
+                "> tunnel - No arguments, mines in a 1x2 radius.",
+                "> tunnel depth/height/width - Tunnels in a user defined depth, height and width."
         );
     }
 }
