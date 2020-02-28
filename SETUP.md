@@ -2,7 +2,9 @@
 
 The easiest way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone.
 
-For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1).
+1.14.4 and lower is located on the [releases](https://github.com/cabaletta/baritone/releases/) page, if you don't want to use Impact. 
+
+For 1.15.2, [click here](https://www.dropbox.com/s/8rx6f0kts9hvd4f/1.15.2-Baritone.zip?dl=1).
 
 Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
 
