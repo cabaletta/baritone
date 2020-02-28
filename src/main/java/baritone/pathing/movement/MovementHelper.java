@@ -302,7 +302,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
             return true;
         }
-        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST) {
+        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST ) {
             return true;
         }
         if (isWater(block)) {
