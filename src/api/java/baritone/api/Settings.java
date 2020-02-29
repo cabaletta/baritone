@@ -1047,9 +1047,34 @@ public final class Settings {
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
     /**
-     * Desktop Notifications
+     * Desktop notifications
      */
     public final Setting<Boolean> desktopNotifications = new Setting<>(false);
+
+    /**
+     * Desktop notification on path complete
+     */
+    public final Setting<Boolean> notificationOnPathComplete = new Setting<>(true);
+
+    /**
+     * Desktop notification on farm fail
+     */
+    public final Setting<Boolean> notificationOnFarmFail = new Setting<>(true);
+
+    /**
+     * Desktop notification on build finished
+     */
+    public final Setting<Boolean> notificationOnBuildFinished = new Setting<>(true);
+
+    /**
+     * Desktop notification on explore finished
+     */
+    public final Setting<Boolean> notificationOnExploreFinished = new Setting<>(true);
+
+    /**
+     * Desktop notification on mine fail
+     */
+    public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
 
     /**
      * A map of lowercase setting field names to their respective setting
