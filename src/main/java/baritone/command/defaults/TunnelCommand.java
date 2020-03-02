@@ -107,7 +107,7 @@ public class TunnelCommand extends Command {
                 "",
                 "Usage:",
                 "> tunnel - No arguments, mines in a 1x2 radius.",
-                "> tunnel height/width/depth - Tunnels in a user defined height, width and depth."
+                "> tunnel <height> <width> <depth> - Tunnels in a user defined height, width and depth."
         );
     }
 }
