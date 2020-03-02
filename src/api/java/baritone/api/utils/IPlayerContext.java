@@ -77,6 +77,10 @@ public interface IPlayerContext {
         return new Rotation(player().rotationYaw, player().rotationPitch);
     }
 
+    static double eyeHeight(boolean ifSneaking) {
+        return ifSneaking ? 1.54 : 1.62;
+    }
+
     /**
      * Returns the block that the crosshair is currently placed over. Updated once per tick.
      *
