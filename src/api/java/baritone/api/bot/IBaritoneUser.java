@@ -33,6 +33,11 @@ import net.minecraft.util.Session;
 public interface IBaritoneUser {
 
     /**
+     * @return The Baritone instance
+     */
+    IBaritone getBaritone();
+
+    /**
      * @return The network manager that is responsible for the current connection.
      */
     NetworkManager getNetworkManager();
@@ -75,6 +80,4 @@ public interface IBaritoneUser {
      * @return The manager that spawned this {@link IBaritoneUser}.
      */
     IUserManager getManager();
-
-    IBaritone getBaritone();
 }
