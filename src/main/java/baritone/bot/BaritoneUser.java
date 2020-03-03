@@ -20,8 +20,8 @@ package baritone.bot;
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.bot.IBaritoneUser;
-import baritone.api.bot.IUserManager;
 import baritone.api.utils.IPlayerController;
+import baritone.bot.spec.BotMinecraft;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
@@ -44,6 +44,7 @@ public class BaritoneUser implements IBaritoneUser {
     private GameProfile profile;
     private INetHandlerPlayClient netHandlerPlayClient;
 
+    private BotMinecraft mc;
     private BotWorld world;
     private EntityBot player;
     private IPlayerController playerController;
@@ -51,6 +52,7 @@ public class BaritoneUser implements IBaritoneUser {
     private final Baritone baritone;
 
     BaritoneUser(UserManager manager, NetworkManager networkManager, Session session) {
+        this.mc = BotMinecraft.allocate(this);
         this.manager = manager;
         this.networkManager = networkManager;
         this.session = session;
@@ -106,5 +108,9 @@ public class BaritoneUser implements IBaritoneUser {
     @Override
     public IBaritone getBaritone() {
         return baritone;
+    }
+
+    public BotMinecraft getMinecraft() {
+        return this.mc;
     }
 }

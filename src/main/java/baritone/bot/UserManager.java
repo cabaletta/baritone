@@ -151,14 +151,16 @@ public final class UserManager implements IUserManager, Helper {
 
     @Override
     public final void disconnect(IBaritoneUser user) {
-        // It's probably fine to pass null to this, because the handlers aren't doing anything with it
-        // noinspection ConstantConditions
-        user.getNetworkManager().closeChannel(null);
-        this.users.remove(user);
+        if (this.users.contains(user)) {
+            // It's probably fine to pass null to this, because the handlers aren't doing anything with it
+            // noinspection ConstantConditions
+            user.getNetworkManager().closeChannel(null);
+            this.users.remove(user);
+        }
     }
 
     @Override
-    public final List<IBaritoneUser> users() {
+    public final List<IBaritoneUser> getUsers() {
         return Collections.unmodifiableList(this.users);
     }
 }

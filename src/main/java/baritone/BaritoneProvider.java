@@ -58,7 +58,7 @@ public final class BaritoneProvider implements IBaritoneProvider {
     public List<IBaritone> getAllBaritones() {
         List<IBaritone> baritones = new ArrayList<>();
         baritones.add(getPrimaryBaritone());
-        for (IBaritoneUser ibu : UserManager.INSTANCE.users()) {
+        for (IBaritoneUser ibu : UserManager.INSTANCE.getUsers()) {
             baritones.add(ibu.getBaritone());
         }
         return baritones;

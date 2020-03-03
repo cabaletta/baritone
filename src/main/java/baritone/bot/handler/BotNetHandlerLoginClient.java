@@ -62,52 +62,16 @@ public class BotNetHandlerLoginClient extends NetHandlerLoginClient {
     private final BaritoneUser user;
 
     public BotNetHandlerLoginClient(NetworkManager networkManager, BaritoneUser user) {
-        super(networkManager, Minecraft.getMinecraft(), null);
+        super(networkManager, user.getMinecraft(), null);
         this.networkManager = networkManager;
-        this.mc = Minecraft.getMinecraft();
+        this.mc = user.getMinecraft();
         this.user = user;
-    }
-
-    @Override
-    public void handleEncryptionRequest(SPacketEncryptionRequest packetIn) {
-        SecretKey secretkey = CryptManager.createNewSharedKey();
-        PublicKey publicKey = packetIn.getPublicKey();
-
-        // Setup joinServer payload info
-        GameProfile profile = this.user.getSession().getProfile();
-        String authenticationToken = this.user.getSession().getToken();
-        String serverId = new BigInteger(CryptManager.getServerIdHash(packetIn.getServerId(), publicKey, secretkey)).toString(16);
-
-        if (this.mc.getCurrentServerData() != null && this.mc.getCurrentServerData().isOnLAN()) {
-            try {
-                this.mc.getSessionService().joinServer(profile, authenticationToken, serverId);
-            } catch (AuthenticationException e) {
-                // Couldn't connect to auth servers but will continue to join LAN
-            }
-        } else {
-            try {
-                this.mc.getSessionService().joinServer(profile, authenticationToken, serverId);
-            } catch (AuthenticationUnavailableException e) {
-                this.networkManager.closeChannel(new TextComponentTranslation("disconnect.loginFailedInfo", new TextComponentTranslation("disconnect.loginFailedInfo.serversUnavailable")));
-                return;
-            } catch (InvalidCredentialsException e) {
-                this.networkManager.closeChannel(new TextComponentTranslation("disconnect.loginFailedInfo", new TextComponentTranslation("disconnect.loginFailedInfo.invalidSession")));
-                return;
-            } catch (AuthenticationException e) {
-                this.networkManager.closeChannel(new TextComponentTranslation("disconnect.loginFailedInfo", e.getMessage()));
-                return;
-            }
-        }
-
-        // noinspection unchecked
-        this.networkManager.sendPacket(new CPacketEncryptionResponse(secretkey, publicKey, packetIn.getVerifyToken()),
-                future -> BotNetHandlerLoginClient.this.networkManager.enableEncryption(secretkey));
     }
 
     @Override
     public void handleLoginSuccess(SPacketLoginSuccess packetIn) {
         this.networkManager.setConnectionState(EnumConnectionState.PLAY);
-        this.networkManager.setNetHandler(new BotNetHandlerPlayClient(this.networkManager, this.user, Minecraft.getMinecraft(), packetIn.getProfile()));
+        this.networkManager.setNetHandler(new BotNetHandlerPlayClient(this.networkManager, this.user, this.mc, packetIn.getProfile()));
     }
 
     @Override

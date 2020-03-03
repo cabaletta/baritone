@@ -68,9 +68,6 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     @Override
     public final void onSendChatMessage(ChatEvent event) {
-        // Ensure UserManager is created to prevent a ConcurrentModificationException
-        Objects.requireNonNull(UserManager.INSTANCE);
-
         listeners.forEach(l -> l.onSendChatMessage(event));
     }
 

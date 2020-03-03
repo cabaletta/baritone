@@ -17,7 +17,9 @@
 
 package baritone.api.bot;
 
+import baritone.api.bot.connect.ConnectionStatus;
 import baritone.api.bot.connect.IConnectionResult;
+import baritone.api.event.events.TickEvent;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.util.Session;
 
@@ -32,7 +34,9 @@ import java.util.UUID;
 public interface IUserManager {
 
     /**
-     * Connects a new user with the specified {@link Session} to the current server.
+     * Connects a new user with the specified {@link Session} to the current server. Returns
+     * a {@link IConnectionResult} describing the result of the attempted connection as well
+     * as a {@link IBaritoneUser} instance if it was {@link ConnectionStatus#SUCCESS}.
      *
      * @param session The user session
      * @return The result of the attempted connection
@@ -40,7 +44,8 @@ public interface IUserManager {
     IConnectionResult connect(Session session);
 
     /**
-     * Disconnects the specified {@link IBaritoneUser} from its current server.
+     * Disconnects the specified {@link IBaritoneUser} from its current server. All valid users
+     * are automatically disconnected when the current game state becomes {@link TickEvent.Type#OUT}.
      *
      * @param user The user to disconnect
      */
@@ -53,7 +58,9 @@ public interface IUserManager {
      * @return The user, {@link Optional#empty()} if no match or {@code profile} is {@code null}
      */
     default Optional<IBaritoneUser> getUserByProfile(GameProfile profile) {
-        return profile == null ? Optional.empty() : users().stream().filter(user -> user.getProfile().equals(profile)).findFirst();
+        return profile == null
+            ? Optional.empty()
+            : this.getUsers().stream().filter(user -> user.getProfile().equals(profile)).findFirst();
     }
 
     /**
@@ -63,11 +70,13 @@ public interface IUserManager {
      * @return The user, {@link Optional#empty()} if no match or {@code uuid} is {@code null}
      */
     default Optional<IBaritoneUser> getUserByUUID(UUID uuid) {
-        return uuid == null ? Optional.empty() : users().stream().filter(user -> user.getProfile().getId().equals(uuid)).findFirst();
+        return uuid == null
+            ? Optional.empty()
+            : this.getUsers().stream().filter(user -> user.getProfile().getId().equals(uuid)).findFirst();
     }
 
     /**
      * @return All of the users held by this manager
      */
-    List<IBaritoneUser> users();
+    List<IBaritoneUser> getUsers();
 }
