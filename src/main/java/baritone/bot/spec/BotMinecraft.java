@@ -65,6 +65,11 @@ public final class BotMinecraft extends Minecraft implements Helper {
         return mc.addScheduledTask(callableToSchedule);
     }
 
+    @Override
+    public boolean isCallingFromMinecraftThread() {
+        return mc.isCallingFromMinecraftThread();
+    }
+
     public static BotMinecraft allocate(IBaritoneUser user) {
         BotMinecraft mc = ObjectAllocator.allocate(BotMinecraft.class);
         mc.user = user;

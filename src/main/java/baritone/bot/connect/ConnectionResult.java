@@ -84,4 +84,12 @@ public final class ConnectionResult implements IConnectionResult {
 
         return new ConnectionResult(SUCCESS, user);
     }
+
+    @Override
+    public String toString() {
+        return "ConnectionResult{" +
+                "status=" + status +
+                ", user=" + user +
+                '}';
+    }
 }

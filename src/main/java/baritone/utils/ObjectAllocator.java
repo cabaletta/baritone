@@ -33,7 +33,7 @@ public final class ObjectAllocator {
 
     static {
         try {
-            Class clazz = Class.forName("sun.misc.Unsafe");
+            Class<?> clazz = Class.forName("sun.misc.Unsafe");
             Field field = clazz.getDeclaredField("theUnsafe");
             field.setAccessible(true);
             theUnsafe = (Unsafe) field.get(null);
