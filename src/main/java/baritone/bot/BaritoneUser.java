@@ -65,8 +65,8 @@ public class BaritoneUser implements IBaritoneUser {
     }
 
     public void onWorldLoad(BotWorld world, EntityBot player, IPlayerController playerController) {
-        this.world = world;
-        this.player = player;
+        this.mc.player = this.player = player;
+        this.player.world = this.world = world;
         this.playerController = playerController;
     }
 

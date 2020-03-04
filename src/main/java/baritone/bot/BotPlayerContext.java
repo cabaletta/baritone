@@ -17,10 +17,12 @@
 
 package baritone.bot;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.bot.IBaritoneUser;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
+import baritone.api.utils.RayTraceUtils;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.RayTraceResult;
@@ -63,18 +65,7 @@ public class BotPlayerContext implements IPlayerContext {
 
     @Override
     public IWorldData worldData() {
-        return bot.getBaritone().getWorldProvider().getCurrentWorld();
-    }
-
-    @Override
-    public RayTraceResult objectMouseOver() {
-        Entity entity = this.bot.getEntity();
-
-        if (entity != null) {
-            double blockReachDistance = this.bot.getPlayerController().getBlockReachDistance();
-            return entity.rayTrace(blockReachDistance, 1.0F);
-        }
-
-        return null;
+        // TODO: (bot-system): Create a solution for Bot World Data
+        return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
     }
 }

@@ -56,9 +56,4 @@ public enum PrimaryPlayerContext implements IPlayerContext, Helper {
     public IWorldData worldData() {
         return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
     }
-
-    @Override
-    public RayTraceResult objectMouseOver() {
-        return RayTraceUtils.rayTraceTowards(player(), playerRotations(), playerController().getBlockReachDistance());
-    }
 }

@@ -25,6 +25,7 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
+import baritone.command.BaritoneChatControl;
 import baritone.command.manager.CommandManager;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
@@ -120,6 +121,8 @@ public class Baritone implements IBaritone {
         if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
             this.gameEventHandler.registerEventListener(BaritoneAutoTest.INSTANCE);
         }
+
+        new BaritoneChatControl(this);
     }
 
     @Override

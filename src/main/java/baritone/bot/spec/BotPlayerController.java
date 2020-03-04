@@ -44,7 +44,7 @@ import net.minecraft.world.World;
  * @author Brady
  * @since 11/14/2018
  */
-public class BotPlayerController implements IPlayerController {
+public final class BotPlayerController implements IPlayerController {
 
     private final IBaritoneUser user;
     private GameType gameType;
@@ -59,6 +59,7 @@ public class BotPlayerController implements IPlayerController {
     public BotPlayerController(IBaritoneUser user) {
         this.user = user;
         this.currentHittingItem = ItemStack.EMPTY;
+        this.currentBlock = new BlockPos(-1, -1, -1);
     }
 
     @Override
@@ -94,8 +95,6 @@ public class BotPlayerController implements IPlayerController {
             player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, pos, side));
             this.handleBreak(pos);
         }
-
-        world.sendBlockBreakProgress(player.getEntityId(), this.currentBlock, (int) (this.blockDamage * 10.0F) - 1);
         return true;
     }
 
@@ -144,20 +143,19 @@ public class BotPlayerController implements IPlayerController {
 
             IBlockState state = world.getBlockState(pos);
             player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, pos, side));
+            boolean flag = state.getMaterial() != Material.AIR;
 
-            if (state.getMaterial() != Material.AIR) {
-                if (this.blockDamage == 0.0F) {
-                    state.getBlock().onBlockClicked(world, pos, player);
-                }
-                if (state.getPlayerRelativeBlockHardness(player, player.world, pos) >= 1.0F) {
-                    this.handleBreak(pos);
-                }
+            if (!flag && this.blockDamage == 0.0F) {
+                state.getBlock().onBlockClicked(world, pos, player);
+            }
+
+            if (!flag && state.getPlayerRelativeBlockHardness(player, player.world, pos) >= 1.0F) {
+                this.handleBreak(pos);
             } else {
                 this.hittingBlock = true;
                 this.currentBlock = pos;
                 this.blockDamage = 0.0F;
                 this.currentHittingItem = player.getHeldItemMainhand();
-                world.sendBlockBreakProgress(player.getEntityId(), this.currentBlock, (int) (this.blockDamage * 10.0F) - 1);
             }
         }
 

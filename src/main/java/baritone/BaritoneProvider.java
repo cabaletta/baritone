@@ -25,7 +25,6 @@ import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
 import baritone.bot.UserManager;
 import baritone.api.schematic.ISchematicSystem;
-import baritone.command.BaritoneChatControl;
 import baritone.cache.WorldScanner;
 import baritone.command.CommandSystem;
 import baritone.utils.player.PrimaryPlayerContext;
@@ -44,9 +43,6 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     {
         this.primary = new Baritone(PrimaryPlayerContext.INSTANCE);
-
-        // Setup chat control, just for the primary instance
-        new BaritoneChatControl(this.primary);
     }
 
     @Override

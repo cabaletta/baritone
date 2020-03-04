@@ -25,6 +25,7 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfiguration;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.tutorial.Tutorial;
 import net.minecraft.util.Session;
 
 import javax.annotation.Nonnull;
@@ -32,12 +33,16 @@ import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 
 /**
+ * "Implementation" of {@link Minecraft} which gets allocated without receiving a constructor call.
+ * This allows us to avoid the game's setup process (moreso in versions after 1.12 than 1.12 itself).
+ *
  * @author Brady
  * @since 3/3/2020
  */
 public final class BotMinecraft extends Minecraft implements Helper {
 
     private IBaritoneUser user;
+    private BotTutorial tutorial;
 
     private BotMinecraft(GameConfiguration gameConfig) {
         super(gameConfig);
@@ -70,9 +75,17 @@ public final class BotMinecraft extends Minecraft implements Helper {
         return mc.isCallingFromMinecraftThread();
     }
 
+    @Nonnull
+    @Override
+    public Tutorial getTutorial() {
+        return this.tutorial;
+    }
+
     public static BotMinecraft allocate(IBaritoneUser user) {
-        BotMinecraft mc = ObjectAllocator.allocate(BotMinecraft.class);
-        mc.user = user;
-        return mc;
+        BotMinecraft bm = ObjectAllocator.allocate(BotMinecraft.class);
+        bm.user = user;
+        bm.tutorial = new BotTutorial(bm);
+        bm.gameSettings = mc.gameSettings;
+        return bm;
     }
 }
