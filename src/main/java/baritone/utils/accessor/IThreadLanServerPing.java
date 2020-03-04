@@ -15,36 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.bot.connect;
+package baritone.utils.accessor;
 
 /**
  * @author Brady
- * @since 11/6/2018
+ * @since 3/4/2020
  */
-public enum ConnectionStatus {
+public interface IThreadLanServerPing {
 
-    /**
-     * The local player is not connected to a server, therefore, there is no target server to connect to.
-     */
-    NO_CURRENT_CONNECTION,
-
-    /**
-     * The IP of the targetted address to connect to could not be resolved.
-     */
-    CANT_RESOLVE_HOST,
-
-    /**
-     * The port for the detected LAN server could not be resolved.
-     */
-    CANT_RESOLVE_LAN,
-
-    /**
-     * The connection initialization failed.
-     */
-    CONNECTION_FAILED,
-
-    /**
-     * The connection was a success
-     */
-    SUCCESS
+    String getAddress();
 }

@@ -27,17 +27,16 @@ import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
+import baritone.utils.accessor.IIntegratedServer;
+import baritone.utils.accessor.IThreadLanServerPing;
 import net.minecraft.client.multiplayer.ServerAddress;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.multiplayer.ThreadLanServerPing;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.handshake.client.C00Handshake;
 import net.minecraft.network.login.client.CPacketLoginStart;
-import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Session;
 
-import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
@@ -93,20 +92,14 @@ public final class UserManager implements IUserManager, Helper {
     public final IConnectionResult connect(Session session) {
         if (mc.getIntegratedServer() != null && mc.getIntegratedServer().getPublic()) {
             try {
-                // TODO: (bot-system) Fix compatibility in production
-                Field fLanServerPing = IntegratedServer.class.getDeclaredField("lanServerPing");
-                fLanServerPing.setAccessible(true);
-                ThreadLanServerPing lanServerPing = (ThreadLanServerPing) fLanServerPing.get(mc.getIntegratedServer());
+                IIntegratedServer integratedServer = (IIntegratedServer) mc.getIntegratedServer();
+                IThreadLanServerPing lanServerPing = (IThreadLanServerPing) integratedServer.getLanServerPing();
+                int port = Integer.parseInt(lanServerPing.getAddress());
 
-                Field fAddress = lanServerPing.getClass().getDeclaredField("address");
-                fAddress.setAccessible(true);
-                int port = Integer.parseInt(fAddress.get(lanServerPing).toString());
-
-                // Connect to the server from the parsed server data
                 return connect0(session, new ServerData("", "localhost:" + port, true));
             } catch (Exception e) {
                 e.printStackTrace();
-                return ConnectionResult.failed(CANT_RESOLVE_HOST);
+                return ConnectionResult.failed(CANT_RESOLVE_LAN);
             }
         }
 
