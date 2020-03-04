@@ -20,6 +20,8 @@ package baritone.bot;
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.bot.IBaritoneUser;
+import baritone.api.event.events.WorldEvent;
+import baritone.api.event.events.type.EventState;
 import baritone.api.utils.IPlayerController;
 import baritone.bot.spec.BotMinecraft;
 import baritone.bot.spec.BotWorld;
@@ -67,9 +69,13 @@ public final class BaritoneUser implements IBaritoneUser {
     }
 
     public void onWorldLoad(BotWorld world, EntityBot player, IPlayerController playerController) {
+        this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.PRE));
+
         this.mc.player = this.player = player;
         this.player.world = this.world = world;
         this.playerController = playerController;
+
+        this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.POST));
     }
 
     @Override

@@ -17,15 +17,11 @@
 
 package baritone.bot;
 
-import baritone.api.BaritoneAPI;
 import baritone.api.bot.IBaritoneUser;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
-import baritone.api.utils.RayTraceUtils;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public final class BotPlayerContext implements IPlayerContext {
@@ -65,7 +61,6 @@ public final class BotPlayerContext implements IPlayerContext {
 
     @Override
     public IWorldData worldData() {
-        // TODO: (bot-system): Create a solution for Bot World Data
-        return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
+        return bot.getBaritone().getWorldProvider().getCurrentWorld();
     }
 }

@@ -114,7 +114,7 @@ public class Baritone implements IBaritone {
             farmProcess = new FarmProcess(this);
         }
 
-        this.worldProvider = new WorldProvider();
+        this.worldProvider = new WorldProvider(this);
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
 

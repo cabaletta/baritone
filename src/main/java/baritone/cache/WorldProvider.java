@@ -20,6 +20,7 @@ package baritone.cache;
 import baritone.Baritone;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.utils.Helper;
+import baritone.bot.BotPlayerContext;
 import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
 import net.minecraft.server.integrated.IntegratedServer;
@@ -43,7 +44,12 @@ public class WorldProvider implements IWorldProvider, Helper {
 
     private static final Map<Path, WorldData> worldCache = new HashMap<>(); // this is how the bots have the same cached world
 
+    private Baritone baritone;
     private WorldData currentWorld;
+
+    public WorldProvider(Baritone baritone) {
+        this.baritone = baritone;
+    }
 
     @Override
     public final WorldData getCurrentWorld() {
@@ -90,6 +96,10 @@ public class WorldProvider implements IWorldProvider, Helper {
             // good thing we have a readme
             out.write("https://github.com/cabaletta/baritone\n".getBytes());
         } catch (IOException ignored) {}
+
+        if (this.baritone.getPlayerContext() instanceof BotPlayerContext) {
+            directory = new File(directory, "bot");
+        }
 
         // We will actually store the world data in a subfolder: "DIM<id>"
         Path dir = new File(directory, "DIM" + dimension).toPath();
