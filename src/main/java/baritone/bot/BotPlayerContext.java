@@ -28,7 +28,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
-public class BotPlayerContext implements IPlayerContext {
+public final class BotPlayerContext implements IPlayerContext {
 
     /**
      * The backing {@link IBaritoneUser}

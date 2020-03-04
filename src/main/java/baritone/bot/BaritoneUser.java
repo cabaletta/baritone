@@ -36,7 +36,7 @@ import net.minecraft.util.Session;
  * @author Brady
  * @since 11/6/2018
  */
-public class BaritoneUser implements IBaritoneUser {
+public final class BaritoneUser implements IBaritoneUser {
 
     private final UserManager manager;
     private final NetworkManager networkManager;

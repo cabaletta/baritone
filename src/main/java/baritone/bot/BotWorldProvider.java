@@ -28,7 +28,7 @@ import net.minecraft.world.WorldType;
  * @author Brady
  * @since 11/7/2018
  */
-public class BotWorldProvider {
+public final class BotWorldProvider {
 
     /**
      * Generic world settings for a typical survival world.
