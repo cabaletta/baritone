@@ -93,6 +93,7 @@ public final class UserManager implements IUserManager, Helper {
     public final IConnectionResult connect(Session session) {
         if (mc.getIntegratedServer() != null && mc.getIntegratedServer().getPublic()) {
             try {
+                // TODO: (bot-system) Fix compatibility in production
                 Field fLanServerPing = IntegratedServer.class.getDeclaredField("lanServerPing");
                 fLanServerPing.setAccessible(true);
                 ThreadLanServerPing lanServerPing = (ThreadLanServerPing) fLanServerPing.get(mc.getIntegratedServer());
@@ -102,7 +103,7 @@ public final class UserManager implements IUserManager, Helper {
                 int port = Integer.parseInt(fAddress.get(lanServerPing).toString());
 
                 // Connect to the server from the parsed server data
-                return connect0(session, ServerAddress.fromString("localhost:" + port));
+                return connect0(session, new ServerData("", "localhost:" + port, true));
             } catch (Exception e) {
                 e.printStackTrace();
                 return ConnectionResult.failed(CANT_RESOLVE_HOST);
@@ -115,7 +116,7 @@ public final class UserManager implements IUserManager, Helper {
         }
 
         // Connect to the server from the parsed server data
-        return connect0(session, ServerAddress.fromString(data.serverIP));
+        return connect0(session, data);
     }
 
     /**
@@ -124,10 +125,11 @@ public final class UserManager implements IUserManager, Helper {
      * Hi Mickey :)
      *
      * @param session The user session
-     * @param address The address of the server to connect to
+     * @param data The address of the server to connect to
      * @return The result of the attempted connection
      */
-    private IConnectionResult connect0(Session session, ServerAddress address) {
+    private IConnectionResult connect0(Session session, ServerData data) {
+        ServerAddress address = ServerAddress.fromString(data.serverIP);
         InetAddress inetAddress;
 
         try {
@@ -145,7 +147,7 @@ public final class UserManager implements IUserManager, Helper {
             );
 
             // Create User
-            BaritoneUser user = new BaritoneUser(this, networkManager, session);
+            BaritoneUser user = new BaritoneUser(this, networkManager, session, data);
             this.users.add(user);
 
             // Setup login handler and send connection packets

@@ -25,6 +25,7 @@ import baritone.bot.spec.BotMinecraft;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.Session;
@@ -51,8 +52,9 @@ public class BaritoneUser implements IBaritoneUser {
 
     private final Baritone baritone;
 
-    BaritoneUser(UserManager manager, NetworkManager networkManager, Session session) {
+    BaritoneUser(UserManager manager, NetworkManager networkManager, Session session, ServerData serverData) {
         this.mc = BotMinecraft.allocate(this);
+        this.mc.setServerData(serverData);
         this.manager = manager;
         this.networkManager = networkManager;
         this.session = session;

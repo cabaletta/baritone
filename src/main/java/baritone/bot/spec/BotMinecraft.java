@@ -54,12 +54,6 @@ public final class BotMinecraft extends Minecraft implements Helper {
         return this.user.getSession();
     }
 
-    @Nullable
-    @Override
-    public ServerData getCurrentServerData() {
-        return mc.getCurrentServerData();
-    }
-
     @Override
     public MinecraftSessionService getSessionService() {
         return mc.getSessionService();

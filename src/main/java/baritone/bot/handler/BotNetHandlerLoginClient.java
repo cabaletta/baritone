@@ -18,25 +18,14 @@
 package baritone.bot.handler;
 
 import baritone.bot.BaritoneUser;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.exceptions.AuthenticationException;
-import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
-import com.mojang.authlib.exceptions.InvalidCredentialsException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.login.client.CPacketEncryptionResponse;
-import net.minecraft.network.login.server.SPacketEncryptionRequest;
 import net.minecraft.network.login.server.SPacketLoginSuccess;
-import net.minecraft.util.CryptManager;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
 
 import javax.annotation.Nonnull;
-import javax.crypto.SecretKey;
-import java.math.BigInteger;
-import java.security.PublicKey;
 
 /**
  * Handles the login stage when connecting to a server.
