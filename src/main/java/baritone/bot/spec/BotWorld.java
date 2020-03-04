@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
  * @author Brady
  * @since 11/7/2018
  */
-public class BotWorld extends World {
+public final class BotWorld extends World {
 
     private static Profiler BOT_WORLD_PROFILER = new Profiler();
     private static int worldNum = 0;

@@ -59,7 +59,7 @@ import javax.annotation.Nullable;
  * @since 10/23/2018
  */
 @SuppressWarnings("EntityConstructor")
-public class EntityBot extends EntityPlayerSP {
+public final class EntityBot extends EntityPlayerSP {
 
     private final IBaritoneUser user;
     private NetworkPlayerInfo playerInfo;
