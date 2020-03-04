@@ -96,7 +96,7 @@ public final class UserManager implements IUserManager, Helper {
                 IThreadLanServerPing lanServerPing = (IThreadLanServerPing) integratedServer.getLanServerPing();
                 int port = Integer.parseInt(lanServerPing.getAddress());
 
-                return connect0(session, new ServerData("", "localhost:" + port, true));
+                return connect0(session, new ServerData(lanServerPing.getMotd(), "localhost:" + port, true));
             } catch (Exception e) {
                 e.printStackTrace();
                 return ConnectionResult.failed(CANT_RESOLVE_LAN);

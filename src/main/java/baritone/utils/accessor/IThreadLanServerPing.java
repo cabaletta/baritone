@@ -23,5 +23,7 @@ package baritone.utils.accessor;
  */
 public interface IThreadLanServerPing {
 
+    String getMotd();
+
     String getAddress();
 }

@@ -31,5 +31,9 @@ public abstract class MixinThreadLanServerPing implements IThreadLanServerPing {
 
     @Accessor
     @Override
+    public abstract String getMotd();
+
+    @Accessor
+    @Override
     public abstract String getAddress();
 }
