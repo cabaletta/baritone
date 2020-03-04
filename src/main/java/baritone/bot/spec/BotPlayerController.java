@@ -28,10 +28,10 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.client.CPacketClickWindow;
-import net.minecraft.network.play.client.CPacketHeldItemChange;
-import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.network.play.client.*;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -243,12 +243,79 @@ public final class BotPlayerController implements IPlayerController {
 
     @Override
     public EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand) {
-        throw new AbstractMethodError("Lol");
+        this.syncHeldItem();
+        if (!world.getWorldBorder().contains(pos)) {
+            return EnumActionResult.FAIL;
+        }
+
+        ItemStack held = player.getHeldItem(hand);
+        Vec3d hitVec = vec.subtract(new Vec3d(pos));
+        float hitX = (float) hitVec.x;
+        float hitY = (float) hitVec.y;
+        float hitZ = (float) hitVec.z;
+
+        boolean usedBlock = false;
+
+        if (this.gameType != GameType.SPECTATOR) {
+            IBlockState state = world.getBlockState(pos);
+            boolean emptyHands = player.getHeldItemMainhand().isEmpty() && player.getHeldItemOffhand().isEmpty();
+
+            if ((!player.isSneaking() || emptyHands) && state.getBlock().onBlockActivated(world, pos, state, player, hand, direction, hitX, hitY, hitZ)) {
+                usedBlock = true;
+            }
+
+            if (!usedBlock && held.getItem() instanceof ItemBlock) {
+                if (!((ItemBlock) held.getItem()).canPlaceBlockOnSide(world, pos, direction, player, held)) {
+                    return EnumActionResult.FAIL;
+                }
+            }
+        }
+
+        this.user.getEntity().connection.sendPacket(
+                new CPacketPlayerTryUseItemOnBlock(pos, direction, hand, hitX, hitY, hitZ)
+        );
+
+        if (!usedBlock && this.gameType != GameType.SPECTATOR) {
+            if (held.isEmpty() || player.getCooldownTracker().hasCooldown(held.getItem())) {
+                return EnumActionResult.PASS;
+            }
+
+            if (held.getItem() instanceof ItemBlock && !player.canUseCommandBlock()) {
+                Block block = ((ItemBlock) held.getItem()).getBlock();
+
+                if (block instanceof BlockCommandBlock || block instanceof BlockStructure) {
+                    return EnumActionResult.FAIL;
+                }
+            }
+
+            return held.onItemUse(player, world, pos, hand, direction, hitX, hitY, hitZ);
+        }
+
+        return EnumActionResult.SUCCESS;
     }
 
     @Override
     public EnumActionResult processRightClick(EntityPlayerSP player, World world, EnumHand hand) {
-        throw new AbstractMethodError("Lol");
+        if (this.gameType == GameType.SPECTATOR) {
+            return EnumActionResult.PASS;
+        }
+
+        this.syncHeldItem();
+        this.user.getEntity().connection.sendPacket(new CPacketPlayerTryUseItem(hand));
+
+        ItemStack stack = player.getHeldItem(hand);
+        if (player.getCooldownTracker().hasCooldown(stack.getItem())) {
+            return EnumActionResult.PASS;
+        }
+
+        ActionResult<ItemStack> result = stack.useItemRightClick(world, player, hand);
+        ItemStack newStack = result.getResult();
+
+        if (newStack != stack || newStack.getCount() != stack.getCount()) {
+            player.setHeldItem(hand, newStack);
+        }
+
+        return result.getType();
     }
 
     @Override
