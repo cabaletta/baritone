@@ -24,12 +24,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfiguration;
-import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.tutorial.Tutorial;
 import net.minecraft.util.Session;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 
 /**
@@ -79,7 +78,8 @@ public final class BotMinecraft extends Minecraft implements Helper {
         BotMinecraft bm = ObjectAllocator.allocate(BotMinecraft.class);
         bm.user = user;
         bm.tutorial = new BotTutorial(bm);
-        bm.gameSettings = mc.gameSettings;
+        bm.gameSettings = new GameSettings();
+        bm.gameSettings.autoJump = false;
         return bm;
     }
 }
