@@ -71,8 +71,10 @@ public final class UserManager implements IUserManager, Helper {
                     }
 
                     UserManager.this.users.forEach(user -> {
-                        if (!user.getNetworkManager().isChannelOpen()) {
-                            UserManager.this.disconnect(user, new TextComponentString("Channel Closed"));
+                        if (user.getNetworkManager().isChannelOpen()) {
+                            user.getNetworkManager().processReceivedPackets();
+                        } else {
+                            user.getNetworkManager().handleDisconnection();
                         }
                     });
 
