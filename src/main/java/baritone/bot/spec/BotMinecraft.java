@@ -25,6 +25,7 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfiguration;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.tutorial.Tutorial;
 import net.minecraft.util.Session;
 
@@ -39,6 +40,14 @@ import java.util.concurrent.Callable;
  * @since 3/3/2020
  */
 public final class BotMinecraft extends Minecraft implements Helper {
+
+    private static final GameSettings BOT_GAME_SETTINGS;
+
+    static {
+        BOT_GAME_SETTINGS = ObjectAllocator.allocate(GameSettings.class);
+        BOT_GAME_SETTINGS.keyBindSprint = ObjectAllocator.allocate(KeyBinding.class);
+        BOT_GAME_SETTINGS.autoJump = false;
+    }
 
     private IBaritoneUser user;
     private BotTutorial tutorial;
@@ -78,8 +87,7 @@ public final class BotMinecraft extends Minecraft implements Helper {
         BotMinecraft bm = ObjectAllocator.allocate(BotMinecraft.class);
         bm.user = user;
         bm.tutorial = new BotTutorial(bm);
-        bm.gameSettings = new GameSettings();
-        bm.gameSettings.autoJump = false;
+        bm.gameSettings = BOT_GAME_SETTINGS;
         return bm;
     }
 }
