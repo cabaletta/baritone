@@ -66,6 +66,6 @@ public class BotNetHandlerLoginClient extends NetHandlerLoginClient {
     @Override
     public void onDisconnect(@Nonnull ITextComponent reason) {
         // It's important that we don't call the superclass method because that would mess up GUIs and make us upset
-        this.user.getManager().notifyDisconnect(this.user, EnumConnectionState.LOGIN);
+        this.user.getManager().disconnect(this.user, reason);
     }
 }

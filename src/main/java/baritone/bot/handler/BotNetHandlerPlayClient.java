@@ -687,7 +687,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void onDisconnect(@Nonnull ITextComponent reason) {
         // TODO Maybe more world unloadinde
         this.world.removeEntity(this.player);
-        this.user.getManager().notifyDisconnect(this.user, EnumConnectionState.PLAY);
+        this.user.getManager().disconnect(this.user, reason);
     }
 
     @Nonnull

@@ -36,6 +36,8 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.handshake.client.C00Handshake;
 import net.minecraft.network.login.client.CPacketLoginStart;
 import net.minecraft.util.Session;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -65,12 +67,12 @@ public final class UserManager implements IUserManager, Helper {
             public final void onTick(TickEvent event) {
                 if (event.getState() == EventState.PRE) {
                     if (event.getType() == TickEvent.Type.OUT) {
-                        UserManager.this.users.forEach(UserManager.this::disconnect);
+                        UserManager.this.users.forEach(user -> UserManager.this.disconnect(user, null));
                     }
 
                     UserManager.this.users.forEach(user -> {
                         if (!user.getNetworkManager().isChannelOpen()) {
-                            UserManager.this.disconnect(user);
+                            UserManager.this.disconnect(user, new TextComponentString("Channel Closed"));
                         }
                     });
 
@@ -155,17 +157,6 @@ public final class UserManager implements IUserManager, Helper {
     }
 
     /**
-     * Notifies the manager of an {@link IBaritoneUser} disconnect, and
-     * removes the {@link IBaritoneUser} from the list of users.
-     *
-     * @param user  The user that disconnected
-     * @param state The connection state at the time of disconnect
-     */
-    public final void notifyDisconnect(IBaritoneUser user, EnumConnectionState state) {
-        this.users.remove(user);
-    }
-
-    /**
      * @return The bot world provider
      */
     public final BotWorldProvider getWorldProvider() {
@@ -173,7 +164,7 @@ public final class UserManager implements IUserManager, Helper {
     }
 
     @Override
-    public final void disconnect(IBaritoneUser user) {
+    public final void disconnect(IBaritoneUser user, ITextComponent reason) {
         if (this.users.contains(user)) {
             if (user.getNetworkManager().isChannelOpen()) {
                 // It's probably fine to pass null to this, because the handlers aren't doing anything with it
@@ -181,6 +172,9 @@ public final class UserManager implements IUserManager, Helper {
                 user.getNetworkManager().closeChannel(null);
             }
             this.users.remove(user);
+            if (reason != null) {
+                logDirect(user.getSession().getUsername() + " Disconnected: " + reason.getUnformattedText());
+            }
         }
     }
 

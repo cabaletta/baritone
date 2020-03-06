@@ -22,6 +22,7 @@ import baritone.api.bot.connect.IConnectionResult;
 import baritone.api.event.events.TickEvent;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.util.Session;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,10 +47,12 @@ public interface IUserManager {
     /**
      * Disconnects the specified {@link IBaritoneUser} from its current server. All valid users
      * are automatically disconnected when the current game state becomes {@link TickEvent.Type#OUT}.
+     * A reason may be specified, but is more widely used in server-initiated disconnects.
      *
      * @param user The user to disconnect
+     * @param reason The reason for the disconnect, may be {@code null}
      */
-    void disconnect(IBaritoneUser user);
+    void disconnect(IBaritoneUser user, ITextComponent reason);
 
     /**
      * Finds the {@link IBaritoneUser} associated with the specified {@link GameProfile}
