@@ -19,6 +19,7 @@
     "MixinEntityLivingBase",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
+    "MixinGameSettings",
     "MixinGuiScreen",
     "MixinIntegratedServer",
     "MixinItemStack",

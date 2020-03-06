@@ -20,6 +20,7 @@ package baritone.bot.spec;
 import baritone.api.bot.IBaritoneUser;
 import baritone.api.utils.Helper;
 import baritone.utils.ObjectAllocator;
+import baritone.utils.accessor.IGameSettings;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import net.minecraft.client.Minecraft;
@@ -27,9 +28,12 @@ import net.minecraft.client.main.GameConfiguration;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.tutorial.Tutorial;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.Session;
 
 import javax.annotation.Nonnull;
+import java.util.HashSet;
 import java.util.concurrent.Callable;
 
 /**
@@ -40,14 +44,6 @@ import java.util.concurrent.Callable;
  * @since 3/3/2020
  */
 public final class BotMinecraft extends Minecraft implements Helper {
-
-    private static final GameSettings BOT_GAME_SETTINGS;
-
-    static {
-        BOT_GAME_SETTINGS = ObjectAllocator.allocate(GameSettings.class);
-        BOT_GAME_SETTINGS.keyBindSprint = ObjectAllocator.allocate(KeyBinding.class);
-        BOT_GAME_SETTINGS.autoJump = false;
-    }
 
     private IBaritoneUser user;
     private BotTutorial tutorial;
@@ -87,7 +83,29 @@ public final class BotMinecraft extends Minecraft implements Helper {
         BotMinecraft bm = ObjectAllocator.allocate(BotMinecraft.class);
         bm.user = user;
         bm.tutorial = new BotTutorial(bm);
-        bm.gameSettings = BOT_GAME_SETTINGS;
+        bm.gameSettings = createGameSettings(bm);
         return bm;
+    }
+
+    private static GameSettings createGameSettings(BotMinecraft bm) {
+        GameSettings settings = ObjectAllocator.allocate(GameSettings.class);
+
+        // Settings that get accessed on entity tick
+        settings.keyBindSprint = ObjectAllocator.allocate(KeyBinding.class);
+        settings.autoJump = false;
+
+        // Settings that are sent to the server
+        settings.language = "en_us";
+        settings.renderDistanceChunks = 8;
+        settings.chatVisibility = EntityPlayer.EnumChatVisibility.FULL;
+        settings.chatColours = true;
+        settings.mainHand = EnumHandSide.RIGHT;
+
+        // Private fields that must be initialized
+        IGameSettings accessor = (IGameSettings) settings;
+        accessor.setMc(bm);
+        accessor.setSetModelParts(new HashSet<>());
+
+        return settings;
     }
 }

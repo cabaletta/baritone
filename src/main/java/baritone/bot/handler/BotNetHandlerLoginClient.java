@@ -18,6 +18,7 @@
 package baritone.bot.handler;
 
 import baritone.bot.BaritoneUser;
+import baritone.bot.spec.BotMinecraft;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.network.EnumConnectionState;
@@ -43,7 +44,7 @@ public class BotNetHandlerLoginClient extends NetHandlerLoginClient {
     /**
      * The {@link Minecraft} game instance
      */
-    private final Minecraft mc;
+    private final BotMinecraft mc;
 
     /**
      * The bot of this connection

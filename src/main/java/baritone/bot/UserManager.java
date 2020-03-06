@@ -154,6 +154,7 @@ public final class UserManager implements IUserManager, Helper {
 
             return ConnectionResult.success(user);
         } catch (Exception e) {
+            e.printStackTrace();
             return ConnectionResult.failed(CONNECTION_FAILED);
         }
     }

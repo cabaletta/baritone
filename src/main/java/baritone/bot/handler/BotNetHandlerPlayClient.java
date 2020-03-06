@@ -19,12 +19,12 @@ package baritone.bot.handler;
 
 import baritone.api.utils.Helper;
 import baritone.bot.BaritoneUser;
+import baritone.bot.spec.BotMinecraft;
 import baritone.bot.spec.BotPlayerController;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -36,7 +36,6 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.PacketThreadUtil;
@@ -48,8 +47,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumHandSide;
-import net.minecraft.util.IThreadListener;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.Explosion;
@@ -78,10 +75,9 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     private final NetworkManager networkManager;
 
     /**
-     * This is the {@link Minecraft} game instance, however, to prevent unwanted references
-     * to the game instance fields, we refer to it as a {@link IThreadListener}.
+     * The bot's minecraft game instance. {@link BaritoneUser#getMinecraft()}
      */
-    private final IThreadListener client;
+    private final BotMinecraft client;
 
     /**
      * The bot of this connection
@@ -103,7 +99,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
      */
     private BotPlayerController playerController;
 
-    public BotNetHandlerPlayClient(NetworkManager networkManager, BaritoneUser user, Minecraft client, GameProfile profile) {
+    public BotNetHandlerPlayClient(NetworkManager networkManager, BaritoneUser user, BotMinecraft client, GameProfile profile) {
         // noinspection ConstantConditions
         super(client, null, networkManager, profile);
         this.networkManager = networkManager;
@@ -357,7 +353,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
         this.playerController = new BotPlayerController(this.user);
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
-        this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
+        this.player = new EntityBot(this.user, this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
         this.user.onWorldLoad(this.world, this.player, this.playerController);
         this.player.preparePlayerToSpawn();
         this.world.spawnEntity(this.player);
@@ -366,7 +362,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.playerController.setGameType(packetIn.getGameType());
         packetIn.getGameType().configurePlayerCapabilities(this.player.capabilities);
 
-        this.networkManager.sendPacket(new CPacketClientSettings("en_us", 8, EntityPlayer.EnumChatVisibility.FULL, true, 0, EnumHandSide.RIGHT));
+        this.client.gameSettings.sendSettingsToServer();
         this.networkManager.sendPacket(new CPacketCustomPayload("MC|Brand", new PacketBuffer(Unpooled.buffer()).writeString("vanilla")));
 
         this.world.registerBot(packetIn.getPlayerId(), this.player);
@@ -477,7 +473,7 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
         EntityBot prev = this.player;
 
-        this.player = new EntityBot(this.user, (Minecraft) this.client, this.world, this, prev.getStatFileWriter(), prev.getRecipeBook());
+        this.player = new EntityBot(this.user, this.client, this.world, this, prev.getStatFileWriter(), prev.getRecipeBook());
         this.user.onWorldLoad(this.world, this.player, this.playerController);
         // noinspection ConstantConditions
         this.player.getDataManager().setEntryValues(prev.getDataManager().getAll());
