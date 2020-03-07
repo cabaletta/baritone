@@ -70,9 +70,10 @@ public class BotWorld extends World {
     }
 
     public void removeEntityFromWorld(int entityID) {
-        Entity entity = this.entitiesById.removeObject(entityID);
+        Entity entity = this.entitiesById.lookup(entityID);
         if (entity != null && !(entity instanceof EntityBot)) {
             this.removeEntity(entity);
+            this.entitiesById.removeObject(entityID);
         }
     }
 
