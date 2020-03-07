@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
  * @author Brady
  * @since 11/7/2018
  */
-public final class BotWorld extends World {
+public class BotWorld extends World {
 
     private static Profiler BOT_WORLD_PROFILER = new Profiler();
     private static int worldNum = 0;
@@ -63,13 +63,15 @@ public final class BotWorld extends World {
         return allowEmpty || !this.chunkProviderClient.provideChunk(x, z).isEmpty();
     }
 
-    public void registerBot(int entityID, EntityBot entity) {
+    public void addEntityToWorld(int entityID, EntityBot entity) {
+        this.removeEntityFromWorld(entityID);
+        this.spawnEntity(entity);
         this.entitiesById.addKey(entityID, entity);
     }
 
     public void removeEntityFromWorld(int entityID) {
         Entity entity = this.entitiesById.removeObject(entityID);
-        if (entity != null) {
+        if (entity != null && !(entity instanceof EntityBot)) {
             this.removeEntity(entity);
         }
     }

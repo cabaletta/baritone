@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
  * @author Brady
  * @since 10/29/2018
  */
-public class BotNetHandlerLoginClient extends NetHandlerLoginClient {
+public final class BotNetHandlerLoginClient extends NetHandlerLoginClient {
 
     /**
      * The {@link NetworkManager} that is managing the connection with the server.

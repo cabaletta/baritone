@@ -67,7 +67,7 @@ import javax.annotation.Nonnull;
  * @author Brady
  * @since 10/22/2018
  */
-public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
+public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     /**
      * The {@link NetworkManager} that is managing the connection with the server.
@@ -300,9 +300,9 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
         // noinspection ConstantConditions
         new Explosion(this.world, null, packetIn.getX(), packetIn.getY(), packetIn.getZ(), packetIn.getStrength(), packetIn.getAffectedBlockPositions()).doExplosionB(true);
-        this.player.motionX += (double) packetIn.getMotionX();
-        this.player.motionY += (double) packetIn.getMotionY();
-        this.player.motionZ += (double) packetIn.getMotionZ();
+        this.player.motionX += packetIn.getMotionX();
+        this.player.motionY += packetIn.getMotionY();
+        this.player.motionZ += packetIn.getMotionZ();
     }
 
     @Override
@@ -356,16 +356,14 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.player = new EntityBot(this.user, this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
         this.user.onWorldLoad(this.world, this.player, this.playerController);
         this.player.preparePlayerToSpawn();
-        this.world.spawnEntity(this.player);
         this.player.setEntityId(packetIn.getPlayerId());
         this.player.dimension = packetIn.getDimension();
+        this.world.addEntityToWorld(packetIn.getPlayerId(), this.player);
         this.playerController.setGameType(packetIn.getGameType());
         packetIn.getGameType().configurePlayerCapabilities(this.player.capabilities);
 
         this.client.gameSettings.sendSettingsToServer();
         this.networkManager.sendPacket(new CPacketCustomPayload("MC|Brand", new PacketBuffer(Unpooled.buffer()).writeString("vanilla")));
-
-        this.world.registerBot(packetIn.getPlayerId(), this.player);
 
         Helper.HELPER.logDirect("Initialized Player and World");
     }
@@ -478,10 +476,10 @@ public class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         // noinspection ConstantConditions
         this.player.getDataManager().setEntryValues(prev.getDataManager().getAll());
         this.player.preparePlayerToSpawn();
-        this.world.spawnEntity(this.player);
         this.player.setEntityId(prev.getEntityId());
         this.player.dimension = packetIn.getDimensionID();
         this.player.setServerBrand(prev.getServerBrand());
+        this.world.addEntityToWorld(prev.getEntityId(), this.player);
         this.playerController.setGameType(packetIn.getGameType());
     }
 
