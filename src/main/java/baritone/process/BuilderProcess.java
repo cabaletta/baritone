@@ -246,17 +246,17 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     if (desired == null) {
                         continue; // irrelevant
                     }
-					boolean ignoringBuildIgnoreExisting = false;
-					if(Baritone.settings().buildIgnoreExisting.value){
-						Baritone.settings().buildIgnoreExisting.value = false;
-						ignoringBuildIgnoreExisting = true;
-					}
+                    boolean ignoringBuildIgnoreExisting = false;
+                    if(Baritone.settings().buildIgnoreExisting.value){
+                        Baritone.settings().buildIgnoreExisting.value = false;
+                        ignoringBuildIgnoreExisting = true;
+                    }
                     IBlockState curr = bcc.bsi.get0(x, y, z);
                     if (MovementHelper.isReplaceable(x, y, z, curr, bcc.bsi) && !valid(curr, desired)) {
-						if(ignoringBuildIgnoreExisting){
-							Baritone.settings().buildIgnoreExisting.value = true;
-							ignoringBuildIgnoreExisting = false;
-						}
+                        if(ignoringBuildIgnoreExisting){
+                            Baritone.settings().buildIgnoreExisting.value = true;
+                            ignoringBuildIgnoreExisting = false;
+                        }
                         if (dy == 1 && bcc.bsi.get0(x, y + 1, z).getBlock() == Blocks.AIR) {
                             continue;
                         }
@@ -266,10 +266,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                             return opt;
                         }
                     }
-					if(ignoringBuildIgnoreExisting){
-							Baritone.settings().buildIgnoreExisting.value = true;
-							ignoringBuildIgnoreExisting = false;
-					}
+                    if(ignoringBuildIgnoreExisting){
+                            Baritone.settings().buildIgnoreExisting.value = true;
+                            ignoringBuildIgnoreExisting = false;
+                    }
                 }
             }
         }
@@ -327,20 +327,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             );
             ctx.player().rotationYaw = originalYaw;
             ctx.player().rotationPitch = originalPitch;
-			boolean ignoringBuildIgnoreExisting = false;
-			if(Baritone.settings().buildIgnoreExisting.value){
-				Baritone.settings().buildIgnoreExisting.value = false;
-				ignoringBuildIgnoreExisting = true;
-			}
+            boolean ignoringBuildIgnoreExisting = false;
+            if(Baritone.settings().buildIgnoreExisting.value){
+                Baritone.settings().buildIgnoreExisting.value = false;
+                ignoringBuildIgnoreExisting = true;
+            }
             if (valid(wouldBePlaced, desired)) {
-				if(ignoringBuildIgnoreExisting){
-					Baritone.settings().buildIgnoreExisting.value = true;
-				}
+                if(ignoringBuildIgnoreExisting){
+                    Baritone.settings().buildIgnoreExisting.value = true;
+                }
                 return OptionalInt.of(i);
             }
-			if(ignoringBuildIgnoreExisting){
-				Baritone.settings().buildIgnoreExisting.value = true;
-			}
+            if(ignoringBuildIgnoreExisting){
+                Baritone.settings().buildIgnoreExisting.value = true;
+            }
         }
         return OptionalInt.empty();
     }
@@ -478,14 +478,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (Baritone.settings().allowInventory.value) {
             ArrayList<Integer> usefulSlots = new ArrayList<>();
             List<IBlockState> noValidHotbarOption = new ArrayList<>();
-			boolean ignoringBuildIgnoreExisting = false;
-			if(Baritone.settings().buildIgnoreExisting.value){
-				Baritone.settings().buildIgnoreExisting.value = false;
-				ignoringBuildIgnoreExisting = true;
-			}
+            boolean ignoringBuildIgnoreExisting = false;
+            if(Baritone.settings().buildIgnoreExisting.value){
+                Baritone.settings().buildIgnoreExisting.value = false;
+                ignoringBuildIgnoreExisting = true;
+            }
             outer:
             for (IBlockState desired : desirableOnHotbar) {
-				
+                
                 for (int i = 0; i < 9; i++) {
                     if (valid(approxPlaceable.get(i), desired)) {
                         usefulSlots.add(i);
@@ -504,10 +504,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                 }
             }
-			if(ignoringBuildIgnoreExisting){
-				Baritone.settings().buildIgnoreExisting.value = true;
-				ignoringBuildIgnoreExisting = false;
-			}
+            if(ignoringBuildIgnoreExisting){
+                Baritone.settings().buildIgnoreExisting.value = true;
+                ignoringBuildIgnoreExisting = false;
+            }
         }
 
         Goal goal = assemble(bcc, approxPlaceable.subList(0, 9));
