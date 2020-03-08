@@ -71,32 +71,32 @@ public final class EntityBot extends EntityPlayerSP {
     }
 
     @Override
-    public void sendStatusMessage(ITextComponent chatComponent, boolean actionBar) {
+    public void sendStatusMessage(@Nonnull ITextComponent chatComponent, boolean actionBar) {
         // TODO: Custom message handling
     }
 
     @Override
-    public void sendMessage(ITextComponent component) {
+    public void sendMessage(@Nonnull ITextComponent component) {
         // TODO: Custom message handling
     }
 
     @Override
-    public void openEditSign(TileEntitySign signTile) {
+    public void openEditSign(@Nonnull TileEntitySign signTile) {
         // TODO: Custom GUI handling
     }
 
     @Override
-    public void displayGuiEditCommandCart(CommandBlockBaseLogic commandBlock) {
+    public void displayGuiEditCommandCart(@Nonnull CommandBlockBaseLogic commandBlock) {
         // TODO: Custom GUI handling
     }
 
     @Override
-    public void displayGuiCommandBlock(TileEntityCommandBlock commandBlock) {
+    public void displayGuiCommandBlock(@Nonnull TileEntityCommandBlock commandBlock) {
         // TODO: Custom GUI handling
     }
 
     @Override
-    public void openEditStructure(TileEntityStructure structure) {
+    public void openEditStructure(@Nonnull TileEntityStructure structure) {
         // TODO: Custom GUI handling
     }
 
@@ -106,12 +106,12 @@ public final class EntityBot extends EntityPlayerSP {
     }
 
     @Override
-    public void displayGUIChest(IInventory chestInventory) {
+    public void displayGUIChest(@Nonnull IInventory chestInventory) {
         // TODO: Custom GUI handling
     }
 
     @Override
-    public void openGuiHorseInventory(AbstractHorse horse, IInventory inventoryIn) {
+    public void openGuiHorseInventory(@Nonnull AbstractHorse horse, IInventory inventoryIn) {
         // TODO: Custom GUI handling
     }
 

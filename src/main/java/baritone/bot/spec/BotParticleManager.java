@@ -17,25 +17,27 @@
 
 package baritone.bot.spec;
 
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.settings.GameSettings;
+import net.minecraft.client.particle.ParticleManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.EnumParticleTypes;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author Brady
- * @since 3/7/2020
+ * @since 3/8/2020
  */
-public final class BotSoundHandler extends SoundHandler {
+public final class BotParticleManager extends ParticleManager {
 
-    public static final BotSoundHandler INSTANCE = new BotSoundHandler();
+    public static final BotParticleManager INSTANCE = new BotParticleManager();
 
-    private BotSoundHandler() {
+    private BotParticleManager() {
         super(null, null);
     }
 
     @Override
-    public void playSound(@Nonnull ISound sound) {}
+    public void emitParticleAtEntity(Entity entityIn, @Nonnull EnumParticleTypes particleTypes) {}
+
+    @Override
+    public void emitParticleAtEntity(Entity p_191271_1_, @Nonnull EnumParticleTypes p_191271_2_, int p_191271_3_) {}
 }

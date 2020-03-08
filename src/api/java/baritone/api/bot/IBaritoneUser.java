@@ -21,6 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.utils.IPlayerController;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -55,6 +56,11 @@ public interface IBaritoneUser {
      * @return The locally managed entity for this user.
      */
     EntityPlayerSP getEntity();
+
+    /**
+     * @return The world the user belongs to
+     */
+    WorldClient getWorld();
 
     /**
      * @return The bot player controller

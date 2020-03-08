@@ -29,20 +29,14 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.util.RecipeBookClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.*;
 import net.minecraft.stats.StatisticsManager;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.Explosion;
 
 import javax.annotation.Nonnull;
 
@@ -100,7 +94,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleSpawnObject(@Nonnull SPacketSpawnObject packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+        super.handleSpawnObject(packetIn);
     }
 
     @Override
@@ -127,29 +121,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleAnimation(@Nonnull SPacketAnimation packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Entity entity = this.world.getEntityByID(packetIn.getEntityID());
-        if (entity != null) {
-            switch (packetIn.getAnimationType()) {
-                case 0: {
-                    ((EntityLivingBase) entity).swingArm(EnumHand.MAIN_HAND);
-                    break;
-                }
-                case 1: {
-                    entity.performHurtAnimation();
-                    break;
-                }
-                case 2: {
-                    ((EntityPlayer) entity).wakeUpPlayer(false, false, false);
-                    break;
-                }
-                case 3: {
-                    ((EntityLivingBase) entity).swingArm(EnumHand.OFF_HAND);
-                    break;
-                }
-            }
-        }
+        super.handleAnimation(packetIn);
     }
 
     @Override
@@ -218,28 +190,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleSetSlot(@Nonnull SPacketSetSlot packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        ItemStack stack = packetIn.getStack();
-        int slot = packetIn.getSlot();
-
-        switch (packetIn.getWindowId()) {
-            case -1: {
-                this.player.inventory.setItemStack(stack);
-                break;
-            }
-            case -2: {
-                this.player.inventory.setInventorySlotContents(slot, stack);
-                break;
-            }
-            default: {
-                if (packetIn.getWindowId() == 0 && packetIn.getSlot() >= 36 && slot < 45) {
-                    this.player.inventoryContainer.putStackInSlot(slot, stack);
-                } else if (packetIn.getWindowId() == this.player.openContainer.windowId && packetIn.getWindowId() != 0) {
-                    this.player.openContainer.putStackInSlot(slot, stack);
-                }
-            }
-        }
+        super.handleSetSlot(packetIn);
     }
 
     @Override
@@ -274,13 +225,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleExplosion(@Nonnull SPacketExplosion packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        // noinspection ConstantConditions
-        new Explosion(this.world, null, packetIn.getX(), packetIn.getY(), packetIn.getZ(), packetIn.getStrength(), packetIn.getAffectedBlockPositions()).doExplosionB(true);
-        this.player.motionX += packetIn.getMotionX();
-        this.player.motionY += packetIn.getMotionY();
-        this.player.motionZ += packetIn.getMotionZ();
+        super.handleExplosion(packetIn);
     }
 
     @Override
@@ -338,48 +283,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handlePlayerPosLook(@Nonnull SPacketPlayerPosLook packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        EntityPlayer player = this.player;
-        double d0 = packetIn.getX();
-        double d1 = packetIn.getY();
-        double d2 = packetIn.getZ();
-        float f = packetIn.getYaw();
-        float f1 = packetIn.getPitch();
-
-        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.X)) {
-            d0 += player.posX;
-        } else {
-            player.motionX = 0.0D;
-        }
-
-        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.Y)) {
-            d1 += player.posY;
-        } else {
-            player.motionY = 0.0D;
-        }
-
-        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.Z)) {
-            d2 += player.posZ;
-        } else {
-            player.motionZ = 0.0D;
-        }
-
-        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.X_ROT)) {
-            f1 += player.rotationPitch;
-        }
-
-        if (packetIn.getFlags().contains(SPacketPlayerPosLook.EnumFlags.Y_ROT)) {
-            f += player.rotationYaw;
-        }
-
-        player.setPositionAndRotation(d0, d1, d2, f, f1);
-        this.networkManager.sendPacket(new CPacketConfirmTeleport(packetIn.getTeleportId()));
-        this.networkManager.sendPacket(new CPacketPlayer.PositionRotation(player.posX, player.getEntityBoundingBox().minY, player.posZ, player.rotationYaw, player.rotationPitch, false));
-
-        this.player.prevPosX = this.player.posX;
-        this.player.prevPosY = this.player.posY;
-        this.player.prevPosZ = this.player.posZ;
+        super.handlePlayerPosLook(packetIn);
     }
 
     @Override

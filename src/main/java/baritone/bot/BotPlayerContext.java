@@ -53,10 +53,7 @@ public final class BotPlayerContext implements IPlayerContext {
 
     @Override
     public World world() {
-        if (bot.getEntity() == null) {
-            return null;
-        }
-        return bot.getEntity().world;
+        return bot.getWorld();
     }
 
     @Override

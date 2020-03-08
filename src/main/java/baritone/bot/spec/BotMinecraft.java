@@ -80,6 +80,7 @@ public final class BotMinecraft extends Minecraft implements Helper {
         return this.tutorial;
     }
 
+    @Nonnull
     @Override
     public SoundHandler getSoundHandler() {
         return BotSoundHandler.INSTANCE;
@@ -90,6 +91,7 @@ public final class BotMinecraft extends Minecraft implements Helper {
         bm.user = user;
         bm.tutorial = new Tutorial(bm);
         bm.gameSettings = createGameSettings(bm);
+        bm.effectRenderer = BotParticleManager.INSTANCE;
         return bm;
     }
 

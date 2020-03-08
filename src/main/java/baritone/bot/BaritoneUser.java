@@ -30,6 +30,7 @@ import baritone.utils.player.WrappedPlayerController;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.Session;
@@ -74,7 +75,7 @@ public final class BaritoneUser implements IBaritoneUser {
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.PRE));
 
         this.mc.player = this.player = player;
-        this.player.world = this.mc.world = this.world = world;
+        this.mc.world = this.world = world;
         this.playerController = new WrappedPlayerController(controller);
 
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.POST));
@@ -93,6 +94,11 @@ public final class BaritoneUser implements IBaritoneUser {
     @Override
     public EntityBot getEntity() {
         return this.player;
+    }
+
+    @Override
+    public WorldClient getWorld() {
+        return this.world;
     }
 
     @Override
