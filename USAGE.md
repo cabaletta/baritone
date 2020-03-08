@@ -44,7 +44,7 @@ Some common examples:
 - `save waypointName` to save a waypoint. `goto waypointName` to go to it.
 - `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
 - `schematica` to build the schematic that is currently open in schematica
-- `tunnel` to dig just straight ahead and make a tunnel
+- `tunnel height width depth` to dig and make a tunnel. If you don't supply numbers then it just digs a 1x2 tunnel. 
 - `farm` to automatically harvest, replant, or bone meal crops
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
 - `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
@@ -73,6 +73,8 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `worldExploringChunkOffset`
 - `acceptableThrowawayItems`
 - `blocksToAvoidBreaking`
+- `mineScanDroppedItems`
+- `allowDiagonalAscend`
 
 
 

@@ -41,7 +41,7 @@ public final class BlockStateInterfaceAccessWrapper implements IBlockReader {
     @Nullable
     @Override
     public TileEntity getTileEntity(BlockPos pos) {
-        throw new UnsupportedOperationException("getTileEntity not supported by BlockStateInterfaceAccessWrapper");
+        return null;
     }
 
     @Override
