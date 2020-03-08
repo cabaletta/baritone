@@ -87,7 +87,8 @@ public class MixinNetHandlerPlayClient {
     )
     private void preChunkUnload(SPacketUnloadChunk packet, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
+            EntityPlayerSP player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (NetHandlerPlayClient) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(EventState.PRE, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
                 );
@@ -101,7 +102,8 @@ public class MixinNetHandlerPlayClient {
     )
     private void postChunkUnload(SPacketUnloadChunk packet, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
+            EntityPlayerSP player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (NetHandlerPlayClient) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(EventState.POST, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
                 );
