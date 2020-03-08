@@ -41,11 +41,12 @@ import net.minecraft.world.GameType;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 // Some Notes:
-// onLivingUpdate makes a lot of references to mc fields
-//  - playerController
+// - Inventory handling!
+//   - If chest deposit gets added it will be most useful for bot-system
 
 /**
  * @author Brady
@@ -67,14 +68,6 @@ public final class EntityBot extends EntityPlayerSP {
     public void onUpdate() {
         this.entityCollisionReduction = Baritone.settings().botCollision.value ? 0.0F : 1.0F;
         super.onUpdate();
-    }
-
-    @Override
-    public void closeScreenAndDropStack() {
-        this.inventory.setItemStack(ItemStack.EMPTY);
-
-        // EntityPlayer#closeScreen
-        this.openContainer = this.inventoryContainer;
     }
 
     @Override
@@ -133,12 +126,12 @@ public final class EntityBot extends EntityPlayerSP {
     }
 
     @Override
-    public void onCriticalHit(Entity entityHit) {
+    public void onCriticalHit(@Nonnull Entity entityHit) {
         // Don't render
     }
 
     @Override
-    public void onEnchantmentCritical(Entity entityHit) {
+    public void onEnchantmentCritical(@Nonnull Entity entityHit) {
         // Don't render
     }
 
