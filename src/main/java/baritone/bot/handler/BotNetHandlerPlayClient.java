@@ -230,6 +230,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleChangeGameState(@Nonnull SPacketChangeGameState packetIn) {
+        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
         if (packetIn.getGameState() == 4) {
             this.client.player.connection.sendPacket(new CPacketClientStatus(CPacketClientStatus.State.PERFORM_RESPAWN));
         } else if (packetIn.getGameState() != 5) {
