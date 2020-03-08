@@ -17,52 +17,26 @@
 
 package baritone.bot.spec;
 
-import net.minecraft.client.multiplayer.ChunkProviderClient;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.WorldSettings;
-import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.storage.SaveHandlerMP;
-import net.minecraft.world.storage.WorldInfo;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Brady
  * @since 11/7/2018
  */
-public final class BotWorld extends World {
+public final class BotWorld extends WorldClient {
 
     private static Profiler BOT_WORLD_PROFILER = new Profiler();
-    private static int worldNum = 0;
-
-    private ChunkProviderClient chunkProviderClient;
 
     public BotWorld(WorldSettings settings, int dimension) {
-        super(
-                new SaveHandlerMP(),
-                new WorldInfo(settings, "BotWorld" + ++worldNum),
-                DimensionType.getById(dimension).createDimension(),
-                BOT_WORLD_PROFILER,
-                true
-        );
-        this.provider.setWorld(this);
-        this.chunkProvider = this.createChunkProvider();
-    }
-
-    @Override
-    @Nonnull
-    protected IChunkProvider createChunkProvider() {
-        return (this.chunkProviderClient = new ChunkProviderClient(this));
-    }
-
-    @Override
-    protected boolean isChunkLoaded(int x, int z, boolean allowEmpty) {
-        return allowEmpty || !this.chunkProviderClient.provideChunk(x, z).isEmpty();
+        super(null, settings, dimension, EnumDifficulty.EASY, BOT_WORLD_PROFILER);
     }
 
     @Override
@@ -70,25 +44,26 @@ public final class BotWorld extends World {
         // Do nothing
     }
 
-    public void addEntityToWorld(int entityID, EntityBot entity) {
+    @Override
+    public void addEntityToWorld(int entityID, Entity entity) {
         this.removeEntityFromWorld(entityID);
         this.spawnEntity(entity);
         this.entitiesById.addKey(entityID, entity);
     }
 
-    public void removeEntityFromWorld(int entityID) {
+    @Override
+    public Entity removeEntityFromWorld(int entityID) {
         Entity entity = this.entitiesById.lookup(entityID);
         if (entity != null && !(entity instanceof EntityBot)) {
             this.removeEntity(entity);
             this.entitiesById.removeObject(entityID);
         }
+        return entity;
     }
 
-    public void doPreChunk(int chunkX, int chunkZ, boolean loadChunk) {
-        if (loadChunk) {
-            this.chunkProviderClient.loadChunk(chunkX, chunkZ);
-        } else {
-            this.chunkProviderClient.unloadChunk(chunkX, chunkZ);
-        }
+    @Nullable
+    @Override
+    public Entity getEntityByID(int id) {
+        return this.entitiesById.lookup(id);
     }
 }

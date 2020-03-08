@@ -15,24 +15,15 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
+package baritone.utils.accessor;
 
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.client.multiplayer.WorldClient;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
+ * @since 3/8/2020
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+public interface INetHandlerPlayClient {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
-
-    @Override
-    protected PlayerControllerMP getController() {
-        return mc.playerController;
-    }
+    void setWorld(WorldClient world);
 }

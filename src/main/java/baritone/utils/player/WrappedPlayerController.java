@@ -17,22 +17,22 @@
 
 package baritone.utils.player;
 
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
+ * @since 3/8/2020
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+public class WrappedPlayerController extends AbstractPlayerController {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
+    private final PlayerControllerMP controller;
+
+    public WrappedPlayerController(PlayerControllerMP controller) {
+        this.controller = controller;
+    }
 
     @Override
     protected PlayerControllerMP getController() {
-        return mc.playerController;
+        return this.controller;
     }
 }

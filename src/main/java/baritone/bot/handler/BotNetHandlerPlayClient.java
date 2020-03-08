@@ -23,34 +23,26 @@ import baritone.bot.spec.BotMinecraft;
 import baritone.bot.spec.BotPlayerController;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
+import baritone.utils.accessor.INetHandlerPlayClient;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.util.RecipeBookClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.PacketThreadUtil;
-import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.*;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.stats.StatisticsManager;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.Explosion;
-import net.minecraft.world.chunk.Chunk;
 
 import javax.annotation.Nonnull;
 
@@ -60,10 +52,6 @@ import javax.annotation.Nonnull;
 //   - For other things, we'll actually need the system
 
 /**
- * This class would effectively operate the same if we directly implemented {@link INetHandlerPlayClient},
- * however, the {@link EntityPlayerSP} constructor requires an actual implementation of
- * {@link NetHandlerPlayClient} in order to access the {@link GameProfile}.
- *
  * @author Brady
  * @since 10/22/2018
  */
@@ -186,9 +174,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleBlockChange(@Nonnull SPacketBlockChange packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        this.world.setBlockState(packetIn.getBlockPosition(), packetIn.getBlockState());
+        super.handleBlockChange(packetIn);
     }
 
     @Override
@@ -201,11 +187,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleMultiBlockChange(@Nonnull SPacketMultiBlockChange packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        for (SPacketMultiBlockChange.BlockUpdateData data : packetIn.getChangedBlocks()) {
-            this.world.setBlockState(data.getPos(), data.getBlockState());
-        }
+        super.handleMultiBlockChange(packetIn);
     }
 
     @Override
@@ -218,16 +200,12 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleCloseWindow(@Nonnull SPacketCloseWindow packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        this.player.closeScreenAndDropStack();
+        super.handleCloseWindow(packetIn);
     }
 
     @Override
     public void handleWindowItems(@Nonnull SPacketWindowItems packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        (packetIn.getWindowId() == 0 ? this.player.inventoryContainer : this.player.openContainer).setAll(packetIn.getItemStacks());
+        super.handleWindowItems(packetIn);
     }
 
     @Override
@@ -317,23 +295,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleChunkData(@Nonnull SPacketChunkData packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        if (packetIn.isFullChunk()) {
-            this.world.doPreChunk(packetIn.getChunkX(), packetIn.getChunkZ(), true);
-        }
-
-        Chunk chunk = this.world.getChunk(packetIn.getChunkX(), packetIn.getChunkZ());
-        chunk.read(packetIn.getReadBuffer(), packetIn.getExtractedSize(), packetIn.isFullChunk());
-
-        for (NBTTagCompound tag : packetIn.getTileEntityTags()) {
-            BlockPos pos = new BlockPos(tag.getInteger("x"), tag.getInteger("y"), tag.getInteger("z"));
-            TileEntity tileEntity = this.world.getTileEntity(pos);
-
-            if (tileEntity != null) {
-                tileEntity.readFromNBT(tag);
-            }
-        }
+        super.handleChunkData(packetIn);
     }
 
     @Override
@@ -351,8 +313,9 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void handleJoinGame(@Nonnull SPacketJoinGame packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
-        this.playerController = new BotPlayerController(this.user);
+        this.playerController = new BotPlayerController(this.user, this);
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
+        ((INetHandlerPlayClient) (Object) this).setWorld(this.world);
         this.player = new EntityBot(this.user, this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
         this.user.onWorldLoad(this.world, this.player, this.playerController);
         this.player.preparePlayerToSpawn();
@@ -437,27 +400,17 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handlePlayerListItem(@Nonnull SPacketPlayerListItem packetIn) {
-        // okay now this is awesome
         super.handlePlayerListItem(packetIn);
     }
 
     @Override
     public void handleDestroyEntities(@Nonnull SPacketDestroyEntities packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        for (int i = 0; i < packetIn.getEntityIDs().length; ++i) {
-            this.world.removeEntityFromWorld(packetIn.getEntityIDs()[i]);
-        }
+        super.handleDestroyEntities(packetIn);
     }
 
     @Override
     public void handleRemoveEntityEffect(@Nonnull SPacketRemoveEntityEffect packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Entity entity = packetIn.getEntity(this.world);
-        if (entity instanceof EntityLivingBase) {
-            ((EntityLivingBase) entity).removeActivePotionEffect(packetIn.getPotion());
-        }
+        super.handleRemoveEntityEffect(packetIn);
     }
 
     @Override
@@ -467,6 +420,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         if (packetIn.getDimensionID() != this.player.dimension) {
             this.world.removeEntity(this.player);
             this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimensionID());
+            ((INetHandlerPlayClient) (Object) this).setWorld(this.world);
         }
 
         EntityBot prev = this.player;
@@ -496,36 +450,17 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleEntityMetadata(@Nonnull SPacketEntityMetadata packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Entity entity = this.world.getEntityByID(packetIn.getEntityId());
-        if (entity != null && packetIn.getDataManagerEntries() != null) {
-            entity.getDataManager().setEntryValues(packetIn.getDataManagerEntries());
-        }
+        super.handleEntityMetadata(packetIn);
     }
 
     @Override
     public void handleEntityVelocity(@Nonnull SPacketEntityVelocity packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Entity entity = this.world.getEntityByID(packetIn.getEntityID());
-        if (entity != null) {
-            entity.setVelocity(
-                    (double) packetIn.getMotionX() / 8000.0D,
-                    (double) packetIn.getMotionY() / 8000.0D,
-                    (double) packetIn.getMotionZ() / 8000.0D
-            );
-        }
+        super.handleEntityVelocity(packetIn);
     }
 
     @Override
     public void handleEntityEquipment(@Nonnull SPacketEntityEquipment packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Entity entity = this.world.getEntityByID(packetIn.getEntityID());
-        if (entity != null) {
-            entity.setItemStackToSlot(packetIn.getEquipmentSlot(), packetIn.getItemStack());
-        }
+        super.handleEntityEquipment(packetIn);
     }
 
     @Override
@@ -549,9 +484,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleTimeUpdate(@Nonnull SPacketTimeUpdate packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-        this.world.setTotalWorldTime(packetIn.getTotalWorldTime());
-        this.world.setWorldTime(packetIn.getWorldTime());
+        super.handleTimeUpdate(packetIn);
     }
 
     @Override
@@ -577,19 +510,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleEntityEffect(@Nonnull SPacketEntityEffect packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        Entity entity = this.world.getEntityByID(packetIn.getEntityId());
-
-        if (entity instanceof EntityLivingBase) {
-            Potion potion = Potion.getPotionById(packetIn.getEffectId());
-
-            if (potion != null) {
-                PotionEffect effect = new PotionEffect(potion, packetIn.getDuration(), packetIn.getAmplifier(), packetIn.getIsAmbient(), packetIn.doesShowParticles());
-                effect.setPotionDurationMax(packetIn.isMaxDuration());
-                ((EntityLivingBase) entity).addPotionEffect(effect);
-            }
-        }
+        super.handleEntityEffect(packetIn);
     }
 
     @Override
@@ -601,6 +522,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
             if (packetIn.playerId == this.player.getEntityId()) {
                 // Perform an instantaneous respawn
                 this.networkManager.sendPacket(new CPacketClientStatus(CPacketClientStatus.State.PERFORM_RESPAWN));
+                user.getBaritone().getGameEventHandler().onPlayerDeath();
             }
         }
     }
@@ -613,9 +535,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleWorldBorder(@Nonnull SPacketWorldBorder packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        packetIn.apply(this.world.getWorldBorder());
+        super.handleWorldBorder(packetIn);
     }
 
     @Override

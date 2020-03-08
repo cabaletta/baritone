@@ -26,7 +26,9 @@ import baritone.api.utils.IPlayerController;
 import baritone.bot.spec.BotMinecraft;
 import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.EntityBot;
+import baritone.utils.player.WrappedPlayerController;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -68,12 +70,12 @@ public final class BaritoneUser implements IBaritoneUser {
         this.netHandlerPlayClient = netHandlerPlayClient;
     }
 
-    public void onWorldLoad(BotWorld world, EntityBot player, IPlayerController playerController) {
+    public void onWorldLoad(BotWorld world, EntityBot player, PlayerControllerMP controller) {
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.PRE));
 
         this.mc.player = this.player = player;
-        this.player.world = this.world = world;
-        this.playerController = playerController;
+        this.player.world = this.mc.world = this.world = world;
+        this.playerController = new WrappedPlayerController(controller);
 
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.POST));
     }

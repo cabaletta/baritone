@@ -69,7 +69,9 @@ public class MixinEntityPlayerSP {
 
         ChatEvent event = new ChatEvent(msg);
         for (IBaritone baritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            baritone.getGameEventHandler().onSendChatMessage(event);
+            if (baritone == BaritoneAPI.getProvider().getPrimaryBaritone() != msg.startsWith(BaritoneAPI.getSettings().prefix.value)) {
+                baritone.getGameEventHandler().onSendChatMessage(event);
+            }
         }
 
         if (event.isCancelled()) {

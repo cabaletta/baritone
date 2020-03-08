@@ -21,11 +21,13 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.bot.handler.BotNetHandlerPlayClient;
+import baritone.utils.accessor.INetHandlerPlayClient;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.play.server.SPacketChunkData;
 import net.minecraft.network.play.server.SPacketCombatEvent;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -34,8 +36,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @author Brady
  * @since 8/3/2018
  */
-@Mixin(value = {NetHandlerPlayClient.class, BotNetHandlerPlayClient.class})
-public class MixinNetHandlerPlayClient {
+@Mixin(NetHandlerPlayClient.class)
+public abstract class MixinNetHandlerPlayClient implements INetHandlerPlayClient {
+
+    @Accessor
+    @Override
+    public abstract void setWorld(WorldClient world);
 
     @Inject(
             method = "handleChunkData",

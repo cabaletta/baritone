@@ -17,6 +17,7 @@
 
 package baritone.bot.spec;
 
+import baritone.Baritone;
 import baritone.api.bot.IBaritoneUser;
 import baritone.utils.PlayerMovementInput;
 import net.minecraft.client.Minecraft;
@@ -43,16 +44,8 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 
 // Some Notes:
-// startRiding references the sound manager
-// onUpdateWalkingPlayer references the gameSettings autoJump flag
-// notifyDataManagerChange references the sound manager
 // onLivingUpdate makes a lot of references to mc fields
 //  - playerController
-//  - currentScreen
-//  - gameSettings
-//  - tutorial
-// What needs to be considered
-//  - The server tells us what our entity id should be, the bot entity should respect this.
 
 /**
  * @author Brady
@@ -68,6 +61,12 @@ public final class EntityBot extends EntityPlayerSP {
         super(mc, world, netHandlerPlayClient, statisticsManager, recipeBook);
         this.user = user;
         this.movementInput = new PlayerMovementInput(this.user.getBaritone().getInputOverrideHandler());
+    }
+
+    @Override
+    public void onUpdate() {
+        this.entityCollisionReduction = Baritone.settings().botCollision.value ? 0.0F : 1.0F;
+        super.onUpdate();
     }
 
     @Override
