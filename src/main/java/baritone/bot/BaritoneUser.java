@@ -76,7 +76,7 @@ public final class BaritoneUser implements IBaritoneUser {
 
         this.mc.player = this.player = player;
         this.mc.world = this.world = world;
-        this.playerController = new WrappedPlayerController(controller);
+        this.playerController = new WrappedPlayerController(this.mc.playerController = controller);
 
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.POST));
     }

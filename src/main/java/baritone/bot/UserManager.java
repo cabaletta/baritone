@@ -51,15 +51,14 @@ import static baritone.api.bot.connect.ConnectionStatus.*;
  * @author Brady
  * @since 11/6/2018
  */
-public final class UserManager implements IUserManager, Helper {
-
-    public static final UserManager INSTANCE = new UserManager();
+public enum UserManager implements IUserManager, Helper {
+    INSTANCE;
 
     private final List<IBaritoneUser> users = new CopyOnWriteArrayList<>();
 
     private final BotWorldProvider worldProvider;
 
-    private UserManager() {
+    UserManager() {
         // Setup an event listener that automatically disconnects bots when we're not in-game
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
 
