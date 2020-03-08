@@ -145,7 +145,7 @@ public class MixinMinecraft {
     )
     private boolean isAllowUserInput(GuiScreen screen) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
+        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.allowUserInput;
     }
 
     @Inject(

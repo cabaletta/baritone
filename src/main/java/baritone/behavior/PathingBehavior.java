@@ -103,7 +103,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     @Override
     public void onPlayerSprintState(SprintStateEvent event) {
-        if (current != null) {
+        if (isPathing()) {
             event.setState(current.isSprinting());
         }
     }
