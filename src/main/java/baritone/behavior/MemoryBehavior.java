@@ -32,7 +32,6 @@ import net.minecraft.block.BlockBed;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
-import net.minecraft.network.play.client.CPacketClickWindow;
 import net.minecraft.network.play.client.CPacketCloseWindow;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.network.play.server.SPacketCloseWindow;
@@ -118,11 +117,6 @@ public final class MemoryBehavior extends Behavior {
             if (p instanceof CPacketCloseWindow) {
                 getCurrent().save();
             }
-
-            if (p instanceof CPacketClickWindow) {
-                CPacketClickWindow c = event.cast();
-                System.out.println("CLICK " + c.getWindowId() + " " + c.getSlotId() + " " + c.getUsedButton() + " " + c.getClickType());
-            }
         }
     }
 
@@ -160,19 +154,7 @@ public final class MemoryBehavior extends Behavior {
             if (p instanceof SPacketCloseWindow) {
                 getCurrent().save();
             }
-
-            // apparently doesn't happen
-            /*if (p instanceof SPacketWindowItems) {
-                SPacketWindowItems meme = (SPacketWindowItems) p;
-                if (meme.getWindowId() == ctx.player().openContainer.windowId && enderChestWindowId != null && meme.getWindowId() == enderChestWindowId) {
-                    System.out.println("RECEIVED GUARANTEED ECHEST CONTENTS" + meme.getItemStacks());
-                }
-            }*/
         }
-    }
-
-    public boolean eChestOpen() {
-        return enderChestWindowId != null && ctx.player().openContainer.windowId == enderChestWindowId;
     }
 
     @Override
