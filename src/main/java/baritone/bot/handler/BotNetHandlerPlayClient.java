@@ -488,17 +488,11 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleHeldItemChange(@Nonnull SPacketHeldItemChange packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        if (InventoryPlayer.isHotbar(packetIn.getHeldItemHotbarIndex())) {
-            this.player.inventory.currentItem = packetIn.getHeldItemHotbarIndex();
-        }
+        super.handleHeldItemChange(packetIn);
     }
 
     @Override
-    public void handleDisplayObjective(@Nonnull SPacketDisplayObjective packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-    }
+    public void handleDisplayObjective(@Nonnull SPacketDisplayObjective packetIn) {}
 
     @Override
     public void handleEntityMetadata(@Nonnull SPacketEntityMetadata packetIn) {
@@ -536,18 +530,12 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleSetExperience(@Nonnull SPacketSetExperience packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        this.player.setXPStats(packetIn.getExperienceBar(), packetIn.getTotalExperience(), packetIn.getLevel());
+        super.handleSetExperience(packetIn);
     }
 
     @Override
     public void handleUpdateHealth(@Nonnull SPacketUpdateHealth packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        this.player.setPlayerSPHealth(packetIn.getHealth());
-        this.player.getFoodStats().setFoodLevel(packetIn.getFoodLevel());
-        this.player.getFoodStats().setFoodSaturationLevel(packetIn.getSaturationLevel());
+        super.handleUpdateHealth(packetIn);
     }
 
     @Override
@@ -562,11 +550,8 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleTimeUpdate(@Nonnull SPacketTimeUpdate packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
         this.world.setTotalWorldTime(packetIn.getTotalWorldTime());
         this.world.setWorldTime(packetIn.getWorldTime());
-
-        // TODO: Calculate World TPS
     }
 
     @Override
@@ -653,19 +638,12 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void handleCooldown(@Nonnull SPacketCooldown packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-
-        if (packetIn.getTicks() == 0) { // There is no cooldown
-            this.player.getCooldownTracker().removeCooldown(packetIn.getItem());
-        } else {
-            this.player.getCooldownTracker().setCooldown(packetIn.getItem(), packetIn.getTicks());
-        }
+        super.handleCooldown(packetIn);
     }
 
     @Override
     public void handleMoveVehicle(@Nonnull SPacketMoveVehicle packetIn) {
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
-        /* Atm Baritone doesn't even work on vehicles that well at all, so this is a major TODO */
+        super.handleMoveVehicle(packetIn);
     }
 
     @Override
@@ -679,7 +657,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
 
     @Override
     public void onDisconnect(@Nonnull ITextComponent reason) {
-        // TODO Maybe more world unloadinde
+        // TODO Maybe more world unloading
         this.world.removeEntity(this.player);
         this.user.getManager().disconnect(this.user, reason);
     }

@@ -18,17 +18,16 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
+import baritone.api.bot.IBaritoneUser;
 import baritone.api.bot.connect.IConnectionResult;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.bot.UserManager;
 import net.minecraft.util.Session;
 
-import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -43,10 +42,28 @@ public class BotCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        args.requireMax(0);
-        IConnectionResult result = UserManager.INSTANCE.connect(
-                new Session("Bot" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
-        logDirect(result.toString());
+        if (args.hasExactly(0)) {
+            IConnectionResult result = UserManager.INSTANCE.connect(
+                    new Session("Bot" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
+            logDirect(result.toString());
+        } else if (args.hasExactly(2)) {
+            Action action = Action.getByName(args.getString());
+            if (action == null) {
+                throw new CommandInvalidTypeException(args.consumed(), "an action");
+            }
+
+            Optional<IBaritoneUser> bot = UserManager.INSTANCE.getUserByName(args.getString());
+            if (!bot.isPresent()) {
+                throw new CommandInvalidTypeException(args.consumed(), "a bot name");
+            }
+
+            switch (action) {
+                case DISCONNECT: {
+                    UserManager.INSTANCE.disconnect(bot.get(), null);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -65,7 +82,36 @@ public class BotCommand extends Command {
                 "Spawns a bot",
                 "",
                 "Usage:",
-                "> bot"
+                "> bot",
+                "> bot <disconnect> <name>"
         );
+    }
+
+    private enum Action {
+        DISCONNECT("disconnect", "dc");
+        private final String[] names;
+
+        Action(String... names) {
+            this.names = names;
+        }
+
+        public static Action getByName(String name) {
+            for (Action action : Action.values()) {
+                for (String alias : action.names) {
+                    if (alias.equalsIgnoreCase(name)) {
+                        return action;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static String[] getAllNames() {
+            Set<String> names = new HashSet<>();
+            for (Action action : Action.values()) {
+                names.addAll(Arrays.asList(action.names));
+            }
+            return names.toArray(new String[0]);
+        }
     }
 }

@@ -74,8 +74,20 @@ public interface IUserManager {
      */
     default Optional<IBaritoneUser> getUserByUUID(UUID uuid) {
         return uuid == null
-            ? Optional.empty()
-            : this.getUsers().stream().filter(user -> user.getProfile().getId().equals(uuid)).findFirst();
+                ? Optional.empty()
+                : this.getUsers().stream().filter(user -> user.getProfile().getId().equals(uuid)).findFirst();
+    }
+
+    /**
+     * Finds the {@link IBaritoneUser} associated with the specified username
+     *
+     * @param username The username of the user
+     * @return The user, {@link Optional#empty()} if no match or {@code uuid} is {@code null}
+     */
+    default Optional<IBaritoneUser> getUserByName(String username) {
+        return username == null || username.isEmpty()
+                ? Optional.empty()
+                : this.getUsers().stream().filter(user -> user.getProfile().getName().equalsIgnoreCase(username)).findFirst();
     }
 
     /**

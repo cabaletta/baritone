@@ -175,9 +175,8 @@ public final class UserManager implements IUserManager, Helper {
                 user.getNetworkManager().closeChannel(null);
             }
             this.users.remove(user);
-            if (reason != null) {
-                logDirect(user.getSession().getUsername() + " Disconnected: " + reason.getUnformattedText());
-            }
+            logDirect(user.getSession().getUsername() + " Disconnected: " +
+                    (reason == null ? "Unknown" : reason.getUnformattedText()));
         }
     }
 

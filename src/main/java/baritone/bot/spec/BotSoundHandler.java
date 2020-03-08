@@ -17,15 +17,25 @@
 
 package baritone.bot.spec;
 
-import net.minecraft.client.tutorial.Tutorial;
+import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.settings.GameSettings;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author Brady
- * @since 3/3/2020
+ * @since 3/7/2020
  */
-public final class BotTutorial extends Tutorial {
+public final class BotSoundHandler extends SoundHandler {
 
-    public BotTutorial(BotMinecraft minecraft) {
-        super(minecraft);
+    public static final BotSoundHandler INSTANCE = new BotSoundHandler(null, null);
+
+    public BotSoundHandler(IResourceManager manager, GameSettings gameSettingsIn) {
+        super(manager, gameSettingsIn);
     }
+
+    @Override
+    public void playSound(@Nonnull ISound sound) {}
 }

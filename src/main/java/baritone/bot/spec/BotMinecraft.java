@@ -24,6 +24,7 @@ import baritone.utils.accessor.IGameSettings;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.main.GameConfiguration;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
@@ -46,7 +47,7 @@ import java.util.concurrent.Callable;
 public final class BotMinecraft extends Minecraft implements Helper {
 
     private IBaritoneUser user;
-    private BotTutorial tutorial;
+    private Tutorial tutorial;
 
     private BotMinecraft(GameConfiguration gameConfig) {
         super(gameConfig);
@@ -79,10 +80,15 @@ public final class BotMinecraft extends Minecraft implements Helper {
         return this.tutorial;
     }
 
+    @Override
+    public SoundHandler getSoundHandler() {
+        return BotSoundHandler.INSTANCE;
+    }
+
     public static BotMinecraft allocate(IBaritoneUser user) {
         BotMinecraft bm = ObjectAllocator.allocate(BotMinecraft.class);
         bm.user = user;
-        bm.tutorial = new BotTutorial(bm);
+        bm.tutorial = new Tutorial(bm);
         bm.gameSettings = createGameSettings(bm);
         return bm;
     }

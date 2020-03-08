@@ -20,6 +20,8 @@ package baritone.bot.spec;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.profiler.Profiler;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
@@ -33,7 +35,7 @@ import javax.annotation.Nonnull;
  * @author Brady
  * @since 11/7/2018
  */
-public class BotWorld extends World {
+public final class BotWorld extends World {
 
     private static Profiler BOT_WORLD_PROFILER = new Profiler();
     private static int worldNum = 0;
@@ -61,6 +63,11 @@ public class BotWorld extends World {
     @Override
     protected boolean isChunkLoaded(int x, int z, boolean allowEmpty) {
         return allowEmpty || !this.chunkProviderClient.provideChunk(x, z).isEmpty();
+    }
+
+    @Override
+    public void playSound(double x, double y, double z, SoundEvent soundIn, SoundCategory category, float volume, float pitch, boolean distanceDelay) {
+        // Do nothing
     }
 
     public void addEntityToWorld(int entityID, EntityBot entity) {
