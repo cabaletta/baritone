@@ -31,8 +31,8 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.Session;
 
 /**
@@ -46,16 +46,14 @@ public final class BaritoneUser implements IBaritoneUser {
     private final UserManager manager;
     private final NetworkManager networkManager;
     private final Session session;
+    private final Baritone baritone;
 
     private GameProfile profile;
-    private INetHandlerPlayClient netHandlerPlayClient;
-
+    private NetHandlerPlayClient netHandlerPlayClient;
     private BotMinecraft mc;
     private BotWorld world;
     private EntityBot player;
     private IPlayerController playerController;
-
-    private final Baritone baritone;
 
     BaritoneUser(UserManager manager, NetworkManager networkManager, Session session, ServerData serverData) {
         this.mc = BotMinecraft.allocate(this);
@@ -63,10 +61,11 @@ public final class BaritoneUser implements IBaritoneUser {
         this.manager = manager;
         this.networkManager = networkManager;
         this.session = session;
+        this.profile = session.getProfile();
         this.baritone = new Baritone(new BotPlayerContext(this));
     }
 
-    public void onLoginSuccess(GameProfile profile, INetHandlerPlayClient netHandlerPlayClient) {
+    public void onLoginSuccess(GameProfile profile, NetHandlerPlayClient netHandlerPlayClient) {
         this.profile = profile;
         this.netHandlerPlayClient = netHandlerPlayClient;
     }
@@ -87,7 +86,7 @@ public final class BaritoneUser implements IBaritoneUser {
     }
 
     @Override
-    public INetHandlerPlayClient getConnection() {
+    public NetHandlerPlayClient getConnection() {
         return this.netHandlerPlayClient;
     }
 

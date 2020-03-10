@@ -27,6 +27,8 @@ import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
+import baritone.bot.spec.BotWorld;
+import baritone.bot.spec.EntityBot;
 import baritone.utils.accessor.IIntegratedServer;
 import baritone.utils.accessor.IThreadLanServerPing;
 import net.minecraft.client.multiplayer.ServerAddress;
@@ -37,7 +39,6 @@ import net.minecraft.network.handshake.client.C00Handshake;
 import net.minecraft.network.login.client.CPacketLoginStart;
 import net.minecraft.util.Session;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -176,6 +177,10 @@ public enum UserManager implements IUserManager, Helper {
             this.users.remove(user);
             logDirect(user.getSession().getUsername() + " Disconnected: " +
                     (reason == null ? "Unknown" : reason.getUnformattedText()));
+
+            if (user.getEntity() != null && user.getWorld() != null) {
+                ((BotWorld) user.getWorld()).handleWorldRemove((EntityBot) user.getEntity());
+            }
         }
     }
 

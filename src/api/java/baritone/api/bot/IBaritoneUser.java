@@ -22,9 +22,8 @@ import baritone.api.utils.IPlayerController;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.network.INetHandler;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.Session;
 
 /**
@@ -44,13 +43,9 @@ public interface IBaritoneUser {
     NetworkManager getNetworkManager();
 
     /**
-     * Returns the current play network handler. Can also be acquired via
-     * {@link NetworkManager#getNetHandler()} from {@link #getNetworkManager()},
-     * and checking if the {@link INetHandler} is an instance of {@link INetHandlerPlayClient}.
-     *
-     * @return The current play network handler
+     * @return The play network handler
      */
-    INetHandlerPlayClient getConnection();
+    NetHandlerPlayClient getConnection();
 
     /**
      * @return The locally managed entity for this user.

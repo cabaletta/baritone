@@ -17,15 +17,18 @@
 
 package baritone.bot.spec;
 
+import it.unimi.dsi.fastutil.ints.*;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.WorldSettings;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 
 /**
  * @author Brady
@@ -34,9 +37,11 @@ import javax.annotation.Nullable;
 public final class BotWorld extends WorldClient {
 
     private static Profiler BOT_WORLD_PROFILER = new Profiler();
+    private final HashMap<ChunkPos, IntSet> loadedChunksMap;
 
     public BotWorld(WorldSettings settings, int dimension) {
         super(null, settings, dimension, EnumDifficulty.EASY, BOT_WORLD_PROFILER);
+        this.loadedChunksMap = new HashMap<>();
     }
 
     @Override
@@ -65,5 +70,40 @@ public final class BotWorld extends WorldClient {
     @Override
     public Entity getEntityByID(int id) {
         return this.entitiesById.lookup(id);
+    }
+
+    /**
+     * @param bot    The bot requesting the chunk
+     * @param chunkX The chunk X position
+     * @param chunkZ The chunk Z position
+     * @param load   {@code true} if the chunk is being loaded, {@code false} if the chunk is being unloaded.
+     * @return Whether or not the chunk needs to be loaded or unloaded accordingly.
+     */
+    public boolean handlePreChunk(EntityBot bot, int chunkX, int chunkZ, boolean load) {
+        IntSet bots = this.loadedChunksMap.computeIfAbsent(new ChunkPos(chunkX, chunkZ), $ -> new IntArraySet());
+        if (load) {
+            boolean wasEmpty = bots.isEmpty();
+            bots.add(bot.getEntityId());
+            return wasEmpty;
+        } else {
+            bots.remove(bot.getEntityId());
+            return bots.isEmpty();
+        }
+    }
+
+    public void handleWorldRemove(EntityBot bot) {
+        // Remove Bot from world
+        this.removeEntity(bot);
+        this.entitiesById.removeObject(bot.getEntityId());
+
+        // Unload all chunks that are no longer loaded by the removed Bot
+        this.loadedChunksMap.entrySet().stream()
+                .peek(entry -> entry.getValue().remove(bot.getEntityId()))
+                .filter(entry -> entry.getValue().isEmpty())
+                .forEach(entry -> this.doPreChunk(entry.getKey().x, entry.getKey().z, false));
+    }
+
+    public HashMap<ChunkPos, IntSet> getLoadedChunksMap() {
+        return this.loadedChunksMap;
     }
 }
