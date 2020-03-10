@@ -28,7 +28,7 @@ import baritone.api.utils.Helper;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
 import baritone.bot.spec.BotWorld;
-import baritone.bot.spec.EntityBot;
+import baritone.bot.spec.BotEntity;
 import baritone.utils.accessor.IIntegratedServer;
 import baritone.utils.accessor.IThreadLanServerPing;
 import net.minecraft.client.multiplayer.ServerAddress;
@@ -179,7 +179,7 @@ public enum UserManager implements IUserManager, Helper {
                     (reason == null ? "Unknown" : reason.getUnformattedText()));
 
             if (user.getEntity() != null && user.getWorld() != null) {
-                ((BotWorld) user.getWorld()).handleWorldRemove((EntityBot) user.getEntity());
+                ((BotWorld) user.getWorld()).handleWorldRemove((BotEntity) user.getEntity());
             }
         }
     }

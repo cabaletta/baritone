@@ -22,7 +22,7 @@ import baritone.bot.BaritoneUser;
 import baritone.bot.spec.BotMinecraft;
 import baritone.bot.spec.BotPlayerController;
 import baritone.bot.spec.BotWorld;
-import baritone.bot.spec.EntityBot;
+import baritone.bot.spec.BotEntity;
 import baritone.utils.accessor.INetHandlerPlayClient;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
@@ -68,7 +68,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     /**
      * The bot entity
      */
-    private EntityBot player;
+    private BotEntity player;
 
     /**
      * The current world.
@@ -255,7 +255,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.playerController = new BotPlayerController(this.user, this);
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
         ((INetHandlerPlayClient) (Object) this).setWorld(this.world);
-        this.player = new EntityBot(this.user, this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
+        this.player = new BotEntity(this.user, this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
         this.user.onWorldLoad(this.world, this.player, this.playerController);
         this.player.preparePlayerToSpawn();
         this.player.setEntityId(packetIn.getPlayerId());
@@ -311,9 +311,9 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
             ((INetHandlerPlayClient) (Object) this).setWorld(this.world);
         }
 
-        EntityBot prev = this.player;
+        BotEntity prev = this.player;
 
-        this.player = new EntityBot(this.user, this.client, this.world, this, prev.getStatFileWriter(), prev.getRecipeBook());
+        this.player = new BotEntity(this.user, this.client, this.world, this, prev.getStatFileWriter(), prev.getRecipeBook());
         this.user.onWorldLoad(this.world, this.player, this.playerController);
         // noinspection ConstantConditions
         this.player.getDataManager().setEntryValues(prev.getDataManager().getAll());
@@ -476,7 +476,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         throw new UnsupportedOperationException("This method shouldn't have been called; That is unepic!");
     }
 
-    public EntityBot player() {
+    public BotEntity player() {
         return player;
     }
 

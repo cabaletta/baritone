@@ -53,12 +53,12 @@ import javax.annotation.Nullable;
  * @since 10/23/2018
  */
 @SuppressWarnings("EntityConstructor")
-public final class EntityBot extends EntityPlayerSP {
+public final class BotEntity extends EntityPlayerSP {
 
     private final IBaritoneUser user;
     private NetworkPlayerInfo playerInfo;
 
-    public EntityBot(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
+    public BotEntity(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
         super(mc, world, netHandlerPlayClient, statisticsManager, recipeBook);
         this.user = user;
         this.movementInput = new PlayerMovementInput(this.user.getBaritone().getInputOverrideHandler());
