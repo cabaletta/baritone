@@ -35,8 +35,4 @@ public class WrappedPlayerController extends AbstractPlayerController {
     protected PlayerControllerMP getController() {
         return this.controller;
     }
-
-    public void updateController() {
-        this.controller.updateController();
-    }
 }

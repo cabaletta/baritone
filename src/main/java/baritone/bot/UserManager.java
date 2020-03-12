@@ -31,7 +31,6 @@ import baritone.bot.spec.BotEntity;
 import baritone.bot.spec.BotWorld;
 import baritone.utils.accessor.IIntegratedServer;
 import baritone.utils.accessor.IThreadLanServerPing;
-import baritone.utils.player.WrappedPlayerController;
 import net.minecraft.client.multiplayer.ServerAddress;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.EnumConnectionState;
@@ -75,7 +74,12 @@ public enum UserManager implements IUserManager, AbstractGameEventListener, Help
             switch (event.getType()) {
                 case IN: {
                     if (user.getPlayer() != null && user.getPlayerController() != null) {
-                        ((WrappedPlayerController) user.getPlayerController()).updateController();
+                        user.getPlayerController().syncHeldItem();
+                        if (user.getNetworkManager().isChannelOpen()) {
+                            user.getNetworkManager().processReceivedPackets();
+                        } else {
+                            user.getNetworkManager().handleDisconnection();
+                        }
                     }
                     break;
                 }
