@@ -22,7 +22,6 @@ import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
-import baritone.bot.UserManager;
 import baritone.api.utils.Helper;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
@@ -30,7 +29,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**

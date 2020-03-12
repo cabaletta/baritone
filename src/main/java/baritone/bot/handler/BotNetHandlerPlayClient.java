@@ -19,20 +19,23 @@ package baritone.bot.handler;
 
 import baritone.api.utils.Helper;
 import baritone.bot.BaritoneUser;
+import baritone.bot.spec.BotEntity;
 import baritone.bot.spec.BotMinecraft;
 import baritone.bot.spec.BotPlayerController;
 import baritone.bot.spec.BotWorld;
-import baritone.bot.spec.BotEntity;
 import baritone.utils.accessor.INetHandlerPlayClient;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.util.RecipeBookClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.PacketThreadUtil;
-import net.minecraft.network.play.client.*;
+import net.minecraft.network.play.client.CPacketClientStatus;
+import net.minecraft.network.play.client.CPacketCustomPayload;
+import net.minecraft.network.play.client.CPacketResourcePackStatus;
 import net.minecraft.network.play.server.*;
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.util.text.ITextComponent;
@@ -80,7 +83,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
      */
     private BotPlayerController playerController;
 
-    public BotNetHandlerPlayClient(NetworkManager networkManager, BaritoneUser user, BotMinecraft client, GameProfile profile) {
+    BotNetHandlerPlayClient(NetworkManager networkManager, BaritoneUser user, BotMinecraft client, GameProfile profile) {
         // noinspection ConstantConditions
         super(client, null, networkManager, profile);
         this.networkManager = networkManager;
@@ -97,10 +100,20 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     }
 
     @Override
-    public void handleSpawnExperienceOrb(@Nonnull SPacketSpawnExperienceOrb packetIn) { /* We will want to know this if we want Tenor to collect XP */ }
+    public void handleSpawnExperienceOrb(@Nonnull SPacketSpawnExperienceOrb packetIn) {
+        super.handleSpawnExperienceOrb(packetIn);
+    }
 
     @Override
-    public void handleSpawnGlobalEntity(@Nonnull SPacketSpawnGlobalEntity packetIn) { /* Only lightning bolts, this may change in the future */ }
+    public void handleSpawnGlobalEntity(@Nonnull SPacketSpawnGlobalEntity packetIn) {
+        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        if (this.world != null) {
+            if (this.world.weatherEffects.stream().noneMatch(entity -> entity.getEntityId() == packetIn.getEntityId())) {
+                super.handleSpawnGlobalEntity(packetIn);
+            }
+        }
+    }
 
     @Override
     public void handleSpawnMob(@Nonnull SPacketSpawnMob packetIn) {}
@@ -120,13 +133,17 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     }
 
     @Override
-    public void handleStatistics(@Nonnull SPacketStatistics packetIn) { /* Lol global bot stats when?? */ }
+    public void handleStatistics(@Nonnull SPacketStatistics packetIn) {
+        super.handleStatistics(packetIn);
+    }
 
     @Override
     public void handleRecipeBook(@Nonnull SPacketRecipeBook packetIn) {}
 
     @Override
-    public void handleBlockBreakAnim(@Nonnull SPacketBlockBreakAnim packetIn) {}
+    public void handleBlockBreakAnim(@Nonnull SPacketBlockBreakAnim packetIn) {
+        super.handleBlockBreakAnim(packetIn);
+    }
 
     @Override
     public void handleSignEditorOpen(@Nonnull SPacketSignEditorOpen packetIn) {}
@@ -201,7 +218,9 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     }
 
     @Override
-    public void handleEntityAttach(@Nonnull SPacketEntityAttach packetIn) {}
+    public void handleEntityAttach(@Nonnull SPacketEntityAttach packetIn) {
+        super.handleEntityAttach(packetIn);
+    }
 
     @Override
     public void handleSetPassengers(@Nonnull SPacketSetPassengers packetIn) {}
@@ -214,6 +233,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleChangeGameState(@Nonnull SPacketChangeGameState packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
         if (packetIn.getGameState() == 4) {
             this.client.player.connection.sendPacket(new CPacketClientStatus(CPacketClientStatus.State.PERFORM_RESPAWN));
         } else if (packetIn.getGameState() != 5) {
@@ -229,6 +249,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void handleChunkData(@Nonnull SPacketChunkData packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
         if (packetIn.isFullChunk()) {
             if (!this.world.handlePreChunk(this.player, packetIn.getChunkX(), packetIn.getChunkZ(), true)) {
                 return;
@@ -240,6 +261,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     @Override
     public void processChunkUnload(@Nonnull SPacketUnloadChunk packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
         if (this.world.handlePreChunk(this.player, packetIn.getX(), packetIn.getZ(), false)) {
             super.processChunkUnload(packetIn);
         }
@@ -271,7 +293,16 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     }
 
     @Override
-    public void handleEntityMovement(@Nonnull SPacketEntity packetIn) {}
+    public void handleEntityMovement(@Nonnull SPacketEntity packetIn) {
+        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
+
+        Entity e = packetIn.getEntity(this.world);
+        if (e instanceof BotEntity && !e.equals(this.player)) {
+            return;
+        }
+
+        super.handleEntityMovement(packetIn);
+    }
 
     @Override
     public void handlePlayerPosLook(@Nonnull SPacketPlayerPosLook packetIn) {
@@ -455,10 +486,14 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     }
 
     @Override
-    public void handleAdvancementInfo(@Nonnull SPacketAdvancementInfo packetIn) {}
+    public void handleAdvancementInfo(@Nonnull SPacketAdvancementInfo packetIn) {
+        super.handleAdvancementInfo(packetIn);
+    }
 
     @Override
-    public void handleSelectAdvancementsTab(@Nonnull SPacketSelectAdvancementsTab packetIn) { /* Lol global bot achievements when? */ }
+    public void handleSelectAdvancementsTab(@Nonnull SPacketSelectAdvancementsTab packetIn) {
+        super.handleSelectAdvancementsTab(packetIn);
+    }
 
     @Override
     public void func_194307_a(@Nonnull SPacketPlaceGhostRecipe p_194307_1_) {}

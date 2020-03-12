@@ -118,15 +118,6 @@ public interface IPath {
     }
 
     /**
-     * Returns the estimated amount of time needed to complete this path from start to finish
-     *
-     * @return The estimated amount of time, in ticks
-     */
-    default double totalTicks() {
-        return ticksRemainingFrom(0);
-    }
-
-    /**
      * Cuts off this path at the loaded chunk border, and returns the resulting path. Default
      * implementation just returns this path, without the intended functionality.
      * <p>

@@ -25,6 +25,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.gui.toasts.GuiToast;
 import net.minecraft.client.main.GameConfiguration;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
@@ -48,6 +49,7 @@ public final class BotMinecraft extends Minecraft implements Helper {
 
     private IBaritoneUser user;
     private Tutorial tutorial;
+    private GuiToast toastGui;
 
     private BotMinecraft(GameConfiguration gameConfig) {
         super(gameConfig);
@@ -86,12 +88,19 @@ public final class BotMinecraft extends Minecraft implements Helper {
         return BotSoundHandler.INSTANCE;
     }
 
+    @Nonnull
+    @Override
+    public GuiToast getToastGui() {
+        return this.toastGui;
+    }
+
     public static BotMinecraft allocate(IBaritoneUser user) {
         BotMinecraft bm = ObjectAllocator.allocate(BotMinecraft.class);
         bm.user = user;
         bm.tutorial = new Tutorial(bm);
         bm.gameSettings = createGameSettings(bm);
         bm.effectRenderer = BotParticleManager.INSTANCE;
+        bm.toastGui = new GuiToast(bm);
         return bm;
     }
 

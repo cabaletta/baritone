@@ -29,6 +29,7 @@ import net.minecraft.world.WorldSettings;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Brady
@@ -37,7 +38,7 @@ import java.util.HashMap;
 public final class BotWorld extends WorldClient {
 
     private static Profiler BOT_WORLD_PROFILER = new Profiler();
-    private final HashMap<ChunkPos, IntSet> loadedChunksMap;
+    private final Map<ChunkPos, IntSet> loadedChunksMap;
 
     public BotWorld(WorldSettings settings, int dimension) {
         super(null, settings, dimension, EnumDifficulty.EASY, BOT_WORLD_PROFILER);
@@ -101,9 +102,5 @@ public final class BotWorld extends WorldClient {
                 .peek(entry -> entry.getValue().remove(bot.getEntityId()))
                 .filter(entry -> entry.getValue().isEmpty())
                 .forEach(entry -> this.doPreChunk(entry.getKey().x, entry.getKey().z, false));
-    }
-
-    public HashMap<ChunkPos, IntSet> getLoadedChunksMap() {
-        return this.loadedChunksMap;
     }
 }
