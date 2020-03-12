@@ -55,12 +55,12 @@ import static baritone.api.bot.connect.ConnectionStatus.*;
 public enum UserManager implements IUserManager, AbstractGameEventListener, Helper {
     INSTANCE;
 
-    private final List<IBaritoneUser> users = new CopyOnWriteArrayList<>();
-
+    private final List<IBaritoneUser> users;
     private final BotWorldProvider worldProvider;
 
     UserManager() {
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().registerEventListener(this);
+        this.users = new CopyOnWriteArrayList<>();
         this.worldProvider = new BotWorldProvider();
     }
 
