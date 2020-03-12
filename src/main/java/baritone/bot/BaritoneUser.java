@@ -91,7 +91,7 @@ public final class BaritoneUser implements IBaritoneUser {
     }
 
     @Override
-    public BotEntity getEntity() {
+    public BotEntity getPlayer() {
         return this.player;
     }
 

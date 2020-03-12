@@ -31,7 +31,7 @@ import baritone.bot.spec.BotEntity;
 import baritone.bot.spec.BotWorld;
 import baritone.utils.accessor.IIntegratedServer;
 import baritone.utils.accessor.IThreadLanServerPing;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import baritone.utils.player.WrappedPlayerController;
 import net.minecraft.client.multiplayer.ServerAddress;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.EnumConnectionState;
@@ -74,7 +74,9 @@ public enum UserManager implements IUserManager, AbstractGameEventListener, Help
         this.users.forEach(user -> {
             switch (event.getType()) {
                 case IN: {
-                    ((PlayerControllerMP) user.getPlayerController()).updateController();
+                    if (user.getPlayer() != null && user.getPlayerController() != null) {
+                        ((WrappedPlayerController) user.getPlayerController()).updateController();
+                    }
                     break;
                 }
                 case OUT: {
@@ -179,8 +181,8 @@ public enum UserManager implements IUserManager, AbstractGameEventListener, Help
             logDirect(user.getSession().getUsername() + " Disconnected: " +
                     (reason == null ? "Unknown" : reason.getUnformattedText()));
 
-            if (user.getEntity() != null && user.getWorld() != null) {
-                ((BotWorld) user.getWorld()).handleWorldRemove((BotEntity) user.getEntity());
+            if (user.getPlayer() != null && user.getWorld() != null) {
+                ((BotWorld) user.getWorld()).handleWorldRemove((BotEntity) user.getPlayer());
             }
         }
     }

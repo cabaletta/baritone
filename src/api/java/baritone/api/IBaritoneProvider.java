@@ -53,9 +53,7 @@ public interface IBaritoneProvider {
     List<IBaritone> getAllBaritones();
 
     /**
-     * Provides the {@link IBaritone} instance for a given {@link EntityPlayerSP}. This will likely be
-     * replaced with or be overloaded in addition to {@code #getBaritoneForUser(IBaritoneUser)} when
-     * {@code bot-system} is merged into {@code master}.
+     * Provides the {@link IBaritone} instance for a given {@link EntityPlayerSP}.
      *
      * @param player The player
      * @return The {@link IBaritone} instance.

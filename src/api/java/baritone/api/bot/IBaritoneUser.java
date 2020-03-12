@@ -48,9 +48,9 @@ public interface IBaritoneUser {
     NetHandlerPlayClient getConnection();
 
     /**
-     * @return The locally managed entity for this user.
+     * @return The locally managed player entity for this user.
      */
-    EntityPlayerSP getEntity();
+    EntityPlayerSP getPlayer();
 
     /**
      * @return The world the user belongs to
@@ -58,7 +58,7 @@ public interface IBaritoneUser {
     WorldClient getWorld();
 
     /**
-     * @return The bot player controller
+     * @return The user player controller
      */
     IPlayerController getPlayerController();
 

@@ -37,15 +37,15 @@ public final class BotPlayerContext implements IPlayerContext {
 
     @Override
     public EntityPlayerSP player() {
-        if (bot.getEntity() == null) {
+        if (bot.getPlayer() == null) {
             return null;
         }
-        return bot.getEntity();
+        return bot.getPlayer();
     }
 
     @Override
     public IPlayerController playerController() {
-        if (bot.getEntity() == null) {
+        if (bot.getPlayer() == null) {
             return null;
         }
         return bot.getPlayerController();
