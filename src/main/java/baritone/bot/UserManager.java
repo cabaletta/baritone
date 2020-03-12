@@ -27,10 +27,11 @@ import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
-import baritone.bot.spec.BotWorld;
 import baritone.bot.spec.BotEntity;
+import baritone.bot.spec.BotWorld;
 import baritone.utils.accessor.IIntegratedServer;
 import baritone.utils.accessor.IThreadLanServerPing;
+import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.ServerAddress;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.EnumConnectionState;
@@ -52,7 +53,7 @@ import static baritone.api.bot.connect.ConnectionStatus.*;
  * @author Brady
  * @since 11/6/2018
  */
-public enum UserManager implements IUserManager, Helper {
+public enum UserManager implements IUserManager, AbstractGameEventListener, Helper {
     INSTANCE;
 
     private final List<IBaritoneUser> users = new CopyOnWriteArrayList<>();
@@ -60,30 +61,30 @@ public enum UserManager implements IUserManager, Helper {
     private final BotWorldProvider worldProvider;
 
     UserManager() {
-        // Setup an event listener that automatically disconnects bots when we're not in-game
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().registerEventListener(this);
+        this.worldProvider = new BotWorldProvider();
+    }
 
-            @Override
-            public final void onTick(TickEvent event) {
-                if (event.getState() == EventState.PRE) {
-                    if (event.getType() == TickEvent.Type.OUT) {
-                        UserManager.this.users.forEach(user -> UserManager.this.disconnect(user, null));
-                    }
+    @Override
+    public void onTick(TickEvent event) {
+        if (event.getState() != EventState.PRE) {
+            return;
+        }
 
-                    UserManager.this.users.forEach(user -> {
-                        if (user.getNetworkManager().isChannelOpen()) {
-                            user.getNetworkManager().processReceivedPackets();
-                        } else {
-                            user.getNetworkManager().handleDisconnection();
-                        }
-                    });
-
-                    UserManager.this.worldProvider.tick();
+        this.users.forEach(user -> {
+            switch (event.getType()) {
+                case IN: {
+                    ((PlayerControllerMP) user.getPlayerController()).updateController();
+                    break;
+                }
+                case OUT: {
+                    this.disconnect(user, null);
+                    break;
                 }
             }
         });
 
-        this.worldProvider = new BotWorldProvider();
+        this.worldProvider.tick();
     }
 
     /**

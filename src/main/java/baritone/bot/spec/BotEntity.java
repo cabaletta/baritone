@@ -159,4 +159,9 @@ public final class BotEntity extends EntityPlayerSP {
     protected NetworkPlayerInfo getPlayerInfo() {
         return this.playerInfo == null ? (this.playerInfo = this.connection.getPlayerInfo(this.getUniqueID())) : null;
     }
+
+    @Override
+    public boolean isAutoJumpEnabled() {
+        return false;
+    }
 }
