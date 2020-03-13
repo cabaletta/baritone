@@ -75,11 +75,11 @@ public enum UserManager implements IUserManager, AbstractGameEventListener, Help
                 case IN: {
                     if (user.getPlayer() != null && user.getPlayerController() != null) {
                         user.getPlayerController().syncHeldItem();
-                        if (user.getNetworkManager().isChannelOpen()) {
-                            user.getNetworkManager().processReceivedPackets();
-                        } else {
-                            user.getNetworkManager().handleDisconnection();
-                        }
+                    }
+                    if (user.getNetworkManager().isChannelOpen()) {
+                        user.getNetworkManager().processReceivedPackets();
+                    } else {
+                        user.getNetworkManager().handleDisconnection();
                     }
                     break;
                 }
