@@ -58,6 +58,13 @@ public interface IGameEventListener {
     void onSendChatMessage(ChatEvent event);
 
     /**
+     * Runs whenever the client player tries to tab complete in chat.
+     *
+     * @param event The event
+     */
+    void onPreTabComplete(TabCompleteEvent event);
+
+    /**
      * Runs before and after whenever a chunk is either loaded, unloaded, or populated.
      *
      * @param event The event

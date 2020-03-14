@@ -18,6 +18,7 @@
 package baritone.api.pathing.goals;
 
 import baritone.api.pathing.movement.ActionCosts;
+import baritone.api.utils.SettingsUtil;
 
 /**
  * Useful for mining (getting to diamond / iron level)
@@ -29,7 +30,7 @@ public class GoalYLevel implements Goal, ActionCosts {
     /**
      * The target Y level
      */
-    private final int level;
+    public final int level;
 
     public GoalYLevel(int level) {
         this.level = level;
@@ -59,6 +60,9 @@ public class GoalYLevel implements Goal, ActionCosts {
 
     @Override
     public String toString() {
-        return "GoalYLevel{y=" + level + "}";
+        return String.format(
+                "GoalYLevel{y=%s}",
+                SettingsUtil.maybeCensor(level)
+        );
     }
 }

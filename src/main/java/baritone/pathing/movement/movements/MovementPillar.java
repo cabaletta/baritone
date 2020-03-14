@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -29,6 +30,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -36,6 +38,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class MovementPillar extends Movement {
 
@@ -48,8 +51,14 @@ public class MovementPillar extends Movement {
         return cost(context, src.x, src.y, src.z);
     }
 
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        return ImmutableSet.of(src, dest);
+    }
+
     public static double cost(CalculationContext context, int x, int y, int z) {
-        Block from = context.get(x, y, z).getBlock();
+        IBlockState fromState = context.get(x, y, z);
+        Block from = fromState.getBlock();
         boolean ladder = from == Blocks.LADDER || from == Blocks.VINE;
         IBlockState fromDown = context.get(x, y - 1, z);
         if (!ladder) {
@@ -75,8 +84,16 @@ public class MovementPillar extends Movement {
                 return LADDER_UP_ONE_COST; // allow ascending pillars of water, but only if we're already in one
             }
         }
-        if (!ladder && !context.canPlaceThrowawayAt(x, y, z)) { // we need to place a block where we started to jump on it
-            return COST_INF;
+        double placeCost = 0;
+        if (!ladder) {
+            // we need to place a block where we started to jump on it
+            placeCost = context.costOfPlacingAt(x, y, z, fromState);
+            if (placeCost >= COST_INF) {
+                return COST_INF;
+            }
+            if (fromDown.getBlock() == Blocks.AIR) {
+                placeCost += 0.1; // slightly (1/200th of a second) penalize pillaring on what's currently air
+            }
         }
         if (from instanceof BlockLiquid || (fromDown.getBlock() instanceof BlockLiquid && context.assumeWalkOnWater)) {
             // otherwise, if we're standing in water, we cannot pillar
@@ -114,7 +131,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             return LADDER_UP_ONE_COST + hardness * 5;
         } else {
-            return JUMP_ONE_BLOCK_COST + context.placeBlockCost + context.jumpPenalty + hardness;
+            return JUMP_ONE_BLOCK_COST + placeCost + context.jumpPenalty + hardness;
         }
     }
 
@@ -148,10 +165,14 @@ public class MovementPillar extends Movement {
             return state;
         }
 
+        if (ctx.playerFeet().y < src.y) {
+            return state.setStatus(MovementStatus.UNREACHABLE);
+        }
+
         IBlockState fromDown = BlockStateInterface.get(ctx, src);
         if (MovementHelper.isWater(fromDown.getBlock()) && MovementHelper.isWater(ctx, dest)) {
             // stay centered while swimming up a water column
-            state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest)), false));
+            state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations()), false));
             Vec3d destCenter = VecUtils.getBlockPosCenter(dest);
             if (Math.abs(ctx.player().posX - destCenter.x) > 0.2 || Math.abs(ctx.player().posZ - destCenter.z) > 0.2) {
                 state.setInput(Input.MOVE_FORWARD, true);
@@ -163,7 +184,7 @@ public class MovementPillar extends Movement {
         }
         boolean ladder = fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE;
         boolean vine = fromDown.getBlock() == Blocks.VINE;
-        Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
+        Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                 VecUtils.getBlockPosCenter(positionToPlace),
                 new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch));
         if (!ladder) {
@@ -174,7 +195,7 @@ public class MovementPillar extends Movement {
         if (ladder) {
             BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.offset(fromDown.getValue(BlockLadder.FACING).getOpposite());
             if (against == null) {
-                logDebug("Unable to climb vines");
+                logDirect("Unable to climb vines. Consider disabling allowVines.");
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
@@ -194,7 +215,7 @@ public class MovementPillar extends Movement {
             return state;
         } else {
             // Get ready to place a throwaway block
-            if (!MovementHelper.throwaway(ctx, true)) {
+            if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, src.x, src.y, src.z)) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
@@ -222,11 +243,17 @@ public class MovementPillar extends Movement {
 
 
             if (!blockIsThere) {
-                Block fr = BlockStateInterface.get(ctx, src).getBlock();
-                if (!(fr instanceof BlockAir || fr.isReplaceable(ctx.world(), src))) {
+                IBlockState frState = BlockStateInterface.get(ctx, src);
+                Block fr = frState.getBlock();
+                // TODO: Evaluate usage of getMaterial().isReplaceable()
+                if (!(fr instanceof BlockAir || frState.getMaterial().isReplaceable())) {
+                    RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance())
+                            .map(rot -> new MovementState.MovementTarget(rot, true))
+                            .ifPresent(state::setTarget);
+                    state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
-                } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos()))) {
+                } else if (ctx.player().isSneaking() && (Objects.equals(src.down(), ctx.objectMouseOver().getBlockPos()) || Objects.equals(src, ctx.objectMouseOver().getBlockPos())) && ctx.player().posY > dest.getY() + 0.1) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }

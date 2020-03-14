@@ -17,7 +17,6 @@
 
 package baritone.launch.mixins;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.BlockInteractEvent;
@@ -42,6 +41,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.function.BiFunction;
+
 /**
  * @author Brady
  * @since 7/31/2018
@@ -59,7 +60,7 @@ public class MixinMinecraft {
             at = @At("RETURN")
     )
     private void postInit(CallbackInfo ci) {
-        ((Baritone) BaritoneAPI.getProvider().getPrimaryBaritone()).init();
+        BaritoneAPI.getProvider().getPrimaryBaritone();
     }
 
     @Inject(
@@ -85,13 +86,15 @@ public class MixinMinecraft {
             )
     )
     private void runTick(CallbackInfo ci) {
-        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+        final BiFunction<EventState, TickEvent.Type, TickEvent> tickProvider = TickEvent.createNextProvider();
 
-            TickEvent.Type type = ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().world() != null
+        for (IBaritone baritone : BaritoneAPI.getProvider().getAllBaritones()) {
+
+            TickEvent.Type type = baritone.getPlayerContext().player() != null && baritone.getPlayerContext().world() != null
                     ? TickEvent.Type.IN
                     : TickEvent.Type.OUT;
 
-            ibaritone.getGameEventHandler().onTick(new TickEvent(EventState.PRE, type));
+            baritone.getGameEventHandler().onTick(tickProvider.apply(EventState.PRE, type));
         }
 
     }
@@ -142,7 +145,7 @@ public class MixinMinecraft {
     )
     private boolean isAllowUserInput(GuiScreen screen) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.allowUserInput;
+        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.allowUserInput;
     }
 
     @Inject(

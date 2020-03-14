@@ -29,6 +29,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -36,6 +37,8 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.Set;
 
 public class MovementDescend extends Movement {
 
@@ -59,6 +62,11 @@ public class MovementDescend extends Movement {
             return COST_INF; // doesn't apply to us, this position is a fall not a descend
         }
         return result.cost;
+    }
+
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        return ImmutableSet.of(src, dest.up(), dest);
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
@@ -122,7 +130,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return false;
         }
-        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below) && below.getBlock() != Blocks.WATER) {
+        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below)) {
             return false;
         }
         double costSoFar = 0;
@@ -137,13 +145,14 @@ public class MovementDescend extends Movement {
             IBlockState ontoBlock = context.get(destX, newY, destZ);
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
-            if ((ontoBlock.getBlock() == Blocks.WATER || ontoBlock.getBlock() == Blocks.FLOWING_WATER) && context.getBlock(destX, newY + 1, destZ) != Blocks.WATERLILY) {
-                // lilypads are canWalkThrough, but we can't end a fall that should be broken by water if it's covered by a lilypad
-                // however, don't return impossible in the lilypad scenario, because we could still jump right on it (water that's below a lilypad is canWalkOn so it works)
+            if (MovementHelper.isWater(ontoBlock.getBlock())) {
+                if (!MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
+                    return false;
+                }
                 if (context.assumeWalkOnWater) {
                     return false; // TODO fix
                 }
-                if (MovementHelper.isFlowing(ontoBlock)) {
+                if (MovementHelper.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
                     return false; // TODO flowing check required here?
                 }
                 if (!MovementHelper.canWalkOn(context.bsi, destX, newY - 1, destZ)) {
@@ -186,7 +195,7 @@ public class MovementDescend extends Movement {
                 res.x = destX;
                 res.y = newY + 1;// this is the block we're falling onto, so dest is +1
                 res.z = destZ;
-                res.cost = tentativeCost + context.placeBlockCost;
+                res.cost = tentativeCost + context.placeBucketCost();
                 return true;
             } else {
                 return false;
@@ -202,7 +211,8 @@ public class MovementDescend extends Movement {
         }
 
         BlockPos playerFeet = ctx.playerFeet();
-        if (playerFeet.equals(dest) && (MovementHelper.isLiquid(ctx, dest) || ctx.player().posY - playerFeet.getY() < 0.094)) { // lilypads
+        BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
+        if ((playerFeet.equals(dest) || playerFeet.equals(fakeDest)) && (MovementHelper.isLiquid(ctx, dest) || ctx.player().posY - dest.getY() < 0.5)) { // lilypads
             // Wait until we're actually on the ground before saying we're done because sometimes we continue to fall if the next action starts immediately
             return state.setStatus(MovementStatus.SUCCESS);
             /* else {
@@ -210,11 +220,11 @@ public class MovementDescend extends Movement {
             }*/
         }
         if (safeMode()) {
-            double destX = (src.getX() + 0.5) * 0.19 + (dest.getX() + 0.5) * 0.81;
-            double destZ = (src.getZ() + 0.5) * 0.19 + (dest.getZ() + 0.5) * 0.81;
+            double destX = (src.getX() + 0.5) * 0.17 + (dest.getX() + 0.5) * 0.83;
+            double destZ = (src.getZ() + 0.5) * 0.17 + (dest.getZ() + 0.5) * 0.83;
             EntityPlayerSP player = ctx.player();
             state.setTarget(new MovementState.MovementTarget(
-                    new Rotation(RotationUtils.calcRotationFromVec3d(player.getPositionEyes(1.0F),
+                    new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                             new Vec3d(destX, dest.getY(), destZ),
                             new Rotation(player.rotationYaw, player.rotationPitch)).getYaw(), player.rotationPitch),
                     false
@@ -228,12 +238,8 @@ public class MovementDescend extends Movement {
         double z = ctx.player().posZ - (src.getZ() + 0.5);
         double fromStart = Math.sqrt(x * x + z * z);
         if (!playerFeet.equals(dest) || ab > 0.25) {
-            BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
-            if (numTicks++ < 20) {
+            if (numTicks++ < 20 && fromStart < 1.25) {
                 MovementHelper.moveTowards(ctx, state, fakeDest);
-                if (fromStart > 1.25) {
-                    state.getTarget().rotation = new Rotation(state.getTarget().rotation.getYaw() + 180F, state.getTarget().rotation.getPitch());
-                }
             } else {
                 MovementHelper.moveTowards(ctx, state, dest);
             }
@@ -245,11 +251,20 @@ public class MovementDescend extends Movement {
         // (dest - src) + dest is offset 1 more in the same direction
         // so it's the block we'd need to worry about running into if we decide to sprint straight through this descend
         BlockPos into = dest.subtract(src.down()).add(dest);
+        if (skipToAscend()) {
+            // if dest extends into can't walk through, but the two above are can walk through, then we can overshoot and glitch in that weird way
+            return true;
+        }
         for (int y = 0; y <= 2; y++) { // we could hit any of the three blocks
             if (MovementHelper.avoidWalkingInto(BlockStateInterface.getBlock(ctx, into.up(y)))) {
                 return true;
             }
         }
         return false;
+    }
+
+    public boolean skipToAscend() {
+        BlockPos into = dest.subtract(src.down()).add(dest);
+        return !MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into)) && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).up()) && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).up(2));
     }
 }

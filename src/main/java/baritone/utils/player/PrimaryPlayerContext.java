@@ -19,9 +19,10 @@ package baritone.utils.player;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.cache.IWorldData;
+import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
-import baritone.utils.Helper;
+import baritone.api.utils.RayTraceUtils;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -58,6 +59,6 @@ public enum PrimaryPlayerContext implements IPlayerContext, Helper {
 
     @Override
     public RayTraceResult objectMouseOver() {
-        return mc.objectMouseOver;
+        return RayTraceUtils.rayTraceTowards(player(), playerRotations(), playerController().getBlockReachDistance());
     }
 }

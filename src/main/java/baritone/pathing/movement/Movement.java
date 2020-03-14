@@ -17,24 +17,25 @@
 
 package baritone.pathing.movement;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
+import baritone.behavior.PathingBehavior;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
-    protected static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
+    public static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
 
     protected final IBaritone baritone;
     protected final IPlayerContext ctx;
@@ -61,6 +62,8 @@ public abstract class Movement implements IMovement, MovementHelper {
     public List<BlockPos> toPlaceCached = null;
     public List<BlockPos> toWalkIntoCached = null;
 
+    private Set<BetterBlockPos> validPositionsCached = null;
+
     private Boolean calculatedWhileLoaded;
 
     protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak, BetterBlockPos toPlace) {
@@ -76,29 +79,40 @@ public abstract class Movement implements IMovement, MovementHelper {
         this(baritone, src, dest, toBreak, null);
     }
 
-    @Override
-    public double getCost() {
+    public double getCost() throws NullPointerException {
+        return cost;
+    }
+
+    public double getCost(CalculationContext context) {
         if (cost == null) {
-            cost = calculateCost(new CalculationContext(baritone));
+            cost = calculateCost(context);
         }
         return cost;
     }
 
     public abstract double calculateCost(CalculationContext context);
 
-    @Override
-    public double recalculateCost() {
+    public double recalculateCost(CalculationContext context) {
         cost = null;
-        return getCost();
+        return getCost(context);
     }
 
     public void override(double cost) {
         this.cost = cost;
     }
 
-    @Override
-    public double calculateCostWithoutCaching() {
-        return calculateCost(new CalculationContext(baritone));
+    protected abstract Set<BetterBlockPos> calculateValidPositions();
+
+    public Set<BetterBlockPos> getValidPositions() {
+        if (validPositionsCached == null) {
+            validPositionsCached = calculateValidPositions();
+            Objects.requireNonNull(validPositionsCached);
+        }
+        return validPositionsCached;
+    }
+
+    protected boolean playerInValidPosition() {
+        return getValidPositions().contains(ctx.playerFeet()) || getValidPositions().contains(((PathingBehavior) baritone.getPathingBehavior()).pathStart());
     }
 
     /**
@@ -115,6 +129,7 @@ public abstract class Movement implements IMovement, MovementHelper {
             currentState.setInput(Input.JUMP, true);
         }
         if (ctx.player().isEntityInsideOpaqueBlock()) {
+            ctx.getSelectedBlock().ifPresent(pos -> MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, pos)));
             currentState.setInput(Input.CLICK_LEFT, true);
         }
 
@@ -143,14 +158,17 @@ public abstract class Movement implements IMovement, MovementHelper {
         }
         boolean somethingInTheWay = false;
         for (BetterBlockPos blockPos : positionsToBreak) {
+            if (!ctx.world().getEntitiesWithinAABB(EntityFallingBlock.class, new AxisAlignedBB(0, 0, 0, 1, 1.1, 1).offset(blockPos)).isEmpty() && Baritone.settings().pauseMiningForFallingBlocks.value) {
+                return false;
+            }
             if (!MovementHelper.canWalkThrough(ctx, blockPos) && !(BlockStateInterface.getBlock(ctx, blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
+                MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
-                    MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
-                    if (Objects.equals(ctx.getSelectedBlock().orElse(null), blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
+                    if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
                     return false;
@@ -159,8 +177,8 @@ public abstract class Movement implements IMovement, MovementHelper {
                 //i'm doing it anyway
                 //i dont care if theres snow in the way!!!!!!!
                 //you dont own me!!!!
-                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
-                        VecUtils.getBlockPosCenter(blockPos)), true)
+                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                        VecUtils.getBlockPosCenter(blockPos), ctx.playerRotations()), true)
                 );
                 // don't check selectedblock on this one, this is a fallback when we can't see any face directly, it's intended to be breaking the "incorrect" block
                 state.setInput(Input.CLICK_LEFT, true);
@@ -272,5 +290,9 @@ public abstract class Movement implements IMovement, MovementHelper {
             toWalkIntoCached = new ArrayList<>();
         }
         return toWalkIntoCached;
+    }
+
+    public BlockPos[] toBreakAll() {
+        return positionsToBreak;
     }
 }

@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.1.3'
+version '1.2.11'
 
 buildscript {
     repositories {
@@ -54,6 +54,14 @@ compileJava {
 sourceSets {
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+    }
+
+    schematica_api {
+        compileClasspath += main.compileClasspath
+    }
+
+    main {
+        compileClasspath += schematica_api.output
     }
 }
 
@@ -103,7 +111,7 @@ javadoc {
     options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
     options.linkSource true
     options.encoding "UTF-8" // allow emoji in comments :^)
-    source += sourceSets.api.allJava
+    source = sourceSets.api.allJava
     classpath += sourceSets.api.compileClasspath
 }
 
@@ -111,12 +119,13 @@ jar {
     from sourceSets.launch.output, sourceSets.api.output
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-}
 
-jar {
     manifest {
         attributes(
-                'MixinConfigs': 'mixins.baritone.json'
+                'MixinConfigs': 'mixins.baritone.json',
+
+                'Implementation-Title': 'Baritone',
+                'Implementation-Version': version
         )
     }
 }

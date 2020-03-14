@@ -64,9 +64,17 @@ public interface IPathingBehavior extends IBehavior {
     Goal getGoal();
 
     /**
-     * @return Whether or not a path is currently being executed.
+     * @return Whether or not a path is currently being executed. This will be false if there's currently a pause.
+     * @see #hasPath()
      */
-    default boolean isPathing() {
+    boolean isPathing();
+
+    /**
+     * @return If there is a current path. Note that the path is not necessarily being executed, for example when there
+     * is a pause in effect.
+     * @see #isPathing()
+     */
+    default boolean hasPath() {
         return getCurrent() != null;
     }
 
@@ -79,6 +87,13 @@ public interface IPathingBehavior extends IBehavior {
      * PathingBehavior might be in the middle of an uncancelable action like a parkour jump
      */
     boolean cancelEverything();
+
+    /**
+     * PLEASE never call this
+     * <p>
+     * If cancelEverything was like "kill" this is "sudo kill -9". Or shutting off your computer.
+     */
+    void forceCancel();
 
     /**
      * Returns the current path, from the current path executor, if there is one.

@@ -20,7 +20,12 @@ package baritone;
 import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
+import baritone.api.command.ICommandSystem;
+import baritone.api.schematic.ISchematicSystem;
+import baritone.command.BaritoneChatControl;
 import baritone.cache.WorldScanner;
+import baritone.command.CommandSystem;
+import baritone.utils.schematic.SchematicSystem;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +36,16 @@ import java.util.List;
  */
 public final class BaritoneProvider implements IBaritoneProvider {
 
-    private final Baritone primary = new Baritone();
+    private final Baritone primary;
+    private final List<IBaritone> all;
+
+    {
+        this.primary = new Baritone();
+        this.all = Collections.singletonList(this.primary);
+
+        // Setup chat control, just for the primary instance
+        new BaritoneChatControl(this.primary);
+    }
 
     @Override
     public IBaritone getPrimaryBaritone() {
@@ -40,12 +54,21 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public List<IBaritone> getAllBaritones() {
-        // TODO return a CopyOnWriteArrayList
-        return Collections.singletonList(primary);
+        return all;
     }
 
     @Override
     public IWorldScanner getWorldScanner() {
         return WorldScanner.INSTANCE;
+    }
+
+    @Override
+    public ICommandSystem getCommandSystem() {
+        return CommandSystem.INSTANCE;
+    }
+
+    @Override
+    public ISchematicSystem getSchematicSystem() {
+        return SchematicSystem.INSTANCE;
     }
 }

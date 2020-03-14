@@ -5,48 +5,59 @@
 
 	# Prefix
 
-Baritone commands can by default be typed in the chatbox. However if you make a typo, like typing "gola 10000 10000" instead of goal it goes into public chat, which is bad.
+Baritone's chat control prefix is `#` by default. In Impact, you can also use `.b` as a prefix. (for example, `.b click` instead of `#click`)
 
-Therefore you can use a prefix before your messages.
+Baritone commands can also by default be typed in the chatbox. However if you make a typo, like typing "gola 10000 10000" instead of "goal" it goes into public chat, which is bad, so using `#` is suggested.
 
-On Baritone v1.1.0 and newer: The prefix is `#` by default. Anything beginning with `#` isn't sent, and is only interpreted by Baritone.
-For older than v1.1.0, `#` must be enabled by toggling on the `prefix` setting.
+To disable direct chat control (with no prefix), turn off the `chatControl` setting. To disable chat control with the `#` prefix, turn off the `prefixControl` setting. In Impact, `.b` cannot be disabled. Be careful that you don't leave yourself with all control methods disabled (if you do, reset your settings by deleting the file `minecraft/baritone/settings.txt` and relaunching).
 
-**Only** in Impact 4.4 is `.b` also a valid prefix. In 4.4, `#` does **not** work, neither does saying the commands directly in chat.
+# For Baritone 1.2.10+, 1.3.5+, 1.4.2+
 
-Other clients like Kami and Asuna have their own custom things (like `-path`), and can disable direct chat control entirely.
+Lots of the commands have changed, BUT `#help` is improved vastly (its clickable! commands have tab completion! oh my!).
 
+Try `#help` I promise it won't just send you back here =)
 
+"wtf where is cleararea" -> look at `#help sel`
+
+"wtf where is goto death, goto waypoint" -> look at `#help wp` (a "tag" is like "home" (created automatically on right clicking a bed) or "death" (created automatically on death) or "user" (has to be created manually)). So you might want `#wp save user coolbiome` then, to set the goal `#wp goal coolbiome` then `#path` to path to it. For death, `#wp goal death` (remember stuff is clickable!).
+
+just look at `#help` lmao
+
+Watch this [showcase video](https://youtu.be/CZkLXWo4Fg4)!
 
 # Commands
 
 **All** of these commands may need a prefix before them, as above ^.
 
-`help` for (rudimentary) help. You can see what it says [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java#L53).
+`help`
 
-To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive.
-
-
-
+To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
 
 Some common examples:
 - `thisway 1000` then `path` to go in the direction you're facing for a thousand blocks
-- `goal x y z` or `goal x z` or `goal y`, then `path` to go to a certain coordinate
+- `goal x y z` or `goal x z` or `goal y`, then `path` to set a goal to a certain coordinate then path to it
+- `goto x y z` or `goto x z` or `goto y` to go to a certain coordinate (in a single step, starts going immediately)
 - `goal` to set the goal to your player's feet
 - `goal clear` to clear the goal
 - `cancel` or `stop` to stop everything
 - `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
-- `mine diamond_ore` to mine diamond ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.)
-- `follow playerName` to follow a player. `follow` to follow the entity you're looking at (only works if it hitting range). `followplayers` to follow any players in range (combine with Kill Aura for a fun time).
+- `mine diamond_ore iron_ore` to mine diamond ore or iron ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.) An amount of blocks can also be specified, for example, `mine diamond_ore 64`.
+- `click` to click your destination on the screen. Right click path to on top of the block, left click to path into it (either at foot level or eye level), and left click and drag to clear all blocks from an area.
+- `follow playerName` to follow a player. `followplayers` to follow any players in range (combine with Kill Aura for a fun time). `followentities` to follow any entities. `followentity pig` to follow entities of a specific type.
 - `save waypointName` to save a waypoint. `goto waypointName` to go to it.
-- `goto axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
+- `build` to build a schematic. `build blah` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
+- `schematica` to build the schematic that is currently open in schematica
+- `tunnel height width depth` to dig and make a tunnel. If you don't supply numbers then it just digs a 1x2 tunnel. 
+- `farm` to automatically harvest, replant, or bone meal crops
+- `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
+- `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
-- `render` to rerender the world in case `renderCachedChunks` is being glitchy
+- `version` to get the version of Baritone you're running
 - `damn` daniel
 
-For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/main/java/baritone/utils/ExampleBaritoneControl.java).
+For the rest of the commands, you can take a look at the code [here](https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/utils/ExampleBaritoneControl.java).
 
-All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/">here</a> and navigate to Settings in the left sidebar.
+All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/baritone/api/Settings.html#field.detail">here</a>.
 
 There are about a hundred settings, but here are some fun / interesting / important ones that you might want to look at changing in normal usage of Baritone. The documentation for each can be found at the above links.
 - `allowBreak`
@@ -54,17 +65,24 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `allowPlace`
 - `allowParkour`
 - `allowParkourPlace`
+- `blockPlacementPenalty`
 - `renderCachedChunks` (and `cachedChunksOpacity`) <-- very fun but you need a beefy computer
-- `avoidance`
+- `avoidance` (avoidance of mobs / mob spawners)
 - `legitMine`
 - `followRadius`
+- `backfill` (fill in tunnels behind you)
+- `buildInLayers`
+- `buildRepeatDistance` and `buildRepeatDirection`
+- `worldExploringChunkOffset`
+- `acceptableThrowawayItems`
+- `blocksToAvoidBreaking`
+- `mineScanDroppedItems`
+- `allowDiagonalAscend`
+
 
 
 
 # Troubleshooting / common issues
-
-## Baritone highlights a block in green but gets completely stuck? Also I'm using Baritone with Future?
-Baritone is trying to right click to place a block there, but it can't since there's a conflicting mixin. Baritone can't force click right click when Future is also installed. Left click **does work** on recent Baritone even with Future, however. For now, turn off `allowPlace` and Baritone will only search for paths that don't require placing blocks to complete. `allowBreak` can remain on.
 
 ## Why doesn't Baritone respond to any of my chat commands?
 This could be one of many things.

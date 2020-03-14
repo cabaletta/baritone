@@ -29,7 +29,6 @@ import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -46,7 +45,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     private List<Entity> cache;
 
     public FollowProcess(Baritone baritone) {
-        super(baritone, 1);
+        super(baritone);
     }
 
     @Override
@@ -58,13 +57,13 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     private Goal towards(Entity following) {
         BlockPos pos;
-        if (Baritone.settings().followOffsetDistance.get() == 0) {
+        if (Baritone.settings().followOffsetDistance.value == 0) {
             pos = new BlockPos(following);
         } else {
-            GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.get(), Baritone.settings().followOffsetDistance.get());
+            GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.value, Baritone.settings().followOffsetDistance.value);
             pos = new BlockPos(g.getX(), following.posY, g.getZ());
         }
-        return new GoalNear(pos, Baritone.settings().followRadius.get());
+        return new GoalNear(pos, Baritone.settings().followRadius.value);
     }
 
 
@@ -82,7 +81,12 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     }
 
     private void scanWorld() {
-        cache = Stream.of(ctx.world().loadedEntityList, ctx.world().playerEntities).flatMap(List::stream).filter(this::followable).filter(this.filter).distinct().collect(Collectors.toCollection(ArrayList::new));
+        cache = Stream.of(ctx.world().loadedEntityList, ctx.world().playerEntities)
+                .flatMap(List::stream)
+                .filter(this::followable)
+                .filter(this.filter)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -101,8 +105,8 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     }
 
     @Override
-    public String displayName() {
-        return "Follow " + cache;
+    public String displayName0() {
+        return "Following " + cache;
     }
 
     @Override

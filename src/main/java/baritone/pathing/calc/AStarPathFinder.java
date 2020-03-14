@@ -62,20 +62,21 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
         MutableMoveResult res = new MutableMoveResult();
         BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world.getWorldBorder());
         long startTime = System.currentTimeMillis();
-        boolean slowPath = Baritone.settings().slowPath.get();
+        boolean slowPath = Baritone.settings().slowPath.value;
         if (slowPath) {
-            logDebug("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.<Long>get() + "ms instead of " + primaryTimeout + "ms");
+            logDebug("slowPath is on, path timeout will be " + Baritone.settings().slowPathTimeoutMS.value + "ms instead of " + primaryTimeout + "ms");
         }
-        long primaryTimeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : primaryTimeout);
-        long failureTimeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.<Long>get() : failureTimeout);
+        long primaryTimeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.value : primaryTimeout);
+        long failureTimeoutTime = startTime + (slowPath ? Baritone.settings().slowPathTimeoutMS.value : failureTimeout);
         boolean failing = true;
         int numNodes = 0;
         int numMovementsConsidered = 0;
         int numEmptyChunk = 0;
         boolean isFavoring = !favoring.isEmpty();
         int timeCheckInterval = 1 << 6;
-        int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.get(); // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
-        double minimumImprovement = Baritone.settings().minimumImprovementRepropagation.get() ? MIN_IMPROVEMENT : 0;
+        int pathingMaxChunkBorderFetch = Baritone.settings().pathingMaxChunkBorderFetch.value; // grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
+        double minimumImprovement = Baritone.settings().minimumImprovementRepropagation.value ? MIN_IMPROVEMENT : 0;
+        Moves[] allMoves = Moves.values();
         while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && !cancelRequested) {
             if ((numNodes & (timeCheckInterval - 1)) == 0) { // only call this once every 64 nodes (about half a millisecond)
                 long now = System.currentTimeMillis(); // since nanoTime is slow on windows (takes many microseconds)
@@ -85,9 +86,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             }
             if (slowPath) {
                 try {
-                    Thread.sleep(Baritone.settings().slowPathTimeDelayMS.<Long>get());
-                } catch (InterruptedException ex) {
-                }
+                    Thread.sleep(Baritone.settings().slowPathTimeDelayMS.value);
+                } catch (InterruptedException ignored) {}
             }
             PathNode currentNode = openSet.removeLowest();
             mostRecentConsidered = currentNode;
@@ -96,7 +96,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 logDebug("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(startNode, currentNode, numNodes, goal, calcContext));
             }
-            for (Moves moves : Moves.values()) {
+            for (Moves moves : allMoves) {
                 int newX = currentNode.x + moves.xOffset;
                 int newZ = currentNode.z + moves.zOffset;
                 if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !calcContext.isLoaded(newX, newZ)) {

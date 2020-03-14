@@ -17,13 +17,19 @@
 
 package baritone.cache;
 
+import baritone.api.utils.BlockUtils;
 import baritone.utils.pathing.PathingBlockType;
+import com.google.common.collect.ImmutableSet;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Brady
@@ -31,62 +37,60 @@ import java.util.*;
  */
 public final class CachedChunk {
 
-    public static final Set<Block> BLOCKS_TO_KEEP_TRACK_OF;
+    public static final ImmutableSet<Block> BLOCKS_TO_KEEP_TRACK_OF = ImmutableSet.of(
+            Blocks.DIAMOND_BLOCK,
+            //Blocks.COAL_ORE,
+            Blocks.COAL_BLOCK,
+            //Blocks.IRON_ORE,
+            Blocks.IRON_BLOCK,
+            //Blocks.GOLD_ORE,
+            Blocks.GOLD_BLOCK,
+            Blocks.EMERALD_ORE,
+            Blocks.EMERALD_BLOCK,
 
-    static {
-        HashSet<Block> temp = new HashSet<>();
-        //temp.add(Blocks.DIAMOND_ORE);
-        temp.add(Blocks.DIAMOND_BLOCK);
-        //temp.add(Blocks.COAL_ORE);
-        temp.add(Blocks.COAL_BLOCK);
-        //temp.add(Blocks.IRON_ORE);
-        temp.add(Blocks.IRON_BLOCK);
-        //temp.add(Blocks.GOLD_ORE);
-        temp.add(Blocks.GOLD_BLOCK);
-        temp.add(Blocks.EMERALD_ORE);
-        temp.add(Blocks.EMERALD_BLOCK);
+            Blocks.ENDER_CHEST,
+            Blocks.FURNACE,
+            Blocks.CHEST,
+            Blocks.TRAPPED_CHEST,
+            Blocks.END_PORTAL,
+            Blocks.END_PORTAL_FRAME,
+            Blocks.MOB_SPAWNER,
+            Blocks.BARRIER,
+            Blocks.OBSERVER,
+            Blocks.WHITE_SHULKER_BOX,
+            Blocks.ORANGE_SHULKER_BOX,
+            Blocks.MAGENTA_SHULKER_BOX,
+            Blocks.LIGHT_BLUE_SHULKER_BOX,
+            Blocks.YELLOW_SHULKER_BOX,
+            Blocks.LIME_SHULKER_BOX,
+            Blocks.PINK_SHULKER_BOX,
+            Blocks.GRAY_SHULKER_BOX,
+            Blocks.SILVER_SHULKER_BOX,
+            Blocks.CYAN_SHULKER_BOX,
+            Blocks.PURPLE_SHULKER_BOX,
+            Blocks.BLUE_SHULKER_BOX,
+            Blocks.BROWN_SHULKER_BOX,
+            Blocks.GREEN_SHULKER_BOX,
+            Blocks.RED_SHULKER_BOX,
+            Blocks.BLACK_SHULKER_BOX,
+            Blocks.PORTAL,
+            Blocks.HOPPER,
+            Blocks.BEACON,
+            Blocks.BREWING_STAND,
+            Blocks.SKULL,
+            Blocks.ENCHANTING_TABLE,
+            Blocks.ANVIL,
+            Blocks.LIT_FURNACE,
+            Blocks.BED,
+            Blocks.DRAGON_EGG,
+            Blocks.JUKEBOX,
+            Blocks.END_GATEWAY,
+            Blocks.WEB,
+            Blocks.NETHER_WART,
+            Blocks.LADDER,
+            Blocks.VINE
+    );
 
-        temp.add(Blocks.ENDER_CHEST);
-        temp.add(Blocks.FURNACE);
-        temp.add(Blocks.CHEST);
-        temp.add(Blocks.TRAPPED_CHEST);
-        temp.add(Blocks.END_PORTAL);
-        temp.add(Blocks.END_PORTAL_FRAME);
-        temp.add(Blocks.MOB_SPAWNER);
-        temp.add(Blocks.BARRIER);
-        temp.add(Blocks.OBSERVER);
-        temp.add(Blocks.WHITE_SHULKER_BOX);
-        temp.add(Blocks.ORANGE_SHULKER_BOX);
-        temp.add(Blocks.MAGENTA_SHULKER_BOX);
-        temp.add(Blocks.LIGHT_BLUE_SHULKER_BOX);
-        temp.add(Blocks.YELLOW_SHULKER_BOX);
-        temp.add(Blocks.LIME_SHULKER_BOX);
-        temp.add(Blocks.PINK_SHULKER_BOX);
-        temp.add(Blocks.GRAY_SHULKER_BOX);
-        temp.add(Blocks.SILVER_SHULKER_BOX);
-        temp.add(Blocks.CYAN_SHULKER_BOX);
-        temp.add(Blocks.PURPLE_SHULKER_BOX);
-        temp.add(Blocks.BLUE_SHULKER_BOX);
-        temp.add(Blocks.BROWN_SHULKER_BOX);
-        temp.add(Blocks.GREEN_SHULKER_BOX);
-        temp.add(Blocks.RED_SHULKER_BOX);
-        temp.add(Blocks.BLACK_SHULKER_BOX);
-        temp.add(Blocks.PORTAL);
-        temp.add(Blocks.HOPPER);
-        temp.add(Blocks.BEACON);
-        temp.add(Blocks.BREWING_STAND);
-        temp.add(Blocks.SKULL);
-        temp.add(Blocks.ENCHANTING_TABLE);
-        temp.add(Blocks.ANVIL);
-        temp.add(Blocks.LIT_FURNACE);
-        temp.add(Blocks.BED);
-        temp.add(Blocks.DRAGON_EGG);
-        temp.add(Blocks.JUKEBOX);
-        temp.add(Blocks.END_GATEWAY);
-        temp.add(Blocks.WEB);
-        temp.add(Blocks.NETHER_WART);
-        BLOCKS_TO_KEEP_TRACK_OF = Collections.unmodifiableSet(temp);
-    }
 
     /**
      * The size of the chunk data in bits. Equal to 16 KiB.
@@ -117,6 +121,8 @@ public final class CachedChunk {
      */
     private final BitSet data;
 
+    private final Int2ObjectOpenHashMap<String> special;
+
     /**
      * The block names of each surface level block for generating an overview
      */
@@ -138,12 +144,30 @@ public final class CachedChunk {
         this.heightMap = new int[256];
         this.specialBlockLocations = specialBlockLocations;
         this.cacheTimestamp = cacheTimestamp;
+        if (specialBlockLocations.isEmpty()) {
+            this.special = null;
+        } else {
+            this.special = new Int2ObjectOpenHashMap<>();
+            setSpecial();
+        }
         calculateHeightMap();
     }
 
+    private final void setSpecial() {
+        for (Map.Entry<String, List<BlockPos>> entry : specialBlockLocations.entrySet()) {
+            for (BlockPos pos : entry.getValue()) {
+                special.put(getPositionIndex(pos.getX(), pos.getY(), pos.getZ()), entry.getKey());
+            }
+        }
+    }
+
     public final IBlockState getBlock(int x, int y, int z, int dimension) {
+        int index = getPositionIndex(x, y, z);
+        PathingBlockType type = getType(index);
         int internalPos = z << 4 | x;
-        if (heightMap[internalPos] == y) {
+        if (heightMap[internalPos] == y && type != PathingBlockType.AVOID) {
+            // if the top block in a column is water, we cache it as AVOID but we don't want to just return default state water (which is not flowing) beacuse then it would try to path through it
+
             // we have this exact block, it's a surface block
             /*System.out.println("Saying that " + x + "," + y + "," + z + " is " + state);
             if (!Minecraft.getMinecraft().world.getBlockState(new BlockPos(x + this.x * 16, y, z + this.z * 16)).getBlock().equals(state.getBlock())) {
@@ -151,15 +175,29 @@ public final class CachedChunk {
             }*/
             return overview[internalPos];
         }
-        PathingBlockType type = getType(x, y, z);
-        if (type == PathingBlockType.SOLID && y == 127 && dimension == -1) {
-            return Blocks.BEDROCK.getDefaultState();
+        if (special != null) {
+            String str = special.get(index);
+            if (str != null) {
+                return BlockUtils.stringToBlockRequired(str).getDefaultState();
+            }
+        }
+
+        if (type == PathingBlockType.SOLID) {
+            if (y == 127 && dimension == -1) {
+                // nether roof is always unbreakable
+                return Blocks.BEDROCK.getDefaultState();
+            }
+            if (y < 5 && dimension == 0) {
+                // solid blocks below 5 are commonly bedrock
+                // however, returning bedrock always would be a little yikes
+                // discourage paths that include breaking blocks below 5 a little more heavily just so that it takes paths breaking what's known to be stone (at 5 or above) instead of what could maybe be bedrock (below 5)
+                return Blocks.OBSIDIAN.getDefaultState();
+            }
         }
         return ChunkPacker.pathingTypeToBlock(type, dimension);
     }
 
-    private PathingBlockType getType(int x, int y, int z) {
-        int index = getPositionIndex(x, y, z);
+    private PathingBlockType getType(int index) {
         return PathingBlockType.fromBits(data.get(index), data.get(index + 1));
     }
 
@@ -187,11 +225,11 @@ public final class CachedChunk {
         return specialBlockLocations;
     }
 
-    public final LinkedList<BlockPos> getAbsoluteBlocks(String blockType) {
+    public final ArrayList<BlockPos> getAbsoluteBlocks(String blockType) {
         if (specialBlockLocations.get(blockType) == null) {
             return null;
         }
-        LinkedList<BlockPos> res = new LinkedList<>();
+        ArrayList<BlockPos> res = new ArrayList<>();
         for (BlockPos pos : specialBlockLocations.get(blockType)) {
             res.add(new BlockPos(pos.getX() + x * 16, pos.getY(), pos.getZ() + z * 16));
         }

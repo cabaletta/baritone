@@ -22,10 +22,11 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
 import baritone.api.utils.PathCalculationResult;
 import baritone.pathing.movement.CalculationContext;
-import baritone.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import baritone.utils.NotificationHelper;
 
 import java.util.Optional;
 
@@ -87,7 +88,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
         this.startZ = startZ;
         this.goal = goal;
         this.context = context;
-        this.map = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.get());
+        this.map = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.value);
     }
 
     public void cancel() {
@@ -127,7 +128,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
             }
         } catch (Exception e) {
-            Helper.HELPER.logDebug("Pathing exception: " + e);
+            Helper.HELPER.logDirect("Pathing exception: " + e);
             e.printStackTrace();
             return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION);
         } finally {
@@ -186,7 +187,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
     }
 
     protected Optional<IPath> bestSoFar(boolean logInfo, int numNodes) {
-        if (startNode == null || bestSoFar == null) {
+        if (startNode == null) {
             return Optional.empty();
         }
         double bestDist = 0;
@@ -216,6 +217,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
         if (logInfo) {
             logDebug("Even with a cost coefficient of " + COEFFICIENTS[COEFFICIENTS.length - 1] + ", I couldn't get more than " + Math.sqrt(bestDist) + " blocks");
             logDebug("No path found =(");
+            if (Baritone.settings().desktopNotifications.value) {
+                NotificationHelper.notify("No path found =(", true);
+            }
         }
         return Optional.empty();
     }

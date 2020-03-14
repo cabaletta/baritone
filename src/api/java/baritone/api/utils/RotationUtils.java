@@ -78,6 +78,9 @@ public final class RotationUtils {
      * @return The wrapped angles
      */
     public static Rotation wrapAnglesToRelative(Rotation current, Rotation target) {
+        if (current.yawIsReallyClose(target)) {
+            return new Rotation(current.getYaw(), target.getPitch());
+        }
         return target.subtract(current).normalize().add(current);
     }
 
@@ -102,7 +105,7 @@ public final class RotationUtils {
      * @param dest The destination position
      * @return The rotation from the origin to the destination
      */
-    public static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
+    private static Rotation calcRotationFromVec3d(Vec3d orig, Vec3d dest) {
         double[] delta = {orig.x - dest.x, orig.y - dest.y, orig.z - dest.z};
         double yaw = MathHelper.atan2(delta[0], -delta[2]);
         double dist = Math.sqrt(delta[0] * delta[0] + delta[2] * delta[2]);
@@ -137,6 +140,10 @@ public final class RotationUtils {
         return reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
     }
 
+    public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos, boolean wouldSneak) {
+        return reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance(), wouldSneak);
+    }
+
     /**
      * Determines if the specified entity is able to reach the center of any of the sides
      * of the specified block. It first checks if the block center is reachable, and if so,
@@ -150,8 +157,12 @@ public final class RotationUtils {
      * @return The optional rotation
      */
     public static Optional<Rotation> reachable(EntityPlayerSP entity, BlockPos pos, double blockReachDistance) {
+        return reachable(entity, pos, blockReachDistance, false);
+    }
+
+    public static Optional<Rotation> reachable(EntityPlayerSP entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(entity);
-        if (pos.equals(baritone.getPlayerContext().getSelectedBlock().orElse(null))) {
+        if (baritone.getPlayerContext().isLookingAt(pos)) {
             /*
              * why add 0.0001?
              * to indicate that we actually have a desired pitch
@@ -162,9 +173,18 @@ public final class RotationUtils {
              *
              * or if you're a normal person literally all this does it ensure that we don't nudge the pitch to a normal level
              */
-            return Optional.of(new Rotation(entity.rotationYaw, entity.rotationPitch + 0.0001F));
+            Rotation hypothetical = new Rotation(entity.rotationYaw, entity.rotationPitch + 0.0001F);
+            if (wouldSneak) {
+                // the concern here is: what if we're looking at it now, but as soon as we start sneaking we no longer are
+                RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, hypothetical, blockReachDistance, true);
+                if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK && result.getBlockPos().equals(pos)) {
+                    return Optional.of(hypothetical); // yes, if we sneaked we would still be looking at the block
+                }
+            } else {
+                return Optional.of(hypothetical);
+            }
         }
-        Optional<Rotation> possibleRotation = reachableCenter(entity, pos, blockReachDistance);
+        Optional<Rotation> possibleRotation = reachableCenter(entity, pos, blockReachDistance, wouldSneak);
         //System.out.println("center: " + possibleRotation);
         if (possibleRotation.isPresent()) {
             return possibleRotation;
@@ -176,7 +196,7 @@ public final class RotationUtils {
             double xDiff = aabb.minX * sideOffset.x + aabb.maxX * (1 - sideOffset.x);
             double yDiff = aabb.minY * sideOffset.y + aabb.maxY * (1 - sideOffset.y);
             double zDiff = aabb.minZ * sideOffset.z + aabb.maxZ * (1 - sideOffset.z);
-            possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff), blockReachDistance);
+            possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff), blockReachDistance, wouldSneak);
             if (possibleRotation.isPresent()) {
                 return possibleRotation;
             }
@@ -195,9 +215,10 @@ public final class RotationUtils {
      * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance) {
-        Rotation rotation = calcRotationFromVec3d(entity.getPositionEyes(1.0F), offsetPos);
-        RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance);
+    public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance, boolean wouldSneak) {
+        Vec3d eyes = wouldSneak ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getPositionEyes(1.0F);
+        Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, new Rotation(entity.rotationYaw, entity.rotationPitch));
+        RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance, wouldSneak);
         //System.out.println(result);
         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
             if (result.getBlockPos().equals(pos)) {
@@ -219,7 +240,7 @@ public final class RotationUtils {
      * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos, double blockReachDistance) {
-        return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(entity.world, pos), blockReachDistance);
+    public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
+        return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(entity.world, pos), blockReachDistance, wouldSneak);
     }
 }

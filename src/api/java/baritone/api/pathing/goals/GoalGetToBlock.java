@@ -17,6 +17,7 @@
 
 package baritone.api.pathing.goals;
 
+import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
@@ -28,9 +29,9 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GoalGetToBlock implements Goal, IGoalRenderPos {
 
-    private final int x;
-    private final int y;
-    private final int z;
+    public final int x;
+    public final int y;
+    public final int z;
 
     public GoalGetToBlock(BlockPos pos) {
         this.x = pos.getX();
@@ -61,6 +62,11 @@ public class GoalGetToBlock implements Goal, IGoalRenderPos {
 
     @Override
     public String toString() {
-        return "GoalGetToBlock{x=" + x + ",y=" + y + ",z=" + z + "}";
+        return String.format(
+                "GoalGetToBlock{x=%s,y=%s,z=%s}",
+                SettingsUtil.maybeCensor(x),
+                SettingsUtil.maybeCensor(y),
+                SettingsUtil.maybeCensor(z)
+        );
     }
 }

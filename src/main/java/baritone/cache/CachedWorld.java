@@ -22,7 +22,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IWorldData;
-import baritone.utils.Helper;
+import baritone.api.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -45,7 +44,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
     /**
      * The maximum number of regions in any direction from (0,0)
      */
-    private static final int REGION_MAX = 58594;
+    private static final int REGION_MAX = 30_000_000 / 512 + 1;
 
     /**
      * A map of all of the cached regions.
@@ -71,8 +70,6 @@ public final class CachedWorld implements ICachedWorld, Helper {
         this.directory = directory.toString();
         this.dimension = dimension;
         System.out.println("Cached world directory: " + directory);
-        // Insert an invalid region element
-        cachedRegions.put(0, null);
         Baritone.getExecutor().execute(new PackerThread());
         Baritone.getExecutor().execute(() -> {
             try {
@@ -108,9 +105,13 @@ public final class CachedWorld implements ICachedWorld, Helper {
         return region.isCached(blockX & 511, blockZ & 511);
     }
 
+    public final boolean regionLoaded(int blockX, int blockZ) {
+        return getRegion(blockX >> 9, blockZ >> 9) != null;
+    }
+
     @Override
-    public final LinkedList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
-        LinkedList<BlockPos> res = new LinkedList<>();
+    public final ArrayList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
+        ArrayList<BlockPos> res = new ArrayList<>();
         int centerRegionX = centerX >> 9;
         int centerRegionZ = centerZ >> 9;
 
@@ -127,7 +128,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     CachedRegion region = getOrCreateRegion(regionX, regionZ);
                     if (region != null) {
                         // TODO: 100% verify if this or addAll is faster.
-                        region.getLocationsOf(block).forEach(res::add);
+                        res.addAll(region.getLocationsOf(block));
                     }
                 }
             }
@@ -146,7 +147,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     @Override
     public final void save() {
-        if (!Baritone.settings().chunkCaching.get()) {
+        if (!Baritone.settings().chunkCaching.value) {
             System.out.println("Not saving to disk; chunk caching is disabled.");
             allRegions().forEach(region -> {
                 if (region != null) {
@@ -171,7 +172,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * Delete regions that are too far from the player
      */
     private synchronized void prune() {
-        if (!Baritone.settings().pruneRegionsFromRAM.get()) {
+        if (!Baritone.settings().pruneRegionsFromRAM.value) {
             return;
         }
         BlockPos pruneCenter = guessPosition();
@@ -179,11 +180,13 @@ public final class CachedWorld implements ICachedWorld, Helper {
             if (region == null) {
                 continue;
             }
-            int distX = (region.getX() << 9 + 256) - pruneCenter.getX();
-            int distZ = (region.getZ() << 9 + 256) - pruneCenter.getZ();
+            int distX = ((region.getX() << 9) + 256) - pruneCenter.getX();
+            int distZ = ((region.getZ() << 9) + 256) - pruneCenter.getZ();
             double dist = Math.sqrt(distX * distX + distZ * distZ);
             if (dist > 1024) {
-                logDebug("Deleting cached region " + region.getX() + "," + region.getZ() + " from ram");
+                if (!Baritone.settings().censorCoordinates.value) {
+                    logDebug("Deleting cached region " + region.getX() + "," + region.getZ() + " from ram");
+                }
                 cachedRegions.remove(getRegionID(region.getX(), region.getZ()));
             }
         }
@@ -215,7 +218,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
         if (mostRecentlyModified == null) {
             return new BlockPos(0, 0, 0);
         }
-        return new BlockPos(mostRecentlyModified.x << 4 + 8, 0, mostRecentlyModified.z << 4 + 8);
+        return new BlockPos((mostRecentlyModified.x << 4) + 8, 0, (mostRecentlyModified.z << 4) + 8);
     }
 
     private synchronized List<CachedRegion> allRegions() {
@@ -287,6 +290,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     private class PackerThread implements Runnable {
+
         public void run() {
             while (true) {
                 // TODO: Add CachedWorld unloading to remove the redundancy of having this
@@ -302,6 +306,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
+                } catch (Throwable th) {
+                    // in the case of an exception, keep consuming from the queue so as not to leak memory
+                    th.printStackTrace();
                 }
             }
         }

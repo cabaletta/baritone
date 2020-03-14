@@ -20,6 +20,7 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.ChunkRenderWorker;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -42,7 +43,7 @@ public abstract class MixinChunkRenderWorker {
             )
     )
     private boolean isChunkExisting(ChunkRenderWorker worker, BlockPos pos, World world) {
-        if (Baritone.settings().renderCachedChunks.get()) {
+        if (Baritone.settings().renderCachedChunks.value && !Minecraft.getMinecraft().isSingleplayer()) {
             Baritone baritone = (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
             IPlayerContext ctx = baritone.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null && baritone.bsi != null) {

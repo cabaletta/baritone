@@ -39,11 +39,12 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class MovementFall extends Movement {
 
@@ -64,6 +65,16 @@ public class MovementFall extends Movement {
         return result.cost;
     }
 
+    @Override
+    protected Set<BetterBlockPos> calculateValidPositions() {
+        Set<BetterBlockPos> set = new HashSet<>();
+        set.add(src);
+        for (int y = src.y - dest.y; y >= 0; y--) {
+            set.add(dest.up(y));
+        }
+        return set;
+    }
+
     private boolean willPlaceBucket() {
         CalculationContext context = new CalculationContext(baritone);
         MutableMoveResult result = new MutableMoveResult();
@@ -78,7 +89,7 @@ public class MovementFall extends Movement {
         }
 
         BlockPos playerFeet = ctx.playerFeet();
-        Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest));
+        Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
         Rotation targetRotation = null;
         Block destBlock = ctx.world().getBlockState(dest).getBlock();
         boolean isWater = destBlock == Blocks.WATER || destBlock == Blocks.FLOWING_WATER;
@@ -92,8 +103,7 @@ public class MovementFall extends Movement {
 
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
-                RayTraceResult trace = ctx.objectMouseOver();
-                if (trace != null && trace.typeOfHit == RayTraceResult.Type.BLOCK && (trace.getBlockPos().equals(dest) || trace.getBlockPos().equals(dest.down()))) {
+                if (ctx.isLookingAt(dest) || ctx.isLookingAt(dest.down())) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
             }
@@ -141,7 +151,7 @@ public class MovementFall extends Movement {
         }
         if (targetRotation == null) {
             Vec3d destCenterOffset = new Vec3d(destCenter.x + 0.125 * avoid.getX(), destCenter.y, destCenter.z + 0.125 * avoid.getZ());
-            state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), destCenterOffset), false));
+            state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), destCenterOffset, ctx.playerRotations()), false));
         }
         return state;
     }

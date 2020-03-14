@@ -22,9 +22,9 @@ import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
+import baritone.api.utils.Helper;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.Helper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -50,7 +50,9 @@ public final class GameEventHandler implements IEventBus, Helper {
         if (event.getType() == TickEvent.Type.IN) {
             try {
                 baritone.bsi = new BlockStateInterface(baritone.getPlayerContext(), true);
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                baritone.bsi = null;
+            }
         } else {
             baritone.bsi = null;
         }
@@ -65,6 +67,11 @@ public final class GameEventHandler implements IEventBus, Helper {
     @Override
     public final void onSendChatMessage(ChatEvent event) {
         listeners.forEach(l -> l.onSendChatMessage(event));
+    }
+
+    @Override
+    public void onPreTabComplete(TabCompleteEvent event) {
+        listeners.forEach(l -> l.onPreTabComplete(event));
     }
 
     @Override

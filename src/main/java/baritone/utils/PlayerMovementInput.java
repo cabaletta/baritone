@@ -21,9 +21,10 @@ import baritone.api.utils.input.Input;
 import net.minecraft.util.MovementInput;
 
 public class PlayerMovementInput extends MovementInput {
+
     private final InputOverrideHandler handler;
 
-    public PlayerMovementInput(InputOverrideHandler handler) {
+    PlayerMovementInput(InputOverrideHandler handler) {
         this.handler = handler;
     }
 
@@ -31,7 +32,7 @@ public class PlayerMovementInput extends MovementInput {
         this.moveStrafe = 0.0F;
         this.moveForward = 0.0F;
 
-        jump = handler.isInputForcedDown(Input.JUMP); // oppa
+        jump = handler.isInputForcedDown(Input.JUMP); // oppa gangnam style
 
         if (this.forwardKeyDown = handler.isInputForcedDown(Input.MOVE_FORWARD)) {
             this.moveForward++;

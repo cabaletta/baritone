@@ -21,11 +21,11 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.path.CutoffPath;
-import baritone.utils.Helper;
 import baritone.utils.pathing.PathBase;
 
 import java.util.ArrayList;
@@ -72,31 +72,12 @@ class Path extends PathBase {
         this.start = new BetterBlockPos(start.x, start.y, start.z);
         this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
-        this.path = new ArrayList<>();
         this.movements = new ArrayList<>();
-        this.nodes = new ArrayList<>();
         this.goal = goal;
         this.context = context;
-        assemblePath(end);
-    }
-
-    @Override
-    public Goal getGoal() {
-        return goal;
-    }
-
-    /**
-     * Assembles this path given the end node.
-     *
-     * @param end The end node
-     */
-    private void assemblePath(PathNode end) {
-        if (!path.isEmpty() || !movements.isEmpty()) {
-            throw new IllegalStateException();
-        }
         PathNode current = end;
         LinkedList<BetterBlockPos> tempPath = new LinkedList<>();
-        LinkedList<PathNode> tempNodes = new LinkedList();
+        LinkedList<PathNode> tempNodes = new LinkedList<>();
         // Repeatedly inserting to the beginning of an arraylist is O(n^2)
         // Instead, do it into a linked list, then convert at the end
         while (current != null) {
@@ -107,8 +88,13 @@ class Path extends PathBase {
         // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
         // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         // to performantly do that conversion since it knows the length.
-        path.addAll(tempPath);
-        nodes.addAll(tempNodes);
+        this.path = new ArrayList<>(tempPath);
+        this.nodes = new ArrayList<>(tempNodes);
+    }
+
+    @Override
+    public Goal getGoal() {
+        return goal;
     }
 
     private boolean assembleMovements() {

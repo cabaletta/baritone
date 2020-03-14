@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.type.EventState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.play.server.SPacketChunkData;
 import net.minecraft.network.play.server.SPacketCombatEvent;
@@ -45,7 +46,8 @@ public class MixinNetHandlerPlayClient {
     )
     private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
+            EntityPlayerSP player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (NetHandlerPlayClient) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.PRE,
@@ -64,7 +66,8 @@ public class MixinNetHandlerPlayClient {
     )
     private void postHandleChunkData(SPacketChunkData packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
+            EntityPlayerSP player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (NetHandlerPlayClient) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.POST,
@@ -86,7 +89,8 @@ public class MixinNetHandlerPlayClient {
     )
     private void onPlayerDeath(SPacketCombatEvent packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
+            EntityPlayerSP player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (NetHandlerPlayClient) (Object) this) {
                 ibaritone.getGameEventHandler().onPlayerDeath();
             }
         }
