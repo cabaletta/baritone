@@ -19,13 +19,13 @@ package baritone.command.defaults;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.RelativeBlockPos;
 import baritone.api.command.datatypes.RelativeFile;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
-import baritone.api.command.argument.IArgConsumer;
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FilenameUtils;
 
@@ -59,7 +59,7 @@ public class BuildCommand extends Command {
         }
         boolean success = baritone.getBuilderProcess().build(file.getName(), file, buildOrigin);
         if (!success) {
-            throw new CommandInvalidStateException("Couldn't load the schematic");
+            throw new CommandInvalidStateException("Couldn't load the schematic. Make sure to use the FULL file name, including the extension (e.g. blah.schematic).");
         }
         logDirect(String.format("Successfully loaded schematic for building\nOrigin: %s", buildOrigin));
     }
