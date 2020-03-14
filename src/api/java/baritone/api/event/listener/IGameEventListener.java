@@ -21,9 +21,10 @@ import baritone.api.event.events.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.DeathScreen;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.IPacket;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * @author Brady
@@ -80,7 +81,7 @@ public interface IGameEventListener {
      * Runs before and after whenever a new world is loaded
      *
      * @param event The event
-     * @see Minecraft#loadWorld(ClientWorld, Screen)
+     * @see Minecraft#loadWorld(ClientWorld)
      */
     void onWorldEvent(WorldEvent event);
 
@@ -88,7 +89,7 @@ public interface IGameEventListener {
      * Runs before a outbound packet is sent
      *
      * @param event The event
-     * @see Packet
+     * @see IPacket
      */
     void onSendPacket(PacketEvent event);
 
@@ -96,7 +97,7 @@ public interface IGameEventListener {
      * Runs before an inbound packet is processed
      *
      * @param event The event
-     * @see Packet
+     * @see IPacket
      */
     void onReceivePacket(PacketEvent event);
 
@@ -105,7 +106,7 @@ public interface IGameEventListener {
      * and before and after the player jumps.
      *
      * @param event The event
-     * @see Entity#moveRelative(float, float, float, float)
+     * @see Entity#moveRelative(float, Vec3d)
      */
     void onPlayerRotationMove(RotationMoveEvent event);
 
@@ -125,9 +126,9 @@ public interface IGameEventListener {
     void onBlockInteract(BlockInteractEvent event);
 
     /**
-     * Called when the local player dies, as indicated by the creation of the {@link GuiGameOver} screen.
+     * Called when the local player dies, as indicated by the creation of the {@link DeathScreen} screen.
      *
-     * @see GuiGameOver
+     * @see DeathScreen
      */
     void onPlayerDeath();
 
