@@ -108,6 +108,11 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     }
 
     private boolean inControl() {
+        for (Input input : new Input[]{Input.MOVE_FORWARD, Input.MOVE_BACK, Input.MOVE_LEFT, Input.MOVE_RIGHT, Input.SNEAK}) {
+            if (isInputForcedDown(input)) {
+                return true;
+            }
+        }
         // if we are not primary (a bot) we should set the movementinput even when idle (not pathing)
         return baritone.getPathingBehavior().isPathing() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone();
     }
