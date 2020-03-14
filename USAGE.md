@@ -1,8 +1,5 @@
 	(assuming you already have Baritone [set up](SETUP.md))
-
-	#Don't speak english?
-		- Traduction de ce guide en français [français](USAGE-FR.md)
-
+	
 	# Prefix
 
 Baritone's chat control prefix is `#` by default. In Impact, you can also use `.b` as a prefix. (for example, `.b click` instead of `#click`)
