@@ -89,7 +89,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block instanceof BlockTrapDoor) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block instanceof BlockTrapDoor || block == Blocks.END_ROD) {
             return false;
         }
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
@@ -302,7 +302,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
             return true;
         }
-        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST ) {
+        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
             return true;
         }
         if (isWater(block)) {
