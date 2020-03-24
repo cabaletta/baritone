@@ -25,6 +25,7 @@ import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.EntitySpider;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -78,6 +79,12 @@ public class Avoidance {
                     .filter(entity -> !(entity instanceof EntityPigZombie) || ((EntityPigZombie) entity).isAngry())
                     .filter(entity -> !(entity instanceof EntityEnderman) || ((EntityEnderman) entity).isScreaming())
                     .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
+        }
+        boolean socialDist = Baritone.settings().socialDistancing.value;
+        if(socialDist) {
+            ctx.world().loadedEntityList.stream()
+                    .filter(entity -> entity instanceof EntityPlayer)
+                    .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), 2.0, Baritone.settings().socialDistancingRadius.value)));
         }
         return res;
     }

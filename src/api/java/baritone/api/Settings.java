@@ -332,6 +332,14 @@ public final class Settings {
     public final Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
 
     /**
+     * Set to true to enable COVID-19 countermeasures
+     * Increase range as new instructions from government officials come out
+     */
+    public final Setting<Boolean> socialDistancing = new Setting<>(true);
+
+    public final Setting<Integer> socialDistancingRadius = new Setting<>(2);
+
+    /**
      * When running a goto towards a container block (chest, ender chest, furnace, etc),
      * right click and open it once you arrive.
      */
