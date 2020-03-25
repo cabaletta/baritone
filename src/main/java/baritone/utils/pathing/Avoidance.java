@@ -81,7 +81,7 @@ public class Avoidance {
                     .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
         }
         boolean socialDist = Baritone.settings().socialDistancing.value;
-        if(socialDist) {
+        if (socialDist) {
             ctx.world().loadedEntityList.stream()
                     .filter(entity -> entity instanceof EntityPlayer)
                     .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), 2.0, Baritone.settings().socialDistancingRadius.value)));
