@@ -107,10 +107,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
-            // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
-            // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
-            // be opened by just interacting.
-            return (block != Blocks.IRON_DOOR) || doorCanFulfillRequest(bsi, x, y, z, state, request);
+            return doorCanFulfillRequest(bsi, x, y, z, state, request);
         }
         if (block == Blocks.CARPET) {
             return canWalkOn(bsi, x, y - 1, z);
@@ -166,21 +163,43 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
 
-        EnumFacing doorFacing = lowerDoor.getValue(BlockDoor.FACING).getOpposite();
-        if (lowerDoor.getValue(BlockDoor.OPEN)) {
-            BlockDoor.EnumHingePosition e = upperDoor.getValue(BlockDoor.HINGE);
-            switch (e) {
-                case LEFT:
-                    doorFacing = doorFacing.rotateY();
-                    break;
-                case RIGHT:
-                    doorFacing = doorFacing.rotateYCCW();
-                    break;
-                default:
-                    return false;
+        // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
+        // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
+        // be opened by just interacting.
+        if (upperDoor.getBlock() == Blocks.IRON_DOOR) {
+            // We cannot change it
+            EnumFacing doorFacing = lowerDoor.getValue(BlockDoor.FACING).getOpposite();
+            if (lowerDoor.getValue(BlockDoor.OPEN)) {
+                BlockDoor.EnumHingePosition e = upperDoor.getValue(BlockDoor.HINGE);
+                switch (e) {
+                    case LEFT:
+                        doorFacing = doorFacing.rotateY();
+                        break;
+                    case RIGHT:
+                        doorFacing = doorFacing.rotateYCCW();
+                        break;
+                    default:
+                        return false;
+                }
+            }
+            return !req.requires(doorFacing);
+        } else {
+            // Can we make it work?
+            EnumFacing doorFacing = lowerDoor.getValue(BlockDoor.FACING).getOpposite();
+            if (req.requires(doorFacing)) {
+                BlockDoor.EnumHingePosition e = upperDoor.getValue(BlockDoor.HINGE);
+                switch (e) {
+                    case LEFT:
+                        return !req.requires(doorFacing.rotateY());
+                    case RIGHT:
+                        return !req.requires(doorFacing.rotateYCCW());
+                    default:
+                        return false;
+                }
+            } else {
+                return true;
             }
         }
-        return !req.requires(doorFacing);
     }
 
     /**
