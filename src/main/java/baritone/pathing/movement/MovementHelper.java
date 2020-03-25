@@ -106,7 +106,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
             return false;
         }
-        if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
+        if (block instanceof BlockFenceGate) {
+            return true;
+        }
+        if (block instanceof BlockDoor) {
             return doorCanFulfillRequest(bsi, x, y, z, state, request);
         }
         if (block == Blocks.CARPET) {
