@@ -42,10 +42,9 @@ public class CreateDistTask extends BaritoneGradleTask {
         super.verifyArtifacts();
 
         // Define the distribution file paths
-        Path api             = getRelativeFile("dist/" + formatVersion(ARTIFACT_API));
-        Path standalone      = getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE));
-        Path unoptimized     = getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED));
-        Path forgeApi        = getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API));
+        Path api             = getRelativeFile("dist/" + getFileName(artifactApiPath));
+        Path standalone      = getRelativeFile("dist/" + getFileName(artifactStandalonePath));
+        Path unoptimized     = getRelativeFile("dist/" + getFileName(artifactUnoptimizedPath));
 
         // NIO will not automatically create directories
         Path dir = getRelativeFile("dist/");
@@ -54,18 +53,15 @@ public class CreateDistTask extends BaritoneGradleTask {
         }
 
         // Copy build jars to dist/
-        if (getProject().hasProperty("baritone.forge_build")) {
-            Files.copy(this.artifactForgeApiPath,    forgeApi,    REPLACE_EXISTING);
-        } else {
-            Files.copy(this.artifactApiPath,         api,         REPLACE_EXISTING);
-            Files.copy(this.artifactStandalonePath,  standalone,  REPLACE_EXISTING);
-            Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
-        }
-
+        // TODO: dont copy files that dont exist
+        Files.copy(this.artifactApiPath,         api,         REPLACE_EXISTING);
+        Files.copy(this.artifactStandalonePath,  standalone,  REPLACE_EXISTING);
+        Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
-        List<String> shasum = Stream.of(forgeApi, api, standalone, unoptimized)
-                .filter(f -> false) // TODO: dont sha nonexistant artifacts
+        // TODO: get the hash for both forge and non forge jars
+        List<String> shasum = Stream.of(api, standalone, unoptimized)
+                .filter(Files::exists)
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 
@@ -73,6 +69,10 @@ public class CreateDistTask extends BaritoneGradleTask {
 
         // Write the checksums to a file
         Files.write(getRelativeFile("dist/checksums.txt"), shasum);
+    }
+
+    private static String getFileName(Path p) {
+        return p.getFileName().toString();
     }
 
     private static synchronized String sha1(Path path) {

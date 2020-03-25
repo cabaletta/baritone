@@ -56,12 +56,8 @@ public class ProguardTask extends BaritoneGradleTask {
         downloadProguard();
         extractProguard();
         generateConfigs();
-        if (getProject().hasProperty("baritone.forge_build")) {
-            proguardApi(this.artifactForgeApiPath.toString());
-        } else {
-            proguardApi(this.artifactApiPath.toString());
-            proguardStandalone(this.artifactStandalonePath.toString());
-        }
+        proguardApi();
+        proguardStandalone();
         cleanup();
     }
 
@@ -142,17 +138,16 @@ public class ProguardTask extends BaritoneGradleTask {
         return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
             .stream()
             .filter(File::isFile);
-            //.peek(f -> System.out.println("xd: " + f));
     }
 
-    private void proguardApi(String artifact) throws Exception {
+    private void proguardApi() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), artifact);
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
     }
 
-    private void proguardStandalone(String artifact) throws Exception {
+    private void proguardStandalone() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), artifact);
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
     }
 
     private void cleanup() {
