@@ -195,12 +195,12 @@ public class MovementDiagonal extends Movement {
         }
         // Begin checking other blocks
         EnumFacing aFaceO = (destZ > z) ? EnumFacing.NORTH : EnumFacing.SOUTH;
-        optionA += MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false, new SpaceRequest(aFaceO).withLowerPlayerSpace());
+        optionA += MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false, new SpaceRequest(aFaceO, bFace).withLowerPlayerSpace());
         if (optionA != 0 && optionB != 0) {
             return;
         }
         EnumFacing bFaceO = (destX > x) ? EnumFacing.WEST : EnumFacing.EAST;
-        optionB += MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false, new SpaceRequest(bFaceO).withLowerPlayerSpace());
+        optionB += MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false, new SpaceRequest(bFaceO, aFace).withLowerPlayerSpace());
         if (optionA != 0 && optionB != 0) {
             return;
         }
@@ -229,6 +229,18 @@ public class MovementDiagonal extends Movement {
             if (startIn == Blocks.LADDER || startIn == Blocks.VINE) {
                 // edging around doesn't work if doing so would climb a ladder or vine instead of moving sideways
                 return;
+            }
+            // Detect partial blocks which would prevent edging around
+            if (optionA == 0) {
+                if (MovementHelper.canWalkThrough(context.bsi, destX, y, z, pb2, new SpaceRequest(bFaceO).withLowerPlayerSpace()) && MovementHelper.canWalkThrough(context.bsi, destX, y + 1, z, pb3, new SpaceRequest(bFaceO).withUpperPlayerSpace())) {
+                    //res.cost = COST_INF;
+                    return;
+                }
+            } else {
+                if (MovementHelper.canWalkThrough(context.bsi, x, y, destZ, pb0, new SpaceRequest(aFaceO).withLowerPlayerSpace()) && MovementHelper.canWalkThrough(context.bsi, x, y + 1, destZ, pb1, new SpaceRequest(aFaceO).withUpperPlayerSpace())) {
+                    //res.cost = COST_INF;
+                    return;
+                }
             }
         } else {
             // only can sprint if not edging around
