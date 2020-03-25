@@ -387,10 +387,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 double playerX = ctx.player().posX;
                 double playerZ = ctx.player().posZ;
                 ArrayList<Tuple<BetterBlockPos, EnumFacing>> closest = new ArrayList<>();
-                closest.add(new Tuple<>(feet.north(), EnumFacing.NORTH));
-                closest.add(new Tuple<>(feet.east(), EnumFacing.EAST));
-                closest.add(new Tuple<>(feet.south(), EnumFacing.SOUTH));
-                closest.add(new Tuple<>(feet.west(), EnumFacing.WEST));
+                // The North block needs its southern side clear
+                closest.add(new Tuple<>(feet.north(), EnumFacing.SOUTH));
+                closest.add(new Tuple<>(feet.east(), EnumFacing.WEST));
+                closest.add(new Tuple<>(feet.south(), EnumFacing.NORTH));
+                closest.add(new Tuple<>(feet.west(), EnumFacing.EAST));
                 closest.sort(Comparator.comparingDouble(n -> {
                     BetterBlockPos pos = n.getFirst();
                     return ((pos.x + 0.5D) - playerX) * ((pos.x + 0.5D) - playerX) + ((pos.z + 0.5D) - playerZ) * ((pos.z + 0.5D) - playerZ);
