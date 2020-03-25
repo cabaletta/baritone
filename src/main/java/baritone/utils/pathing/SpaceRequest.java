@@ -50,6 +50,8 @@ public class SpaceRequest {
                 case WEST:
                     requestWest = true;
                     break;
+                default:
+                    break;
             }
         }
     }
@@ -83,6 +85,14 @@ public class SpaceRequest {
             default:
                 return false;
         }
+    }
+
+    public boolean isRequestNoSuffocation() {
+        return requestNoSuffocation;
+    }
+
+    public boolean isRequestPlayerSpace() {
+        return requestPlayerSpace;
     }
 
     public SpaceRequest withNoSuffocation() {
