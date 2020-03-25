@@ -60,6 +60,8 @@ public class MovementDiagonal extends Movement {
 
     private static PositionalSpaceRequest[] buildRequests(BetterBlockPos start, BetterBlockPos end, BetterBlockPos dir1, BetterBlockPos dir2) {
         return new PositionalSpaceRequest[] {
+                PositionalSpaceRequest.greedyRequest(start),
+                PositionalSpaceRequest.greedyRequest(start.up()),
                 PositionalSpaceRequest.greedyRequest(dir1),
                 PositionalSpaceRequest.greedyRequest(dir1.up()),
                 PositionalSpaceRequest.greedyRequest(dir2),
