@@ -36,6 +36,9 @@ import baritone.pathing.path.PathExecutor;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
+import baritone.utils.pathing.SpaceRequest;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -383,22 +386,26 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             if (ctx.player().onGround) {
                 double playerX = ctx.player().posX;
                 double playerZ = ctx.player().posZ;
-                ArrayList<BetterBlockPos> closest = new ArrayList<>();
-                for (int dx = -1; dx <= 1; dx++) {
-                    for (int dz = -1; dz <= 1; dz++) {
-                        closest.add(new BetterBlockPos(feet.x + dx, feet.y, feet.z + dz));
-                    }
-                }
-                closest.sort(Comparator.comparingDouble(pos -> ((pos.x + 0.5D) - playerX) * ((pos.x + 0.5D) - playerX) + ((pos.z + 0.5D) - playerZ) * ((pos.z + 0.5D) - playerZ)));
+                ArrayList<Tuple<BetterBlockPos, EnumFacing>> closest = new ArrayList<>();
+                closest.add(new Tuple<>(feet.north(), EnumFacing.NORTH));
+                closest.add(new Tuple<>(feet.east(), EnumFacing.EAST));
+                closest.add(new Tuple<>(feet.south(), EnumFacing.SOUTH));
+                closest.add(new Tuple<>(feet.west(), EnumFacing.WEST));
+                closest.sort(Comparator.comparingDouble(n -> {
+                    BetterBlockPos pos = n.getFirst();
+                    return ((pos.x + 0.5D) - playerX) * ((pos.x + 0.5D) - playerX) + ((pos.z + 0.5D) - playerZ) * ((pos.z + 0.5D) - playerZ);
+                }));
                 for (int i = 0; i < 4; i++) {
-                    BetterBlockPos possibleSupport = closest.get(i);
+                    Tuple<BetterBlockPos, EnumFacing> possibleSupportTuple = closest.get(i);
+                    EnumFacing possibleSupportSide = possibleSupportTuple.getSecond();
+                    BetterBlockPos possibleSupport = possibleSupportTuple.getFirst();
                     double xDist = Math.abs((possibleSupport.x + 0.5D) - playerX);
                     double zDist = Math.abs((possibleSupport.z + 0.5D) - playerZ);
                     if (xDist > 0.8 && zDist > 0.8) {
                         // can't possibly be sneaking off of this one, we're too far away
                         continue;
                     }
-                    if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport) && MovementHelper.canWalkThrough(ctx, possibleSupport.up())) {
+                    if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport, new SpaceRequest(possibleSupportSide)) && MovementHelper.canWalkThrough(ctx, possibleSupport.up(), new SpaceRequest(possibleSupportSide))) {
                         // this is plausible
                         //logDebug("Faking path start assuming player is standing off the edge of a block");
                         return possibleSupport;

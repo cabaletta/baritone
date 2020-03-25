@@ -27,6 +27,8 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -38,9 +40,21 @@ import java.util.Set;
 public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
+    private EnumFacing direction;
 
-    public MovementAscend(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
-        super(baritone, src, dest, new BetterBlockPos[]{dest, src.up(2), dest.up()}, dest.down());
+    public MovementAscend(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, EnumFacing directionIn) {
+        super(baritone, src, dest, buildSpaceRequests(src, dest, directionIn), dest.down());
+        direction = directionIn;
+    }
+
+    private static PositionalSpaceRequest[] buildSpaceRequests(BetterBlockPos src, BetterBlockPos dest, EnumFacing direction) {
+        EnumFacing opposite = direction.getOpposite();
+        return new PositionalSpaceRequest[] {
+                new PositionalSpaceRequest(src.up(), new SpaceRequest(direction, EnumFacing.UP)),
+                new PositionalSpaceRequest(dest, new SpaceRequest(opposite).withLowerPlayerSpace()),
+                new PositionalSpaceRequest(src.up(2), new SpaceRequest(direction).withUpperPlayerSpace()),
+                new PositionalSpaceRequest(dest.up(), new SpaceRequest(opposite).withUpperPlayerSpace())
+        };
     }
 
     @Override
@@ -51,7 +65,7 @@ public class MovementAscend extends Movement {
 
     @Override
     public double calculateCost(CalculationContext context) {
-        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        return cost(context, src.x, src.y, src.z, dest.x, dest.z, direction);
     }
 
     @Override
@@ -65,7 +79,7 @@ public class MovementAscend extends Movement {
         );
     }
 
-    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ, EnumFacing direction) {
         IBlockState toPlace = context.get(destX, y, destZ);
         double additionalPlacementCost = 0;
         if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace)) {
@@ -94,7 +108,7 @@ public class MovementAscend extends Movement {
             }
         }
         IBlockState srcUp2 = context.get(x, y + 2, z); // used lower down anyway
-        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context.bsi, x, y + 1, z) || !(srcUp2.getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
+        if (context.get(x, y + 3, z).getBlock() instanceof BlockFalling && (MovementHelper.canWalkThrough(context.bsi, x, y + 1, z, SpaceRequest.greedyRequest()) || !(srcUp2.getBlock() instanceof BlockFalling))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts
@@ -143,15 +157,19 @@ public class MovementAscend extends Movement {
         double totalCost = walk + additionalPlacementCost;
         // start with srcUp2 since we already have its state
         // includeFalling isn't needed because of the falling check above -- if srcUp3 is falling we will have already exited with COST_INF if we'd actually have to break it
-        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false);
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false, new SpaceRequest(direction).withUpperPlayerSpace());
         if (totalCost >= COST_INF) {
             return COST_INF;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, false);
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, new SpaceRequest(direction));
         if (totalCost >= COST_INF) {
             return COST_INF;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 2, destZ, true);
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, false, new SpaceRequest(direction.getOpposite()).withLowerPlayerSpace());
+        if (totalCost >= COST_INF) {
+            return COST_INF;
+        }
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 2, destZ, true, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace());
         return totalCost;
     }
 
@@ -226,7 +244,7 @@ public class MovementAscend extends Movement {
         BetterBlockPos startUp = src.up(2);
         for (int i = 0; i < 4; i++) {
             BetterBlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));
-            if (!MovementHelper.canWalkThrough(ctx, check)) {
+            if (!MovementHelper.canWalkThrough(ctx, check, new SpaceRequest(direction).withLowerPlayerSpace())) {
                 // We might bonk our head
                 return false;
             }

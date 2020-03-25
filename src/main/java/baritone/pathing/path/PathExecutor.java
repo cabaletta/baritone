@@ -32,6 +32,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.pathing.SpaceRequest;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
@@ -281,7 +282,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             // we're in some kind of sketchy situation, maybe parkouring
             return false;
         }
-        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet()) || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().up())) {
+        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet(), new SpaceRequest().withNoSuffocation()) || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().up(), new SpaceRequest().withNoSuffocation())) {
             // suffocating?
             return false;
         }

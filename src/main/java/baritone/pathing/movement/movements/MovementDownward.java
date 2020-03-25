@@ -24,6 +24,8 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -36,7 +38,7 @@ public class MovementDownward extends Movement {
     private int numTicks = 0;
 
     public MovementDownward(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
-        super(baritone, start, end, new BetterBlockPos[]{end});
+        super(baritone, start, end, new PositionalSpaceRequest[]{new PositionalSpaceRequest(end, new SpaceRequest().withLowerPlayerSpace())});
     }
 
     @Override
@@ -68,7 +70,7 @@ public class MovementDownward extends Movement {
             return LADDER_DOWN_ONE_COST;
         } else {
             // we're standing on it, while it might be block falling, it'll be air by the time we get here in the movement
-            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, x, y - 1, z, down, false);
+            return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, x, y - 1, z, down, false, new SpaceRequest().withUpperPlayerSpace().withLowerPlayerSpace());
         }
     }
 
@@ -91,7 +93,7 @@ public class MovementDownward extends Movement {
         if (numTicks++ < 10 && ab < 0.2) {
             return state;
         }
-        MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+        MovementHelper.moveTowards(ctx, state, spaceRequests[0].getPos());
         return state;
     }
 }

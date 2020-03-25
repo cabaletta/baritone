@@ -30,10 +30,13 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -47,8 +50,21 @@ public class MovementTraverse extends Movement {
      */
     private boolean wasTheBridgeBlockAlwaysThere = true;
 
-    public MovementTraverse(IBaritone baritone, BetterBlockPos from, BetterBlockPos to) {
-        super(baritone, from, to, new BetterBlockPos[]{to.up(), to}, to.down());
+    private EnumFacing direction;
+
+    public MovementTraverse(IBaritone baritone, BetterBlockPos from, BetterBlockPos to, EnumFacing directionIn) {
+        super(baritone, from, to, buildSpaceRequests(from, to, directionIn), to.down());
+        direction = directionIn;
+    }
+
+    private static PositionalSpaceRequest[] buildSpaceRequests(BetterBlockPos from, BetterBlockPos to, EnumFacing direction) {
+        EnumFacing opposite = direction.getOpposite();
+        return new PositionalSpaceRequest[] {
+                new PositionalSpaceRequest(from.up(), new SpaceRequest(direction)),
+                new PositionalSpaceRequest(from, new SpaceRequest(direction)),
+                new PositionalSpaceRequest(to.up(), new SpaceRequest(opposite).withUpperPlayerSpace()),
+                new PositionalSpaceRequest(to, new SpaceRequest(opposite).withLowerPlayerSpace()),
+        };
     }
 
     @Override
@@ -59,7 +75,7 @@ public class MovementTraverse extends Movement {
 
     @Override
     public double calculateCost(CalculationContext context) {
-        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        return cost(context, src.x, src.y, src.z, dest.x, dest.z, direction);
     }
 
     @Override
@@ -67,7 +83,7 @@ public class MovementTraverse extends Movement {
         return ImmutableSet.of(src, dest);
     }
 
-    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ, EnumFacing direction) {
         IBlockState pb0 = context.get(destX, y + 1, destZ);
         IBlockState pb1 = context.get(destX, y, destZ);
         IBlockState destOn = context.get(destX, y - 1, destZ);
@@ -88,11 +104,19 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
-            double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
+            double hardness3 = MovementHelper.getMiningDurationTicks(context, x, y, z, false, new SpaceRequest(direction));
+            if (hardness3 >= COST_INF) {
+                return COST_INF;
+            }
+            double hardness4 = MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, new SpaceRequest(direction));
+            if (hardness4 >= COST_INF) {
+                return COST_INF;
+            }
+            double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false, new SpaceRequest(direction.getOpposite()).withLowerPlayerSpace());
             if (hardness1 >= COST_INF) {
                 return COST_INF;
             }
-            double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
+            double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace()); // only include falling on the upper block to break
             if (hardness1 == 0 && hardness2 == 0) {
                 if (!water && context.canSprint) {
                     // If there's nothing in the way, and this isn't water, and we aren't sneak placing
@@ -121,11 +145,11 @@ public class MovementTraverse extends Movement {
                 if (placeCost >= COST_INF) {
                     return COST_INF;
                 }
-                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
+                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false, new SpaceRequest(direction.getOpposite()).withLowerPlayerSpace());
                 if (hardness1 >= COST_INF) {
                     return COST_INF;
                 }
-                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
+                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace()); // only include falling on the upper block to break
                 double WC = throughWater ? context.waterWalkSpeed : WALK_ONE_BLOCK_COST;
                 for (int i = 0; i < 5; i++) {
                     int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
@@ -155,8 +179,8 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        IBlockState pb0 = BlockStateInterface.get(ctx, positionsToBreak[0]);
-        IBlockState pb1 = BlockStateInterface.get(ctx, positionsToBreak[1]);
+        IBlockState pb0 = BlockStateInterface.get(ctx, spaceRequests[0].getPos());
+        IBlockState pb1 = BlockStateInterface.get(ctx, spaceRequests[1].getPos());
         if (state.getStatus() != MovementStatus.RUNNING) {
             // if the setting is enabled
             if (!Baritone.settings().walkWhileBreaking.value) {
@@ -209,14 +233,14 @@ public class MovementTraverse extends Movement {
             boolean canOpen = !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()));
 
             if (notPassable && canOpen) {
-                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), positionsToBreak[0]), ctx.playerRotations()), true))
+                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), spaceRequests[0].getPos()), ctx.playerRotations()), true))
                         .setInput(Input.CLICK_RIGHT, true);
             }
         }
 
         if (pb0.getBlock() instanceof BlockFenceGate || pb1.getBlock() instanceof BlockFenceGate) {
-            BlockPos blocked = !MovementHelper.isGatePassable(ctx, positionsToBreak[0], src.up()) ? positionsToBreak[0]
-                    : !MovementHelper.isGatePassable(ctx, positionsToBreak[1], src) ? positionsToBreak[1]
+            BlockPos blocked = !MovementHelper.isGatePassable(ctx, spaceRequests[0].getPos(), src.up()) ? spaceRequests[0].getPos()
+                    : !MovementHelper.isGatePassable(ctx, spaceRequests[1].getPos(), src) ? spaceRequests[1].getPos()
                     : null;
             if (blocked != null) {
                 Optional<Rotation> rotation = RotationUtils.reachable(ctx, blocked);
@@ -258,7 +282,7 @@ public class MovementTraverse extends Movement {
             }
 
             IBlockState destDown = BlockStateInterface.get(ctx, dest.down());
-            BlockPos against = positionsToBreak[0];
+            BlockPos against = spaceRequests[2].getPos();
             if (feet.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
                 against = destDown.getBlock() == Blocks.VINE ? MovementPillar.getAgainst(new CalculationContext(baritone), dest.down()) : dest.offset(destDown.getValue(BlockLadder.FACING).getOpposite());
                 if (against == null) {
@@ -336,7 +360,7 @@ public class MovementTraverse extends Movement {
                 }
                 return state;
             }
-            MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+            MovementHelper.moveTowards(ctx, state, spaceRequests[2].getPos());
             return state;
             // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
         }

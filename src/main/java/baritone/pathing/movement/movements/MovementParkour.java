@@ -27,6 +27,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockStairs;
@@ -39,7 +41,7 @@ import java.util.Set;
 
 public class MovementParkour extends Movement {
 
-    private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
+    private static final PositionalSpaceRequest[] EMPTY = new PositionalSpaceRequest[]{};
 
     private final EnumFacing direction;
     private final int dist;

@@ -30,6 +30,8 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
@@ -43,7 +45,9 @@ import java.util.Set;
 public class MovementPillar extends Movement {
 
     public MovementPillar(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
-        super(baritone, start, end, new BetterBlockPos[]{start.up(2)}, start);
+        super(baritone, start, end, new PositionalSpaceRequest[]{
+                new PositionalSpaceRequest(start.up(2), new SpaceRequest().withUpperPlayerSpace())
+        }, start);
     }
 
     @Override
@@ -101,7 +105,7 @@ public class MovementPillar extends Movement {
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
             return COST_INF;
         }
-        double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);
+        double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true, new SpaceRequest().withUpperPlayerSpace());
         if (hardness >= COST_INF) {
             return COST_INF;
         }

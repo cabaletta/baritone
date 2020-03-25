@@ -28,6 +28,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -53,7 +55,18 @@ public class MovementDiagonal extends Movement {
     }
 
     private MovementDiagonal(IBaritone baritone, BetterBlockPos start, BetterBlockPos end, BetterBlockPos dir1, BetterBlockPos dir2) {
-        super(baritone, start, end, new BetterBlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
+        super(baritone, start, end, buildRequests(start, end, dir1, dir2));
+    }
+
+    private static PositionalSpaceRequest[] buildRequests(BetterBlockPos start, BetterBlockPos end, BetterBlockPos dir1, BetterBlockPos dir2) {
+        return new PositionalSpaceRequest[] {
+                PositionalSpaceRequest.greedyRequest(dir1),
+                PositionalSpaceRequest.greedyRequest(dir1.up()),
+                PositionalSpaceRequest.greedyRequest(dir2),
+                PositionalSpaceRequest.greedyRequest(dir2.up()),
+                PositionalSpaceRequest.greedyRequest(end),
+                PositionalSpaceRequest.greedyRequest(end.up())
+        };
     }
 
     @Override
@@ -80,16 +93,16 @@ public class MovementDiagonal extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
-        if (!MovementHelper.canWalkThrough(context.bsi, destX, y + 1, destZ)) {
+        if (!MovementHelper.canWalkThrough(context.bsi, destX, y + 1, destZ, SpaceRequest.greedyRequest())) {
             return;
         }
         IBlockState destInto = context.get(destX, y, destZ);
         boolean ascend = false;
         IBlockState destWalkOn;
         boolean descend = false;
-        if (!MovementHelper.canWalkThrough(context.bsi, destX, y, destZ, destInto)) {
+        if (!MovementHelper.canWalkThrough(context.bsi, destX, y, destZ, destInto, SpaceRequest.greedyRequest())) {
             ascend = true;
-            if (!context.allowDiagonalAscend || !MovementHelper.canWalkThrough(context.bsi, x, y + 2, z) || !MovementHelper.canWalkOn(context.bsi, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context.bsi, destX, y + 2, destZ)) {
+            if (!context.allowDiagonalAscend || !MovementHelper.canWalkThrough(context.bsi, x, y + 2, z, SpaceRequest.greedyRequest()) || !MovementHelper.canWalkOn(context.bsi, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context.bsi, destX, y + 2, destZ, SpaceRequest.greedyRequest())) {
                 return;
             }
             destWalkOn = destInto;
@@ -97,7 +110,7 @@ public class MovementDiagonal extends Movement {
             destWalkOn = context.get(destX, y - 1, destZ);
             if (!MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn)) {
                 descend = true;
-                if (!context.allowDiagonalDescend || !MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi, destX, y - 1, destZ, destWalkOn)) {
+                if (!context.allowDiagonalDescend || !MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi, destX, y - 1, destZ, destWalkOn, SpaceRequest.greedyRequest())) {
                     return;
                 }
             }
@@ -139,12 +152,12 @@ public class MovementDiagonal extends Movement {
         IBlockState pb0 = context.get(x, y, destZ);
         IBlockState pb2 = context.get(destX, y, z);
         if (ascend) {
-            boolean ATop = MovementHelper.canWalkThrough(context.bsi, x, y + 2, destZ);
-            boolean AMid = MovementHelper.canWalkThrough(context.bsi, x, y + 1, destZ);
-            boolean ALow = MovementHelper.canWalkThrough(context.bsi, x, y, destZ, pb0);
-            boolean BTop = MovementHelper.canWalkThrough(context.bsi, destX, y + 2, z);
-            boolean BMid = MovementHelper.canWalkThrough(context.bsi, destX, y + 1, z);
-            boolean BLow = MovementHelper.canWalkThrough(context.bsi, destX, y, z, pb2);
+            boolean ATop = MovementHelper.canWalkThrough(context.bsi, x, y + 2, destZ, SpaceRequest.greedyRequest());
+            boolean AMid = MovementHelper.canWalkThrough(context.bsi, x, y + 1, destZ, SpaceRequest.greedyRequest());
+            boolean ALow = MovementHelper.canWalkThrough(context.bsi, x, y, destZ, pb0, SpaceRequest.greedyRequest());
+            boolean BTop = MovementHelper.canWalkThrough(context.bsi, destX, y + 2, z, SpaceRequest.greedyRequest());
+            boolean BMid = MovementHelper.canWalkThrough(context.bsi, destX, y + 1, z, SpaceRequest.greedyRequest());
+            boolean BLow = MovementHelper.canWalkThrough(context.bsi, destX, y, z, pb2, SpaceRequest.greedyRequest());
             if ((!(ATop && AMid && ALow) && !(BTop && BMid && BLow)) // no option
                     || MovementHelper.avoidWalkingInto(pb0.getBlock()) // bad
                     || MovementHelper.avoidWalkingInto(pb2.getBlock()) // bad
@@ -160,15 +173,39 @@ public class MovementDiagonal extends Movement {
             res.y = y + 1;
             return;
         }
-        double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false);
-        double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false);
+        // Check the blocks we're currently in first
+        EnumFacing aFace = (destZ > z) ? EnumFacing.SOUTH : EnumFacing.NORTH;
+        EnumFacing bFace = (destX > x) ? EnumFacing.EAST : EnumFacing.WEST;
+        IBlockState stateFeet = context.get(x, y, z);
+        double optionA = MovementHelper.getMiningDurationTicks(context, x, y, z, stateFeet, false, new SpaceRequest(aFace).withLowerPlayerSpace());
+        double optionB = MovementHelper.getMiningDurationTicks(context, x, y, z, stateFeet, false, new SpaceRequest(bFace).withLowerPlayerSpace());
         if (optionA != 0 && optionB != 0) {
-            // check these one at a time -- if pb0 and pb2 were nonzero, we already know that (optionA != 0 && optionB != 0)
+            // check these one at a time -- if both were blocked, we already know that (optionA != 0 && optionB != 0)
             // so no need to check pb1 as well, might as well return early here
             return;
         }
+        IBlockState stateHead = context.get(x, y + 1, z);
+        optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, stateHead, true, new SpaceRequest(aFace).withUpperPlayerSpace());
+        if (optionA != 0 && optionB != 0) {
+            return;
+        }
+        optionB += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, stateHead, true, new SpaceRequest(bFace).withUpperPlayerSpace());
+        if (optionA != 0 && optionB != 0) {
+            return;
+        }
+        // Begin checking other blocks
+        EnumFacing aFaceO = (destZ > z) ? EnumFacing.NORTH : EnumFacing.SOUTH;
+        optionA += MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false, new SpaceRequest(aFaceO).withLowerPlayerSpace());
+        if (optionA != 0 && optionB != 0) {
+            return;
+        }
+        EnumFacing bFaceO = (destX > x) ? EnumFacing.WEST : EnumFacing.EAST;
+        optionB += MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false, new SpaceRequest(bFaceO).withLowerPlayerSpace());
+        if (optionA != 0 && optionB != 0) {
+            return;
+        }
         IBlockState pb1 = context.get(x, y + 1, destZ);
-        optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true);
+        optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true, new SpaceRequest(aFaceO).withUpperPlayerSpace());
         if (optionA != 0 && optionB != 0) {
             // same deal, if pb1 makes optionA nonzero and option B already was nonzero, pb3 can't affect the result
             return;
@@ -178,7 +215,7 @@ public class MovementDiagonal extends Movement {
             // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
             return;
         }
-        optionB += MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true);
+        optionB += MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true, new SpaceRequest(bFaceO).withUpperPlayerSpace());
         if (optionA != 0 && optionB != 0) {
             // and finally, if the cost is nonzero for both ways to approach this diagonal, it's not possible
             return;
@@ -240,7 +277,7 @@ public class MovementDiagonal extends Movement {
             return false;
         }
         for (int i = 0; i < 4; i++) {
-            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
+            if (!MovementHelper.canWalkThrough(ctx, spaceRequests[i])) {
                 return false;
             }
         }
@@ -259,8 +296,8 @@ public class MovementDiagonal extends Movement {
         }
         List<BlockPos> result = new ArrayList<>();
         for (int i = 4; i < 6; i++) {
-            if (!MovementHelper.canWalkThrough(bsi, positionsToBreak[i].x, positionsToBreak[i].y, positionsToBreak[i].z)) {
-                result.add(positionsToBreak[i]);
+            if (!MovementHelper.canWalkThrough(bsi, spaceRequests[i])) {
+                result.add(spaceRequests[i].getPos());
             }
         }
         toBreakCached = result;
@@ -274,8 +311,8 @@ public class MovementDiagonal extends Movement {
         }
         List<BlockPos> result = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            if (!MovementHelper.canWalkThrough(bsi, positionsToBreak[i].x, positionsToBreak[i].y, positionsToBreak[i].z)) {
-                result.add(positionsToBreak[i]);
+            if (!MovementHelper.canWalkThrough(bsi, spaceRequests[i])) {
+                result.add(spaceRequests[i].getPos());
             }
         }
         toWalkIntoCached = result;

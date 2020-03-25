@@ -26,6 +26,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.BaritoneProcessHelper;
+import baritone.utils.pathing.PositionalSpaceRequest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
@@ -116,7 +117,13 @@ public final class BackfillProcess extends BaritoneProcessHelper {
             return false;
         }
         Movement movement = (Movement) exec.getPath().movements().get(exec.getPosition());
-        return Arrays.asList(movement.toBreakAll()).contains(pos);
+        PositionalSpaceRequest[] requests = movement.allSpaceRequests();
+        for (int i = 0; i < requests.length; i++) {
+            if (requests[i].getPos().equals(pos)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

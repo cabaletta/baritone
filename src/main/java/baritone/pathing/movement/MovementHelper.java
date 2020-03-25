@@ -27,6 +27,8 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
@@ -76,15 +78,24 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block instanceof BlockLiquid;
     }
 
-    static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {
-        return canWalkThrough(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
+    static boolean canWalkThrough(IPlayerContext ctx, PositionalSpaceRequest posReq) {
+        return canWalkThrough(ctx, posReq.getPos(), posReq.getRequest());
     }
 
-    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z) {
-        return canWalkThrough(bsi, x, y, z, bsi.get0(x, y, z));
+    static boolean canWalkThrough(BlockStateInterface bsi, PositionalSpaceRequest posReq) {
+        BetterBlockPos pos = posReq.getPos();
+        return canWalkThrough(bsi, pos.x, pos.y, pos.z, posReq.getRequest());
     }
 
-    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+    static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos, SpaceRequest request) {
+        return canWalkThrough(new BlockStateInterface(ctx), pos.x, pos.y, pos.z, request);
+    }
+
+    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, SpaceRequest request) {
+        return canWalkThrough(bsi, x, y, z, bsi.get0(x, y, z), request);
+    }
+
+    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state, SpaceRequest request) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) { // early return for most common case
             return true;
@@ -99,7 +110,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
             // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
             // be opened by just interacting.
-            return block != Blocks.IRON_DOOR;
+            return (block != Blocks.IRON_DOOR) || doorCanFulfillRequest(bsi, x, y, z, state, request);
         }
         if (block == Blocks.CARPET) {
             return canWalkOn(bsi, x, y - 1, z);
@@ -135,6 +146,41 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
 
         return block.isPassable(bsi.access, bsi.isPassableBlockPos.setPos(x, y, z));
+    }
+
+    static boolean doorCanFulfillRequest(BlockStateInterface bsi, int x, int y, int z, IBlockState state, SpaceRequest req) {
+        if (req == null) {
+            return false;
+        }
+
+        IBlockState lowerDoor;
+        IBlockState upperDoor;
+        if (state.getValue(BlockDoor.HALF) == BlockDoor.EnumDoorHalf.UPPER) {
+            upperDoor = state;
+            lowerDoor = bsi.get0(x, y - 1, z);
+        } else {
+            upperDoor = bsi.get0(x, y + 1, z);
+            lowerDoor = state;
+        }
+        if (upperDoor.getBlock() != lowerDoor.getBlock()) {
+            return false;
+        }
+
+        EnumFacing doorFacing = lowerDoor.getValue(BlockDoor.FACING).getOpposite();
+        if (lowerDoor.getValue(BlockDoor.OPEN)) {
+            BlockDoor.EnumHingePosition e = upperDoor.getValue(BlockDoor.HINGE);
+            switch (e) {
+                case LEFT:
+                    doorFacing = doorFacing.rotateY();
+                    break;
+                case RIGHT:
+                    doorFacing = doorFacing.rotateYCCW();
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return !req.requires(doorFacing);
     }
 
     /**
@@ -373,13 +419,13 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.isBlockNormalCube() || state.isFullBlock() || state.getBlock() == Blocks.GLASS || state.getBlock() == Blocks.STAINED_GLASS;
     }
 
-    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling) {
-        return getMiningDurationTicks(context, x, y, z, context.get(x, y, z), includeFalling);
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling, SpaceRequest request) {
+        return getMiningDurationTicks(context, x, y, z, context.get(x, y, z), includeFalling, request);
     }
 
-    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling, SpaceRequest request) {
         Block block = state.getBlock();
-        if (!canWalkThrough(context.bsi, x, y, z, state)) {
+        if (!canWalkThrough(context.bsi, x, y, z, state, request)) {
             if (block instanceof BlockLiquid) {
                 return COST_INF;
             }
@@ -400,7 +446,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (includeFalling) {
                 IBlockState above = context.get(x, y + 1, z);
                 if (above.getBlock() instanceof BlockFalling) {
-                    result += getMiningDurationTicks(context, x, y + 1, z, above, true);
+                    result += getMiningDurationTicks(context, x, y + 1, z, above, true, request);
                 }
             }
             return result;

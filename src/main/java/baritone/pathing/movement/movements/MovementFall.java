@@ -30,6 +30,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.pathing.MutableMoveResult;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.state.IBlockState;
@@ -51,14 +53,17 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
     private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
-    public MovementFall(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
-        super(baritone, src, dest, MovementFall.buildPositionsToBreak(src, dest));
+    private EnumFacing direction;
+
+    public MovementFall(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, EnumFacing directionIn) {
+        super(baritone, src, dest, MovementFall.buildRequiredSpace(src, dest));
+        direction = directionIn;
     }
 
     @Override
     public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
-        MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
+        MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z, result, direction);
         if (result.y != dest.y) {
             return COST_INF; // doesn't apply to us, this position is a descend not a fall
         }
@@ -173,16 +178,16 @@ public class MovementFall extends Movement {
         return ctx.playerFeet().equals(src) || state.getStatus() != MovementStatus.RUNNING;
     }
 
-    private static BetterBlockPos[] buildPositionsToBreak(BetterBlockPos src, BetterBlockPos dest) {
-        BetterBlockPos[] toBreak;
+    private static PositionalSpaceRequest[] buildRequiredSpace(BetterBlockPos src, BetterBlockPos dest) {
+        PositionalSpaceRequest[] requests;
         int diffX = src.getX() - dest.getX();
         int diffZ = src.getZ() - dest.getZ();
         int diffY = src.getY() - dest.getY();
-        toBreak = new BetterBlockPos[diffY + 2];
-        for (int i = 0; i < toBreak.length; i++) {
-            toBreak[i] = new BetterBlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ);
+        requests = new PositionalSpaceRequest[diffY + 2];
+        for (int i = 0; i < requests.length; i++) {
+            requests[i] = PositionalSpaceRequest.greedyRequest(new BetterBlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ));
         }
-        return toBreak;
+        return requests;
     }
 
     @Override
@@ -192,8 +197,8 @@ public class MovementFall extends Movement {
         }
         // only break if one of the first three needs to be broken
         // specifically ignore the last one which might be water
-        for (int i = 0; i < 4 && i < positionsToBreak.length; i++) {
-            if (!MovementHelper.canWalkThrough(ctx, positionsToBreak[i])) {
+        for (int i = 0; i < 4 && i < spaceRequests.length; i++) {
+            if (!MovementHelper.canWalkThrough(ctx, spaceRequests[i])) {
                 return super.prepared(state);
             }
         }

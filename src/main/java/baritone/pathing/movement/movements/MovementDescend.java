@@ -29,12 +29,15 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -43,9 +46,22 @@ import java.util.Set;
 public class MovementDescend extends Movement {
 
     private int numTicks = 0;
+    private EnumFacing direction;
 
-    public MovementDescend(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
-        super(baritone, start, end, new BetterBlockPos[]{end.up(2), end.up(), end}, end.down());
+    public MovementDescend(IBaritone baritone, BetterBlockPos start, BetterBlockPos end, EnumFacing directionIn) {
+        super(baritone, start, end, buildRequests(start, end, directionIn), end.down());
+        direction = directionIn;
+    }
+
+    private static PositionalSpaceRequest[] buildRequests(BetterBlockPos start, BetterBlockPos end, EnumFacing direction) {
+        EnumFacing opposite = direction.getOpposite();
+        return new PositionalSpaceRequest[] {
+                new PositionalSpaceRequest(start.up(), new SpaceRequest(direction)),
+                new PositionalSpaceRequest(end.up(2), new SpaceRequest(opposite).withUpperPlayerSpace()),
+                new PositionalSpaceRequest(start, new SpaceRequest(direction)),
+                new PositionalSpaceRequest(end.up(), new SpaceRequest(opposite).withUpperPlayerSpace().withLowerPlayerSpace()),
+                new PositionalSpaceRequest(end, new SpaceRequest().withLowerPlayerSpace())
+        };
     }
 
     @Override
@@ -57,7 +73,7 @@ public class MovementDescend extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
-        cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
+        cost(context, src.x, src.y, src.z, dest.x, dest.z, result, direction);
         if (result.y != dest.y) {
             return COST_INF; // doesn't apply to us, this position is a fall not a descend
         }
@@ -69,18 +85,26 @@ public class MovementDescend extends Movement {
         return ImmutableSet.of(src, dest.up(), dest);
     }
 
-    public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
+    public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res, EnumFacing direction) {
         double totalCost = 0;
         IBlockState destDown = context.get(destX, y - 1, destZ);
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false);
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false, new SpaceRequest(direction.getOpposite()).withLowerPlayerSpace());
         if (totalCost >= COST_INF) {
             return;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y, destZ, false);
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y, destZ, false, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace().withLowerPlayerSpace());
         if (totalCost >= COST_INF) {
             return;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true); // only the top block in the 3 we need to mine needs to consider the falling blocks above
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace()); // only the top block in the 3 we need to mine needs to consider the falling blocks above
+        if (totalCost >= COST_INF) {
+            return;
+        }
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y, z, false, new SpaceRequest(direction));
+        if (totalCost >= COST_INF) {
+            return;
+        }
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, new SpaceRequest(direction));
         if (totalCost >= COST_INF) {
             return;
         }
@@ -130,7 +154,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return false;
         }
-        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below, SpaceRequest.greedyRequest())) {
             return false;
         }
         double costSoFar = 0;
@@ -146,7 +170,7 @@ public class MovementDescend extends Movement {
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
             if (MovementHelper.isWater(ontoBlock.getBlock())) {
-                if (!MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
+                if (!MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock, SpaceRequest.greedyRequest())) {
                     return false;
                 }
                 if (context.assumeWalkOnWater) {
@@ -174,7 +198,7 @@ public class MovementDescend extends Movement {
                 effectiveStartHeight = newY;
                 continue;
             }
-            if (MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock, SpaceRequest.greedyRequest())) {
                 continue;
             }
             if (!MovementHelper.canWalkOn(context.bsi, destX, newY, destZ, ontoBlock)) {
@@ -265,6 +289,6 @@ public class MovementDescend extends Movement {
 
     public boolean skipToAscend() {
         BlockPos into = dest.subtract(src.down()).add(dest);
-        return !MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into)) && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).up()) && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).up(2));
+        return !MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into), SpaceRequest.greedyRequest()) && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).up(), SpaceRequest.greedyRequest()) && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).up(2), SpaceRequest.greedyRequest());
     }
 }

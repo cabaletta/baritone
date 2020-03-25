@@ -25,6 +25,8 @@ import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.behavior.PathingBehavior;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.pathing.PositionalSpaceRequest;
+import baritone.utils.pathing.SpaceRequest;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.util.EnumFacing;
@@ -47,9 +49,9 @@ public abstract class Movement implements IMovement, MovementHelper {
     protected final BetterBlockPos dest;
 
     /**
-     * The positions that need to be broken before this movement can ensue
+     * The movement space needed before this movement can ensue
      */
-    protected final BetterBlockPos[] positionsToBreak;
+    protected final PositionalSpaceRequest[] spaceRequests;
 
     /**
      * The position where we need to place a block before this movement can ensue
@@ -66,17 +68,17 @@ public abstract class Movement implements IMovement, MovementHelper {
 
     private Boolean calculatedWhileLoaded;
 
-    protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak, BetterBlockPos toPlace) {
+    protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, PositionalSpaceRequest[] spaceRequested, BetterBlockPos toPlace) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.src = src;
         this.dest = dest;
-        this.positionsToBreak = toBreak;
+        this.spaceRequests = spaceRequested;
         this.positionToPlace = toPlace;
     }
 
-    protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
-        this(baritone, src, dest, toBreak, null);
+    protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, PositionalSpaceRequest[] spaceRequested) {
+        this(baritone, src, dest, spaceRequested, null);
     }
 
     public double getCost() throws NullPointerException {
@@ -157,11 +159,13 @@ public abstract class Movement implements IMovement, MovementHelper {
             return true;
         }
         boolean somethingInTheWay = false;
-        for (BetterBlockPos blockPos : positionsToBreak) {
+        for (PositionalSpaceRequest request : spaceRequests) {
+            BetterBlockPos blockPos = request.getPos();
+            SpaceRequest spaceRequest = request.getRequest();
             if (!ctx.world().getEntitiesWithinAABB(EntityFallingBlock.class, new AxisAlignedBB(0, 0, 0, 1, 1.1, 1).offset(blockPos)).isEmpty() && Baritone.settings().pauseMiningForFallingBlocks.value) {
                 return false;
             }
-            if (!MovementHelper.canWalkThrough(ctx, blockPos) && !(BlockStateInterface.getBlock(ctx, blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
+            if (!MovementHelper.canWalkThrough(ctx, blockPos, spaceRequest) && !(BlockStateInterface.getBlock(ctx, blockPos) instanceof BlockLiquid)) { // can't break liquid, so don't try
                 somethingInTheWay = true;
                 MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), blockPos, ctx.playerController().getBlockReachDistance());
@@ -264,8 +268,10 @@ public abstract class Movement implements IMovement, MovementHelper {
             return toBreakCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        for (BetterBlockPos positionToBreak : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(bsi, positionToBreak.x, positionToBreak.y, positionToBreak.z)) {
+        for (PositionalSpaceRequest request : spaceRequests) {
+            BetterBlockPos positionToBreak = request.getPos();
+            SpaceRequest spaceRequest = request.getRequest();
+            if (!MovementHelper.canWalkThrough(bsi, positionToBreak.x, positionToBreak.y, positionToBreak.z, spaceRequest)) {
                 result.add(positionToBreak);
             }
         }
@@ -292,7 +298,7 @@ public abstract class Movement implements IMovement, MovementHelper {
         return toWalkIntoCached;
     }
 
-    public BlockPos[] toBreakAll() {
-        return positionsToBreak;
+    public PositionalSpaceRequest[] allSpaceRequests() {
+        return spaceRequests;
     }
 }
