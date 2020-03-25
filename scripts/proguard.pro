@@ -17,6 +17,7 @@
 # also lwjgl lol
 -dontwarn module-info
 
+# please do not change the comment below
 -keep class baritone.api.** { *; } # this is the keep api
 
 # service provider needs these class names

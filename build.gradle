@@ -39,6 +39,9 @@ buildscript {
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
+
+import net.minecraftforge.gradle.userdev.tasks.GenerateSRG
+import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.apache.tools.ant.taskdefs.condition.Os
 
 apply plugin: 'java'
@@ -83,7 +86,13 @@ task sourceJar(type: Jar, dependsOn: classes) {
 
 minecraft {
     mappings channel: 'snapshot', version: '20200213-1.15.1'
-    reobfMappings 'notch'
+
+    if (getProject().hasProperty("baritone.forge_build")) {
+        println 'searge mappings!!'
+        reobfMappings 'searge'
+    } else {
+        reobfMappings 'notch'
+    }
 
     runs {
         client {
@@ -145,7 +154,8 @@ dependencies {
     }
     runtime launchCompile('org.ow2.asm:asm-debug-all:5.2')
     runtime launchCompile('com.github.ImpactDevelopment:SimpleTweaker:1.2')
-    runtime launchCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+    //"org.spongepowered:mixin:0.8.+"
+    runtime launchCompile('org.spongepowered:mixin:0.8.+') {
         // Mixin includes a lot of dependencies that are too up-to-date
         exclude module: 'launchwrapper'
         exclude module: 'guava'
@@ -178,14 +188,48 @@ jar {
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.baritone.json',
+                "MixinConnector": "baritone.launch.BaritoneMixinConnector",
 
                 'Implementation-Title': 'Baritone',
-                'Implementation-Version': version
+                'Implementation-Version': version,
         )
     }
 }
 
-task proguard(type: ProguardTask) {
+// skidded from ProguardTask
+File getClientJar() {
+    return project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
+            .stream()
+            .filter({f -> f.toString().endsWith("client-extra.jar")})
+            .map({f -> new File(f.getParentFile(), "client.jar")})
+            .findFirst()
+            .get()
+}
+
+task copyMcJar(type: Copy) {
+    def mcJar = {getClientJar()}
+
+    from mcJar
+    into 'build/createMcSrgJar/'
+    rename {'client-srg.jar'}
+}
+
+task createSrgMc(type: RenameJarInPlace) {
+    setInput(new File(copyMcJar.getOutputs().getFiles().getSingleFile(), "client-srg.jar"))
+    setClasspath(files({getClientJar()}))
+
+    // fork
+    setMappingType(net.minecraftforge.gradle.common.util.MappingFile.Mapping.SEARGE)
+    setJarTask('nword')
+}
+project.afterEvaluate {
+    createSrgMc.dependsOn(extractSrg, copyMcJar)
+    createSrgMc.setMappings(extractSrg.getOutput())
+    //println(createSrgMc.getClasspath().getFiles())
+}
+
+
+task proguard(type: ProguardTask, dependsOn: createSrgMc) { // TODO: dont need to create srg mc if doing notch build
     url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
     extract 'proguard6.0.3/lib/proguard.jar'
 }

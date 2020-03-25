@@ -56,8 +56,12 @@ public class ProguardTask extends BaritoneGradleTask {
         downloadProguard();
         extractProguard();
         generateConfigs();
-        proguardApi();
-        proguardStandalone();
+        if (getProject().hasProperty("baritone.forge_build")) {
+            proguardApi(this.artifactForgeApiPath.toString());
+        } else {
+            proguardApi(this.artifactApiPath.toString());
+            proguardStandalone(this.artifactStandalonePath.toString());
+        }
         cleanup();
     }
 
@@ -99,18 +103,27 @@ public class ProguardTask extends BaritoneGradleTask {
         String out = IOUtils.toString(p.getInputStream(), "UTF-8").split("\n")[0].split("Opened ")[1].replace("]", "");
         template.add(2, "-libraryjars '" + out + "'");
 
-        // Discover all of the libraries that we will need to acquire from gradle
-        acquireDependencies().forEach(f -> {
-            if (f.toString().endsWith("-recomp.jar")) {
-                // remove MCP mapped jar
-                return;
+        {
+            final Stream<File> libraries;
+            {
+                // Discover all of the libraries that we will need to acquire from gradle
+                final Stream<File> dependencies = acquireDependencies()
+                    // remove MCP mapped jar
+                    .filter(f -> !f.toString().endsWith("-recomp.jar"))
+                    // go from the extra to the original downloaded client
+                    .map(f -> f.toString().endsWith("client-extra.jar") ? new File(f.getParentFile(), "client.jar") : f);
+
+                if (getProject().hasProperty("baritone.forge_build")) {
+                    libraries = dependencies
+                        .map(f -> f.toString().endsWith("client.jar") ? getSrgMcJar() : f);
+                } else {
+                    libraries = dependencies;
+                }
             }
-            if (f.toString().endsWith("client-extra.jar")) {
-                // go from the extra to the original downloaded client
-                f = new File(f.getParentFile(), "client.jar");
-            }
-            template.add(2, "-libraryjars '" + f + "'");
-        });
+            libraries.forEach(f -> {
+                template.add(2, "-libraryjars '" + f + "'");
+            });
+        }
 
         // API config doesn't require any changes from the changes that we made to the template
         Files.write(getTemporaryFile(PROGUARD_API_CONFIG), template);
@@ -121,18 +134,25 @@ public class ProguardTask extends BaritoneGradleTask {
         Files.write(getTemporaryFile(PROGUARD_STANDALONE_CONFIG), standalone);
     }
 
+    private File getSrgMcJar() {
+        return getProject().getTasks().findByName("copyMcJar").getOutputs().getFiles().getSingleFile();
+    }
+
     private Stream<File> acquireDependencies() {
-        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles().stream().filter(File::isFile);
+        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
+            .stream()
+            .filter(File::isFile);
+            //.peek(f -> System.out.println("xd: " + f));
     }
 
-    private void proguardApi() throws Exception {
+    private void proguardApi(String artifact) throws Exception {
         runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), artifact);
     }
 
-    private void proguardStandalone() throws Exception {
+    private void proguardStandalone(String artifact) throws Exception {
         runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), artifact);
     }
 
     private void cleanup() {
