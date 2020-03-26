@@ -88,7 +88,6 @@ minecraft {
     mappings channel: 'snapshot', version: '20200213-1.15.1'
 
     if (getProject().hasProperty("baritone.forge_build")) {
-        println 'searge mappings!!'
         reobfMappings 'searge'
     } else {
         reobfMappings 'notch'
@@ -154,7 +153,6 @@ dependencies {
     }
     runtime launchCompile('org.ow2.asm:asm-debug-all:5.2')
     runtime launchCompile('com.github.ImpactDevelopment:SimpleTweaker:1.2')
-    //"org.spongepowered:mixin:0.8.+"
     runtime launchCompile('org.spongepowered:mixin:0.8.+') {
         // Mixin includes a lot of dependencies that are too up-to-date
         exclude module: 'launchwrapper'
@@ -220,12 +218,11 @@ task createSrgMc(type: RenameJarInPlace) {
 
     // fork
     setMappingType(net.minecraftforge.gradle.common.util.MappingFile.Mapping.SEARGE)
-    setJarTask('nword')
+    setJarTask('trans alaskan pipeline')
 }
 project.afterEvaluate {
     createSrgMc.dependsOn(extractSrg, copyMcJar)
     createSrgMc.setMappings(extractSrg.getOutput())
-    //println(createSrgMc.getClasspath().getFiles())
 }
 
 
