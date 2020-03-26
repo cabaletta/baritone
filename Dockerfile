@@ -21,3 +21,4 @@ WORKDIR /code
 RUN dpkg -i scripts/xvfb_1.16.4-1_amd64.deb
 
 RUN ./gradlew build
+RUN ./gradlew build -Pbaritone.forge_build

@@ -42,9 +42,9 @@ public class CreateDistTask extends BaritoneGradleTask {
         super.verifyArtifacts();
 
         // Define the distribution file paths
-        Path api             = getRelativeFile("dist/" + getFileName(artifactApiPath));
-        Path standalone      = getRelativeFile("dist/" + getFileName(artifactStandalonePath));
-        Path unoptimized     = getRelativeFile("dist/" + getFileName(artifactUnoptimizedPath));
+        Path api = getRelativeFile("dist/" + getFileName(artifactApiPath));
+        Path standalone = getRelativeFile("dist/" + getFileName(artifactStandalonePath));
+        Path unoptimized = getRelativeFile("dist/" + getFileName(artifactUnoptimizedPath));
 
         // NIO will not automatically create directories
         Path dir = getRelativeFile("dist/");
@@ -54,8 +54,8 @@ public class CreateDistTask extends BaritoneGradleTask {
 
         // Copy build jars to dist/
         // TODO: dont copy files that dont exist
-        Files.copy(this.artifactApiPath,         api,         REPLACE_EXISTING);
-        Files.copy(this.artifactStandalonePath,  standalone,  REPLACE_EXISTING);
+        Files.copy(this.artifactApiPath, api, REPLACE_EXISTING);
+        Files.copy(this.artifactStandalonePath, standalone, REPLACE_EXISTING);
         Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
@@ -76,12 +76,12 @@ public class CreateDistTask extends BaritoneGradleTask {
 
     private List<Path> getAllDistJars() {
         return Arrays.asList(
-            getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED)),
-            getRelativeFile("dist/" + formatVersion(ARTIFACT_API)),
-            getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE)),
-            getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_UNOPTIMIZED)),
-            getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API)),
-            getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_STANDALONE))
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_API)),
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API)),
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE)),
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_STANDALONE)),
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED)),
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_UNOPTIMIZED))
         );
     }
 
