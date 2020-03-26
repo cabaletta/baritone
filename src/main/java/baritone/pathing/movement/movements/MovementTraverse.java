@@ -193,10 +193,10 @@ public class MovementTraverse extends Movement {
                 return state;
             }
             // and if it's fine to walk into the blocks in front
-            if (MovementHelper.avoidWalkingInto(pb0.getBlock())) {
+            if (MovementHelper.avoidWalkingInto(pb2.getBlock())) {
                 return state;
             }
-            if (MovementHelper.avoidWalkingInto(pb1.getBlock())) {
+            if (MovementHelper.avoidWalkingInto(pb3.getBlock())) {
                 return state;
             }
             // and we aren't already pressed up against the block
