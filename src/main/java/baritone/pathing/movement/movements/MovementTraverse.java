@@ -181,6 +181,8 @@ public class MovementTraverse extends Movement {
         super.updateState(state);
         IBlockState pb0 = BlockStateInterface.get(ctx, spaceRequests[0].getPos());
         IBlockState pb1 = BlockStateInterface.get(ctx, spaceRequests[1].getPos());
+        IBlockState pb2 = BlockStateInterface.get(ctx, spaceRequests[2].getPos());
+        IBlockState pb3 = BlockStateInterface.get(ctx, spaceRequests[3].getPos());
         if (state.getStatus() != MovementStatus.RUNNING) {
             // if the setting is enabled
             if (!Baritone.settings().walkWhileBreaking.value) {
@@ -227,10 +229,10 @@ public class MovementTraverse extends Movement {
         Block fd = BlockStateInterface.get(ctx, src.down()).getBlock();
         boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
 
-        if (pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor) {
+        if (pb0.getBlock() instanceof BlockDoor || pb1.getBlock() instanceof BlockDoor || pb2.getBlock() instanceof BlockDoor || pb3.getBlock() instanceof BlockDoor) {
 
-            boolean notPassable = pb0.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, src, dest) || pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, dest, src);
-            boolean canOpen = !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()));
+            boolean notPassable = pb0.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, src, dest) || pb1.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, dest, src) || pb2.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, dest, src) || pb3.getBlock() instanceof BlockDoor && !MovementHelper.isDoorPassable(ctx, dest, src);
+            boolean canOpen = !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()) || Blocks.IRON_DOOR.equals(pb2.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()));
 
             if (notPassable && canOpen) {
                 return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), spaceRequests[0].getPos()), ctx.playerRotations()), true))
@@ -238,9 +240,9 @@ public class MovementTraverse extends Movement {
             }
         }
 
-        if (pb0.getBlock() instanceof BlockFenceGate || pb1.getBlock() instanceof BlockFenceGate) {
-            BlockPos blocked = !MovementHelper.isGatePassable(ctx, spaceRequests[0].getPos(), src.up()) ? spaceRequests[0].getPos()
-                    : !MovementHelper.isGatePassable(ctx, spaceRequests[1].getPos(), src) ? spaceRequests[1].getPos()
+        if (pb2.getBlock() instanceof BlockFenceGate || pb3.getBlock() instanceof BlockFenceGate) {
+            BlockPos blocked = !MovementHelper.isGatePassable(ctx, spaceRequests[2].getPos(), src.up()) ? spaceRequests[2].getPos()
+                    : !MovementHelper.isGatePassable(ctx, spaceRequests[3].getPos(), src) ? spaceRequests[3].getPos()
                     : null;
             if (blocked != null) {
                 Optional<Rotation> rotation = RotationUtils.reachable(ctx, blocked);
