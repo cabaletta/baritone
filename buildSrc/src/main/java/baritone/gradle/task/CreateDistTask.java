@@ -59,9 +59,8 @@ public class CreateDistTask extends BaritoneGradleTask {
         Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
-        // TODO: get the hash for both forge and non forge jars
-        List<String> shasum = Stream.of(api, standalone, unoptimized)
-                .filter(Files::exists)
+        List<String> shasum = Files.walk(getRelativeFile("dist"), 1)
+                .filter(p -> p.toString().endsWith(".jar"))
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 
