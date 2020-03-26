@@ -41,10 +41,10 @@ class BaritoneGradleTask extends DefaultTask {
             PROGUARD_STANDALONE_CONFIG      = "standalone.pro",
             PROGUARD_EXPORT_PATH            = "proguard_out.jar",
 
-            ARTIFACT_STANDARD         = "%s-%s.jar",
-            ARTIFACT_UNOPTIMIZED      = "%s-unoptimized-%s.jar",
-            ARTIFACT_API              = "%s-api-%s.jar",
-            ARTIFACT_STANDALONE       = "%s-standalone-%s.jar",
+            ARTIFACT_STANDARD          = "%s-%s.jar",
+            ARTIFACT_UNOPTIMIZED       = "%s-unoptimized-%s.jar",
+            ARTIFACT_API               = "%s-api-%s.jar",
+            ARTIFACT_STANDALONE        = "%s-standalone-%s.jar",
             ARTIFACT_FORGE_UNOPTIMIZED = "%s-unoptimized-forge-%s.jar",
             ARTIFACT_FORGE_API         = "%s-api-forge-%s.jar",
             ARTIFACT_FORGE_STANDALONE  = "%s-standalone-forge-%s.jar";

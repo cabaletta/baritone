@@ -218,7 +218,7 @@ task createSrgMc(type: RenameJarInPlace) {
 
     // fork
     setMappingType(net.minecraftforge.gradle.common.util.MappingFile.Mapping.SEARGE)
-    setJarTask('trans alaskan pipeline')
+    setJarTask('trans alaska pipeline')
 }
 project.afterEvaluate {
     createSrgMc.dependsOn(extractSrg, copyMcJar)

@@ -23,9 +23,9 @@ import javax.xml.bind.DatatypeConverter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -59,8 +59,8 @@ public class CreateDistTask extends BaritoneGradleTask {
         Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
-        List<String> shasum = Files.walk(getRelativeFile("dist"), 1)
-                .filter(p -> p.toString().endsWith(".jar"))
+        List<String> shasum = getAllDistJars().stream()
+                .filter(Files::exists)
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 
@@ -72,6 +72,17 @@ public class CreateDistTask extends BaritoneGradleTask {
 
     private static String getFileName(Path p) {
         return p.getFileName().toString();
+    }
+
+    private List<Path> getAllDistJars() {
+        return Arrays.asList(
+            getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED)),
+            getRelativeFile("dist/" + formatVersion(ARTIFACT_API)),
+            getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE)),
+            getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_UNOPTIMIZED)),
+            getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API)),
+            getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_STANDALONE))
+        );
     }
 
     private static synchronized String sha1(Path path) {
