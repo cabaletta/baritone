@@ -161,7 +161,7 @@ public abstract class Movement implements IMovement, MovementHelper {
         boolean somethingInTheWay = false;
         for (PositionalSpaceRequest request : spaceRequests) {
             BetterBlockPos blockPos = request.getPos();
-            SpaceRequest spaceRequest = request.getRequest();
+            int spaceRequest = request.getRequest();
             if (!ctx.world().getEntitiesWithinAABB(EntityFallingBlock.class, new AxisAlignedBB(0, 0, 0, 1, 1.1, 1).offset(blockPos)).isEmpty() && Baritone.settings().pauseMiningForFallingBlocks.value) {
                 return false;
             }
@@ -270,7 +270,7 @@ public abstract class Movement implements IMovement, MovementHelper {
         List<BlockPos> result = new ArrayList<>();
         for (PositionalSpaceRequest request : spaceRequests) {
             BetterBlockPos positionToBreak = request.getPos();
-            SpaceRequest spaceRequest = request.getRequest();
+            int spaceRequest = request.getRequest();
             if (!MovementHelper.canWalkThrough(bsi, positionToBreak.x, positionToBreak.y, positionToBreak.z, spaceRequest)) {
                 result.add(positionToBreak);
             }

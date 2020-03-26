@@ -56,11 +56,11 @@ public class MovementDescend extends Movement {
     private static PositionalSpaceRequest[] buildRequests(BetterBlockPos start, BetterBlockPos end, EnumFacing direction) {
         EnumFacing opposite = direction.getOpposite();
         return new PositionalSpaceRequest[] {
-                new PositionalSpaceRequest(start.up(), new SpaceRequest(direction)),
-                new PositionalSpaceRequest(end.up(2), new SpaceRequest(opposite).withUpperPlayerSpace()),
-                new PositionalSpaceRequest(start, new SpaceRequest(direction)),
-                new PositionalSpaceRequest(end.up(), new SpaceRequest(opposite).withUpperPlayerSpace().withLowerPlayerSpace()),
-                new PositionalSpaceRequest(end, new SpaceRequest().withLowerPlayerSpace())
+                new PositionalSpaceRequest(start.up(), SpaceRequest.fromFaces(direction)),
+                new PositionalSpaceRequest(end.up(2), SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(opposite))),
+                new PositionalSpaceRequest(start, SpaceRequest.fromFaces(direction)),
+                new PositionalSpaceRequest(end.up(), SpaceRequest.withAllPlayerSpace(SpaceRequest.fromFaces(opposite))),
+                new PositionalSpaceRequest(end, SpaceRequest.withLowerPlayerSpace(SpaceRequest.none()))
         };
     }
 
@@ -88,23 +88,23 @@ public class MovementDescend extends Movement {
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res, EnumFacing direction) {
         double totalCost = 0;
         IBlockState destDown = context.get(destX, y - 1, destZ);
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false, new SpaceRequest(direction.getOpposite()).withLowerPlayerSpace());
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite())));
         if (totalCost >= COST_INF) {
             return;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y, destZ, false, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace().withLowerPlayerSpace());
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y, destZ, false, SpaceRequest.withAllPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite())));
         if (totalCost >= COST_INF) {
             return;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace()); // only the top block in the 3 we need to mine needs to consider the falling blocks above
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite()))); // only the top block in the 3 we need to mine needs to consider the falling blocks above
         if (totalCost >= COST_INF) {
             return;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, x, y, z, false, new SpaceRequest(direction));
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y, z, false, SpaceRequest.fromFaces(direction));
         if (totalCost >= COST_INF) {
             return;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, new SpaceRequest(direction));
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, SpaceRequest.fromFaces(direction));
         if (totalCost >= COST_INF) {
             return;
         }

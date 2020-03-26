@@ -282,7 +282,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             // we're in some kind of sketchy situation, maybe parkouring
             return false;
         }
-        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet(), new SpaceRequest().withNoSuffocation()) || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().up(), new SpaceRequest().withNoSuffocation())) {
+        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet(), SpaceRequest.withNoSuffocation(SpaceRequest.none())) || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().up(), SpaceRequest.withNoSuffocation(SpaceRequest.none()))) {
             // suffocating?
             return false;
         }

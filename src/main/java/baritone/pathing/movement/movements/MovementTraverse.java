@@ -60,10 +60,10 @@ public class MovementTraverse extends Movement {
     private static PositionalSpaceRequest[] buildSpaceRequests(BetterBlockPos from, BetterBlockPos to, EnumFacing direction) {
         EnumFacing opposite = direction.getOpposite();
         return new PositionalSpaceRequest[] {
-                new PositionalSpaceRequest(from.up(), new SpaceRequest(direction)),
-                new PositionalSpaceRequest(from, new SpaceRequest(direction)),
-                new PositionalSpaceRequest(to.up(), new SpaceRequest(opposite).withUpperPlayerSpace()),
-                new PositionalSpaceRequest(to, new SpaceRequest(opposite).withLowerPlayerSpace()),
+                new PositionalSpaceRequest(from.up(), SpaceRequest.fromFaces(direction)),
+                new PositionalSpaceRequest(from, SpaceRequest.fromFaces(direction)),
+                new PositionalSpaceRequest(to.up(), SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(opposite))),
+                new PositionalSpaceRequest(to, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(opposite))),
         };
     }
 
@@ -104,19 +104,19 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
-            double hardness3 = MovementHelper.getMiningDurationTicks(context, x, y, z, false, new SpaceRequest(direction));
+            double hardness3 = MovementHelper.getMiningDurationTicks(context, x, y, z, false, SpaceRequest.fromFaces(direction));
             if (hardness3 >= COST_INF) {
                 return COST_INF;
             }
-            double hardness4 = MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, new SpaceRequest(direction));
+            double hardness4 = MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, SpaceRequest.fromFaces(direction));
             if (hardness4 >= COST_INF) {
                 return COST_INF;
             }
-            double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false, new SpaceRequest(direction.getOpposite()).withLowerPlayerSpace());
+            double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite())));
             if (hardness1 >= COST_INF) {
                 return COST_INF;
             }
-            double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace()); // only include falling on the upper block to break
+            double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite()))); // only include falling on the upper block to break
             if (hardness1 == 0 && hardness2 == 0) {
                 if (!water && context.canSprint) {
                     // If there's nothing in the way, and this isn't water, and we aren't sneak placing
@@ -145,11 +145,11 @@ public class MovementTraverse extends Movement {
                 if (placeCost >= COST_INF) {
                     return COST_INF;
                 }
-                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false, new SpaceRequest(direction.getOpposite()).withLowerPlayerSpace());
+                double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite())));
                 if (hardness1 >= COST_INF) {
                     return COST_INF;
                 }
-                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace()); // only include falling on the upper block to break
+                double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite()))); // only include falling on the upper block to break
                 double WC = throughWater ? context.waterWalkSpeed : WALK_ONE_BLOCK_COST;
                 for (int i = 0; i < 5; i++) {
                     int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();

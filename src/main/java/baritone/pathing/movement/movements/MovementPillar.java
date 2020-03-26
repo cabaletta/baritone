@@ -46,7 +46,7 @@ public class MovementPillar extends Movement {
 
     public MovementPillar(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
         super(baritone, start, end, new PositionalSpaceRequest[]{
-                new PositionalSpaceRequest(start.up(2), new SpaceRequest().withUpperPlayerSpace())
+                new PositionalSpaceRequest(start.up(2), SpaceRequest.withUpperPlayerSpace(SpaceRequest.none()))
         }, start);
     }
 
@@ -105,7 +105,7 @@ public class MovementPillar extends Movement {
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
             return COST_INF;
         }
-        double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true, new SpaceRequest().withUpperPlayerSpace());
+        double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.none()));
         if (hardness >= COST_INF) {
             return COST_INF;
         }

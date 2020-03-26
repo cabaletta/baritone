@@ -87,15 +87,15 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkThrough(bsi, pos.x, pos.y, pos.z, posReq.getRequest());
     }
 
-    static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos, SpaceRequest request) {
+    static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos, int request) {
         return canWalkThrough(new BlockStateInterface(ctx), pos.x, pos.y, pos.z, request);
     }
 
-    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, SpaceRequest request) {
+    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, int request) {
         return canWalkThrough(bsi, x, y, z, bsi.get0(x, y, z), request);
     }
 
-    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state, SpaceRequest request) {
+    static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state, int request) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) { // early return for most common case
             return true;
@@ -148,11 +148,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block.isPassable(bsi.access, bsi.isPassableBlockPos.setPos(x, y, z));
     }
 
-    static boolean doorCanFulfillRequest(BlockStateInterface bsi, int x, int y, int z, IBlockState state, SpaceRequest req) {
-        if (req == null) {
-            return false;
-        }
-
+    static boolean doorCanFulfillRequest(BlockStateInterface bsi, int x, int y, int z, IBlockState state, int req) {
         IBlockState lowerDoor;
         IBlockState upperDoor;
         if (state.getValue(BlockDoor.HALF) == BlockDoor.EnumDoorHalf.UPPER) {
@@ -185,17 +181,17 @@ public interface MovementHelper extends ActionCosts, Helper {
                         return false;
                 }
             }
-            return !req.requires(doorFacing);
+            return !SpaceRequest.requires(req, doorFacing);
         } else {
             // Can we make it work?
             EnumFacing doorFacing = lowerDoor.getValue(BlockDoor.FACING).getOpposite();
-            if (req.requires(doorFacing)) {
+            if (SpaceRequest.requires(req, doorFacing)) {
                 BlockDoor.EnumHingePosition e = upperDoor.getValue(BlockDoor.HINGE);
                 switch (e) {
                     case LEFT:
-                        return !req.requires(doorFacing.rotateY());
+                        return !SpaceRequest.requires(req, doorFacing.rotateY());
                     case RIGHT:
-                        return !req.requires(doorFacing.rotateYCCW());
+                        return !SpaceRequest.requires(req, doorFacing.rotateYCCW());
                     default:
                         return false;
                 }
@@ -441,11 +437,11 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.isBlockNormalCube() || state.isFullBlock() || state.getBlock() == Blocks.GLASS || state.getBlock() == Blocks.STAINED_GLASS;
     }
 
-    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling, SpaceRequest request) {
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling, int request) {
         return getMiningDurationTicks(context, x, y, z, context.get(x, y, z), includeFalling, request);
     }
 
-    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling, SpaceRequest request) {
+    static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling, int request) {
         Block block = state.getBlock();
         if (!canWalkThrough(context.bsi, x, y, z, state, request)) {
             if (block instanceof BlockLiquid) {

@@ -406,7 +406,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         // can't possibly be sneaking off of this one, we're too far away
                         continue;
                     }
-                    if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport, new SpaceRequest(possibleSupportSide)) && MovementHelper.canWalkThrough(ctx, possibleSupport.up(), new SpaceRequest(possibleSupportSide))) {
+                    if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport, SpaceRequest.fromFaces(possibleSupportSide)) && MovementHelper.canWalkThrough(ctx, possibleSupport.up(), SpaceRequest.fromFaces(possibleSupportSide))) {
                         // this is plausible
                         //logDebug("Faking path start assuming player is standing off the edge of a block");
                         return possibleSupport;

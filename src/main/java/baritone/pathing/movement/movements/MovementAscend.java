@@ -50,10 +50,10 @@ public class MovementAscend extends Movement {
     private static PositionalSpaceRequest[] buildSpaceRequests(BetterBlockPos src, BetterBlockPos dest, EnumFacing direction) {
         EnumFacing opposite = direction.getOpposite();
         return new PositionalSpaceRequest[] {
-                new PositionalSpaceRequest(src.up(), new SpaceRequest(direction, EnumFacing.UP)),
-                new PositionalSpaceRequest(dest, new SpaceRequest(opposite).withLowerPlayerSpace()),
-                new PositionalSpaceRequest(src.up(2), new SpaceRequest(direction).withUpperPlayerSpace()),
-                new PositionalSpaceRequest(dest.up(), new SpaceRequest(opposite).withUpperPlayerSpace())
+                new PositionalSpaceRequest(src.up(), SpaceRequest.fromFaces(direction, EnumFacing.UP)),
+                new PositionalSpaceRequest(dest, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(opposite))),
+                new PositionalSpaceRequest(src.up(2), SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(direction))),
+                new PositionalSpaceRequest(dest.up(), SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(opposite)))
         };
     }
 
@@ -157,19 +157,19 @@ public class MovementAscend extends Movement {
         double totalCost = walk + additionalPlacementCost;
         // start with srcUp2 since we already have its state
         // includeFalling isn't needed because of the falling check above -- if srcUp3 is falling we will have already exited with COST_INF if we'd actually have to break it
-        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false, new SpaceRequest(direction).withUpperPlayerSpace());
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(direction)));
         if (totalCost >= COST_INF) {
             return COST_INF;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, new SpaceRequest(direction));
+        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, SpaceRequest.fromFaces(direction));
         if (totalCost >= COST_INF) {
             return COST_INF;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, false, new SpaceRequest(direction.getOpposite()).withLowerPlayerSpace());
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, false, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite())));
         if (totalCost >= COST_INF) {
             return COST_INF;
         }
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 2, destZ, true, new SpaceRequest(direction.getOpposite()).withUpperPlayerSpace());
+        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 2, destZ, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(direction.getOpposite())));
         return totalCost;
     }
 
@@ -244,7 +244,7 @@ public class MovementAscend extends Movement {
         BetterBlockPos startUp = src.up(2);
         for (int i = 0; i < 4; i++) {
             BetterBlockPos check = startUp.offset(EnumFacing.byHorizontalIndex(i));
-            if (!MovementHelper.canWalkThrough(ctx, check, new SpaceRequest(direction).withLowerPlayerSpace())) {
+            if (!MovementHelper.canWalkThrough(ctx, check, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(direction)))) {
                 // We might bonk our head
                 return false;
             }

@@ -179,35 +179,35 @@ public class MovementDiagonal extends Movement {
         EnumFacing aFace = (destZ > z) ? EnumFacing.SOUTH : EnumFacing.NORTH;
         EnumFacing bFace = (destX > x) ? EnumFacing.EAST : EnumFacing.WEST;
         IBlockState stateFeet = context.get(x, y, z);
-        double optionA = MovementHelper.getMiningDurationTicks(context, x, y, z, stateFeet, false, new SpaceRequest(aFace).withLowerPlayerSpace());
-        double optionB = MovementHelper.getMiningDurationTicks(context, x, y, z, stateFeet, false, new SpaceRequest(bFace).withLowerPlayerSpace());
+        double optionA = MovementHelper.getMiningDurationTicks(context, x, y, z, stateFeet, false, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(aFace)));
+        double optionB = MovementHelper.getMiningDurationTicks(context, x, y, z, stateFeet, false, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(bFace)));
         if (optionA != 0 && optionB != 0) {
             // check these one at a time -- if both were blocked, we already know that (optionA != 0 && optionB != 0)
             // so no need to check pb1 as well, might as well return early here
             return;
         }
         IBlockState stateHead = context.get(x, y + 1, z);
-        optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, stateHead, true, new SpaceRequest(aFace).withUpperPlayerSpace());
+        optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, stateHead, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(aFace)));
         if (optionA != 0 && optionB != 0) {
             return;
         }
-        optionB += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, stateHead, true, new SpaceRequest(bFace).withUpperPlayerSpace());
+        optionB += MovementHelper.getMiningDurationTicks(context, x, y + 1, z, stateHead, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(bFace)));
         if (optionA != 0 && optionB != 0) {
             return;
         }
         // Begin checking other blocks
         EnumFacing aFaceO = (destZ > z) ? EnumFacing.NORTH : EnumFacing.SOUTH;
-        optionA += MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false, new SpaceRequest(aFaceO, bFace).withLowerPlayerSpace());
+        optionA += MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(aFaceO, bFace)));
         if (optionA != 0 && optionB != 0) {
             return;
         }
         EnumFacing bFaceO = (destX > x) ? EnumFacing.WEST : EnumFacing.EAST;
-        optionB += MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false, new SpaceRequest(bFaceO, aFace).withLowerPlayerSpace());
+        optionB += MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(bFaceO, aFace)));
         if (optionA != 0 && optionB != 0) {
             return;
         }
         IBlockState pb1 = context.get(x, y + 1, destZ);
-        optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true, new SpaceRequest(aFaceO).withUpperPlayerSpace());
+        optionA += MovementHelper.getMiningDurationTicks(context, x, y + 1, destZ, pb1, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(aFaceO)));
         if (optionA != 0 && optionB != 0) {
             // same deal, if pb1 makes optionA nonzero and option B already was nonzero, pb3 can't affect the result
             return;
@@ -217,7 +217,7 @@ public class MovementDiagonal extends Movement {
             // at this point we're done calculating optionA, so we can check if it's actually possible to edge around in that direction
             return;
         }
-        optionB += MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true, new SpaceRequest(bFaceO).withUpperPlayerSpace());
+        optionB += MovementHelper.getMiningDurationTicks(context, destX, y + 1, z, pb3, true, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(bFaceO)));
         if (optionA != 0 && optionB != 0) {
             // and finally, if the cost is nonzero for both ways to approach this diagonal, it's not possible
             return;
@@ -234,12 +234,12 @@ public class MovementDiagonal extends Movement {
             }
             // Detect partial blocks which would prevent edging around
             if (optionA == 0) {
-                if (MovementHelper.canWalkThrough(context.bsi, destX, y, z, pb2, new SpaceRequest(bFaceO).withLowerPlayerSpace()) && MovementHelper.canWalkThrough(context.bsi, destX, y + 1, z, pb3, new SpaceRequest(bFaceO).withUpperPlayerSpace())) {
+                if (MovementHelper.canWalkThrough(context.bsi, destX, y, z, pb2, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(bFaceO))) && MovementHelper.canWalkThrough(context.bsi, destX, y + 1, z, pb3, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(bFaceO)))) {
                     //res.cost = COST_INF;
                     return;
                 }
             } else {
-                if (MovementHelper.canWalkThrough(context.bsi, x, y, destZ, pb0, new SpaceRequest(aFaceO).withLowerPlayerSpace()) && MovementHelper.canWalkThrough(context.bsi, x, y + 1, destZ, pb1, new SpaceRequest(aFaceO).withUpperPlayerSpace())) {
+                if (MovementHelper.canWalkThrough(context.bsi, x, y, destZ, pb0, SpaceRequest.withLowerPlayerSpace(SpaceRequest.fromFaces(aFaceO))) && MovementHelper.canWalkThrough(context.bsi, x, y + 1, destZ, pb1, SpaceRequest.withUpperPlayerSpace(SpaceRequest.fromFaces(aFaceO)))) {
                     //res.cost = COST_INF;
                     return;
                 }

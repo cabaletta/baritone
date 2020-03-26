@@ -20,95 +20,98 @@ package baritone.utils.pathing;
 import net.minecraft.util.EnumFacing;
 
 public class SpaceRequest {
-    private boolean requestTop;
-    private boolean requestBottom;
-    private boolean requestNorth;
-    private boolean requestEast;
-    private boolean requestSouth;
-    private boolean requestWest;
-    private boolean requestNoSuffocation;
-    private boolean requestPlayerSpace;
+    private static final int REQUEST_TOP = 1;
+    private static final int REQUEST_BOTTOM = 2;
+    private static final int REQUEST_NORTH = 4;
+    private static final int REQUEST_EAST = 8;
+    private static final int REQUEST_SOUTH = 16;
+    private static final int REQUEST_WEST = 32;
+    private static final int REQUEST_NO_SUFFOCATION = 64;
+    private static final int REQUEST_PLAYER_SPACE = 128;
 
-    public SpaceRequest(EnumFacing... faces) {
+    private SpaceRequest() {
+    }
+
+    public static int none() {
+        return 0;
+    }
+
+    public static int addFaces(int v, EnumFacing... faces) {
         for (EnumFacing face : faces) {
             switch (face) {
                 case UP:
-                    requestTop = true;
+                    v |= REQUEST_TOP;
                     break;
                 case DOWN:
-                    requestBottom = true;
+                    v |= REQUEST_BOTTOM;
                     break;
                 case NORTH:
-                    requestNorth = true;
+                    v |= REQUEST_NORTH;
                     break;
                 case EAST:
-                    requestEast = true;
+                    v |= REQUEST_EAST;
                     break;
                 case SOUTH:
-                    requestSouth = true;
+                    v |= REQUEST_SOUTH;
                     break;
                 case WEST:
-                    requestWest = true;
+                    v |= REQUEST_WEST;
                     break;
                 default:
                     break;
             }
         }
+        return v;
     }
 
-    public static SpaceRequest greedyRequest() {
-        SpaceRequest s = new SpaceRequest();
-        s.requestTop = true;
-        s.requestBottom = true;
-        s.requestNorth = true;
-        s.requestEast = true;
-        s.requestSouth = true;
-        s.requestWest = true;
-        s.requestNoSuffocation = true;
-        return s;
+    public static int fromFaces(EnumFacing... faces) {
+        return addFaces(SpaceRequest.none(), faces);
     }
 
-    public boolean requires(EnumFacing face) {
+    public static int greedyRequest() {
+        return Integer.MAX_VALUE;
+    }
+
+    public static boolean requires(int v, EnumFacing face) {
         switch (face) {
             case UP:
-                return requestTop;
+                return (v & REQUEST_TOP) != 0;
             case DOWN:
-                return requestBottom;
+                return (v & REQUEST_BOTTOM) != 0;
             case NORTH:
-                return requestNorth;
+                return (v & REQUEST_NORTH) != 0;
             case EAST:
-                return requestEast;
+                return (v & REQUEST_EAST) != 0;
             case SOUTH:
-                return requestSouth;
+                return (v & REQUEST_SOUTH) != 0;
             case WEST:
-                return requestWest;
+                return (v & REQUEST_WEST) != 0;
             default:
                 return false;
         }
     }
 
-    public boolean isRequestNoSuffocation() {
-        return requestNoSuffocation;
+    public static boolean isRequestNoSuffocation(int v) {
+        return (v & REQUEST_NO_SUFFOCATION) != 0;
     }
 
-    public boolean isRequestPlayerSpace() {
-        return requestPlayerSpace;
+    public static boolean isRequestPlayerSpace(int v) {
+        return (v & REQUEST_PLAYER_SPACE) != 0;
     }
 
-    public SpaceRequest withNoSuffocation() {
-        requestNoSuffocation = true;
-        return this;
+    public static int withNoSuffocation(int v) {
+        return v | REQUEST_NO_SUFFOCATION;
     }
 
-    public SpaceRequest withLowerPlayerSpace() {
-        requestTop = true;
-        requestPlayerSpace = true;
-        return this;
+    public static int withLowerPlayerSpace(int v) {
+        return v | REQUEST_PLAYER_SPACE | REQUEST_TOP;
     }
 
-    public SpaceRequest withUpperPlayerSpace() {
-        requestBottom = true;
-        requestPlayerSpace = true;
-        return this;
+    public static int withUpperPlayerSpace(int v) {
+        return v | REQUEST_PLAYER_SPACE | REQUEST_BOTTOM;
+    }
+
+    public static int withAllPlayerSpace(int v) {
+        return v | REQUEST_PLAYER_SPACE | REQUEST_TOP | REQUEST_BOTTOM;
     }
 }

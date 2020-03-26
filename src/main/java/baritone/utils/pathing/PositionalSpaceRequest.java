@@ -21,9 +21,9 @@ import baritone.api.utils.BetterBlockPos;
 
 public class PositionalSpaceRequest {
     private BetterBlockPos pos;
-    private SpaceRequest request;
+    private int request;
 
-    public PositionalSpaceRequest(BetterBlockPos posIn, SpaceRequest requestIn) {
+    public PositionalSpaceRequest(BetterBlockPos posIn, int requestIn) {
         pos = posIn;
         request = requestIn;
     }
@@ -36,7 +36,7 @@ public class PositionalSpaceRequest {
         return pos;
     }
 
-    public SpaceRequest getRequest() {
+    public int getRequest() {
         return request;
     }
 }
