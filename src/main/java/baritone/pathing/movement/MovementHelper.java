@@ -91,7 +91,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof AirBlock) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof AbstractSkullBlock || block == Blocks.BUBBLE_COLUMN || block instanceof ShulkerBoxBlock || block instanceof SlabBlock || block instanceof TrapDoorBlock || block == Blocks.HONEY_BLOCK) {
+        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof AbstractSkullBlock || block == Blocks.BUBBLE_COLUMN || block instanceof ShulkerBoxBlock || block instanceof SlabBlock || block instanceof TrapDoorBlock || block == Blocks.HONEY_BLOCK || block == Blocks.END_ROD) {
             return false;
         }
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
@@ -309,7 +309,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
             return true;
         }
-        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST ) {
+        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
             return true;
         }
         if (isWater(state)) {
