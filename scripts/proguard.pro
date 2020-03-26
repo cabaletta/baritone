@@ -16,7 +16,10 @@
 -dontwarn org.lwjgl.**
 # also lwjgl lol
 -dontwarn module-info
+# we dont have forge
+-dontwarn baritone.launch.BaritoneForgeModXD
 
+# please do not change the comment below
 -keep class baritone.api.** { *; } # this is the keep api
 
 # service provider needs these class names
