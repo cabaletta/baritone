@@ -33,13 +33,9 @@ A Minecraft pathfinder bot.
 
 Baritone is the pathfinding system used in [Impact](https://impactclient.net/) since 4.4. There's a [showcase video](https://youtu.be/CZkLXWo4Fg4) made by @Adovin#0730 on Baritone which I recommend. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a (very old!) video I made showing off what it can do.
 
-By far the easiest and most user-friendly way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone.
+The easiest way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the v1.2.* forge api jar from [releases](https://github.com/cabaletta/baritone/releases). Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
 
-The second easiest way (for 1.12.2 Forge or 1.15.2 Forge only) is to install the v1.2.* or v1.5.* (respectively) "forge-api" jar from [releases](https://github.com/cabaletta/baritone/releases). For 1.12.2, click [here](https://github.com/cabaletta/baritone/releases/download/v1.2.13/baritone-api-forge-1.2.13.jar). For 1.15.2 you will also need a second mod to allow Baritone's forge mod to work. Mod 1 (baritone) is [here](https://github.com/cabaletta/baritone/releases/download/v1.5.3/baritone-api-forge-1.5.3.jar). Mod 2 (mixinbootstrap) is [here](https://github.com/LXGaming/MixinBootstrap/releases/download/v1.0.2/MixinBootstrap-1.0.2.jar). They must go in `mods`. Not in `mods/1.15.2` or anything. Otherwise, see [Installation & setup](SETUP.md).
-
-For 1.15.2 vanilla version (no Forge), [click here](https://www.youtube.com/watch?v=j1qKtCZFURM) and see description.
-
-Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+For 1.15.2, [click here](https://www.youtube.com/watch?v=j1qKtCZFURM) and see description.
 
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 through 1.15.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
