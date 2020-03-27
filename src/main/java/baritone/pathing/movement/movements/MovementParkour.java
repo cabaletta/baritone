@@ -89,7 +89,7 @@ public class MovementParkour extends Movement {
         if (!MovementHelper.fullyPassable(context, x + xDiff, y + 2, z + zDiff)) {
             return;
         }
-        if (!MovementHelper.fullyPassable(context, x, y + 2, z)) {
+        if (!MovementHelper.canWalkThrough(context.bsi, x, y + 2, z, SpaceRequest.withAllowIfInside(SpaceRequest.fromFaces(EnumFacing.UP, dir.getOpposite())))) {
             return;
         }
         IBlockState standingOn = context.get(x, y - 1, z);

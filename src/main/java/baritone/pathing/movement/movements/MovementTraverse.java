@@ -104,11 +104,11 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
-            double hardness3 = MovementHelper.getMiningDurationTicks(context, x, y, z, false, SpaceRequest.fromFaces(direction));
+            double hardness3 = MovementHelper.getMiningDurationTicks(context, x, y, z, false, SpaceRequest.withAllowIfInside(SpaceRequest.fromFaces(direction)));
             if (hardness3 >= COST_INF) {
                 return COST_INF;
             }
-            double hardness4 = MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, SpaceRequest.fromFaces(direction));
+            double hardness4 = MovementHelper.getMiningDurationTicks(context, x, y + 1, z, false, SpaceRequest.withAllowIfInside(SpaceRequest.fromFaces(direction)));
             if (hardness4 >= COST_INF) {
                 return COST_INF;
             }

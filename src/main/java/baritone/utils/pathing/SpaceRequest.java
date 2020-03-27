@@ -28,6 +28,7 @@ public class SpaceRequest {
     private static final int REQUEST_WEST = 32;
     private static final int REQUEST_NO_SUFFOCATION = 64;
     private static final int REQUEST_PLAYER_SPACE = 128;
+    private static final int REQUEST_ALLOW_IF_INSIDE = 256;
 
     private SpaceRequest() {
     }
@@ -113,5 +114,9 @@ public class SpaceRequest {
 
     public static int withAllPlayerSpace(int v) {
         return v | REQUEST_PLAYER_SPACE | REQUEST_TOP | REQUEST_BOTTOM;
+    }
+
+    public static int withAllowIfInside(int v) {
+        return v | REQUEST_ALLOW_IF_INSIDE;
     }
 }
