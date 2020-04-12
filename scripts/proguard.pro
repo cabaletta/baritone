@@ -23,6 +23,13 @@
 
 -keep class baritone.api.utils.MyChunkPos { *; } # even in standalone we need to keep this for gson reflect
 
+# Keep any class or member annotated with @KeepName so we dont have to put everything in the script
+-keep,allowobfuscation @interface baritone.KeepName
+-keep @baritone.KeepName class *
+-keepclassmembers class * {
+    @baritone.KeepName *;
+}
+
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
     public <fields>;    
