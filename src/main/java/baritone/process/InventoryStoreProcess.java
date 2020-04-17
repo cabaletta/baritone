@@ -19,7 +19,7 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.*;
-import baritone.api.process.IInventoryProcess;
+import baritone.api.process.IInventoryStoreProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.*;
@@ -42,12 +42,15 @@ import java.util.stream.Collectors;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
+// TODO consider splitting this into a store and a obtain process?
+// How do you prevent them from competing?
+
 /**
  * Mine blocks of a certain type
  *
  * @author matthewfcarlson
  */
-public final class InventoryProcess extends BaritoneProcessHelper implements IInventoryProcess {
+public final class InventoryStoreProcess extends BaritoneProcessHelper implements IInventoryStoreProcess {
 
     private BlockOptionalMetaLookup filter;
     private int desiredQuantity;
@@ -60,12 +63,20 @@ public final class InventoryProcess extends BaritoneProcessHelper implements IIn
     }
     private EInventoryProcessState state = EInventoryProcessState.IDLE;
 
-    public InventoryProcess(Baritone baritone) {
+    public InventoryStoreProcess(Baritone baritone) {
         super(baritone);
     }
 
     @Override
     public boolean isActive() {
+        if (ctx.player() == null || ctx.world() == null) {
+            return false;
+        }
+        if (!Baritone.settings().storeExcessInventory.value) { // TODO also check obtain
+            return false;
+        }
+        // check if our inventory is full
+        
         // TODO check if we want to be active 
         // We only want to check if the inventory if full
         return state != EInventoryProcessState.IDLE;

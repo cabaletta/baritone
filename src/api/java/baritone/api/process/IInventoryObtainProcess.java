@@ -25,9 +25,6 @@ import java.util.stream.Stream;
 
 /**
  * This process manages the inventory of a player. 
- *  - Check if inventory if full (TODO: what defines full?)
- *      - If so, place in shulkers
- *      - or find the nearest inventory that has space
  *   - It can be requested to get items (by build process)
  *      - first looks in inventory (shulker boxes)
  *      - next looks in immediate area for item entities that can be picked up
@@ -37,7 +34,7 @@ import java.util.stream.Stream;
  * @author matthewfcarlson
  * @since 4/16/2020
  */
-public interface IInventoryProcess extends IBaritoneProcess {
+public interface IInventoryObtainProcess extends IBaritoneProcess {
 
     /**
      * Begin to search for the specified blocks until the number of
@@ -75,44 +72,6 @@ public interface IInventoryProcess extends IBaritoneProcess {
      */
     default void obtainBlocksByName(String... blocks) {
         obtainBlocksByName(0, blocks);
-    }
-
-    /**
-     * Attempts to store certain blocks in shulker boxes and 
-     * remembered inventories
-     */
-    void storeBlocks(int quantity, BlockOptionalMetaLookup filter);
-
-    /**
-     * Tries to store all the blocks in the inventory
-     */
-    default void storeBlocks(BlockOptionalMetaLookup filter) {
-        storeBlocks(0, filter);
-    }
-
-    /**
-     * Stores blocks by name
-     */
-    void storeBlocksByName(int quantity, String... blocks);
-
-    /**
-     * Stores all the blocks of a type in chest systems
-     *
-     * @param blocks The blocks to mine
-     */
-    default void storeBlocksByName(String... blocks) {
-        storeBlocksByName(0, blocks);
-    }
-
-    /**
-     * Stores the blocks requested
-     */
-    default void storeBlocks(int quantity, Block... blocks) {
-        storeBlocks(quantity, new BlockOptionalMetaLookup(
-                Stream.of(blocks)
-                        .map(BlockOptionalMeta::new)
-                        .toArray(BlockOptionalMeta[]::new)
-        ));
     }
 
     /**
