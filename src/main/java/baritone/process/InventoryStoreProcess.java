@@ -34,6 +34,7 @@ import net.minecraft.block.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -42,26 +43,20 @@ import java.util.stream.Collectors;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
-// TODO consider splitting this into a store and a obtain process?
+// Split this into a store and a obtain process?
 // How do you prevent them from competing?
 
 /**
- * Mine blocks of a certain type
- *
+ * Stores blocks of a certain type if your inventory becomes full
+ * It will attempt to store excess throwaway blocks, as well as extra storage blocks
  * @author matthewfcarlson
  */
 public final class InventoryStoreProcess extends BaritoneProcessHelper implements IInventoryStoreProcess {
 
     private BlockOptionalMetaLookup filter;
-    private int desiredQuantity;
+    private int desiredQuantity = -1; // -1 means no desire, 0 means store as much as you can, >0 means store up to that much
     private int tickCount;
 
-    private enum EInventoryProcessState {
-        OBTAIN,
-        IDLE,
-        STORE
-    }
-    private EInventoryProcessState state = EInventoryProcessState.IDLE;
 
     public InventoryStoreProcess(Baritone baritone) {
         super(baritone);
@@ -75,11 +70,47 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         if (!Baritone.settings().storeExcessInventory.value) { // TODO also check obtain
             return false;
         }
-        // check if our inventory is full
         
-        // TODO check if we want to be active 
-        // We only want to check if the inventory if full
-        return state != EInventoryProcessState.IDLE;
+        // check if our inventory is full
+        if (!Baritone.settings().allowInventory.value) {
+            logDirect("storeExcessInventory cannot be used with allowInventory false");
+            Baritone.settings().storeExcessInventory.value = false;
+            return false;
+        }
+
+        if (desiredQuantity >= 0) {
+            return true;
+        }
+
+        if (ctx.player().openContainer != ctx.player().container) {
+            // we have a crafting table or a chest or something open
+            return false;
+        }
+
+        // If we don't have any empty slots left
+        if (ctx.player().inventory.getFirstEmptyStack() == -1) {
+            logDirect("storeExcessInventory- we don't have a free slot");
+            
+            this.desiredQuantity = 0;
+            List<Item> throwAwayItems = Baritone.settings().acceptableThrowawayItems.value;
+            List<Item> wantedItems = Baritone.settings().itemsToSore.value;
+            // set the filter up so that it will look for items in the inventory 
+            this.filter = new BlockOptionalMetaLookup("minecraft:dirt");
+            int storableCount = numberThingsAvailableToStore();
+            if (storableCount > 0){
+                // We need to figure out 
+                logDirect("storeExcessInventory- " + storableCount + " items");
+                desiredQuantity = storableCount;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Based on filter, how many items do we have in the inventory to store?
+    private int numberThingsAvailableToStore() {
+        
+        return 0;
     }
 
     @Override
@@ -90,15 +121,17 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
     @Override
     public void onLostControl() {
         // TODO reset ourselves?
+        logDirect("storeExcessInventory cannot be used with allowInventory false");
     }
 
     @Override
     public String displayName0() {
         // TODO figure out if we're storing or obtaining
-        return "Inventory " + filter;
+        return "Inventory Store" + filter.toString();
     }
 
     /**
+     * TODO: move this to obtain
      * Scans for and returns the block pos off the scanned items
      */
     public List<BlockPos> droppedItemsScan() {
@@ -115,36 +148,24 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
     } 
 
     @Override
-    public void obtainBlocks(int quantity, BlockOptionalMetaLookup filter) {
-        // TODO Auto-generated method stub
-        this.desiredQuantity = quantity;
-
-    }
-
-    @Override
-    public void obtainBlocksByName(int quantity, String... blocks) {
-        // TODO Auto-generated method stub
-        this.desiredQuantity = quantity;
-
-    }
-
-    @Override
     public void storeBlocks(int quantity, BlockOptionalMetaLookup filter) {
         // TODO Auto-generated method stub
         this.desiredQuantity = quantity;
-
+        this.filter = filter;
     }
 
     @Override
     public void storeBlocksByName(int quantity, String... blocks) {
         // TODO Auto-generated method stub
         this.desiredQuantity = quantity;
+        this.filter = new BlockOptionalMetaLookup(blocks);
 
     }
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         // TODO Auto-generated method stub
+        logDirect("storeExcessInventory- tick");
         return new PathingCommand(null, PathingCommandType.DEFER); // cede to other process
     }
 }

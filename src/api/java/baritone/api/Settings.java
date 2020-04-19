@@ -506,10 +506,23 @@ public final class Settings {
     public final Setting<Boolean> storeExcessInventory = new Setting<>(false);
 
     /**
+     * Blocks that Baritone is allowed to store if inventory becomes full
+     * This gets overridden when you do a mine command to include what you are mining for
+     */
+    public final Setting<List<Item>> itemsToStore = new Setting<>(new ArrayList<>());
+
+    /**
      * Stores excess inventory in remembered chests/inventories
      * You must have storeExcessInventory on for this to work
      */
     public final Setting<Boolean> storeExcessInChests = new Setting<>(false);
+
+    /**
+     * Stores excess inventory in shulker boxes if they are in the inventory
+     * This is preferred over storeExcessInChests
+     * You must have storeExcessInventory on for this to work
+     */
+    public final Setting<Boolean> storeExcessInShulkers = new Setting<>(false);
     
     /**
      * Fill in blocks behind you
