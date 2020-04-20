@@ -36,6 +36,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
@@ -93,9 +94,17 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             
             this.desiredQuantity = 0;
             List<Item> throwAwayItems = Baritone.settings().acceptableThrowawayItems.value;
-            List<Item> wantedItems = Baritone.settings().itemsToSore.value;
+            List<Item> wantedItems = Baritone.settings().itemsToStore.value;
             // set the filter up so that it will look for items in the inventory 
-            this.filter = new BlockOptionalMetaLookup("minecraft:dirt");
+            Set<Block> filteredItems = new HashSet<>();
+            for (Item item : throwAwayItems) {
+                filteredItems.add(Block.getBlockFromItem(item));
+            }
+            for (Item item : wantedItems) {
+                filteredItems.add(Block.getBlockFromItem(item));
+            }
+            
+            this.filter = new BlockOptionalMetaLookup(new ArrayList<>(filteredItems));
             int storableCount = numberThingsAvailableToStore();
             if (storableCount > 0){
                 // We need to figure out 
@@ -109,8 +118,18 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
 
     // Based on filter, how many items do we have in the inventory to store?
     private int numberThingsAvailableToStore() {
-        
-        return 0;
+        NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
+        int totalCount = 0;
+        for (BlockOptionalMeta block : this.filter.blocks()) {
+            // Check if we have this item
+            for (ItemStack item : inv) {
+                if (block.matches(item)) {
+                    totalCount += item.getCount();
+                }
+            }
+            
+        }
+        return totalCount;
     }
 
     @Override
