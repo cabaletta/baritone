@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -498,6 +498,39 @@ public final class Settings {
     public final Setting<Boolean> containerMemory = new Setting<>(false);
 
     /**
+     * List of containers to loot
+     */
+    public final Setting<List<Block>> lootContainers = new Setting<>(new ArrayList<>(Arrays.asList(
+            Blocks.CHEST,
+            Blocks.BLACK_SHULKER_BOX,
+            Blocks.BLUE_SHULKER_BOX,
+            Blocks.BROWN_SHULKER_BOX,
+            Blocks.CYAN_SHULKER_BOX,
+            Blocks.GRAY_SHULKER_BOX,
+            Blocks.GREEN_SHULKER_BOX,
+            Blocks.LIGHT_BLUE_SHULKER_BOX,
+            Blocks.LIME_SHULKER_BOX,
+            Blocks.MAGENTA_SHULKER_BOX,
+            Blocks.ORANGE_SHULKER_BOX,
+            Blocks.PINK_SHULKER_BOX,
+            Blocks.PURPLE_SHULKER_BOX,
+            Blocks.RED_SHULKER_BOX,
+            Blocks.SILVER_SHULKER_BOX,
+            Blocks.WHITE_SHULKER_BOX,
+            Blocks.YELLOW_SHULKER_BOX
+    )));
+
+    /**
+     * Steal not only the items, but also the container when looting
+     */
+    public final Setting<Boolean> stealContainer = new Setting<>(false);
+
+    /**
+     * While looting, should it also consider dropped items of the correct type as a pathing destination (as well as containers)?
+     */
+    public final Setting<Boolean> lootScanDroppedItems = new Setting<>(true);
+
+    /**
      * Fill in blocks behind you
      */
     public final Setting<Boolean> backfill = new Setting<>(false);
@@ -601,9 +634,9 @@ public final class Settings {
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
 
     /**
-     * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
-     * of that block as "unreachable" and go towards the next closest. GetToBlock expands this seaarch to the whole "vein"; MineProcess does not.
-     * This is because MineProcess finds individual impossible blocks (like one block in a vein that has gravel on top then lava, so it can't break)
+     * When GetToBlockProcess, LootProcess, or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
+     * of that block as "unreachable" and go towards the next closest. GetToBlock expands this search to the whole "vein"; MineProcess and LootProcess does not.
+     * This is because MineProcess and LootProcess finds individual impossible blocks (like one block in a vein that has gravel on top then lava, so it can't break)
      * Whereas GetToBlock should blacklist the whole "vein" if it can't get to any of them.
      */
     public final Setting<Boolean> blacklistClosestOnFailure = new Setting<>(true);

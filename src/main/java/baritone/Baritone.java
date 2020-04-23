@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
+import baritone.api.process.ILootProcess;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
@@ -72,6 +73,7 @@ public class Baritone implements IBaritone {
     private FollowProcess followProcess;
     private MineProcess mineProcess;
     private GetToBlockProcess getToBlockProcess;
+    private LootProcess lootProcess;
     private CustomGoalProcess customGoalProcess;
     private BuilderProcess builderProcess;
     private ExploreProcess exploreProcess;
@@ -108,6 +110,7 @@ public class Baritone implements IBaritone {
             mineProcess = new MineProcess(this);
             customGoalProcess = new CustomGoalProcess(this); // very high iq
             getToBlockProcess = new GetToBlockProcess(this);
+            lootProcess = new LootProcess(this);
             builderProcess = new BuilderProcess(this);
             exploreProcess = new ExploreProcess(this);
             backfillProcess = new BackfillProcess(this);
@@ -212,6 +215,9 @@ public class Baritone implements IBaritone {
     public CommandManager getCommandManager() {
         return this.commandManager;
     }
+
+    @Override
+    public LootProcess getLootProcess() { return this.lootProcess; }
 
     @Override
     public void openClick() {

@@ -134,6 +134,12 @@ public interface IBaritone {
     ICommandManager getCommandManager();
 
     /**
+     * @return The {@link ILootProcess} instance
+     * @see ILootProcess
+     */
+    ILootProcess getLootProcess();
+
+    /**
      * Open click
      */
     void openClick();
