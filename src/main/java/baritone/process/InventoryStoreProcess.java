@@ -50,27 +50,49 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 /**
  * Stores blocks of a certain type if your inventory becomes full
  * It will attempt to store excess throwaway blocks, as well as extra storage blocks
+ * If it cannot use shulker chests and it cannot use chests, 
+ * it will just throw away the acceptableThrowawayItems but will try to keep at least one stack
  * @author matthewfcarlson
  */
 public final class InventoryStoreProcess extends BaritoneProcessHelper implements IInventoryStoreProcess {
 
-    private BlockOptionalMetaLookup filter;
+    private BlockOptionalMetaLookup filter; // TODO make this an item filter, not a block filter
+    final int DELAY_TICKS = 50; // how many ticks we wait after the inventory is full before we start doing something
     private int desiredQuantity = -1; // -1 means no desire, 0 means store as much as you can, >0 means store up to that much
-    private int tickCount;
+    private int tickCount = 0;
+    private enum StoreState {
+        IDLE,
+        FULL, // We are full, after DELAY_TICKS, go to STORING
+        STORING,
+        CHECK_FOR_SHULKER,
+        FIND_CHEST,
+        GO_TO_CHEST,
+        AT_CHEST,
+        DISCARDING,
+        DONE
+    }
+    private StoreState state = StoreState.IDLE;
 
 
     public InventoryStoreProcess(Baritone baritone) {
         super(baritone);
     }
 
+    private boolean isInventoryFull() {
+        return ctx.player().inventory.getFirstEmptyStack() == -1;
+    }
+
     @Override
     public boolean isActive() {
+        logDebug("InventoryStoreProcess isActive");
         if (ctx.player() == null || ctx.world() == null) {
             return false;
         }
-        if (!Baritone.settings().storeExcessInventory.value) { // TODO also check obtain
+        if (!Baritone.settings().storeExcessInventory.value) {
             return false;
         }
+
+        logDebug("InventoryStoreProcess: "+ this.state);
         
         // check if our inventory is full
         if (!Baritone.settings().allowInventory.value) {
@@ -79,19 +101,51 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             return false;
         }
 
-        if (desiredQuantity >= 0) {
-            return true;
+        // Wait until our tick count goes above delay ticks if we're done, then go back to idle
+        if (this.state == StoreState.DONE) {
+            this.tickCount += 1;
+            if (this.tickCount >= DELAY_TICKS) {
+                this.state = StoreState.IDLE;
+                this.tickCount = 0;
+            }
+            return false;
         }
-
-        if (ctx.player().openContainer != ctx.player().container) {
-            // we have a crafting table or a chest or something open
+        // if we're not idle, we are active
+        if (this.state != StoreState.IDLE && this.state != StoreState.FULL) return true;
+        // If the user is mucking around with their inventory, a chest, or a crafting table, don't increment the ticker
+        // Note: this doesn't apply when we're active
+        if (ctx.player().openContainer != null) {
+            return false;
+        }
+        // Add to our tick count
+        if (this.tickCount < DELAY_TICKS) {
+            this.tickCount += 1;
             return false;
         }
 
+        // Reset out tick count
+        this.tickCount = 0;
+        // If we're not full, we're going back to idle
+        if (!this.isInventoryFull()) {
+            this.state = StoreState.IDLE;
+            return false;
+        }
+        // If we're in the full state, it's time to start storing
+        if (this.state == StoreState.FULL) 
+        {
+            this.desiredQuantity = 10;
+            this.state = StoreState.STORING; // set our state to STORING
+            return true;
+        }
+        else {
+            this.state = StoreState.FULL;
+            return false;
+        }
+        
+
         // If we don't have any empty slots left
-        if (ctx.player().inventory.getFirstEmptyStack() == -1) {
-            logDirect("storeExcessInventory- we don't have a free slot");
-            
+        /* 
+        This code figures out what we can throw away
             this.desiredQuantity = 0;
             List<Item> throwAwayItems = Baritone.settings().acceptableThrowawayItems.value;
             List<Item> wantedItems = Baritone.settings().itemsToStore.value;
@@ -109,11 +163,12 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             if (storableCount > 0){
                 // We need to figure out 
                 logDirect("storeExcessInventory- " + storableCount + " items");
-                desiredQuantity = storableCount;
+                this.desiredQuantity = storableCount;
+                this.store = StoreState.SS_CHECK_FOR_SHULKER;
                 return true;
             }
         }
-        return false;
+        */
     }
 
     // Based on filter, how many items do we have in the inventory to store?
@@ -127,7 +182,6 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                     totalCount += item.getCount();
                 }
             }
-            
         }
         return totalCount;
     }
@@ -140,7 +194,8 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
     @Override
     public void onLostControl() {
         // TODO reset ourselves?
-        logDirect("storeExcessInventory cannot be used with allowInventory false");
+        logDirect("InventoryStoreProcess we lost control");
+        this.state = StoreState.IDLE; // we're gonna drop back to idle
     }
 
     @Override
@@ -171,6 +226,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         // TODO Auto-generated method stub
         this.desiredQuantity = quantity;
         this.filter = filter;
+        this.state = StoreState.STORING;
     }
 
     @Override
@@ -178,13 +234,54 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         // TODO Auto-generated method stub
         this.desiredQuantity = quantity;
         this.filter = new BlockOptionalMetaLookup(blocks);
+        this.state = StoreState.STORING;
+    }
 
+    // Checks the settings if we can use chests to store excess inventory
+    private boolean canUseShulkers() {
+        return Baritone.settings().storeExcessInShulkers.value;
+    }
+    
+    // Checks the settings if we can use chests to store excess inventory
+    private boolean canUseChests() {
+        return Baritone.settings().storeExcessInChests.value;
+    }
+
+    // Checks the settings if we can just yeet the excess inventory
+    private boolean canDiscard() {
+        return false;
     }
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        // TODO Auto-generated method stub
-        logDirect("storeExcessInventory- tick");
+        StoreState nextState = this.state;
+        // If we're storing
+        if (this.state == StoreState.STORING) {
+            // TODO calculate
+            if (!Baritone.settings().storeExcessInventory.value) {
+                logDirect("storeExcessInventory is not on");
+                nextState = StoreState.DONE;
+            }
+            else if (canUseShulkers()) {
+                nextState = StoreState.CHECK_FOR_SHULKER;
+            }
+            else if (canUseChests()) {
+                nextState = StoreState.FIND_CHEST;
+            }
+            else if (canDiscard()) {
+                nextState = StoreState.DISCARDING;
+            }
+            else {
+                nextState = StoreState.DONE;
+            }
+        }
+
+        // If we just finished
+        if (nextState == StoreState.DONE) {
+            logDirect("storeExcessInventory- Done");
+        }
+        logDirect("storeExcessInventory- "+this.state + " => "+ nextState);
+        this.state = nextState;
         return new PathingCommand(null, PathingCommandType.DEFER); // cede to other process
     }
 }
