@@ -74,9 +74,7 @@ public interface IInventoryStoreProcess extends IBaritoneProcess {
     }
 
     /**
-     * Cancels the current mining task
+     * Cancels the current task
      */
-    default void cancel() {
-        onLostControl();
-    }
+    void cancel();
 }
