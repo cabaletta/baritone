@@ -43,7 +43,6 @@ import net.minecraft.util.math.BlockPos;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 // Split this into a store and a obtain process?
 // How do you prevent them from competing?
 
@@ -57,7 +56,27 @@ import java.util.stream.Collectors;
  */
 public final class InventoryStoreProcess extends BaritoneProcessHelper implements IInventoryStoreProcess {
 
-    private BlockOptionalMetaLookup filter; // TODO make this an item filter, not a block filter
+    private class ItemFilter {
+        public final Item i;
+        public final boolean garbage;
+
+        public ItemFilter(Item i, boolean garbage) {
+            this.i = i;
+            this.garbage = garbage;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.i.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "(" + this.i.toString() + ", " + this.garbage + ")";
+        }
+    }
+
+    private List<ItemFilter> filter = new ArrayList<>(); // TODO make this an item filter, not a block filter
     final int DELAY_TICKS = 50; // how many ticks we wait after the inventory is full before we start doing
                                 // something
     private int desiredQuantity = -1; // -1 means no desire, 0 means store as much as you can, >0 means store up to
@@ -85,179 +104,65 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         super(baritone);
     }
 
+    // ---------------------------------------------
+    // TICKER FUNCTIONALITY
+    // ---------------------------------------------
+
+    private void resetTicker() {
+        this.tickCount = 0;
+    }
+
+    private void incrementTicker() {
+        this.tickCount += 1;
+    }
+
+    private boolean tickerExpired() {
+        return this.tickCount >= DELAY_TICKS;
+    }
+
+    // ---------------------------------------------
+    // INVENTORY MANAGEMENT FUNCTIONALITY
+    // ---------------------------------------------
     private boolean isInventoryFull() {
         return ctx.player().inventory.getFirstEmptyStack() == -1;
-    }
-
-    // Checks whether we have any shulkers in our inventory
-    private boolean isShulkerBoxInInventory() {
-        return getSlotsWithShulkers().size() > 0;
-    }
-
-    @Override
-    public boolean isActive() {
-        if (ctx.player() == null || ctx.world() == null) {
-            return false;
-        }
-        if (!Baritone.settings().storeExcessInventory.value) {
-            return false;
-        }
-
-        logDebug("InventoryStoreProcess: " + this.state + " " + this.tickCount);
-
-        // check if our inventory is full
-        if (!Baritone.settings().allowInventory.value) {
-            logDirect("storeExcessInventory cannot be used with allowInventory false");
-            Baritone.settings().storeExcessInventory.value = false;
-            return false;
-        }
-
-        // Wait until our tick count goes above delay ticks if we're done, then go back
-        // to idle
-        if (this.state == StoreState.DONE) {
-            this.tickCount += 1;
-            if (this.tickCount >= DELAY_TICKS) {
-                this.state = StoreState.IDLE;
-                this.tickCount = 0;
-            }
-            return false;
-        }
-        // if we're not idle, we are active
-        if (this.state != StoreState.IDLE && this.state != StoreState.FULL)
-            return true;
-        // If the user is mucking around with their inventory, a chest, or a crafting
-        // table, don't increment the ticker
-        // Note: this doesn't apply when we're active
-        if (ctx.player().openContainer != ctx.player().container) {
-            logDebug("We have something open " + ctx.player().openContainer.toString());
-            this.tickCount = 0; // TODO: move this to seperate method, resetTicker()?
-            return false;
-        }
-        // Add to our tick count
-        if (this.tickCount < DELAY_TICKS) {
-            this.tickCount += 1;
-            return false;
-        }
-
-        // Reset out tick count
-        this.tickCount = 0;
-        // If we're not full, we're going back to idle
-        if (!this.isInventoryFull()) {
-            this.state = StoreState.IDLE;
-            return false;
-        }
-        // If we're in the full state, it's time to start storing
-        if (this.state == StoreState.FULL) {
-            this.desiredQuantity = 10;
-            this.state = StoreState.STORING; // set our state to STORING
-            return true;
-        } else {
-            this.state = StoreState.FULL;
-            return false;
-        }
-
-        // If we don't have any empty slots left
-        /*
-         * This code figures out what we can throw away this.desiredQuantity = 0;
-         * List<Item> throwAwayItems =
-         * Baritone.settings().acceptableThrowawayItems.value; List<Item> wantedItems =
-         * Baritone.settings().itemsToStore.value; // set the filter up so that it will
-         * look for items in the inventory Set<Block> filteredItems = new HashSet<>();
-         * for (Item item : throwAwayItems) {
-         * filteredItems.add(Block.getBlockFromItem(item)); } for (Item item :
-         * wantedItems) { filteredItems.add(Block.getBlockFromItem(item)); }
-         * 
-         * this.filter = new BlockOptionalMetaLookup(new ArrayList<>(filteredItems));
-         * int storableCount = numberThingsAvailableToStore(); if (storableCount > 0){
-         * // We need to figure out logDirect("storeExcessInventory- " + storableCount +
-         * " items"); this.desiredQuantity = storableCount; this.store =
-         * StoreState.SS_CHECK_FOR_SHULKER; return true; } }
-         */
     }
 
     // Based on filter, how many items do we have in the inventory to store?
     private int numberThingsAvailableToStore() {
         NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
         int totalCount = 0;
-        for (BlockOptionalMeta block : this.filter.blocks()) {
+        int biggestStackOfTrash = 0; // keep track of the biggest stack of trash we have
+        for (ItemFilter item_filter : this.filter) {
             // Check if we have this item
             for (ItemStack item : inv) {
-                if (block.matches(item)) {
+                if (item == null)
+                    continue;
+                if (item.getItem().equals(item_filter.i)) {
                     totalCount += item.getCount();
+                    if (item_filter.garbage && biggestStackOfTrash < item.getCount())
+                        biggestStackOfTrash = item.getCount();
                 }
+                System.out.println("numberThingsAvailableToStore " + item_filter.toString() + " vs " + item.toString()
+                        + " stack: " + biggestStackOfTrash);
             }
         }
-        return totalCount;
-    }
-
-    @Override
-    public double priority() {
-        return 2; // sort of arbitrary but it seems like a good amount?
-    }
-
-    @Override
-    public void onLostControl() {
-        this.state = StoreState.IDLE; // we're gonna drop back to idle
-        this.tickCount = 0; // make sure to reset our counter
-    }
-
-    @Override
-    public String displayName0() {
-        // TODO figure out if we're storing or obtaining
-        return "Inventory Store" + filter.toString();
+        System.out.println("Total: " + totalCount + ", trash: " + biggestStackOfTrash);
+        return totalCount - biggestStackOfTrash;
     }
 
     /**
-     * TODO: move this to obtain Scans for and returns the block pos off the scanned
-     * items
+     * Scans for dropped items items
      */
-    public List<BlockPos> droppedItemsScan() {
+    public List<BlockPos> droppedItemsScan(Set<Item> filter) {
         List<BlockPos> ret = new ArrayList<>();
         for (Entity entity : ((ClientWorld) ctx.world()).getAllEntities()) {
             if (entity instanceof ItemEntity) {
                 ItemEntity ei = (ItemEntity) entity;
-                if (filter.has(ei.getItem())) {
+                if (filter.contains(ei.getItem().getItem()))
                     ret.add(new BlockPos(entity));
-                }
             }
         }
         return ret;
-    }
-
-    /**
-     * Returns a list with the inventory slots that have shulkers in them
-     */
-    private List<Integer> getSlotsWithShulkers() {
-        List<Integer> list = new ArrayList<>();
-        for (ItemStack stack: ctx.player().inventory.mainInventory) {
-            System.out.println(stack.toString());
-            System.out.println(stack.getItem());
-            if (stack.getItem() == Items.SHULKER_BOX) {
-                list.add(0); // TODO add this
-            }
-        }
-        return list;
-    }
-
-    @Override
-    public void storeBlocks(int quantity, BlockOptionalMetaLookup filter) {
-        // TODO Auto-generated method stub
-        this.desiredQuantity = quantity;
-        this.filter = filter;
-        this.state = StoreState.STORING;
-    }
-
-    @Override
-    public void storeBlocksByName(int quantity, String... blocks) {
-        // TODO Auto-generated method stub
-        this.desiredQuantity = quantity;
-        this.filter = new BlockOptionalMetaLookup(blocks);
-        this.state = StoreState.STORING;
-    }
-
-    // Checks the settings if we can use chests to store excess inventory
-    private boolean canUseShulkers() {
-        return Baritone.settings().storeExcessInShulkers.value;
     }
 
     // Checks the settings if we can use chests to store excess inventory
@@ -270,28 +175,135 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         return false;
     }
 
+    /**
+     * This code figures out what we can throw away
+     */
+    private void setupFilter() {
+        this.desiredQuantity = 0;
+        List<Item> throwAwayItems = Baritone.settings().acceptableThrowawayItems.value;
+        List<Item> wantedItems = Baritone.settings().itemsToStore.value;
+        this.filter.clear(); // set the filter up so that it will
+        // look for items in the inventory
+        Set<ItemFilter> filteredItems = new HashSet<>();
+        // Add the wanted items and the throwaway items to the filter list
+        for (Item item : throwAwayItems)
+            filteredItems.add(new ItemFilter(item, true));
+        for (Item item : wantedItems)
+            filteredItems.add(new ItemFilter(item, false));
+        this.filter.addAll(filteredItems);
+    }
+
+    // ---------------------------------------------
+    // SHULKER FUNCTIONS
+    // ---------------------------------------------
+
+    private boolean tryToStoreInShulkers() {
+        List<Integer> slots = getSlotsWithShulkers();
+        if (slots.size() == 0)
+            return false;
+        for (Integer slot : slots) {
+            // Check if shulker is empty
+        }
+        return false;
+    }
+
+    // Checks the settings if we can use chests to store excess inventory
+    private boolean canUseShulkers() {
+        return Baritone.settings().storeExcessInShulkers.value;
+    }
+
+    // Checks whether we have any shulkers in our inventory
+    private boolean isShulkerBoxInInventory() {
+        return getSlotsWithShulkers().size() > 0;
+    }
+
+    /**
+     * Returns a list with the inventory slots that have shulkers in them
+     */
+    private List<Integer> getSlotsWithShulkers() {
+        List<Integer> list = new ArrayList<>();
+        for (ItemStack stack : ctx.player().inventory.mainInventory) {
+            System.out.println(stack.toString());
+            System.out.println(stack.getItem());
+            if (stack.getItem() == Items.SHULKER_BOX) {
+                list.add(0); // TODO add this
+            }
+        }
+        return list;
+    }
+
+    // ---------------------------------------------
+    // Management functions
+    // ---------------------------------------------
+
+    @Override
+    public void storeBlocks(int quantity, BlockOptionalMetaLookup filter) {
+        // TODO Auto-generated method stub
+        this.desiredQuantity = quantity;
+        // this.filter = filter;
+        this.state = StoreState.STORING;
+    }
+
+    @Override
+    public void storeBlocksByName(int quantity, String... blocks) {
+        // TODO Auto-generated method stub
+        this.desiredQuantity = quantity;
+        // this.filter = new BlockOptionalMetaLookup(blocks);
+        this.state = StoreState.STORING;
+    }
+
+    @Override
+    public void cancel() {
+        if (this.state == StoreState.IDLE)
+            return; // No need to cancel
+        logDebug("CANCEL");
+        onLostControl();
+    }
+
+    @Override
+    public double priority() {
+        return 2; // sort of arbitrary but it seems like a good amount?
+    }
+
+    @Override
+    public void onLostControl() {
+        this.state = StoreState.IDLE; // we're gonna drop back to idle
+        resetTicker();
+    }
+
+    @Override
+    public String displayName0() {
+        // TODO figure out if we're storing or obtaining
+        return "Inventory Store" + filter.toString();
+    }
+
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         StoreState nextState = this.state;
         // If we're storing
         if (this.state == StoreState.STORING) {
             // TODO calculate
+            nextState = StoreState.DONE;
             if (!Baritone.settings().storeExcessInventory.value) {
                 logDirect("storeExcessInventory is not on");
-                nextState = StoreState.DONE;
+            } else {
+                // figure out how much we can get rid of
+                this.setupFilter();
+                this.desiredQuantity = numberThingsAvailableToStore();
+                if (this.desiredQuantity > 0)
+                    nextState = StoreState.CHECK_FOR_SHULKER_BOX;
             }
-            nextState = StoreState.CHECK_FOR_SHULKER_BOX; // check if we can use shulkers
-            this.desiredQuantity = 5;
+
         } else if (this.desiredQuantity == 0) { // if we've hit our goal and we're not in our store state
             nextState = StoreState.DONE;
         } else if (this.state == StoreState.CHECK_FOR_SHULKER_BOX) {
             nextState = StoreState.FIND_CHEST;
             boolean haveShulker = isShulkerBoxInInventory();
-            if (canUseShulkers() && haveShulker) {
-                // Put stuff into the shulkers
+            if (canUseShulkers() && haveShulker) { // Put stuff into the shulkers
                 boolean result = tryToStoreInShulkers();
                 logDebug("Put stuff in shulkers");
-                if (result) nextState = StoreState.CHECK_FOR_SHULKER_BOX;
+                if (result)
+                    nextState = StoreState.CHECK_FOR_SHULKER_BOX;
             } else if (!haveShulker) { // check if we have any shulkers in our inventory
                 logDebug("StoreExcessInventory - we don't have any shulkers");
 
@@ -317,22 +329,66 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         return new PathingCommand(null, PathingCommandType.DEFER); // cede to other process
     }
 
-    private boolean tryToStoreInShulkers() {
-        List<Integer> slots = getSlotsWithShulkers();
-        if (slots.size() == 0)
-            return false;
-        for (Integer slot : slots) {
-            // Check if shulker is empty
-        }
-        return false;
-    }
-
     @Override
-    public void cancel() {
-        if (this.state == StoreState.IDLE)
-            return; // No need to cancel
-        logDebug("CANCEL");
-        onLostControl();
+    public boolean isActive() {
+        if (ctx.player() == null || ctx.world() == null) {
+            return false;
+        }
+        if (!Baritone.settings().storeExcessInventory.value) {
+            return false;
+        }
 
+        logDebug("InventoryStoreProcess: " + this.state + " " + this.tickCount);
+
+        // check if our inventory is full
+        if (!Baritone.settings().allowInventory.value) {
+            logDirect("storeExcessInventory cannot be used with allowInventory false");
+            Baritone.settings().storeExcessInventory.value = false;
+            return false;
+        }
+
+        // Wait until our tick count goes above delay ticks if we're done, then go back
+        // to idle
+        if (this.state == StoreState.DONE) {
+            incrementTicker();
+            if (tickerExpired()) {
+                this.state = StoreState.IDLE;
+                resetTicker();
+            }
+            return false;
+        }
+        // if we're not idle, we are active
+        if (this.state != StoreState.IDLE && this.state != StoreState.FULL)
+            return true;
+        // If the user is mucking around with their inventory, a chest, or a crafting
+        // table, don't increment the ticker
+        // Note: this doesn't apply when we're active
+        if (ctx.player().openContainer != ctx.player().container) {
+            logDebug("We have something open " + ctx.player().openContainer.toString());
+            resetTicker();
+            return false;
+        }
+        // Add to our tick count
+        if (!tickerExpired()) {
+            incrementTicker();
+            return false;
+        }
+
+        // Reset out tick count
+        resetTicker();
+        // If we're not full, we're going back to idle
+        if (!this.isInventoryFull()) {
+            this.state = StoreState.IDLE;
+            return false;
+        }
+        // If we're in the full state, it's time to start storing
+        if (this.state == StoreState.FULL) {
+            this.desiredQuantity = 10;
+            this.state = StoreState.STORING; // set our state to STORING
+            return true;
+        } else {
+            this.state = StoreState.FULL;
+            return false;
+        }
     }
 }
