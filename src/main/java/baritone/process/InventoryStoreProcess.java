@@ -36,13 +36,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 // Split this into a store and a obtain process?
 // How do you prevent them from competing?
@@ -66,7 +66,17 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
 
     private enum StoreState {
         IDLE, FULL, // We are full, after DELAY_TICKS, go to STORING
-        STORING, CHECK_FOR_SHULKER, FIND_CHEST, GO_TO_CHEST, AT_CHEST, DISCARDING, DONE
+        STORING, // we need to decide how to store
+        CHECK_FOR_SHULKER_BOX, // Check for shulker in our inventory
+        PLACE_SHULKER_BOX, // Place the shulker in the world
+        STORE_IN_SHULKER, // Open the shulker and store in it
+        MINE_SHULKER_BOX, // Now we need to mine the shulker that we placed
+        COLLECT_SHULKER_BOX, // Now we need to collect the tile that dropped
+        FIND_CHEST, // find a stored inventory that has space
+        GO_TO_CHEST, // go to chest
+        AT_CHEST, // Once we're at the chest, place the stuff inside
+        DISCARDING, // Throw away the items until we can't anymore
+        DONE // we finished
     }
 
     private StoreState state = StoreState.IDLE;
@@ -80,8 +90,8 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
     }
 
     // Checks whether we have any shulkers in our inventory
-    private boolean isShulkerInInventory() {
-        return false;
+    private boolean isShulkerBoxInInventory() {
+        return getSlotsWithShulkers().size() > 0;
     }
 
     @Override
@@ -214,6 +224,21 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         return ret;
     }
 
+    /**
+     * Returns a list with the inventory slots that have shulkers in them
+     */
+    private List<Integer> getSlotsWithShulkers() {
+        List<Integer> list = new ArrayList<>();
+        for (ItemStack stack: ctx.player().inventory.mainInventory) {
+            System.out.println(stack.toString());
+            System.out.println(stack.getItem());
+            if (stack.getItem() == Items.SHULKER_BOX) {
+                list.add(0); // TODO add this
+            }
+        }
+        return list;
+    }
+
     @Override
     public void storeBlocks(int quantity, BlockOptionalMetaLookup filter) {
         // TODO Auto-generated method stub
@@ -255,16 +280,18 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                 logDirect("storeExcessInventory is not on");
                 nextState = StoreState.DONE;
             }
-            nextState = StoreState.CHECK_FOR_SHULKER; // check if we can use shulkers
+            nextState = StoreState.CHECK_FOR_SHULKER_BOX; // check if we can use shulkers
             this.desiredQuantity = 5;
         } else if (this.desiredQuantity == 0) { // if we've hit our goal and we're not in our store state
             nextState = StoreState.DONE;
-        } else if (this.state == StoreState.CHECK_FOR_SHULKER) {
+        } else if (this.state == StoreState.CHECK_FOR_SHULKER_BOX) {
             nextState = StoreState.FIND_CHEST;
-            boolean haveShulker = isShulkerInInventory();
+            boolean haveShulker = isShulkerBoxInInventory();
             if (canUseShulkers() && haveShulker) {
                 // Put stuff into the shulkers
+                boolean result = tryToStoreInShulkers();
                 logDebug("Put stuff in shulkers");
+                if (result) nextState = StoreState.CHECK_FOR_SHULKER_BOX;
             } else if (!haveShulker) { // check if we have any shulkers in our inventory
                 logDebug("StoreExcessInventory - we don't have any shulkers");
 
@@ -288,6 +315,16 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         logDirect("storeExcessInventory- " + this.state + " => " + nextState);
         this.state = nextState;
         return new PathingCommand(null, PathingCommandType.DEFER); // cede to other process
+    }
+
+    private boolean tryToStoreInShulkers() {
+        List<Integer> slots = getSlotsWithShulkers();
+        if (slots.size() == 0)
+            return false;
+        for (Integer slot : slots) {
+            // Check if shulker is empty
+        }
+        return false;
     }
 
     @Override
