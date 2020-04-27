@@ -64,11 +64,17 @@ public final class InventoryBehavior extends Behavior {
         }
     }
 
-    public void attemptToPutOnHotbar(int inMainInvy, Predicate<Integer> disallowedHotbar) {
+    /**
+     * Tries to put an item on the hotbar
+     * @return 0-9 the slot that it put it into
+     * @return -1 if unable to
+     */
+    public OptionalInt attemptToPutOnHotbar(int inMainInvy, Predicate<Integer> disallowedHotbar) {
         OptionalInt destination = getTempHotbarSlot(disallowedHotbar);
         if (destination.isPresent()) {
             swapWithHotBar(inMainInvy, destination.getAsInt());
         }
+        return destination;
     }
 
     public OptionalInt getTempHotbarSlot(Predicate<Integer> disallowedHotbar) {

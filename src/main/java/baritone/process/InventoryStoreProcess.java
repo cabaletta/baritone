@@ -32,12 +32,17 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.gui.screen.inventory.ShulkerBoxScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.ClickType;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.PlayerContainer;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -86,7 +91,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         }
     }
 
-    private List<ItemFilter> filter = new ArrayList<>(); // TODO make this an item filter, not a block filter
+    private List<ItemFilter> filter = new ArrayList<>();
 
     final int DELAY_TICKS = 50; // how many ticks we wait after the inventory is full before we start doing
                                 // something
@@ -109,7 +114,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         STORE_IN_SHULKER, // Open the shulker and store in it
         MINE_SHULKER_BOX, // Now we need to mine the shulker that we placed
         COLLECT_SHULKER_BOX, // Now we need to collect the tile that dropped
-        FIND_CHEST, // find a stored inventory that has space
+        CHECK_FOR_CHEST, // find a stored inventory that has space
         GO_TO_CHEST, // go to chest
         AT_CHEST, // Once we're at the chest, place the stuff inside
         DISCARDING, // Throw away the items until we can't anymore
@@ -149,6 +154,94 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
     private void swapWithHotBar(int inInventory, int inHotbar) {
         ctx.playerController().windowClick(ctx.player().container.windowId,
                 inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickType.SWAP, ctx.player());
+    }
+
+    /**
+     * This assumes that the chest is currently open
+     */
+    private boolean transferItemsToOpenChest() {
+        ClientPlayerEntity player = ctx.player();
+        if (ctx.player().openContainer instanceof PlayerContainer) {
+            // We opened our own inventory!
+            System.out.println("We don't have a container open");
+        }
+        boolean did_transfer_items = false;
+
+        int numberChestSlots = 27; // TODO: figure out what are slots of our inventory and what are slots in the chest
+        // Go through each of the slot in the chest
+        // TODO: check if we can do this
+        NonNullList<ItemStack> inv = player.inventory.mainInventory;
+        for (int j = 0; j < inv.size(); j++) {
+            ItemStack stack = inv.get(j);
+            if (stack.isEmpty())
+                continue;
+            // System.out.println("Compared to " + j + " = " + stack);
+            if (!isNonGarbageItem(stack.getItem()))
+                continue;
+            int stackSize = stack.getCount();
+            System.out.println("Transferring goods " + j + ": " + stack);
+            int slotId = j;
+            // Slot chest_slot = player.openContainer.getSlot(slotId);
+            // Check to make sure we are doing the slot we think we are
+            // Click on the thing in our inventory?
+            ItemStack outstack = ctx.playerController().windowClick(ctx.player().container.windowId, slotId, 1,
+                    ClickType.QUICK_MOVE, ctx.player());
+            System.out.println("Tried to move " + outstack);
+            this.desiredQuantity -= stackSize;
+
+            did_transfer_items = true;
+            break;
+        }
+        // Now we try the garbage
+        for (int j = 0; j < inv.size() && !did_transfer_items; j++) {
+            ItemStack stack = inv.get(j);
+            if (stack.isEmpty())
+                continue;
+            // System.out.println("Compared to " + j + " = " + stack);
+            if (!isGarbageItem(stack.getItem()))
+                continue;
+            this.desiredQuantity -= stack.getCount();
+            System.out.println("Transferring garbage " + j + ":" + stack);
+            // how do I figure out what this is
+            int slotId = j;
+            // Slot chest_slot = player.openContainer.getSlot(slotId);
+            // Check to make sure we are doing the slot we think we are
+            // Click on the thing in our inventory?
+            ItemStack outstack = ctx.playerController().windowClick(ctx.player().container.windowId, slotId, 1,
+                    ClickType.QUICK_MOVE, ctx.player());
+            System.out.println("Tried to move " + outstack);
+            did_transfer_items = true;
+            break;
+        }
+        // TODO: try to consolidate chest- so we can store more things next time
+        if (did_transfer_items) {
+            System.out.println("We should consolidate the chest");
+        }
+        return did_transfer_items;
+    }
+
+    /**
+     * Uses the filer to check if this is garbage
+     */
+    private boolean isGarbageItem(Item i) {
+        for (ItemFilter item_filter : this.filter) { // TODO: have a better way to check if this is in there
+            if (item_filter.garbage && item_filter.i.equals(i)) { // If it's a match
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Uses the filter to check if this is a non garbage item
+     */
+    private boolean isNonGarbageItem(Item i) {
+        for (ItemFilter item_filter : this.filter) { // TODO: have a better way to check if this is in there
+            if (!item_filter.garbage && item_filter.i.equals(i)) { // If it's a match
+                return true;
+            }
+        }
+        return false;
     }
 
     // Based on filter, how many items do we have in the inventory to store?
@@ -254,25 +347,47 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                 mostSpace = itemSpace;
                 bestSlot = slot;
             }
-
         }
         if (bestSlot == -1)
             return false;
         // switch to the box we selected
-        System.out.println("Hotbar Slot: " + bestSlot);
-        if (!PlayerInventory.isHotbar(bestSlot)) {
-            swapWithHotBar(bestSlot, 0);
-            bestSlot = 0;
+        int time_attempted = 0;
+        ArrayList<Integer> usefulSlots = new ArrayList<>();
+        // TODO figure out what we care about?
+        OptionalInt newSlot = baritone.getInventoryBehavior().attemptToPutOnHotbar(bestSlot, usefulSlots::contains);
+        if (!newSlot.isPresent()) {
+            System.out.println("We failed to equipt the shulker box");
+            return false;
         }
-        ctx.player().inventory.currentItem = bestSlot;
+        ctx.player().inventory.currentItem = newSlot.getAsInt();
 
-        System.out.println("Hotbar Slot: " + bestSlot);
+        if (!isShulkerBox(ctx.player().inventory.getCurrentItem())) {
+            System.out.println("Failed to get shulker");
+            return false;
+        }
+        // Now figure out where to place the shulker
         this.shulkerPlace = findPlaceToPutShulkerBox();
         if (this.shulkerPlace == null)
             return false;
         System.out.println("Shulker box @" + this.shulkerPlace);
         // TODO: Try to place it where we can get to it
         return true;
+    }
+
+    private boolean isShulkerBox(ItemStack stack) {
+        if (stack.isEmpty())
+            return false;
+        return isShulkerBox(stack.getItem());
+    }
+
+    private boolean isShulkerBox(Item i) {
+        return i.equals(Items.SHULKER_BOX) || i.equals(Items.BLACK_SHULKER_BOX) || i.equals(Items.BLUE_SHULKER_BOX)
+                || i.equals(Items.BROWN_SHULKER_BOX) || i.equals(Items.CYAN_SHULKER_BOX)
+                || i.equals(Items.GRAY_SHULKER_BOX) || i.equals(Items.GREEN_SHULKER_BOX)
+                || i.equals(Items.LIME_SHULKER_BOX) || i.equals(Items.MAGENTA_SHULKER_BOX)
+                || i.equals(Items.ORANGE_SHULKER_BOX) || i.equals(Items.PINK_SHULKER_BOX)
+                || i.equals(Items.PURPLE_SHULKER_BOX) || i.equals(Items.RED_SHULKER_BOX)
+                || i.equals(Items.WHITE_SHULKER_BOX) || i.equals(Items.YELLOW_SHULKER_BOX);
     }
 
     private BlockPos findPlaceToPutShulkerBox() {
@@ -290,8 +405,11 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         BlockStateInterface bsi = baritone.bsi;
         for (BlockPos place : places) {
             BlockState upper = bsi.get0(place.up());
-            if (bsi.get0(place).isAir() && (upper.isTransparent() || upper.isAir())) // Make sure we can place the thing
-                                                                                     // there and we can open it later
+            BlockState lower = bsi.get0(place.down());
+            if (bsi.get0(place).isAir() && (upper.isTransparent() || upper.isAir()) && lower.isSolid()) // Make sure we
+                                                                                                        // can place the
+                                                                                                        // thing
+                // there and we can open it later
                 return place;
         }
         System.out.println("We failed to find a spot to place the shulker box");
@@ -321,13 +439,17 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
     /**
      * Scans for dropped items items
      */
-    public List<BlockPos> droppedShulkerBoxScan(Set<Item> filter) {
+    public List<BlockPos> droppedShulkerBoxScan() {
         List<BlockPos> ret = new ArrayList<>();
+        System.out.println("DroppedShulkerBoxScan");
+        // TODO sort by distance from player
         for (Entity entity : ((ClientWorld) ctx.world()).getAllEntities()) {
             if (entity instanceof ItemEntity) {
                 ItemEntity ei = (ItemEntity) entity;
-                if (ei.getItem().getItem().equals(Items.SHULKER_BOX))
-                    ret.add(new BlockPos(entity));
+                if (ei.getItem().getItem().equals(Items.SHULKER_BOX)) {
+                    BlockPos pos = new BlockPos(entity);
+                    ret.add(pos);
+                }
             }
         }
         // We found
@@ -401,7 +523,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         StoreState nextState = this.state;
-        this.activeTicker += 1; // make sure to add to the ticker
+        this.tickCount += 1; // make sure to add to the ticker
         // If we're storing
         if (this.state == StoreState.STORING) {
             // TODO calculate
@@ -423,7 +545,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             // SHULKER STORAGE
         }
         else if (this.state == StoreState.CHECK_FOR_SHULKER_BOX) {
-            nextState = StoreState.FIND_CHEST;
+            nextState = StoreState.CHECK_FOR_CHEST;
             if (canUseShulkers()) { // Put stuff into the shulkers
                 boolean result = tryToPlaceShulkerChest();
                 logDebug("Put stuff in shulkers");
@@ -436,6 +558,10 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         }
         else if (this.state == StoreState.PLACE_SHULKER_BOX) {
             baritone.getInputOverrideHandler().clearAllKeys();
+            if (!isShulkerBox(ctx.player().inventory.getCurrentItem())) {
+                logDirect("We failed to put the shulker in our hand");
+                nextState = StoreState.CHECK_FOR_CHEST;
+            }
             Optional<Rotation> shulker_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace,
                     ctx.playerController().getBlockReachDistance());
             Optional<Rotation> under_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace.down(),
@@ -444,8 +570,13 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             if (shulker_reachable.isPresent()) {
                 // Look at it
                 baritone.getLookBehavior().updateTarget(shulker_reachable.get(), true);
-
-                if (this.shulkerPlace.equals(ctx.getSelectedBlock().orElse(null))) {
+                BlockState state = baritone.bsi.get0(shulkerPlace);
+                // If the place is filled and it isn't a shulker box
+                if (!state.isAir() && state.getBlock() != Blocks.SHULKER_BOX) {
+                    System.out.println("We messed up " + state);
+                    nextState = StoreState.CHECK_FOR_SHULKER_BOX;
+                }
+                else if (this.shulkerPlace.equals(ctx.getSelectedBlock().orElse(null))) {
                     // We did it!
                     nextState = StoreState.OPEN_SHULKER_BOX;
                 }
@@ -453,8 +584,12 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             else if (under_reachable.isPresent()) {
                 // Look at it
                 baritone.getLookBehavior().updateTarget(under_reachable.get(), true);
+                // If we're looking at it?
+                // TODO: determine if we are looking at a top face?
                 if (this.shulkerPlace.down().equals(ctx.getSelectedBlock().orElse(null))) { // wait for us to actually
                                                                                             // look at the block
+                    // Place that funky shulker box white boy
+                    System.out.println("Placing that block");
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // firmly grasp it
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL); // cede to other process
                 }
@@ -479,29 +614,60 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                 nextState = StoreState.STORE_IN_SHULKER;
         }
         else if (this.state == StoreState.STORE_IN_SHULKER) {
-
+            ClientPlayerEntity player = ctx.player();
+            Container openContainer = player.openContainer;
+            if (openContainer == player.container) {
+                System.out.println("Finished putting stuff in the shulker");
+                nextState = StoreState.MINE_SHULKER_BOX;
+            }
+            else if (this.tickCount % 20 == 0 && this.tickCount != 0) {
+                // if we can't place anything else in the chest
+                if (!transferItemsToOpenChest())
+                    ctx.player().closeScreen();
+            }
         }
         else if (this.state == StoreState.MINE_SHULKER_BOX) {
             baritone.getInputOverrideHandler().clearAllKeys();
             if (baritone.bsi.get0(this.shulkerPlace).isAir()) {
+                this.shulkerPlace = null;
                 nextState = StoreState.COLLECT_SHULKER_BOX;
             }
             else {
-                // Look at it
-                // TODO- this code should be in a function
-                Optional<Rotation> shulker_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace, ctx.playerController().getBlockReachDistance());
+                // Make sure we got some sort of pickaxe?
+                MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(this.shulkerPlace));
+                // TODO: switch to tool that's best for the job
+                Optional<Rotation> shulker_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace,
+                        ctx.playerController().getBlockReachDistance());
                 if (shulker_reachable.isPresent()) {
                     baritone.getLookBehavior().updateTarget(shulker_reachable.get(), true);
                 }
                 // check if we're looking at it
                 if (this.shulkerPlace.equals(ctx.getSelectedBlock().orElse(null))) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // firmly grasp it
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true); // firmly punch it
                 }
+            }
+        }
+        else if (this.state == StoreState.COLLECT_SHULKER_BOX) {
+            if (this.shulkerPlace == null || this.tickCount % 10 == 0) {
+                List<BlockPos> shulkerBoxes = droppedShulkerBoxScan();
+                // TODO find the closest
+                if (shulkerBoxes.size() > 0)
+                    this.shulkerPlace = shulkerBoxes.get(0);
+                else {
+                    // We found it? Go back to the top to use a different shulker?
+                    System.out.println("We finished");
+                    nextState = StoreState.STORE_IN_SHULKER;
+                }
+                if (this.shulkerPlace == null)
+                    nextState = StoreState.DONE;
+            }
+            else {
+                return new PathingCommand(new GoalBlock(this.shulkerPlace), PathingCommandType.SET_GOAL_AND_PATH);
             }
         }
         // -----------------------
         // CHEST STORAGE
-        else if (this.state == StoreState.FIND_CHEST) {
+        else if (this.state == StoreState.CHECK_FOR_CHEST) {
             nextState = StoreState.DISCARDING;
             if (canUseChests()) { // if we can use chests, look for a place to put a chest
                 // TODO find a chest in our remembered inventories
@@ -522,7 +688,8 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         if (nextState == StoreState.DONE) {
             logDirect("storeExcessInventory- Done with left: " + this.desiredQuantity);
         }
-        logDirect("storeExcessInventory- " + this.state + " => " + nextState);
+        if (this.state != nextState)
+            logDirect("storeExcessInventory- " + this.state + " => " + nextState);
         this.state = nextState;
         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE); // cede to other process
     }
