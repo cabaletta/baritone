@@ -107,6 +107,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
 
     private enum StoreState {
         IDLE, FULL, // We are full, after DELAY_TICKS, go to STORING
+        CONDENSE_INVENTORY, // Try to condense our inventory
         STORING, // we need to decide how to store
         CHECK_FOR_SHULKER_BOX, // Check for shulker in our inventory
         PLACE_SHULKER_BOX, // Place the shulker in the world
@@ -184,8 +185,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             // Slot chest_slot = player.openContainer.getSlot(slotId);
             // Check to make sure we are doing the slot we think we are
             // Click on the thing in our inventory?
-            ItemStack outstack = ctx.playerController().windowClick(ctx.player().container.windowId, slotId, 1,
-                    ClickType.QUICK_MOVE, ctx.player());
+            ItemStack outstack = tryQuickTransferToChest(j);
             System.out.println("Tried to move " + outstack);
             this.desiredQuantity -= stackSize;
 
@@ -203,12 +203,9 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             this.desiredQuantity -= stack.getCount();
             System.out.println("Transferring garbage " + j + ":" + stack);
             // how do I figure out what this is
-            int slotId = j;
-            // Slot chest_slot = player.openContainer.getSlot(slotId);
             // Check to make sure we are doing the slot we think we are
             // Click on the thing in our inventory?
-            ItemStack outstack = ctx.playerController().windowClick(ctx.player().container.windowId, slotId, 1,
-                    ClickType.QUICK_MOVE, ctx.player());
+            ItemStack outstack = tryQuickTransferToChest(j);
             System.out.println("Tried to move " + outstack);
             did_transfer_items = true;
             break;
@@ -218,6 +215,11 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             System.out.println("We should consolidate the chest");
         }
         return did_transfer_items;
+    }
+    private ItemStack tryQuickTransferToChest(int invSlotId) {
+        // Get the actual slot in the player?
+        int slotId = invSlotId < 9 ? invSlotId + 36 : invSlotId;
+        return ctx.playerController().windowClick(ctx.player().container.windowId, slotId, 0, ClickType.QUICK_MOVE, ctx.player());
     }
 
     /**
@@ -331,16 +333,14 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
      * Tries to find a shulker to place
      */
     private boolean tryToPlaceShulkerChest() {
-        List<Integer> slots = getSlotsWithShulkers();
-        if (slots.size() == 0) {
-            System.out.println("No Shulkers to place");
-            return false;
-        }
         int bestSlot = -1;
         int mostSpace = 0;
-        for (Integer slot : slots) { // try and find the best shulker to place
+        int invSize = ctx.player().inventory.mainInventory.size();
+        for (int slot = 0; slot < invSize; slot++) { // try and find the best shulker to place
             ItemStack stack = ctx.player().inventory.mainInventory.get(slot);
-            int itemSpace = getEmptySpaceInShulkerBox(stack.getTag());
+            if (!isShulkerBox(stack))
+                continue;
+            int itemSpace = getEmptySpaceInShulkerBox(stack);
             System.out.println("STACK: " + stack + " @" + slot + " =" + itemSpace);
 
             if (itemSpace > mostSpace) {
@@ -348,21 +348,31 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                 bestSlot = slot;
             }
         }
-        if (bestSlot == -1)
-            return false;
-        // switch to the box we selected
-        int time_attempted = 0;
-        ArrayList<Integer> usefulSlots = new ArrayList<>();
-        // TODO figure out what we care about?
-        OptionalInt newSlot = baritone.getInventoryBehavior().attemptToPutOnHotbar(bestSlot, usefulSlots::contains);
-        if (!newSlot.isPresent()) {
-            System.out.println("We failed to equipt the shulker box");
+        if (bestSlot == -1) {
+            System.out.println("No Shulkers to place");
             return false;
         }
-        ctx.player().inventory.currentItem = newSlot.getAsInt();
+        // Find a new place to place it
+        ArrayList<Integer> candidates = new ArrayList<>(); // They use 0 and 8
+        candidates.add(0);
+        candidates.add(8);
 
-        if (!isShulkerBox(ctx.player().inventory.getCurrentItem())) {
-            System.out.println("Failed to get shulker");
+        OptionalInt newSlot = baritone.getInventoryBehavior().attemptToPutOnHotbar(bestSlot, candidates::contains);
+
+        if (newSlot.isPresent()) {
+            int newSlotInt = newSlot.getAsInt();
+            System.out.println("Switching from " + ctx.player().inventory.currentItem + " to " + newSlotInt);
+            ctx.player().inventory.currentItem = newSlotInt;
+        }
+        else if (ctx.player().getHeldItemOffhand().isEmpty()) {
+            baritone.getInventoryBehavior().attemptToPlaceInOffhand(bestSlot);
+        }
+        else {
+            System.out.println("I don't know what to do here");
+        }
+        //
+        if (!isCurrentItemShulkerBox()) {
+            System.out.println("Failed to get shulker in our hotbar");
             return false;
         }
         // Now figure out where to place the shulker
@@ -370,11 +380,26 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         if (this.shulkerPlace == null)
             return false;
         System.out.println("Shulker box @" + this.shulkerPlace);
-        // TODO: Try to place it where we can get to it
         return true;
     }
 
+    private boolean isCurrentItemShulkerBox() {
+        if (isShulkerBox(ctx.player().getHeldItemMainhand()))
+            return true;
+        if (isShulkerBox(ctx.player().getHeldItemOffhand()))
+            return true;
+        return false;
+    }
+
+    private boolean isShulkerBoxWithSpace(ItemStack stack) {
+        if (!isShulkerBox(stack))
+            return false;
+        return getEmptySpaceInShulkerBox(stack) > 0;
+    }
+
     private boolean isShulkerBox(ItemStack stack) {
+        if (stack == null)
+            return false;
         if (stack.isEmpty())
             return false;
         return isShulkerBox(stack.getItem());
@@ -413,7 +438,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                 return place;
         }
         System.out.println("We failed to find a spot to place the shulker box");
-        logDebug("We failed to find a spot to place the shulker box");
+        logDirect("We failed to find a spot to place the shulker box");
         return null;
 
     }
@@ -421,8 +446,16 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
     /**
      * Returns the number of empty slots in a shulker
      */
+    private int getEmptySpaceInShulkerBox(ItemStack stack) {
+        if (!isShulkerBox(stack))
+            return 0;
+        return getEmptySpaceInShulkerBox(stack.getTag());
+    }
+
+    /**
+     * @return returns the number of slots available in a given shulker
+     */
     private int getEmptySpaceInShulkerBox(CompoundNBT data) {
-        System.out.println("DATA: " + data);
         int defaultSize = 27;
         if (data == null)
             return defaultSize;
@@ -461,23 +494,8 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         return Baritone.settings().storeExcessInShulkers.value;
     }
 
-    /**
-     * Returns a list with the inventory slots that have shulkers in them
-     */
-    private List<Integer> getSlotsWithShulkers() {
-        List<Integer> list = new ArrayList<>();
-        int mainInventorySize = ctx.player().inventory.mainInventory.size();
-        for (int i = 0; i < mainInventorySize; i++) {
-            ItemStack stack = ctx.player().inventory.mainInventory.get(i);
-            if (stack.getItem() == Items.SHULKER_BOX) {
-                list.add(i);
-            }
-        }
-        return list;
-    }
-
     // ---------------------------------------------
-    // Management functions
+    // Process Management functions
     // ---------------------------------------------
 
     @Override
@@ -525,7 +543,11 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         StoreState nextState = this.state;
         this.tickCount += 1; // make sure to add to the ticker
         // If we're storing
-        if (this.state == StoreState.STORING) {
+        if (this.state == StoreState.CONDENSE_INVENTORY) {
+            System.out.println("TODO: attempt to condense inventory");
+            nextState = StoreState.STORING;
+        }
+        else if (this.state == StoreState.STORING) {
             // TODO calculate
             nextState = StoreState.DONE;
             if (!Baritone.settings().storeExcessInventory.value) {
@@ -541,16 +563,17 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         }
         else if (this.desiredQuantity == 0) { // if we've hit our goal and we're not in our store state
             nextState = StoreState.DONE;
-            // -----------------------
-            // SHULKER STORAGE
+
         }
+        // -----------------------
+        // SHULKER STORAGE
         else if (this.state == StoreState.CHECK_FOR_SHULKER_BOX) {
             nextState = StoreState.CHECK_FOR_CHEST;
             if (canUseShulkers()) { // Put stuff into the shulkers
                 boolean result = tryToPlaceShulkerChest();
                 logDebug("Put stuff in shulkers");
                 if (result)
-                    nextState = StoreState.PLACE_SHULKER_BOX;
+                    nextState = StoreState.DONE; //StoreState.PLACE_SHULKER_BOX;
             }
             else {
                 System.out.println("Can't use shulkers");
@@ -558,21 +581,23 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         }
         else if (this.state == StoreState.PLACE_SHULKER_BOX) {
             baritone.getInputOverrideHandler().clearAllKeys();
-            if (!isShulkerBox(ctx.player().inventory.getCurrentItem())) {
-                logDirect("We failed to put the shulker in our hand");
-                nextState = StoreState.CHECK_FOR_CHEST;
-            }
             Optional<Rotation> shulker_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace,
                     ctx.playerController().getBlockReachDistance());
             Optional<Rotation> under_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace.down(),
                     ctx.playerController().getBlockReachDistance());
             // TODO: figure out how to make this better so it doesn't suck
+            BlockState state = baritone.bsi.get0(shulkerPlace);
+            boolean placedShulker = !state.isAir() && isShulkerBox(state.getBlock().asItem());
+            // if we haven't placed the shulker
+            if (!placedShulker && !isShulkerBox(ctx.player().inventory.getCurrentItem())) {
+                logDirect("We failed to put the shulker in our hand");
+                nextState = StoreState.CHECK_FOR_CHEST;
+            }
             if (shulker_reachable.isPresent()) {
                 // Look at it
                 baritone.getLookBehavior().updateTarget(shulker_reachable.get(), true);
-                BlockState state = baritone.bsi.get0(shulkerPlace);
                 // If the place is filled and it isn't a shulker box
-                if (!state.isAir() && state.getBlock() != Blocks.SHULKER_BOX) {
+                if (!placedShulker) {
                     System.out.println("We messed up " + state);
                     nextState = StoreState.CHECK_FOR_SHULKER_BOX;
                 }
@@ -703,6 +728,10 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             return false;
         }
 
+        // This doesn't apply if we're creative
+        if (ctx.player().isCreative())
+            return false;
+
         logDebug("InventoryStoreProcess: " + this.state + " " + this.tickCount);
 
         // check if our inventory is full
@@ -749,7 +778,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         // If we're in the full state, it's time to start storing
         if (this.state == StoreState.FULL) {
             this.desiredQuantity = 10;
-            this.state = StoreState.STORING; // set our state to STORING
+            this.state = StoreState.CONDENSE_INVENTORY; // set our state to STORING
             return true;
         }
         else {
