@@ -15,24 +15,29 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
+package baritone.launch.mixins;
 
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import baritone.utils.accessor.IGameSettings;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.GameSettings;
+import net.minecraft.entity.player.EnumPlayerModelParts;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
+
+import java.util.Set;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
+ * @since 3/6/2020
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+@Mixin(GameSettings.class)
+public abstract class MixinGameSettings implements IGameSettings {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
-
+    @Accessor
     @Override
-    protected PlayerControllerMP getController() {
-        return mc.playerController;
-    }
+    public abstract void setSetModelParts(Set<EnumPlayerModelParts> setModelParts);
+
+    @Accessor
+    @Override
+    public abstract void setMc(Minecraft mc);
 }

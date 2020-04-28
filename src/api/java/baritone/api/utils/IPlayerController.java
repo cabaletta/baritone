@@ -46,6 +46,8 @@ public interface IPlayerController {
 
     ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, EntityPlayer player);
 
+    void setGameType(GameType type);
+
     GameType getGameType();
 
     EnumActionResult processRightClickBlock(EntityPlayerSP player, World world, BlockPos pos, EnumFacing direction, Vec3d vec, EnumHand hand);

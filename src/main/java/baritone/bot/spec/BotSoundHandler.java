@@ -15,24 +15,27 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
+package baritone.bot.spec;
 
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.settings.GameSettings;
+
+import javax.annotation.Nonnull;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
+ * @since 3/7/2020
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+public final class BotSoundHandler extends SoundHandler {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
+    public static final BotSoundHandler INSTANCE = new BotSoundHandler();
+
+    private BotSoundHandler() {
+        super(null, null);
+    }
 
     @Override
-    protected PlayerControllerMP getController() {
-        return mc.playerController;
-    }
+    public void playSound(@Nonnull ISound sound) {}
 }

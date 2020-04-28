@@ -15,24 +15,36 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
-
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+package baritone.api.bot.connect;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
+ * @since 11/6/2018
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+public enum ConnectionStatus {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
+    /**
+     * The local player is not connected to a server, therefore, there is no target server to connect to.
+     */
+    NO_CURRENT_CONNECTION,
 
-    @Override
-    protected PlayerControllerMP getController() {
-        return mc.playerController;
-    }
+    /**
+     * The IP of the targetted address to connect to could not be resolved.
+     */
+    CANT_RESOLVE_HOST,
+
+    /**
+     * The port for the detected LAN server could not be resolved.
+     */
+    CANT_RESOLVE_LAN,
+
+    /**
+     * The connection initialization failed.
+     */
+    CONNECTION_FAILED,
+
+    /**
+     * The connection was a success
+     */
+    SUCCESS
 }

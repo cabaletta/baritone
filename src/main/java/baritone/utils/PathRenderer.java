@@ -54,16 +54,12 @@ public final class PathRenderer implements IRenderer {
     public static void render(RenderEvent event, PathingBehavior behavior) {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
-        if (Helper.mc.currentScreen instanceof GuiClick) {
-            ((GuiClick) Helper.mc.currentScreen).onRender();
+        if (behavior.baritone.getPlayerContext().world() == null) {
+            return;
         }
 
-        int thisPlayerDimension = behavior.baritone.getPlayerContext().world().provider.getDimensionType().getId();
-        int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().provider.getDimensionType().getId();
-
-        if (thisPlayerDimension != currentRenderViewDimension) {
-            // this is a path for a bot in a different dimension, don't render it
-            return;
+        if (Helper.mc.currentScreen instanceof GuiClick && behavior.baritone == BaritoneAPI.getProvider().getPrimaryBaritone()) {
+            ((GuiClick) Helper.mc.currentScreen).onRender();
         }
 
         Entity renderView = Helper.mc.getRenderViewEntity();

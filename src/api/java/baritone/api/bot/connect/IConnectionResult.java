@@ -15,24 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
+package baritone.api.bot.connect;
 
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import baritone.api.bot.IBaritoneUser;
+
+import java.util.Optional;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
+ * @since 1/17/2019
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+public interface IConnectionResult {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
+    /**
+     * @return The actual status of the connection attempt.
+     * @see ConnectionStatus
+     */
+    ConnectionStatus getStatus();
 
-    @Override
-    protected PlayerControllerMP getController() {
-        return mc.playerController;
-    }
+    /**
+     * Returns the user that was created in this connection this result reflects, if
+     * {@link #getStatus()} is {@link ConnectionStatus#SUCCESS}, otherwise it will
+     * return {@link Optional#empty()}.
+     *
+     * @return The user created in the connection
+     */
+    Optional<IBaritoneUser> getUser();
 }

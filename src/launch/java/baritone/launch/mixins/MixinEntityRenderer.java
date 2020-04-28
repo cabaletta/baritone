@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -38,7 +39,13 @@ public class MixinEntityRenderer {
             )
     )
     private void renderWorldPass(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
+        int renderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().provider.getDimensionType().getId();
+
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            World world = ibaritone.getPlayerContext().world();
+            if (world == null || world.provider.getDimensionType().getId() != renderViewDimension) {
+                continue;
+            }
             ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks));
         }
     }

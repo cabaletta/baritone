@@ -17,6 +17,7 @@
 
 package baritone.api;
 
+import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommand;
 import baritone.api.command.ICommandSystem;
@@ -52,9 +53,7 @@ public interface IBaritoneProvider {
     List<IBaritone> getAllBaritones();
 
     /**
-     * Provides the {@link IBaritone} instance for a given {@link EntityPlayerSP}. This will likely be
-     * replaced with or be overloaded in addition to {@code #getBaritoneForUser(IBaritoneUser)} when
-     * {@code bot-system} is merged into {@code master}.
+     * Provides the {@link IBaritone} instance for a given {@link EntityPlayerSP}.
      *
      * @param player The player
      * @return The {@link IBaritone} instance.
@@ -69,12 +68,17 @@ public interface IBaritoneProvider {
     }
 
     /**
-     * Returns the {@link IWorldScanner} instance. This is not a type returned by
-     * {@link IBaritone} implementation, because it is not linked with {@link IBaritone}.
+     * Returns the {@link IWorldScanner} instance. This is not a type returned by a
+     * {@link IBaritone} implementation because it is not linked with {@link IBaritone}.
      *
      * @return The {@link IWorldScanner} instance.
      */
     IWorldScanner getWorldScanner();
+
+    /**
+     * @return The {@link IUserManager} instance.
+     */
+    IUserManager getUserManager();
 
     /**
      * Returns the {@link ICommandSystem} instance. This is not bound to a specific {@link IBaritone}

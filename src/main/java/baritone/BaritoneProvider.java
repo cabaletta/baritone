@@ -19,15 +19,18 @@ package baritone;
 
 import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
+import baritone.api.bot.IBaritoneUser;
+import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
+import baritone.bot.UserManager;
 import baritone.api.schematic.ISchematicSystem;
-import baritone.command.BaritoneChatControl;
 import baritone.cache.WorldScanner;
 import baritone.command.CommandSystem;
+import baritone.utils.player.PrimaryPlayerContext;
 import baritone.utils.schematic.SchematicSystem;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,14 +40,9 @@ import java.util.List;
 public final class BaritoneProvider implements IBaritoneProvider {
 
     private final Baritone primary;
-    private final List<IBaritone> all;
 
     {
-        this.primary = new Baritone();
-        this.all = Collections.singletonList(this.primary);
-
-        // Setup chat control, just for the primary instance
-        new BaritoneChatControl(this.primary);
+        this.primary = new Baritone(PrimaryPlayerContext.INSTANCE);
     }
 
     @Override
@@ -54,12 +52,22 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public List<IBaritone> getAllBaritones() {
-        return all;
+        List<IBaritone> baritones = new ArrayList<>();
+        baritones.add(getPrimaryBaritone());
+        for (IBaritoneUser ibu : UserManager.INSTANCE.getUsers()) {
+            baritones.add(ibu.getBaritone());
+        }
+        return baritones;
     }
 
     @Override
     public IWorldScanner getWorldScanner() {
         return WorldScanner.INSTANCE;
+    }
+
+    @Override
+    public IUserManager getUserManager() {
+        return UserManager.INSTANCE;
     }
 
     @Override

@@ -15,24 +15,29 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
+package baritone.bot.spec;
 
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.client.particle.ParticleManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.EnumParticleTypes;
+
+import javax.annotation.Nonnull;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
+ * @since 3/8/2020
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+public final class BotParticleManager extends ParticleManager {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
+    public static final BotParticleManager INSTANCE = new BotParticleManager();
+
+    private BotParticleManager() {
+        super(null, null);
+    }
 
     @Override
-    protected PlayerControllerMP getController() {
-        return mc.playerController;
-    }
+    public void emitParticleAtEntity(Entity entityIn, @Nonnull EnumParticleTypes particleTypes) {}
+
+    @Override
+    public void emitParticleAtEntity(Entity p_191271_1_, @Nonnull EnumParticleTypes p_191271_2_, int p_191271_3_) {}
 }

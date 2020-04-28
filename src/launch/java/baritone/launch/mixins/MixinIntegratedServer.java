@@ -15,24 +15,22 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
+package baritone.launch.mixins;
 
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import baritone.utils.accessor.IIntegratedServer;
+import net.minecraft.client.multiplayer.ThreadLanServerPing;
+import net.minecraft.server.integrated.IntegratedServer;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
+ * @since 3/4/2020
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+@Mixin(IntegratedServer.class)
+public abstract class MixinIntegratedServer implements IIntegratedServer {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
-
+    @Accessor
     @Override
-    protected PlayerControllerMP getController() {
-        return mc.playerController;
-    }
+    public abstract ThreadLanServerPing getLanServerPing();
 }

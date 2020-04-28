@@ -15,43 +15,49 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
+package baritone.bot;
 
-import baritone.api.BaritoneAPI;
+import baritone.api.bot.IBaritoneUser;
 import baritone.api.cache.IWorldData;
-import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.world.World;
 
-/**
- * Implementation of {@link IPlayerContext} that provides information about the primary player.
- *
- * @author Brady
- * @since 11/12/2018
- */
-public enum PrimaryPlayerContext implements IPlayerContext, Helper {
+public final class BotPlayerContext implements IPlayerContext {
 
-    INSTANCE;
+    /**
+     * The backing {@link IBaritoneUser}
+     */
+    private final IBaritoneUser bot;
+
+    public BotPlayerContext(IBaritoneUser bot) {
+        this.bot = bot;
+    }
 
     @Override
     public EntityPlayerSP player() {
-        return mc.player;
+        if (bot.getPlayer() == null) {
+            return null;
+        }
+        return bot.getPlayer();
     }
 
     @Override
     public IPlayerController playerController() {
-        return PrimaryPlayerController.INSTANCE;
+        if (bot.getPlayer() == null) {
+            return null;
+        }
+        return bot.getPlayerController();
     }
 
     @Override
     public World world() {
-        return mc.world;
+        return bot.getWorld();
     }
 
     @Override
     public IWorldData worldData() {
-        return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
+        return bot.getBaritone().getWorldProvider().getCurrentWorld();
     }
 }
