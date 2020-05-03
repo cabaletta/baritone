@@ -71,6 +71,9 @@ public final class DefaultCommands {
         commands.add(prc.resumeCommand);
         commands.add(prc.pausedCommand);
         commands.add(prc.cancelCommand);
+        commands.add(new CommandAlias(baritone, "p", "Alias for pause", "pause"));
+        commands.add(new CommandAlias(baritone, "r", "Alias for resume", "resume"));
+        commands.add(new CommandAlias(baritone, "s", "Alias for stop", "stop"));
         return Collections.unmodifiableList(commands);
     }
 }
