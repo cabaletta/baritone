@@ -105,6 +105,8 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
 
     private BlockPos shulkerPlace = null;
 
+    private int condenseIndex = 0; // The index the 
+
     private enum StoreState {
         IDLE, FULL, // We are full, after DELAY_TICKS, go to STORING
         CONDENSE_INVENTORY, // Try to condense our inventory
@@ -314,10 +316,13 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         this.desiredQuantity = 0;
         List<Item> throwAwayItems = Baritone.settings().acceptableThrowawayItems.value;
         List<Item> wantedItems = Baritone.settings().itemsToStore.value;
+        List<Item> minedItems = baritone.getMineProcess().getCurrentItems();
         this.filter.clear(); // set the filter up so that it will
         // look for items in the inventory
         Set<ItemFilter> filteredItems = new HashSet<>();
         // Add the wanted items and the throwaway items to the filter list
+        for (Item item : minedItems)
+            filteredItems.add(new ItemFilter(item, true));
         for (Item item : throwAwayItems)
             filteredItems.add(new ItemFilter(item, true));
         for (Item item : wantedItems)
@@ -545,6 +550,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         // If we're storing
         if (this.state == StoreState.CONDENSE_INVENTORY) {
             System.out.println("TODO: attempt to condense inventory");
+            this.condenseIndex = 0;
             nextState = StoreState.STORING;
         }
         else if (this.state == StoreState.STORING) {

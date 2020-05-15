@@ -34,6 +34,7 @@ import net.minecraft.block.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -440,4 +441,19 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
     }
+
+    /**
+     * Gets the a list of the items that are currently being mined
+     * @return an empty list if not active
+     */
+	public List<Item> getCurrentItems() {
+        List<Item> items = new ArrayList<>();
+        if (filter == null) {
+            return items;
+        }
+        for (BlockOptionalMeta b : this.filter.blocks()) {
+            items.add(b.getBlock().asItem());
+        }
+		return items;
+	}
 }
