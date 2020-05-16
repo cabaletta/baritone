@@ -33,7 +33,7 @@ public class PlayerMovementInput extends MovementInput {
         this.moveStrafe = 0.0F;
         this.moveForward = 0.0F;
 
-        jump = handler.isInputForcedDown(Input.JUMP); // oppa gangnam style
+        this.jump = handler.isInputForcedDown(Input.JUMP); // oppa gangnam style
 
         if (this.forwardKeyDown = handler.isInputForcedDown(Input.MOVE_FORWARD)) {
             this.moveForward++;
@@ -51,7 +51,7 @@ public class PlayerMovementInput extends MovementInput {
             this.moveStrafe--;
         }
 
-        if (this.field_228350_h_ = handler.isInputForcedDown(Input.SNEAK)) {
+        if (this.sneaking = handler.isInputForcedDown(Input.SNEAK)) {
             this.moveStrafe *= 0.3D;
             this.moveForward *= 0.3D;
         }

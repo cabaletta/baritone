@@ -85,7 +85,7 @@ task sourceJar(type: Jar, dependsOn: classes) {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200213-1.15.1'
+    mappings channel: 'snapshot', version: '20200515-1.15.1'
 
     if (getProject().hasProperty("baritone.forge_build")) {
         reobfMappings 'searge'

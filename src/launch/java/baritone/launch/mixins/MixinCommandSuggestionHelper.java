@@ -55,7 +55,7 @@ public class MixinCommandSuggestionHelper {
     private CompletableFuture<Suggestions> field_228107_p_;
 
     @Inject(
-            method = "func_228111_a_",
+            method = "init",
             at = @At("HEAD"),
             cancellable = true
     )
