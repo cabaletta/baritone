@@ -159,7 +159,20 @@ public final class BlockOptionalMeta {
             if (lootTableLocation == LootTables.EMPTY) {
                 return Collections.emptyList();
             } else {
-                return getManager().getLootTableFromLocation(lootTableLocation).generate(new LootContext.Builder(null).withRandom(new Random()).withParameter(LootParameters.POSITION, BlockPos.ZERO).withParameter(LootParameters.TOOL, ItemStack.EMPTY).withNullableParameter(LootParameters.BLOCK_ENTITY, null).withParameter(LootParameters.BLOCK_STATE, block.getDefaultState()).build(LootParameterSets.BLOCK)).stream().map(ItemStack::getItem).collect(Collectors.toList());
+                List<Item> items = new ArrayList<>();
+
+                // the other overload for generate doesnt work in forge because forge adds code that requires a non null world
+                getManager().getLootTableFromLocation(lootTableLocation).generate(
+                    new LootContext.Builder(null)
+                        .withRandom(new Random())
+                        .withParameter(LootParameters.POSITION, BlockPos.ZERO)
+                        .withParameter(LootParameters.TOOL, ItemStack.EMPTY)
+                        .withNullableParameter(LootParameters.BLOCK_ENTITY, null)
+                        .withParameter(LootParameters.BLOCK_STATE, block.getDefaultState())
+                        .build(LootParameterSets.BLOCK),
+                    stack -> items.add(stack.getItem())
+                );
+                return items;
             }
         });
     }
