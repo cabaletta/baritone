@@ -48,10 +48,10 @@ public class InventoryHelper implements Helper {
     }
 
     // Shamelessly stolen from PlayerInventory.class vanilla minecraft
-    public boolean canMergeStacks(final ItemStack stack1, final ItemStack stack2) {
-        return !stack1.isEmpty() && this.stackEqualExact(stack1, stack2) && stack1.isStackable()
-                && stack1.getCount() < stack1.getMaxStackSize()
-                && stack1.getCount() < ctx.player().inventory.getInventoryStackLimit();
+    public boolean canMergeStacks(final ItemStack dest, final ItemStack src) {
+        return !dest.isEmpty() && this.stackEqualExact(dest, src) && dest.isStackable()
+                && dest.getCount() < dest.getMaxStackSize()
+                && dest.getCount() < ctx.player().inventory.getInventoryStackLimit();
     }
 
     /**
@@ -149,7 +149,7 @@ public class InventoryHelper implements Helper {
             // TODO figure out where to place it,
             for (int i = 9; i < condenseIndex && destIndex == -1; i++) {
                 destStack = ctx.player().inventory.mainInventory.get(i);
-                if (this.canMergeStacks(srcStack, destStack)) {
+                if (this.canMergeStacks(destStack, srcStack)) {
                     destIndex = i;
                     // check if we can merge the stacks completely
                     full_merge = this.canMergeStacksCompletely(srcStack, destStack);
