@@ -76,6 +76,7 @@ public class Baritone implements IBaritone {
     private BuilderProcess builderProcess;
     private ExploreProcess exploreProcess;
     private BackfillProcess backfillProcess;
+    private InventoryStoreProcess inventoryProcess;
     private FarmProcess farmProcess;
 
     private PathingControlManager pathingControlManager;
@@ -111,6 +112,7 @@ public class Baritone implements IBaritone {
             builderProcess = new BuilderProcess(this);
             exploreProcess = new ExploreProcess(this);
             backfillProcess = new BackfillProcess(this);
+            inventoryProcess = new InventoryStoreProcess(this);
             farmProcess = new FarmProcess(this);
         }
 
@@ -164,6 +166,10 @@ public class Baritone implements IBaritone {
     @Override
     public BuilderProcess getBuilderProcess() {
         return this.builderProcess;
+    }
+
+    public InventoryStoreProcess getInventoryProcess() {
+        return this.inventoryProcess;
     }
 
     public InventoryBehavior getInventoryBehavior() {

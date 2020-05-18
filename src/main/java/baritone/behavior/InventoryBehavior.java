@@ -58,30 +58,50 @@ public final class InventoryBehavior extends Behavior {
         if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
             swapWithHotBar(firstValidThrowaway(), 8);
         }
+        // Always place a pickaxe if we have one
         int pick = bestToolAgainst(Blocks.STONE, PickaxeItem.class);
         if (pick >= 9) {
             swapWithHotBar(pick, 0);
         }
     }
 
-    public void attemptToPutOnHotbar(int inMainInvy, Predicate<Integer> disallowedHotbar) {
+    /**
+     * Tries to put an item on the hotbar
+     * @return 0-9 the slot that it put it into
+     * @return -1 if unable to
+     */
+    public OptionalInt attemptToPutOnHotbar(int inMainInvy, Predicate<Integer> disallowedHotbar) {
         OptionalInt destination = getTempHotbarSlot(disallowedHotbar);
         if (destination.isPresent()) {
             swapWithHotBar(inMainInvy, destination.getAsInt());
         }
+        return destination;
+    }
+
+    /**
+     * Tries to put an item from your main inventory in the offhand
+     * This will fail if something is already in the offhand
+     */
+    public void attemptToPlaceInOffhand(int inMainInvy) {
+        int inInventory = inMainInvy < 9 ? inMainInvy + 36 : inMainInvy;
+        // main offhand is five?
+        ctx.playerController().windowClick(ctx.player().container.windowId, inInventory, 0, ClickType.PICKUP_ALL, ctx.player());
+        // Off hand should be 5?
+        ctx.playerController().windowClick(ctx.player().container.windowId, 5, 0, ClickType.SWAP, ctx.player());
+        return;
     }
 
     public OptionalInt getTempHotbarSlot(Predicate<Integer> disallowedHotbar) {
         // we're using 0 and 8 for pickaxe and throwaway
         ArrayList<Integer> candidates = new ArrayList<>();
         for (int i = 1; i < 8; i++) {
-            if (ctx.player().inventory.mainInventory.get(i).isEmpty() && !disallowedHotbar.test(i)) {
+            if (ctx.player().inventory.mainInventory.get(i).isEmpty() && (disallowedHotbar!= null &&!disallowedHotbar.test(i))) {
                 candidates.add(i);
             }
         }
         if (candidates.isEmpty()) {
             for (int i = 1; i < 8; i++) {
-                if (!disallowedHotbar.test(i)) {
+                if (disallowedHotbar!= null && !disallowedHotbar.test(i)) {
                     candidates.add(i);
                 }
             }
