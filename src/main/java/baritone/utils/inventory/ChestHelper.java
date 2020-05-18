@@ -111,7 +111,7 @@ public class ChestHelper implements Helper {
 
     private boolean itemInFilter(ItemFilter[] filter, Item item) {
         for (ItemFilter item_filter : filter) {
-            return item_filter.matches(item);
+            if (item_filter.matches(item)) return true;
         }
         return false;
     }
