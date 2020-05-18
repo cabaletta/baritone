@@ -448,7 +448,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
      */
 	public List<Item> getCurrentItems() {
         List<Item> items = new ArrayList<>();
-        if (filter == null) {
+        if (this.filter == null) {
             return items;
         }
         for (BlockOptionalMeta b : this.filter.blocks()) {

@@ -501,7 +501,8 @@ public final class Settings {
 
     /**
      * This stores excess inventory- it will try to keep one slot in your inventory open
-     * This will store items in shulker chests as well as nearby inventories
+     * This will store items in shulker chests
+     * This feature is still experimental and needs refinement
      */
     public final Setting<Boolean> storeExcessInventory = new Setting<>(false);
 
@@ -515,7 +516,7 @@ public final class Settings {
      * Stores excess inventory in remembered chests/inventories
      * You must have storeExcessInventory on for this to work
      */
-    public final Setting<Boolean> storeExcessInChests = new Setting<>(false);
+    //public final Setting<Boolean> storeExcessInChests = new Setting<>(false);
 
     /**
      * Stores excess inventory in shulker boxes if they are in the inventory

@@ -13,6 +13,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Author: Matthew Carlson (@matthewfcarlson)
  */
 
 package baritone.process;
@@ -24,42 +26,26 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
-import baritone.cache.CachedChunk;
-import baritone.cache.WorldScanner;
-import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.movement.MovementState;
 import baritone.utils.BaritoneProcessHelper;
-import baritone.utils.BlockStateInterface;
+import baritone.utils.inventory.ChestHelper;
+import baritone.utils.inventory.InventoryHelper;
+import baritone.utils.inventory.ItemFilter;
+import baritone.utils.inventory.ShulkerHelper;
 import net.minecraft.block.*;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.gui.screen.inventory.ShulkerBoxScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.ClickType;
 import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.PlayerContainer;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.nbt.NBTTypes;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// Split this into a store and a obtain process?
-// How do you prevent them from competing?
+// This file is crazy long and needs to be 
 
 /**
  * Stores blocks of a certain type if your inventory becomes full It will attempt to store excess throwaway blocks, as
@@ -69,27 +55,6 @@ import java.util.stream.Collectors;
  * @author matthewfcarlson
  */
 public final class InventoryStoreProcess extends BaritoneProcessHelper implements IInventoryStoreProcess {
-
-    private class ItemFilter {
-        public final Item i;
-
-        public final boolean garbage;
-
-        public ItemFilter(Item i, boolean garbage) {
-            this.i = i;
-            this.garbage = garbage;
-        }
-
-        @Override
-        public int hashCode() {
-            return this.i.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return "(" + this.i.toString() + ", " + this.garbage + ")";
-        }
-    }
 
     private List<ItemFilter> filter = new ArrayList<>();
 
@@ -105,7 +70,11 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
 
     private BlockPos shulkerPlace = null;
 
-    private int condenseIndex = 0; // The index the 
+    private InventoryHelper invHelper = null;
+
+    private ChestHelper chestHelper = null;
+
+    private ShulkerHelper shulkerHelper = null;
 
     private enum StoreState {
         IDLE, FULL, // We are full, after DELAY_TICKS, go to STORING
@@ -128,6 +97,9 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
 
     public InventoryStoreProcess(Baritone baritone) {
         super(baritone);
+        this.invHelper = new InventoryHelper(ctx);
+        this.chestHelper = new ChestHelper(ctx, baritone);
+        this.shulkerHelper = new ShulkerHelper(ctx, baritone);
     }
 
     // ---------------------------------------------
@@ -147,161 +119,11 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         return this.activeTicker >= DELAY_TICKS;
     }
 
-    // ---------------------------------------------
-    // INVENTORY MANAGEMENT FUNCTIONALITY
-    // ---------------------------------------------
-    private boolean isInventoryFull() {
-        return ctx.player().inventory.getFirstEmptyStack() == -1;
-    }
-
-    private void swapWithHotBar(int inInventory, int inHotbar) {
-        ctx.playerController().windowClick(ctx.player().container.windowId,
-                inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickType.SWAP, ctx.player());
-    }
-
-    /**
-     * This assumes that the chest is currently open
-     */
-    private boolean transferItemsToOpenChest() {
-        ClientPlayerEntity player = ctx.player();
-        if (ctx.player().openContainer instanceof PlayerContainer) {
-            // We opened our own inventory!
-            System.out.println("We don't have a container open");
-        }
-        boolean did_transfer_items = false;
-
-        int numberChestSlots = 27; // TODO: figure out what are slots of our inventory and what are slots in the chest
-        // Go through each of the slot in the chest
-        // TODO: check if we can do this
-        NonNullList<ItemStack> inv = player.inventory.mainInventory;
-        for (int j = 0; j < inv.size(); j++) {
-            ItemStack stack = inv.get(j);
-            if (stack.isEmpty())
-                continue;
-            // System.out.println("Compared to " + j + " = " + stack);
-            if (!isNonGarbageItem(stack.getItem()))
-                continue;
-            int stackSize = stack.getCount();
-            System.out.println("Transferring goods " + j + ": " + stack);
-            int slotId = j;
-            // Slot chest_slot = player.openContainer.getSlot(slotId);
-            // Check to make sure we are doing the slot we think we are
-            // Click on the thing in our inventory?
-            ItemStack outstack = tryQuickTransferToChest(j);
-            System.out.println("Tried to move " + outstack);
-            this.desiredQuantity -= stackSize;
-
-            did_transfer_items = true;
-            break;
-        }
-        // Now we try the garbage
-        for (int j = 0; j < inv.size() && !did_transfer_items; j++) {
-            ItemStack stack = inv.get(j);
-            if (stack.isEmpty())
-                continue;
-            // System.out.println("Compared to " + j + " = " + stack);
-            if (!isGarbageItem(stack.getItem()))
-                continue;
-            this.desiredQuantity -= stack.getCount();
-            System.out.println("Transferring garbage " + j + ":" + stack);
-            // how do I figure out what this is
-            // Check to make sure we are doing the slot we think we are
-            // Click on the thing in our inventory?
-            ItemStack outstack = tryQuickTransferToChest(j);
-            System.out.println("Tried to move " + outstack);
-            did_transfer_items = true;
-            break;
-        }
-        // TODO: try to consolidate chest- so we can store more things next time
-        if (did_transfer_items) {
-            System.out.println("We should consolidate the chest");
-        }
-        return did_transfer_items;
-    }
-    private ItemStack tryQuickTransferToChest(int invSlotId) {
-        // Get the actual slot in the player?
-        int slotId = invSlotId < 9 ? invSlotId + 36 : invSlotId;
-        return ctx.playerController().windowClick(ctx.player().container.windowId, slotId, 0, ClickType.QUICK_MOVE, ctx.player());
-    }
-
-    /**
-     * Uses the filer to check if this is garbage
-     */
-    private boolean isGarbageItem(Item i) {
-        for (ItemFilter item_filter : this.filter) { // TODO: have a better way to check if this is in there
-            if (item_filter.garbage && item_filter.i.equals(i)) { // If it's a match
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Uses the filter to check if this is a non garbage item
-     */
-    private boolean isNonGarbageItem(Item i) {
-        for (ItemFilter item_filter : this.filter) { // TODO: have a better way to check if this is in there
-            if (!item_filter.garbage && item_filter.i.equals(i)) { // If it's a match
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Based on filter, how many items do we have in the inventory to store?
-    private int numberThingsAvailableToStore() {
-        NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
-        int totalCount = 0;
-        int biggestStackOfTrash = 0; // keep track of the biggest stack of trash we have
-        for (ItemFilter item_filter : this.filter) {
-            // Check if we have this item
-            for (ItemStack item : inv) {
-                if (item == null)
-                    continue;
-                if (item.getItem().equals(item_filter.i)) {
-                    totalCount += item.getCount();
-                    if (item_filter.garbage && biggestStackOfTrash < item.getCount())
-                        biggestStackOfTrash = item.getCount();
-                }
-            }
-        }
-        System.out.println("Total: " + totalCount + ", trash: " + biggestStackOfTrash);
-        return totalCount - biggestStackOfTrash;
-    }
-
-    /**
-     * Used to open a chest or placed shulker box
-     * @return true when we finished, false when we still aren't done
-     */
-    private boolean rightClickOpenChest(BlockPos pos) {
-        Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), pos,
-                ctx.playerController().getBlockReachDistance());
-        if (reachable.isPresent()) {
-            baritone.getLookBehavior().updateTarget(reachable.get(), true);
-            if (pos.equals(ctx.getSelectedBlock().orElse(null))) {
-                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // TODO find some way to
-                                                                                                // right click even if
-                                                                                                // we're in an ESC menu
-                if (!(ctx.player().openContainer instanceof PlayerContainer)) { // check to make sure we didn't open the
-                                                                                // player container
-                    baritone.getInputOverrideHandler().clearAllKeys();
-                    return true;
-                }
-            }
-            if (this.tickCount % 20 == 0 && this.tickCount != 0) {
-                System.out.println("Right click timed out");
-                baritone.getInputOverrideHandler().clearAllKeys();
-                return true;
-            }
-            return false; // trying to right click, will do it next tick or so
-        }
-        System.out.println("Arrived but failed to right click open");
-        return true;
-    }
-
     // Checks the settings if we can use chests to store excess inventory
     private boolean canUseChests() {
-        return Baritone.settings().storeExcessInChests.value;
+        return false;
+        // by default this is disabled until finished
+        // return Baritone.settings().storeExcessInChests.value;
     }
 
     // Checks the settings if we can just yeet the excess inventory
@@ -314,19 +136,23 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
      */
     private void setupFilter() {
         this.desiredQuantity = 0;
+        this.filter.clear();
         List<Item> throwAwayItems = Baritone.settings().acceptableThrowawayItems.value;
         List<Item> wantedItems = Baritone.settings().itemsToStore.value;
         List<Item> minedItems = baritone.getMineProcess().getCurrentItems();
-        this.filter.clear(); // set the filter up so that it will
+        System.out.print("Including the following mined items:");
+        for (Item i: minedItems) System.out.print(i);
+        System.out.println("");
+         // set the filter up so that it will
         // look for items in the inventory
         Set<ItemFilter> filteredItems = new HashSet<>();
         // Add the wanted items and the throwaway items to the filter list
         for (Item item : minedItems)
-            filteredItems.add(new ItemFilter(item, true));
+            filteredItems.add(new ItemFilter(item, 2)); // mined items get highest priority
         for (Item item : throwAwayItems)
-            filteredItems.add(new ItemFilter(item, true));
+            filteredItems.add(new ItemFilter(item, 1));
         for (Item item : wantedItems)
-            filteredItems.add(new ItemFilter(item, false));
+            filteredItems.add(new ItemFilter(item, 0));
         this.filter.addAll(filteredItems);
     }
 
@@ -343,9 +169,9 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         int invSize = ctx.player().inventory.mainInventory.size();
         for (int slot = 0; slot < invSize; slot++) { // try and find the best shulker to place
             ItemStack stack = ctx.player().inventory.mainInventory.get(slot);
-            if (!isShulkerBox(stack))
+            if (!ShulkerHelper.isShulkerBox(stack))
                 continue;
-            int itemSpace = getEmptySpaceInShulkerBox(stack);
+            int itemSpace = ShulkerHelper.getEmptySpaceInShulkerBox(stack);
             System.out.println("STACK: " + stack + " @" + slot + " =" + itemSpace);
 
             if (itemSpace > mostSpace) {
@@ -376,102 +202,16 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             System.out.println("I don't know what to do here");
         }
         //
-        if (!isCurrentItemShulkerBox()) {
+        if (!this.shulkerHelper.isCurrentHeldItemShulkerBox()) {
             System.out.println("Failed to get shulker in our hotbar");
             return false;
         }
         // Now figure out where to place the shulker
-        this.shulkerPlace = findPlaceToPutShulkerBox();
+        this.shulkerPlace = shulkerHelper.findPlaceToPutShulkerBox();
         if (this.shulkerPlace == null)
             return false;
-        System.out.println("Shulker box @" + this.shulkerPlace);
+        System.out.println("Will try to put Shulker box @" + this.shulkerPlace);
         return true;
-    }
-
-    private boolean isCurrentItemShulkerBox() {
-        if (isShulkerBox(ctx.player().getHeldItemMainhand()))
-            return true;
-        if (isShulkerBox(ctx.player().getHeldItemOffhand()))
-            return true;
-        return false;
-    }
-
-    private boolean isShulkerBoxWithSpace(ItemStack stack) {
-        if (!isShulkerBox(stack))
-            return false;
-        return getEmptySpaceInShulkerBox(stack) > 0;
-    }
-
-    private boolean isShulkerBox(ItemStack stack) {
-        if (stack == null)
-            return false;
-        if (stack.isEmpty())
-            return false;
-        return isShulkerBox(stack.getItem());
-    }
-
-    private boolean isShulkerBox(Item i) {
-        return i.equals(Items.SHULKER_BOX) || i.equals(Items.BLACK_SHULKER_BOX) || i.equals(Items.BLUE_SHULKER_BOX)
-                || i.equals(Items.BROWN_SHULKER_BOX) || i.equals(Items.CYAN_SHULKER_BOX)
-                || i.equals(Items.GRAY_SHULKER_BOX) || i.equals(Items.GREEN_SHULKER_BOX)
-                || i.equals(Items.LIME_SHULKER_BOX) || i.equals(Items.MAGENTA_SHULKER_BOX)
-                || i.equals(Items.ORANGE_SHULKER_BOX) || i.equals(Items.PINK_SHULKER_BOX)
-                || i.equals(Items.PURPLE_SHULKER_BOX) || i.equals(Items.RED_SHULKER_BOX)
-                || i.equals(Items.WHITE_SHULKER_BOX) || i.equals(Items.YELLOW_SHULKER_BOX);
-    }
-
-    private BlockPos findPlaceToPutShulkerBox() {
-        BlockPos player_pos = ctx.player().getPosition();
-        BlockPos player_lower = player_pos.down();
-
-        BlockPos places[] = {
-                // upper half
-                player_pos.add(1, 0, 1), player_pos.add(1, 0, 0), player_pos.add(0, 0, 1), player_pos.add(-1, 0, 0),
-                player_pos.add(0, 0, -1), player_pos.add(-1, 0, 1), player_pos.add(1, 0, -1), player_pos.add(-1, 0, -1),
-                // lower half
-                player_lower.add(1, 0, 1), player_lower.add(1, 0, 0), player_lower.add(0, 0, 1),
-                player_lower.add(-1, 0, 0), player_lower.add(0, 0, -1), player_lower.add(-1, 0, 1),
-                player_lower.add(1, 0, -1), player_lower.add(-1, 0, -1) };
-        BlockStateInterface bsi = baritone.bsi;
-        for (BlockPos place : places) {
-            BlockState upper = bsi.get0(place.up());
-            BlockState lower = bsi.get0(place.down());
-            if (bsi.get0(place).isAir() && (upper.isTransparent() || upper.isAir()) && lower.isSolid()) // Make sure we
-                                                                                                        // can place the
-                                                                                                        // thing
-                // there and we can open it later
-                return place;
-        }
-        System.out.println("We failed to find a spot to place the shulker box");
-        logDirect("We failed to find a spot to place the shulker box");
-        return null;
-
-    }
-
-    /**
-     * Returns the number of empty slots in a shulker
-     */
-    private int getEmptySpaceInShulkerBox(ItemStack stack) {
-        if (!isShulkerBox(stack))
-            return 0;
-        return getEmptySpaceInShulkerBox(stack.getTag());
-    }
-
-    /**
-     * @return returns the number of slots available in a given shulker
-     */
-    private int getEmptySpaceInShulkerBox(CompoundNBT data) {
-        int defaultSize = 27;
-        if (data == null)
-            return defaultSize;
-        CompoundNBT blockEntityTag = data.getCompound("BlockEntityTag");
-        if (blockEntityTag == null)
-            return defaultSize;
-        ListNBT items = blockEntityTag.getList("Items", 10);
-        if (items == null)
-            return defaultSize;
-        // TODO: figure out how much we can fit of what we currently have
-        return defaultSize - items.size();
     }
 
     /**
@@ -543,33 +283,49 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         return "Inventory Store" + this.state.toString();
     }
 
+    private int calculateDesiredInventory() {
+        // First we create a filter
+        List<ItemFilter> nonGarbage = this.filter.stream().filter(x -> x.isGarbage()).collect(Collectors.toList());
+        List<ItemFilter> justGarbage = this.filter.stream().filter(x -> !x.isGarbage()).collect(Collectors.toList());
+        int totalCount = invHelper.numberItemsInInventory(nonGarbage);
+        int garbageCount = invHelper.numberItemsInInventory(justGarbage);
+        int garbageStackCount = invHelper.getSizeOfLargestStackOfItemsInInventory(justGarbage);
+        return totalCount + garbageCount - garbageStackCount;
+    }
+
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         StoreState nextState = this.state;
         this.tickCount += 1; // make sure to add to the ticker
-        // If we're storing
+        // -----------------------
+        // CONDENSING
         if (this.state == StoreState.CONDENSE_INVENTORY) {
-            System.out.println("TODO: attempt to condense inventory");
-            this.condenseIndex = 0;
-            nextState = StoreState.STORING;
+            this.desiredQuantity = 0;
+            if (!this.invHelper.attemptToCondense())
+                nextState = StoreState.STORING;
         }
+        // -----------------------
+        // Storing
         else if (this.state == StoreState.STORING) {
-            // TODO calculate
+
             nextState = StoreState.DONE;
-            if (!Baritone.settings().storeExcessInventory.value) {
+            if (!invHelper.isInventoryFull() && this.desiredQuantity == 0) {
+                // we don't need to do anything
+                System.out.println("We're done here!");
+            }
+            else if (!Baritone.settings().storeExcessInventory.value) {
                 logDirect("storeExcessInventory is not on");
             }
             else {
                 // figure out how much we can get rid of
                 this.setupFilter();
-                this.desiredQuantity = numberThingsAvailableToStore();
+                this.desiredQuantity = calculateDesiredInventory();
                 if (this.desiredQuantity > 0)
                     nextState = StoreState.CHECK_FOR_SHULKER_BOX;
             }
         }
         else if (this.desiredQuantity == 0) { // if we've hit our goal and we're not in our store state
             nextState = StoreState.DONE;
-
         }
         // -----------------------
         // SHULKER STORAGE
@@ -577,9 +333,9 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             nextState = StoreState.CHECK_FOR_CHEST;
             if (canUseShulkers()) { // Put stuff into the shulkers
                 boolean result = tryToPlaceShulkerChest();
-                logDebug("Put stuff in shulkers");
+                System.out.println("Put stuff in shulkers");
                 if (result)
-                    nextState = StoreState.DONE; //StoreState.PLACE_SHULKER_BOX;
+                    nextState = StoreState.PLACE_SHULKER_BOX;
             }
             else {
                 System.out.println("Can't use shulkers");
@@ -593,9 +349,9 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                     ctx.playerController().getBlockReachDistance());
             // TODO: figure out how to make this better so it doesn't suck
             BlockState state = baritone.bsi.get0(shulkerPlace);
-            boolean placedShulker = !state.isAir() && isShulkerBox(state.getBlock().asItem());
+            boolean placedShulker = !state.isAir() && ShulkerHelper.isShulkerBox(state.getBlock().asItem());
             // if we haven't placed the shulker
-            if (!placedShulker && !isShulkerBox(ctx.player().inventory.getCurrentItem())) {
+            if (!placedShulker && !ShulkerHelper.isShulkerBox(ctx.player().inventory.getCurrentItem())) {
                 logDirect("We failed to put the shulker in our hand");
                 nextState = StoreState.CHECK_FOR_CHEST;
             }
@@ -641,7 +397,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
 
         }
         else if (this.state == StoreState.OPEN_SHULKER_BOX) {
-            if (this.rightClickOpenChest(this.shulkerPlace))
+            if (chestHelper.rightClickOpenChest(this.shulkerPlace))
                 nextState = StoreState.STORE_IN_SHULKER;
         }
         else if (this.state == StoreState.STORE_IN_SHULKER) {
@@ -651,9 +407,12 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                 System.out.println("Finished putting stuff in the shulker");
                 nextState = StoreState.MINE_SHULKER_BOX;
             }
-            else if (this.tickCount % 20 == 0 && this.tickCount != 0) {
+            else {
                 // if we can't place anything else in the chest
-                if (!transferItemsToOpenChest())
+                int deposited = chestHelper.transferItemsToOpenChest(this.filter, this.desiredQuantity, false);
+                this.desiredQuantity -= deposited;
+                System.out.println("Deposited " + deposited);
+                if (deposited == 0)
                     ctx.player().closeScreen();
             }
         }
@@ -682,15 +441,10 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             if (this.shulkerPlace == null || this.tickCount % 10 == 0) {
                 List<BlockPos> shulkerBoxes = droppedShulkerBoxScan();
                 // TODO find the closest
-                if (shulkerBoxes.size() > 0)
-                    this.shulkerPlace = shulkerBoxes.get(0);
-                else {
-                    // We found it? Go back to the top to use a different shulker?
-                    System.out.println("We finished");
+                if (this.shulkerPlace == null || shulkerBoxes.size() == 0)
                     nextState = StoreState.STORE_IN_SHULKER;
-                }
-                if (this.shulkerPlace == null)
-                    nextState = StoreState.DONE;
+                else if (shulkerBoxes.size() > 0)
+                    this.shulkerPlace = shulkerBoxes.get(0);
             }
             else {
                 return new PathingCommand(new GoalBlock(this.shulkerPlace), PathingCommandType.SET_GOAL_AND_PATH);
@@ -777,13 +531,12 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         // Reset out tick count
         resetTickers();
         // If we're not full, we're going back to idle
-        if (!this.isInventoryFull()) {
+        if (!this.invHelper.isInventoryFull()) {
             this.state = StoreState.IDLE;
             return false;
         }
         // If we're in the full state, it's time to start storing
         if (this.state == StoreState.FULL) {
-            this.desiredQuantity = 10;
             this.state = StoreState.CONDENSE_INVENTORY; // set our state to STORING
             return true;
         }
