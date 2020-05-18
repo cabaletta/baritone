@@ -69,15 +69,24 @@ public class ChestHelper implements Helper {
         int numberSlots = current_container.inventorySlots.size();
         int numberChestSlots = numberSlots - playerSlots; // the number of slots that belong to the chest
         int playerSlotStartIndex = numberChestSlots; // where our player slots begin
-        for (int i = playerSlotStartIndex; i < numberSlots; i++) {
+        int emptySlots = 0;
+
+        for (int i = 0; i < playerSlotStartIndex; i ++) {
+            // Count how many empty slots are in the chest
+            Slot slot = current_container.getSlot(i);
+            if (slot.getStack().isEmpty()) emptySlots ++;
+        }
+        for (int i = playerSlotStartIndex; i < numberSlots && emptySlots > 0; i++) {
             Slot slot = current_container.getSlot(i);
             ItemStack stack = slot.getStack();
             if (itemInFilter(itemFilter, stack)) {
                 // try to transfer it to the chest
                 System.out.println("Attempting to stash " + stack.toString());
                 int count = stack.getCount();
-                if (tryQuickTransferToChest(i))
+                if (tryQuickTransferToChest(i)) {
                     transfer_amount += count;
+                    emptySlots -= 1;
+                }
                 else
                     System.out.println("Failed");
                 if (!all_at_once)
