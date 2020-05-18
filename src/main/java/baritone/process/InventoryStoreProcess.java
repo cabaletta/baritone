@@ -316,12 +316,12 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             else if (this.state == StoreState.STORING) {
 
                 nextState = StoreState.DONE;
-                if (!invHelper.isInventoryFull() && this.desiredQuantity == 0) {
+                if (!Baritone.settings().storeExcessInventory.value) {
+                    logDirect("storeExcessInventory is not on");
+                }
+                else if (!invHelper.isInventoryFull() && this.desiredQuantity == 0) {
                     // we don't need to do anything
                     System.out.println("We're done here!");
-                }
-                else if (!Baritone.settings().storeExcessInventory.value) {
-                    logDirect("storeExcessInventory is not on");
                 }
                 else {
                     // figure out how much we can get rid of
@@ -331,16 +331,16 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
                         nextState = StoreState.CHECK_FOR_SHULKER_BOX;
                 }
             }
-            else if (this.desiredQuantity == 0) { // if we've hit our goal and we're not in our store state
-                nextState = StoreState.DONE;
-            }
             // -----------------------
             // SHULKER STORAGE
             else if (this.state == StoreState.CHECK_FOR_SHULKER_BOX) {
                 nextState = StoreState.CHECK_FOR_CHEST;
-                if (canUseShulkers()) { // Put stuff into the shulkers
+                if (this.desiredQuantity == 0) {
+                    nextState = StoreState.DONE;
+                }
+                else if (canUseShulkers()) { // Put stuff into the shulkers
                     boolean result = tryToPlaceShulkerChest();
-                    System.out.println("Put stuff in shulkers");
+                    System.out.println("Put " + this.desiredQuantity + " stuff in shulkers");
                     if (result)
                         nextState = StoreState.PLACE_SHULKER_BOX;
                 }

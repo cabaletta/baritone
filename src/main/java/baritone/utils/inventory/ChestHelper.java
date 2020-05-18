@@ -76,7 +76,7 @@ public class ChestHelper implements Helper {
             Slot slot = current_container.getSlot(i);
             if (slot.getStack().isEmpty()) emptySlots ++;
         }
-        for (int i = playerSlotStartIndex; i < numberSlots && emptySlots > 0; i++) {
+        for (int i = playerSlotStartIndex; i < numberSlots && emptySlots > 0 && transfer_amount < desiredQuantity; i++) {
             Slot slot = current_container.getSlot(i);
             ItemStack stack = slot.getStack();
             if (itemInFilter(itemFilter, stack)) {
