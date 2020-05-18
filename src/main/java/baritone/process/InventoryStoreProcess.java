@@ -141,19 +141,24 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
         List<Item> wantedItems = Baritone.settings().itemsToStore.value;
         List<Item> minedItems = baritone.getMineProcess().getCurrentItems();
         System.out.print("Including the following mined items:");
-        for (Item i: minedItems) System.out.print(i);
+        for (Item i : minedItems)
+            System.out.print(i);
         System.out.println("");
-         // set the filter up so that it will
+        // set the filter up so that it will
         // look for items in the inventory
         Set<ItemFilter> filteredItems = new HashSet<>();
         // Add the wanted items and the throwaway items to the filter list
         for (Item item : minedItems)
             filteredItems.add(new ItemFilter(item, 2)); // mined items get highest priority
         for (Item item : throwAwayItems)
-            filteredItems.add(new ItemFilter(item, 1));
-        for (Item item : wantedItems)
             filteredItems.add(new ItemFilter(item, 0));
+        for (Item item : wantedItems)
+            filteredItems.add(new ItemFilter(item, 1));
         this.filter.addAll(filteredItems);
+        System.out.print("Filter: ");
+        for (ItemFilter item_filter : this.filter)
+            System.out.print(item_filter.toString());
+        System.out.println();
     }
 
     // ---------------------------------------------
@@ -196,6 +201,7 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
             ctx.player().inventory.currentItem = newSlotInt;
         }
         else if (ctx.player().getHeldItemOffhand().isEmpty()) {
+            // if our offhand slot is empty, use that
             baritone.getInventoryBehavior().attemptToPlaceInOffhand(bestSlot);
         }
         else {
@@ -295,188 +301,202 @@ public final class InventoryStoreProcess extends BaritoneProcessHelper implement
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        StoreState nextState = this.state;
-        this.tickCount += 1; // make sure to add to the ticker
-        // -----------------------
-        // CONDENSING
-        if (this.state == StoreState.CONDENSE_INVENTORY) {
-            this.desiredQuantity = 0;
-            if (!this.invHelper.attemptToCondense())
-                nextState = StoreState.STORING;
-        }
-        // -----------------------
-        // Storing
-        else if (this.state == StoreState.STORING) {
+        try {
+            StoreState nextState = this.state;
+            this.tickCount += 1; // make sure to add to the ticker
+            // -----------------------
+            // CONDENSING
+            if (this.state == StoreState.CONDENSE_INVENTORY) {
+                this.desiredQuantity = 0;
+                if (!this.invHelper.attemptToCondense())
+                    nextState = StoreState.STORING;
+            }
+            // -----------------------
+            // Storing
+            else if (this.state == StoreState.STORING) {
 
-            nextState = StoreState.DONE;
-            if (!invHelper.isInventoryFull() && this.desiredQuantity == 0) {
-                // we don't need to do anything
-                System.out.println("We're done here!");
-            }
-            else if (!Baritone.settings().storeExcessInventory.value) {
-                logDirect("storeExcessInventory is not on");
-            }
-            else {
-                // figure out how much we can get rid of
-                this.setupFilter();
-                this.desiredQuantity = calculateDesiredInventory();
-                if (this.desiredQuantity > 0)
-                    nextState = StoreState.CHECK_FOR_SHULKER_BOX;
-            }
-        }
-        else if (this.desiredQuantity == 0) { // if we've hit our goal and we're not in our store state
-            nextState = StoreState.DONE;
-        }
-        // -----------------------
-        // SHULKER STORAGE
-        else if (this.state == StoreState.CHECK_FOR_SHULKER_BOX) {
-            nextState = StoreState.CHECK_FOR_CHEST;
-            if (canUseShulkers()) { // Put stuff into the shulkers
-                boolean result = tryToPlaceShulkerChest();
-                System.out.println("Put stuff in shulkers");
-                if (result)
-                    nextState = StoreState.PLACE_SHULKER_BOX;
-            }
-            else {
-                System.out.println("Can't use shulkers");
-            }
-        }
-        else if (this.state == StoreState.PLACE_SHULKER_BOX) {
-            baritone.getInputOverrideHandler().clearAllKeys();
-            Optional<Rotation> shulker_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace,
-                    ctx.playerController().getBlockReachDistance());
-            Optional<Rotation> under_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace.down(),
-                    ctx.playerController().getBlockReachDistance());
-            // TODO: figure out how to make this better so it doesn't suck
-            BlockState state = baritone.bsi.get0(shulkerPlace);
-            boolean placedShulker = !state.isAir() && ShulkerHelper.isShulkerBox(state.getBlock().asItem());
-            // if we haven't placed the shulker
-            if (!placedShulker && !ShulkerHelper.isShulkerBox(ctx.player().inventory.getCurrentItem())) {
-                logDirect("We failed to put the shulker in our hand");
-                nextState = StoreState.CHECK_FOR_CHEST;
-            }
-            if (shulker_reachable.isPresent()) {
-                // Look at it
-                baritone.getLookBehavior().updateTarget(shulker_reachable.get(), true);
-                // If the place is filled and it isn't a shulker box
-                if (!placedShulker) {
-                    System.out.println("We messed up " + state);
-                    nextState = StoreState.CHECK_FOR_SHULKER_BOX;
+                nextState = StoreState.DONE;
+                if (!invHelper.isInventoryFull() && this.desiredQuantity == 0) {
+                    // we don't need to do anything
+                    System.out.println("We're done here!");
                 }
-                else if (this.shulkerPlace.equals(ctx.getSelectedBlock().orElse(null))) {
-                    // We did it!
-                    nextState = StoreState.OPEN_SHULKER_BOX;
-                }
-            }
-            else if (under_reachable.isPresent()) {
-                // Look at it
-                baritone.getLookBehavior().updateTarget(under_reachable.get(), true);
-                // If we're looking at it?
-                // TODO: determine if we are looking at a top face?
-                if (this.shulkerPlace.down().equals(ctx.getSelectedBlock().orElse(null))) { // wait for us to actually
-                                                                                            // look at the block
-                    // Place that funky shulker box white boy
-                    System.out.println("Placing that block");
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // firmly grasp it
-                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL); // cede to other process
+                else if (!Baritone.settings().storeExcessInventory.value) {
+                    logDirect("storeExcessInventory is not on");
                 }
                 else {
-                    System.out.println("We aren't looking at it yet");
+                    // figure out how much we can get rid of
+                    this.setupFilter();
+                    this.desiredQuantity = calculateDesiredInventory();
+                    if (this.desiredQuantity > 0)
+                        nextState = StoreState.CHECK_FOR_SHULKER_BOX;
                 }
-                // Check if we actually placed a block
             }
-            else if (this.tickCount % 100 == 0) {
-                // If we happy upon an unlucky start
+            else if (this.desiredQuantity == 0) { // if we've hit our goal and we're not in our store state
                 nextState = StoreState.DONE;
             }
-            else {
-                System.out.println("I can't reach this block");
+            // -----------------------
+            // SHULKER STORAGE
+            else if (this.state == StoreState.CHECK_FOR_SHULKER_BOX) {
+                nextState = StoreState.CHECK_FOR_CHEST;
+                if (canUseShulkers()) { // Put stuff into the shulkers
+                    boolean result = tryToPlaceShulkerChest();
+                    System.out.println("Put stuff in shulkers");
+                    if (result)
+                        nextState = StoreState.PLACE_SHULKER_BOX;
+                }
+                else {
+                    System.out.println("Can't use shulkers");
+                }
             }
-            if (nextState == StoreState.PLACE_SHULKER_BOX)
-                return new PathingCommand(new GoalGetToBlock(this.shulkerPlace), PathingCommandType.SET_GOAL_AND_PATH);
-
-        }
-        else if (this.state == StoreState.OPEN_SHULKER_BOX) {
-            if (chestHelper.rightClickOpenChest(this.shulkerPlace))
-                nextState = StoreState.STORE_IN_SHULKER;
-        }
-        else if (this.state == StoreState.STORE_IN_SHULKER) {
-            ClientPlayerEntity player = ctx.player();
-            Container openContainer = player.openContainer;
-            if (openContainer == player.container) {
-                System.out.println("Finished putting stuff in the shulker");
-                nextState = StoreState.MINE_SHULKER_BOX;
-            }
-            else {
-                // if we can't place anything else in the chest
-                int deposited = chestHelper.transferItemsToOpenChest(this.filter, this.desiredQuantity, false);
-                this.desiredQuantity -= deposited;
-                System.out.println("Deposited " + deposited);
-                if (deposited == 0)
-                    ctx.player().closeScreen();
-            }
-        }
-        else if (this.state == StoreState.MINE_SHULKER_BOX) {
-            baritone.getInputOverrideHandler().clearAllKeys();
-            if (baritone.bsi.get0(this.shulkerPlace).isAir()) {
-                this.shulkerPlace = null;
-                nextState = StoreState.COLLECT_SHULKER_BOX;
-            }
-            else {
-                // Make sure we got some sort of pickaxe?
-                MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(this.shulkerPlace));
-                // TODO: switch to tool that's best for the job
+            else if (this.state == StoreState.PLACE_SHULKER_BOX) {
+                baritone.getInputOverrideHandler().clearAllKeys();
                 Optional<Rotation> shulker_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace,
                         ctx.playerController().getBlockReachDistance());
-                if (shulker_reachable.isPresent()) {
-                    baritone.getLookBehavior().updateTarget(shulker_reachable.get(), true);
+                Optional<Rotation> under_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace.down(),
+                        ctx.playerController().getBlockReachDistance());
+                // TODO: figure out how to make this better so it doesn't suck
+                BlockState state = baritone.bsi.get0(shulkerPlace);
+                boolean placedShulker = !state.isAir() && ShulkerHelper.isShulkerBox(state.getBlock().asItem());
+                // if we haven't placed the shulker
+                if (!placedShulker && !ShulkerHelper.isShulkerBox(ctx.player().inventory.getCurrentItem())) {
+                    logDirect("We failed to put the shulker in our hand");
+                    nextState = StoreState.CHECK_FOR_CHEST;
                 }
-                // check if we're looking at it
-                if (this.shulkerPlace.equals(ctx.getSelectedBlock().orElse(null))) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true); // firmly punch it
+                if (shulker_reachable.isPresent()) {
+                    // Look at it
+                    baritone.getLookBehavior().updateTarget(shulker_reachable.get(), true);
+                    // If the place is filled and it isn't a shulker box
+                    if (!placedShulker) {
+                        System.out.println("We messed up " + state);
+                        nextState = StoreState.CHECK_FOR_SHULKER_BOX;
+                    }
+                    else if (this.shulkerPlace.equals(ctx.getSelectedBlock().orElse(null))) {
+                        // We did it!
+                        nextState = StoreState.OPEN_SHULKER_BOX;
+                    }
+                }
+                else if (under_reachable.isPresent()) {
+                    // Look at it
+                    baritone.getLookBehavior().updateTarget(under_reachable.get(), true);
+                    // If we're looking at it?
+                    // TODO: determine if we are looking at a top face?
+                    if (this.shulkerPlace.down().equals(ctx.getSelectedBlock().orElse(null))) { // wait for us to
+                                                                                                // actually
+                                                                                                // look at the block
+                        // Place that funky shulker box white boy
+                        System.out.println("Placing that block");
+                        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // firmly grasp
+                                                                                                        // it
+                        return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL); // cede to other
+                                                                                                 // process
+                    }
+                    else {
+                        System.out.println("We aren't looking at it yet");
+                    }
+                    // Check if we actually placed a block
+                }
+                else if (this.tickCount % 100 == 0) {
+                    // If we happy upon an unlucky start
+                    nextState = StoreState.DONE;
+                }
+                else {
+                    System.out.println("I can't reach this block");
+                }
+                if (nextState == StoreState.PLACE_SHULKER_BOX)
+                    return new PathingCommand(new GoalGetToBlock(this.shulkerPlace),
+                            PathingCommandType.SET_GOAL_AND_PATH);
+
+            }
+            else if (this.state == StoreState.OPEN_SHULKER_BOX) {
+                if (chestHelper.rightClickOpenChest(this.shulkerPlace))
+                    nextState = StoreState.STORE_IN_SHULKER;
+            }
+            else if (this.state == StoreState.STORE_IN_SHULKER) {
+                ClientPlayerEntity player = ctx.player();
+                Container openContainer = player.openContainer;
+                if (openContainer == player.container) {
+                    System.out.println("Finished putting stuff in the shulker");
+                    nextState = StoreState.MINE_SHULKER_BOX;
+                }
+                else {
+                    // if we can't place anything else in the chest
+                    int deposited = chestHelper.transferItemsToOpenChest(this.filter, this.desiredQuantity, false);
+                    this.desiredQuantity -= deposited;
+                    System.out.println("Deposited " + deposited);
+                    if (deposited == 0)
+                        ctx.player().closeScreen();
                 }
             }
-        }
-        else if (this.state == StoreState.COLLECT_SHULKER_BOX) {
-            if (this.shulkerPlace == null || this.tickCount % 10 == 0) {
-                List<BlockPos> shulkerBoxes = droppedShulkerBoxScan();
-                // TODO find the closest
-                if (this.shulkerPlace == null || shulkerBoxes.size() == 0)
-                    nextState = StoreState.STORE_IN_SHULKER;
-                else if (shulkerBoxes.size() > 0)
-                    this.shulkerPlace = shulkerBoxes.get(0);
+            else if (this.state == StoreState.MINE_SHULKER_BOX) {
+                baritone.getInputOverrideHandler().clearAllKeys();
+                BlockState bs = baritone.bsi.get0(this.shulkerPlace);
+                if (bs != null && bs.isAir()) {
+                    this.shulkerPlace = null;
+                    nextState = StoreState.COLLECT_SHULKER_BOX;
+                }
+                else {
+                    // Make sure we got some sort of pickaxe?
+                    MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(this.shulkerPlace));
+                    // TODO: switch to tool that's best for the job
+                    Optional<Rotation> shulker_reachable = RotationUtils.reachable(ctx.player(), this.shulkerPlace,
+                            ctx.playerController().getBlockReachDistance());
+                    if (shulker_reachable.isPresent()) {
+                        baritone.getLookBehavior().updateTarget(shulker_reachable.get(), true);
+                    }
+                    // check if we're looking at it
+                    if (this.shulkerPlace.equals(ctx.getSelectedBlock().orElse(null))) {
+                        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true); // firmly punch
+                                                                                                       // it
+                    }
+                }
+            }
+            else if (this.state == StoreState.COLLECT_SHULKER_BOX) {
+                if (this.shulkerPlace == null || this.tickCount % 10 == 0) {
+                    List<BlockPos> shulkerBoxes = droppedShulkerBoxScan();
+                    // TODO find the closest
+                    if (shulkerBoxes.size() == 0)
+                        nextState = StoreState.CHECK_FOR_SHULKER_BOX;
+                    else if (shulkerBoxes.size() > 0)
+                        this.shulkerPlace = shulkerBoxes.get(0);
+                }
+                // TODO figure out a better way to detect the pickup
+                else {
+                    return new PathingCommand(new GoalBlock(this.shulkerPlace), PathingCommandType.SET_GOAL_AND_PATH);
+                }
+            }
+            // -----------------------
+            // CHEST STORAGE
+            else if (this.state == StoreState.CHECK_FOR_CHEST) {
+                nextState = StoreState.DISCARDING;
+                if (canUseChests()) { // if we can use chests, look for a place to put a chest
+                    // TODO find a chest in our remembered inventories
+                }
+            }
+            else if (this.state == StoreState.DISCARDING) {
+                nextState = StoreState.DONE;
+                if (canDiscard()) {
+                    // Throw away what we need to get rid of
+                }
             }
             else {
-                return new PathingCommand(new GoalBlock(this.shulkerPlace), PathingCommandType.SET_GOAL_AND_PATH);
+                System.out.println("UNKNOWN state: " + this.state);
+                nextState = StoreState.DONE;
             }
-        }
-        // -----------------------
-        // CHEST STORAGE
-        else if (this.state == StoreState.CHECK_FOR_CHEST) {
-            nextState = StoreState.DISCARDING;
-            if (canUseChests()) { // if we can use chests, look for a place to put a chest
-                // TODO find a chest in our remembered inventories
-            }
-        }
-        else if (this.state == StoreState.DISCARDING) {
-            nextState = StoreState.DONE;
-            if (canDiscard()) {
-                // Throw away what we need to get rid of
-            }
-        }
-        else {
-            System.out.println("UNKNOWN state: " + this.state);
-            nextState = StoreState.DONE;
-        }
 
-        // If we just finished
-        if (nextState == StoreState.DONE) {
-            logDirect("storeExcessInventory- Done with left: " + this.desiredQuantity);
+            // If we just finished
+            if (nextState == StoreState.DONE) {
+                logDirect("storeExcessInventory- Done with left: " + this.desiredQuantity);
+            }
+            if (this.state != nextState)
+                logDirect("storeExcessInventory- " + this.state + " => " + nextState);
+            this.state = nextState;
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE); // cede to other process
         }
-        if (this.state != nextState)
-            logDirect("storeExcessInventory- " + this.state + " => " + nextState);
-        this.state = nextState;
-        return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE); // cede to other process
+        catch (NullPointerException e) {
+            System.err.println("We had an error");
+            System.err.println(e);
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE); // cede to other process
+        }
     }
 
     @Override

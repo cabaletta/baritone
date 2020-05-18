@@ -83,7 +83,7 @@ public class InventoryHelper implements Helper {
             for (final ItemStack item : inv) {
                 if (item == null)
                     continue;
-                if (item.getItem().equals(item_filter.i)) {
+                if (item_filter.matches(item.getItem())) {
                     totalCount += item.getCount();
                 }
             }
@@ -103,7 +103,7 @@ public class InventoryHelper implements Helper {
             for (final ItemStack item : inv) {
                 if (item == null)
                     continue;
-                if (item.getItem().equals(item_filter.i)) {
+                if (item_filter.matches(item.getItem())) {
                     largestStack = (item.getCount() > largestStack) ? item.getCount() : largestStack;
                 }
             }

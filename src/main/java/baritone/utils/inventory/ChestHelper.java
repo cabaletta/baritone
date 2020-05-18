@@ -59,6 +59,10 @@ public class ChestHelper implements Helper {
             System.out.println("We don't have a container open");
         }
         int transfer_amount = 0;
+        System.out.print("Trying to transfer: ");
+        for (ItemFilter item_filter : itemFilter)
+            System.out.print(item_filter.toString());
+        System.out.println();
 
         Container current_container = player.openContainer;
         int playerSlots = player.inventory.mainInventory.size();
@@ -107,7 +111,7 @@ public class ChestHelper implements Helper {
 
     private boolean itemInFilter(ItemFilter[] filter, Item item) {
         for (ItemFilter item_filter : filter) {
-            return item.equals(item_filter.i);
+            return item_filter.matches(item);
         }
         return false;
     }
@@ -141,7 +145,7 @@ public class ChestHelper implements Helper {
             for (ItemStack item : inv) {
                 if (item == null)
                     continue;
-                if (item.getItem().equals(item_filter.i)) {
+                if (item_filter.matches(item.getItem())) {
                     largestStack = (item.getCount() > largestStack) ? item.getCount() : largestStack;
                 }
             }

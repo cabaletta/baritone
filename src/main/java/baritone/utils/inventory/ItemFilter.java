@@ -50,4 +50,9 @@ public class ItemFilter {
     public String toString() {
         return "(" + this.i.toString() + ", " + this.priority + ")";
     }
+
+    public boolean matches(Item item) {
+        // for the time being just check if the id's match
+        return (Item.getIdFromItem(item) == Item.getIdFromItem(this.i));
+    }
 }
