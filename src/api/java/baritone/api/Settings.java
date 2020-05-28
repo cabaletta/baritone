@@ -226,7 +226,7 @@ public final class Settings {
      * <p>
      * It also overshoots the landing pretty much always (making contact with the next block over), so be careful
      */
-    public final Setting<Boolean> allowParkour = new Setting<>(false);
+    public final Setting<Boolean> allowParkour = new Setting<>(true);
 
     /**
      * Actually pretty reliable.
