@@ -4,10 +4,7 @@ import java.util.Random;
 
 /** A vertex in a ConnGraph. See the comments for ConnGraph. */
 public class ConnVertex {
-    /**
-     * The thread-local random number generator we use by default to set the "hash" field. We could use
-     * ThreadLocalRandom instead, but ThreadLocalRandom isn't available in Java 6.0 and below.
-     */
+    /** The thread-local random number generator we use by default to set the "hash" field. */
     private static final ThreadLocal<Random> random = new ThreadLocal<Random>() {
         @Override
         protected Random initialValue() {

@@ -110,5 +110,5 @@ Thoughts concerning optimization:
   cluster replacement edges so that they are close to each other in the Euler
   tour, then random iteration should tend to locate a replacement edge faster
   than in-order iteration. (If we know from a previously mentioned optimization
-  that there is probably no replacement edge, the we shouldn't bother to iterate
-  over the edges in random order.)
+  that there is probably no replacement edge, then we shouldn't bother to
+  iterate over the edges in random order.)

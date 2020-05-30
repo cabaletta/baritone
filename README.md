@@ -19,7 +19,7 @@ Javadoc documentation.
   the amount of gold the player can access, or the strongest monster that can
   reach him. Retrieving the combined augmentation for a connected component
   takes O(log N) time with high probability.
-* Compatible with Java 6.0 and above.
+* Compatible with Java 7.0 and above.
 
 # Limitations
 * `ConnGraph` does not directly support augmenting edges. However, this can be
@@ -49,3 +49,7 @@ graph.connected(vertex1, vertex3);  // Returns true
 graph.removeEdge(vertex1, vertex2);
 graph.connected(vertex1, vertex3);  // Returns false
 ```
+
+# Documentation
+See <https://btrekkie.github.io/dynamic-connectivity/index.html> for API
+documentation.

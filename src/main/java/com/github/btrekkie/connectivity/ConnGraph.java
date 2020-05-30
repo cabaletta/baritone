@@ -61,7 +61,7 @@ import java.util.Map;
  * vertices' first and last visits. Instead, we have each vertex store a reference to an arbitrary visit to that vertex.
  * We also maintain edge objects for each of the edges in the Euler tours. Each such edge stores a pointer to the two
  * visits that precede the traversal of the edge in the Euler tour. These do not change when we perform a reroot. The
- * remove edge operation then requires a pointer to the edge object, rather than a pointer to the vertices. Given the
+ * remove edge operation then requires a pointer to the edge object, rather than pointers to the vertices. Given the
  * edge object, we can splice out the range of nodes between the two visits that precede the edge.
  *
  * Rather than explicitly giving each edge a level number, the level numbers are implicit through links from each level
@@ -898,7 +898,7 @@ public class ConnGraph {
 
     /**
      * Returns whether the specified vertices are connected - whether there is a path between them. Returns true if
-     * vertex1 == vertex2. This method takes O(lg N) time with high probability.
+     * vertex1 == vertex2. This method takes O(log N) time with high probability.
      */
     public boolean connected(ConnVertex vertex1, ConnVertex vertex2) {
         if (vertex1 == vertex2) {
