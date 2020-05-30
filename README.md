@@ -138,5 +138,4 @@ public class Tree<T extends Comparable<? super T>> {
 ```
 
 # Documentation
-For more detailed instructions, check the source code to see the full API and
-Javadoc documentation.
+See <https://btrekkie.github.io/RedBlackNode/index.html> for API documentation.
