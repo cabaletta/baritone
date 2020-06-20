@@ -154,8 +154,8 @@ install {
     }
     repositories.mavenInstaller {
 		addFilter('api') { artifact, file -> artifact.name == "baritone-api" }
-    	addFilter('api-forge') { artifact, file -> artifact.name == "baritone-api-forge" }
-    	addFilter('standalone') { artifact, file -> artifact.name == "baritone-standalone" }
+		addFilter('api-forge') { artifact, file -> artifact.name == "baritone-api-forge" }
+		addFilter('standalone') { artifact, file -> artifact.name == "baritone-standalone" }
 		addFilter('standalone-forge') { artifact, file -> artifact.name == "baritone-standalone-forge" }
     }
 }
