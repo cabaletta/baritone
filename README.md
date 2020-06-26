@@ -4,8 +4,7 @@ dynamic connectivity. It supports adding and removing edges and determining
 whether two vertices are connected - whether there is a path between them.
 Adding and removing edges take O(log<sup>2</sup>N) amortized time with high
 probability, while checking whether two vertices are connected takes O(log N)
-time with high probability. Check the source code to see the full API and the
-Javadoc documentation.
+time with high probability.
 
 # Features
 * Efficiently add and remove edges and determine whether vertices are connected.
