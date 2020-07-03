@@ -93,10 +93,16 @@ public class GuiClick extends GuiScreen {
                 Helper.HELPER.logDirect(component);
                 clickStart = null;
             } else {
-                BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(currentMouseOver));
+                if(currentMouseOver != null)//Catch this, or else a click into void will result in a crash
+                    BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver));
+                else
+                    Helper.HELPER.logDirect("Sorry, I can't go to nothing");
             }
         } else if (mouseButton == 1) {
-            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
+            if(currentMouseOver != null)
+                BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
+            else
+                Helper.HELPER.logDirect("Sorry, I can't go to nothing");
         }
         clickStart = null;
     }
