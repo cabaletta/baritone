@@ -132,8 +132,8 @@ public class ProguardTask extends BaritoneGradleTask {
 
         path = findJavaByGradleCurrentRuntime();
         if (path != null) return path;
-
-        throw new RuntimeException("Unable to find java to determine ProGuard libraryjars. Please specify forkOptions.executable in javaCompile," +
+        
+        throw new Exception("Unable to find java to determine ProGuard libraryjars. Please specify forkOptions.executable in javaCompile," +
                 " JAVA_HOME environment variable, or make sure to run Gradle with the correct JDK (a v1.8 only)");
     }
 
