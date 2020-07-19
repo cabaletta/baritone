@@ -59,21 +59,21 @@ public class HelpCommand extends Command {
                         String names = String.join("/", command.getNames());
                         String name = command.getNames().get(0);
                         TextComponent shortDescComponent = new StringTextComponent(" - " + command.getShortDesc());
-                        shortDescComponent.func_230530_a_(shortDescComponent.getStyle().func_240712_a_(TextFormatting.DARK_GRAY));
+                        shortDescComponent.func_230530_a_(shortDescComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
                         TextComponent namesComponent = new StringTextComponent(names);
-                        namesComponent.func_230530_a_(namesComponent.getStyle().func_240712_a_(TextFormatting.WHITE));
+                        namesComponent.func_230530_a_(namesComponent.getStyle().setFormatting(TextFormatting.WHITE));
                         TextComponent hoverComponent = new StringTextComponent("");
-                        hoverComponent.func_230530_a_(hoverComponent.getStyle().func_240712_a_(TextFormatting.GRAY));
+                        hoverComponent.func_230530_a_(hoverComponent.getStyle().setFormatting(TextFormatting.GRAY));
                         hoverComponent.func_230529_a_(namesComponent);
                         hoverComponent.func_240702_b_("\n" + command.getShortDesc());
                         hoverComponent.func_240702_b_("\n\nClick to view full help");
                         String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.getNames().get(0));
                         TextComponent component = new StringTextComponent(name);
-                        component.func_230530_a_(component.getStyle().func_240712_a_(TextFormatting.GRAY));
+                        component.func_230530_a_(component.getStyle().setFormatting(TextFormatting.GRAY));
                         component.func_230529_a_(shortDescComponent);
                         component.func_230530_a_(component.getStyle()
-                                .func_240716_a_(new HoverEvent(HoverEvent.Action.field_230550_a_, hoverComponent))
-                                .func_240715_a_(new ClickEvent(ClickEvent.Action.RUN_COMMAND, clickCommand)));
+                                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
+                                .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, clickCommand)));
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + label
@@ -89,7 +89,7 @@ public class HelpCommand extends Command {
             command.getLongDesc().forEach(this::logDirect);
             logDirect("");
             TextComponent returnComponent = new StringTextComponent("Click to return to the help menu");
-            returnComponent.func_230530_a_(returnComponent.getStyle().func_240715_a_(new ClickEvent(
+            returnComponent.func_230530_a_(returnComponent.getStyle().setClickEvent(new ClickEvent(
                     ClickEvent.Action.RUN_COMMAND,
                     FORCE_COMMAND_PREFIX + label
             )));

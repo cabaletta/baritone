@@ -55,12 +55,12 @@ public class GuiClick extends Screen implements Helper {
     }
 
     @Override
-    public boolean func_231177_au__() {
+    public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void func_230430_a_(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         double mx = mc.mouseHelper.getMouseX();
         double my = mc.mouseHelper.getMouseY();
 
@@ -82,15 +82,15 @@ public class GuiClick extends Screen implements Helper {
     }
 
     @Override
-    public boolean func_231048_c_(double mouseX, double mouseY, int mouseButton) {
+    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
         if (mouseButton == 0) {
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
                 TextComponent component = new StringTextComponent("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
                 component.func_230530_a_(component.getStyle()
-                        .func_240712_a_(TextFormatting.WHITE)
-                        .func_240715_a_(new ClickEvent(
+                        .setFormatting(TextFormatting.WHITE)
+                        .setClickEvent(new ClickEvent(
                                 ClickEvent.Action.RUN_COMMAND,
                                 FORCE_COMMAND_PREFIX + "help sel"
                         )));
@@ -103,13 +103,13 @@ public class GuiClick extends Screen implements Helper {
             BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
         }
         clickStart = null;
-        return super.func_231048_c_(mouseX, mouseY, mouseButton);
+        return super.mouseReleased(mouseX, mouseY, mouseButton);
     }
 
     @Override
-    public boolean func_231044_a_(double mouseX, double mouseY, int mouseButton) {
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         clickStart = currentMouseOver;
-        return super.func_231044_a_(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     public void onRender(MatrixStack modelViewStack, Matrix4f projectionMatrix) {

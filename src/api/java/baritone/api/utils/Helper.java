@@ -52,11 +52,11 @@ public interface Helper {
         final Calendar now = Calendar.getInstance();
         final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) <= 3;
         TextComponent baritone = new StringTextComponent(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
-        baritone.func_230530_a_(baritone.getStyle().func_240712_a_(TextFormatting.LIGHT_PURPLE));
+        baritone.func_230530_a_(baritone.getStyle().setFormatting(TextFormatting.LIGHT_PURPLE));
 
         // Outer brackets
         TextComponent prefix = new StringTextComponent("");
-        prefix.func_230530_a_(baritone.getStyle().func_240712_a_(TextFormatting.DARK_PURPLE));
+        prefix.func_230530_a_(baritone.getStyle().setFormatting(TextFormatting.DARK_PURPLE));
         prefix.func_240702_b_("[");
         prefix.func_230529_a_(baritone);
         prefix.func_240702_b_("]");
@@ -101,7 +101,7 @@ public interface Helper {
     default void logDirect(String message, TextFormatting color) {
         Stream.of(message.split("\n")).forEach(line -> {
             TextComponent component = new StringTextComponent(line.replace("\t", "    "));
-            component.func_230530_a_(component.getStyle().func_240712_a_(color));
+            component.func_230530_a_(component.getStyle().setFormatting(color));
             logDirect(component);
         });
     }

@@ -133,12 +133,12 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/gui/screen/Screen.field_230711_n_:Z"
+                    target = "net/minecraft/client/gui/screen/Screen.passEvents:Z"
             )
     )
     private boolean passEvents(Screen screen) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.field_230711_n_;
+        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.passEvents;
     }
 
     // TODO

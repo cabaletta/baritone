@@ -27,7 +27,6 @@ import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -83,19 +82,19 @@ public class SetCommand extends Command {
                                 " (%s)",
                                 settingTypeToString(setting)
                         ));
-                        typeComponent.func_230530_a_(typeComponent.getStyle().func_240712_a_(TextFormatting.DARK_GRAY));
+                        typeComponent.func_230530_a_(typeComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
                         TextComponent hoverComponent = new StringTextComponent("");
-                        hoverComponent.func_230530_a_(hoverComponent.getStyle().func_240712_a_(TextFormatting.GRAY));
+                        hoverComponent.func_230530_a_(hoverComponent.getStyle().setFormatting(TextFormatting.GRAY));
                         hoverComponent.func_240702_b_(setting.getName());
                         hoverComponent.func_240702_b_(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.func_240702_b_(String.format("\n\nValue:\n%s", settingValueToString(setting)));
                         String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
                         TextComponent component = new StringTextComponent(setting.getName());
-                        component.func_230530_a_(component.getStyle().func_240712_a_(TextFormatting.GRAY));
+                        component.func_230530_a_(component.getStyle().setFormatting(TextFormatting.GRAY));
                         component.func_230529_a_(typeComponent);
                         component.func_230530_a_(component.getStyle()
-                                .func_240716_a_(new HoverEvent(HoverEvent.Action.field_230550_a_, hoverComponent))
-                                .func_240715_a_(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion)));
+                                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
+                                .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion)));
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + "set " + arg + " " + search
@@ -166,12 +165,12 @@ public class SetCommand extends Command {
             }
             TextComponent oldValueComponent = new StringTextComponent(String.format("Old value: %s", oldValue));
             oldValueComponent.func_230530_a_(oldValueComponent.getStyle()
-                    .func_240712_a_(TextFormatting.GRAY)
-                    .func_240716_a_(new HoverEvent(
-                            HoverEvent.Action.field_230550_a_,
+                    .setFormatting(TextFormatting.GRAY)
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
                             new StringTextComponent("Click to set the setting back to this value")
                     ))
-                    .func_240715_a_(new ClickEvent(
+                    .setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
                     )));

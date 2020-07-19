@@ -24,7 +24,6 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.command.argument.IArgConsumer;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
 import java.util.List;
