@@ -35,8 +35,8 @@ import baritone.api.command.manager.ICommandManager;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
@@ -79,9 +79,10 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
         if (settings.echoCommands.value) {
             String msg = command + rest;
             String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
-            ITextComponent component = new StringTextComponent(String.format("> %s", toDisplay));
-            component.getStyle()
-                    .setColor(TextFormatting.WHITE)
+            StringTextComponent component = new StringTextComponent(String.format("> %s", toDisplay));
+            Style componentStyle = Style.EMPTY;
+            componentStyle = componentStyle
+                    .setFormatting(TextFormatting.WHITE)
                     .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
                             new StringTextComponent("Click to rerun command")
@@ -90,6 +91,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                             ClickEvent.Action.RUN_COMMAND,
                             FORCE_COMMAND_PREFIX + msg
                     ));
+            component.func_230530_a_(componentStyle);
             logDirect(component);
         }
     }

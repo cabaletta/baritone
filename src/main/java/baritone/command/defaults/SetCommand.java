@@ -27,8 +27,8 @@ import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
@@ -78,23 +78,30 @@ public class SetCommand extends Command {
                                     : String.format("All %ssettings:", viewModified ? "modified " : "")
                     ),
                     setting -> {
-                        ITextComponent typeComponent = new StringTextComponent(String.format(
+                        StringTextComponent typeComponent = new StringTextComponent(String.format(
                                 " (%s)",
                                 settingTypeToString(setting)
                         ));
-                        typeComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
-                        ITextComponent hoverComponent = new StringTextComponent("");
-                        hoverComponent.getStyle().setColor(TextFormatting.GRAY);
-                        hoverComponent.appendText(setting.getName());
-                        hoverComponent.appendText(String.format("\nType: %s", settingTypeToString(setting)));
-                        hoverComponent.appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                        Style typeComponentStyle = Style.EMPTY;
+                        typeComponentStyle = typeComponentStyle.setFormatting(TextFormatting.DARK_GRAY);
+                        typeComponent.func_230530_a_(typeComponentStyle);
+                        StringTextComponent hoverComponent = new StringTextComponent("");
+                        Style hoverComponentStyle = Style.EMPTY;
+                        hoverComponentStyle = hoverComponentStyle.setFormatting(TextFormatting.GRAY);
+                        hoverComponent.func_230530_a_(hoverComponentStyle);
+                        hoverComponent.func_240702_b_(setting.getName());
+                        hoverComponent.func_240702_b_(String.format("\nType: %s", settingTypeToString(setting)));
+                        hoverComponent.func_240702_b_(String.format("\n\nValue:\n%s", settingValueToString(setting)));
                         String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
-                        ITextComponent component = new StringTextComponent(setting.getName());
-                        component.getStyle().setColor(TextFormatting.GRAY);
-                        component.appendSibling(typeComponent);
-                        component.getStyle()
+                        StringTextComponent component = new StringTextComponent(setting.getName());
+                        Style componentStyle = Style.EMPTY;
+                        componentStyle = componentStyle.setFormatting(TextFormatting.GRAY);
+                        component.func_230530_a_(componentStyle);
+                        component.func_230529_a_(typeComponent);
+                        componentStyle = componentStyle
                                 .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
                                 .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion));
+                        component.func_230530_a_(componentStyle);
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + "set " + arg + " " + search
@@ -163,9 +170,10 @@ public class SetCommand extends Command {
                         settingValueToString(setting)
                 ));
             }
-            ITextComponent oldValueComponent = new StringTextComponent(String.format("Old value: %s", oldValue));
-            oldValueComponent.getStyle()
-                    .setColor(TextFormatting.GRAY)
+            StringTextComponent oldValueComponent = new StringTextComponent(String.format("Old value: %s", oldValue));
+            Style oldValueComponentStyle = Style.EMPTY;
+            oldValueComponentStyle = oldValueComponentStyle
+                    .setFormatting(TextFormatting.GRAY)
                     .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
                             new StringTextComponent("Click to set the setting back to this value")
@@ -174,6 +182,7 @@ public class SetCommand extends Command {
                             ClickEvent.Action.RUN_COMMAND,
                             FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
                     ));
+            oldValueComponent.func_230530_a_(oldValueComponentStyle);
             logDirect(oldValueComponent);
             if ((setting.getName().equals("chatControl") && !(Boolean) setting.value && !Baritone.settings().chatControlAnyway.value) ||
                     setting.getName().equals("chatControlAnyway") && !(Boolean) setting.value && !Baritone.settings().chatControl.value) {

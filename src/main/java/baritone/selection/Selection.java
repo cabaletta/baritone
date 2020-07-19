@@ -4,7 +4,7 @@ import baritone.api.selection.ISelection;
 import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 
 public class Selection implements ISelection {
 
@@ -12,7 +12,7 @@ public class Selection implements ISelection {
     private final BetterBlockPos pos2;
     private final BetterBlockPos min;
     private final BetterBlockPos max;
-    private final Vec3i size;
+    private final Vector3i size;
     private final AxisAlignedBB aabb;
 
     public Selection(BetterBlockPos pos1, BetterBlockPos pos2) {
@@ -31,7 +31,7 @@ public class Selection implements ISelection {
                 Math.max(pos1.z, pos2.z)
         );
 
-        this.size = new Vec3i(
+        this.size = new Vector3i(
                 max.x - min.x + 1,
                 max.y - min.y + 1,
                 max.z - min.z + 1
@@ -61,7 +61,7 @@ public class Selection implements ISelection {
     }
 
     @Override
-    public Vec3i size() {
+    public Vector3i size() {
         return size;
     }
 

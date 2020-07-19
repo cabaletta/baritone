@@ -36,7 +36,7 @@ public enum ForDirection implements IDatatypeFor<Direction> {
     public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
         return new TabCompleteHelper()
                 .append(Stream.of(Direction.values())
-                        .map(Direction::getName).map(String::toLowerCase))
+                        .map(Direction::name).map(String::toLowerCase))
                 .filterPrefix(ctx.getConsumer().getString())
                 .stream();
     }

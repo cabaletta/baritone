@@ -24,7 +24,7 @@ import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.IPacket;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 /**
  * @author Brady
@@ -106,7 +106,7 @@ public interface IGameEventListener {
      * and before and after the player jumps.
      *
      * @param event The event
-     * @see Entity#moveRelative(float, Vec3d)
+     * @see Entity#moveRelative(float, Vector3d)
      */
     void onPlayerRotationMove(RotationMoveEvent event);
 

@@ -18,11 +18,11 @@
 package baritone.launch.mixins;
 
 import baritone.api.utils.BlockOptionalMeta;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootPredicateManager;
+import net.minecraft.loot.LootTableManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootPredicateManager;
-import net.minecraft.world.storage.loot.LootTableManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -48,7 +48,7 @@ public class MixinLootContext {
             method = "build",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/server/MinecraftServer.getLootTableManager()Lnet/minecraft/world/storage/loot/LootTableManager;"
+                    target = "Lnet/minecraft/server/MinecraftServer;getLootTableManager()Lnet/minecraft/loot/LootTableManager;"
             )
     )
     private LootTableManager getLootTableManager(MinecraftServer server) {
@@ -62,7 +62,7 @@ public class MixinLootContext {
             method = "build",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/server/MinecraftServer.func_229736_aP_()Lnet/minecraft/world/storage/loot/LootPredicateManager;"
+                    target = "Lnet/minecraft/server/MinecraftServer;func_229736_aP_()Lnet/minecraft/loot/LootPredicateManager;"
             )
     )
     private LootPredicateManager getLootPredicateManager(MinecraftServer server) {

@@ -85,7 +85,7 @@ task sourceJar(type: Jar, dependsOn: classes) {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200515-1.15.1'
+    mappings channel: 'snapshot', version: '20200707-1.16.1'
 
     if (getProject().hasProperty("baritone.forge_build")) {
         reobfMappings 'searge'
@@ -146,7 +146,7 @@ repositories {
 }
 
 dependencies {
-    minecraft 'com.github.ImpactDevelopment:Vanilla:1.15.2'
+    minecraft 'com.github.ImpactDevelopment:Vanilla:1.16.1'
 
     runtime launchCompile('net.minecraft:launchwrapper:1.12') {
         exclude module: 'lwjgl'

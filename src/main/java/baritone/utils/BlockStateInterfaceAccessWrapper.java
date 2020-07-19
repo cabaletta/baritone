@@ -18,7 +18,7 @@
 package baritone.utils;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.fluid.IFluidState;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
@@ -51,7 +51,7 @@ public final class BlockStateInterfaceAccessWrapper implements IBlockReader {
     }
 
     @Override
-    public IFluidState getFluidState(BlockPos blockPos) {
+    public FluidState getFluidState(BlockPos blockPos) {
         return getBlockState(blockPos).getFluidState();
     }
 }

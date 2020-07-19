@@ -32,8 +32,8 @@ import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
@@ -57,19 +57,26 @@ public class WaypointsCommand extends Command {
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
         }
-        BiFunction<IWaypoint, Action, ITextComponent> toComponent = (waypoint, _action) -> {
-            ITextComponent component = new StringTextComponent("");
-            ITextComponent tagComponent = new StringTextComponent(waypoint.getTag().name() + " ");
-            tagComponent.getStyle().setColor(TextFormatting.GRAY);
+        BiFunction<IWaypoint, Action, StringTextComponent> toComponent = (waypoint, _action) -> {
+            StringTextComponent component = new StringTextComponent("");
+            StringTextComponent tagComponent = new StringTextComponent(waypoint.getTag().name() + " ");
+            Style tagComponentStyle = Style.EMPTY;
+            tagComponentStyle = tagComponentStyle.setFormatting(TextFormatting.GRAY);
+            tagComponent.func_230530_a_(tagComponentStyle);
             String name = waypoint.getName();
-            ITextComponent nameComponent = new StringTextComponent(!name.isEmpty() ? name : "<empty>");
-            nameComponent.getStyle().setColor(!name.isEmpty() ? TextFormatting.GRAY : TextFormatting.DARK_GRAY);
-            ITextComponent timestamp = new StringTextComponent(" @ " + new Date(waypoint.getCreationTimestamp()));
-            timestamp.getStyle().setColor(TextFormatting.DARK_GRAY);
-            component.appendSibling(tagComponent);
-            component.appendSibling(nameComponent);
-            component.appendSibling(timestamp);
-            component.getStyle()
+            StringTextComponent nameComponent = new StringTextComponent(!name.isEmpty() ? name : "<empty>");
+            Style nameComponentStyle = Style.EMPTY;
+            nameComponentStyle = nameComponentStyle.setFormatting(!name.isEmpty() ? TextFormatting.GRAY : TextFormatting.DARK_GRAY);
+            nameComponent.func_230530_a_(nameComponentStyle);
+            StringTextComponent timestamp = new StringTextComponent(" @ " + new Date(waypoint.getCreationTimestamp()));
+            Style timestampStyle = Style.EMPTY;
+            timestampStyle = timestampStyle.setFormatting(TextFormatting.DARK_GRAY);
+            timestamp.func_230530_a_(timestampStyle);
+            component.func_230529_a_(tagComponent);
+            component.func_230529_a_(nameComponent);
+            component.func_230529_a_(timestamp);
+            Style componentStyle = Style.EMPTY;
+            componentStyle = componentStyle
                     .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
                             new StringTextComponent("Click to select")
@@ -85,9 +92,10 @@ public class WaypointsCommand extends Command {
                                     waypoint.getCreationTimestamp()
                             ))
                     );
+            component.func_230530_a_(componentStyle);
             return component;
         };
-        Function<IWaypoint, ITextComponent> transform = waypoint ->
+        Function<IWaypoint, StringTextComponent> transform = waypoint ->
                 toComponent.apply(waypoint, action == Action.LIST ? Action.INFO : action);
         if (action == Action.LIST) {
             IWaypoint.Tag tag = args.hasAny() ? IWaypoint.Tag.getByName(args.peekString()) : null;
@@ -136,9 +144,11 @@ public class WaypointsCommand extends Command {
             args.requireMax(0);
             IWaypoint waypoint = new Waypoint(name, tag, pos);
             ForWaypoints.waypoints(this.baritone).addWaypoint(waypoint);
-            ITextComponent component = new StringTextComponent("Waypoint added: ");
-            component.getStyle().setColor(TextFormatting.GRAY);
-            component.appendSibling(toComponent.apply(waypoint, Action.INFO));
+            StringTextComponent component = new StringTextComponent("Waypoint added: ");
+            Style componentStyle = Style.EMPTY;
+            componentStyle = componentStyle.setFormatting(TextFormatting.GRAY);
+            component.func_230530_a_(componentStyle);
+            component.func_230529_a_(toComponent.apply(waypoint, Action.INFO));
             logDirect(component);
         } else if (action == Action.CLEAR) {
             args.requireMax(1);
@@ -194,8 +204,9 @@ public class WaypointsCommand extends Command {
                 if (action == Action.INFO) {
                     logDirect(transform.apply(waypoint));
                     logDirect(String.format("Position: %s", waypoint.getLocation()));
-                    ITextComponent deleteComponent = new StringTextComponent("Click to delete this waypoint");
-                    deleteComponent.getStyle().setClickEvent(new ClickEvent(
+                    StringTextComponent deleteComponent = new StringTextComponent("Click to delete this waypoint");
+                    Style deleteComponentStyle = Style.EMPTY;
+                    deleteComponentStyle = deleteComponentStyle.setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
                                     "%s%s delete %s @ %d",
@@ -205,8 +216,10 @@ public class WaypointsCommand extends Command {
                                     waypoint.getCreationTimestamp()
                             )
                     ));
-                    ITextComponent goalComponent = new StringTextComponent("Click to set goal to this waypoint");
-                    goalComponent.getStyle().setClickEvent(new ClickEvent(
+                    deleteComponent.func_230530_a_(deleteComponentStyle);
+                    StringTextComponent goalComponent = new StringTextComponent("Click to set goal to this waypoint");
+                    Style goalComponentStyle = Style.EMPTY;
+                    goalComponentStyle = goalComponentStyle.setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
                                     "%s%s goal %s @ %d",
@@ -216,8 +229,10 @@ public class WaypointsCommand extends Command {
                                     waypoint.getCreationTimestamp()
                             )
                     ));
-                    ITextComponent backComponent = new StringTextComponent("Click to return to the waypoints list");
-                    backComponent.getStyle().setClickEvent(new ClickEvent(
+                    goalComponent.func_230530_a_(goalComponentStyle);
+                    StringTextComponent backComponent = new StringTextComponent("Click to return to the waypoints list");
+                    Style backComponentStyle = Style.EMPTY;
+                    backComponentStyle = backComponentStyle.setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
                                     "%s%s list",
@@ -225,6 +240,7 @@ public class WaypointsCommand extends Command {
                                     label
                             )
                     ));
+                    backComponent.func_230530_a_(backComponentStyle);
                     logDirect(deleteComponent);
                     logDirect(goalComponent);
                     logDirect(backComponent);

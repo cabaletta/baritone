@@ -25,11 +25,11 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
+import baritone.cache.WorldProvider;
 import baritone.pathing.path.PathExecutor;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.tileentity.BeaconTileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
@@ -39,6 +39,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.vector.Matrix4f;
 
 import java.awt.*;
 import java.util.Collection;
@@ -77,8 +78,8 @@ public final class PathRenderer implements IRenderer, Helper {
             ((GuiClick) Helper.mc.currentScreen).onRender(event.getModelViewStack(), event.getProjectionMatrix());
         }
 
-        int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getId();
-        int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getDimension().getType().getId();
+        int thisPlayerDimension = WorldProvider.getDimensionId(behavior.baritone.getPlayerContext().world().func_234923_W_());
+        int currentRenderViewDimension = WorldProvider.getDimensionId(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().func_234923_W_());
 
         if (thisPlayerDimension != currentRenderViewDimension) {
             // this is a path for a bot in a different dimension, don't render it

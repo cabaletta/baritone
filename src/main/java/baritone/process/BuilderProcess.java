@@ -57,6 +57,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,7 +73,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private String name;
     private ISchematic realSchematic;
     private ISchematic schematic;
-    private Vec3i origin;
+    private Vector3i origin;
     private int ticks;
     private boolean paused;
     private int layer;
@@ -83,7 +85,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     @Override
-    public void build(String name, ISchematic schematic, Vec3i origin) {
+    public void build(String name, ISchematic schematic, Vector3i origin) {
         this.name = name;
         this.schematic = schematic;
         this.realSchematic = null;
@@ -99,7 +101,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (Baritone.settings().schematicOrientationZ.value) {
             z += schematic.lengthZ();
         }
-        this.origin = new Vec3i(x, y, z);
+        this.origin = new Vector3i(x, y, z);
         this.paused = false;
         this.layer = 0;
         this.numRepeats = 0;
@@ -120,7 +122,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     @Override
-    public boolean build(String name, File schematic, Vec3i origin) {
+    public boolean build(String name, File schematic, Vector3i origin) {
         Optional<ISchematicFormat> format = SchematicSystem.INSTANCE.getByFile(schematic);
         if (!format.isPresent()) {
             return false;
@@ -286,11 +288,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 continue;
             }
             AxisAlignedBB aabb = placeAgainstState.getShape(ctx.world(), placeAgainstPos).getBoundingBox();
-            for (Vec3d placementMultiplier : aabbSideMultipliers(against)) {
+            for (Vector3d placementMultiplier : aabbSideMultipliers(against)) {
                 double placeX = placeAgainstPos.x + aabb.minX * placementMultiplier.x + aabb.maxX * (1 - placementMultiplier.x);
                 double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
                 double placeZ = placeAgainstPos.z + aabb.minZ * placementMultiplier.z + aabb.maxZ * (1 - placementMultiplier.z);
-                Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3d(placeX, placeY, placeZ), ctx.playerRotations());
+                Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vector3d(placeX, placeY, placeZ), ctx.playerRotations());
                 RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot, ctx.playerController().getBlockReachDistance(), true);
                 if (result != null && result.getType() == RayTraceResult.Type.BLOCK && ((BlockRayTraceResult) result).getPos().equals(placeAgainstPos) && ((BlockRayTraceResult) result).getFace() == against.getOpposite()) {
                     OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, rot);
@@ -337,19 +339,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return OptionalInt.empty();
     }
 
-    private static Vec3d[] aabbSideMultipliers(Direction side) {
+    private static Vector3d[] aabbSideMultipliers(Direction side) {
         switch (side) {
             case UP:
-                return new Vec3d[]{new Vec3d(0.5, 1, 0.5), new Vec3d(0.1, 1, 0.5), new Vec3d(0.9, 1, 0.5), new Vec3d(0.5, 1, 0.1), new Vec3d(0.5, 1, 0.9)};
+                return new Vector3d[]{new Vector3d(0.5, 1, 0.5), new Vector3d(0.1, 1, 0.5), new Vector3d(0.9, 1, 0.5), new Vector3d(0.5, 1, 0.1), new Vector3d(0.5, 1, 0.9)};
             case DOWN:
-                return new Vec3d[]{new Vec3d(0.5, 0, 0.5), new Vec3d(0.1, 0, 0.5), new Vec3d(0.9, 0, 0.5), new Vec3d(0.5, 0, 0.1), new Vec3d(0.5, 0, 0.9)};
+                return new Vector3d[]{new Vector3d(0.5, 0, 0.5), new Vector3d(0.1, 0, 0.5), new Vector3d(0.9, 0, 0.5), new Vector3d(0.5, 0, 0.1), new Vector3d(0.5, 0, 0.9)};
             case NORTH:
             case SOUTH:
             case EAST:
             case WEST:
                 double x = side.getXOffset() == 0 ? 0.5 : (1 + side.getXOffset()) / 2D;
                 double z = side.getZOffset() == 0 ? 0.5 : (1 + side.getZOffset()) / 2D;
-                return new Vec3d[]{new Vec3d(x, 0.25, z), new Vec3d(x, 0.75, z)};
+                return new Vector3d[]{new Vector3d(x, 0.25, z), new Vector3d(x, 0.75, z)};
             default: // null
                 throw new IllegalStateException();
         }
@@ -417,10 +419,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 layer++;
                 return onTick(calcFailed, isSafeToCancel);
             }
-            Vec3i repeat = Baritone.settings().buildRepeat.value;
+            Vector3i repeat = Baritone.settings().buildRepeat.value;
             int max = Baritone.settings().buildRepeatCount.value;
             numRepeats++;
-            if (repeat.equals(new Vec3i(0, 0, 0)) || (max != -1 && numRepeats >= max)) {
+            if (repeat.equals(new Vector3i(0, 0, 0)) || (max != -1 && numRepeats >= max)) {
                 logDirect("Done building");
                 onLostControl();
                 return null;
@@ -436,7 +438,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
 
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
-        if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround) {
+        if (toBreak.isPresent() && isSafeToCancel && ctx.player().func_233570_aj_()) {
             // we'd like to pause to break this block
             // only change look direction if it's safe (don't want to fuck up an in progress parkour for example
             Rotation rot = toBreak.get().getB();
@@ -456,7 +458,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         List<BlockState> desirableOnHotbar = new ArrayList<>();
         Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
-        if (toPlace.isPresent() && isSafeToCancel && ctx.player().onGround && ticks <= 0) {
+        if (toPlace.isPresent() && isSafeToCancel && ctx.player().func_233570_aj_() && ticks <= 0) {
             Rotation rot = toPlace.get().rot;
             baritone.getLookBehavior().updateTarget(rot, true);
             ctx.player().inventory.currentItem = toPlace.get().hotbarSelection;
@@ -521,7 +523,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     private void trim() {
         HashSet<BetterBlockPos> copy = new HashSet<>(incorrectPositions);
-        copy.removeIf(pos -> pos.distanceSq(new BlockPos(ctx.player())) > 200);
+        copy.removeIf(pos -> pos.distanceSq(ctx.player().func_233580_cy_()) > 200);
         if (!copy.isEmpty()) {
             incorrectPositions = copy;
         }
@@ -779,7 +781,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 continue;
             }
             // <toxic cloud>
-            result.add(((BlockItem) stack.getItem()).getBlock().getStateForPlacement(new BlockItemUseContext(new ItemUseContext(ctx.world(), ctx.player(), Hand.MAIN_HAND, stack, new BlockRayTraceResult(new Vec3d(ctx.player().getPositionVec().x, ctx.player().getPositionVec().y, ctx.player().getPositionVec().z), Direction.UP, ctx.playerFeet(), false)) {})));
+            result.add(((BlockItem) stack.getItem()).getBlock().getStateForPlacement(new BlockItemUseContext(new ItemUseContext(ctx.world(), ctx.player(), Hand.MAIN_HAND, stack, new BlockRayTraceResult(new Vector3d(ctx.player().getPositionVec().x, ctx.player().getPositionVec().y, ctx.player().getPositionVec().z), Direction.UP, ctx.playerFeet(), false)) {})));
             // </toxic cloud>
         }
         return result;

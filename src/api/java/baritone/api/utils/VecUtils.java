@@ -22,8 +22,8 @@ import net.minecraft.block.FireBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
 /**
@@ -42,7 +42,7 @@ public final class VecUtils {
      * @return The center of the block's bounding box
      * @see #getBlockPosCenter(BlockPos)
      */
-    public static Vec3d calculateBlockCenter(World world, BlockPos pos) {
+    public static Vector3d calculateBlockCenter(World world, BlockPos pos) {
         BlockState b = world.getBlockState(pos);
         VoxelShape shape = b.getCollisionShape(world, pos);
         if (shape.isEmpty()) {
@@ -57,7 +57,7 @@ public final class VecUtils {
         if (b.getBlock() instanceof FireBlock) {//look at bottom of fire when putting it out
             yDiff = 0;
         }
-        return new Vec3d(
+        return new Vector3d(
                 pos.getX() + xDiff,
                 pos.getY() + yDiff,
                 pos.getZ() + zDiff
@@ -74,8 +74,8 @@ public final class VecUtils {
      * @return The assumed center of the position
      * @see #calculateBlockCenter(World, BlockPos)
      */
-    public static Vec3d getBlockPosCenter(BlockPos pos) {
-        return new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+    public static Vector3d getBlockPosCenter(BlockPos pos) {
+        return new Vector3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
     }
 
     /**
