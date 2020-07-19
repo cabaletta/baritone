@@ -19,7 +19,7 @@ package baritone.api.event.events;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 /**
  * @author Brady
@@ -70,7 +70,7 @@ public final class RotationMoveEvent {
         /**
          * Called when the player's motion is updated.
          *
-         * @see Entity#moveRelative(float, Vec3d)
+         * @see Entity#moveRelative(float, Vector3d)
          */
         MOTION_UPDATE,
 

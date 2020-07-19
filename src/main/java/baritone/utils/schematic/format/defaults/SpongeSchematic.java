@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.state.IProperty;
+import net.minecraft.state.Property;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 
@@ -111,7 +111,7 @@ public final class SpongeSchematic extends StaticSchematic {
                 this.blockState = block.getDefaultState();
 
                 this.properties.keySet().stream().sorted(String::compareTo).forEachOrdered(key -> {
-                    IProperty<?> property = block.getStateContainer().getProperty(key);
+                    Property<?> property = block.getStateContainer().getProperty(key);
                     if (property != null) {
                         this.blockState = setPropertyValue(this.blockState, property, this.properties.get(key));
                     }
@@ -146,7 +146,7 @@ public final class SpongeSchematic extends StaticSchematic {
             }
         }
 
-        private static <T extends Comparable<T>> BlockState setPropertyValue(BlockState state, IProperty<T> property, String value) {
+        private static <T extends Comparable<T>> BlockState setPropertyValue(BlockState state, Property<T> property, String value) {
             Optional<T> parsed = property.parseValue(value);
             if (parsed.isPresent()) {
                 return state.with(property, parsed.get());

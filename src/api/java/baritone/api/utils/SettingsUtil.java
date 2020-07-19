@@ -24,7 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.registry.Registry;
 
 import java.awt.*;
@@ -225,8 +225,8 @@ public class SettingsUtil {
                 color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue()
         ),
         VEC3I(
-                Vec3i.class,
-                str -> new Vec3i(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
+                Vector3i.class,
+                str -> new Vector3i(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
                 vec -> vec.getX() + "," + vec.getY() + "," + vec.getZ()
         ),
         BLOCK(

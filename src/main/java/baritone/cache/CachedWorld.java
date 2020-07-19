@@ -25,7 +25,9 @@ import baritone.api.cache.IWorldData;
 import baritone.api.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import java.io.IOException;
@@ -58,9 +60,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     private final LinkedBlockingQueue<Chunk> toPack = new LinkedBlockingQueue<>();
 
-    private final int dimension;
+    private final RegistryKey<World> dimension;
 
-    CachedWorld(Path directory, int dimension) {
+    CachedWorld(Path directory, RegistryKey<World> dimension) {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);

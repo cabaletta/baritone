@@ -23,6 +23,7 @@ import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.argument.IArgConsumer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
@@ -74,40 +75,40 @@ public class Paginator<E> implements Helper {
         }
         boolean hasPrevPage = commandPrefix != null && validPage(page - 1);
         boolean hasNextPage = commandPrefix != null && validPage(page + 1);
-        ITextComponent prevPageComponent = new StringTextComponent("<<");
+        TextComponent prevPageComponent = new StringTextComponent("<<");
         if (hasPrevPage) {
-            prevPageComponent.getStyle()
-                    .setClickEvent(new ClickEvent(
+            prevPageComponent.func_230530_a_(prevPageComponent.getStyle()
+                    .func_240715_a_(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format("%s %d", commandPrefix, page - 1)
                     ))
-                    .setHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
+                    .func_240716_a_(new HoverEvent(
+                            HoverEvent.Action.field_230550_a_,
                             new StringTextComponent("Click to view previous page")
-                    ));
+                    )));
         } else {
-            prevPageComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
+            prevPageComponent.func_230530_a_(prevPageComponent.getStyle().func_240712_a_(TextFormatting.DARK_GRAY));
         }
-        ITextComponent nextPageComponent = new StringTextComponent(">>");
+        TextComponent nextPageComponent = new StringTextComponent(">>");
         if (hasNextPage) {
-            nextPageComponent.getStyle()
-                    .setClickEvent(new ClickEvent(
+            nextPageComponent.func_230530_a_(nextPageComponent.getStyle()
+                    .func_240715_a_(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format("%s %d", commandPrefix, page + 1)
                     ))
-                    .setHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
+                    .func_240716_a_(new HoverEvent(
+                            HoverEvent.Action.field_230550_a_,
                             new StringTextComponent("Click to view next page")
-                    ));
+                    )));
         } else {
-            nextPageComponent.getStyle().setColor(TextFormatting.DARK_GRAY);
+            nextPageComponent.func_230530_a_(nextPageComponent.getStyle().func_240712_a_(TextFormatting.DARK_GRAY));
         }
-        ITextComponent pagerComponent = new StringTextComponent("");
-        pagerComponent.getStyle().setColor(TextFormatting.GRAY);
-        pagerComponent.appendSibling(prevPageComponent);
-        pagerComponent.appendText(" | ");
-        pagerComponent.appendSibling(nextPageComponent);
-        pagerComponent.appendText(String.format(" %d/%d", page, getMaxPage()));
+        TextComponent pagerComponent = new StringTextComponent("");
+        pagerComponent.func_230530_a_(pagerComponent.getStyle().func_240712_a_(TextFormatting.GRAY));
+        pagerComponent.func_230529_a_(prevPageComponent); // appendSibling
+        pagerComponent.func_240702_b_(" | ");             // appendText
+        pagerComponent.func_230529_a_(nextPageComponent);
+        pagerComponent.func_240702_b_(String.format(" %d/%d", page, getMaxPage()));
         logDirect(pagerComponent);
     }
 

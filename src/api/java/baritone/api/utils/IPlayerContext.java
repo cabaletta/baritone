@@ -23,6 +23,8 @@ import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
 
 import java.util.Optional;
@@ -75,12 +77,12 @@ public interface IPlayerContext {
         return feet;
     }
 
-    default Vec3d playerFeetAsVec() {
-        return new Vec3d(player().getPositionVec().x, player().getPositionVec().y, player().getPositionVec().z);
+    default Vector3d playerFeetAsVec() {
+        return new Vector3d(player().getPositionVec().x, player().getPositionVec().y, player().getPositionVec().z);
     }
 
-    default Vec3d playerHead() {
-        return new Vec3d(player().getPositionVec().x, player().getPositionVec().y + player().getEyeHeight(), player().getPositionVec().z);
+    default Vector3d playerHead() {
+        return new Vector3d(player().getPositionVec().x, player().getPositionVec().y + player().getEyeHeight(), player().getPositionVec().z);
     }
 
     default Rotation playerRotations() {

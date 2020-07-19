@@ -35,7 +35,7 @@ import net.minecraft.block.*;
 import net.minecraft.fluid.WaterFluid;
 import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 import java.util.Optional;
 import java.util.Set;
@@ -143,7 +143,7 @@ public class MovementTraverse extends Movement {
                 if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof SlabBlock && down.get(SlabBlock.TYPE) != SlabType.DOUBLE)) {
                     return COST_INF; // can't sneak and backplace against soul sand or half slabs (regardless of whether it's top half or bottom half) =/
                 }
-                if (down.getFluidState() instanceof WaterFluid) {
+                if (down.getFluidState().getFluid() instanceof WaterFluid) {
                     return COST_INF; // this is obviously impossible
                 }
                 WC = WC * (SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST);//since we are sneak backplacing, we are sneaking lol
@@ -245,7 +245,7 @@ public class MovementTraverse extends Movement {
             }
             Block low = BlockStateInterface.get(ctx, src).getBlock();
             Block high = BlockStateInterface.get(ctx, src.up()).getBlock();
-            if (ctx.player().getPositionVec().y > src.y + 0.1D && !ctx.player().onGround && (low == Blocks.VINE || low == Blocks.LADDER || high == Blocks.VINE || high == Blocks.LADDER)) {
+            if (ctx.player().getPositionVec().y > src.y + 0.1D && !ctx.player().func_233570_aj_() && (low == Blocks.VINE || low == Blocks.LADDER || high == Blocks.VINE || high == Blocks.LADDER)) {
                 // hitting W could cause us to climb the ladder instead of going forward
                 // wait until we're on the ground
                 return state;
@@ -317,7 +317,7 @@ public class MovementTraverse extends Movement {
                 // faceX, faceY, faceZ is the middle of the face between from and to
                 BlockPos goalLook = src.down(); // this is the block we were just standing on, and the one we want to place against
 
-                Rotation backToFace = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
+                Rotation backToFace = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), new Vector3d(faceX, faceY, faceZ), ctx.playerRotations());
                 float pitch = backToFace.getPitch();
                 double dist2 = Math.max(Math.abs(ctx.player().getPositionVec().x - faceX), Math.abs(ctx.player().getPositionVec().z - faceZ));
                 if (dist2 < 0.29) { // see issue #208

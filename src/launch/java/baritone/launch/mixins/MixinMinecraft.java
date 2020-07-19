@@ -57,6 +57,7 @@ public class MixinMinecraft {
         BaritoneAPI.getProvider().getPrimaryBaritone();
     }
 
+    /*
     @Inject(
             method = "startTimerHackThread",
             at = @At("HEAD")
@@ -64,6 +65,7 @@ public class MixinMinecraft {
     private void preInit(CallbackInfo ci) {
         BaritoneAutoTest.INSTANCE.onPreInit();
     }
+     */
 
     @Inject(
             method = "runTick",
@@ -131,12 +133,12 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/gui/screen/Screen.passEvents:Z"
+                    target = "net/minecraft/client/gui/screen/Screen.field_230711_n_:Z"
             )
     )
     private boolean passEvents(Screen screen) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.passEvents;
+        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.field_230711_n_;
     }
 
     // TODO

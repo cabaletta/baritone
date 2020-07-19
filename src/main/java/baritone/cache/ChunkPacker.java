@@ -21,9 +21,11 @@ import baritone.api.utils.BlockUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.block.*;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.palette.PalettedContainer;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 
@@ -123,7 +125,7 @@ public final class ChunkPacker {
                 return PathingBlockType.AVOID;
             }
             if (x == 0 || x == 15 || z == 0 || z == 15) {
-                Vec3d flow = state.getFluidState().getFlow(chunk.getWorld(), new BlockPos(x + chunk.getPos().x << 4, y, z + chunk.getPos().z << 4));
+                Vector3d flow = state.getFluidState().getFlow(chunk.getWorld(), new BlockPos(x + chunk.getPos().x << 4, y, z + chunk.getPos().z << 4));
                 if (flow.x != 0.0 || flow.z != 0.0) {
                     return PathingBlockType.WATER;
                 }
@@ -146,7 +148,7 @@ public final class ChunkPacker {
         return PathingBlockType.SOLID;
     }
 
-    public static BlockState pathingTypeToBlock(PathingBlockType type, int dimension) {
+    public static BlockState pathingTypeToBlock(PathingBlockType type, RegistryKey<World> dimension) {
         switch (type) {
             case AIR:
                 return Blocks.AIR.getDefaultState();
@@ -156,14 +158,14 @@ public final class ChunkPacker {
                 return Blocks.LAVA.getDefaultState();
             case SOLID:
                 // Dimension solid types
-                switch (dimension) {
-                    case -1:
-                        return Blocks.NETHERRACK.getDefaultState();
-                    case 0:
-                    default: // The fallback solid type
-                        return Blocks.STONE.getDefaultState();
-                    case 1:
-                        return Blocks.END_STONE.getDefaultState();
+                if (dimension == World.field_234918_g_) {
+                    return Blocks.STONE.getDefaultState();
+                }
+                if (dimension == World.field_234919_h_) {
+                    return Blocks.NETHERRACK.getDefaultState();
+                }
+                if (dimension == World.field_234920_i_) {
+                    return Blocks.END_STONE.getDefaultState();
                 }
             default:
                 return null;

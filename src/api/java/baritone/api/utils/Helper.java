@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.util.Arrays;
@@ -50,15 +51,15 @@ public interface Helper {
         // Inner text component
         final Calendar now = Calendar.getInstance();
         final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) <= 3;
-        ITextComponent baritone = new StringTextComponent(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
-        baritone.getStyle().setColor(TextFormatting.LIGHT_PURPLE);
+        TextComponent baritone = new StringTextComponent(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
+        baritone.func_230530_a_(baritone.getStyle().func_240712_a_(TextFormatting.LIGHT_PURPLE));
 
         // Outer brackets
-        ITextComponent prefix = new StringTextComponent("");
-        prefix.getStyle().setColor(TextFormatting.DARK_PURPLE);
-        prefix.appendText("[");
-        prefix.appendSibling(baritone);
-        prefix.appendText("]");
+        TextComponent prefix = new StringTextComponent("");
+        prefix.func_230530_a_(baritone.getStyle().func_240712_a_(TextFormatting.DARK_PURPLE));
+        prefix.func_240702_b_("[");
+        prefix.func_230529_a_(baritone);
+        prefix.func_240702_b_("]");
 
         return prefix;
     }
@@ -83,10 +84,10 @@ public interface Helper {
      * @param components The components to send
      */
     default void logDirect(ITextComponent... components) {
-        ITextComponent component = new StringTextComponent("");
-        component.appendSibling(getPrefix());
-        component.appendSibling(new StringTextComponent(" "));
-        Arrays.asList(components).forEach(component::appendSibling);
+        TextComponent component = new StringTextComponent("");
+        component.func_230529_a_(getPrefix());
+        component.func_230529_a_(new StringTextComponent(" "));
+        Arrays.asList(components).forEach(component::func_230529_a_);
         mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
     }
 
@@ -99,8 +100,8 @@ public interface Helper {
      */
     default void logDirect(String message, TextFormatting color) {
         Stream.of(message.split("\n")).forEach(line -> {
-            ITextComponent component = new StringTextComponent(line.replace("\t", "    "));
-            component.getStyle().setColor(color);
+            TextComponent component = new StringTextComponent(line.replace("\t", "    "));
+            component.func_230530_a_(component.getStyle().func_240712_a_(color));
             logDirect(component);
         });
     }

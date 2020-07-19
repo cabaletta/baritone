@@ -27,12 +27,13 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.Matrix4f;
-import net.minecraft.client.renderer.Vector4f;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector4f;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 
@@ -54,23 +55,24 @@ public class GuiClick extends Screen implements Helper {
     }
 
     @Override
-    public boolean isPauseScreen() {
+    public boolean func_231177_au__() {
         return false;
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
+    public void func_230430_a_(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         double mx = mc.mouseHelper.getMouseX();
         double my = mc.mouseHelper.getMouseY();
 
         my = mc.getMainWindow().getHeight() - my;
         my *= mc.getMainWindow().getFramebufferHeight() / (double) mc.getMainWindow().getHeight();
         mx *= mc.getMainWindow().getFramebufferWidth() / (double) mc.getMainWindow().getWidth();
-        Vec3d near = toWorld(mx, my, 0);
-        Vec3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
+        Vector3d near = toWorld(mx, my, 0);
+        Vector3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
+
         if (near != null && far != null) {
             ///
-            Vec3d viewerPos = new Vec3d(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
+            Vector3d viewerPos = new Vector3d(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
             ClientPlayerEntity player = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().player();
             RayTraceResult result = player.world.rayTraceBlocks(new RayTraceContext(near.add(viewerPos), far.add(viewerPos), RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, player));
             if (result != null && result.getType() == RayTraceResult.Type.BLOCK) {
@@ -80,18 +82,18 @@ public class GuiClick extends Screen implements Helper {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
+    public boolean func_231048_c_(double mouseX, double mouseY, int mouseButton) {
         if (mouseButton == 0) {
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
-                ITextComponent component = new StringTextComponent("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
-                component.getStyle()
-                        .setColor(TextFormatting.WHITE)
-                        .setClickEvent(new ClickEvent(
+                TextComponent component = new StringTextComponent("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
+                component.func_230530_a_(component.getStyle()
+                        .func_240712_a_(TextFormatting.WHITE)
+                        .func_240715_a_(new ClickEvent(
                                 ClickEvent.Action.RUN_COMMAND,
                                 FORCE_COMMAND_PREFIX + "help sel"
-                        ));
+                        )));
                 Helper.HELPER.logDirect(component);
                 clickStart = null;
             } else {
@@ -101,13 +103,13 @@ public class GuiClick extends Screen implements Helper {
             BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
         }
         clickStart = null;
-        return super.mouseReleased(mouseX, mouseY, mouseButton);
+        return super.func_231048_c_(mouseX, mouseY, mouseButton);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    public boolean func_231044_a_(double mouseX, double mouseY, int mouseButton) {
         clickStart = currentMouseOver;
-        return super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.func_231044_a_(mouseX, mouseY, mouseButton);
     }
 
     public void onRender(MatrixStack modelViewStack, Matrix4f projectionMatrix) {
@@ -139,7 +141,7 @@ public class GuiClick extends Screen implements Helper {
         }
     }
 
-    private Vec3d toWorld(double x, double y, double z) {
+    private Vector3d toWorld(double x, double y, double z) {
         if (this.projectionViewMatrix == null) {
             return null;
         }
@@ -156,6 +158,6 @@ public class GuiClick extends Screen implements Helper {
         }
 
         pos.perspectiveDivide();
-        return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+        return new Vector3d(pos.getX(), pos.getY(), pos.getZ());
     }
 }

@@ -24,11 +24,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.*;
 import net.minecraft.resources.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.storage.loot.*;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -36,7 +36,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class BlockOptionalMeta {
 
@@ -133,11 +132,10 @@ public final class BlockOptionalMeta {
 
     public static LootTableManager getManager() {
         if (manager == null) {
-            ResourcePackList rpl = new ResourcePackList<>(ResourcePackInfo::new);
-            rpl.addPackFinder(new ServerPackFinder());
+            ResourcePackList rpl = new ResourcePackList<>(ResourcePackInfo::new, new ServerPackFinder());
             rpl.reloadPacksFromFinders();
             IResourcePack thePack = ((ResourcePackInfo) rpl.getAllPacks().iterator().next()).getResourcePack();
-            IReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(ResourcePackType.SERVER_DATA, null);
+            IReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(ResourcePackType.SERVER_DATA);
             manager = new LootTableManager(predicate);
             resourceManager.addReloadListener(manager);
             try {

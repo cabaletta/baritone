@@ -20,7 +20,7 @@ package baritone.api.selection;
 import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 
 /**
  * A selection is an immutable object representing the current selection. The selection is commonly used for certain
@@ -51,7 +51,7 @@ public interface ISelection {
     /**
      * @return The size of this ISelection.
      */
-    Vec3i size();
+    Vector3i size();
 
     /**
      * @return An {@link AxisAlignedBB} encompassing all blocks in this selection.

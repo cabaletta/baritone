@@ -36,7 +36,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 
 import java.util.Optional;
@@ -125,7 +125,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (isFlowing(x, y, z, state, bsi)) {
             return false; // Don't walk through flowing liquids
         }
-        IFluidState fluidState = state.getFluidState();
+        FluidState fluidState = state.getFluidState();
         if (fluidState.getFluid() instanceof WaterFluid) {
             if (Baritone.settings().assumeWalkOnWater.value) {
                 return false;
@@ -493,13 +493,13 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean possiblyFlowing(BlockState state) {
-        IFluidState fluidState = state.getFluidState();
+        FluidState fluidState = state.getFluidState();
         return fluidState.getFluid() instanceof FlowingFluid
                 && fluidState.getFluid().getLevel(fluidState) != 8;
     }
 
     static boolean isFlowing(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
-        IFluidState fluidState = state.getFluidState();
+        FluidState fluidState = state.getFluidState();
         if (!(fluidState.getFluid() instanceof FlowingFluid)) {
             return false;
         }
@@ -542,7 +542,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 double faceX = (placeAt.getX() + against1.getX() + 1.0D) * 0.5D;
                 double faceY = (placeAt.getY() + against1.getY() + 0.5D) * 0.5D;
                 double faceZ = (placeAt.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                Rotation place = RotationUtils.calcRotationFromVec3d(wouldSneak ? RayTraceUtils.inferSneakingEyePosition(ctx.player()) : ctx.playerHead(), new Vec3d(faceX, faceY, faceZ), ctx.playerRotations());
+                Rotation place = RotationUtils.calcRotationFromVec3d(wouldSneak ? RayTraceUtils.inferSneakingEyePosition(ctx.player()) : ctx.playerHead(), new Vector3d(faceX, faceY, faceZ), ctx.playerRotations());
                 RayTraceResult res = RayTraceUtils.rayTraceTowards(ctx.player(), place, ctx.playerController().getBlockReachDistance(), wouldSneak);
                 if (res != null && res.getType() == RayTraceResult.Type.BLOCK && ((BlockRayTraceResult) res).getPos().equals(against1) && ((BlockRayTraceResult) res).getPos().offset(((BlockRayTraceResult) res).getFace()).equals(placeAt)) {
                     state.setTarget(new MovementState.MovementTarget(place, true));

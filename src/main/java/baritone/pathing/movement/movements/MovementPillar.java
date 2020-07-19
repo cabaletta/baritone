@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 import java.util.Set;
 
@@ -171,7 +171,7 @@ public class MovementPillar extends Movement {
         if (MovementHelper.isWater(fromDown) && MovementHelper.isWater(ctx, dest)) {
             // stay centered while swimming up a water column
             state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations()), false));
-            Vec3d destCenter = VecUtils.getBlockPosCenter(dest);
+            Vector3d destCenter = VecUtils.getBlockPosCenter(dest);
             if (Math.abs(ctx.player().getPositionVec().x - destCenter.x) > 0.2 || Math.abs(ctx.player().getPositionVec().z - destCenter.z) > 0.2) {
                 state.setInput(Input.MOVE_FORWARD, true);
             }

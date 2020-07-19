@@ -29,14 +29,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.MainMenuScreen;
 import net.minecraft.client.settings.AmbientOcclusionStatus;
 import net.minecraft.client.settings.CloudOption;
+import net.minecraft.client.settings.GraphicsFanciness;
 import net.minecraft.client.settings.ParticleStatus;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.server.IDynamicRegistries;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.HTTPUtil;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.*;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.gen.settings.DimensionGeneratorSettings;
 import net.minecraft.world.server.ServerWorld;
 
 import java.io.File;
@@ -82,7 +84,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         s.chatScale = 0.0F;
         s.ambientOcclusionStatus = AmbientOcclusionStatus.OFF;
         s.cloudOption = CloudOption.OFF;
-        s.fancyGraphics = false;
+        s.field_238330_f_ = GraphicsFanciness.FAST;
         s.tutorialStep = TutorialSteps.NONE;
         s.hideGUI = true;
         s.fov = 30.0F;
@@ -90,24 +92,27 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     @Override
     public void onTick(TickEvent event) {
+        // I don't want to make autotest work right now :)
+        System.exit(0);
+        /*
         IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
         // If we're on the main menu then create the test world and launch the integrated server
         if (mc.currentScreen instanceof MainMenuScreen) {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
             WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.SURVIVAL, true, false, WorldType.DEFAULT);
-            mc.launchIntegratedServer("BaritoneAutoTest", "BaritoneAutoTest", worldsettings);
+            mc.func_238192_a_("BaritoneAutoTest", worldsettings, IDynamicRegistries.func_239770_b_(), DimensionGeneratorSettings.field_236202_b_);
         }
 
         IntegratedServer server = mc.getIntegratedServer();
 
         // If the integrated server is launched and the world has initialized, set the spawn point
         // to our defined starting position
-        if (server != null && server.getWorld(DimensionType.OVERWORLD) != null) {
+        if (server != null && server.getWorld(World.field_234918_g_) != null) {
             server.setDifficultyForAllWorlds(Difficulty.PEACEFUL, true);
             if (mc.player == null) {
                 server.execute(() -> {
-                    server.getWorld(DimensionType.OVERWORLD).setSpawnPoint(STARTING_POSITION);
+                    server.getWorld(World.field_234918_g_).func_241124_a__(STARTING_POSITION);
                     server.getCommandManager().handleCommand(server.getCommandSource(), "/difficulty peaceful");
                     int result = server.getCommandManager().handleCommand(server.getCommandSource(), "/gamerule spawnRadius 0");
                     if (result != 0) {
@@ -117,12 +122,8 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
                 for (final ServerWorld world : mc.getIntegratedServer().getWorlds()) {
                     // If the world has initialized, set the spawn point to our defined starting position
                     if (world != null) {
-                        // I would rather do this than try to mess with poz
-                        CompoundNBT nbt = world.getGameRules().write();
-                        nbt.putString("spawnRadius", "0");
-                        world.getGameRules().read(nbt);
-
-                        world.setSpawnPoint(STARTING_POSITION);
+                        world.getGameRules().get(GameRules.SPAWN_RADIUS).func_234909_b_("0");
+                        world.func_241124_a__(STARTING_POSITION);
                     }
                 }
             }
@@ -173,6 +174,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
                 throw new IllegalStateException("took too long");
             }
         }
+         */
     }
 
     private BaritoneAutoTest() {

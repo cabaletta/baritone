@@ -41,8 +41,7 @@ import baritone.utils.IRenderer;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 
 import java.awt.*;
 import java.util.List;
@@ -84,7 +83,7 @@ public class SelCommand extends Command {
             if (action == Action.POS2 && pos1 == null) {
                 throw new CommandInvalidStateException("Set pos1 first before using pos2");
             }
-            BetterBlockPos playerPos = mc.getRenderViewEntity() != null ? BetterBlockPos.from(new BlockPos(mc.getRenderViewEntity())) : ctx.playerFeet();
+            BetterBlockPos playerPos = mc.getRenderViewEntity() != null ? BetterBlockPos.from(mc.getRenderViewEntity().func_233580_cy_()) : ctx.playerFeet();
             BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos) : playerPos;
             args.requireMax(0);
             if (action == Action.POS1) {
@@ -145,7 +144,7 @@ public class SelCommand extends Command {
                 );
             }
             for (ISelection selection : selections) {
-                Vec3i size = selection.size();
+                Vector3i size = selection.size();
                 BetterBlockPos min = selection.min();
                 ISchematic schematic = new FillSchematic(size.getX(), size.getY(), size.getZ(), type);
                 if (action == Action.WALLS) {

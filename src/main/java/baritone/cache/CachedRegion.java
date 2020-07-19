@@ -21,7 +21,9 @@ import baritone.Baritone;
 import baritone.api.cache.ICachedRegion;
 import baritone.api.utils.BlockUtils;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -60,14 +62,14 @@ public final class CachedRegion implements ICachedRegion {
      */
     private final int z;
 
-    private final int dimension;
+    private final RegistryKey<World> dimension;
 
     /**
      * Has this region been modified since its most recent load or save
      */
     private boolean hasUnsavedChanges;
 
-    CachedRegion(int x, int z, int dimension) {
+    CachedRegion(int x, int z, RegistryKey<World> dimension) {
         this.x = x;
         this.z = z;
         this.hasUnsavedChanges = false;

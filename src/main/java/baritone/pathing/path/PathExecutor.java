@@ -35,8 +35,8 @@ import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 
 import java.util.*;
 
@@ -274,7 +274,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!current.isPresent()) {
             return false;
         }
-        if (!ctx.player().onGround) {
+        if (!ctx.player().func_233570_aj_()) {
             return false;
         }
         if (!MovementHelper.canWalkOn(ctx, ctx.playerFeet().down())) {
@@ -323,7 +323,7 @@ public class PathExecutor implements IPathExecutor, Helper {
      * @return Whether or not it was possible to snap to the current player feet
      */
     public boolean snipsnapifpossible() {
-        if (!ctx.player().onGround && ctx.world().getFluidState(ctx.playerFeet()).isEmpty()) {
+        if (!ctx.player().func_233570_aj_() && ctx.world().getFluidState(ctx.playerFeet()).isEmpty()) {
             // if we're falling in the air, and not in water, don't splice
             return false;
         } else {
@@ -424,7 +424,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
         }
         if (current instanceof MovementFall) {
-            Tuple<Vec3d, BlockPos> data = overrideFall((MovementFall) current);
+            Tuple<Vector3d, BlockPos> data = overrideFall((MovementFall) current);
             if (data != null) {
                 BetterBlockPos fallDest = new BetterBlockPos(data.getB());
                 if (!path.positions().contains(fallDest)) {
@@ -445,15 +445,15 @@ public class PathExecutor implements IPathExecutor, Helper {
         return false;
     }
 
-    private Tuple<Vec3d, BlockPos> overrideFall(MovementFall movement) {
-        Vec3i dir = movement.getDirection();
+    private Tuple<Vector3d, BlockPos> overrideFall(MovementFall movement) {
+        Vector3i dir = movement.getDirection();
         if (dir.getY() < -3) {
             return null;
         }
         if (!movement.toBreakCached.isEmpty()) {
             return null; // it's breaking
         }
-        Vec3i flatDir = new Vec3i(dir.getX(), 0, dir.getZ());
+        Vector3i flatDir = new Vector3i(dir.getX(), 0, dir.getZ());
         int i;
         outer:
         for (i = pathPosition + 1; i < path.length() - 1 && i < pathPosition + 3; i++) {
@@ -480,7 +480,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         double len = i - pathPosition - 0.4;
         return new Tuple<>(
-                new Vec3d(flatDir.getX() * len + movement.getDest().x + 0.5, movement.getDest().y, flatDir.getZ() * len + movement.getDest().z + 0.5),
+                new Vector3d(flatDir.getX() * len + movement.getDest().x + 0.5, movement.getDest().y, flatDir.getZ() * len + movement.getDest().z + 0.5),
                 movement.getDest().add(flatDir.getX() * (i - pathPosition), 0, flatDir.getZ() * (i - pathPosition)));
     }
 
