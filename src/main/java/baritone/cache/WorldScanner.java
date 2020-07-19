@@ -162,7 +162,7 @@ public enum WorldScanner implements IWorldScanner {
             final int imax = 1 << 12;
             for (int i = 0; i < imax; i++) {
                 BlockState state = bsc.getAtPalette(storage[i]);
-                if (filter.has(state)) {
+                if (state != null && filter.has(state)) {
                     int y = yReal | ((i >> 8) & 15);
                     if (result.size() >= max) {
                         if (Math.abs(y - playerY) < yLevelThreshold) {
