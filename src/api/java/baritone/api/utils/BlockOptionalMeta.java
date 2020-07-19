@@ -132,9 +132,9 @@ public final class BlockOptionalMeta {
 
     public static LootTableManager getManager() {
         if (manager == null) {
-            ResourcePackList rpl = new ResourcePackList<>(ResourcePackInfo::new, new ServerPackFinder());
+            ResourcePackList<?> rpl = new ResourcePackList<>(ResourcePackInfo::new, new ServerPackFinder());
             rpl.reloadPacksFromFinders();
-            IResourcePack thePack = ((ResourcePackInfo) rpl.getAllPacks().iterator().next()).getResourcePack();
+            IResourcePack thePack = rpl.getAllPacks().iterator().next().getResourcePack();
             IReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(ResourcePackType.SERVER_DATA);
             manager = new LootTableManager(predicate);
             resourceManager.addReloadListener(manager);
