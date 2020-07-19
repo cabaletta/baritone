@@ -57,15 +57,14 @@ public class MixinMinecraft {
         BaritoneAPI.getProvider().getPrimaryBaritone();
     }
 
-    /*
+
     @Inject(
-            method = "startTimerHackThread",
-            at = @At("HEAD")
+            method = "<init>",
+            at = @At("RETURN")
     )
     private void preInit(CallbackInfo ci) {
         BaritoneAutoTest.INSTANCE.onPreInit();
     }
-     */
 
     @Inject(
             method = "runTick",

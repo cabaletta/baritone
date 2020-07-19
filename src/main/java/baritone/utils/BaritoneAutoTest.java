@@ -32,10 +32,10 @@ import net.minecraft.client.settings.CloudOption;
 import net.minecraft.client.settings.GraphicsFanciness;
 import net.minecraft.client.settings.ParticleStatus;
 import net.minecraft.client.tutorial.TutorialSteps;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.server.IDynamicRegistries;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.HTTPUtil;
+import net.minecraft.util.datafix.codec.DatapackCodec;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.*;
 import net.minecraft.world.gen.settings.DimensionGeneratorSettings;
@@ -44,6 +44,7 @@ import net.minecraft.world.server.ServerWorld;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.OptionalLong;
 
 /**
  * Responsible for automatically testing Baritone's pathing algorithm by automatically creating a world with a specific
@@ -92,16 +93,13 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        // I don't want to make autotest work right now :)
-        System.exit(0);
-        /*
         IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
         // If we're on the main menu then create the test world and launch the integrated server
         if (mc.currentScreen instanceof MainMenuScreen) {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
-            WorldSettings worldsettings = new WorldSettings(TEST_SEED, GameType.SURVIVAL, true, false, WorldType.DEFAULT);
-            mc.func_238192_a_("BaritoneAutoTest", worldsettings, IDynamicRegistries.func_239770_b_(), DimensionGeneratorSettings.field_236202_b_);
+            WorldSettings worldsettings = new WorldSettings("BaritoneAutoTest", GameType.SURVIVAL, false, Difficulty.NORMAL, true, new GameRules(), DatapackCodec.field_234880_a_);
+            mc.func_238192_a_("BaritoneAutoTest", worldsettings, IDynamicRegistries.func_239770_b_(), DimensionGeneratorSettings.field_236202_b_.func_236220_a_(false, OptionalLong.of(TEST_SEED)));
         }
 
         IntegratedServer server = mc.getIntegratedServer();
@@ -174,7 +172,6 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
                 throw new IllegalStateException("took too long");
             }
         }
-         */
     }
 
     private BaritoneAutoTest() {
