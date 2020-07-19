@@ -78,33 +78,33 @@ public class Paginator<E> implements Helper {
         TextComponent prevPageComponent = new StringTextComponent("<<");
         if (hasPrevPage) {
             prevPageComponent.func_230530_a_(prevPageComponent.getStyle()
-                    .func_240715_a_(new ClickEvent(
+                    .setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format("%s %d", commandPrefix, page - 1)
                     ))
-                    .func_240716_a_(new HoverEvent(
-                            HoverEvent.Action.field_230550_a_,
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
                             new StringTextComponent("Click to view previous page")
                     )));
         } else {
-            prevPageComponent.func_230530_a_(prevPageComponent.getStyle().func_240712_a_(TextFormatting.DARK_GRAY));
+            prevPageComponent.func_230530_a_(prevPageComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
         }
         TextComponent nextPageComponent = new StringTextComponent(">>");
         if (hasNextPage) {
             nextPageComponent.func_230530_a_(nextPageComponent.getStyle()
-                    .func_240715_a_(new ClickEvent(
+                    .setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format("%s %d", commandPrefix, page + 1)
                     ))
-                    .func_240716_a_(new HoverEvent(
-                            HoverEvent.Action.field_230550_a_,
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
                             new StringTextComponent("Click to view next page")
                     )));
         } else {
-            nextPageComponent.func_230530_a_(nextPageComponent.getStyle().func_240712_a_(TextFormatting.DARK_GRAY));
+            nextPageComponent.func_230530_a_(nextPageComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
         }
         TextComponent pagerComponent = new StringTextComponent("");
-        pagerComponent.func_230530_a_(pagerComponent.getStyle().func_240712_a_(TextFormatting.GRAY));
+        pagerComponent.func_230530_a_(pagerComponent.getStyle().setFormatting(TextFormatting.GRAY));
         pagerComponent.func_230529_a_(prevPageComponent); // appendSibling
         pagerComponent.func_240702_b_(" | ");             // appendText
         pagerComponent.func_230529_a_(nextPageComponent);

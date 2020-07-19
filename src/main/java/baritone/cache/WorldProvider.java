@@ -53,6 +53,8 @@ public class WorldProvider implements IWorldProvider, Helper {
 
     /**
      * Called when a new world is initialized to discover the
+     *
+     * @param world The world's Registry Data
      */
     public final void initWorld(RegistryKey<World> world) {
         File directory;

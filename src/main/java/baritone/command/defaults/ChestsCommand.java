@@ -27,8 +27,6 @@ import baritone.api.command.argument.IArgConsumer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponent;
 
 import java.util.Arrays;
 import java.util.List;
