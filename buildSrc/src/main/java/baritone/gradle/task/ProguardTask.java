@@ -109,7 +109,7 @@ public class ProguardTask extends BaritoneGradleTask {
         }
     }
 
-    private String getJavaBinPathForProguard() {
+    private String getJavaBinPathForProguard() throws Exception {
         String path;
         try {
             path = findJavaPathByGradleConfig();
