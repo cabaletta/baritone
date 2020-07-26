@@ -9,5 +9,5 @@ build:
     - ./gradlew build
   artifacts:
     paths:
-      - build/libs/*.jar
-    expire_in: 1 month
+      - dist/*
+    expire_in: 1 week
