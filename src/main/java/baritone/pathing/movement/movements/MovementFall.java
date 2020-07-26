@@ -97,11 +97,11 @@ public class MovementFall extends Movement {
         Block destBlock = destState.getBlock();
         boolean isWater = destState.getFluidState().getFluid() instanceof WaterFluid;
         if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
-            if (!PlayerInventory.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().func_234922_V_() == DimensionType.field_236000_d_) {
+            if (!PlayerInventory.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().func_234922_V_() == DimensionType.THE_NETHER) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (ctx.player().getPositionVec().y - dest.getY() < ctx.playerController().getBlockReachDistance() && !ctx.player().func_233570_aj_()) {
+            if (ctx.player().getPositionVec().y - dest.getY() < ctx.playerController().getBlockReachDistance() && !ctx.player().isOnGround()) {
                 ctx.player().inventory.currentItem = ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER);
 
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
@@ -136,7 +136,7 @@ public class MovementFall extends Movement {
         }
         Vector3d destCenter = VecUtils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
         if (Math.abs(ctx.player().getPositionVec().x + ctx.player().getMotion().x - destCenter.x) > 0.1 || Math.abs(ctx.player().getPositionVec().z + ctx.player().getMotion().z - destCenter.z) > 0.1) {
-            if (!ctx.player().func_233570_aj_() && Math.abs(ctx.player().getMotion().y) > 0.4) {
+            if (!ctx.player().isOnGround() && Math.abs(ctx.player().getMotion().y) > 0.4) {
                 state.setInput(Input.SNEAK, true);
             }
             state.setInput(Input.MOVE_FORWARD, true);
@@ -148,7 +148,7 @@ public class MovementFall extends Movement {
             double dist = Math.abs(avoid.getX() * (destCenter.x - avoid.getX() / 2.0 - ctx.player().getPositionVec().x)) + Math.abs(avoid.getZ() * (destCenter.z - avoid.getZ() / 2.0 - ctx.player().getPositionVec().z));
             if (dist < 0.6) {
                 state.setInput(Input.MOVE_FORWARD, true);
-            } else if (!ctx.player().func_233570_aj_()) {
+            } else if (!ctx.player().isOnGround()) {
                 state.setInput(Input.SNEAK, false);
             }
         }

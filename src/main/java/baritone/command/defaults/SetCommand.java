@@ -82,17 +82,17 @@ public class SetCommand extends Command {
                                 " (%s)",
                                 settingTypeToString(setting)
                         ));
-                        typeComponent.func_230530_a_(typeComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
+                        typeComponent.setStyle(typeComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
                         TextComponent hoverComponent = new StringTextComponent("");
-                        hoverComponent.func_230530_a_(hoverComponent.getStyle().setFormatting(TextFormatting.GRAY));
-                        hoverComponent.func_240702_b_(setting.getName());
-                        hoverComponent.func_240702_b_(String.format("\nType: %s", settingTypeToString(setting)));
-                        hoverComponent.func_240702_b_(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                        hoverComponent.setStyle(hoverComponent.getStyle().setFormatting(TextFormatting.GRAY));
+                        hoverComponent.appendString(setting.getName());
+                        hoverComponent.appendString(String.format("\nType: %s", settingTypeToString(setting)));
+                        hoverComponent.appendString(String.format("\n\nValue:\n%s", settingValueToString(setting)));
                         String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
                         TextComponent component = new StringTextComponent(setting.getName());
-                        component.func_230530_a_(component.getStyle().setFormatting(TextFormatting.GRAY));
-                        component.func_230529_a_(typeComponent);
-                        component.func_230530_a_(component.getStyle()
+                        component.setStyle(component.getStyle().setFormatting(TextFormatting.GRAY));
+                        component.append(typeComponent);
+                        component.setStyle(component.getStyle()
                                 .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
                                 .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion)));
                         return component;
@@ -164,7 +164,7 @@ public class SetCommand extends Command {
                 ));
             }
             TextComponent oldValueComponent = new StringTextComponent(String.format("Old value: %s", oldValue));
-            oldValueComponent.func_230530_a_(oldValueComponent.getStyle()
+            oldValueComponent.setStyle(oldValueComponent.getStyle()
                     .setFormatting(TextFormatting.GRAY)
                     .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,

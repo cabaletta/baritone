@@ -29,7 +29,7 @@ public class PlayerMovementInput extends MovementInput {
     }
 
     @Override
-    public void func_225607_a_(boolean p_225607_1_) {
+    public void tickMovement(boolean p_225607_1_) {
         this.moveStrafe = 0.0F;
         this.moveForward = 0.0F;
 

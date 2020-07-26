@@ -77,7 +77,7 @@ public class Paginator<E> implements Helper {
         boolean hasNextPage = commandPrefix != null && validPage(page + 1);
         TextComponent prevPageComponent = new StringTextComponent("<<");
         if (hasPrevPage) {
-            prevPageComponent.func_230530_a_(prevPageComponent.getStyle()
+            prevPageComponent.setStyle(prevPageComponent.getStyle()
                     .setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format("%s %d", commandPrefix, page - 1)
@@ -87,11 +87,11 @@ public class Paginator<E> implements Helper {
                             new StringTextComponent("Click to view previous page")
                     )));
         } else {
-            prevPageComponent.func_230530_a_(prevPageComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
+            prevPageComponent.setStyle(prevPageComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
         }
         TextComponent nextPageComponent = new StringTextComponent(">>");
         if (hasNextPage) {
-            nextPageComponent.func_230530_a_(nextPageComponent.getStyle()
+            nextPageComponent.setStyle(nextPageComponent.getStyle()
                     .setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format("%s %d", commandPrefix, page + 1)
@@ -101,14 +101,14 @@ public class Paginator<E> implements Helper {
                             new StringTextComponent("Click to view next page")
                     )));
         } else {
-            nextPageComponent.func_230530_a_(nextPageComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
+            nextPageComponent.setStyle(nextPageComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
         }
         TextComponent pagerComponent = new StringTextComponent("");
-        pagerComponent.func_230530_a_(pagerComponent.getStyle().setFormatting(TextFormatting.GRAY));
-        pagerComponent.func_230529_a_(prevPageComponent); // appendSibling
-        pagerComponent.func_240702_b_(" | ");             // appendText
-        pagerComponent.func_230529_a_(nextPageComponent);
-        pagerComponent.func_240702_b_(String.format(" %d/%d", page, getMaxPage()));
+        pagerComponent.setStyle(pagerComponent.getStyle().setFormatting(TextFormatting.GRAY));
+        pagerComponent.append(prevPageComponent);
+        pagerComponent.appendString(" | ");
+        pagerComponent.append(nextPageComponent);
+        pagerComponent.appendString(String.format(" %d/%d", page, getMaxPage()));
         logDirect(pagerComponent);
     }
 

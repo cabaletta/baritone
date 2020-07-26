@@ -61,16 +61,16 @@ public class WaypointsCommand extends Command {
         BiFunction<IWaypoint, Action, ITextComponent> toComponent = (waypoint, _action) -> {
             TextComponent component = new StringTextComponent("");
             TextComponent tagComponent = new StringTextComponent(waypoint.getTag().name() + " ");
-            tagComponent.func_230530_a_(tagComponent.getStyle().setFormatting(TextFormatting.GRAY));
+            tagComponent.setStyle(tagComponent.getStyle().setFormatting(TextFormatting.GRAY));
             String name = waypoint.getName();
             TextComponent nameComponent = new StringTextComponent(!name.isEmpty() ? name : "<empty>");
-            nameComponent.func_230530_a_(nameComponent.getStyle().setFormatting(!name.isEmpty() ? TextFormatting.GRAY : TextFormatting.DARK_GRAY));
+            nameComponent.setStyle(nameComponent.getStyle().setFormatting(!name.isEmpty() ? TextFormatting.GRAY : TextFormatting.DARK_GRAY));
             TextComponent timestamp = new StringTextComponent(" @ " + new Date(waypoint.getCreationTimestamp()));
-            timestamp.func_230530_a_(timestamp.getStyle().setFormatting(TextFormatting.DARK_GRAY));
-            component.func_230529_a_(tagComponent);
-            component.func_230529_a_(nameComponent);
-            component.func_230529_a_(timestamp);
-            component.func_230530_a_(component.getStyle()
+            timestamp.setStyle(timestamp.getStyle().setFormatting(TextFormatting.DARK_GRAY));
+            component.append(tagComponent);
+            component.append(nameComponent);
+            component.append(timestamp);
+            component.setStyle(component.getStyle()
                     .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
                             new StringTextComponent("Click to select")
@@ -138,8 +138,8 @@ public class WaypointsCommand extends Command {
             IWaypoint waypoint = new Waypoint(name, tag, pos);
             ForWaypoints.waypoints(this.baritone).addWaypoint(waypoint);
             TextComponent component = new StringTextComponent("Waypoint added: ");
-            component.func_230530_a_(component.getStyle().setFormatting(TextFormatting.GRAY));
-            component.func_230529_a_(toComponent.apply(waypoint, Action.INFO));
+            component.setStyle(component.getStyle().setFormatting(TextFormatting.GRAY));
+            component.append(toComponent.apply(waypoint, Action.INFO));
             logDirect(component);
         } else if (action == Action.CLEAR) {
             args.requireMax(1);
@@ -196,7 +196,7 @@ public class WaypointsCommand extends Command {
                     logDirect(transform.apply(waypoint));
                     logDirect(String.format("Position: %s", waypoint.getLocation()));
                     TextComponent deleteComponent = new StringTextComponent("Click to delete this waypoint");
-                    deleteComponent.func_230530_a_(deleteComponent.getStyle().setClickEvent(new ClickEvent(
+                    deleteComponent.setStyle(deleteComponent.getStyle().setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
                                     "%s%s delete %s @ %d",
@@ -207,7 +207,7 @@ public class WaypointsCommand extends Command {
                             )
                     )));
                     TextComponent goalComponent = new StringTextComponent("Click to set goal to this waypoint");
-                    goalComponent.func_230530_a_(goalComponent.getStyle().setClickEvent(new ClickEvent(
+                    goalComponent.setStyle(goalComponent.getStyle().setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
                                     "%s%s goal %s @ %d",
@@ -218,7 +218,7 @@ public class WaypointsCommand extends Command {
                             )
                     )));
                     TextComponent backComponent = new StringTextComponent("Click to return to the waypoints list");
-                    backComponent.func_230530_a_(backComponent.getStyle().setClickEvent(new ClickEvent(
+                    backComponent.setStyle(backComponent.getStyle().setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
                                     "%s%s list",

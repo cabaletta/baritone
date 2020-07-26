@@ -99,7 +99,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
             WorldSettings worldsettings = new WorldSettings("BaritoneAutoTest", GameType.SURVIVAL, false, Difficulty.NORMAL, true, new GameRules(), DatapackCodec.field_234880_a_);
-            mc.func_238192_a_("BaritoneAutoTest", worldsettings, IDynamicRegistries.func_239770_b_(), DimensionGeneratorSettings.field_236202_b_.func_236220_a_(false, OptionalLong.of(TEST_SEED)));
+            mc.func_238192_a_("BaritoneAutoTest", worldsettings, IDynamicRegistries.func_239770_b_(), DimensionGeneratorSettings.field_236202_b_.create(false, OptionalLong.of(TEST_SEED)));
         }
 
         IntegratedServer server = mc.getIntegratedServer();

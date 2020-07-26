@@ -52,7 +52,7 @@ public class MixinCommandSuggestionHelper {
     private List<String> field_228103_l_;
 
     @Shadow
-    private CompletableFuture<Suggestions> field_228107_p_;
+    private CompletableFuture<Suggestions> suggestionsFuture;
 
     @Inject(
             method = "init",
@@ -78,7 +78,7 @@ public class MixinCommandSuggestionHelper {
             this.field_228103_l_.clear();
 
             if (event.completions.length == 0) {
-                this.field_228107_p_ = Suggestions.empty();
+                this.suggestionsFuture = Suggestions.empty();
             } else {
                 int offset = this.field_228095_d_.getText().endsWith(" ")
                         ? this.field_228095_d_.getCursorPosition()
@@ -92,8 +92,8 @@ public class MixinCommandSuggestionHelper {
                         StringRange.between(offset, offset + suggestionList.stream().mapToInt(s -> s.getText().length()).max().orElse(0)),
                         suggestionList);
 
-                this.field_228107_p_ = new CompletableFuture<>();
-                this.field_228107_p_.complete(suggestions);
+                this.suggestionsFuture = new CompletableFuture<>();
+                this.suggestionsFuture.complete(suggestions);
             }
         }
     }

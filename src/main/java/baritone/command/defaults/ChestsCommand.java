@@ -55,7 +55,7 @@ public class ChestsCommand extends Command {
             logDirect(pos.toString());
             for (ItemStack item : inv.getContents()) {
                 IFormattableTextComponent component = (IFormattableTextComponent) item.getTextComponent();
-                component.func_240702_b_(String.format(" x %d", item.getCount()));
+                component.appendString(String.format(" x %d", item.getCount()));
                 logDirect(component);
             }
         }

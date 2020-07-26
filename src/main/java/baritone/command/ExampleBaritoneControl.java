@@ -80,7 +80,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             String msg = command + rest;
             String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
             TextComponent component = new StringTextComponent(String.format("> %s", toDisplay));
-            component.func_230530_a_(component.getStyle()
+            component.setStyle(component.getStyle()
                     .setFormatting(TextFormatting.WHITE)
                     .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
