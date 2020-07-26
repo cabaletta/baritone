@@ -1,0 +1,13 @@
+image: java:8
+
+before_script:
+  - which java
+  - which javac
+
+build:
+  script:
+    - ./gradlew build
+  artifacts:
+    paths:
+      - build/libs/*.jar
+    expire_in: 1 month
