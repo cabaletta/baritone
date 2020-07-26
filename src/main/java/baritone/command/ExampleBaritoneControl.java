@@ -49,12 +49,12 @@ import java.util.stream.Stream;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
-public class BaritoneChatControl implements Helper, AbstractGameEventListener {
+public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
 
     private static final Settings settings = BaritoneAPI.getSettings();
     private final ICommandManager manager;
 
-    public BaritoneChatControl(IBaritone baritone) {
+    public ExampleBaritoneControl(IBaritone baritone) {
         this.manager = baritone.getCommandManager();
         baritone.getGameEventHandler().registerEventListener(this);
     }
