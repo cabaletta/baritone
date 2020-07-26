@@ -7,6 +7,7 @@ before_script:
 build:
   script:
     - ./gradlew build
+    - ./gradlew build -Pbaritone.forge_build
   artifacts:
     paths:
       - dist/*
