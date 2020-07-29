@@ -213,6 +213,21 @@ public class MovementDiagonal extends Movement {
         res.z = destZ;
     }
 
+    protected boolean safeToCancel(MovementState currentState) {
+        //too simple. backfill does not work after cornering with this
+        //return MovementHelper.canWalkOn(ctx, ctx.playerFeet().down());
+        //check the corners of the hitbox instead
+        EntityPlayerSP player = ctx.player();
+        double offset = 0.25;
+        double x = player.posX;
+        double y = player.posY - 1;
+        double z = player.posZ;
+        return MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z + offset))
+            || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z - offset))
+            || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z + offset))
+            || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z - offset));
+    }
+
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
