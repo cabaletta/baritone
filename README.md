@@ -21,7 +21,7 @@
 ![Lines of Code](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
 [![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
 [![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
-[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.10%20/%20v1.3.5%20/%20v1.4.3-brightgreen.svg)](https://impactclient.net/)
+[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.14%20/%20v1.3.8%20/%20v1.4.6%20/%20v1.5.3-brightgreen.svg)](https://impactclient.net/)
 [![KAMI Blue integration](https://img.shields.io/badge/KAMI%20Blue%20integration-v1.2.14--master-green)](https://github.com/kami-blue/client)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg)](https://github.com/fr1kin/ForgeHax/)
 [![Aristois add-on integration](https://img.shields.io/badge/Aristois%20add--on%20integration-v1.3.4%20/%20v1.4.1-green.svg)](https://gitlab.com/emc-mods-indrit/baritone_api)
