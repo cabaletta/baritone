@@ -103,7 +103,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         this.origin = new Vector3i(x, y, z);
         this.paused = false;
-        this.layer = 0;
+        this.layer = Baritone.settings().startAtLayer.value;
         this.numRepeats = 0;
         this.observedCompleted = new LongOpenHashSet();
     }
@@ -761,7 +761,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         name = null;
         schematic = null;
         realSchematic = null;
-        layer = 0;
+        layer = Baritone.settings().startAtLayer.value;
         numRepeats = 0;
         paused = false;
         observedCompleted = null;
