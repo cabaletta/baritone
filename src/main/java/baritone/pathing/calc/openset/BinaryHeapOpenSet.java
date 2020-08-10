@@ -98,7 +98,7 @@ public final class BinaryHeapOpenSet implements IOpenSet {
         PathNode val = array[size];
         array[1] = val;
         val.heapPosition = 1;
-        array[size] = null;
+        array[size] = null; // allow old node to be gc'd
         size--;
         result.heapPosition = -1;
         if (size < 2) {
@@ -106,7 +106,7 @@ public final class BinaryHeapOpenSet implements IOpenSet {
         }
         int index = 1;
         int smallerChild = 2;
-        double cost = val.combinedCost;
+        final double cost = val.combinedCost;
         do {
             PathNode smallerChildNode = array[smallerChild];
             double smallerChildCost = smallerChildNode.combinedCost;
