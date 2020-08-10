@@ -1,0 +1,14 @@
+image: java:8
+
+before_script:
+  - which java
+  - which javac
+
+build:
+  script:
+    - ./gradlew build
+    - ./gradlew build -Pbaritone.forge_build
+  artifacts:
+    paths:
+      - dist/*
+    expire_in: 1 week

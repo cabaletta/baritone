@@ -52,14 +52,14 @@ public interface Helper {
         final Calendar now = Calendar.getInstance();
         final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) <= 3;
         TextComponent baritone = new StringTextComponent(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
-        baritone.func_230530_a_(baritone.getStyle().setFormatting(TextFormatting.LIGHT_PURPLE));
+        baritone.setStyle(baritone.getStyle().setFormatting(TextFormatting.LIGHT_PURPLE));
 
         // Outer brackets
         TextComponent prefix = new StringTextComponent("");
-        prefix.func_230530_a_(baritone.getStyle().setFormatting(TextFormatting.DARK_PURPLE));
-        prefix.func_240702_b_("[");
-        prefix.func_230529_a_(baritone);
-        prefix.func_240702_b_("]");
+        prefix.setStyle(baritone.getStyle().setFormatting(TextFormatting.DARK_PURPLE));
+        prefix.appendString("[");
+        prefix.append(baritone);
+        prefix.appendString("]");
 
         return prefix;
     }
@@ -85,9 +85,9 @@ public interface Helper {
      */
     default void logDirect(ITextComponent... components) {
         TextComponent component = new StringTextComponent("");
-        component.func_230529_a_(getPrefix());
-        component.func_230529_a_(new StringTextComponent(" "));
-        Arrays.asList(components).forEach(component::func_230529_a_);
+        component.append(getPrefix());
+        component.append(new StringTextComponent(" "));
+        Arrays.asList(components).forEach(component::append);
         mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
     }
 
@@ -101,7 +101,7 @@ public interface Helper {
     default void logDirect(String message, TextFormatting color) {
         Stream.of(message.split("\n")).forEach(line -> {
             TextComponent component = new StringTextComponent(line.replace("\t", "    "));
-            component.func_230530_a_(component.getStyle().setFormatting(color));
+            component.setStyle(component.getStyle().setFormatting(color));
             logDirect(component);
         });
     }

@@ -88,7 +88,7 @@ public class GuiClick extends Screen implements Helper {
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
                 TextComponent component = new StringTextComponent("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
-                component.func_230530_a_(component.getStyle()
+                component.setStyle(component.getStyle()
                         .setFormatting(TextFormatting.WHITE)
                         .setClickEvent(new ClickEvent(
                                 ClickEvent.Action.RUN_COMMAND,

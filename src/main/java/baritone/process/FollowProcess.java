@@ -57,7 +57,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     private Goal towards(Entity following) {
         BlockPos pos;
         if (Baritone.settings().followOffsetDistance.value == 0) {
-            pos = following.func_233580_cy_();
+            pos = following.getPosition();
         } else {
             GoalXZ g = GoalXZ.fromDirection(following.getPositionVec(), Baritone.settings().followOffsetDirection.value, Baritone.settings().followOffsetDistance.value);
             pos = new BlockPos(g.getX(), following.getPositionVec().y, g.getZ());

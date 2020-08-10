@@ -49,12 +49,12 @@ import java.util.stream.Stream;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
-public class BaritoneChatControl implements Helper, AbstractGameEventListener {
+public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
 
     private static final Settings settings = BaritoneAPI.getSettings();
     private final ICommandManager manager;
 
-    public BaritoneChatControl(IBaritone baritone) {
+    public ExampleBaritoneControl(IBaritone baritone) {
         this.manager = baritone.getCommandManager();
         baritone.getGameEventHandler().registerEventListener(this);
     }
@@ -80,7 +80,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             String msg = command + rest;
             String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
             TextComponent component = new StringTextComponent(String.format("> %s", toDisplay));
-            component.func_230530_a_(component.getStyle()
+            component.setStyle(component.getStyle()
                     .setFormatting(TextFormatting.WHITE)
                     .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,

@@ -77,7 +77,7 @@ public class Avoidance {
                     .filter(entity -> (!(entity instanceof SpiderEntity)) || ctx.player().getBrightness() < 0.5)
                     .filter(entity -> !(entity instanceof ZombifiedPiglinEntity) || ((ZombifiedPiglinEntity) entity).getRevengeTarget() != null)
                     .filter(entity -> !(entity instanceof EndermanEntity) || ((EndermanEntity) entity).isScreaming())
-                    .forEach(entity -> res.add(new Avoidance(entity.func_233580_cy_(), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
+                    .forEach(entity -> res.add(new Avoidance(entity.getPosition(), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
         }
         return res;
     }

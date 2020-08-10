@@ -380,7 +380,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public BetterBlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
         if (!MovementHelper.canWalkOn(ctx, feet.down())) {
-            if (ctx.player().func_233570_aj_()) {
+            if (ctx.player().isOnGround()) {
                 double playerX = ctx.player().getPositionVec().x;
                 double playerZ = ctx.player().getPositionVec().z;
                 ArrayList<BetterBlockPos> closest = new ArrayList<>();
