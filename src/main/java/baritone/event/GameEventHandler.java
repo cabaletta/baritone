@@ -115,7 +115,7 @@ public final class GameEventHandler implements IEventBus, Helper {
         if (event.getState() == EventState.POST) {
             cache.closeWorld();
             if (event.getWorld() != null) {
-                cache.initWorld(event.getWorld().func_234923_W_());
+                cache.initWorld(event.getWorld().getDimensionKey());
             }
         }
 
