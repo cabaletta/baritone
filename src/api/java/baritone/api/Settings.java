@@ -62,6 +62,11 @@ public final class Settings {
     public final Setting<Boolean> allowInventory = new Setting<>(false);
 
     /**
+     * Allow player to decide if to use auto tool or not
+     */
+    public final Setting<Boolean> autoTool = new Setting<>(true);
+
+    /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited.
      * <p>
