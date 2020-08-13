@@ -127,7 +127,7 @@ public class ToolSet {
                 }
             }
         }
-        return Baritone.settings().autoTool.value? best : player.inventory.currentItem;
+        return best;
     }
 
     /**
