@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.command.argparser.DefaultArgParsers;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -102,6 +103,11 @@ public class ToolSet {
      * @return An int containing the index in the tools array that worked best
      */
     public int getBestSlot(Block b, boolean preferSilkTouch) {
+        // Make all depending calculation respect auto tool value without doing unecessary calculations...
+        if (Baritone.settings().autoTool.value) {
+            return player.inventory.currentItem;
+        }
+
         int best = 0;
         double highestSpeed = Double.NEGATIVE_INFINITY;
         int lowestCost = Integer.MIN_VALUE;
