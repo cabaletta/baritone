@@ -103,7 +103,7 @@ public class ToolSet {
      */
     public int getBestSlot(Block b, boolean preferSilkTouch) {
         // Make all depending calculation respect auto tool value without doing unecessary calculations...
-        if (!Baritone.settings().autoTool.value) {
+        if (!Baritone.settings().ignoreAutoToolMovementCost.value) {
             return player.inventory.currentItem;
         }
 

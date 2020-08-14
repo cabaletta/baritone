@@ -67,6 +67,14 @@ public final class Settings {
     public final Setting<Boolean> autoTool = new Setting<>(true);
 
     /**
+     * Should movement cost calculation ignore the cost of breaking blocks with current slot?
+     * Only use this if actually necessary, make sure to put this back to original state (false), or it
+     * will mess up pathing in some combinations with auto tool setting. (just fall back to original settings if any
+     * problems occurs)
+     */
+    public final Setting<Boolean> ignoreAutoToolMovementCost = new Setting<>(false);
+
+    /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited.
      * <p>
