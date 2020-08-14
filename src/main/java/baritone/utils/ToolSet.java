@@ -96,7 +96,8 @@ public class ToolSet {
     }
 
     /**
-     * Calculate which tool on the hotbar is best for mining
+     * Calculate which tool on the hotbar is best for mining, depending on an override setting,
+     * related to auto tool movement cost, it will either return current selected slot, or the best slot.
      *
      * @param b the blockstate to be mined
      * @return An int containing the index in the tools array that worked best
@@ -107,7 +108,11 @@ public class ToolSet {
     }
 
     public int getBestSlot(Block b, boolean preferSilkTouch, boolean pathingCalculation) {
-        // Make all depending calculation respect auto tool value without doing unecessary calculations...
+
+        /*
+        If we actually want know what efficiency our held item has instead of the best one
+        possible, this lets us make pathing depending on the actual tool used (if auto tool is disabled)
+        */
         if (!Baritone.settings().ignoreAutoToolMovementCost.value && pathingCalculation) {
             return player.inventory.currentItem;
         }

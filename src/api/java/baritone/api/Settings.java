@@ -67,9 +67,11 @@ public final class Settings {
     public final Setting<Boolean> autoTool = new Setting<>(true);
 
     /**
-     * Should movement cost calculation ignore the cost of breaking blocks with current slot?
+     * Should movement cost calculation ignore the cost of breaking blocks with current slot, and assume best possible
+     * item in the hotbar?
+     *
      * Only use this if actually necessary, make sure to put this back to original state (false), or it
-     * migth mess up pathing in some combinations with auto tool setting. (just fall back to original settings if any
+     * might mess up pathing in some combinations with auto tool setting. (just fall back to original settings if any
      * problems occurs)
      */
     public final Setting<Boolean> ignoreAutoToolMovementCost = new Setting<>(false);
