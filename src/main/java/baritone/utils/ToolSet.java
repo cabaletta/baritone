@@ -101,9 +101,14 @@ public class ToolSet {
      * @param b the blockstate to be mined
      * @return An int containing the index in the tools array that worked best
      */
+
     public int getBestSlot(Block b, boolean preferSilkTouch) {
+        return getBestSlot(b, preferSilkTouch, false);
+    }
+
+    public int getBestSlot(Block b, boolean preferSilkTouch, boolean pathingCalculation) {
         // Make all depending calculation respect auto tool value without doing unecessary calculations...
-        if (!Baritone.settings().ignoreAutoToolMovementCost.value) {
+        if (!Baritone.settings().ignoreAutoToolMovementCost.value && pathingCalculation) {
             return player.inventory.currentItem;
         }
 
@@ -142,7 +147,7 @@ public class ToolSet {
      * @return A double containing the destruction ticks with the best tool
      */
     private double getBestDestructionTime(Block b) {
-        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b, false));
+        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b, false, true));
         return calculateSpeedVsBlock(stack, b.getDefaultState()) * avoidanceMultiplier(b);
     }
 

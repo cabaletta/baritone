@@ -69,7 +69,7 @@ public final class Settings {
     /**
      * Should movement cost calculation ignore the cost of breaking blocks with current slot?
      * Only use this if actually necessary, make sure to put this back to original state (false), or it
-     * will mess up pathing in some combinations with auto tool setting. (just fall back to original settings if any
+     * migth mess up pathing in some combinations with auto tool setting. (just fall back to original settings if any
      * problems occurs)
      */
     public final Setting<Boolean> ignoreAutoToolMovementCost = new Setting<>(false);
