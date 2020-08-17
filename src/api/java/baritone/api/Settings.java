@@ -62,6 +62,19 @@ public final class Settings {
     public final Setting<Boolean> allowInventory = new Setting<>(false);
 
     /**
+     * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto tool functionality
+     * <p>
+     * Specifically, path calculation will still assume that an auto tool wil run at execution time, even though
+     * Baritone itself will not do that.
+     */
+    public final Setting<Boolean> assumeExternalAutoTool = new Setting<>(false);
+
+    /**
+     * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
+     */
+    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
+
+    /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited.
      * <p>
@@ -1074,9 +1087,34 @@ public final class Settings {
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
     /**
-     * Desktop Notifications
+     * Desktop notifications
      */
     public final Setting<Boolean> desktopNotifications = new Setting<>(false);
+
+    /**
+     * Desktop notification on path complete
+     */
+    public final Setting<Boolean> notificationOnPathComplete = new Setting<>(true);
+
+    /**
+     * Desktop notification on farm fail
+     */
+    public final Setting<Boolean> notificationOnFarmFail = new Setting<>(true);
+
+    /**
+     * Desktop notification on build finished
+     */
+    public final Setting<Boolean> notificationOnBuildFinished = new Setting<>(true);
+
+    /**
+     * Desktop notification on explore finished
+     */
+    public final Setting<Boolean> notificationOnExploreFinished = new Setting<>(true);
+
+    /**
+     * Desktop notification on mine fail
+     */
+    public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
 
     /**
      * A map of lowercase setting field names to their respective setting
