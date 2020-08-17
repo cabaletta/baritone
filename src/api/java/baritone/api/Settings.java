@@ -762,6 +762,12 @@ public final class Settings {
     public final Setting<Boolean> layerOrder = new Setting<>(false);
 
     /**
+     * Start building the schematic at a specific layer.
+     * Can help on larger builds when schematic wants to break things its already built
+     */
+    public final Setting<Integer> startAtLayer = new Setting<>(0);
+
+    /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
