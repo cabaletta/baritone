@@ -191,6 +191,15 @@ public final class Settings {
     )));
 
     /**
+     * A list of blocks to become air
+     * <p>
+     * If a schematic asks for a block on this list, only air will be accepted at that location (and nothing on buildIgnoreBlocks)
+     */
+    public final Setting<List<Block>> okIfAir = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
      * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
      */
     public final Setting<Boolean> buildIgnoreExisting = new Setting<>(false);
@@ -431,6 +440,11 @@ public final class Settings {
      * your Y coordinate's accuracy doesn't matter at all until you get much much closer.
      */
     public final Setting<Boolean> simplifyUnloadedYCoord = new Setting<>(true);
+
+    /**
+     * Whenever a block changes, repack the whole chunk that it's in
+     */
+    public final Setting<Boolean> repackOnAnyBlockChange = new Setting<>(true);
 
     /**
      * If a movement takes this many ticks more than its initial cost estimate, cancel it
