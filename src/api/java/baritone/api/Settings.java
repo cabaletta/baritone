@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -60,6 +60,19 @@ public final class Settings {
      * Allow Baritone to move items in your inventory to your hotbar
      */
     public final Setting<Boolean> allowInventory = new Setting<>(false);
+
+    /**
+     * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto tool functionality
+     * <p>
+     * Specifically, path calculation will still assume that an auto tool wil run at execution time, even though
+     * Baritone itself will not do that.
+     */
+    public final Setting<Boolean> assumeExternalAutoTool = new Setting<>(false);
+
+    /**
+     * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
+     */
+    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
@@ -185,6 +198,29 @@ public final class Settings {
     )));
 
     /**
+     * A list of blocks to be treated as if they're air.
+     * <p>
+     * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
+     */
+    public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
+     * A list of blocks to become air
+     * <p>
+     * If a schematic asks for a block on this list, only air will be accepted at that location (and nothing on buildIgnoreBlocks)
+     */
+    public final Setting<List<Block>> okIfAir = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
+     * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
+     */
+    public final Setting<Boolean> buildIgnoreExisting = new Setting<>(false);
+
+    /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
      * <p>
      * I.E. it will never trigger cascading sand / gravel falls
@@ -234,7 +270,7 @@ public final class Settings {
     /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
      * <p>
-     * This helps with speed at >=20m/s
+     * This helps with speed exceeding 20m/s
      */
     public final Setting<Boolean> overshootTraverse = new Setting<>(true);
 
@@ -247,6 +283,11 @@ public final class Settings {
      * How many ticks between right clicks are allowed. Default in game is 4
      */
     public final Setting<Integer> rightClickSpeed = new Setting<>(4);
+
+    /**
+     * Block reach distance
+     */
+    public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
 
     /**
      * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable
@@ -410,6 +451,11 @@ public final class Settings {
      * your Y coordinate's accuracy doesn't matter at all until you get much much closer.
      */
     public final Setting<Boolean> simplifyUnloadedYCoord = new Setting<>(true);
+
+    /**
+     * Whenever a block changes, repack the whole chunk that it's in
+     */
+    public final Setting<Boolean> repackOnAnyBlockChange = new Setting<>(true);
 
     /**
      * If a movement takes this many ticks more than its initial cost estimate, cancel it
@@ -734,9 +780,20 @@ public final class Settings {
     public final Setting<Boolean> layerOrder = new Setting<>(false);
 
     /**
+     * Start building the schematic at a specific layer.
+     * Can help on larger builds when schematic wants to break things its already built
+     */
+    public final Setting<Integer> startAtLayer = new Setting<>(0);
+
+    /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
+
+    /**
+     * How many times to buildrepeat. -1 for infinite.
+     */
+    public final Setting<Integer> buildRepeatCount = new Setting<>(-1);
 
     /**
      * Allow standing above a block while mining it, in BuilderProcess
@@ -786,6 +843,12 @@ public final class Settings {
      * When this setting is true, build a schematic with the highest Z coordinate being the origin, instead of the lowest
      */
     public final Setting<Boolean> schematicOrientationZ = new Setting<>(false);
+
+    /**
+     * The fallback used by the build command when no extension is specified. This may be useful if schematics of a
+     * particular format are used often, and the user does not wish to have to specify the extension with every usage.
+     */
+    public final Setting<String> schematicFallbackExtension = new Setting<>("schematic");
 
     /**
      * Distance to scan every tick for updates. Expanding this beyond player reach distance (i.e. setting it to 6 or above)
@@ -1016,6 +1079,35 @@ public final class Settings {
      */
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
+    /**
+     * Desktop notifications
+     */
+    public final Setting<Boolean> desktopNotifications = new Setting<>(false);
+
+    /**
+     * Desktop notification on path complete
+     */
+    public final Setting<Boolean> notificationOnPathComplete = new Setting<>(true);
+
+    /**
+     * Desktop notification on farm fail
+     */
+    public final Setting<Boolean> notificationOnFarmFail = new Setting<>(true);
+
+    /**
+     * Desktop notification on build finished
+     */
+    public final Setting<Boolean> notificationOnBuildFinished = new Setting<>(true);
+
+    /**
+     * Desktop notification on explore finished
+     */
+    public final Setting<Boolean> notificationOnExploreFinished = new Setting<>(true);
+
+    /**
+     * Desktop notification on mine fail
+     */
+    public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
 
     /**
      * A map of lowercase setting field names to their respective setting

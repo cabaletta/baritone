@@ -23,6 +23,13 @@
 
 -keep class baritone.api.utils.MyChunkPos { *; } # even in standalone we need to keep this for gson reflect
 
+# Keep any class or member annotated with @KeepName so we dont have to put everything in the script
+-keep,allowobfuscation @interface baritone.KeepName
+-keep @baritone.KeepName class *
+-keepclassmembers class * {
+    @baritone.KeepName *;
+}
+
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
     public <fields>;    
@@ -181,19 +188,19 @@
 -assumenosideeffects public class java.lang.* extends java.lang.Number {
     public static java.lang.String toString(byte);
     public static java.lang.Byte valueOf(byte);
-    public static byte parseByte(java.lang.String);
-    public static byte parseByte(java.lang.String,int);
-    public static java.lang.Byte valueOf(java.lang.String,int);
-    public static java.lang.Byte valueOf(java.lang.String);
-    public static java.lang.Byte decode(java.lang.String);
+#    public static byte parseByte(java.lang.String);
+#    public static byte parseByte(java.lang.String,int);
+#    public static java.lang.Byte valueOf(java.lang.String,int);
+#    public static java.lang.Byte valueOf(java.lang.String);
+#    public static java.lang.Byte decode(java.lang.String);
     public int compareTo(java.lang.Byte);
     public static java.lang.String toString(short);
-    public static short parseShort(java.lang.String);
-    public static short parseShort(java.lang.String,int);
-    public static java.lang.Short valueOf(java.lang.String,int);
-    public static java.lang.Short valueOf(java.lang.String);
+#    public static short parseShort(java.lang.String);
+#    public static short parseShort(java.lang.String,int);
+#    public static java.lang.Short valueOf(java.lang.String,int);
+#    public static java.lang.Short valueOf(java.lang.String);
     public static java.lang.Short valueOf(short);
-    public static java.lang.Short decode(java.lang.String);
+#    public static java.lang.Short decode(java.lang.String);
     public static short reverseBytes(short);
     public int compareTo(java.lang.Short);
     public static java.lang.String toString(int,int);
@@ -201,10 +208,10 @@
     public static java.lang.String toOctalString(int);
     public static java.lang.String toBinaryString(int);
     public static java.lang.String toString(int);
-    public static int parseInt(java.lang.String,int);
-    public static int parseInt(java.lang.String);
-    public static java.lang.Integer valueOf(java.lang.String,int);
-    public static java.lang.Integer valueOf(java.lang.String);
+#    public static int parseInt(java.lang.String,int);
+#    public static int parseInt(java.lang.String);
+#    public static java.lang.Integer valueOf(java.lang.String,int);
+#    public static java.lang.Integer valueOf(java.lang.String);
     public static java.lang.Integer valueOf(int);
     public static java.lang.Integer getInteger(java.lang.String);
     public static java.lang.Integer getInteger(java.lang.String,int);
@@ -226,12 +233,12 @@
     public static java.lang.String toOctalString(long);
     public static java.lang.String toBinaryString(long);
     public static java.lang.String toString(long);
-    public static long parseLong(java.lang.String,int);
-    public static long parseLong(java.lang.String);
-    public static java.lang.Long valueOf(java.lang.String,int);
-    public static java.lang.Long valueOf(java.lang.String);
+#    public static long parseLong(java.lang.String,int);
+#    public static long parseLong(java.lang.String);
+#    public static java.lang.Long valueOf(java.lang.String,int);
+#    public static java.lang.Long valueOf(java.lang.String);
     public static java.lang.Long valueOf(long);
-    public static java.lang.Long decode(java.lang.String);
+#    public static java.lang.Long decode(java.lang.String);
     public static java.lang.Long getLong(java.lang.String);
     public static java.lang.Long getLong(java.lang.String,long);
     public static java.lang.Long getLong(java.lang.String,java.lang.Long);
@@ -248,9 +255,9 @@
     public int compareTo(java.lang.Long);
     public static java.lang.String toString(float);
     public static java.lang.String toHexString(float);
-    public static java.lang.Float valueOf(java.lang.String);
+#    public static java.lang.Float valueOf(java.lang.String);
     public static java.lang.Float valueOf(float);
-    public static float parseFloat(java.lang.String);
+#    public static float parseFloat(java.lang.String);
     public static boolean isNaN(float);
     public static boolean isInfinite(float);
     public static int floatToIntBits(float);
@@ -262,9 +269,9 @@
     public int compareTo(java.lang.Float);
     public static java.lang.String toString(double);
     public static java.lang.String toHexString(double);
-    public static java.lang.Double valueOf(java.lang.String);
-    public static java.lang.Double valueOf(double);
-    public static double parseDouble(java.lang.String);
+#    public static java.lang.Double valueOf(java.lang.String);
+#    public static java.lang.Double valueOf(double);
+#    public static double parseDouble(java.lang.String);
     public static boolean isNaN(double);
     public static boolean isInfinite(double);
     public static long doubleToLongBits(double);

@@ -40,7 +40,16 @@ public final class RayTraceUtils {
      * @return The calculated raytrace result
      */
     public static RayTraceResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance) {
-        Vec3d start = entity.getPositionEyes(1.0F);
+        return rayTraceTowards(entity, rotation, blockReachDistance, false);
+    }
+
+    public static RayTraceResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance, boolean wouldSneak) {
+        Vec3d start;
+        if (wouldSneak) {
+            start = inferSneakingEyePosition(entity);
+        } else {
+            start = entity.getPositionEyes(1.0F); // do whatever is correct
+        }
         Vec3d direction = RotationUtils.calcVec3dFromRotation(rotation);
         Vec3d end = start.add(
                 direction.x * blockReachDistance,
@@ -48,5 +57,9 @@ public final class RayTraceUtils {
                 direction.z * blockReachDistance
         );
         return entity.world.rayTraceBlocks(start, end, false, false, true);
+    }
+
+    public static Vec3d inferSneakingEyePosition(Entity entity) {
+        return new Vec3d(entity.posX, entity.posY + IPlayerContext.eyeHeight(true), entity.posZ);
     }
 }

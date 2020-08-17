@@ -17,20 +17,21 @@
 
 package baritone.command.defaults;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.RelativeBlockPos;
 import baritone.api.command.datatypes.RelativeFile;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
-import baritone.api.command.argument.IArgConsumer;
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.client.Minecraft;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Stream;
 
 public class BuildCommand extends Command {
@@ -44,8 +45,8 @@ public class BuildCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         File file = args.getDatatypePost(RelativeFile.INSTANCE, schematicsDir).getAbsoluteFile();
-        if (!file.getName().toLowerCase(Locale.US).endsWith(".schematic")) {
-            file = new File(file.getAbsolutePath() + ".schematic");
+        if (FilenameUtils.getExtension(file.getAbsolutePath()).isEmpty()) {
+            file = new File(file.getAbsolutePath() + "." + Baritone.settings().schematicFallbackExtension.value);
         }
         BetterBlockPos origin = ctx.playerFeet();
         BetterBlockPos buildOrigin;
@@ -58,7 +59,7 @@ public class BuildCommand extends Command {
         }
         boolean success = baritone.getBuilderProcess().build(file.getName(), file, buildOrigin);
         if (!success) {
-            throw new CommandInvalidStateException("Couldn't load the schematic");
+            throw new CommandInvalidStateException("Couldn't load the schematic. Make sure to use the FULL file name, including the extension (e.g. blah.schematic).");
         }
         logDirect(String.format("Successfully loaded schematic for building\nOrigin: %s", buildOrigin));
     }

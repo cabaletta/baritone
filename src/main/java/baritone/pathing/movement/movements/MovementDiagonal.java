@@ -57,6 +57,14 @@ public class MovementDiagonal extends Movement {
     }
 
     @Override
+    protected boolean safeToCancel(MovementState state) {
+        return ctx.playerFeet().equals(src) || ((
+                MovementHelper.canWalkOn(ctx, new BlockPos(src.x, src.y - 1, dest.z))
+        ) &&
+                MovementHelper.canWalkOn(ctx, new BlockPos(dest.x, src.y - 1, src.z)));
+    }
+
+    @Override
     public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
