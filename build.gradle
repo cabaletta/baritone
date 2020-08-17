@@ -25,11 +25,11 @@ buildscript {
             url = 'http://files.minecraftforge.net/maven'
         }
         maven {
-            url = 'https://www.dogforce-games.com/maven/'
-        }
-        maven {
             name = 'impactdevelopment-repo'
             url = 'https://impactdevelopment.github.io/maven/'
+        }
+        maven {
+            url = 'https://www.dogforce-games.com/maven/'
         }
         jcenter()
     }
@@ -142,11 +142,11 @@ repositories {
         url = 'http://repo.spongepowered.org/maven/'
     }
     maven {
-        url = 'https://www.dogforce-games.com/maven/'
-    }
-    maven {
         name = 'impactdevelopment-repo'
         url = 'https://impactdevelopment.github.io/maven/'
+    }
+    maven {
+        url = 'https://www.dogforce-games.com/maven/'
     }
 }
 
