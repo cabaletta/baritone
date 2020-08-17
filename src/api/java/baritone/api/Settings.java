@@ -440,6 +440,11 @@ public final class Settings {
     public final Setting<Boolean> simplifyUnloadedYCoord = new Setting<>(true);
 
     /**
+     * Whenever a block changes, repack the whole chunk that it's in
+     */
+    public final Setting<Boolean> repackOnAnyBlockChange = new Setting<>(true);
+
+    /**
      * If a movement takes this many ticks more than its initial cost estimate, cancel it
      */
     public final Setting<Integer> movementTimeoutTicks = new Setting<>(100);
