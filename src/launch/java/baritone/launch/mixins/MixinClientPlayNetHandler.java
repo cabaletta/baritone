@@ -120,19 +120,15 @@ public class MixinClientPlayNetHandler {
         if (!Baritone.settings().repackOnAnyBlockChange.value) {
             return;
         }
-        if (packetIn.getChangedBlocks().length == 0) {
-            return;
-        }
-        https://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.15
-        {
-            for (SMultiBlockChangePacket.BlockUpdateData update : packetIn.getChangedBlocks()) {
-                if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(update.getBlockState().getBlock())) {
-                    break https;
-                }
+        ChunkPos[] chunkPos = new ChunkPos[1];
+        packetIn.func_244310_a((pos, state) -> {
+            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(state.getBlock())) {
+                chunkPos[0] = new ChunkPos(pos);
             }
+        });
+        if (chunkPos[0] == null) {
             return;
         }
-        ChunkPos pos = new ChunkPos(packetIn.getChangedBlocks()[0].getPos());
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             ClientPlayerEntity player = ibaritone.getPlayerContext().player();
             if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
@@ -140,8 +136,8 @@ public class MixinClientPlayNetHandler {
                         new ChunkEvent(
                                 EventState.POST,
                                 ChunkEvent.Type.POPULATE_FULL,
-                                pos.x,
-                                pos.z
+                                chunkPos[0].x,
+                                chunkPos[0].z
                         )
                 );
             }
