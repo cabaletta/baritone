@@ -111,9 +111,9 @@ public class ToolSet {
 
         /*
         If we actually want know what efficiency our held item has instead of the best one
-        possible, this lets us make pathing depending on the actual tool used (if auto tool is disabled)
+        possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
         */
-        if (!Baritone.settings().ignoreAutoToolMovementCost.value && pathingCalculation) {
+        if (Baritone.settings().disableAutoTool.value && pathingCalculation) {
             return player.inventory.currentItem;
         }
 

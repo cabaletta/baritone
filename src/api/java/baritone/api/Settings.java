@@ -62,19 +62,17 @@ public final class Settings {
     public final Setting<Boolean> allowInventory = new Setting<>(false);
 
     /**
-     * Allow player to decide if to use auto tool or not
+     * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto tool functionality
+     * <p>
+     * Specifically, path calculation will still assume that an auto tool wil run at execution time, even though
+     * Baritone itself will not do that.
      */
-    public final Setting<Boolean> autoTool = new Setting<>(true);
+    public final Setting<Boolean> assumeExternalAutoTool = new Setting<>(false);
 
     /**
-     * Should movement cost calculation ignore the cost of breaking blocks with current slot, and assume best possible
-     * item in the hotbar?
-     *
-     * Only use this if actually necessary, make sure to put this back to original state (false), or it
-     * might mess up pathing in some combinations with auto tool setting. (just fall back to original settings if any
-     * problems occurs)
+     * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
      */
-    public final Setting<Boolean> ignoreAutoToolMovementCost = new Setting<>(false);
+    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
