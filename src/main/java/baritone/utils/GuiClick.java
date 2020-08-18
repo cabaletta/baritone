@@ -78,30 +78,26 @@ public class GuiClick extends GuiScreen {
 
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
-        if (mouseButton == 0) {
-            if (clickStart != null && !clickStart.equals(currentMouseOver)) {
-                BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
-                BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
-                ITextComponent component = new TextComponentString("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
-                component.getStyle()
-                        .setColor(TextFormatting.WHITE)
-                        .setClickEvent(new ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND,
-                                FORCE_COMMAND_PREFIX + "help sel"
-                        ));
-                Helper.HELPER.logDirect(component);
-                clickStart = null;
-            } else {
-                if (currentMouseOver != null)//Catch this, or else a click into void will result in a crash
+        if (currentMouseOver != null) { //Catch this, or else a click into void will result in a crash
+            if (mouseButton == 0) {
+                if (clickStart != null && !clickStart.equals(currentMouseOver)) {
+                    BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
+                    BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
+                    ITextComponent component = new TextComponentString("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
+                    component.getStyle()
+                            .setColor(TextFormatting.WHITE)
+                            .setClickEvent(new ClickEvent(
+                                    ClickEvent.Action.RUN_COMMAND,
+                                    FORCE_COMMAND_PREFIX + "help sel"
+                            ));
+                    Helper.HELPER.logDirect(component);
+                    clickStart = null;
+                } else {
                     BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver));
-                else
-                    Helper.HELPER.logDirect("Sorry, I can't go to nothing");
-            }
-        } else if (mouseButton == 1) {
-            if (currentMouseOver != null)
+                }
+            } else if (mouseButton == 1) {
                 BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
-            else
-                Helper.HELPER.logDirect("Sorry, I can't go to nothing");
+            }
         }
         clickStart = null;
     }
