@@ -1110,6 +1110,11 @@ public final class Settings {
     public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
 
     /**
+     *
+     */
+    public final Setting<Integer> fullBrightLevel = new Setting<>(16);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
