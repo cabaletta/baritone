@@ -29,6 +29,7 @@ import net.minecraft.resources.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -132,7 +133,7 @@ public final class BlockOptionalMeta {
 
     public static LootTableManager getManager() {
         if (manager == null) {
-            ResourcePackList<?> rpl = new ResourcePackList<>(ResourcePackInfo::new, new ServerPackFinder());
+            ResourcePackList rpl = new ResourcePackList(ResourcePackInfo::new, new ServerPackFinder());
             rpl.reloadPacksFromFinders();
             IResourcePack thePack = rpl.getAllPacks().iterator().next().getResourcePack();
             IReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(ResourcePackType.SERVER_DATA);
@@ -163,7 +164,7 @@ public final class BlockOptionalMeta {
                 getManager().getLootTableFromLocation(lootTableLocation).generate(
                     new LootContext.Builder(null)
                         .withRandom(new Random())
-                        .withParameter(LootParameters.POSITION, BlockPos.ZERO)
+                        .withParameter(LootParameters.field_237457_g_, Vector3d.copy(BlockPos.NULL_VECTOR))
                         .withParameter(LootParameters.TOOL, ItemStack.EMPTY)
                         .withNullableParameter(LootParameters.BLOCK_ENTITY, null)
                         .withParameter(LootParameters.BLOCK_STATE, block.getDefaultState())

@@ -45,11 +45,11 @@ public class MixinCommandSuggestionHelper {
 
     @Shadow
     @Final
-    private TextFieldWidget field_228095_d_;
+    private TextFieldWidget inputField;
 
     @Shadow
     @Final
-    private List<String> field_228103_l_;
+    private List<String> exceptionList;
 
     @Shadow
     private CompletableFuture<Suggestions> suggestionsFuture;
@@ -61,7 +61,7 @@ public class MixinCommandSuggestionHelper {
     )
     private void preUpdateSuggestion(CallbackInfo ci) {
         // Anything that is present in the input text before the cursor position
-        String prefix = this.field_228095_d_.getText().substring(0, Math.min(this.field_228095_d_.getText().length(), this.field_228095_d_.getCursorPosition()));
+        String prefix = this.inputField.getText().substring(0, Math.min(this.inputField.getText().length(), this.inputField.getCursorPosition()));
 
         TabCompleteEvent event = new TabCompleteEvent(prefix);
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onPreTabComplete(event);
@@ -75,14 +75,14 @@ public class MixinCommandSuggestionHelper {
             ci.cancel();
 
             // TODO: Support populating the command usage
-            this.field_228103_l_.clear();
+            this.exceptionList.clear();
 
             if (event.completions.length == 0) {
                 this.suggestionsFuture = Suggestions.empty();
             } else {
-                int offset = this.field_228095_d_.getText().endsWith(" ")
-                        ? this.field_228095_d_.getCursorPosition()
-                        : this.field_228095_d_.getText().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
+                int offset = this.inputField.getText().endsWith(" ")
+                        ? this.inputField.getCursorPosition()
+                        : this.inputField.getText().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
 
                 List<Suggestion> suggestionList = Stream.of(event.completions)
                         .map(s -> new Suggestion(StringRange.between(offset, offset + s.length()), s))

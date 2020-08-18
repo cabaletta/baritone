@@ -158,13 +158,13 @@ public final class ChunkPacker {
                 return Blocks.LAVA.getDefaultState();
             case SOLID:
                 // Dimension solid types
-                if (dimension == World.field_234918_g_) {
+                if (dimension == World.OVERWORLD) {
                     return Blocks.STONE.getDefaultState();
                 }
-                if (dimension == World.field_234919_h_) {
+                if (dimension == World.THE_NETHER) {
                     return Blocks.NETHERRACK.getDefaultState();
                 }
-                if (dimension == World.field_234920_i_) {
+                if (dimension == World.THE_END) {
                     return Blocks.END_STONE.getDefaultState();
                 }
             default:

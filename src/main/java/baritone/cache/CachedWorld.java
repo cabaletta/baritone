@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -35,6 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -58,7 +61,17 @@ public final class CachedWorld implements ICachedWorld, Helper {
      */
     private final String directory;
 
-    private final LinkedBlockingQueue<Chunk> toPack = new LinkedBlockingQueue<>();
+    /**
+     * Queue of positions to pack. Refers to the toPackMap, in that every element of this queue will be a
+     * key in that map.
+     */
+    private final LinkedBlockingQueue<ChunkPos> toPackQueue = new LinkedBlockingQueue<>();
+
+    /**
+     * All chunk positions pending packing. This map will be updated in-place if a new update to the chunk occurs
+     * while waiting in the queue for the packer thread to get to it.
+     */
+    private final Map<ChunkPos, Chunk> toPackMap = new ConcurrentHashMap<>();
 
     private final RegistryKey<World> dimension;
 
@@ -91,10 +104,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     @Override
     public final void queueForPacking(Chunk chunk) {
-        try {
-            toPack.put(chunk);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (toPackMap.put(chunk.getPos(), chunk) == null) {
+            toPackQueue.add(chunk.getPos());
         }
     }
 
@@ -295,13 +306,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
         public void run() {
             while (true) {
-                // TODO: Add CachedWorld unloading to remove the redundancy of having this
-                LinkedBlockingQueue<Chunk> queue = toPack;
-                if (queue == null) {
-                    break;
-                }
                 try {
-                    Chunk chunk = queue.take();
+                    ChunkPos pos = toPackQueue.take();
+                    Chunk chunk = toPackMap.remove(pos);
                     CachedChunk cached = ChunkPacker.pack(chunk);
                     CachedWorld.this.updateCachedChunk(cached);
                     //System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);

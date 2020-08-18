@@ -42,7 +42,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.DimensionType;
+import net.minecraft.world.World;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -97,7 +97,7 @@ public class MovementFall extends Movement {
         Block destBlock = destState.getBlock();
         boolean isWater = destState.getFluidState().getFluid() instanceof WaterFluid;
         if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
-            if (!PlayerInventory.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().func_234922_V_() == DimensionType.THE_NETHER) {
+            if (!PlayerInventory.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().getDimensionKey() == World.THE_NETHER) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 

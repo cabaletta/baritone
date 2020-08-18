@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.6.1'
+version '1.6.2'
 
 buildscript {
     repositories {
@@ -27,6 +27,9 @@ buildscript {
         maven {
             name = 'impactdevelopment-repo'
             url = 'https://impactdevelopment.github.io/maven/'
+        }
+        maven {
+            url = 'https://www.dogforce-games.com/maven/'
         }
         jcenter()
     }
@@ -85,7 +88,7 @@ task sourceJar(type: Jar, dependsOn: classes) {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200723-1.16.1'
+    mappings channel: 'snapshot', version: '20200813-1.16.1'
 
     if (getProject().hasProperty("baritone.forge_build")) {
         reobfMappings 'searge'
@@ -138,15 +141,17 @@ repositories {
         name = 'spongepowered-repo'
         url = 'http://repo.spongepowered.org/maven/'
     }
-
     maven {
         name = 'impactdevelopment-repo'
         url = 'https://impactdevelopment.github.io/maven/'
     }
+    maven {
+        url = 'https://www.dogforce-games.com/maven/'
+    }
 }
 
 dependencies {
-    minecraft 'com.github.ImpactDevelopment:Vanilla:1.16.1'
+    minecraft 'com.github.ImpactDevelopment:Vanilla:1.16.2'
 
     runtime launchCompile('net.minecraft:launchwrapper:1.12') {
         exclude module: 'lwjgl'

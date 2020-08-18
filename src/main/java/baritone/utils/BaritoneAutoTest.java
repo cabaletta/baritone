@@ -32,11 +32,11 @@ import net.minecraft.client.settings.CloudOption;
 import net.minecraft.client.settings.GraphicsFanciness;
 import net.minecraft.client.settings.ParticleStatus;
 import net.minecraft.client.tutorial.TutorialSteps;
-import net.minecraft.server.IDynamicRegistries;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.HTTPUtil;
 import net.minecraft.util.datafix.codec.DatapackCodec;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.world.*;
 import net.minecraft.world.gen.settings.DimensionGeneratorSettings;
 import net.minecraft.world.server.ServerWorld;
@@ -85,7 +85,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         s.chatScale = 0.0F;
         s.ambientOcclusionStatus = AmbientOcclusionStatus.OFF;
         s.cloudOption = CloudOption.OFF;
-        s.field_238330_f_ = GraphicsFanciness.FAST;
+        s.graphicFanciness = GraphicsFanciness.FAST;
         s.tutorialStep = TutorialSteps.NONE;
         s.hideGUI = true;
         s.fov = 30.0F;
@@ -99,18 +99,19 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
             WorldSettings worldsettings = new WorldSettings("BaritoneAutoTest", GameType.SURVIVAL, false, Difficulty.NORMAL, true, new GameRules(), DatapackCodec.field_234880_a_);
-            mc.func_238192_a_("BaritoneAutoTest", worldsettings, IDynamicRegistries.func_239770_b_(), DimensionGeneratorSettings.field_236202_b_.create(false, OptionalLong.of(TEST_SEED)));
+            final DynamicRegistries.Impl impl = DynamicRegistries.func_239770_b_();
+            mc.func_238192_a_("BaritoneAutoTest", worldsettings, impl, DimensionGeneratorSettings.func_242752_a(impl).create(false, OptionalLong.of(TEST_SEED)));
         }
 
         IntegratedServer server = mc.getIntegratedServer();
 
         // If the integrated server is launched and the world has initialized, set the spawn point
         // to our defined starting position
-        if (server != null && server.getWorld(World.field_234918_g_) != null) {
+        if (server != null && server.getWorld(World.OVERWORLD) != null) {
             server.setDifficultyForAllWorlds(Difficulty.PEACEFUL, true);
             if (mc.player == null) {
                 server.execute(() -> {
-                    server.getWorld(World.field_234918_g_).func_241124_a__(STARTING_POSITION);
+                    server.getWorld(World.OVERWORLD).func_241124_a__(STARTING_POSITION, 0.0f);
                     server.getCommandManager().handleCommand(server.getCommandSource(), "/difficulty peaceful");
                     int result = server.getCommandManager().handleCommand(server.getCommandSource(), "/gamerule spawnRadius 0");
                     if (result != 0) {
@@ -121,7 +122,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
                     // If the world has initialized, set the spawn point to our defined starting position
                     if (world != null) {
                         world.getGameRules().get(GameRules.SPAWN_RADIUS).func_234909_b_("0");
-                        world.func_241124_a__(STARTING_POSITION);
+                        world.func_241124_a__(STARTING_POSITION, 0.0f);
                     }
                 }
             }
