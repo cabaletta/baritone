@@ -97,17 +97,4 @@ public interface IPlayerContext {
     default boolean isLookingAt(BlockPos pos) {
         return getSelectedBlock().equals(Optional.of(pos));
     }
-
-    /**
-     * Returns the entity that the crosshair is currently placed over. Updated once per tick.
-     *
-     * @return The entity
-     */
-    default Optional<Entity> getSelectedEntity() {
-        RayTraceResult result = objectMouseOver();
-        if (result != null && result.typeOfHit == RayTraceResult.Type.ENTITY) {
-            return Optional.of(result.entityHit);
-        }
-        return Optional.empty();
-    }
 }
