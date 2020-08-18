@@ -46,7 +46,7 @@ public class FullBrightCommand extends Command {
         args.requireMax(1);
 
         if (args.has(1)) {
-            ICommandArgument iarg = args.getArgs().get(1);
+            ICommandArgument iarg = args.getArgs().get(0);
             approachGamma(Double.parseDouble(iarg.getValue()));
         } else {
             GameSettings options = Helper.mc.gameSettings;
