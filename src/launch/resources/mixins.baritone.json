@@ -8,7 +8,6 @@
     "maxShiftBy": 2
   },
   "client": [
-    "MixinBitArray",
     "MixinChunkArray",
     "MixinClientChunkProvider",
     "MixinClientPlayerEntity",
@@ -21,7 +20,6 @@
     "MixinLootContext",
     "MixinMinecraft",
     "MixinNetworkManager",
-    "MixinPalettedContainer",
     "MixinPlayerController",
     "MixinScreen",
     "MixinWorldRenderer"

@@ -22,11 +22,11 @@ import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.IPlayerContext;
-import baritone.utils.accessor.IPalettedContainer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.palette.PalettedContainer;
 import net.minecraft.world.chunk.AbstractChunkProvider;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
@@ -155,27 +155,27 @@ public enum WorldScanner implements IWorldScanner {
                 continue;
             }
             int yReal = y0 << 4;
-            IPalettedContainer bsc = (IPalettedContainer) section.getData();
-            // storageArray uses an optimized algorithm that's faster than getAt
-            // creating this array and then using getAtPalette is faster than even getFast(int index)
-            int[] storage = bsc.storageArray();
-            final int imax = 1 << 12;
-            for (int i = 0; i < imax; i++) {
-                BlockState state = bsc.getAtPalette(storage[i]);
-                if (state != null && filter.has(state)) {
-                    int y = yReal | ((i >> 8) & 15);
-                    if (result.size() >= max) {
-                        if (Math.abs(y - playerY) < yLevelThreshold) {
-                            foundWithinY = true;
-                        } else {
-                            if (foundWithinY) {
-                                // have found within Y in this chunk, so don't need to consider outside Y
-                                // TODO continue iteration to one more sorted Y coordinate block
-                                return true;
+            PalettedContainer<BlockState> bsc = section.getData();
+            for (int yy = 0; yy < 16; yy++) {
+                for (int z = 0; z < 16; z++) {
+                    for (int x = 0; x < 16; x++) {
+                        BlockState state = bsc.get(x, yy, z);
+                        if (filter.has(state)) {
+                            int y = yReal | yy;
+                            if (result.size() >= max) {
+                                if (Math.abs(y - playerY) < yLevelThreshold) {
+                                    foundWithinY = true;
+                                } else {
+                                    if (foundWithinY) {
+                                        // have found within Y in this chunk, so don't need to consider outside Y
+                                        // TODO continue iteration to one more sorted Y coordinate block
+                                        return true;
+                                    }
+                                }
                             }
+                            result.add(new BlockPos(chunkX | x, y, chunkZ | z));
                         }
                     }
-                    result.add(new BlockPos(chunkX | (i & 15), y, chunkZ | ((i >> 4) & 15)));
                 }
             }
         }
