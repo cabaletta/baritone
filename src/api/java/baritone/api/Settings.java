@@ -180,9 +180,14 @@ public final class Settings {
     /**
      * Blocks that Baritone will attempt to avoid (Used in avoidance)
      */
-    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(
-            // Leave Empty by Default
-    ));
+    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(Arrays.asList(
+            Blocks.FIRE,
+            Blocks.TRIPWIRE,
+            Blocks.WEB,
+            Blocks.END_PORTAL,
+            Blocks.COCOA,
+            Blocks.END_ROD
+    )));
 
     /**
      * Blocks that Baritone is not allowed to break
