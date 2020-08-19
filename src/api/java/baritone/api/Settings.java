@@ -1110,7 +1110,7 @@ public final class Settings {
     public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
 
     /**
-     *
+     * The default gamma level when turning fullbright on.
      */
     public final Setting<Integer> fullBrightLevel = new Setting<>(16);
 
