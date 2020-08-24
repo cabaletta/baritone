@@ -76,15 +76,14 @@ public class MovementDiagonal extends Movement {
                 return true;
         }
         //we are in a likely unwalkable corner, check for a supporting block
-        if ((ctx.playerFeet().equals(new BetterBlockPos(src.x, src.y, dest.z))
-            || ctx.playerFeet().equals(new BetterBlockPos(dest.x, src.y, src.z)))
-                && (MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z + offset))
+        if (ctx.playerFeet().equals(new BetterBlockPos(src.x, src.y, dest.z))
+            || ctx.playerFeet().equals(new BetterBlockPos(dest.x, src.y, src.z))){
+                return (MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z + offset))
                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z - offset))
                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z + offset))
-                   || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z - offset)))){
-                        return true;
+                   || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z - offset)));
         }
-        return false;
+        return true;
    }
 
     @Override
