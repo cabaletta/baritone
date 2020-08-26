@@ -52,6 +52,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private Goal goal;
     private CalculationContext context;
 
+    /*eta*/
+    private int ticksElapsedSoFar;
+    private BetterBlockPos startPosition;
+
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
     private boolean unpausedLastTick;
@@ -98,6 +102,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         expectedSegmentStart = pathStart();
         baritone.getPathingControlManager().preTick();
         tickPath();
+        ticksElapsedSoFar++;
         dispatchEvents();
     }
 
@@ -372,6 +377,16 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return context;
     }
 
+    public Optional<Double> estimatedTicksToGoal(){
+        if (goal == null){
+            return Optional.empty();
+        }
+        BetterBlockPos currentPos = ctx.playerFeet();
+        double current = goal.heuristic(currentPos.x, currentPos.y, currentPos.z);
+        double start = goal.heuristic(startPosition.x, startPosition.y, startPosition.z);
+        return Optional.of(current * ticksElapsedSoFar / (start - current));
+    }
+
     /**
      * See issue #209
      *
@@ -468,6 +483,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         if (executor.get().getPath().positions().contains(expectedSegmentStart)) {
                             queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                             current = executor.get();
+                            ticksElapsedSoFar = 0;
+                            startPosition = expectedSegmentStart;
                         } else {
                             logDebug("Warning: discarding orphan path segment with incorrect start");
                         }
