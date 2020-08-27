@@ -72,7 +72,7 @@ public class ETACommand extends Command {
                 "Be aware that the ETA to your goal is really unprecise",
                 "",
                 "Usage:",
-                "> proc - View ETA, if present"
+                "> eta - View ETA, if present"
         );
     }
 }
