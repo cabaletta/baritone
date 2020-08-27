@@ -30,9 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class EtaCommand extends Command {
+public class ETACommand extends Command {
 
-    public EtaCommand(IBaritone baritone) {
+    public ETACommand(IBaritone baritone) {
         super(baritone, "eta");
     }
 
@@ -60,19 +60,19 @@ public class EtaCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "View the current eta";
+        return "View the current ETA";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The eta command provides information about the estimated time until the next segment.",
+                "The ETA command provides information about the estimated time until the next segment.",
                 "and the goal",
                 "",
-                "Be aware that the eta to your goal is really unprecise",
+                "Be aware that the ETA to your goal is really unprecise",
                 "",
                 "Usage:",
-                "> proc - View eta, if present"
+                "> proc - View ETA, if present"
         );
     }
 }
