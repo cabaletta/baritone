@@ -378,12 +378,15 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     public Optional<Double> estimatedTicksToGoal() {
-        if (goal == null) {
+        if (goal == null || ticksElapsedSoFar == 0) {
             return Optional.empty();
         }
         BetterBlockPos currentPos = ctx.playerFeet();
         double current = goal.heuristic(currentPos.x, currentPos.y, currentPos.z);
         double start = goal.heuristic(startPosition.x, startPosition.y, startPosition.z);
+        if (current == start) {//can't check above because current and start can be equal even if currentPos and startPosition are not
+            return Optional.empty();
+        }
         return Optional.of(current * ticksElapsedSoFar / (start - current));
     }
 
