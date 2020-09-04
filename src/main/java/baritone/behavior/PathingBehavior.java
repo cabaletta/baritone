@@ -387,7 +387,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (current == start) {//can't check above because current and start can be equal even if currentPos and startPosition are not
             return Optional.empty();
         }
-        double eta = current * ticksElapsedSoFar / (start - current);
+        double eta = Math.abs(current) * ticksElapsedSoFar / Math.abs(start - current);
         if (eta < 0 || current < 0){
             return Optional.empty();
         }
