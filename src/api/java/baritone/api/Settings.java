@@ -727,6 +727,11 @@ public final class Settings {
     public final Setting<Integer> maxCachedWorldScanCount = new Setting<>(10);
 
     /**
+     * This will only allow baritone to mine exposed ores, can be used to stop ore obfuscators on servers that use them.
+     */
+    public final Setting<Boolean> allowOnlyExposedOres = new Setting<>(false);
+
+    /**
      * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);

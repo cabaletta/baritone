@@ -40,6 +40,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -409,6 +410,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
 
+                .filter(pos -> isNextToAir(ctx, pos))
+
                 .filter(pos -> !blacklist.contains(pos))
 
                 .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player()::getDistanceSq))
@@ -419,6 +422,19 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         return locs;
     }
+
+    public static boolean isNextToAir(CalculationContext ctx, BlockPos pos) {
+        if (!Baritone.settings().allowOnlyExposedOres.value) {
+            return true;
+        }
+        return (ctx.bsi.get0(pos.down()).getBlock() == Blocks.AIR ||
+                ctx.bsi.get0(pos.up()).getBlock() == Blocks.AIR
+                || ctx.bsi.get0(pos.north()).getBlock() == Blocks.AIR ||
+                ctx.bsi.get0(pos.south()).getBlock() == Blocks.AIR ||
+                ctx.bsi.get0(pos.east()).getBlock() == Blocks.AIR
+                || ctx.bsi.get0(pos.west()).getBlock() == Blocks.AIR);
+    }
+
 
     public static boolean plausibleToBreak(CalculationContext ctx, BlockPos pos) {
         if (MovementHelper.getMiningDurationTicks(ctx, pos.getX(), pos.getY(), pos.getZ(), ctx.bsi.get0(pos), true) >= COST_INF) {
