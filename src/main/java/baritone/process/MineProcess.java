@@ -424,15 +424,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     public static boolean isNextToAir(CalculationContext ctx, BlockPos pos) {
-        if (!Baritone.settings().allowOnlyExposedOres.value) {
-            return true;
-        }
-        return (ctx.bsi.get0(pos.down()).getBlock() == Blocks.AIR ||
-                ctx.bsi.get0(pos.up()).getBlock() == Blocks.AIR
-                || ctx.bsi.get0(pos.north()).getBlock() == Blocks.AIR ||
-                ctx.bsi.get0(pos.south()).getBlock() == Blocks.AIR ||
-                ctx.bsi.get0(pos.east()).getBlock() == Blocks.AIR
-                || ctx.bsi.get0(pos.west()).getBlock() == Blocks.AIR);
+        //need to remove diagonals
+        return makeSphere(pos, Baritone.settings().allowOnlyExposedOresDistance.value, ctx);
     }
 
 
@@ -467,5 +460,91 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (filter != null) {
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
+    }
+
+    public static boolean makeSphere(BlockPos pos, double radius, CalculationContext ctx) {
+        double radiusX = radius;
+        double radiusY = radius;
+        double radiusZ = radius;
+        radiusX += 0.5;
+        radiusY += 0.5;
+        radiusZ += 0.5;
+
+        final double invRadiusX = 1 / radiusX;
+        final double invRadiusY = 1 / radiusY;
+        final double invRadiusZ = 1 / radiusZ;
+
+        final int ceilRadiusX = (int) Math.ceil(radiusX);
+        final int ceilRadiusY = (int) Math.ceil(radiusY);
+        final int ceilRadiusZ = (int) Math.ceil(radiusZ);
+
+        double nextXn = 0;
+        forX:
+        for (int x = 0; x <= ceilRadiusX; ++x) {
+            final double xn = nextXn;
+            nextXn = (x + 1) * invRadiusX;
+            double nextYn = 0;
+            forY:
+            for (int y = 0; y <= ceilRadiusY; ++y) {
+                final double yn = nextYn;
+                nextYn = (y + 1) * invRadiusY;
+                double nextZn = 0;
+                forZ:
+                for (int z = 0; z <= ceilRadiusZ; ++z) {
+                    final double zn = nextZn;
+                    nextZn = (z + 1) * invRadiusZ;
+
+                    double distanceSq = lengthSq(xn, yn, zn);
+                    if (distanceSq > 1) {
+                        if (z == 0) {
+                            if (y == 0) {
+                                break forX;
+                            }
+                            break forY;
+                        }
+                        break forZ;
+                    }
+
+                    if (isTransparent(pos.add(x, y, z), ctx)) {
+                        return true;
+                    }
+                    if (isTransparent(pos.add(-x, y, z), ctx)) {
+                        return true;
+                    }
+                    if (isTransparent(pos.add(x, -y, z), ctx)) {
+                        return true;
+                    }
+                    if (isTransparent(pos.add(x, y, -z), ctx)) {
+                        return true;
+                    }
+                    if (isTransparent(pos.add(-x, -y, z), ctx)) {
+                        return true;
+                    }
+                    if (isTransparent(pos.add(x, -y, -z), ctx)) {
+                        return true;
+                    }
+                    if (isTransparent(pos.add(-x, y, -z), ctx)) {
+                        return true;
+                    }
+                    if (isTransparent(pos.add(-x, -y, -z), ctx)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static double lengthSq(double x, double y, double z) {
+        return (x * x) + (y * y) + (z * z);
+    }
+
+    public static boolean isTransparent(BlockPos pos, CalculationContext ctx) {
+        IBlockState blockState = ctx.bsi.get0(pos);
+        return blockState.getBlock() == Blocks.AIR ||
+                blockState.getBlock() == Blocks.FLOWING_LAVA ||
+                blockState.getBlock() == Blocks.FLOWING_WATER ||
+                blockState.getBlock() == Blocks.WATER;
     }
 }

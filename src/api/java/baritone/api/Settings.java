@@ -732,6 +732,13 @@ public final class Settings {
     public final Setting<Boolean> allowOnlyExposedOres = new Setting<>(false);
 
     /**
+     * When allowOnlyExposedOres is enabled this is the distance around to search.
+     * <p>
+     * I recommend keeping this value low as the amount of blocks that need to be scanned increases exponentially.
+     */
+    public final Setting<Integer> allowOnlyExposedOresDistance = new Setting<>(1);
+
+    /**
      * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
