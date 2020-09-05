@@ -388,9 +388,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             return Optional.empty();
         }
         double eta = Math.abs(current) * ticksElapsedSoFar / Math.abs(start - current);
-        if (eta < 0 || current < 0){
-            return Optional.empty();
-        }
         return Optional.of(eta);
     }
 
