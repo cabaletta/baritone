@@ -40,7 +40,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -410,7 +410,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
 
-                .filter(pos -> isNextToAir(ctx, pos))
+                .filter(pos -> {
+                    if (Baritone.settings().allowOnlyExposedOres.value)
+                        return isNextToAir(ctx, pos);
+                    else
+                        return true;
+                })
 
                 .filter(pos -> !blacklist.contains(pos))
 
@@ -494,7 +499,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     final double zn = nextZn;
                     nextZn = (z + 1) * invRadiusZ;
 
-                    double distanceSq = lengthSq(xn, yn, zn);
+                    double distanceSq = new Vec3d(xn, yn, zn).lengthSquared();
                     if (distanceSq > 1) {
                         if (z == 0) {
                             if (y == 0) {
@@ -534,10 +539,6 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
 
         return false;
-    }
-
-    private static double lengthSq(double x, double y, double z) {
-        return (x * x) + (y * y) + (z * z);
     }
 
     public static boolean isTransparent(BlockPos pos, CalculationContext ctx) {

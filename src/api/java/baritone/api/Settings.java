@@ -734,7 +734,7 @@ public final class Settings {
     /**
      * When allowOnlyExposedOres is enabled this is the distance around to search.
      * <p>
-     * I recommend keeping this value low as the amount of blocks that need to be scanned increases exponentially.
+     * It is recommended to keep this value low, as it exponentially increases calculation times and also to keep the
      */
     public final Setting<Integer> allowOnlyExposedOresDistance = new Setting<>(1);
 
