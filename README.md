@@ -43,7 +43,7 @@ For 1.15.2, [click here](https://www.youtube.com/watch?v=j1qKtCZFURM) and see de
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 through 1.15.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
 
-Have committed at least once a day from Aug 1 2018 to Aug 1 2019.
+Have committed at least once a day from Aug 1, 2018, to Aug 1, 2019.
 
 1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
 
@@ -71,7 +71,7 @@ The API is heavily documented, you can find the Javadocs for the latest release 
 Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
 jar.
 
-Below is an example of basic usage for changing some settings, and then pathing to a X/Z goal.
+Below is an example of basic usage for changing some settings, and then pathing to an X/Z goal.
 
 ```
 BaritoneAPI.getSettings().allowSprint.value = true;
@@ -84,7 +84,7 @@ BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAnd
 
 ## Can I use Baritone as a library in my custom utility client?
 
-That's what it's for, sure! (As long as usage is in compliance with the LGPL 3.0 License)
+That's what it's for, sure! (As long as usage complies with the LGPL 3.0 License)
 
 ## How is it so fast?
 

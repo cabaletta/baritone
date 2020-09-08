@@ -64,7 +64,7 @@ public final class Settings {
     /**
      * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto tool functionality
      * <p>
-     * Specifically, path calculation will still assume that an auto tool wil run at execution time, even though
+     * Specifically, path calculation will still assume that an auto tool will run at execution time, even though
      * Baritone itself will not do that.
      */
     public final Setting<Boolean> assumeExternalAutoTool = new Setting<>(false);
