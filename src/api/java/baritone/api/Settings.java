@@ -734,7 +734,7 @@ public final class Settings {
     /**
      * When allowOnlyExposedOres is enabled this is the distance around to search.
      * <p>
-     * It is recommended to keep this value low, as it exponentially increases calculation times and also to keep the
+     * It is recommended to keep this value low, as it dramatically increases calculation times.
      */
     public final Setting<Integer> allowOnlyExposedOresDistance = new Setting<>(1);
 
