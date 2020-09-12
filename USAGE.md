@@ -24,6 +24,8 @@ Watch this [showcase video](https://youtu.be/CZkLXWo4Fg4)!
 
 # Commands
 
+[Tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa)
+
 **All** of these commands may need a prefix before them, as above ^.
 
 `help`
