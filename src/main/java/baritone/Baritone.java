@@ -104,14 +104,14 @@ public class Baritone implements IBaritone {
 
         this.pathingControlManager = new PathingControlManager(this);
         {
-            this.getPathingControlManager().registerProcess(followProcess = new FollowProcess(this));
-            this.getPathingControlManager().registerProcess(mineProcess = new MineProcess(this));
-            this.getPathingControlManager().registerProcess(customGoalProcess = new CustomGoalProcess(this)); // very high iq
-            this.getPathingControlManager().registerProcess(getToBlockProcess = new GetToBlockProcess(this));
-            this.getPathingControlManager().registerProcess(builderProcess = new BuilderProcess(this));
-            this.getPathingControlManager().registerProcess(exploreProcess = new ExploreProcess(this));
-            this.getPathingControlManager().registerProcess(backfillProcess = new BackfillProcess(this));
-            this.getPathingControlManager().registerProcess(farmProcess = new FarmProcess(this));
+            this.pathingControlManager.registerProcess(followProcess = new FollowProcess(this));
+            this.pathingControlManager.registerProcess(mineProcess = new MineProcess(this));
+            this.pathingControlManager.registerProcess(customGoalProcess = new CustomGoalProcess(this)); // very high iq
+            this.pathingControlManager.registerProcess(getToBlockProcess = new GetToBlockProcess(this));
+            this.pathingControlManager.registerProcess(builderProcess = new BuilderProcess(this));
+            this.pathingControlManager.registerProcess(exploreProcess = new ExploreProcess(this));
+            this.pathingControlManager.registerProcess(backfillProcess = new BackfillProcess(this));
+            this.pathingControlManager.registerProcess(farmProcess = new FarmProcess(this));
         }
 
         this.worldProvider = new WorldProvider();
