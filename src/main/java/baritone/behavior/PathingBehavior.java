@@ -391,6 +391,19 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return Optional.of(eta);
     }
 
+    private void resetEstimatedTicksToGoal() {
+        resetEstimatedTicksToGoal(expectedSegmentStart);
+    }
+
+    private void resetEstimatedTicksToGoal(BlockPos start) {
+        resetEstimatedTicksToGoal(new BetterBlockPos(start));
+    }
+
+    private void resetEstimatedTicksToGoal(BetterBlockPos start) {
+        ticksElapsedSoFar = 0;
+        startPosition = start;
+    }
+
     /**
      * See issue #209
      *
@@ -487,8 +500,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         if (executor.get().getPath().positions().contains(expectedSegmentStart)) {
                             queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                             current = executor.get();
-                            ticksElapsedSoFar = 0;
-                            startPosition = expectedSegmentStart;
+                            resetEstimatedTicksToGoal(start);
                         } else {
                             logDebug("Warning: discarding orphan path segment with incorrect start");
                         }
