@@ -378,7 +378,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     public Optional<Double> estimatedTicksToGoal() {
-        if (goal == null || ticksElapsedSoFar == 0) {
+        if (goal == null) {
+            return Optional.empty();
+        }
+        if (goal.isInGoal(ctx.playerFeet())) {
+            resetEstimatedTicksToGoal();
+            return Optional.of(0.0);
+        }
+        if (ticksElapsedSoFar == 0) {
             return Optional.empty();
         }
         BetterBlockPos currentPos = ctx.playerFeet();
