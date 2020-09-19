@@ -21,6 +21,9 @@ import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
 
 /**
  * Useful for automated combat (retreating specifically)
@@ -78,6 +81,45 @@ public class GoalRunAway implements Goal {
             min = min * 0.6 + GoalYLevel.calculate(maintainY, y) * 1.5;
         }
         return min;
+    }
+
+    @Override
+    public double heuristic() {//TODO less hacky solution
+        int distance = (int)Math.ceil(Math.abs(Math.sqrt(distanceSq)));
+        int minX = from[0].getX() - distance;
+        int minY = from[0].getY() - distance;
+        int minZ = from[0].getZ() - distance;
+        int maxX = from[0].getX() + distance;
+        int maxY = from[0].getY() + distance;
+        int maxZ = from[0].getZ() + distance;
+        for (BlockPos p : from) {
+            minX = Math.min(minX, p.getX() - distance);
+            minY = Math.min(minY, p.getY() - distance);
+            minZ = Math.min(minZ, p.getZ() - distance);
+            maxX = Math.max(minX, p.getX() + distance);
+            maxY = Math.max(minY, p.getY() + distance);
+            maxZ = Math.max(minZ, p.getZ() + distance);
+        }
+        HashSet<Double> maybeAlwaysInside = new HashSet<>();
+        HashSet<Double> sometimesOutside = new HashSet<>();
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minX; y <= maxX; y++) {
+                for (int z = minX; z <= maxX; z++) {
+                    double h = heuristic(x, y, z);
+                    if (!sometimesOutside.contains(h) && isInGoal(x, y, z)) {
+                        maybeAlwaysInside.add(h);
+                    } else {
+                        maybeAlwaysInside.remove(h);
+                        sometimesOutside.add(h);
+                    }
+                }
+            }
+        }
+        try {
+            return Collections.max(maybeAlwaysInside);
+        } catch (NoSuchElementException e) {
+            return Double.NEGATIVE_INFINITY;
+        }
     }
 
     @Override

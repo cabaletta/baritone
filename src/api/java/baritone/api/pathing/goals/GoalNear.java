@@ -21,6 +21,9 @@ import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Collections;
+import java.util.HashSet;
+
 public class GoalNear implements Goal, IGoalRenderPos {
 
     private final int x;
@@ -49,6 +52,27 @@ public class GoalNear implements Goal, IGoalRenderPos {
         int yDiff = y - this.y;
         int zDiff = z - this.z;
         return GoalBlock.calculate(xDiff, yDiff, zDiff);
+    }
+
+    @Override
+    public double heuristic() {//TODO less hacky solution
+        int range = (int)Math.ceil(Math.abs(Math.sqrt(rangeSq)));
+        HashSet<Double> maybeAlwaysInside = new HashSet<>();
+        HashSet<Double> sometimesOutside = new HashSet<>();
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -range; dy <= range; dy++) {
+                for (int dz = -range; dz <= range; dz++) {
+                    double h = heuristic(x+dx, y+dy, z+dz);
+                    if (!sometimesOutside.contains(h) && isInGoal(x+dx, y+dy, z+dz)) {
+                        maybeAlwaysInside.add(h);
+                    } else {
+                        maybeAlwaysInside.remove(h);
+                        sometimesOutside.add(h);
+                    }
+                }
+            }
+        }
+        return Collections.max(maybeAlwaysInside);
     }
 
     @Override
