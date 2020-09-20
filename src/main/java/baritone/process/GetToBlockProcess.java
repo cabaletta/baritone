@@ -77,6 +77,10 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
                     public boolean isInGoal(int x, int y, int z) {
                         return false;
                     }
+                    @Override
+                    public double heuristic() {
+                        return Double.NEGATIVE_INFINITY;
+                    }
                 }, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
             }
             logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
