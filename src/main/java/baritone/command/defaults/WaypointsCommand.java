@@ -296,7 +296,8 @@ public class WaypointsCommand extends Command {
                 "> wp <s/save> <tag> <name> <pos> - Save the waypoint with the specified name and position.",
                 "> wp <i/info/show> <tag> - Show info on a waypoint by tag.",
                 "> wp <d/delete> <tag> - Delete a waypoint by tag.",
-                "> wp <g/goal/goto> <tag> - Set a goal to a waypoint by tag."
+                "> wp <g/goal> <tag> - Set a goal to a waypoint by tag.",
+                "> wp <goto> <tag> - Set a goal to a waypoint by tag and start pathing."
         );
     }
 
