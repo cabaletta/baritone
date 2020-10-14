@@ -71,7 +71,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(ITextComponent title, ITextComponent message) {
-        BaritoneToast.addOrUpdate(mc.getToastGui(), title, message, BaritoneAPI.getSettings().toastTimer.value);
+        mc.addScheduledTask(() -> BaritoneToast.addOrUpdate(mc.getToastGui(), title, message, BaritoneAPI.getSettings().toastTimer.value));
     }
 
     /**
