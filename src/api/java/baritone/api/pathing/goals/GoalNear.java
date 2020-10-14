@@ -56,14 +56,14 @@ public class GoalNear implements Goal, IGoalRenderPos {
 
     @Override
     public double heuristic() {//TODO less hacky solution
-        int range = (int)Math.ceil(Math.sqrt(rangeSq));
+        int range = (int) Math.ceil(Math.sqrt(rangeSq));
         HashSet<Double> maybeAlwaysInside = new HashSet<>();
         HashSet<Double> sometimesOutside = new HashSet<>();
         for (int dx = -range; dx <= range; dx++) {
             for (int dy = -range; dy <= range; dy++) {
                 for (int dz = -range; dz <= range; dz++) {
-                    double h = heuristic(x+dx, y+dy, z+dz);
-                    if (!sometimesOutside.contains(h) && isInGoal(x+dx, y+dy, z+dz)) {
+                    double h = heuristic(x + dx, y + dy, z + dz);
+                    if (!sometimesOutside.contains(h) && isInGoal(x + dx, y + dy, z + dz)) {
                         maybeAlwaysInside.add(h);
                     } else {
                         maybeAlwaysInside.remove(h);
