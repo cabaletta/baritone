@@ -40,7 +40,6 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -411,10 +410,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
 
                 .filter(pos -> {
-                    if (Baritone.settings().allowOnlyExposedOres.value)
+                    if (Baritone.settings().allowOnlyExposedOres.value) {
                         return isNextToAir(ctx, pos);
-                    else
+                    } else {
                         return true;
+                    }
                 })
 
                 .filter(pos -> !blacklist.contains(pos))
@@ -434,7 +434,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             for (int dy = -radius; dy <= radius; dy++) {
                 for (int dz = -radius; dz <= radius; dz++) {
                     if (Math.abs(dx) + Math.abs(dy) + Math.abs(dz) <= radius
-                            && MovementHelper.isTransparent(ctx.getBlock(pos.getX()+dx, pos.getY()+dy, pos.getZ()+dz))) {
+                            && MovementHelper.isTransparent(ctx.getBlock(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz))) {
                         return true;
                     }
                 }
