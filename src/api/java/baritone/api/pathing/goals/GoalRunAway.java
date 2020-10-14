@@ -85,7 +85,7 @@ public class GoalRunAway implements Goal {
 
     @Override
     public double heuristic() {//TODO less hacky solution
-        int distance = (int)Math.ceil(Math.abs(Math.sqrt(distanceSq)));
+        int distance = (int)Math.ceil(Math.sqrt(distanceSq));
         int minX = from[0].getX() - distance;
         int minY = from[0].getY() - distance;
         int minZ = from[0].getZ() - distance;
