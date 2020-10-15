@@ -68,7 +68,7 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
-    public double heuristic(int x, int y, int z) {//mostly copied from GoalBlock
+    public double heuristic(int x, int y, int z) {// mostly copied from GoalBlock
         double min = Double.MAX_VALUE;
         for (BlockPos p : from) {
             double h = GoalXZ.calculate(p.getX() - x, p.getZ() - z);
@@ -84,7 +84,7 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
-    public double heuristic() {//TODO less hacky solution
+    public double heuristic() {// TODO less hacky solution
         int distance = (int) Math.ceil(Math.sqrt(distanceSq));
         int minX = from[0].getX() - distance;
         int minY = from[0].getY() - distance;

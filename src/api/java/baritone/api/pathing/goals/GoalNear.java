@@ -55,7 +55,7 @@ public class GoalNear implements Goal, IGoalRenderPos {
     }
 
     @Override
-    public double heuristic() {//TODO less hacky solution
+    public double heuristic() {// TODO less hacky solution
         int range = (int) Math.ceil(Math.sqrt(rangeSq));
         HashSet<Double> maybeAlwaysInside = new HashSet<>();
         HashSet<Double> sometimesOutside = new HashSet<>();

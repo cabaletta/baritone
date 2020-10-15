@@ -391,7 +391,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
         double current = goal.heuristic(currentPos.x, currentPos.y, currentPos.z);
         double start = goal.heuristic(startPosition.x, startPosition.y, startPosition.z);
-        if (current == start) {//can't check above because current and start can be equal even if currentPos and startPosition are not
+        if (current == start) {// can't check above because current and start can be equal even if currentPos and startPosition are not
             return Optional.empty();
         }
         double eta = Math.abs(current - goal.heuristic()) * ticksElapsedSoFar / Math.abs(start - current);

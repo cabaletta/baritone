@@ -61,7 +61,7 @@ public class GoalComposite implements Goal {
     public double heuristic() {
         double min = Double.MAX_VALUE;
         for (Goal g : goals) {
-            //just take the highest value that is guaranteed to be inside the goal
+            // just take the highest value that is guaranteed to be inside the goal
             min = Math.min(min, g.heuristic());
         }
         return min;
