@@ -40,7 +40,6 @@ public class SetChestCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        BetterBlockPos player = ctx.playerFeet();
         Optional<BlockPos> blockPos = ctx.getSelectedBlock();
 
         int x = blockPos.get().getX();
