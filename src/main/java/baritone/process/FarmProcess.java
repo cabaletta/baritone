@@ -179,16 +179,12 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             Set<Item> validDrops = new HashSet<Item>(PICKUP_DROPPED);
             boolean invFull = isInventoryFull();
             blacklistBlocks = new BlockOptionalMetaLookup();
-
             PathingCommand result = null;
-
             if(invFull) {
                 Set<ItemStack> notFullStacks = notFullStacks(validDrops);
                 blacklistBlocks = getBlacklistBlocks(notFullStacks, FILTER);
-
                 if(notFullStacks.isEmpty()||noGoal) {
                     result = gotoChest(isSafeToCancel);
-                    
                     usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
                 }
             }
@@ -204,7 +200,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 usingChest = false;
                 noGoal = false;
             }
-
             if(result != null) return result;
         }
 
@@ -269,7 +264,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                 }
-
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
@@ -285,7 +279,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                     if (ctx.isLookingAt(pos)) {
                         baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                     }
-
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
             }
@@ -297,7 +290,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
-
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }

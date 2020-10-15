@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.cache.IWaypoint;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -107,7 +108,7 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
 
         Set<ItemStack> stacks = inv.stream()
-            .filter(stack -> validDrops.contains(stack.getItem()) && stack.getMaxStackSize() != stack.getCount())
+            .filter(stack -> validDrops.contains(stack.getItem()) && stack.getMaxStackSize() < stack.getCount())
             .collect(Collectors.toCollection(HashSet::new));
         
         return stacks;
@@ -131,12 +132,10 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
     }
 
     public PathingCommand gotoChest(boolean isSafeToCancel) {
-        IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.USECHEST);
         IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
-        if (chestLoc != null && waypoint != null) {
+        if (chestLoc != null ) {
             BlockPos chest = chestLoc.getLocation();
-            if (waypoint.getLocation().getDistance(chest.getX(), chest.getY(), chest.getZ()) < 6) {
-                Goal goal = new GoalBlock(waypoint.getLocation());
+                Goal goal = new GoalGetToBlock(chestLoc.getLocation());
                 if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart())) {
                     Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
                     if (rot.isPresent() && isSafeToCancel) {
@@ -153,9 +152,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
                 } else {
                     return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
                 }
-            } else {
-                logDirect("Chest not properly set, please use #setchest again");
-            }
         } else {
             logDirect("No chest set, please use #setchest");
         }

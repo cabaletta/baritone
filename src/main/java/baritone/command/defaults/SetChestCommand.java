@@ -48,17 +48,12 @@ public class SetChestCommand extends Command {
         int z = blockPos.get().getZ();
 
         if (blockPos.isPresent()) {
-            if (player.getDistance(x, y, z) < 6) {
-                Block block = ctx.world().getBlockState(blockPos.get()).getBlock();
-                if (block.equals(Blocks.CHEST) || block.equals(Blocks.ENDER_CHEST) || block.equals(Blocks.TRAPPED_CHEST)) {
-                    baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.CHEST, new BetterBlockPos(blockPos.get())));
-                    baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.USECHEST, player));
-                    logDirect("Chest selected at " + x + " " + y + " " + z);
-                } else {
-                    logDirect("Block is not a Chest");
-                }
+            Block block = ctx.world().getBlockState(blockPos.get()).getBlock();
+            if (block.equals(Blocks.CHEST) || block.equals(Blocks.ENDER_CHEST) || block.equals(Blocks.TRAPPED_CHEST)) {
+                baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.CHEST, new BetterBlockPos(blockPos.get())));
+                logDirect("Chest selected at " + x + " " + y + " " + z);
             } else {
-                logDirect("Block is not in Range");
+                logDirect("Block is not a Chest");
             }
         } else {
             logDirect("Please look at a chest");
