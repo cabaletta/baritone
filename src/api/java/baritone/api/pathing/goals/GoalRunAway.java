@@ -101,16 +101,15 @@ public class GoalRunAway implements Goal {
             maxZ = Math.max(minZ, p.getZ() + distance);
         }
         HashSet<Double> maybeAlwaysInside = new HashSet<>();
-        HashSet<Double> sometimesOutside = new HashSet<>();
+        double minOutside = Double.POSITIVE_INFINITY;
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     double h = heuristic(x, y, z);
-                    if (!sometimesOutside.contains(h) && isInGoal(x, y, z)) {
+                    if (h < minOutside && isInGoal(x, y, z)) {
                         maybeAlwaysInside.add(h);
                     } else {
-                        maybeAlwaysInside.remove(h);
-                        sometimesOutside.add(h);
+                        minOutside = Math.min(minOutside, h);
                     }
                 }
             }
