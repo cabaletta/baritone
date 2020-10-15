@@ -108,7 +108,7 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
 
         Set<ItemStack> stacks = inv.stream()
-            .filter(stack -> validDrops.contains(stack.getItem()) && stack.getMaxStackSize() < stack.getCount())
+            .filter(stack -> validDrops.contains(stack.getItem()) && stack.getMaxStackSize() > stack.getCount())
             .collect(Collectors.toCollection(HashSet::new));
         
         return stacks;
@@ -116,16 +116,14 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
 
     public BlockOptionalMetaLookup getBlacklistBlocks(Set<ItemStack> notFullStacks, BlockOptionalMetaLookup filter) {
         List<BlockOptionalMeta> blacklistBlocks = new ArrayList<>();
-
+        OUTER:
         for (BlockOptionalMeta bom : filter.blocks()) {
-            boolean blacklist = true;
             for (ItemStack stack : notFullStacks) {
                 if (bom.matches(stack)) {
-                    blacklist = false;
-                    break;
+                   continue OUTER;
                 }
             }
-            if (blacklist) blacklistBlocks.add(bom);
+            blacklistBlocks.add(bom);
         }
 
         return new BlockOptionalMetaLookup(blacklistBlocks.toArray(new BlockOptionalMeta[blacklistBlocks.size()]));

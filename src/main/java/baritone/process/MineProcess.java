@@ -81,13 +81,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (Baritone.settings().checkInventory.value) {
             boolean invFull = isInventoryFull();
             blacklistBlocks = new BlockOptionalMetaLookup();
-
             PathingCommand result = null;
-
             if(invFull) {
                 Set<ItemStack> notFullStacks = notFullStacks(validDrops);
                 blacklistBlocks = getBlacklistBlocks(notFullStacks, filter);
-
                 if(notFullStacks.isEmpty()) {
                     result = gotoChest(isSafeToCancel);
                     
@@ -105,7 +102,6 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 }
                 usingChest = false;
             }
-
             if(result != null) return result;
         }
 
