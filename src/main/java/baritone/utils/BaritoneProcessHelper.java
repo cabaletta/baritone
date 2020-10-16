@@ -101,7 +101,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
                 break;  
             }
         }
-
         return inventoryFull;
     }
 
@@ -111,7 +110,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         Set<ItemStack> stacks = inv.stream()
             .filter(stack -> validDrops.contains(stack.getItem()) && stack.getMaxStackSize() > stack.getCount())
             .collect(Collectors.toCollection(HashSet::new));
-        
         return stacks;
     }
 
@@ -126,7 +124,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
             }
             blacklistBlocks.add(bom);
         }
-
         return new BlockOptionalMetaLookup(blacklistBlocks.toArray(new BlockOptionalMeta[blacklistBlocks.size()]));
     }
 
@@ -154,7 +151,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         } else {
             logDirect("No chest set, please use #setchest");
         }
-
         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
     }
 
@@ -174,7 +170,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
                         }
                         onLostControl();
                         logDirect("Inventory is full; Stopping current task.");
-
                     }
                 }
             }
