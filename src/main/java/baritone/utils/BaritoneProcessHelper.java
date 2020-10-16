@@ -76,7 +76,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
     public boolean putInventoryInChest(Set<Item> validDrops) {
         List<Slot> chestInv = ctx.player().openContainer.inventorySlots;
         NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
-
         for (int i = 0; i < inv.size(); i++) {
             if (!inv.isEmpty() && validDrops.contains(inv.get(i).getItem())) {
                 for (int j = 0; j < chestInv.size() - inv.size(); j++) {
@@ -93,7 +92,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
     public boolean isInventoryFull() {
         NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
         boolean inventoryFull = true;
-
         for (ItemStack stack : inv) {
             if (stack.isEmpty()) {
                 inventoryFull = false;
@@ -105,7 +103,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
 
     public Set<ItemStack> notFullStacks(Set<Item> validDrops) {
         NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
-
         Set<ItemStack> stacks = inv.stream()
             .filter(stack -> validDrops.contains(stack.getItem()) && stack.getMaxStackSize() > stack.getCount())
             .collect(Collectors.toCollection(HashSet::new));

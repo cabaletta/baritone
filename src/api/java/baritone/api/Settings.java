@@ -945,7 +945,6 @@ public final class Settings {
      */
     public final Setting<Boolean> putDropsInChest = new Setting<>(true);
 
-
     /**
      * What Y level to go to for legit strip mining
      */
