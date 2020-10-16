@@ -21,6 +21,7 @@ import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.utils.BetterBlockPos;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,8 +35,13 @@ public class FarmCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        args.requireMax(0);
-        baritone.getFarmProcess().farm();
+        args.requireMax(1);
+        int range = 0;
+        if (args.hasExactly(1)) {
+            range = args.getAs(Integer.class);
+        }
+        BetterBlockPos origin = baritone.getPlayerContext().playerFeet();
+        baritone.getFarmProcess().farm(range, origin);
         logDirect("Farming");
     }
 
@@ -55,7 +61,8 @@ public class FarmCommand extends Command {
                 "The farm command starts farming nearby plants. It harvests mature crops and plants new ones.",
                 "",
                 "Usage:",
-                "> farm"
+                "> farm - farms every crop it can find.",
+                "> farm 100 - farm crops within a 100 block radius from the starting position."
         );
     }
 }
