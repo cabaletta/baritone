@@ -165,8 +165,17 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
             if(invFull) {
                 Set<ItemStack> notFullStacks = notFullStacks(validDrops);
                 if(notFullStacks.isEmpty()) {
+                    if(Baritone.settings().putDropsInChest.value){
                     result = gotoChest(isSafeToCancel);
                     usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
+                    }else{
+                        if (Baritone.settings().goHome.value) {
+                            returnhome();
+                        }
+                        onLostControl();
+                        logDirect("Inventory is full; Stopping current task.");
+
+                    }
                 }
             }
             if(usingChest && putInventoryInChest(validDrops)) {
