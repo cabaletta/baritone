@@ -114,7 +114,7 @@ public class MovementParkour extends Movement {
                 return;
             }
             IBlockState destInto = context.bsi.get0(destX, y, destZ);
-            if (!MovementHelper.fullyPassable(destInto)) {
+            if (!MovementHelper.fullyPassable(context.bsi.access, context.bsi.isPassableBlockPos.setPos(destX, y, destZ), destInto)) {
                 if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context.bsi, destX, y, destZ, destInto) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
                     res.x = destX;
                     res.y = y + 1;
@@ -250,7 +250,7 @@ public class MovementParkour extends Movement {
             }
         } else if (!ctx.playerFeet().equals(src)) {
             if (ctx.playerFeet().equals(src.offset(direction)) || ctx.player().posY - src.y > 0.0001) {
-                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true) == PlaceResult.READY_TO_PLACE) {
+                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true, false) == PlaceResult.READY_TO_PLACE) {
                     // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
                     state.setInput(Input.CLICK_RIGHT, true);
                 }

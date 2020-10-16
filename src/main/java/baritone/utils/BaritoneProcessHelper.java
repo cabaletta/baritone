@@ -56,7 +56,6 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
     public BaritoneProcessHelper(Baritone baritone) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
-        baritone.getPathingControlManager().registerProcess(this);
     }
 
     @Override

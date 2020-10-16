@@ -29,6 +29,7 @@ import baritone.api.utils.input.Input;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
+import baritone.utils.NotificationHelper;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -244,7 +245,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         both.addAll(openSoulsand);
         for (BlockPos pos : both) {
             boolean soulsand = openSoulsand.contains(pos);
-            Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance());
+            Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance(), false);
             if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, soulsand ? this::isNetherWart : this::isPlantable)) {
                 RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
                 if (result.typeOfHit == RayTraceResult.Type.BLOCK && result.sideHit == EnumFacing.UP) {
@@ -269,6 +270,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
         if (calcFailed) {
             logDirect("Farm failed");
+            if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnFarmFail.value) {
+                NotificationHelper.notify("Farm failed", true);
+            }
             onLostControl();
             if (Baritone.settings().goHome.value) {
                 returnhome();
