@@ -739,6 +739,11 @@ public final class Settings {
     public final Setting<Integer> maxCachedWorldScanCount = new Setting<>(10);
 
     /**
+     * Sets the minimum y level whilst mining - set to 0 to turn off.
+     */
+    public final Setting<Integer> minYLevelWhileMining = new Setting<>(0);
+
+    /**
      * This will only allow baritone to mine exposed ores, can be used to stop ore obfuscators on servers that use them.
      */
     public final Setting<Boolean> allowOnlyExposedOres = new Setting<>(false);
