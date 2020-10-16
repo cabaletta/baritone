@@ -59,8 +59,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     private BlockOptionalMetaLookup blacklistBlocks;
     private List<BlockPos> locations;
     private int tickCount;
-    private boolean usingChest;
-    private boolean noGoal = false;
 
     private static final BlockOptionalMetaLookup FILTER = new BlockOptionalMetaLookup(Arrays.asList(Harvest.values())
         .stream()
@@ -175,34 +173,13 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        if (Baritone.settings().checkInventory.value) {
-            Set<Item> validDrops = new HashSet<Item>(PICKUP_DROPPED);
-            boolean invFull = isInventoryFull();
-            blacklistBlocks = new BlockOptionalMetaLookup();
-            PathingCommand result = null;
-            if(invFull) {
-                Set<ItemStack> notFullStacks = notFullStacks(validDrops);
-                blacklistBlocks = getBlacklistBlocks(notFullStacks, FILTER);
-                if(notFullStacks.isEmpty()||noGoal) {
-                    result = gotoChest(isSafeToCancel);
-                    usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
-                }
-            }
-            if(usingChest && putInventoryInChest(validDrops)) {
-                ctx.player().closeScreen();
-                if (invFull) {
-                    if (Baritone.settings().goHome.value) {
-                        returnhome();
-                    }
-                    onLostControl();
-                    logDirect("Inventory and chest are full; no more farming.");
-                }
-                usingChest = false;
-                noGoal = false;
-            }
-            if(result != null) return result;
+        Set<Item> validDrops = new HashSet<Item>(PICKUP_DROPPED);
+        blacklistBlocks = new BlockOptionalMetaLookup();
+        if (Baritone.settings().checkInventory.value && isInventoryFull()) {
+            blacklistBlocks = getBlacklistBlocks(notFullStacks(validDrops), FILTER);
         }
-
+        PathingCommand command = handleInventory(isSafeToCancel,validDrops);
+        if (command != null) return command;
         ArrayList<Block> scan = new ArrayList<>();
         for (Harvest harvest : Harvest.values()) {
             scan.add(harvest.block);
@@ -331,7 +308,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 }
             }
         }
-        noGoal = goalz.isEmpty();
         return new PathingCommand(new GoalComposite(goalz.toArray(new Goal[0])), PathingCommandType.SET_GOAL_AND_PATH);
     }
 

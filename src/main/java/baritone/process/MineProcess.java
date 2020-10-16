@@ -78,33 +78,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        if (Baritone.settings().checkInventory.value) {
-            boolean invFull = isInventoryFull();
-            blacklistBlocks = new BlockOptionalMetaLookup();
-            PathingCommand result = null;
-            if(invFull) {
-                Set<ItemStack> notFullStacks = notFullStacks(validDrops);
-                blacklistBlocks = getBlacklistBlocks(notFullStacks, filter);
-                if(notFullStacks.isEmpty()) {
-                    result = gotoChest(isSafeToCancel);
-                    
-                    usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
-                }
-            }
-            if(usingChest && putInventoryInChest(validDrops)) {
-                ctx.player().closeScreen();
-                if (invFull) {
-                    if (Baritone.settings().goHome.value) {
-                        returnhome();
-                    }
-                    cancel();
-                    logDirect("Inventory and chest are full; no more mining.");
-                }
-                usingChest = false;
-            }
-            if(result != null) return result;
+        blacklistBlocks = new BlockOptionalMetaLookup();
+        if (Baritone.settings().checkInventory.value && isInventoryFull()) {
+            blacklistBlocks = getBlacklistBlocks(notFullStacks(validDrops), filter);
         }
-
+        PathingCommand result = handleInventory(isSafeToCancel, validDrops);
+        if (result != null) return result;
         if (desiredQuantity > 0) {
             int curr = ctx.player().inventory.mainInventory.stream()
                     .filter(stack -> filter.has(stack))

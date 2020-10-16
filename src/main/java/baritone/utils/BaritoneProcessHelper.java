@@ -51,6 +51,7 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
 
     protected final Baritone baritone;
     protected final IPlayerContext ctx;
+    private boolean usingChest;
 
     public BaritoneProcessHelper(Baritone baritone) {
         this.baritone = baritone;
@@ -155,5 +156,31 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         }
 
         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+    }
+
+    public PathingCommand handleInventory(boolean isSafeToCancel,Set<Item> validDrops){
+        PathingCommand result =null;
+        if (Baritone.settings().checkInventory.value){
+            boolean invFull=isInventoryFull();
+            if(invFull) {
+                Set<ItemStack> notFullStacks = notFullStacks(validDrops);
+                if(notFullStacks.isEmpty()) {
+                    result = gotoChest(isSafeToCancel);
+                    usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
+                }
+            }
+            if(usingChest && putInventoryInChest(validDrops)) {
+                ctx.player().closeScreen();
+                if (invFull) {
+                    if (Baritone.settings().goHome.value) {
+                        returnhome();
+                    }
+                    onLostControl();
+                    logDirect("Inventory and chest are full; Stopping current task.");
+                }
+                usingChest = false;
+            }
+        }
+        return result;
     }
 }
