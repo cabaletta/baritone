@@ -24,10 +24,7 @@ import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.api.utils.RayTraceUtils;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.MovementHelper;
@@ -56,7 +53,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private boolean active;
 
-    private BlockOptionalMetaLookup blacklistBlocks;
     private List<BlockPos> locations;
     private int tickCount;
 
@@ -174,7 +170,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         Set<Item> validDrops = new HashSet<Item>(PICKUP_DROPPED);
-        blacklistBlocks = new BlockOptionalMetaLookup();
+        BlockOptionalMetaLookup blacklistBlocks = new BlockOptionalMetaLookup();
         if (Baritone.settings().checkInventory.value && isInventoryFull()) {
             blacklistBlocks = getBlacklistBlocks(notFullStacks(validDrops), FILTER);
         }
