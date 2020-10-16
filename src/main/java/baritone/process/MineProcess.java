@@ -498,14 +498,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (filter != null) {
             for(BlockOptionalMeta bom : filter.blocks()) {
                 Block block = bom.getBlock();
-
                 Item item = block.getItemDropped(block.getDefaultState(), new Random(), 0);
                 Item ore = Item.getItemFromBlock(block);
-
                 this.validDrops.add(item);
                 this.validDrops.add(ore);
             }
-
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
     }
