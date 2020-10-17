@@ -216,14 +216,14 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 continue;
             }
             if (readyForHarvest(ctx.world(), pos, state)) {
-                if (!blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock())) {
+                if (!blacklistBlocks.has(state.getBlock())) {
                     toBreak.add(pos);
                 }
                 continue;
             }
             if (state.getBlock() instanceof IGrowable) {
                 IGrowable ig = (IGrowable) state.getBlock();
-                if (ig.canGrow(ctx.world(), pos, state, true) && ig.canUseBonemeal(ctx.world(), ctx.world().rand, pos, state)) {
+                if (ig.canGrow(ctx.world(), pos, state, true) && ig.canUseBonemeal(ctx.world(), ctx.world().rand, pos, state) && !blacklistBlocks.has(state.getBlock())) {
                     bonemealable.add(pos);
                 }
             }
