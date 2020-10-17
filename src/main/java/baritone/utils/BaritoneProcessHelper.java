@@ -25,26 +25,16 @@ import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BlockOptionalMeta;
-import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
-
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
@@ -63,7 +53,7 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         return false;
     }
 
-    public void returnhome() {
+    public void returnHome() {
         IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
         if (waypoint != null) {
             Goal goal = new GoalBlock(waypoint.getLocation());
@@ -95,7 +85,7 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         for (ItemStack stack : inv) {
             if (stack.isEmpty()) {
                 inventoryFull = false;
-                break;  
+                break;
             }
         }
         return inventoryFull;
@@ -104,8 +94,8 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
     public Set<ItemStack> notFullStacks(Set<Item> validDrops) {
         NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
         Set<ItemStack> stacks = inv.stream()
-            .filter(stack -> validDrops.contains(stack.getItem()) && stack.getMaxStackSize() > stack.getCount())
-            .collect(Collectors.toCollection(HashSet::new));
+                .filter(stack -> validDrops.contains(stack.getItem()) && stack.getMaxStackSize() > stack.getCount())
+                .collect(Collectors.toCollection(HashSet::new));
         return stacks;
     }
 
@@ -115,7 +105,7 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         for (BlockOptionalMeta bom : filter.blocks()) {
             for (ItemStack stack : notFullStacks) {
                 if (bom.matches(stack)) {
-                   continue OUTER;
+                    continue OUTER;
                 }
             }
             blacklistBlocks.add(bom);
@@ -123,57 +113,57 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
         return new BlockOptionalMetaLookup(blacklistBlocks.toArray(new BlockOptionalMeta[blacklistBlocks.size()]));
     }
 
-    public PathingCommand gotoChest(boolean isSafeToCancel) {
+    public PathingCommand goToChest(boolean isSafeToCancel) {
         IWaypoint chestLoc = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.CHEST);
-        if (chestLoc != null ) {
+        if (chestLoc != null) {
             BlockPos chest = chestLoc.getLocation();
-                Goal goal = new GoalGetToBlock(chestLoc.getLocation());
-                if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart())) {
-                    Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
-                    if (rot.isPresent() && isSafeToCancel) {
-                        baritone.getLookBehavior().updateTarget(rot.get(), true);
-                        if (ctx.isLookingAt(chest)) {
-                            if (ctx.player().openContainer == ctx.player().inventoryContainer) {
-                                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                            } else {
-                                baritone.getInputOverrideHandler().clearAllKeys();
-                            }
+            Goal goal = new GoalGetToBlock(chestLoc.getLocation());
+            if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart())) {
+                Optional<Rotation> rot = RotationUtils.reachable(ctx, chest);
+                if (rot.isPresent() && isSafeToCancel) {
+                    baritone.getLookBehavior().updateTarget(rot.get(), true);
+                    if (ctx.isLookingAt(chest)) {
+                        if (ctx.player().openContainer == ctx.player().inventoryContainer) {
+                            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                        } else {
+                            baritone.getInputOverrideHandler().clearAllKeys();
                         }
-                        return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                     }
-                } else {
-                    return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
+            } else {
+                return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+            }
         } else {
             logDirect("No chest set, please use #setchest");
         }
         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
     }
 
-    public PathingCommand handleInventory(boolean isSafeToCancel,Set<Item> validDrops){
-        PathingCommand result =null;
-        if (Baritone.settings().checkInventory.value){
-            boolean invFull=isInventoryFull();
-            if(invFull) {
+    public PathingCommand handleInventory(boolean isSafeToCancel, Set<Item> validDrops) {
+        PathingCommand result = null;
+        if (Baritone.settings().checkInventory.value) {
+            boolean invFull = isInventoryFull();
+            if (invFull) {
                 Set<ItemStack> notFullStacks = notFullStacks(validDrops);
-                if(notFullStacks.isEmpty()) {
-                    if(Baritone.settings().putDropsInChest.value){
-                    result = gotoChest(isSafeToCancel);
-                    usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
-                    }else{
+                if (notFullStacks.isEmpty()) {
+                    if (Baritone.settings().putDropsInChest.value) {
+                        result = goToChest(isSafeToCancel);
+                        usingChest = result.commandType == PathingCommandType.REQUEST_PAUSE;
+                    } else {
                         if (Baritone.settings().goHome.value) {
-                            returnhome();
+                            returnHome();
                         }
                         onLostControl();
                         logDirect("Inventory is full; Stopping current task.");
                     }
                 }
             }
-            if(usingChest && putInventoryInChest(validDrops)) {
+            if (usingChest && putInventoryInChest(validDrops)) {
                 ctx.player().closeScreen();
                 if (invFull) {
                     if (Baritone.settings().goHome.value) {
-                        returnhome();
+                        returnHome();
                     }
                     onLostControl();
                     logDirect("Inventory and chest are full; Stopping current task.");

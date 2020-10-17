@@ -24,7 +24,10 @@ import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.*;
+import baritone.api.utils.BlockOptionalMetaLookup;
+import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.MovementHelper;
@@ -53,14 +56,13 @@ import java.util.stream.Collectors;
 public final class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
 
     private boolean active;
-
     private List<BlockPos> locations;
     private int tickCount;
 
     private static final BlockOptionalMetaLookup FILTER = new BlockOptionalMetaLookup(Arrays.asList(Harvest.values())
-        .stream()
-        .map(harvest -> harvest.block)
-        .collect(Collectors.toList()));
+            .stream()
+            .map(harvest -> harvest.block)
+            .collect(Collectors.toList()));
 
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
@@ -170,12 +172,12 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        Set<Item> validDrops = new HashSet<Item>(PICKUP_DROPPED);
+        Set<Item> validDrops = new HashSet<>(PICKUP_DROPPED);
         BlockOptionalMetaLookup blacklistBlocks = new BlockOptionalMetaLookup();
         if (Baritone.settings().checkInventory.value && isInventoryFull()) {
             blacklistBlocks = getBlacklistBlocks(notFullStacks(validDrops), FILTER);
         }
-        PathingCommand command = handleInventory(isSafeToCancel,validDrops);
+        PathingCommand command = handleInventory(isSafeToCancel, validDrops);
         if (command != null) return command;
         ArrayList<Block> scan = new ArrayList<>();
         for (Harvest harvest : Harvest.values()) {
@@ -214,7 +216,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 continue;
             }
             if (readyForHarvest(ctx.world(), pos, state)) {
-                if(!blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock())) {
+                if (!blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock())) {
                     toBreak.add(pos);
                 }
                 continue;
@@ -273,7 +275,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
             onLostControl();
             if (Baritone.settings().goHome.value) {
-                returnhome();
+                returnHome();
             }
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }

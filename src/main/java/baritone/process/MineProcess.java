@@ -110,7 +110,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 }
                 logDirect("Unable to find any path to " + filter + ", canceling Mine");
                 if (Baritone.settings().goHome.value) {
-                    returnhome();
+                    returnHome();
                 }
                 cancel();
                 return null;
@@ -157,7 +157,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             // none in range
             // maybe say something in chat? (ahem impact)
             if (Baritone.settings().goHome.value) {
-                returnhome();
+                returnHome();
             }
             cancel();
             return null;
@@ -199,7 +199,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             CalculationContext context = new CalculationContext(baritone);
             List<BlockPos> locs2 = prune(context, new ArrayList<>(locs), filter, ORE_LOCATIONS_COUNT, blacklist, droppedItemsScan());
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
-            locs2.removeIf(pos-> blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock()));
+            locs2.removeIf(pos -> blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock()));
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2, context)).toArray(Goal[]::new));
             knownOreLocations = locs2;
             return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
@@ -249,12 +249,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 NotificationHelper.notify("No locations for " + filter + " known, cancelling", true);
             }
             if (Baritone.settings().goHome.value) {
-                returnhome();
+                returnHome();
             }
             cancel();
             return;
         }
-        locs.removeIf(pos-> blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock()));
+        locs.removeIf(pos -> blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock()));
         knownOreLocations = locs;
     }
 
@@ -496,7 +496,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.validDrops = new HashSet<>();
         this.blacklistBlocks = new BlockOptionalMetaLookup();
         if (filter != null) {
-            for(BlockOptionalMeta bom : filter.blocks()) {
+            for (BlockOptionalMeta bom : filter.blocks()) {
                 Block block = bom.getBlock();
                 Item item = block.getItemDropped(block.getDefaultState(), new Random(), 0);
                 Item ore = Item.getItemFromBlock(block);

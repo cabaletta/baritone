@@ -25,7 +25,7 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.utils.BetterBlockPos;
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockContainer;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
@@ -48,7 +48,7 @@ public class SetChestCommand extends Command {
 
         if (blockPos.isPresent()) {
             Block block = ctx.world().getBlockState(blockPos.get()).getBlock();
-            if (block.equals(Blocks.CHEST) || block.equals(Blocks.ENDER_CHEST) || block.equals(Blocks.TRAPPED_CHEST)) {
+            if (block instanceof BlockContainer) {
                 baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", IWaypoint.Tag.CHEST, new BetterBlockPos(blockPos.get())));
                 logDirect("Chest selected at " + x + " " + y + " " + z);
             } else {
