@@ -331,10 +331,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     public static List<BlockPos> searchWorld(CalculationContext ctx, BlockOptionalMetaLookup filter, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist, List<BlockPos> dropped) {
-        return searchWorld(ctx, filter, max, alreadyKnown, blacklist, dropped,null, 0);
+        return searchWorld(ctx, filter, max, alreadyKnown, blacklist, dropped, null, 0);
     }
 
-        public static List<BlockPos> searchWorld(CalculationContext ctx, BlockOptionalMetaLookup filter, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist, List<BlockPos> dropped, BlockPos callPosition, int radius) {
+    public static List<BlockPos> searchWorld(CalculationContext ctx, BlockOptionalMetaLookup filter, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist, List<BlockPos> dropped, BlockPos callPosition, int radius) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> untracked = new ArrayList<>();
         for (BlockOptionalMeta bom : filter.blocks()) {

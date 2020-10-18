@@ -43,14 +43,20 @@ public class MineCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         List<BlockOptionalMeta> boms = new ArrayList<>();
         boolean fromHome = false;
-        try {
-            if (args.getArgs().get(1).is(Integer.class)) {
-                fromHome = args.getAs(String.class).toLowerCase().equals("home");
+        int radius = 0;
+        if (!args.is(Integer.class)) {
+            if (args.getAsOrNull(String.class).toLowerCase().equals("radius")) {
+                try {
+                    if (args.getArgs().get(1).is(Integer.class)) {
+                        HELPER.logDirect(args.getArgs().get(2).getValue());
+                        fromHome = args.getAs(String.class).toLowerCase().equals("home");
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    fromHome = false;
+                }
+                radius = args.getAsOrDefault(Integer.class, 0);
             }
-        } catch (IndexOutOfBoundsException e) {
-            fromHome = false;
         }
-        int radius = args.getAsOrDefault(Integer.class, 0);
         HELPER.logDirect(fromHome + "    " + radius);
         int quantity = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
@@ -59,6 +65,7 @@ public class MineCommand extends Command {
         }
         WorldScanner.INSTANCE.repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
+        HELPER.logDirect(quantity + "");
         BlockPos fromPosition = fromHome ? baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME).getLocation() : mc.player.getPosition();
         baritone.getMineProcess().mine(fromPosition, radius, quantity, boms.toArray(new BlockOptionalMeta[0]));
     }
