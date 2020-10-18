@@ -119,6 +119,22 @@ public class DefaultArgParsers {
             LongArgumentParser.INSTANCE,
             FloatArgumentParser.INSTANCE,
             DoubleArgumentParser.INSTANCE,
-            BooleanArgumentParser.INSTANCE
+            BooleanArgumentParser.INSTANCE,
+            StringArgumentParser.INSTANCE
     );
+
+    public static class StringArgumentParser implements IArgParser.Stateless<String> {
+
+        public static final StringArgumentParser INSTANCE = new StringArgumentParser();
+
+        @Override
+        public Class<String> getTarget() {
+            return String.class;
+        }
+
+        @Override
+        public String parseArg(ICommandArgument arg) throws RuntimeException {
+            return arg.getValue();
+        }
+    }
 }

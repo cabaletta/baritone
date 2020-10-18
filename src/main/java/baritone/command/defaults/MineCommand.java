@@ -18,13 +18,15 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.utils.BlockOptionalMeta;
+import baritone.api.cache.IWaypoint;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.cache.WorldScanner;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,15 +41,26 @@ public class MineCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
+        List<BlockOptionalMeta> boms = new ArrayList<>();
+        boolean fromHome = false;
+        try {
+            if (args.getArgs().get(1).is(Integer.class)) {
+                fromHome = args.getAs(String.class).toLowerCase().equals("home");
+            }
+        } catch (IndexOutOfBoundsException e) {
+            fromHome = false;
+        }
+        int radius = args.getAsOrDefault(Integer.class, 0);
+        HELPER.logDirect(fromHome + "    " + radius);
         int quantity = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
-        List<BlockOptionalMeta> boms = new ArrayList<>();
         while (args.hasAny()) {
             boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
         }
         WorldScanner.INSTANCE.repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
-        baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        BlockPos fromPosition = fromHome ? baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME).getLocation() : mc.player.getPosition();
+        baritone.getMineProcess().mine(fromPosition, radius, quantity, boms.toArray(new BlockOptionalMeta[0]));
     }
 
     @Override

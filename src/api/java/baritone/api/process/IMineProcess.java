@@ -20,6 +20,7 @@ package baritone.api.process;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.stream.Stream;
 
@@ -47,7 +48,22 @@ public interface IMineProcess extends IBaritoneProcess {
      * @param quantity The number of items to get from blocks mined
      * @param filter   The blocks to mine
      */
-    void mine(int quantity, BlockOptionalMetaLookup filter);
+    default void mine(int quantity, BlockOptionalMetaLookup filter) {
+        mine(quantity, filter, null, 0);
+    }
+
+    /**
+     * Begin to search for and mine the specified blocks until
+     * the number of specified items to get from the blocks that
+     * are mined. This is based on the first target block to mine.
+     * This is limited have a maximum distance.
+     *
+     * @param quantity The number of items to get from blocks mined
+     * @param filter   The blocks to mine
+     * @param pos      The block pos which to mine around.
+     * @param radius   the max radius from the block pos.
+     */
+    void mine(int quantity, BlockOptionalMetaLookup filter, BlockPos pos, int radius);
 
     /**
      * Begin to search for and mine the specified blocks.
@@ -72,8 +88,8 @@ public interface IMineProcess extends IBaritoneProcess {
      *
      * @param boms The blocks to mine
      */
-    default void mine(int quantity, BlockOptionalMeta... boms) {
-        mine(quantity, new BlockOptionalMetaLookup(boms));
+    default void mine(BlockPos callLocation, int radius, int quantity, BlockOptionalMeta... boms) {
+        mine(quantity, new BlockOptionalMetaLookup(boms), callLocation, radius);
     }
 
     /**
@@ -82,7 +98,7 @@ public interface IMineProcess extends IBaritoneProcess {
      * @param boms The blocks to mine
      */
     default void mine(BlockOptionalMeta... boms) {
-        mine(0, boms);
+        mine(null, 0, 0, boms);
     }
 
     /**
@@ -114,4 +130,5 @@ public interface IMineProcess extends IBaritoneProcess {
     default void cancel() {
         onLostControl();
     }
+
 }

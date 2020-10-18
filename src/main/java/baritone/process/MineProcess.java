@@ -63,6 +63,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
+    private BlockPos callPosition;
+    private int radius;
 
     public MineProcess(Baritone baritone) {
         super(baritone);
@@ -181,7 +183,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
             CalculationContext context = new CalculationContext(baritone);
-            List<BlockPos> locs2 = prune(context, new ArrayList<>(locs), filter, ORE_LOCATIONS_COUNT, blacklist, droppedItemsScan());
+            List<BlockPos> locs2 = prune(context, new ArrayList<>(locs), filter, ORE_LOCATIONS_COUNT, blacklist, droppedItemsScan(), callPosition, radius);
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2, context)).toArray(Goal[]::new));
             knownOreLocations = locs2;
@@ -329,6 +331,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     public static List<BlockPos> searchWorld(CalculationContext ctx, BlockOptionalMetaLookup filter, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist, List<BlockPos> dropped) {
+        return searchWorld(ctx, filter, max, alreadyKnown, blacklist, dropped,null, 0);
+    }
+
+        public static List<BlockPos> searchWorld(CalculationContext ctx, BlockOptionalMetaLookup filter, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist, List<BlockPos> dropped, BlockPos callPosition, int radius) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> untracked = new ArrayList<>();
         for (BlockOptionalMeta bom : filter.blocks()) {
@@ -349,7 +355,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             }
         }
 
-        locs = prune(ctx, locs, filter, max, blacklist, dropped);
+        locs = prune(ctx, locs, filter, max, blacklist, dropped, callPosition, radius);
 
         if (!untracked.isEmpty() || (Baritone.settings().extendCacheOnThreshold.value && locs.size() < max)) {
             locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(
@@ -363,7 +369,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
         locs.addAll(alreadyKnown);
 
-        return prune(ctx, locs, filter, max, blacklist, dropped);
+        return prune(ctx, locs, filter, max, blacklist, dropped, callPosition, radius);
     }
 
     private void addNearby() {
@@ -387,10 +393,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 }
             }
         }
-        knownOreLocations = prune(new CalculationContext(baritone), knownOreLocations, filter, ORE_LOCATIONS_COUNT, blacklist, dropped);
+        knownOreLocations = prune(new CalculationContext(baritone), knownOreLocations, filter, ORE_LOCATIONS_COUNT, blacklist, dropped, callPosition, radius);
     }
 
-    private static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, BlockOptionalMetaLookup filter, int max, List<BlockPos> blacklist, List<BlockPos> dropped) {
+    private static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, BlockOptionalMetaLookup filter, int max, List<BlockPos> blacklist, List<BlockPos> dropped, BlockPos callPosition, int radius) {
         dropped.removeIf(drop -> {
             for (BlockPos pos : locs2) {
                 if (pos.distanceSq(drop) <= 9 && filter.has(ctx.get(pos.getX(), pos.getY(), pos.getZ())) && MineProcess.plausibleToBreak(ctx, pos)) { // TODO maybe drop also has to be supported? no lava below?
@@ -418,6 +424,13 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 })
 
                 .filter(pos -> !blacklist.contains(pos))
+
+                .filter(blockPos -> {
+                    if (radius != 0) {
+                        return callPosition.getDistance(blockPos.getX(), blockPos.getY(), blockPos.getZ()) < radius;
+                    }
+                    return true;
+                })
 
                 .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player()::getDistanceSq))
                 .collect(Collectors.toList());
@@ -459,7 +472,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     @Override
-    public void mine(int quantity, BlockOptionalMetaLookup filter) {
+    public void mine(int quantity, BlockOptionalMetaLookup filter, BlockPos pos, int radius) {
         this.filter = filter;
         if (filter != null && !Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
@@ -472,6 +485,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.branchPoint = null;
         this.branchPointRunaway = null;
         this.anticipatedDrops = new HashMap<>();
+        this.callPosition = pos;
+        this.radius = radius;
         if (filter != null) {
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
