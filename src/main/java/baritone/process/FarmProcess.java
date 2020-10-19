@@ -173,7 +173,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         Set<Item> validDrops = new HashSet<>(PICKUP_DROPPED);
-        //Ignoring Pumpkin and melon seeds for inventory Handling
+        // Ignoring Pumpkin and melon seeds for inventory Handling
         validDrops.remove(Items.MELON_SEEDS);
         validDrops.remove(Items.PUMPKIN_SEEDS);
         blacklistBlocks = new BlockOptionalMetaLookup();
