@@ -18,6 +18,7 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
+import baritone.api.cache.IWaypoint;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.BlockById;
@@ -25,7 +26,9 @@ import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.utils.BlockOptionalMeta;
+import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.cache.WorldScanner;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -38,6 +41,17 @@ public class MineCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
+        BlockPos startPos = ctx.playerFeet();
+        if ("home".equals(args.peekString())) {
+            args.getString();
+            IWaypoint waypoint = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getMostRecentByTag(IWaypoint.Tag.HOME);
+            if (waypoint != null) {
+                startPos = waypoint.getLocation();
+            } else {
+                logDirect("No home waypoint found. Use player position instead");
+            }
+        }
+        int radius = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
         Map<BlockOptionalMeta, Integer> quantity = new HashMap<>();
@@ -55,7 +69,7 @@ public class MineCommand extends Command {
         }
         WorldScanner.INSTANCE.repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
-        baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        baritone.getMineProcess().mine(startPos, radius, quantity, new BlockOptionalMetaLookup(boms.toArray(new BlockOptionalMeta[0])));
     }
 
     @Override
