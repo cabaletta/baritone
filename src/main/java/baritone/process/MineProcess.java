@@ -196,7 +196,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 if (radius == 0) {
                     return false;
                 }
-                return !(Math.sqrt(Math.pow(startPos.getZ() - pos.getZ(), 2) + startPos.getX() - pos.getX()) < radius);
+                return (Math.sqrt(Math.pow(startPos.getZ() - pos.getZ(), 2) + startPos.getX() - pos.getX()) >= radius);
             });
             CalculationContext context = new CalculationContext(baritone);
             List<BlockPos> locs2 = prune(context, new ArrayList<>(locs), filter, ORE_LOCATIONS_COUNT, blacklist, droppedItemsScan());
