@@ -18,17 +18,16 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.exception.CommandNotEnoughArgumentsException;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.cache.WorldScanner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class MineCommand extends Command {
@@ -39,11 +38,20 @@ public class MineCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        int quantity = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
+        Map<BlockOptionalMeta, Integer> quantity = new HashMap<>();
         while (args.hasAny()) {
-            boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
+            BlockOptionalMeta bom = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
+            // check if there is at least 1 argument left
+            try {
+                args.peek();
+                quantity.put(bom, args.getAsOrDefault(Integer.class, 0));
+            } catch (CommandNotEnoughArgumentsException e) {
+                quantity.put(bom, 0);
+            }
+
+            boms.add(bom);
         }
         WorldScanner.INSTANCE.repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
@@ -72,7 +80,8 @@ public class MineCommand extends Command {
                 "Usage:",
                 "> mine diamond_ore - Mines all diamonds it can find.",
                 "> mine redstone_ore lit_redstone_ore - Mines redstone ore.",
-                "> mine log:0 - Mines only oak logs."
+                "> mine log:0 - Mines only oak logs.",
+                "> mine iron_ore 64 coal_ore 128 - Mines 64 iron ore blocks and 128 coal/coal ore blocks "
         );
     }
 }

@@ -61,7 +61,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private Map<BlockPos, Long> anticipatedDrops;
     private BlockPos branchPoint;
     private GoalRunAway branchPointRunaway;
-    private int desiredQuantity;
+    private Map<BlockOptionalMeta, Integer> desiredQuantity;
     private int tickCount;
 
     public MineProcess(Baritone baritone) {
@@ -75,17 +75,23 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        if (desiredQuantity > 0) {
-            int curr = ctx.player().inventory.mainInventory.stream()
-                    .filter(stack -> filter.has(stack))
-                    .mapToInt(ItemStack::getCount).sum();
-            System.out.println("Currently have " + curr + " valid items");
-            if (curr >= desiredQuantity) {
-                logDirect("Have " + curr + " valid items");
-                cancel();
-                return null;
+        List<BlockOptionalMeta> blocksLeft = new ArrayList<>();
+        for (BlockOptionalMeta bom : filter.blocks()) {
+            if (desiredQuantity.get(bom) > 0) {
+                int curr = ctx.player().inventory.mainInventory.stream()
+                        .filter(stack -> bom.matches(stack))
+                        .mapToInt(ItemStack::getCount).sum();
+                System.out.println("Currently have " + curr + " valid " + bom.getBlock().getLocalizedName());
+                if (curr >= desiredQuantity.get(bom)) {
+                    logDirect("Have " + curr + " valid " + bom.getBlock().getLocalizedName());
+                } else {
+                    blocksLeft.add(bom);
+                }
+            } else {
+                blocksLeft.add(bom);
             }
         }
+        filter = new BlockOptionalMetaLookup(blocksLeft.toArray(new BlockOptionalMeta[0]));
         if (calcFailed) {
             if (!knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
                 logDirect("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...");
@@ -168,7 +174,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public void onLostControl() {
-        mine(0, (BlockOptionalMetaLookup) null);
+        mine(null, (BlockOptionalMetaLookup) null);
     }
 
     @Override
@@ -454,12 +460,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     @Override
-    public void mineByName(int quantity, String... blocks) {
+    public void mineByName(Map<BlockOptionalMeta, Integer> quantity, String... blocks) {
         mine(quantity, new BlockOptionalMetaLookup(blocks));
     }
 
     @Override
-    public void mine(int quantity, BlockOptionalMetaLookup filter) {
+    public void mine(Map<BlockOptionalMeta, Integer> quantity, BlockOptionalMetaLookup filter) {
         this.filter = filter;
         if (filter != null && !Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
