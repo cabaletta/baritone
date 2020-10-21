@@ -1,0 +1,3 @@
+mine [[home] blockradius] block1 [quantity1] [block2 [quantity2] block3 [quantity3] ...]
+"startpos" == [[home]Playerspawn_point] block1 [[quantity1] [block1_type] = minecraft_bed]...]
+startpos[[home]blockradius] block1 [quantity1] [block2 [quantity2] block3 [quantity] ...]
