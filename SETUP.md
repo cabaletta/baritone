@@ -68,7 +68,7 @@ In order to get JDK 8 running in the **current terminal window** you will have t
 
 `% export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)`
 
-To add OpenJDK 8 to your PATH try this guide: http://www.sajeconsultants.com/how-to-set-java_home-on-mac-os-x/?utm_source=rss&utm_medium=rss&utm_campaign=how-to-set-java_home-on-mac-os-x. If you're using bash change the .bachrc and if you're using zsh change the .zshrc
+To add OpenJDK 8 to your PATH add the export line to the end of your `.zshrc / .bashrc` if you want it to apply to each new terminal. If you're using bash change the .bachrc and if you're using zsh change the .zshrc
 #### Windows 10 guide (currently working on it)
 
 Setting up the Environment:
