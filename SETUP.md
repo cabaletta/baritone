@@ -51,7 +51,7 @@ If you have errors with a package missing please make sure you have setup your e
 
 To check which java you are using do 
 `java -version` in a command prompt or terminal.
-If you are using OpenJDK 8+ it will not work because the Java distributions above JDK 8 using may not have the needed javax classes.
+If you are using anything above OpenJDK 8, it might not work because the Java distributions above JDK 8 using may not have the needed javax classes.
 
 Open JDK 8 download: https://openjdk.java.net/install/
 #### macOS guide
@@ -69,7 +69,6 @@ In order to get JDK 8 running in the **current terminal window** you will have t
 `% export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)`
 
 To add OpenJDK 8 to your PATH add the export line to the end of your `.zshrc / .bashrc` if you want it to apply to each new terminal. If you're using bash change the .bachrc and if you're using zsh change the .zshrc
-#### Windows 10 guide (currently working on it)
 
 Setting up the Environment:
 
