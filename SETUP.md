@@ -53,7 +53,7 @@ To check which java you are using do
 `java -version` in a command prompt or terminal.
 If you are using Oracle JDK 8+ it will not work because the Java distributions above JDK 8 using may not have the needed javax classes.
 
-Oracle JDK 8 download: https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html
+Open JDK 8 download: https://openjdk.java.net/install/
 #### macOS guide
 In order to get JDK 8, run the following command:
 `% /usr/libexec/java_home -V`
