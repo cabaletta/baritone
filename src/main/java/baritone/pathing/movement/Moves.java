@@ -322,6 +322,23 @@ public enum Moves {
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementParkour.cost(context, x, y, z, EnumFacing.WEST, result);
         }
+    },
+
+    PARKOUR_ADV(0, 0, 0, true, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MovementParkourAdv out = MovementParkourAdv.cost(context, src);
+            System.out.println("apply0, Source: " + out.src + ", Destination: " + out.dest);
+            return out;
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkourAdv.cost(context, x, y, z, result);
+            if(result.cost < 100000) {
+                System.out.println("apply, Cost: " + result.cost + ", ResX: " + result.x);
+            }
+        }
     };
 
     public final boolean dynamicXZ;
