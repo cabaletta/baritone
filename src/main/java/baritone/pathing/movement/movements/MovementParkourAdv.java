@@ -78,6 +78,8 @@ public class MovementParkourAdv extends Movement {
         ALL_VALID_DIR.put(EnumFacing.NORTH, NORTH_VALID);
         ALL_VALID_DIR.put(EnumFacing.EAST, EAST_VALID);
 
+        System.out.println(ALL_VALID_DIR);
+
         for (HashSet<Vec3i> posbJumpsForDir : ALL_VALID_DIR.values()) {
             for (Vec3i vec : posbJumpsForDir) {
                 ALL_VALID.add(vec);
@@ -113,8 +115,9 @@ public class MovementParkourAdv extends Movement {
         double angleCos = Math.cos(angle);
         double angleSin = Math.sin(angle);
 
-        double x = angleCos * input.getX() + angleSin * input.getZ();
-        double z = -angleSin * input.getX() + angleCos * input.getZ();
+        double x = angleCos * input.getX() + angleSin * input.getZ() + 0.1;
+        double z = -angleSin * input.getX() + angleCos * input.getZ() + 0.1;
+
         return new Vec3i(x, input.getY(), z);
     }
 
@@ -277,10 +280,20 @@ public class MovementParkourAdv extends Movement {
     }
 
     private static boolean checkBlocksInWay(CalculationContext context, int srcX, int srcY, int srcZ, Vec3i jump, EnumFacing jumpDirection, int ascendAmount) {
-        HashSet<Vec3i> jumpLine = getLineApprox(VecUtils.add(VecUtils.subtract(jump, jumpDirection.getDirectionVec()), 0, ascendAmount, 0), 0.1);
+        Vec3i endPoint = VecUtils.add(VecUtils.subtract(jump, jumpDirection.getDirectionVec()), 0, ascendAmount, 0);
+        HashSet<Vec3i> jumpLine = getLineApprox(endPoint, 0.1);
+
+        //TODO: Endpoint changes? (By approximately (positive) jumpDirection)
+        jumpLine.remove(endPoint);
+        jumpLine.remove(VecUtils.add(endPoint, 0, 1, 0));
+        jumpLine.remove(VecUtils.add(endPoint, 0, -1, 0));
+
+        String test = ("InWay endPoint = " + VecUtils.add(endPoint, srcX, srcY + 1, srcZ));
+
         for (Vec3i jumpVec : jumpLine) {
-            Vec3i vec = VecUtils.add(jumpVec, jumpDirection.getDirectionVec());
+            Vec3i vec = jumpVec; // VecUtils.add(jumpVec, jumpDirection.getDirectionVec());
             if (!MovementHelper.fullyPassable(context, srcX + vec.getX(), srcY + vec.getY() + 1, srcZ + vec.getZ())) {
+                System.out.println(test);
                 System.out.println("TEST 1.1, Blocks in the way, Line = " + (srcX + vec.getX()) + ", " + (srcY + vec.getY() + 1) + ", " + (srcZ + vec.getZ()));
                 return true;
             }
@@ -454,13 +467,13 @@ public class MovementParkourAdv extends Movement {
             }
         }
         res = lowestCost;
-        if(res.cost < 1000) {
+        if (res.cost < 1000) {
             System.out.println("Dir = " + simpleDirection + ", Calc: " + res.x + " - " + srcX + ", Distance: " + getDistance(new Vec3i(res.x - srcX, res.y - srcY, res.z - srcZ), simpleDirection));
         }
     }
 
     private static double costFromJumpDistance(CalculationContext context, double distance) {
-        if(distance >= SPRINT_THRESHOLD) {
+        if (distance >= SPRINT_THRESHOLD) {
             return SPRINT_ONE_BLOCK_COST * distance + context.jumpPenalty;
         }
         return WALK_ONE_BLOCK_COST * distance + context.jumpPenalty;
@@ -475,7 +488,8 @@ public class MovementParkourAdv extends Movement {
         Vec3d preJumpPos = offset.add(src.x, src.y, src.z);
         double distance = preJumpPos.distanceTo(ctx.playerFeetAsVec());
         System.out.println("Distance to prejump = " + distance);
-        if(distance > 0.75) {
+        boolean prepLocPassable = MovementHelper.fullyPassable(ctx, src.offset(simpleDirection.getOpposite()));
+        if ((distance > 0.75 && prepLocPassable) || (distance > 0.80 && !prepLocPassable)) {
             MovementHelper.moveBackwardsTowards(ctx, state, src, offset);
             return false;
         } else {
