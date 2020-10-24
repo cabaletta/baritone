@@ -447,7 +447,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
-     * Moves towards the centre of a block (yaw & pitch), offset by a double vector (generally with axis less than 0.5)
+     * Moves towards the centre of a block, offset by a double vector (generally with axis less than 0.5)
      *
      * @param ctx       Player context
      * @param state     Movement State
@@ -456,11 +456,28 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos, Vec3d offset) {
         state.setTarget(new MovementTarget(
-                RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                         VecUtils.getBlockPosCenter(pos).add(offset),
-                        ctx.playerRotations()),
+                        ctx.playerRotations()).getYaw(), ctx.player().rotationPitch),
                 false
         )).setInput(Input.MOVE_FORWARD, true);
+    }
+
+    /**
+     * Moves backwards towards the centre of a block, offset by a double vector (generally with axis less than 0.5)
+     *
+     * @param ctx       Player context
+     * @param state     Movement State
+     * @param pos       Block to move to
+     * @param offset    amount/direction to offset by
+     */
+    static void moveBackwardsTowards(IPlayerContext ctx, MovementState state, BlockPos pos, Vec3d offset) {
+        state.setTarget(new MovementTarget(
+                new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                        VecUtils.getBlockPosCenter(pos).add(offset),
+                        ctx.playerRotations()).opposite().getYaw(), ctx.player().rotationPitch),
+                false
+        )).setInput(Input.MOVE_BACK, true);
     }
 
     /**
