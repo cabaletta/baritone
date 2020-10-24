@@ -104,15 +104,12 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                     if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
                         numEmptyChunk++;
                     }
-                    if(moves == Moves.PARKOUR_ADV) { System.out.println("ASTAR 1"); }
                     continue;
                 }
                 if (!moves.dynamicXZ && !worldBorder.entirelyContains(newX, newZ)) {
-                    if(moves == Moves.PARKOUR_ADV) { System.out.println("ASTAR 2"); }
                     continue;
                 }
                 if (currentNode.y + moves.yOffset > 256 || currentNode.y + moves.yOffset < 0) {
-                    if(moves == Moves.PARKOUR_ADV) { System.out.println("ASTAR 3"); }
                     continue;
                 }
                 res.reset();
@@ -127,7 +124,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 }
                 // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
                 if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
-                    if(moves == Moves.PARKOUR_ADV) { System.out.println("ASTAR 5"); }
                     continue;
                 }
                 if (!moves.dynamicXZ && (res.x != newX || res.z != newZ)) {

@@ -447,6 +447,23 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
+     * Moves towards the centre of a block (yaw & pitch), offset by a double vector (generally with axis less than 0.5)
+     *
+     * @param ctx       Player context
+     * @param state     Movement State
+     * @param pos       Block to move to
+     * @param offset    amount/direction to offset by
+     */
+    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos, Vec3d offset) {
+        state.setTarget(new MovementTarget(
+                RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                        VecUtils.getBlockPosCenter(pos).add(offset),
+                        ctx.playerRotations()),
+                false
+        )).setInput(Input.MOVE_FORWARD, true);
+    }
+
+    /**
      * Returns whether or not the specified block is
      * water, regardless of whether or not it is flowing.
      *

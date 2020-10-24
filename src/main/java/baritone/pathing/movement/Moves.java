@@ -324,17 +324,68 @@ public enum Moves {
         }
     },
 
-    PARKOUR_ADV(0, 0, 0, true, true) {
+    PARKOUR_ADV_NORTH(0, 0, 0, true, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            MovementParkourAdv out = MovementParkourAdv.cost(context, src);
+            MovementParkourAdv out = MovementParkourAdv.cost(context, src, EnumFacing.NORTH);
             System.out.println("apply0, Source: " + out.src + ", Destination: " + out.dest);
             return out;
         }
 
         @Override
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementParkourAdv.cost(context, x, y, z, result);
+            MovementParkourAdv.cost(context, x, y, z, result, EnumFacing.NORTH);
+            if(result.cost < 100000) {
+                System.out.println("apply, Cost: " + result.cost + ", ResX: " + result.x);
+            }
+        }
+    },
+
+    PARKOUR_ADV_SOUTH(0, 0, 0, true, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MovementParkourAdv out = MovementParkourAdv.cost(context, src, EnumFacing.SOUTH);
+            System.out.println("apply0, Source: " + out.src + ", Destination: " + out.dest);
+            return out;
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkourAdv.cost(context, x, y, z, result, EnumFacing.SOUTH);
+            if(result.cost < 100000) {
+                System.out.println("apply, Cost: " + result.cost + ", ResX: " + result.x);
+            }
+        }
+    },
+
+    PARKOUR_ADV_EAST(0, 0, 0, true, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MovementParkourAdv out = MovementParkourAdv.cost(context, src, EnumFacing.EAST);
+            System.out.println("apply0, Source: " + out.src + ", Destination: " + out.dest);
+            return out;
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkourAdv.cost(context, x, y, z, result, EnumFacing.EAST);
+            if(result.cost < 100000) {
+                System.out.println("apply, Cost: " + result.cost + ", ResX: " + result.x);
+            }
+        }
+    },
+
+    PARKOUR_ADV_WEST(0, 0, 0, true, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            MovementParkourAdv out = MovementParkourAdv.cost(context, src, EnumFacing.WEST);
+            System.out.println("apply0, Source: " + out.src + ", Destination: " + out.dest);
+            return out;
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkourAdv.cost(context, x, y, z, result, EnumFacing.WEST);
             if(result.cost < 100000) {
                 System.out.println("apply, Cost: " + result.cost + ", ResX: " + result.x);
             }
