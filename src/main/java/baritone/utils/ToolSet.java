@@ -18,7 +18,6 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.api.utils.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -125,7 +124,7 @@ public class ToolSet {
         IBlockState blockState = b.getDefaultState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
-            if (itemStack.getItemDamage() >= itemStack.getMaxDamage() - 1 && Baritone.settings().itemSaver.value) {
+            if (itemStack.getItemDamage() >= itemStack.getMaxDamage() && Baritone.settings().itemSaver.value && itemStack.getMaxDamage() > 1) {
                 continue;
             }
             double speed = calculateSpeedVsBlock(itemStack, blockState);
