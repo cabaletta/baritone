@@ -57,12 +57,17 @@ public class MovementParkourAdv extends Movement {
 
     private static final HashMap<Vec3i, Double> DISTANCE_CACHE = new HashMap<Vec3i, Double>();
 
-    private static final double SPRINT_THRESHOLD = 3.2; // Distance required for a sprint jump
+    //cost is similar to an equivalent straight flat jump in blocks
+    private static final double ASCEND_COST = 0.8;
+    private static final double DESCEND_COST_PER_BLOCK = -0.3;
+    private static final double TURN_COST = 0.3; //per radian
+
+    private static final double SPRINT_THRESHOLD = 3.25 + TURN_COST * Math.toRadians(30); // Distance required for a sprint jump
 
     static {
         int[][] validQuadrant = {{2, 1}, {3, 1}, {4, 1},
                                  {1, 2}, {2, 2}, {3, 2}, {4, 2},
-                                 {1, 3}, {2, 3}};
+                                 {2, 3}};
         for (int i = 0; i < validQuadrant.length; i++) {
             int z = validQuadrant[i][0];
             for (int neg = -1; neg < 2; neg += 2) { // -1 and 1
@@ -123,7 +128,7 @@ public class MovementParkourAdv extends Movement {
         return new Vec3i(x, input.getY(), z);
     }
 
-    private final double realDist;
+    private final double realDist; //not used?
     private final double moveDist;
     private final int ascendAmount;
     private final Vec3i direction;
@@ -133,16 +138,15 @@ public class MovementParkourAdv extends Movement {
     private boolean inStartingPosition = false;
     private int atDestTicks = 0;
 
-    private MovementParkourAdv(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, EnumFacing simpleDirection, int ascendAmount) {
+    private MovementParkourAdv(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, EnumFacing simpleDirection) {
         super(baritone, src, dest, EMPTY);
         direction = VecUtils.subtract(dest, src);
         realDist = getDistance(direction);
         moveDist = calcMoveDist(direction, simpleDirection);
-        this.ascendAmount = ascendAmount;
+        this.ascendAmount = dest.y - src.y;
         this.simpleDirection = simpleDirection;
         jumpDirection = VecUtils.subtract(direction, simpleDirection.getDirectionVec());
         Vec3d norDir = normalize(direction);
-        System.out.println("DIRECTION: " + norDir);
         for (Vec3i vec : approxBlock(norDir, 0.3)) {
             adjJumpBlocks.add(new BetterBlockPos(src.add(vec)));
         }
@@ -178,7 +182,7 @@ public class MovementParkourAdv extends Movement {
 
     //Maybe cache
     public static ArrayList<Vec3d> getLine(Vec3i vector, double accPerBlock) {
-        int length = (int) Math.ceil(getDistance(vector));
+        double length = Math.ceil(getDistance(vector));
         ArrayList<Vec3d> line = new ArrayList<Vec3d>();
         for (double i = 0; i <= length; i += (1 / accPerBlock)) {
             line.add(normalize(vector).scale(i).add(0.5, 0.5, 0.5));
@@ -312,7 +316,7 @@ public class MovementParkourAdv extends Movement {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, res, simpleDirection);
         int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
-        return new MovementParkourAdv(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z), simpleDirection,res.y - src.y);
+        return new MovementParkourAdv(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z), simpleDirection);
     }
 
     public static void cost(CalculationContext context, int srcX, int srcY, int srcZ, MutableMoveResult res, EnumFacing simpleDirection) {
@@ -435,7 +439,7 @@ public class MovementParkourAdv extends Movement {
             }
             //TODO
             //if (!checkOvershootSafety(context.bsi, destX + xDiff, srcY, destZ + zDiff)) {
-                //continue; // Can place but will overshoot the jump
+                //continue; // Can place but will overshoot into a bad location
             //}
 
             //Check if a block side is available/visible to place on
@@ -474,12 +478,27 @@ public class MovementParkourAdv extends Movement {
         int ascendAmount = jump.getY();
         jump = new Vec3i(jump.getX(), 0, jump.getZ());
         double distance = getDistance(jump, jumpDirection);
+
+        //Modifying distance so that ascends have larger distances while descends have smaller
         if(ascendAmount > 0) {
-            distance += 0.8;
+            distance += ASCEND_COST;
         } else {
-            distance += ascendAmount * 0.3; // ascendAmount is negative
+            distance += ascendAmount * -DESCEND_COST_PER_BLOCK; // ascendAmount is negative
         }
-        return distance;
+
+        //Calculating angle between vectors
+        Vec3d jumpVec = new Vec3d(jump.getX() - jumpDirection.getXOffset(), 0, jump.getZ() - jumpDirection.getZOffset()).normalize();
+        double angle = Math.acos(jumpVec.dotProduct(new Vec3d(jumpDirection.getDirectionVec()))); //in radians
+
+        //This distance is unitless as it contains: modifiers on ascends/descends, and the slowdowns in changing directions midair (angle)
+        return distance + TURN_COST * angle;
+    }
+
+    @Override
+    public boolean safeToCancel(MovementState state) {
+        // since we don't really know anything about momentum, it can only be canceled during prep phase (i.e. before the jump)
+        // e.g. can't cancel while cancelling momentum or we may fall off the block.
+        return state.getStatus() != MovementStatus.RUNNING;
     }
 
     private static double costFromJump(CalculationContext context, Vec3i jump, EnumFacing jumpDirection) {
