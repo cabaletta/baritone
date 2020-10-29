@@ -447,17 +447,16 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
-     * Moves towards the centre of a block, offset by a double vector (generally with axis less than 0.5)
+     * Moves towards a double vector's coordinates.
      *
      * @param ctx       Player context
      * @param state     Movement State
-     * @param pos       Block to move to
-     * @param offset    amount/direction to offset by
+     * @param pos       Position to move to
      */
-    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos, Vec3d offset) {
+    static void moveTowards(IPlayerContext ctx, MovementState state, Vec3d pos) {
         state.setTarget(new MovementTarget(
                 new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(pos).add(offset),
+                        pos,
                         ctx.playerRotations()).getYaw(), ctx.player().rotationPitch),
                 false
         )).setInput(Input.MOVE_FORWARD, true);
@@ -494,6 +493,22 @@ public interface MovementHelper extends ActionCosts, Helper {
                         ctx.playerRotations()).opposite().getYaw(), ctx.player().rotationPitch),
                 false
         )).setInput(Input.MOVE_BACK, true);
+    }
+
+    /**
+     * Not working
+     *
+     * @param ctx
+     * @param state
+     * @param pos
+     */
+    static void moveTowards45Strafe(IPlayerContext ctx, MovementState state, BlockPos pos) {
+        state.setTarget(new MovementTarget(
+                new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                        VecUtils.getBlockPosCenter(pos),
+                        ctx.playerRotations()).getYaw() + 45, ctx.player().rotationPitch),
+                false
+        )).setInput(Input.MOVE_FORWARD, true).setInput(Input.MOVE_LEFT, true);
     }
 
     /**
