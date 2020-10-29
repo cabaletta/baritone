@@ -66,7 +66,7 @@ public class MovementParkourAdv extends Movement {
 
     private static final double MOMENTUM_THRESHOLD = 4.6; // We require an extra momentum jump for jumps longer than this.
     private static final double MAX_JUMP_SPRINT = 5.3; // We can't make any jumps greater than this distance.
-    private static final double MAX_JUMP_WALK = 3.45; // We can make the jump without sprinting below this distance
+    private static final double MAX_JUMP_WALK = 3.48; // We can make the jump without sprinting below this distance
     private static final double MAX_JUMP_SLOWED = 2.5; //soulsand
 
     //private static final double SPRINT_THRESHOLD = 3.25 + TURN_COST * Math.toRadians(30); // Distance required for a sprint jump
@@ -561,10 +561,16 @@ public class MovementParkourAdv extends Movement {
         double distance = preJumpPos.distanceTo(ctx.playerFeetAsVec());
         System.out.println("Distance to prepLoc = " + distance);
         boolean prepLocPassable = MovementHelper.fullyPassable(ctx, src.offset(simpleDirection.getOpposite()));
-        if ((distance > 0.012 && prepLocPassable) || (distance > (PREP_OFFSET - 0.195) && !prepLocPassable)) {
-            MovementHelper.moveBackwardsTowards(ctx, state, src, offset);
+        double accuracy = moveDist < MOMENTUM_THRESHOLD ? 0.1 : 0.012;
+        if (((distance > accuracy && prepLocPassable) || (distance > (PREP_OFFSET - (0.2 - accuracy)) && !prepLocPassable)) && (atDestTicks < 7 || moveDist < MOMENTUM_THRESHOLD)) {
+            if (atDestTicks < 5) {
+                MovementHelper.moveBackwardsTowards(ctx, state, src, offset);
+            }
             if(distance < 0.2) {
                 state.setInput(Input.SNEAK, true);
+                atDestTicks++;
+            } else {
+                atDestTicks = 0;
             }
             return false;
         } else {

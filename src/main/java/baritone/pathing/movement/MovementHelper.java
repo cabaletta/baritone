@@ -496,22 +496,6 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
-     * Not working
-     *
-     * @param ctx
-     * @param state
-     * @param pos
-     */
-    static void moveTowards45Strafe(IPlayerContext ctx, MovementState state, BlockPos pos) {
-        state.setTarget(new MovementTarget(
-                new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(pos),
-                        ctx.playerRotations()).getYaw() + 45, ctx.player().rotationPitch),
-                false
-        )).setInput(Input.MOVE_FORWARD, true).setInput(Input.MOVE_LEFT, true);
-    }
-
-    /**
      * Returns whether or not the specified block is
      * water, regardless of whether or not it is flowing.
      *
