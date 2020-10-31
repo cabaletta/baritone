@@ -417,7 +417,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     }
                 })
 
-                .filter(pos -> pos.getY() > Baritone.settings().minYLevelWhileMining.value)
+                .filter(pos -> pos.getY() >= Baritone.settings().minYLevelWhileMining.value)
 
                 .filter(pos -> !blacklist.contains(pos))
 
