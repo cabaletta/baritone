@@ -49,6 +49,27 @@ On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 
 If you have errors with a package missing please make sure you have setup your environment, and are using Oracle JDK 8.
 
+To check which java you are using do 
+`java -version` in a command prompt or terminal.
+If you are using anything above OpenJDK 8, it might not work because the Java distributions above JDK 8 using may not have the needed javax classes.
+
+Open JDK 8 download: https://openjdk.java.net/install/
+#### macOS guide
+In order to get JDK 8, Try running the following command:
+`% /usr/libexec/java_home -V`
+If it doesn't work try this guide: https://stackoverflow.com/questions/46513639/how-to-downgrade-java-from-9-to-8-on-a-macos-eclipse-is-not-running-with-java-9
+
+If you see something like
+
+`% 1.8.0_VERSION, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_VERSION.jdk/Contents/Home`
+
+in the list then you've got JDK 8 installed. 
+In order to get JDK 8 running in the **current terminal window** you will have to run this command: 
+
+`% export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)`
+
+To add OpenJDK 8 to your PATH add the export line to the end of your `.zshrc / .bashrc` if you want it to apply to each new terminal. If you're using bash change the .bachrc and if you're using zsh change the .zshrc
+
 Setting up the Environment:
 
 ```
