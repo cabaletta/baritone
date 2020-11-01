@@ -175,7 +175,7 @@ public final class MemoryBehavior extends Behavior {
     @Override
     public void onPlayerDeath() {
         Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
-        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet()));
+        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
         ITextComponent component = new TextComponentString("Death position saved.");
         component.getStyle()
                 .setColor(TextFormatting.WHITE)
