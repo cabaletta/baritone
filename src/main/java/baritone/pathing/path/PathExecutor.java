@@ -309,6 +309,8 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (path.movements().get(pathPosition) instanceof MovementFall) {
                 BlockPos fallDest = path.positions().get(pathPosition + 1); // .get(pathPosition) is the block we fell off of
                 return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest) >= leniency; // ignore Y by using flat distance
+            } else if (path.movements().get(pathPosition) instanceof MovementParkourAdv) {
+                return ((MovementParkourAdv) path.movements().get(pathPosition)).calculateValidPositions(leniency).contains(ctx.playerFeet());
             } else {
                 return true;
             }
