@@ -45,7 +45,7 @@ public class FarmCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(2);
         int range = 0;
-        BetterBlockPos origin;
+        BetterBlockPos origin = null;
         //range
         if (args.has(1)) {
             range = args.getAs(Integer.class);
@@ -81,10 +81,7 @@ public class FarmCommand extends Command {
             } else {
                 origin = waypoint.getLocation();
             }
-        } else {
-            origin = baritone.getPlayerContext().playerFeet();
         }
-
 
         baritone.getFarmProcess().farm(range, origin);
         logDirect("Farming");
