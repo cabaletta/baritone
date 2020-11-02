@@ -1111,7 +1111,7 @@ public final class Settings {
     /**
      * Use sword to mine.
      */
-    public final Setting<Boolean> useSwordToMine = new Setting<>(true);
+    public final Setting<Boolean> useSwordToMine = new Setting<>(false);
 
     /**
      * Desktop notifications
