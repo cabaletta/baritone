@@ -51,30 +51,17 @@ public class FarmCommand extends Command {
             range = args.getAs(Integer.class);
         }
         //waypoint
-        if (args.hasExactly(1)){
+        if (args.has(1)){
             IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
             IWaypoint waypoint = null;
-            if (args.hasAny() && args.peekString().equals("@")) {
-                long timestamp = args.getAs(Long.class);
-                for (IWaypoint iWaypoint : waypoints) {
-                    if (iWaypoint.getCreationTimestamp() == timestamp) {
-                        waypoint = iWaypoint;
-                        break;
-                    }
-                }
-                if (waypoint == null) {
-                    throw new CommandInvalidStateException("Timestamp was specified but no waypoint was found");
-                }
-            } else {
-                switch (waypoints.length) {
-                    case 0:
-                        throw new CommandInvalidStateException("No waypoints found");
-                    case 1:
-                        waypoint = waypoints[0];
-                        break;
-                    default:
-                        break;
-                }
+            switch (waypoints.length) {
+                case 0:
+                    throw new CommandInvalidStateException("No waypoints found");
+                case 1:
+                    waypoint = waypoints[0];
+                    break;
+                default:
+                    break;
             }
             if (waypoint == null) {
                 throw new CommandInvalidStateException("Multiple waypoints were found");
