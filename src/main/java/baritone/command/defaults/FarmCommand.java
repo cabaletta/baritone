@@ -61,13 +61,9 @@ public class FarmCommand extends Command {
                     waypoint = waypoints[0];
                     break;
                 default:
-                    break;
+                    throw new CommandInvalidStateException("Multiple waypoints were found");
             }
-            if (waypoint == null) {
-                throw new CommandInvalidStateException("Multiple waypoints were found");
-            } else {
-                origin = waypoint.getLocation();
-            }
+            origin = waypoint.getLocation();
         }
 
         baritone.getFarmProcess().farm(range, origin);
