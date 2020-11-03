@@ -512,8 +512,7 @@ public class MovementParkourAdv extends Movement {
 
     @Override
     public boolean safeToCancel(MovementState state) {
-        // since we don't really know anything about momentum, it can only be canceled during prep phase (i.e. before the jump)
-        // e.g. can't cancel while cancelling momentum or we may fall off the block.
+        // possibly safe if ctx.player().motion is low enough
         return state.getStatus() != MovementStatus.RUNNING;
     }
 
@@ -534,8 +533,8 @@ public class MovementParkourAdv extends Movement {
         return 0; // Will never reach this unless a new type is added
     }
 
+    // The direction the destination is in
     private final EnumFacing destDir = EnumFacing.fromAngle(MathHelper.atan2(src.x - dest.x, -(src.z - dest.z)) * RotationUtils.RAD_TO_DEG);
-
 
     @Override
     protected boolean prepared(MovementState state) {
@@ -622,6 +621,14 @@ public class MovementParkourAdv extends Movement {
         return vel;
     }
 
+    /**
+     * Calculates the velocity the player would have a specified amount of ticks after a jump
+     * Jump at tick 1
+     *
+     * @param ticksFromStart    The amount of ticks since jumping
+     * @param ctx               Player context (for jump boost)
+     * @return                  The y velocity calculated (+ is up)
+     */
     private static double calcFallVelocity(int ticksFromStart, IPlayerContext ctx) {
         if (ctx.player().isPotionActive(MobEffects.JUMP_BOOST) && Baritone.settings().considerPotionEffects.value) {
             return calcFallVelocity(ticksFromStart, true, ctx.player().getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier());
@@ -630,7 +637,15 @@ public class MovementParkourAdv extends Movement {
         }
     }
 
-    // used for calculating blocks in the way
+    /**
+     * Calculates the y position of the player relative to the jump y position
+     * Jump at tick 1
+     *
+     * @param ticksFromStart    The amount of ticks that have passed since jumping
+     * @param jump              If the jump is a jump and not a fall
+     * @param jumpBoostLvl      The level of jump boost active on the player
+     * @return                  The relative y position of the player
+     */
     private static double calcFallPosition(int ticksFromStart, boolean jump, int jumpBoostLvl) {
         int yPos = 0;
         for (int i = 1; i <= ticksFromStart; i++) {
@@ -639,6 +654,15 @@ public class MovementParkourAdv extends Movement {
         return yPos;
     }
 
+    /**
+     * Calculates the y position of the player relative to the jump y position
+     * Jump at tick 1
+     *
+     * @param ticksFromStart    The amount of ticks that have passed since jumping
+     * @param jump              If the jump is a jump and not a fall
+     * @param ctx               The player context (for jump boost)
+     * @return                  The relative y position of the player
+     */
     private static double calcFallPosition(int ticksFromStart, boolean jump, IPlayerContext ctx) {
         if (ctx.player().isPotionActive(MobEffects.JUMP_BOOST) && Baritone.settings().considerPotionEffects.value) {
             return calcFallPosition(ticksFromStart, jump, ctx.player().getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier());
@@ -647,7 +671,15 @@ public class MovementParkourAdv extends Movement {
         }
     }
 
-    private static double calcJumpTime(double ascendAmount, boolean jump, int jumpBoostLvl) {
+    /**
+     * Calculates the time in ticks spent in the air after jumping
+     *
+     * @param ascendAmount` The y differance of the landing position (can be negative)
+     * @param jump          If the jump is a jump and not a fall
+     * @param jumpBoostLvl  Tne level of jump boost active on the player
+     * @return              The jump time in ticks
+     */
+    private static int calcJumpTime(double ascendAmount, boolean jump, int jumpBoostLvl) {
         if (ascendAmount == 0) {
             return 12; // Most common case
         }
@@ -664,7 +696,15 @@ public class MovementParkourAdv extends Movement {
         return ticks;
     }
 
-    private static double calcJumpTime(double height, boolean jump, IPlayerContext ctx) {
+    /**
+     * Calculates the time in ticks spent in the air after jumping
+     *
+     * @param height   The height we are landing at (relative to the jump height)
+     * @param jump     If the jump is a jump and not a fall
+     * @param ctx      The player context (for jump boost)
+     * @return         The jump time in ticks
+     */
+    private static int calcJumpTime(double height, boolean jump, IPlayerContext ctx) {
         if (ctx.player().isPotionActive(MobEffects.JUMP_BOOST) && Baritone.settings().considerPotionEffects.value) {
             return calcJumpTime(height, jump, ctx.player().getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier());
         } else {
@@ -672,6 +712,13 @@ public class MovementParkourAdv extends Movement {
         }
     }
 
+    /**
+     * Gets the maximum jump height for a given jump boost lvl
+     *
+     * @param jump          If the jump is a jump and not a fall
+     * @param jumpBoostLvl  What level of jump boost is active on the player
+     * @return              The relative jump height
+     */
     private static double calcMaxJumpHeight(boolean jump, int jumpBoostLvl) {
         if (!jump) {
             return 0;
@@ -702,21 +749,38 @@ public class MovementParkourAdv extends Movement {
      * @return              Location as a double vector
      */
     private static Vec3d getFutureLocation(IPlayerContext ctx, MovementState state, int ticksFromNow) {
-        Vec3d out = getHorizontalVelocity(ctx, state, ctx.playerFeetAsVec(), ctx.player().motionX, ctx.player().motionZ).add(0, getVerticalVelocity(ctx, ctx.player().motionY), 0);
+        Vec3d out = getHorizontalVelocity(ctx, state, ctx.playerFeetAsVec(), ctx.player().motionX, ctx.player().motionZ).add(0, getVerticalVelocity(ctx.player().motionY), 0);
         for (int i = 1; i < ticksFromNow; i++) {
-            out = out.add(getHorizontalVelocity(ctx, state, out.add(ctx.playerFeetAsVec()), out.x, out.z)).add(0, getVerticalVelocity(ctx, out.y), 0);
+            out = out.add(getHorizontalVelocity(ctx, state, out.add(ctx.playerFeetAsVec()), out.x, out.z)).add(0, getVerticalVelocity(out.y), 0);
         }
         return out.add(ctx.playerFeetAsVec());
     }
 
-    private static double getVerticalVelocity(IPlayerContext ctx, double prevVelY) {
+    /**
+     * Predicts the vertical velocity in the future
+     * Only accurate when falling
+     *
+     * @param prevVelY  The velocity last tick in the y direction
+     * @return          The y velocity the tick after the given velocity
+     */
+    private static double getVerticalVelocity(double prevVelY) {
         return (prevVelY - 0.08) * 0.98;
     }
 
-    // Possibly to be used for location predictions more than 1 tick away (currently not used)
-    private static Vec3d getHorizontalVelocity(IPlayerContext ctx, MovementState state, Vec3d currentLocaiton, double prevVelX, double prevVelZ) {
+    /**
+     * Predicts the horizontal velocity in the future.
+     * Possibly to be used for location predictions more than 1 tick away (currently not used)
+     *
+     * @param ctx               The player context
+     * @param state             The MovementState containing the key presses we are pressing
+     * @param currentLocation   The current location
+     * @param prevVelX          The velocity last tick in the x direction
+     * @param prevVelZ          The velocity last tick in the z direction
+     * @return                  The velocity as a vector with the y value as 0
+     */
+    private static Vec3d getHorizontalVelocity(IPlayerContext ctx, MovementState state, Vec3d currentLocation, double prevVelX, double prevVelZ) {
         // Slipperiness effects some blocks etc. ice/slime, but is usually 0.6
-        double slipperiness = BlockStateInterface.getBlock(ctx, new BlockPos(currentLocaiton.subtract(0, 1, 0))).slipperiness; //set 1 to 0.5 in 1.15+
+        double slipperiness = BlockStateInterface.getBlock(ctx, new BlockPos(currentLocation.subtract(0, 1, 0))).slipperiness; //set 1 to 0.5 in 1.15+
         double effectMod = 1; // Potion Effects Multiplier
         if (ctx.player().isPotionActive(MobEffects.SPEED) && Baritone.settings().considerPotionEffects.value) {
             effectMod *= 1 + 0.2 * ctx.player().getActivePotionEffect(MobEffects.SPEED).getAmplifier(); // 20% per level
@@ -759,7 +823,13 @@ public class MovementParkourAdv extends Movement {
         return new Vec3d(velocityX, 0, velocityZ);
     }
 
-    // Move in the direction of jumpDir while facing towards destDir
+    /**
+     * Move in the direction of jumpDir while facing towards destDir
+     *
+     * @param jumpDir   The direction to move in
+     * @param destDir   The direction we are facing
+     * @return          The input to press
+     */
     private static Input neoJumpSideMove(EnumFacing jumpDir, EnumFacing destDir) {
         if (jumpDir == EnumFacing.NORTH && destDir == EnumFacing.WEST || jumpDir == EnumFacing.SOUTH && destDir == EnumFacing.EAST ||
                 jumpDir == EnumFacing.EAST && destDir == EnumFacing.NORTH || jumpDir == EnumFacing.WEST && destDir == EnumFacing.SOUTH) {
