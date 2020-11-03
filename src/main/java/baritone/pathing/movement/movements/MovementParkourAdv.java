@@ -71,7 +71,6 @@ public class MovementParkourAdv extends Movement {
     private static final double MAX_JUMP_MOMENTUM = 5.3; // We can't make 1bm momentum jumps greater than this distance
     private static final double MAX_JUMP_SPRINT = 4.6; // We can't make flat sprint jumps greater than this distance
     private static final double MAX_JUMP_WALK = 3.48; // We can make the jump without sprinting below this distance
-    private static final double MAX_JUMP_SLOWED = 2.5; //soulsand
 
     private static final double MAX_JUMP_EDGE = 6;
 
@@ -317,13 +316,9 @@ public class MovementParkourAdv extends Movement {
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
-        return calculateValidPositions(2);
-    }
-
-    public Set<BetterBlockPos> calculateValidPositions(double overlap) {
+    public Set<BetterBlockPos> calculateValidPositions() {
         HashSet<BetterBlockPos> out = new HashSet<BetterBlockPos>();
-        for (Vec3i vec : getLineApprox(direction, overlap, 3)) {
+        for (Vec3i vec : getLineApprox(direction, 2, 3)) {
             BetterBlockPos pos = new BetterBlockPos(src.add(vec));
             out.add(pos);       //Jumping from blocks
             out.add(pos.up());  //Jumping into blocks
@@ -337,8 +332,6 @@ public class MovementParkourAdv extends Movement {
     // 5 ticks spent 1 block higher
     // size of jump varies from 1b to 4b
     // tick 3 to tick 7 is spent 1 block higher
-    private static final int JUMP_UPPER_SIZE = 2;
-
     private static final double PLAYER_HEIGHT = 1.8;
 
     //true if blocks are in the way
@@ -377,7 +370,6 @@ public class MovementParkourAdv extends Movement {
     }
 
     public static void cost(CalculationContext context, int srcX, int srcY, int srcZ, MutableMoveResult res, EnumFacing simpleDirection) {
-
         if (!context.allowParkour || !context.allowParkourAdv) {
             return;
         }
@@ -432,34 +424,29 @@ public class MovementParkourAdv extends Movement {
             int destZ = srcZ + posbJump.getZ();
 
             double maxJump = 0;
-            if (standingOn.getBlock() == Blocks.SOUL_SAND) {
-                maxJump = MAX_JUMP_SLOWED; // 1 block gap
+            if (context.canSprint) {
+                switch (type) {
+                    case EDGE:  // An edge jump has only a little less momentum than a normal jump
+                    case NORMAL:
+                        maxJump = MAX_JUMP_SPRINT;
+                        break;
+                    case MOMENTUM:
+                        maxJump = MAX_JUMP_MOMENTUM;
+                        break;
+                    case EDGE_NEO:
+                        maxJump = 3; 
+                        break;
+                }
             } else {
-                if (context.canSprint) {
-                    switch (type) {
-                        case EDGE:  // An edge jump has only a little less momentum than a normal jump
-                        case NORMAL:
-                            maxJump = MAX_JUMP_SPRINT;
-                            break;
-                        case MOMENTUM:
-                            maxJump = MAX_JUMP_MOMENTUM;
-                            break;
-                        case EDGE_NEO:
-                            maxJump = 5; //TODO
-                            break;
-                    }
-                } else {
-                    switch (type) {
-                        case EDGE: // An edge jump has only a little less momentum than a normal jump
-                        case NORMAL:
-                            maxJump = MAX_JUMP_WALK;
-                            break;
-                        case EDGE_NEO: // can't neo without sprint :(
-                        case MOMENTUM: // can't momentum without sprint :(
-                            maxJump = -1;
-                            break;
-                    }
-
+                switch (type) {
+                    case EDGE: // An edge jump has only a little less momentum than a normal jump
+                    case NORMAL:
+                        maxJump = MAX_JUMP_WALK;
+                        break;
+                    case EDGE_NEO: // can't neo without sprint :(
+                    case MOMENTUM: // can't momentum without sprint :(
+                        maxJump = -1;
+                        break;
                 }
             }
 
@@ -644,7 +631,7 @@ public class MovementParkourAdv extends Movement {
                 accuracy = 0.025;
                 break;
         }
-        Vec3d preJumpPos = offset.add(src.x + 0.5, src.y, src.z + 0.5);
+        Vec3d preJumpPos = offset.add(src.x + 0.5, ctx.player().posY, src.z + 0.5);
         double distance = preJumpPos.distanceTo(ctx.playerFeetAsVec());
         System.out.println("Distance to prepLoc = " + distance);
         boolean prepLocPassable = MovementHelper.fullyPassable(ctx, src.add(new BlockPos(offset.add(offset.normalize().scale(0.4))))); // Checking 0.4 blocks in the direction of offset for a block (0.3 is the player hitbox width)
