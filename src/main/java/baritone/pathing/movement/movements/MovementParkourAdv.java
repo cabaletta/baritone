@@ -346,7 +346,6 @@ public class MovementParkourAdv extends Movement {
 
         IBlockState standingOn = context.get(srcX, srcY - 1, srcZ);
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || standingOn.getBlock() instanceof BlockLiquid) {
-            // System.out.println("TEST -1, " + srcX + ", " + (srcY - 1) + ", " + srcZ + ", " + " = " + standingOn.getBlock());
             return;
         }
 
@@ -408,7 +407,6 @@ public class MovementParkourAdv extends Movement {
                     continue;
                 }
 
-                //System.out.println("TEST 2, ASCENDING, moveDistance = " + calcMoveDist(context, srcX, srcY, srcZ, extraAscend, posbJump, simpleDirection));
                 if (context.allowParkourAscend && MovementHelper.canWalkOn(context.bsi, destX, srcY, destZ, destInto) /* && MovementParkour.checkOvershootSafety(context.bsi, destX + xDiff, srcY + 1, destZ + zDiff) */) {
                     if (checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, simpleDirection, 1, type)) {
                         continue; // Blocks are in the way
