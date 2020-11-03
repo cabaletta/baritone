@@ -616,26 +616,12 @@ public class MovementParkourAdv extends Movement {
         // If |VN+1| < 0.003, it is 0 instead
         double vel = init * Math.pow(0.98, ticksFromStart - 1) + 4 * Math.pow(0.98, ticksFromStart) - 3.92;
         if(vel < -3.92) {
-            vel = -3.92; //TERMINAL_VELOCITY
+            vel = -3.92; // TERMINAL_VELOCITY
         }
         if(Math.abs(vel) < 0.003) {
             vel = 0; // MINIMUM_VELOCITY
         }
         return vel;
-        /*
-        if(ticksFromStart == 1) {
-            if(jump) {
-                return 0.42;
-            } else {
-                return -0.0784;
-            }
-        }
-        double vel = (getFallVelocity(ticksFromStart - 1, jump) - 0.08) * 0.98;
-        if(vel < 0.003) {
-            return 0;
-        } else {
-            return vel;
-        } */
     }
 
     private static double calcFallVelocity(int ticksFromStart, IPlayerContext ctx) {
@@ -850,7 +836,8 @@ public class MovementParkourAdv extends Movement {
         /*
         logDebug("Overshoot = " + overshootVec.subtract(ctx.playerFeetAsVec()) + ", og = " + destVec.normalize() + ", difference = " + destVec.normalize().subtract(overshootVec.subtract(ctx.playerFeetAsVec())));
         logDebug("Motion = " + motionVec + ", Speed = " + motionVec.length() + ", XZ = " + speedXZ);
-        logDebug("FutureLoc = " + futureLoc); //*/
+        logDebug("FutureLoc = " + futureLoc);
+        //*/
 
         if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.up()) || (distToJumpXZ < 0.5 && distFromStartXZ < 1.2)) {
             // logDebug("Moving to jump, on src = " + ctx.playerFeet().equals(src) + ", or above = " + ctx.playerFeet().equals(src.up()));
@@ -916,8 +903,6 @@ public class MovementParkourAdv extends Movement {
             }
         } else if (!ctx.playerFeet().equals(src)) {
             // During a momentum jump the momentum jump will position us so just jump whenever possible (i.e. as soon as we land)
-            // distToJump < 0.17
-            // logDebug("JUMPING? " + Math.abs(futureLoc.x - (src.x + 0.5)) + " or " + Math.abs(futureLoc.z - (src.z + 0.5)));
             if (((Math.abs(futureLoc.x - (src.x + 0.5)) > 0.8 || Math.abs(futureLoc.z - (src.z + 0.5)) > 0.8) && distFromStart < 1.2) ||
                     (type == JumpType.MOMENTUM && distToJumpXZ < 0.6) ||
                     ((type == JumpType.EDGE || type == JumpType.EDGE_NEO) && distFromStart < 1)) {
