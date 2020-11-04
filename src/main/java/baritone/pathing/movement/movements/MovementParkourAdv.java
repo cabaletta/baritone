@@ -216,30 +216,7 @@ public class MovementParkourAdv extends Movement {
         }
         return output;
     }
-
-    /**
-     * Approximates a vectors location in a single quadrant (e.g. positive X/Y/Z direction)
-     * I do not know a better way to do this
-     *
-     * @param output    The HashSet to add the output to
-     * @param vector    The vector to approximate
-     * @param overlap   The distance the vector has to be to a block to add that block to the output.
-     * @param posX      If the quadrant to check is in the positive X direction
-     * @param posY      If the quadrant to check is in the positive Y direction
-     * @param posZ      If the quadrant to check is in the positive Z direction
-     */
-    private static void approxQuadrant(HashSet<Vec3i> output, Vec3d vector, double overlap, boolean posX, boolean posY, boolean posZ) {
-        for(double x = vector.x + (posX ? -1 : 1); (posX ? (x <= Math.floor(vector.x) + overlap) : (x >= Math.ceil(vector.x) - overlap)); x += posX ? 1 : -1) {
-            for(double y = vector.y + (posY ? -1 : 1); (posY ? (y <= Math.floor(vector.y) + overlap) : (y >= Math.ceil(vector.y) - overlap)); y += posY ? 1 : -1) {
-                for(double z = vector.z + (posZ ? -1 : 1); (posZ ? (z <= Math.floor(vector.z) + overlap) : (z >= Math.ceil(vector.z) - overlap)); z += posZ ? 1 : -1) {
-                    output.add(new Vec3i((vector.x * 2) - (x + (posX ? 1 : -1)), (vector.y * 2) - (y + (posY ? 1 : -1)), (vector.z * 2) - (z + (posZ ? 1 : -1))));
-                }
-            }
-        }
-    }
-
-    private static final boolean[][] allBooleans3 = {{false, false, false}, {false, false, true}, {false, true, false}, {false, true, true}, {true, false, false}, {true, false, true}, {true, true, false}, {true, true, true}};
-
+    
     /**
      * When the vector is pointing to a location close to the edge of a block also returns the block next to that edge.
      *
@@ -249,8 +226,12 @@ public class MovementParkourAdv extends Movement {
      */
     public static HashSet<Vec3i> approxBlock(Vec3d vector, double overlap) {
         HashSet<Vec3i> output = new HashSet<Vec3i>();
-        for (boolean[] boolCom : allBooleans3) {
-            approxQuadrant(output, vector, overlap, boolCom[0], boolCom[1], boolCom[2]);
+        for (int x = (int) (vector.x - overlap); x <= vector.x + overlap; x++) {
+            for (int y = (int) (vector.y - overlap); y <= vector.y + overlap; y++) {
+                for (int z = (int) (vector.z - overlap); z <= vector.z + overlap; z++) {
+                    output.add(new Vec3i(x, y, z));
+                }
+            }
         }
         return output;
     }
