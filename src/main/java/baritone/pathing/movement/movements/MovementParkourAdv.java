@@ -50,17 +50,17 @@ public class MovementParkourAdv extends Movement {
 
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
 
-    private static final HashMap<EnumFacing, HashMap<Vec3i, JumpType>> ALL_VALID_DIR = new HashMap<EnumFacing, HashMap<Vec3i, JumpType>>();
-    private static final HashMap<Vec3i, JumpType> SOUTH_VALID = new HashMap<Vec3i, JumpType>();
-    private static final HashMap<Vec3i, JumpType> WEST_VALID = new HashMap<Vec3i, JumpType>();
-    private static final HashMap<Vec3i, JumpType> NORTH_VALID = new HashMap<Vec3i, JumpType>();
-    private static final HashMap<Vec3i, JumpType> EAST_VALID = new HashMap<Vec3i, JumpType>();
+    private static final EnumMap<EnumFacing, HashMap<Vec3i, JumpType>> ALL_VALID_DIR = new EnumMap<>(EnumFacing.class);
+    private static final HashMap<Vec3i, JumpType> SOUTH_VALID = new HashMap<>();
+    private static final HashMap<Vec3i, JumpType> WEST_VALID = new HashMap<>();
+    private static final HashMap<Vec3i, JumpType> NORTH_VALID = new HashMap<>();
+    private static final HashMap<Vec3i, JumpType> EAST_VALID = new HashMap<>();
 
-    private static final HashMap<Vec3i, Double> DISTANCE_CACHE = new HashMap<Vec3i, Double>();
+    private static final HashMap<Vec3i, Double> DISTANCE_CACHE = new HashMap<>();
 
     // cost is similar to an equivalent straight flat jump in blocks
-    private static final double ASCEND_COST_PER_BLOCK = 0.6;
-    private static final double DESCEND_COST_PER_BLOCK = -0.3; // its easier to descend
+    private static final double ASCEND_DIST_PER_BLOCK = 0.6;
+    private static final double DESCEND_DIST_PER_BLOCK = -0.3; // its easier to descend
     private static final double TURN_COST_PER_RADIAN = 0.3;
 
     private static final double PREP_OFFSET = 0.2215; // The default prep location for a jump
@@ -72,7 +72,7 @@ public class MovementParkourAdv extends Movement {
     private static final double MOVE_COST = SPRINT_ONE_BLOCK_COST; // Since WALK_ONE_BLOCK_COST is heavily penalised it sometimes chose longer sprint jumps over walking jumps. This is now the cost per move distance for all jumps (multiplied for harder ones).
     private static final double COST_MODIFIER = 1.3; // The amount to multiply the cost by (in attempt to magnify the differences between jumps)
 
-    static enum JumpType {
+    enum JumpType {
         NORMAL, // Normal run and jump
         MOMENTUM, // An extra momentum jump 1bm
         EDGE, // No run up (for higher angle jumps)
@@ -189,13 +189,13 @@ public class MovementParkourAdv extends Movement {
         return new Vec3d(x, y, z);
     }
 
-    private static LinkedHashSet<Vec3i> getLineApprox(Vec3i vec, double overlap, double accPerBlock) {
+    private static Set<Vec3i> getLineApprox(Vec3i vec, double overlap, double accPerBlock) {
         return approxBlocks(getLine(vec, accPerBlock), overlap);
     }
 
-    public static ArrayList<Vec3d> getLine(Vec3i vector, double accPerBlock) {
+    public static List<Vec3d> getLine(Vec3i vector, double accPerBlock) {
         double length = Math.ceil(getDistance(vector));
-        ArrayList<Vec3d> line = new ArrayList<Vec3d>();
+        ArrayList<Vec3d> line = new ArrayList<>();
         for (double i = 0; i <= length - (1 / accPerBlock); i += (1 / accPerBlock)) {
             line.add(normalize(vector).scale(i).add(0.5, 0.5, 0.5));
         }
@@ -207,16 +207,16 @@ public class MovementParkourAdv extends Movement {
      *
      * @param vectors   The vectors to approximate
      * @param overlap   The size of the edge
-     * @return          The blocks that the vectors approximately lie in
+     * @return          An ordered set with the blocks that the vectors approximately lie in
      */
-    public static LinkedHashSet<Vec3i> approxBlocks(Collection<Vec3d> vectors, double overlap) {
-        LinkedHashSet<Vec3i> output = new LinkedHashSet<Vec3i>();
+    public static Set<Vec3i> approxBlocks(Collection<Vec3d> vectors, double overlap) {
+        LinkedHashSet<Vec3i> output = new LinkedHashSet<>();
         for (Vec3d vector : vectors) {
             output.addAll(approxBlock(vector, overlap));
         }
         return output;
     }
-    
+
     /**
      * When the vector is pointing to a location close to the edge of a block also returns the block next to that edge.
      *
@@ -224,8 +224,8 @@ public class MovementParkourAdv extends Movement {
      * @param overlap   The size of the edge
      * @return          The set of vectors that correspond to blocks at the approximate location of the input vector
      */
-    public static HashSet<Vec3i> approxBlock(Vec3d vector, double overlap) {
-        HashSet<Vec3i> output = new HashSet<Vec3i>();
+    public static Set<Vec3i> approxBlock(Vec3d vector, double overlap) {
+        HashSet<Vec3i> output = new HashSet<>();
         for (int x = (int) (vector.x - overlap); x <= vector.x + overlap; x++) {
             for (int y = (int) (vector.y - overlap); y <= vector.y + overlap; y++) {
                 for (int z = (int) (vector.z - overlap); z <= vector.z + overlap; z++) {
@@ -238,7 +238,7 @@ public class MovementParkourAdv extends Movement {
 
     @Override
     public Set<BetterBlockPos> calculateValidPositions() {
-        HashSet<BetterBlockPos> out = new HashSet<BetterBlockPos>();
+        HashSet<BetterBlockPos> out = new HashSet<>();
         for (Vec3i vec : getLineApprox(direction, 2, 3)) {
             BetterBlockPos pos = new BetterBlockPos(src.add(vec));
             out.add(pos); // Jumping from blocks
@@ -251,22 +251,22 @@ public class MovementParkourAdv extends Movement {
 
     private static final double PLAYER_HEIGHT = 1.8;
 
-    //true if blocks are in the way
+    // true if blocks are in the way
     private static boolean checkBlocksInWay(CalculationContext context, int srcX, int srcY, int srcZ, Vec3i jump, EnumFacing jumpDirection, int ascendAmount, JumpType type) {
         BlockPos dest = new BlockPos(srcX + jump.getX(), srcY + jump.getY() + ascendAmount, srcZ + jump.getZ());
         if (!MovementHelper.fullyPassable(context, dest.getX(), dest.getY(), dest.getZ()) ||  !MovementHelper.fullyPassable(context, dest.getX(), dest.getY() + 1, dest.getZ())) {
-            return true; //Destination is blocked
+            return true; // Destination is blocked
         }
         Vec3i endPoint = VecUtils.add(VecUtils.subtract(jump, jumpDirection.getDirectionVec()), 0, ascendAmount, 0);
         if(type == JumpType.EDGE_NEO) {
             endPoint = VecUtils.add(endPoint, jumpDirection.getDirectionVec());
         }
-        LinkedHashSet<Vec3i> jumpLine = getLineApprox(endPoint, 0.2, 1);
+        Set<Vec3i> jumpLine = getLineApprox(endPoint, 0.2, 1);
         jumpLine.add(endPoint); // Check the destination for blocks
         jumpLine.remove(VecUtils.add(endPoint, 0, -1, 0)); // Landing block
         jumpLine.add(new Vec3i(-jumpDirection.getXOffset(), 0, -jumpDirection.getZOffset())); // Src block
         if (type == JumpType.MOMENTUM) {
-           jumpLine.add(new Vec3i(-jumpDirection.getXOffset(), 2, -jumpDirection.getZOffset())); // The block above the src is entered during a momentum jump (check block above head)
+           jumpLine.add(new Vec3i(-jumpDirection.getXOffset(), 1, -jumpDirection.getZOffset())); // The block above the src is entered during a momentum jump (check block above head)
         }
         Iterator<Vec3i> jumpItr = jumpLine.iterator();
         double stepSize = (double) jumpLine.size() / calcJumpTime(ascendAmount, true, context.baritone.getPlayerContext());
@@ -279,7 +279,7 @@ public class MovementParkourAdv extends Movement {
                 prevHeight += calcFallVelocity(tick, context.getBaritone().getPlayerContext());
                 prevTick = tick;
             }
-            for (int j = (int) prevHeight; j <= PLAYER_HEIGHT + prevHeight; j++) { //Checks feet, head, for each block. (can double check some blocks on ascends/descends)
+            for (int j = (int) prevHeight; j <= PLAYER_HEIGHT + prevHeight; j++) { // Checks feet, head, for each block. (can double check some blocks on ascends/descends)
                 // jumpDirection is subtracted at the beginning (re-added here)
                 Vec3i vec = VecUtils.add(VecUtils.add(jumpVec, jumpDirection.getDirectionVec()), srcX, srcY + j, srcZ);
                 if (!MovementHelper.fullyPassable(context, vec.getX(), vec.getY(), vec.getZ())) {
@@ -312,7 +312,7 @@ public class MovementParkourAdv extends Movement {
         int zDiff = simpleDirection.getZOffset();
         double extraAscend = 0;
 
-        if (!MovementHelper.fullyPassable(context, srcX + xDiff, srcY, srcZ + zDiff)) { //block in foot in directly adjacent block
+        if (!MovementHelper.fullyPassable(context, srcX + xDiff, srcY, srcZ + zDiff)) { // block in foot in directly adjacent block
             return;
         }
         IBlockState adj = context.get(srcX + xDiff, srcY - 1, srcZ + zDiff);
@@ -323,10 +323,10 @@ public class MovementParkourAdv extends Movement {
         if (MovementHelper.avoidWalkingInto(adj.getBlock()) && adj.getBlock() != Blocks.WATER && adj.getBlock() != Blocks.FLOWING_WATER) { // magma sucks
             return;
         }
-        if (!MovementHelper.fullyPassable(context, srcX + xDiff, srcY + 1, srcZ + zDiff)) { //block in head in directly adjacent block
+        if (!MovementHelper.fullyPassable(context, srcX + xDiff, srcY + 1, srcZ + zDiff)) { // block in head in directly adjacent block
             return;
         }
-        if (!MovementHelper.fullyPassable(context, srcX + xDiff, srcY + 2, srcZ + zDiff)) { //Block above head in directly adjacent block
+        if (!MovementHelper.fullyPassable(context, srcX + xDiff, srcY + 2, srcZ + zDiff)) { // Block above head in directly adjacent block
             return;
         }
 
@@ -349,7 +349,7 @@ public class MovementParkourAdv extends Movement {
             int destX = srcX + posbJump.getX();
             int destZ = srcZ + posbJump.getZ();
 
-            double maxJump = -1;
+            double maxJump = -1; // defaults to not possible
             if (context.canSprint) {
                 switch (type) {
                     case EDGE:  // An edge jump has only a little less momentum than a normal jump
@@ -362,7 +362,7 @@ public class MovementParkourAdv extends Movement {
                         }
                         break;
                     case EDGE_NEO:
-                        maxJump = 3;
+                        maxJump = 4;
                         break;
                 }
             } else {
@@ -374,7 +374,7 @@ public class MovementParkourAdv extends Movement {
                 }
             }
 
-            if (!MovementHelper.fullyPassable(context, destX, srcY + 1, destZ)) { //block in head at destination
+            if (!MovementHelper.fullyPassable(context, destX, srcY + 1, destZ)) { // block in head at destination
                 continue;
             }
 
@@ -385,7 +385,6 @@ public class MovementParkourAdv extends Movement {
             IBlockState destInto = context.bsi.get0(destX, srcY, destZ);
             // Must ascend here as foot has block, && no block in head at destination (if ascend)
             if (!MovementHelper.fullyPassable(context.bsi.access, context.bsi.isPassableBlockPos.setPos(destX, srcY, destZ), destInto) && MovementHelper.fullyPassable(context, destX, srcY + 2, destZ)) {
-                // ascendAmount += 1;
                 posbJump = VecUtils.add(posbJump, 0, 1, 0);
 
                 if (calcMoveDist(context, srcX, srcY, srcZ, extraAscend, posbJump, simpleDirection) > maxJump) {
@@ -399,7 +398,6 @@ public class MovementParkourAdv extends Movement {
                     }
 
                     lowestCost = getMoveResult(context, destX, srcY + 1, destZ, extraAscend, VecUtils.add(posbJump, 0, 1, 0), simpleDirection, type, 0, lowestCost, res);
-                    continue;
                 }
                 continue;
             }
@@ -414,7 +412,6 @@ public class MovementParkourAdv extends Movement {
                 // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland haha
                 if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, destX, srcY - descendAmount - 1, destZ, landingOn)) {
                     lowestCost = getMoveResult(context, destX, srcY - descendAmount, destZ, extraAscend, VecUtils.add(posbJump, 0, -descendAmount, 0), simpleDirection, type, 0, lowestCost, res);
-                    continue;
                 }
             }
 
@@ -447,15 +444,16 @@ public class MovementParkourAdv extends Movement {
                 }
                 if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
                     lowestCost = getMoveResult(context, destX, srcY, destZ, extraAscend, posbJump, simpleDirection, type, placeCost, lowestCost, res);
-                    continue;
                 }
             }
         }
         res = lowestCost;
+        /*
         if (res.cost < 1000) {
             Vec3i jumpVec = new Vec3i(res.x - srcX, res.y - srcY, res.z - srcZ);
             // System.out.println(new Vec3i(srcX, srcY, srcZ) + ", Dir = " + simpleDirection + ", Cost: " + res.cost + ", Distance: " + getDistance(jumpVec, simpleDirection) + ", MoveDis: " + calcMoveDist(context, srcX, srcY, srcZ, extraAscend, jumpVec, simpleDirection));
         }
+        //*/
     }
 
     private static MutableMoveResult getMoveResult(CalculationContext context, int x, int y, int z, double extraAscend, Vec3i jump, EnumFacing jumpDirection, JumpType type, double costModifiers, MutableMoveResult curLowestCost, MutableMoveResult res) {
@@ -483,17 +481,23 @@ public class MovementParkourAdv extends Movement {
 
         // Modifying distance so that ascends have larger distances while descends have smaller
         if(ascendAmount > 0) {
-            distance += ascendAmount * ASCEND_COST_PER_BLOCK;
+            distance += ascendAmount * ASCEND_DIST_PER_BLOCK;
         } else {
-            distance += ascendAmount * -DESCEND_COST_PER_BLOCK; // ascendAmount is negative
+            distance += ascendAmount * -DESCEND_DIST_PER_BLOCK; // ascendAmount is negative
         }
 
         // Calculating angle between vectors
         Vec3d jumpVec = new Vec3d(jump.getX() - jumpDirection.getXOffset(), 0, jump.getZ() - jumpDirection.getZOffset()).normalize();
-        double angle = Math.acos(jumpVec.dotProduct(new Vec3d(jumpDirection.getDirectionVec()))); //in radians
+        double angle = Math.acos(jumpVec.dotProduct(new Vec3d(jumpDirection.getDirectionVec()))); // in radians
+        distance += TURN_COST_PER_RADIAN * angle;
+
+        // reduce distance to approach a minimum value of 0.559 (prevents negatives/or very low distances)
+        if (distance < 1.74) { // 1.74 = 3.48 [MAX_JUMP_WALK] / 2
+            distance = Math.pow(1.1, distance) + 0.559; // 1.1^1.74 + 0.559 = 1.739
+        }
 
         // This distance is unitless as it contains: modifiers on ascends/descends, and the slowdowns in changing directions midair (angle)
-        return distance + TURN_COST_PER_RADIAN * angle;
+        return distance;
     }
 
     @Override
@@ -504,6 +508,7 @@ public class MovementParkourAdv extends Movement {
 
     private static double costFromJump(CalculationContext context, int srcX, int srcY, int srcZ, double extraAscend, Vec3i jump, EnumFacing jumpDirection, JumpType type) {
         double distance = calcMoveDist(context, srcX, srcY, srcZ, extraAscend, jump, jumpDirection);
+        distance += -Math.min(jump.getY() + extraAscend, 0) * FALL_0_25_BLOCKS_COST; // penalise jumps with descends (as falling takes time)
         switch (type) {
             case EDGE: // for now edge jumps cost the same as normal ones (just setup differently)
             case NORMAL:
@@ -515,9 +520,6 @@ public class MovementParkourAdv extends Movement {
         }
         return 0; // Will never reach this unless a new type is added
     }
-
-    // The direction the destination is in
-    private final EnumFacing destDir = EnumFacing.fromAngle(MathHelper.atan2(src.x - dest.x, -(src.z - dest.z)) * RotationUtils.RAD_TO_DEG);
 
     @Override
     protected boolean prepared(MovementState state) {
@@ -535,6 +537,7 @@ public class MovementParkourAdv extends Movement {
                 accuracy = 0.025; // Don't want to fall off
                 break;
             case EDGE_NEO:
+                EnumFacing destDir = EnumFacing.fromAngle(MathHelper.atan2(src.x - dest.x, -(src.z - dest.z)) * RotationUtils.RAD_TO_DEG);
                 offset = new Vec3d(simpleDirection.getDirectionVec()).scale(0.8).add(new Vec3d(destDir.getOpposite().getDirectionVec()).scale(0.2));
                 accuracy = 0.025;
                 break;
@@ -566,7 +569,7 @@ public class MovementParkourAdv extends Movement {
             }
             return false;
         } else {
-            logDebug("Achieved '" + (double) Math.round(distance * 10000) / 10000 + "' blocks of accuracy to preploc");
+            logDebug("Achieved '" + (double) Math.round(distance * 10000) / 10000 + "' blocks of accuracy to preploc. Jump Direction = " + simpleDirection + ", Using technique '" + type + "'");
             inStartingPosition = true;
             return true;
         }
@@ -672,6 +675,7 @@ public class MovementParkourAdv extends Movement {
         }
         int ticks = 0;
         double prevHeight = 0;
+        // Removing (prevHeight > maxJumpHeight) breaks it?
         while ((prevHeight > maxJumpHeight && prevHeight > ascendAmount) || prevHeight < maxJumpHeight) { // You can only land on a block when you are moving down
             ticks++;
             prevHeight += calcFallVelocity(ticks, jump, jumpBoostLvl);
@@ -763,7 +767,7 @@ public class MovementParkourAdv extends Movement {
      */
     private static Vec3d getHorizontalVelocity(IPlayerContext ctx, MovementState state, Vec3d currentLocation, double prevVelX, double prevVelZ) {
         // Slipperiness effects some blocks etc. ice/slime, but is usually 0.6
-        double slipperiness = BlockStateInterface.getBlock(ctx, new BlockPos(currentLocation.subtract(0, 1, 0))).slipperiness; //set 1 to 0.5 in 1.15+
+        double slipperiness = BlockStateInterface.getBlock(ctx, new BlockPos(currentLocation.subtract(0, 1, 0))).slipperiness; // set 1 to 0.5 in 1.15+
         double effectMod = 1; // Potion Effects Multiplier
         if (ctx.player().isPotionActive(MobEffects.SPEED) && Baritone.settings().considerPotionEffects.value) {
             effectMod *= 1 + 0.2 * ctx.player().getActivePotionEffect(MobEffects.SPEED).getAmplifier(); // 20% per level
@@ -807,29 +811,21 @@ public class MovementParkourAdv extends Movement {
     }
 
     /**
-     * Move in the direction of jumpDir while facing towards destDir
+     * Move in the direction of moveDirYaw while facing towards playerYaw
+     * (excluding MOVE_BACK)
      *
-     * @param jumpDir   The direction to move in
-     * @param destDir   The direction we are facing
-     * @return          The input to press
+     * @param playerYaw     The yaw we are facing towards
+     * @param moveDirYaw    The yaw (angle) to move towards
+     * @return              The input required
      */
-    private static Input neoJumpSideMove(EnumFacing jumpDir, EnumFacing destDir) {
-        if (jumpDir == EnumFacing.NORTH && destDir == EnumFacing.WEST || jumpDir == EnumFacing.SOUTH && destDir == EnumFacing.EAST ||
-                jumpDir == EnumFacing.EAST && destDir == EnumFacing.NORTH || jumpDir == EnumFacing.WEST && destDir == EnumFacing.SOUTH) {
-            return Input.MOVE_RIGHT;
-        }
-        if (jumpDir == EnumFacing.NORTH && destDir == EnumFacing.EAST || jumpDir == EnumFacing.SOUTH && destDir == EnumFacing.WEST ||
-                jumpDir == EnumFacing.WEST && destDir == EnumFacing.NORTH || jumpDir == EnumFacing.EAST && destDir == EnumFacing.SOUTH) {
-            return Input.MOVE_LEFT;
-        }
-        if(jumpDir == destDir) {
-            return Input.MOVE_FORWARD;
-        }
-        return null;
-    }
-
     private static Input sideMove(double playerYaw, double moveDirYaw) {
         double diff = moveDirYaw - playerYaw;
+        if(diff > 180) {
+            diff = 180 - diff;
+        }
+        if(diff < -180) {
+            diff = -180 - diff;
+        }
         if (diff >= 45) {
             return Input.MOVE_RIGHT;
         }
@@ -842,6 +838,23 @@ public class MovementParkourAdv extends Movement {
         return null; // Not possible
     }
 
+    /**
+     * Move in the direction of moveDirYaw while facing towards playerLookDest
+     * (excluding MOVE_BACK)
+     *
+     * @param src               The block we are at
+     * @param playerLookDest    The block we are facing towards
+     * @param moveDest          The block to move towards
+     * @return                  The input required
+     */
+    private static Input sideMove(Vec3i src, Vec3i playerLookDest, Vec3i moveDest) {
+        // Make vectors relative
+        playerLookDest = VecUtils.subtract(playerLookDest, src);
+        moveDest = VecUtils.subtract(moveDest, src);
+        return sideMove(MathHelper.atan2(playerLookDest.getX(), -playerLookDest.getZ()) * RotationUtils.RAD_TO_DEG,
+                MathHelper.atan2(moveDest.getX(), -moveDest.getZ()) * RotationUtils.RAD_TO_DEG);
+    }
+
     double queuedAngleChange = 0;
 
     @Override
@@ -851,7 +864,7 @@ public class MovementParkourAdv extends Movement {
             return state;
         }
 
-        if(ticksFromStart > 40) { //Should generally have <= 12 (exceptions are descending jumps)
+        if(ticksFromStart > 40) { // Should generally have <= 12 (exceptions are descending jumps)
             logDebug("jump timed out");
             return state.setStatus(MovementStatus.FAILED);
         }
@@ -924,7 +937,7 @@ public class MovementParkourAdv extends Movement {
                     } else if (ticksFromStart >= 1) {
                         MovementHelper.moveTowards(ctx, state, src.offset(simpleDirection, 2));
                         if (ticksFromStart <= 2) {
-                            state.setInput(Input.SPRINT, false); //not sprinting for a few ticks
+                            state.setInput(Input.SPRINT, false); // not sprinting for a few ticks
                         }
                     }
                     break;
@@ -933,9 +946,8 @@ public class MovementParkourAdv extends Movement {
                     curDest = VecUtils.getBlockPosCenter(dest);
                     break;
                 case EDGE_NEO:
-                    curDest = new Vec3d(simpleDirection.getDirectionVec()).scale(0.3).add(VecUtils.getBlockPosCenter(dest));
-                    MovementHelper.moveTowards(ctx, state, curDest);
-                    state.setInput(neoJumpSideMove(simpleDirection, destDir), true);
+                    MovementHelper.moveTowards(ctx, state, new Vec3d(simpleDirection.getDirectionVec()).scale(0.3).add(VecUtils.getBlockPosCenter(dest)));
+                    state.setInput(sideMove(src, dest, src.offset(simpleDirection)), true);
                     break;
             }
         } else if (curDist < 1) {
@@ -956,10 +968,11 @@ public class MovementParkourAdv extends Movement {
             atDestTicks = 0;
         }
 
-        if (curDest != null) {
+        if (curDest != null &&
+                type != JumpType.EDGE_NEO && type != JumpType.MOMENTUM) { // EDGE_NEO and MOMENTUM jumps are completed with very low room for error, dodging an obstacle will lead to missing the jump due to the slight decrease in speed
             // This is called after movement to also factor in key presses and look direction
             int ticksRemaining = calcJumpTime(ascendAmount, true, ctx) - ticksFromStart;
-            HashSet<Vec3d> futureLocationsXZ = new HashSet<Vec3d>();
+            HashSet<Vec3d> futureLocationsXZ = new HashSet<>();
             for (int i = 6; i <= Math.min(12, ticksRemaining); i += 2) {
                 Vec3d vec = getFutureLocation(ctx, state, i + 1); // The predicted location a few ticks in the future
                 vec = new Vec3d(vec.x, ctx.player().posY, vec.z); // Remove y axis due to inaccuracies
@@ -973,11 +986,12 @@ public class MovementParkourAdv extends Movement {
                     double futureAngle = MathHelper.atan2(ctx.player().posX - pos.getX(), -(ctx.player().posZ - pos.getZ())) * RotationUtils.RAD_TO_DEG;
 
                     double addAngle = (destAngle - futureAngle) * 4;
-                    final double MAX_ANGLE = 90;
+                    final double MAX_ANGLE = 50;
                     if (addAngle > MAX_ANGLE) { addAngle = MAX_ANGLE; }
                     if (addAngle < -MAX_ANGLE) { addAngle = -MAX_ANGLE; }
 
                     if (Math.abs(queuedAngleChange + addAngle) <= MAX_ANGLE * 2) {
+                        logDebug("Adjusting movement to dodge an obstacle. ");
                         queuedAngleChange += addAngle;
                     }
                     break;
@@ -985,9 +999,9 @@ public class MovementParkourAdv extends Movement {
             }
 
             state.setTarget(new MovementState.MovementTarget(
-                    new Rotation((float) (destAngle + Math.min(queuedAngleChange, 90) * 0.1), ctx.player().rotationPitch),
+                    new Rotation((float) (destAngle + queuedAngleChange * 0.2), ctx.player().rotationPitch),
                     false
-            )).setInput(Input.MOVE_FORWARD, true).setInput(sideMove(ctx.playerRotations().getYaw(), queuedAngleChange), true);
+            )).setInput(Input.MOVE_FORWARD, true).setInput(sideMove(ctx.playerRotations().normalize().getYaw(), queuedAngleChange), true);
         }
 
         /*
@@ -1009,19 +1023,14 @@ public class MovementParkourAdv extends Movement {
             if (d == Blocks.VINE || d == Blocks.LADDER) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-        } else if (!ctx.playerFeet().equals(src)) {
-            // During a momentum jump the momentum jump will position us so just jump whenever possible (i.e. as soon as we land)
-            if (((Math.abs(futureLoc.x - (src.x + 0.5)) > 0.8 || Math.abs(futureLoc.z - (src.z + 0.5)) > 0.8) && distFromStart < 1.2) ||
-                    (type == JumpType.MOMENTUM && distToJumpXZ < 0.6) ||
-                    ((type == JumpType.EDGE || type == JumpType.EDGE_NEO) && distFromStart < 1)) {
-
-                // To only log Jumping when we can actually jump
-                if(ctx.player().onGround) {
-                    state.setInput(Input.JUMP, true);
-                    logDebug("Jumping");
-                    ticksFromStart = 0; // Reset ticks from momentum/run-up phase
-                }
-            }
+        } else if (!ctx.playerFeet().equals(src) && // Don't jump on the src block (too early)
+                (((Math.abs(futureLoc.x - (src.x + 0.5)) > 0.8 || Math.abs(futureLoc.z - (src.z + 0.5)) > 0.8) && distFromStart < 1.2) || // Centre 0.5 + Player hitbox 0.3 = 0.8, if we are this distance from src, jump
+                    (type == JumpType.MOMENTUM && distToJumpXZ < 0.6) || // During a momentum jump the momentum jump will position us so just jump whenever possible (i.e. as soon as we land)
+                    ((type == JumpType.EDGE || type == JumpType.EDGE_NEO) && distFromStart < 1))  // The prepLoc of an edge jump is on the edge of the block so just jump straight away
+                    && ctx.player().onGround) { // To only log Jumping when we can actually jump
+            state.setInput(Input.JUMP, true);
+            logDebug("Jumping");
+            ticksFromStart = 0; // Reset ticks from momentum/run-up phase
         }
         return state;
     }
