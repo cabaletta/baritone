@@ -35,6 +35,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.IBlockAccess;
 
 import java.util.Optional;
@@ -152,6 +153,14 @@ public interface MovementHelper extends ActionCosts, Helper {
                 context.bsi.access,
                 context.bsi.isPassableBlockPos.setPos(x, y, z),
                 context.bsi.get0(x, y, z)
+        );
+    }
+
+    static boolean fullyPassable(CalculationContext context, Vec3i pos) {
+        return fullyPassable(
+                context.bsi.access,
+                context.bsi.isPassableBlockPos.setPos(pos.getX(), pos.getY(), pos.getZ()),
+                context.bsi.get0(pos.getX(), pos.getY(), pos.getZ())
         );
     }
 
@@ -348,6 +357,10 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos) {
         return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
+    }
+
+    static boolean canWalkOn(BlockStateInterface bsi, BetterBlockPos pos, IBlockState state) {
+        return canWalkOn(bsi, pos.x, pos.y, pos.z, state);
     }
 
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z) {
