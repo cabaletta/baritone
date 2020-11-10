@@ -18,7 +18,9 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
+import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -199,202 +201,52 @@ public class MovementPrediction {
         return r;
     }
 
-    // Code from Entity class
-    public static void moveAndCheckCollisions(PredictionResult r) {
+    /**
+     * Checks the if movement collides with blocks (that is relevant to parkour e.g. no stair steps, no sneak till edge)
+     *
+     * @param r
+     */
+    public static void moveAndCheckCollisionsParkour(PredictionResult r) {
         double x = r.motionX;
         double y = r.motionY;
         double z = r.motionZ;
-
-        if (r.isInWeb) {
-            r.isInWeb = false;
-            x *= 0.25D;
-            y *= 0.05000000074505806D;
-            z *= 0.25D;
-            r.motionX = 0.0D;
-            r.motionY = 0.0D;
-            r.motionZ = 0.0D;
-        }
 
         // save initial values
         double initX = x;
         double initY = y;
         double initZ = z;
 
-        double stepHeight = 0.5; // How high this entity can step up when running into a block to try to get over it (currently make note the entity will always step up this amount and not just the amount needed)
-
-        // Sneak till edge (unless a block is available to step on)
-        if (r.onGround && r.isSneaking) {
-            //world.getCollisionBoxes = Gets a list of bounding boxes that intersect with the provided AABB (excluding the player)
-            for (; x != 0.0D && r.player.world.getCollisionBoxes(r.player, r.boundingBox.offset(x, -stepHeight, 0.0D)).isEmpty(); initX = x) {
-                if (x < 0.05D && x >= -0.05D) {
-                    x = 0.0D;
-                } else if (x > 0.0D) {
-                    x -= 0.05D;
-                } else {
-                    x += 0.05D;
-                }
-            }
-
-            for (; z != 0.0D && r.player.world.getCollisionBoxes(r.player, r.boundingBox.offset(0.0D, -stepHeight, z)).isEmpty(); initZ = z) {
-                if (z < 0.05D && z >= -0.05D) {
-                    z = 0.0D;
-                } else if (z > 0.0D) {
-                    z -= 0.05D;
-                } else {
-                    z += 0.05D;
-                }
-            }
-
-            for (; x != 0.0D && z != 0.0D && r.player.world.getCollisionBoxes(r.player, r.boundingBox.offset(x, -stepHeight, z)).isEmpty(); initZ = z) {
-                if (x < 0.05D && x >= -0.05D) {
-                    x = 0.0D;
-                } else if (x > 0.0D) {
-                    x -= 0.05D;
-                } else {
-                    x += 0.05D;
-                }
-
-                initX = x;
-
-                if (z < 0.05D && z >= -0.05D) {
-                    z = 0.0D;
-                } else if (z > 0.0D) {
-                    z -= 0.05D;
-                } else {
-                    z += 0.05D;
-                }
-            }
-        }
-
         // Calculate block collisions
-        List<AxisAlignedBB> list1 = r.player.world.getCollisionBoxes(r.player, r.boundingBox.expand(x, y, z));
-        AxisAlignedBB axisalignedbb = r.boundingBox;
+        List<AxisAlignedBB> nearbyBBs = r.player.world.getCollisionBoxes(r.player, r.boundingBox.expand(x, y, z));
 
-        if (y != 0.0D) {
-            int k = 0;
-
-            for (int listSize = list1.size(); k < listSize; ++k) {
-                y = list1.get(k).calculateYOffset(r.boundingBox, y);
+        if (y != 0) {
+            int i = 0;
+            for (int listSize = nearbyBBs.size(); i < listSize; ++i) {
+                y = nearbyBBs.get(i).calculateYOffset(r.boundingBox, y);
             }
-            r.boundingBox = r.boundingBox.offset(0.0D, y, 0.0D);
+            r.boundingBox = r.boundingBox.offset(0, y, 0);
         }
 
-        if (x != 0.0D) {
-            int j5 = 0;
-
-            for (int listSize = list1.size(); j5 < listSize; ++j5) {
-                x = list1.get(j5).calculateXOffset(r.boundingBox, x);
+        if (x != 0) {
+            int i = 0;
+            for (int listSize = nearbyBBs.size(); i < listSize; ++i) {
+                x = nearbyBBs.get(i).calculateXOffset(r.boundingBox, x);
             }
-
-            if (x != 0.0D) {
-                r.boundingBox = r.boundingBox.offset(x, 0.0D, 0.0D);
+            if (x != 0) {
+                r.boundingBox = r.boundingBox.offset(x, 0, 0);
             }
         }
 
-        if (z != 0.0D) {
-            int k5 = 0;
-
-            for (int listSize = list1.size(); k5 < listSize; ++k5) {
-                z = list1.get(k5).calculateZOffset(r.boundingBox, z);
+        if (z != 0) {
+            int i = 0;
+            for (int listSize = nearbyBBs.size(); i < listSize; ++i) {
+                z = nearbyBBs.get(i).calculateZOffset(r.boundingBox, z);
             }
-
-            if (z != 0.0D) {
-                r.boundingBox = r.boundingBox.offset(0.0D, 0.0D, z);
+            if (z != 0) {
+                r.boundingBox = r.boundingBox.offset(0, 0, z);
             }
         }
 
-        boolean flag = r.onGround || initY != y && initY < 0.0D;
-
-        // if stepHeight > 0
-        if (flag && (initX != x || initZ != z)) {
-            double d14 = x;
-            double d6 = y;
-            double d7 = z;
-            AxisAlignedBB oldBoundingBox = r.boundingBox;
-            r.boundingBox = axisalignedbb;
-            y = stepHeight;
-            List<AxisAlignedBB> list = r.player.world.getCollisionBoxes(r.player, r.boundingBox.expand(initX, y, initZ));
-            AxisAlignedBB axisalignedbb2 = r.boundingBox;
-            AxisAlignedBB axisalignedbb3 = axisalignedbb2.expand(initX, 0.0D, initZ);
-            double d8 = y;
-            int j1 = 0;
-
-            for (int k1 = list.size(); j1 < k1; ++j1) {
-                d8 = list.get(j1).calculateYOffset(axisalignedbb3, d8);
-            }
-
-            axisalignedbb2 = axisalignedbb2.offset(0.0D, d8, 0.0D);
-            double d18 = initX;
-            int l1 = 0;
-
-            for (int i2 = list.size(); l1 < i2; ++l1) {
-                d18 = list.get(l1).calculateXOffset(axisalignedbb2, d18);
-            }
-
-            axisalignedbb2 = axisalignedbb2.offset(d18, 0.0D, 0.0D);
-            double d19 = initZ;
-            int j2 = 0;
-
-            for (int k2 = list.size(); j2 < k2; ++j2) {
-                d19 = list.get(j2).calculateZOffset(axisalignedbb2, d19);
-            }
-
-            axisalignedbb2 = axisalignedbb2.offset(0.0D, 0.0D, d19);
-            AxisAlignedBB axisalignedbb4 = r.boundingBox;
-            double d20 = y;
-            int l2 = 0;
-
-            for (int i3 = list.size(); l2 < i3; ++l2) {
-                d20 = list.get(l2).calculateYOffset(axisalignedbb4, d20);
-            }
-
-            axisalignedbb4 = axisalignedbb4.offset(0.0D, d20, 0.0D);
-            double d21 = initX;
-            int j3 = 0;
-
-            for (int k3 = list.size(); j3 < k3; ++j3) {
-                d21 = list.get(j3).calculateXOffset(axisalignedbb4, d21);
-            }
-
-            axisalignedbb4 = axisalignedbb4.offset(d21, 0.0D, 0.0D);
-            double d22 = initZ;
-            int l3 = 0;
-
-            for (int i4 = list.size(); l3 < i4; ++l3) {
-                d22 = list.get(l3).calculateZOffset(axisalignedbb4, d22);
-            }
-
-            axisalignedbb4 = axisalignedbb4.offset(0.0D, 0.0D, d22);
-            double d23 = d18 * d18 + d19 * d19;
-            double d9 = d21 * d21 + d22 * d22;
-
-            if (d23 > d9) {
-                x = d18;
-                z = d19;
-                y = -d8;
-                r.boundingBox = axisalignedbb2;
-            } else {
-                x = d21;
-                z = d22;
-                y = -d20;
-                r.boundingBox = axisalignedbb4;
-            }
-
-            int j4 = 0;
-
-            for (int k4 = list.size(); j4 < k4; ++j4) {
-                y = list.get(j4).calculateYOffset(r.boundingBox, y);
-            }
-
-            r.boundingBox = r.boundingBox.offset(0.0D, y, 0.0D);
-
-            if (d14 * d14 + d7 * d7 >= x * x + z * z) {
-                x = d14;
-                y = d6;
-                z = d7;
-                r.boundingBox = oldBoundingBox;
-            }
-        }
 
         // Set position
         r.resetPositionToBB();
@@ -451,14 +303,6 @@ public class MovementPrediction {
         }
     }
 
-    /*
-     * Code from Entity and EntityLivingBase
-     * Unnecessary or unrelated code is stripped out
-     *
-     * Modified from:
-     * https://www.mcpk.wiki/wiki/45_Strafe
-     */
-
     public static void onLivingUpdate(PredictionResult r, MovementState state) {
         /*
          * moveStrafing and moveForward represent relative movement.
@@ -468,62 +312,66 @@ public class MovementPrediction {
          * Furthermore, moveStrafing and moveForward *= 0.3 if the player is sneaking.
          */
 
-        float moveStrafing = 0;
+        double strafe = 0;
         if (state.getInputStates().getOrDefault(Input.MOVE_LEFT, false)) {
-            moveStrafing += 1;
+            strafe += 1;
         }
         if (state.getInputStates().getOrDefault(Input.MOVE_RIGHT, false)) {
-            moveStrafing -= 1;
+            strafe -= 1;
         }
 
-        float moveForward = 0;
+        double forward = 0;
         if (state.getInputStates().getOrDefault(Input.MOVE_FORWARD, false)) {
-            moveForward += 1;
+            forward += 1;
         }
         if (state.getInputStates().getOrDefault(Input.MOVE_BACK, false)) {
-            moveForward -= 1;
+            forward -= 1;
         }
 
         if (r.isSneaking) {
-            moveForward *= 0.3;
-            moveStrafing *= 0.3;
+            forward *= 0.3;
+            strafe *= 0.3;
         }
 
-        moveStrafing *= 0.98F;
-        moveForward *= 0.98F;
+        strafe *= 0.98F;
+        forward *= 0.98F;
 
-        moveEntityWithHeading(r, moveStrafing, moveForward, state);
-    }
-
-    public static void moveEntityWithHeading(PredictionResult r, float strafe, float forward, MovementState state) {
         // inertia determines how much speed is conserved on the next tick
-        float inertia = 0.91F;
+        double inertia = 0.91;
         if (r.onGround) {
             inertia = r.player.world.getBlockState(new BlockPos(MathHelper.floor(r.posX), MathHelper.floor(r.boundingBox.minY) - 1, MathHelper.floor(r.posZ))).getBlock().slipperiness * 0.91F; // -1 is 0.5 in 1.15+
         }
 
         // acceleration = (0.6*0.91)^3 / (slipperiness*0.91)^3) -> redundant calculations...
-        float acceleration = 0.16277136F / (inertia * inertia * inertia);
+        double acceleration = 0.16277136F / (inertia * inertia * inertia);
 
-        double movementFactor;
+        double moveMod;
         if (r.onGround) {
-            float landMovementFactor = 0.1F;
-            if (state.getInputStates().getOrDefault(Input.SPRINT, false)) {
-                landMovementFactor *= 1.3F;
-            }
-
-            movementFactor = landMovementFactor * acceleration * (r.getPotionAmplifier(MobEffects.SPEED) * 0.2 - r.getPotionAmplifier(MobEffects.SLOWNESS) * 0.15 + 1);
-            /* base: 0.1; x1.3 if sprinting, affected by potion effects. */
+            moveMod = 0.1F;
+            moveMod = moveMod * acceleration * (r.getPotionAmplifier(MobEffects.SPEED) * 0.2 - r.getPotionAmplifier(MobEffects.SLOWNESS) * 0.15 + 1);
         } else {
-            float airMovementFactor = 0.02F;
-            if (state.getInputStates().getOrDefault(Input.SPRINT, false)) {
-                airMovementFactor *= 1.3F;
-            }
-            movementFactor = airMovementFactor;
-            /* base: 0.02; x1.3 if sprinting */
+            moveMod = 0.02F;
         }
 
-        updateMotionXZ(r, strafe, forward, (float) movementFactor); /* add relative movement to motion */
+        if (state.getInputStates().getOrDefault(Input.SPRINT, false)) {
+            moveMod *= 1.3F;
+        }
+
+        double distance = strafe * strafe + forward * forward;
+        if (distance >= 1.0E-4F) {
+            distance = MathHelper.sqrt(distance);
+
+            if (distance < 1.0F)
+                distance = 1.0F;
+
+            distance = moveMod / distance;
+            strafe = strafe * distance;
+            forward = forward * distance;
+            float sinYaw = MathHelper.sin((float) (r.rotationYaw * Math.PI / 180.0F));
+            float cosYaw = MathHelper.cos((float) (r.rotationYaw * Math.PI / 180.0F));
+            r.motionX += strafe * cosYaw - forward * sinYaw;
+            r.motionZ += forward * cosYaw + strafe * sinYaw;
+        }
 
         if (r.isJumping) {
             r.motionY = 0.42 + r.getPotionAmplifier(MobEffects.JUMP_BOOST) * 0.1;
@@ -536,35 +384,11 @@ public class MovementPrediction {
         }
 
         // new location
-        moveAndCheckCollisions(r);
+        moveAndCheckCollisionsParkour(r);
 
         // ending motion
         r.motionX *= inertia;
         r.motionZ *= inertia;
         r.motionY = (r.motionY - 0.08) * 0.98; // gravity and drag
-    }
-
-    public static void updateMotionXZ(PredictionResult r, float strafe, float forward, float movementFactor) {
-        /*
-         * This function is extremely weird, and is solely responsible for the existence of 45° strafe
-         * Also note that:
-         *     - Sprint boost is contained within "movementFactor"
-         *     - Sneak slowdown is contained within "strafe" and "forward"
-         */
-        float distance = strafe * strafe + forward * forward;
-        if (distance >= 1.0E-4F) {
-            distance = MathHelper.sqrt(distance);
-
-            if (distance < 1.0F)
-                distance = 1.0F;
-
-            distance = movementFactor / distance;
-            strafe = strafe * distance;
-            forward = forward * distance;
-            float sinYaw = MathHelper.sin((float) (r.rotationYaw * Math.PI / 180.0F));
-            float cosYaw = MathHelper.cos((float) (r.rotationYaw * Math.PI / 180.0F));
-            r.motionX += strafe * cosYaw - forward * sinYaw;
-            r.motionZ += forward * cosYaw + strafe * sinYaw;
-        }
     }
 }

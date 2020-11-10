@@ -332,7 +332,7 @@ public enum Moves {
 
         @Override
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementParkourAdv.cost(context, new BetterBlockPos(x, y, z), result, EnumFacing.NORTH);
+            MovementParkourAdv.cost(context, x, y, z, result, EnumFacing.NORTH);
         }
     },
 
@@ -344,7 +344,7 @@ public enum Moves {
 
         @Override
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementParkourAdv.cost(context, new BetterBlockPos(x, y, z), result, EnumFacing.SOUTH);
+            MovementParkourAdv.cost(context, x, y, z, result, EnumFacing.SOUTH);
         }
     },
 
@@ -356,7 +356,7 @@ public enum Moves {
 
         @Override
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementParkourAdv.cost(context, new BetterBlockPos(x, y, z), result, EnumFacing.EAST);
+            MovementParkourAdv.cost(context, x, y, z, result, EnumFacing.EAST);
         }
     },
 
@@ -368,7 +368,7 @@ public enum Moves {
 
         @Override
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
-            MovementParkourAdv.cost(context, new BetterBlockPos(x, y, z), result, EnumFacing.WEST);
+            MovementParkourAdv.cost(context, x, y, z, result, EnumFacing.WEST);
         }
     };
 
