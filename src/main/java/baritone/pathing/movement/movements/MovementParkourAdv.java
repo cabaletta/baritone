@@ -70,6 +70,8 @@ public class MovementParkourAdv extends Movement {
     private static final double MOVE_COST = SPRINT_ONE_BLOCK_COST; // Since WALK_ONE_BLOCK_COST is heavily penalised it sometimes chose longer sprint jumps over walking jumps. This is now the cost per move distance for all jumps (multiplied for harder ones).
     private static final double COST_MODIFIER = 1.3; // The amount to multiply the cost by (in attempt to magnify the differences between jumps)
 
+    private static final boolean TEST_LOG = false;
+
     enum JumpType {
         NORMAL(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // Normal run and jump
         MOMENTUM(-1, MAX_JUMP_MOMENTUM), // An extra momentum jump 1bm
@@ -452,7 +454,7 @@ public class MovementParkourAdv extends Movement {
         }
         res = lowestCost;
         //*
-        if (res.cost < 1000) {
+        if (TEST_LOG && res.cost < 1000) {
             Vec3i jumpVec = new Vec3i(res.x - src.getX(), res.y - src.getY(), res.z - src.getZ());
             System.out.println(src + ", Dir = " + simpleDirection + ", Cost: " + res.cost + ", Distance: " + getDistance(jumpVec, simpleDirection) + ", MoveDis: " + calcMoveDist(context, src, extraAscend, jumpVec, simpleDirection));
         }
@@ -868,7 +870,6 @@ public class MovementParkourAdv extends Movement {
                     }
                     break;
                 case EDGE:
-                    logDebug(" AHHHHH ");
                     MovementHelper.moveTowards(ctx, state, dest);
                     break;
                 case EDGE_NEO:
@@ -942,22 +943,24 @@ public class MovementParkourAdv extends Movement {
             ticksFromStart = 0; // Reset ticks from momentum/run-up phase
         }
 
-        MovementPrediction.PredictionResult r = MovementPrediction.getFutureLocation(ctx.player(), state, 1); // Predict location for next tick
-        logDebug("Prediction = " + new Vec3d(r.posX, r.posY, r.posZ));
+        if (TEST_LOG) {
+            MovementPrediction.PredictionResult r = MovementPrediction.getFutureLocation(ctx.player(), state, 1); // Predict location for next tick
+            logDebug("Prediction = " + new Vec3d(r.posX, r.posY, r.posZ));
 
-        //*
-        Vec3d motionDiff = new Vec3d(Math.abs(prevMotionPredict.x - ctx.playerFeetAsVec().x), Math.abs(prevMotionPredict.y - ctx.playerFeetAsVec().y), Math.abs(prevMotionPredict.z - ctx.playerFeetAsVec().z));
-        Vec3d velocityDiff = new Vec3d(Math.abs(prevVelocityPredict.x - ctx.playerFeetAsVec().x), Math.abs(prevVelocityPredict.y - ctx.playerFeetAsVec().y), Math.abs(prevVelocityPredict.z - ctx.playerFeetAsVec().z));
-        prevMotionPredict = motionVec.add(ctx.playerFeetAsVec());
-        prevVelocityPredict = new Vec3d(r.posX, r.posY, r.posZ);
-        totalMotionDiff = totalMotionDiff.add(motionDiff);
-        totalVelocityDiff = totalVelocityDiff.add(velocityDiff);
+            //*
+            Vec3d motionDiff = new Vec3d(Math.abs(prevMotionPredict.x - ctx.playerFeetAsVec().x), Math.abs(prevMotionPredict.y - ctx.playerFeetAsVec().y), Math.abs(prevMotionPredict.z - ctx.playerFeetAsVec().z));
+            Vec3d velocityDiff = new Vec3d(Math.abs(prevVelocityPredict.x - ctx.playerFeetAsVec().x), Math.abs(prevVelocityPredict.y - ctx.playerFeetAsVec().y), Math.abs(prevVelocityPredict.z - ctx.playerFeetAsVec().z));
+            prevMotionPredict = motionVec.add(ctx.playerFeetAsVec());
+            prevVelocityPredict = new Vec3d(r.posX, r.posY, r.posZ);
+            totalMotionDiff = totalMotionDiff.add(motionDiff);
+            totalVelocityDiff = totalVelocityDiff.add(velocityDiff);
 
-        logDebug("distToJumpXZ = " + distToJumpXZ + ", distFromStart = " + distFromStart + ", distFromStartXZ = " + distFromStartXZ + ", ticksFromStart = " + ticksFromStart);
-        logDebug("Player coords = " + ctx.playerFeetAsVec());
-        logDebug("MotionDiff = " + motionDiff + ", total = " + totalMotionDiff);
-        logDebug("VelocityDiff = " + velocityDiff + ", total = " + totalVelocityDiff);
-        //*/
+            logDebug("distToJumpXZ = " + distToJumpXZ + ", distFromStart = " + distFromStart + ", distFromStartXZ = " + distFromStartXZ + ", ticksFromStart = " + ticksFromStart);
+            logDebug("Player coords = " + ctx.playerFeetAsVec());
+            logDebug("MotionDiff = " + motionDiff + ", total = " + totalMotionDiff);
+            logDebug("VelocityDiff = " + velocityDiff + ", total = " + totalVelocityDiff);
+            //*/
+        }
 
         return state;
     }
