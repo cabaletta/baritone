@@ -484,6 +484,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (goal == null) {
             goal = assemble(bcc, approxPlaceable); // we're far away, so assume that we have our whole inventory to recalculate placeable properly
             if (goal == null) {
+                if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value && layer < realSchematic.heightY()) {
+                    logDirect("Skipping layer that I cannot construct! Layer #" + layer);
+                    layer++;
+                    return onTick(calcFailed, isSafeToCancel);
+                }
                 logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
                 paused = true;
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);

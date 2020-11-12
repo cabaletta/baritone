@@ -815,6 +815,11 @@ public final class Settings {
     public final Setting<Integer> startAtLayer = new Setting<>(0);
 
     /**
+     * If a layer is unable to be constructed, just skip it.
+     */
+    public final Setting<Boolean> skipFailedLayers = new Setting<>(false);
+
+    /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
