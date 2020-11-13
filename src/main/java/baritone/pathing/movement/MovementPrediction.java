@@ -49,7 +49,7 @@ public class MovementPrediction {
     public static class PredictionResult {
         EntityPlayerSP player;
         private final Map<Potion, PotionEffect> activePotionsMap;
-        int tick = 0; // ticks from the present
+        public int tick = 0; // ticks from the present
 
         /**
          * Currently does not take into account blocks that prevent/negate fall damage (Slime, etc.)
@@ -63,13 +63,12 @@ public class MovementPrediction {
         public boolean collidedVertically = false;
         public boolean collidedHorizontally = false;
 
-        double rotationYaw;
+        public double rotationYaw;
 
         boolean isJumping = false;
-        boolean isAirBorne;
+        public boolean isAirBorne;
         boolean isSneaking = false; // changed in update()
-        boolean onGround;
-        boolean isInWeb;
+        public boolean onGround;
 
         double motionX;
         double motionY;
@@ -101,7 +100,6 @@ public class MovementPrediction {
 
             isAirBorne = p.isAirBorne;
             onGround = p.onGround;
-            isInWeb = p.world.getBlockState(p.getPosition()).getBlock() instanceof BlockWeb;
 
             double playerWidth = 0.3; // 0.3 in each direction
             double playerHeight = 1.8; // modified while sneaking?
@@ -270,7 +268,6 @@ public class MovementPrediction {
 
             if (block1 instanceof BlockFence || block1 instanceof BlockWall || block1 instanceof BlockFenceGate) {
                 iblockstate = iblockstate1;
-                blockpos = blockpos1;
             }
         }
 
