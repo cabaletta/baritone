@@ -84,7 +84,7 @@ public class MovementParkourAdv extends Movement {
         NORMAL(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // Normal run and jump
         NORMAL_STRAIGHT_DESCEND(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // A type that will use the normal jump on descends only (Since MovementParkour doesn't do descends)
         MOMENTUM(-1, MAX_JUMP_MOMENTUM), // An extra momentum jump 1bm
-        EDGE(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // No run up (for higher angle jumps)
+        EDGE(3, MAX_JUMP_SPRINT), // No run up (for higher angle jumps)
         EDGE_NEO(-1, 4); // Around the pillar
 
         final double maxJumpNoSprint;
@@ -451,7 +451,7 @@ public class MovementParkourAdv extends Movement {
                 if (context.allowParkourAscend && MovementHelper.canWalkOn(context.bsi, destX, destY, destZ, destInto) /* && MovementParkour.checkOvershootSafety(context.bsi, destX + xDiff, srcY + 1, destZ + zDiff) */) {
                     destY += 1;
 
-                    if (checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, 1, simpleDirection, type, moveDis > MAX_JUMP_WALK)) {
+                    if (checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, 1, simpleDirection, type, moveDis > type.maxJumpNoSprint)) {
                         continue; // Blocks are in the way
                     }
 
@@ -470,7 +470,7 @@ public class MovementParkourAdv extends Movement {
 
                 // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland
                 if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, destX, destY - descendAmount - 1, destZ, landingOn)) {
-                    if (checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, -descendAmount, simpleDirection, type, (moveDis + descendAmount * DESCEND_DIST_PER_BLOCK) > MAX_JUMP_WALK)) {
+                    if (checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, -descendAmount, simpleDirection, type, (moveDis + descendAmount * DESCEND_DIST_PER_BLOCK) > type.maxJumpNoSprint)) {
                         continue; // Blocks are in the way
                     }
                     getMoveResult(context, srcX, srcY, srcZ, destX, destY - descendAmount, destZ, extraAscend - descendAmount, posbJump, simpleDirection, type, 0, lowestCost, res);
@@ -889,9 +889,7 @@ public class MovementParkourAdv extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
 
-        if (moveDist > MAX_JUMP_WALK ||
-                type == JumpType.MOMENTUM ||
-                type == JumpType.EDGE_NEO) {
+        if (moveDist > type.maxJumpNoSprint) {
             state.setInput(Input.SPRINT, true);
         }
 
