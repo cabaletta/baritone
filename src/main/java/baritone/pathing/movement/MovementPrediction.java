@@ -18,9 +18,7 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
-import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
-import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -200,11 +198,11 @@ public class MovementPrediction {
     }
 
     /**
-     * Checks the if movement collides with blocks (that is relevant to parkour e.g. no stair steps, no sneak till edge)
+     * Checks the if movement collides with blocks (no stair steps, no sneak till edge)
      *
      * @param r
      */
-    public static void moveAndCheckCollisionsParkour(PredictionResult r) {
+    public static void moveAndCheckCollisions(PredictionResult r) {
         double x = r.motionX;
         double y = r.motionY;
         double z = r.motionZ;
@@ -381,7 +379,7 @@ public class MovementPrediction {
         }
 
         // new location
-        moveAndCheckCollisionsParkour(r);
+        moveAndCheckCollisions(r);
 
         // ending motion
         r.motionX *= inertia;

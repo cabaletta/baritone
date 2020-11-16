@@ -476,39 +476,6 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
-     * Moves backwards towards the centre of a block
-     *
-     * @param ctx       Player context
-     * @param state     Movement State
-     * @param pos       Block to move to
-     */
-    static void moveBackwardsTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
-        state.setTarget(new MovementTarget(
-                new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(pos),
-                        ctx.playerRotations()).opposite().getYaw(), ctx.player().rotationPitch),
-                false
-        )).setInput(Input.MOVE_BACK, true);
-    }
-
-    /**
-     * Moves backwards towards the centre of a block, offset by a double vector (generally with axis less than 0.5)
-     *
-     * @param ctx       Player context
-     * @param state     Movement State
-     * @param pos       Block to move to
-     * @param offset    amount/direction to offset by
-     */
-    static void moveBackwardsTowards(IPlayerContext ctx, MovementState state, BlockPos pos, Vec3d offset) {
-        state.setTarget(new MovementTarget(
-                new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(pos).add(offset),
-                        ctx.playerRotations()).opposite().getYaw(), ctx.player().rotationPitch),
-                false
-        )).setInput(Input.MOVE_BACK, true);
-    }
-
-    /**
      * Returns whether or not the specified block is
      * water, regardless of whether or not it is flowing.
      *
