@@ -38,6 +38,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import org.lwjgl.Sys;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -81,6 +82,7 @@ public class MovementParkourAdv extends Movement {
     private static final double MOMENTUM_JUMP_DISTANCE = (MAX_JUMP_MOMENTUM - 1.6) / 12;
 
     private static final boolean TEST_LOG = false;
+    private static final DecimalFormat df = new DecimalFormat("#.##");
 
     enum JumpType {
         NORMAL(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // Normal run and jump
@@ -704,8 +706,9 @@ public class MovementParkourAdv extends Movement {
             }
             return false;
         } else {
-            logDebug("Achieved '" + (double) Math.round(distance * 10000) / 10000 + "' blocks of accuracy to preploc. Jump Direction = " + simpleDirection + ", Remaining Motion = " + new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ).length() + ", Using technique '" + type + "'");
+            logDebug("Achieved '" + df.format(distance) + "' blocks of accuracy to preploc. Jump Direction = " + simpleDirection + ", Remaining Motion = " + new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ).length() + ", Using technique '" + type + "'");
             inStartingPosition = true;
+            atDestTicks = 0;
             prevMotionPredict = ctx.playerFeetAsVec();
             prevVelocityPredict = ctx.playerFeetAsVec();
             return true;
@@ -934,10 +937,41 @@ public class MovementParkourAdv extends Movement {
         }
     }
 
+    private static double getDistanceToEdge(double posX, double posZ, Vec3i feetPos, double edgeSize) {
+        return Math.min(Math.abs(Math.abs(feetPos.getX() + 0.5 - posX) - edgeSize), Math.abs(Math.abs(feetPos.getZ() + 0.5 - posZ) - edgeSize));
+    }
+
+    private static double getDistanceToEdge(double posX, double posZ, Vec3i feetPos, Vec3d momentum, double edgeSize) {
+        double relX = posX - feetPos.getX() - 0.5; // position relative to block centre
+        double relZ = posZ - feetPos.getZ() - 0.5;
+
+        relX = momentum.x > 0 ? edgeSize - relX : -edgeSize - relX; // position relative to edge
+        relZ = momentum.z > 0 ? edgeSize - relZ : -edgeSize - relZ;
+
+        // dividing by very low numbers leads to floating point inaccuracy
+        if (Math.abs(momentum.z) < 0.01) {
+            return Math.abs(relX);
+        }
+        if (Math.abs(momentum.x) < 0.01) {
+            return Math.abs(relZ);
+        }
+
+        double disX = Math.abs(relZ * momentum.x / momentum.z); // distance to edge in direction of momentum
+        double disZ = Math.abs(relX * momentum.z / momentum.x);
+
+        disX = disX < disZ ? disX : disZ * momentum.x / momentum.z; // smallest distance to edge in direction of momentum
+        disZ = disX > disZ ? disZ : disX * momentum.z / momentum.x;
+
+        return Math.sqrt(disX * disX + disZ * disZ); // euclidean distance to edge in direction of momentum
+    }
+
     Vec3d prevMotionPredict = ctx.playerFeetAsVec();
     Vec3d prevVelocityPredict = ctx.playerFeetAsVec();
     Vec3d totalMotionDiff = new Vec3d(0, 0, 0);
     Vec3d totalVelocityDiff = new Vec3d(0, 0, 0);
+
+    double prevDistance = -1; // starting value >= root(2)
+    boolean initialLanding = true;
 
     @Override
     public MovementState updateState(MovementState state) {
@@ -986,22 +1020,12 @@ public class MovementParkourAdv extends Movement {
         double distFromStart = ctx.playerFeetAsVec().distanceTo(startLoc);
         double distFromStartXZ = ctx.playerFeetAsVec().distanceTo(startLoc.subtract(0, startLoc.y - ctx.playerFeetAsVec().y, 0));
 
-        Vec3d motionVec = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);
         MovementHelper.moveTowards(ctx, state, dest); // set initial look direction (for prediction)
         MovementPrediction.PredictionResult future = MovementPrediction.getFutureLocation(ctx.player(), state, 1); // The predicted location 1 tick in the future
+        Vec3d motionVec = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);
+        Vec3d motionVecPred = future.getPosition().subtract(ctx.playerFeetAsVec());
 
-        Vec3d overshootVec = destVec.normalize().scale(2).subtract(motionVec.normalize()).normalize().add(ctx.playerFeetAsVec()); // The unit vector pointing in the ( direction that cancels out motion away from the destination ) + the current position
         double speedXZ = motionVec.distanceTo(new Vec3d(0, motionVec.y, 0));
-        if (speedXZ < 0.15) {
-            overshootVec = destVec.normalize().add(ctx.playerFeetAsVec());
-        }
-
-        /*
-        logDebug("Overshoot = " + overshootVec.subtract(ctx.playerFeetAsVec()) + ", og = " + destVec.normalize() + ", difference = " + destVec.normalize().subtract(overshootVec.subtract(ctx.playerFeetAsVec())));
-        logDebug("Motion = " + motionVec + ", Speed = " + motionVec.length() + ", XZ = " + speedXZ);
-        logDebug("FutureLoc = " + futureLoc);
-        //*/
-
         Vec3d curDest = null; // The current destination (position we are moving towards)
 
         if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.up()) || (distToJumpXZ < 0.5 && distFromStartXZ < 1.2)) {
@@ -1043,20 +1067,36 @@ public class MovementParkourAdv extends Movement {
                     throw new UnsupportedOperationException("Add new movement to this switch.");
             }
         } else if (curDist < 0.8 && ctx.player().onGround) {
-            // logDebug("landed, " + curDist + ", approx, " + (0.8 - curDist));
-            if (motionVec.length() < 0.3) {
-                atDestTicks++;
-                if (atDestTicks >= 2) {
-                    logDebug("Canceled momentum for " + atDestTicks + " ticks, distance = " + Math.round(curDist * 10000) / 10000);
-                    return state.setStatus(MovementStatus.SUCCESS);
-                }
+            IBlockState landingOn = ctx.world().getBlockState(dest.down());
+            double remMotion = motionVecPred.length();
+            double distance;
+            if (remMotion < 0.08) {
+                distance = prevDistance; // we can still fall off with slow cancelled momentum (e.g. on edge of block)
             } else {
-                MovementHelper.moveTowards(ctx, state, overshootVec);
+                distance = getDistanceToEdge(ctx.player().posX, ctx.player().posZ, dest, motionVecPred,0.5);
             }
+            double slipMod = 0;
+            if (initialLanding && landingOn.getBlock().slipperiness > 0.61) {
+                slipMod = remMotion * 2.9; // lower values of remaining motion while on slippery blocks can still be 0 tick cancels
+                initialLanding = false;
+            } else if (landingOn.getBlock().slipperiness > 0.61) {
+                slipMod = remMotion * 4 + 0.5; // slippery surfaces retain a lot of momentum after landing
+            }
+            // logDebug("Cancelling momentum for " + atDestTicks + " ticks, distance = " + df.format(curDist) + ", distance to edge = " + df.format(distance) + ", remaining motion = " + df.format(remMotion) + ", " + df.format(remMotion + slipMod));
+            if (remMotion + slipMod < distance || (distance < 0.5 && distance > prevDistance)) {
+                // logDebug("first = " + (remMotion + slipMod < distance) + " || " + (distance < 0.5 && distance > prevDistance));
+                logDebug("Canceled momentum for " + atDestTicks + " ticks, distance = " + df.format(curDist) + ", distance to edge = " + df.format(distance) + ", remaining motion = " + df.format(remMotion));
+                return state.setStatus(MovementStatus.SUCCESS);
+            } else {
+                atDestTicks++;
+                MovementHelper.moveTowards(ctx, state, dest);
+                state.getInputStates().remove(Input.MOVE_FORWARD);
+                state.setInput(Input.SNEAK, true);
+            }
+            prevDistance = distance;
         } else {
             MovementHelper.moveTowards(ctx, state, dest);
             curDest = VecUtils.getBlockPosCenter(dest);
-            atDestTicks = 0;
         }
 
         if (curDest != null &&
@@ -1078,7 +1118,7 @@ public class MovementParkourAdv extends Movement {
             // logDebug("Overshoot? " + distanceXZ + " < " + future5Pos.distanceTo(startLoc) + " && " + distanceXZ + " > " + distFromStartXZ);
             if (distanceXZ < future5Pos.distanceTo(startLoc) && // overshot (in the future)
                     distanceXZ > distFromStartXZ) { // haven't overshot yet
-                logDebug("Adjusting movement to prevent overshoot.");
+                logDebug("Adjusting movement to prevent overshoot. " + ticksFromStart);
                 state.getInputStates().remove(Input.MOVE_FORWARD);
             }
         }
@@ -1101,7 +1141,7 @@ public class MovementParkourAdv extends Movement {
                 }
             }
             state.setInput(Input.JUMP, true);
-            logDebug("Jumping");
+            logDebug("Jumping " + ticksFromStart);
             ticksFromStart = 0; // Reset ticks from momentum/run-up phase
         }
 
