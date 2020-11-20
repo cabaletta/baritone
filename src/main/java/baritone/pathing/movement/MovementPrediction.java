@@ -342,8 +342,7 @@ public class MovementPrediction {
 
         double moveMod;
         if (r.onGround) {
-            moveMod = 0.1F;
-            moveMod = moveMod * acceleration * (r.getPotionAmplifier(MobEffects.SPEED) * 0.2 - r.getPotionAmplifier(MobEffects.SLOWNESS) * 0.15 + 1);
+            moveMod = 0.1 * acceleration * (r.getPotionAmplifier(MobEffects.SPEED) * 0.2 - r.getPotionAmplifier(MobEffects.SLOWNESS) * 0.15 + 1);
         } else {
             moveMod = 0.02F;
         }
