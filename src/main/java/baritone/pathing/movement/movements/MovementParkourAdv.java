@@ -148,7 +148,7 @@ public class MovementParkourAdv extends Movement {
     private MovementParkourAdv(CalculationContext context, BetterBlockPos src, BetterBlockPos dest, EnumFacing simpleDirection, JumpType type) {
         super(context.baritone, src, dest, EMPTY);
         direction = VecUtils.subtract(dest, src);
-        moveDist = calcMoveDist(context, src.x, src.y, src.z, MovementHelper.isBottomSlab(context.get(src.down())) ? -0.5 : 0, direction, simpleDirection);
+        moveDist = calcMoveDist(context, src.x, src.y, src.z, direction.getX(), direction.getY(), direction.getZ(), MovementHelper.isBottomSlab(context.get(src.down())) ? 0.5 : 0, simpleDirection);
         this.ascendAmount = dest.y - src.y;
         this.simpleDirection = simpleDirection;
         this.type = type;
@@ -378,7 +378,7 @@ public class MovementParkourAdv extends Movement {
             }
             extraAscend += 0.5;
         }
-        double moveDis = calcMoveDist(context, src.x, src.y, src.z, extraAscend, direction, simpleDirection);
+        double moveDis = calcMoveDist(context, src.x, src.y, src.z, direction.getX(), direction.getY(), direction.getZ(), extraAscend, simpleDirection);
 
         if ((type == JumpType.MOMENTUM || type == JumpType.EDGE_NEO) && !context.allowParkourMomentumOrNeo) {
             return COST_INF;
@@ -479,7 +479,7 @@ public class MovementParkourAdv extends Movement {
             IBlockState destInto = context.bsi.get0(destX, destY, destZ);
             // Must ascend here as foot has block, && no block in head at destination (if ascend)
             if (!MovementHelper.fullyPassable(context.bsi.access, context.bsi.isPassableBlockPos.setPos(destX, destY, destZ), destInto) && type != JumpType.NORMAL_STRAIGHT_DESCEND) {
-                moveDis = calcMoveDist(context, srcX, srcY, srcZ, extraAscend + 1, posbJump, simpleDirection);
+                moveDis = calcMoveDist(context, srcX, srcY, srcZ, posbJump.getX(), posbJump.getY() + 1, posbJump.getZ(), extraAscend, simpleDirection);
 
                 if (moveDis > maxJump) {
                     continue; // jump is too long (recalculated with new posbJump)
@@ -492,12 +492,12 @@ public class MovementParkourAdv extends Movement {
                         continue; // Blocks are in the way
                     }
 
-                    getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend + 1, posbJump, simpleDirection, type, 0, lowestCost, res);
+                    getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, simpleDirection, type, 0, lowestCost, res);
                 }
                 continue;
             }
 
-            moveDis = calcMoveDist(context, srcX, srcY, srcZ, extraAscend, posbJump, simpleDirection);
+            moveDis = calcMoveDist(context, srcX, srcY, srcZ, posbJump.getX(), posbJump.getY(), posbJump.getZ(), extraAscend, simpleDirection);
             if (moveDis > maxJump) {
                 continue; // jump is too long (usually due to ascending (slab) or no sprint)
             }
@@ -549,7 +549,7 @@ public class MovementParkourAdv extends Movement {
         //*
         if (TEST_LOG && res.cost < COST_INF) {
             Vec3i jumpVec = new Vec3i(res.x - srcX, res.y - srcY, res.z - srcZ);
-            System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(res.x, res.y, res.z) + ", Dir = " + simpleDirection + ", Cost: " + res.cost + ", Distance: " + getDistance(jumpVec, simpleDirection) + ", MoveDis: " + calcMoveDist(context, srcX, srcY, srcZ, extraAscend, jumpVec, simpleDirection));
+            System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(res.x, res.y, res.z) + ", Dir = " + simpleDirection + ", Cost: " + res.cost + ", Distance: " + getDistance(jumpVec, simpleDirection) + ", MoveDis: " + calcMoveDist(context, srcX, srcY, srcZ, jumpVec.getX(), jumpVec.getY(), jumpVec.getZ(), extraAscend, simpleDirection));
         }
         //*/
     }
@@ -558,7 +558,7 @@ public class MovementParkourAdv extends Movement {
         res.x = destX;
         res.y = destY;
         res.z = destZ;
-        res.cost = costFromJump(context, srcX, srcY, srcZ, jump.getX(), jump.getY(), jump.getZ(), extraAscend, jumpDirection, type) + costModifiers;
+        res.cost = costFromJump(context, srcX, srcY, srcZ, jump.getX(), destY - srcY, jump.getZ(), extraAscend, jumpDirection, type) + costModifiers;
         // System.out.println("type = " + type + ", res = " + res.cost + ", curLowest = " + curLowestCost.cost);
         if (res.cost < curLowestCost.cost) {
             curLowestCost.x = res.x;
@@ -569,31 +569,33 @@ public class MovementParkourAdv extends Movement {
     }
 
     // used to determine if we should sprint or not
-    private static double calcMoveDist(CalculationContext context, int srcX, int srcY, int srcZ, double extraAscend, Vec3i jump, EnumFacing jumpDirection) {
-        double ascendAmount = jump.getY() + extraAscend;
+    private static double calcMoveDist(CalculationContext context, int srcX, int srcY, int srcZ, int jumpX, int jumpY, int jumpZ, double extraAscend, EnumFacing jumpDirection) {
+        double ascendAmount = jumpY + extraAscend;
 
         // Accounting for slab height
-        IBlockState destBlock = context.get(jump.getX() + srcX, jump.getY() + srcY - 1, +jump.getZ() + srcZ);
+        IBlockState destBlock = context.get(jumpX + srcX, jumpY + srcY - 1, jumpZ + srcZ);
         if (MovementHelper.isBottomSlab(destBlock)) {
             ascendAmount -= 0.5;
         }
 
-        jump = new Vec3i(jump.getX(), 0, jump.getZ());
-        double distance = getDistance(jump, jumpDirection);
+        int x = jumpX - jumpDirection.getXOffset();
+        int z = jumpZ - jumpDirection.getZOffset();
+        double distance = Math.sqrt(x * x + z * z);
+
+        // Calculating angle between vectors
+        double angle = Math.acos((x * jumpDirection.getXOffset() + z * jumpDirection.getZOffset()) / distance); // in radians acos(dot_product(xz, jumpDir))
+        distance += TURN_COST_PER_RADIAN * angle + 1;
 
         // Modifying distance so that ascends have larger distances while descends have smaller
         if (ascendAmount > 0) {
+            if (ascendAmount > calcMaxJumpHeight(true, getPotionEffectAmplifier(context.baritone.getPlayerContext(), MobEffects.JUMP_BOOST))) {
+                System.out.println("Ascending = " + jumpY + ", " + extraAscend);
+                return COST_INF; // any value > the highest sprint jump distance (about 5)
+            }
             distance += ascendAmount * ASCEND_DIST_PER_BLOCK;
         } else {
             distance += ascendAmount * -DESCEND_DIST_PER_BLOCK; // ascendAmount is negative
         }
-
-        // Calculating angle between vectors
-        int x = jump.getX() - jumpDirection.getXOffset();
-        int z = jump.getZ() - jumpDirection.getZOffset();
-        double dis = Math.sqrt(x * x + z * z);
-        double angle = Math.acos((x * jumpDirection.getXOffset() + z * jumpDirection.getZOffset()) / dis); // in radians acos(dot_product(xz, jumpDir))
-        distance += TURN_COST_PER_RADIAN * angle;
 
         // reduce distance to approach a minimum value of 0.559 (prevents negatives/or very low distances)
         if (distance < 1.74) { // 1.74 = 3.48 [MAX_JUMP_WALK] / 2
@@ -987,7 +989,7 @@ public class MovementParkourAdv extends Movement {
 
         ticksFromStart++;
 
-        if (ctx.playerFeet().y < (src.y + Math.min(ascendAmount, 0))) {
+        if (ctx.player().posY < (src.y + Math.min(ascendAmount, 0) - 0.5)) {
             // we have fallen
             logDebug("Fallen during jump phase");
             return state.setStatus(MovementStatus.UNREACHABLE);
