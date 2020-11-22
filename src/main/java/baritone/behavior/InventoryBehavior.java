@@ -112,6 +112,10 @@ public final class InventoryBehavior extends Behavior {
             if (stack.isEmpty()) {
                 continue;
             }
+            //Ignore if durability is below 20 and allowBreakTool is true
+            if (Baritone.settings().allowBreakTool.value && stack.isItemStackDamageable() && stack.getMaxDamage()-stack.getItemDamage()<=20){
+                continue;
+            }
             if (cla$$.isInstance(stack.getItem())) {
                 double speed = ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState()); // takes into account enchants
                 if (speed > bestSpeed) {

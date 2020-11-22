@@ -75,6 +75,11 @@ public final class Settings {
     public final Setting<Boolean> disableAutoTool = new Setting<>(false);
 
     /**
+     * If this setting is true, tools with a low durability aren't used.
+     */
+    public final Setting<Boolean> allowBreakTool = new Setting<>(true);
+
+    /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
      * because we want to generally conserve blocks which might be limited.
      * <p>

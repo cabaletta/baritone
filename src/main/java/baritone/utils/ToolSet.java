@@ -124,6 +124,12 @@ public class ToolSet {
         IBlockState blockState = b.getDefaultState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
+
+            //Ignore if durability is below 20 and allowBreakTool is true
+            if (Baritone.settings().allowBreakTool.value && itemStack.isItemStackDamageable() && itemStack.getMaxDamage()-itemStack.getItemDamage()<=20){
+                continue;
+            }
+
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
             if (speed > highestSpeed) {
