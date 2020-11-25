@@ -187,6 +187,10 @@ public class MovementPrediction {
                 update(state);
             }
         }
+
+        public PredictionResult recalculate(MovementState state) {
+            return getFutureLocation(player, state, tick);
+        }
     }
 
     public static PredictionResult getFutureLocation(EntityPlayerSP p, MovementState state, int ticksInTheFuture) {

@@ -434,7 +434,7 @@ public class MovementParkourAdv extends Movement {
 
         if (type == JumpType.MOMENTUM) {
             if (MovementHelper.fullyPassable(context, src.x - simpleDirection.getXOffset(), src.y, src.z - simpleDirection.getZOffset())) {
-                System.out.println("no block found " + new Vec3i(res.x - simpleDirection.getXOffset(), res.y, res.z - simpleDirection.getZOffset()));
+                // System.out.println("no block found " + new Vec3i(res.x - simpleDirection.getXOffset(), res.y, res.z - simpleDirection.getZOffset()));
                 type = JumpType.MOMENTUM_NO_BLOCK;
             } else {
                 type = JumpType.MOMENTUM_BLOCK;
@@ -839,7 +839,7 @@ public class MovementParkourAdv extends Movement {
      * @return The jump time in ticks
      */
     private static int calcJumpTime(double ascendAmount, boolean jump, int jumpBoostLvl) {
-        if (ascendAmount == 0) {
+        if (ascendAmount == 0 && jumpBoostLvl == 0 && jump) {
             return 12; // Most common case
         }
         double maxJumpHeight = calcMaxJumpHeight(jump, jumpBoostLvl);
@@ -849,7 +849,8 @@ public class MovementParkourAdv extends Movement {
         int ticks = 0;
         double prevHeight = -1;
         double newHeight = 0;
-        while (prevHeight < newHeight || newHeight > ascendAmount) { // You can only land on a block when you are moving down
+        while (prevHeight < newHeight || // True when moving upwards (You can only land on a block when you are moving down)
+                newHeight > ascendAmount) { // True when you are above the landing block
             ticks++;
             prevHeight = newHeight;
             newHeight += calcFallVelocity(ticks, jump, jumpBoostLvl);
@@ -878,7 +879,7 @@ public class MovementParkourAdv extends Movement {
      */
     private static double calcMaxJumpHeight(boolean jump, int jumpBoostLvl) {
         if (!jump) {
-            return 0;
+            return 0; // you only move up when you press the jump key
         }
         int ticks = 1;
         double prevHeight = -1;
@@ -891,6 +892,7 @@ public class MovementParkourAdv extends Movement {
         return prevHeight;
     }
 
+    // 0 is not active (or not relevant), 1 is level 1 (amplifier of 0)
     private static int getPotionEffectAmplifier(IPlayerContext ctx, Potion effect) {
         if (Baritone.settings().considerPotionEffects.value && ctx.player().isPotionActive(effect)) {
             return ctx.player().getActivePotionEffect(effect).getAmplifier() + 1;
@@ -908,7 +910,7 @@ public class MovementParkourAdv extends Movement {
      */
     private static Input sideMove(double angleDiff) {
         if (angleDiff > 180) {
-            angleDiff = 180 - angleDiff;
+            angleDiff = 180 - angleDiff; // account for values close to the -180 to 180 flip
         }
         if (angleDiff < -180) {
             angleDiff = -180 - angleDiff;
@@ -955,37 +957,77 @@ public class MovementParkourAdv extends Movement {
                 MathHelper.atan2(moveDest.getX(), -moveDest.getZ()) * RotationUtils.RAD_TO_DEG);
     }
 
-    private void landHere(IPlayerContext ctx, BlockPos src, double dist, MovementState state, int ticksRemaining) {
-        MovementPrediction.PredictionResult future2 = MovementPrediction.getFutureLocation(ctx.player(), state, ticksRemaining);
-        double xDiffFuture = Math.abs(src.getX() + 0.5 - future2.posX);
-        double zDiffFuture = Math.abs(src.getZ() + 0.5 - future2.posZ);
-        double xDiffNow = Math.abs(src.getX() + 0.5 - ctx.player().posX);
-        double zDiffNow = Math.abs(src.getZ() + 0.5 - ctx.player().posZ);
-        final double futureRelevance = 0.2; // How much we value the future possibilities (compared to the present)
-        // System.out.println("Pos = " + ctx.playerFeetAsVec() + ", xDiffFuture = " + xDiffFuture + ", zDiffFuture = " + zDiffFuture + ", futureCollision? = " + future2.collidedVertically + ", future = " + future2.getPosition() + ", test = " + xDiffNow + " > " + (dist - WALK_JUMP_DISTANCE - (ticksRemaining * WALK_JUMP_DISTANCE) * futureRelevance));
-        if (!future2.collidedVertically && (xDiffFuture > dist || zDiffFuture > dist)) {
-            if (xDiffNow > dist - WALK_JUMP_DISTANCE - (ticksRemaining * WALK_JUMP_DISTANCE) * futureRelevance || zDiffNow > dist - WALK_JUMP_DISTANCE - (ticksRemaining * WALK_JUMP_DISTANCE) * futureRelevance) {
-                if (TEST_LOG) {
-                    System.out.println("Removing walk");
-                }
-                state.getInputStates().remove(Input.MOVE_FORWARD); // we did not land?
-            } else if (xDiffNow > dist - SPRINT_JUMP_DISTANCE - (ticksRemaining * SPRINT_JUMP_DISTANCE) || zDiffNow > dist - SPRINT_JUMP_DISTANCE - (ticksRemaining * SPRINT_JUMP_DISTANCE)) {
-                if (TEST_LOG) {
-                    System.out.println("Removing sprint");
-                }
-                state.getInputStates().remove(Input.SPRINT); // The remaining distance should be covered without sprinting
-            }
-        } else if (!future2.collidedVertically && future2.posY < src.getY() && ticksRemaining <= 1) {
-            if (TEST_LOG) {
-                System.out.println("Back tracking, probably fell...");
-            }
-            MovementHelper.moveTowards(ctx, state, src);
-            inStartingPosition = false;
+    private void landHere(IPlayerContext ctx, BlockPos src, double dist, MovementState state, int ticksRemaining, boolean inwards) {
+        if (!inwards && getDistanceToEdgeNeg(ctx.player().posX, ctx.player().posZ, src, 0.8) < 0) {
+            // if we are moving outwards and we are already over the edge.
+            logDebug("Fallen?");
+            return;
         }
+
+        // whether we are moving inwards (towards src) or outwards (away from src)
+
+        // set state to walk only
+        state.getInputStates().remove(Input.SPRINT);
+        state.getInputStates().remove(Input.SNEAK);
+        state.setInput(Input.MOVE_FORWARD, true);
+
+        MovementPrediction.PredictionResult future = MovementPrediction.getFutureLocation(ctx.player(), state, ticksRemaining);
+
+        // does walking get us to our target?
+        if ((future.collidedVertically && !inwards) || (!future.collidedVertically && inwards)) {
+            // try if faster movement also works
+            state.setInput(Input.SPRINT, true);
+            future = future.recalculate(state);
+            if (!future.collidedVertically && !inwards) {
+                // faster didn't work walking is the best option
+                state.getInputStates().remove(Input.SPRINT);
+            } else if (!future.collidedVertically) {
+                // (inwards) we can't make it when sprinting
+                logDebug("Too far can't make jump?");
+            }
+        } else {
+            // walking doesn't work try slower
+            state.setInput(Input.SNEAK, true); // sneaking
+            future = future.recalculate(state);
+            if ((!future.collidedVertically && !inwards) || (future.collidedVertically && inwards)) {
+                // sneaking didn't work try slower
+                state.getInputStates().remove(Input.MOVE_FORWARD);
+                state.getInputStates().remove(Input.SNEAK);
+                future = future.recalculate(state);
+                if (!inwards && !future.collidedVertically) {
+                    // oh no. this is as slow as we can go
+                    logDebug("We've overshot..");
+                } else if (inwards && !future.collidedVertically) {
+                    state.setInput(Input.SNEAK, true);
+                    state.setInput(Input.MOVE_FORWARD, true);
+                }
+            } else if (inwards) {
+                // && !future.collidedVertically
+                state.getInputStates().remove(Input.SNEAK);
+            }
+        }
+
     }
 
+    /**
+     * Returns the Chebyshev distance to the edge of the given block
+     *
+     * @param posX      X position of the player
+     * @param posZ      Z position of the player
+     * @param feetPos   The block to find the distance to
+     * @param edgeSize  The distance to add to the block centre
+     * @return          The distance
+     */
     private static double getDistanceToEdge(double posX, double posZ, Vec3i feetPos, double edgeSize) {
-        return Math.min(Math.abs(Math.abs(feetPos.getX() + 0.5 - posX) - edgeSize), Math.abs(Math.abs(feetPos.getZ() + 0.5 - posZ) - edgeSize));
+        return Math.min(Math.abs(edgeSize - Math.abs(feetPos.getX() + 0.5 - posX)), Math.abs(edgeSize - Math.abs(feetPos.getZ() + 0.5 - posZ)));
+    }
+
+    /**
+     * Returns the Chebyshev distance to the edge of the given block (when positive). Negative if not on block.
+     * Negative values show the distance along the farthest axis instead and therefore should only be used for it's sign.
+     */
+    private static double getDistanceToEdgeNeg(double posX, double posZ, Vec3i feetPos, double edgeSize) {
+        return Math.min(edgeSize - Math.abs(feetPos.getX() + 0.5 - posX), edgeSize - Math.abs(feetPos.getZ() + 0.5 - posZ));
     }
 
     private static double getDistanceToEdge(double posX, double posZ, Vec3i feetPos, Vec3d momentum, double edgeSize) {
@@ -1085,7 +1127,7 @@ public class MovementParkourAdv extends Movement {
                     } else if (ticksFromJump > 0) {
                         if (ticksFromJump >= 10) {
                             MovementHelper.moveTowards(ctx, state, dest);
-                            landHere(ctx, src, 0.8, state, 12 - ticksFromJump);
+                            landHere(ctx, src, 0.8, state, calcJumpTime(0, true, ctx) - ticksFromJump, false);
                         } else if (ticksFromJump <= 1 || ticksFromJump == 3) {
                             state.getInputStates().remove(Input.SPRINT); // not sprinting for a few ticks
                             MovementHelper.moveTowards(ctx, state, src.offset(simpleDirection));
@@ -1097,11 +1139,18 @@ public class MovementParkourAdv extends Movement {
                     }
                     break;
                 case MOMENTUM_NO_BLOCK:
-                    if (ticksFromJump >= 9) {
-                        // logDebug("m 1");
+                    if (ticksFromJump >= 6) {
+                        // logDebug("m 1, " + ticksFromJump);
                         MovementHelper.moveTowards(ctx, state, dest);
-                    } else if (ticksFromJump != 0 && ticksFromJump <= 5) {
+                        landHere(ctx, src, 0.8, state, calcJumpTime(0, true, ctx) - ticksFromJump, false);
+                    } else if (ticksFromJump != 0) {
                         // logDebug("m 2");
+                        state.setTarget(new MovementState.MovementTarget(
+                                new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                                        VecUtils.getBlockPosCenter(src.offset(simpleDirection, 2)),
+                                        ctx.playerRotations()).getYaw(), ctx.player().rotationPitch),
+                                false
+                        ));
                         state.getInputStates().remove(Input.MOVE_FORWARD);
                     } else {
                         // logDebug("m 3");
@@ -1194,7 +1243,6 @@ public class MovementParkourAdv extends Movement {
             if (type != JumpType.EDGE_NEO) {
                 MovementHelper.moveTowards(ctx, state, dest); // make sure we are looking at the target when we jump for sprint jump bonuses
                 if (type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) {
-                    state.setInput(Input.MOVE_FORWARD, true);
                     state.setInput(Input.SPRINT, true);
                 }
             }
