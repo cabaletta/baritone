@@ -30,6 +30,8 @@ public final class MutableMoveResult {
     public int y;
     public int z;
     public double cost;
+    private MutableMoveResult next;
+    private boolean hasNext;
 
     public MutableMoveResult() {
         reset();
@@ -40,5 +42,24 @@ public final class MutableMoveResult {
         y = 0;
         z = 0;
         cost = ActionCosts.COST_INF;
+        hasNext = false;
+        if (next != null) {
+            next.reset();
+        }
+    }
+
+    public MutableMoveResult nextPotentialDestination() {
+        if (next == null) {
+            next = new MutableMoveResult(); // this is okay because it's one-time at the beginning (or near the beginning) of the calculation, instead of per-movement
+        }
+        hasNext = true;
+        return next;
+    }
+
+    public MutableMoveResult getNext() {
+        if (!hasNext) {
+            return null;
+        }
+        return next;
     }
 }

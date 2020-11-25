@@ -114,50 +114,53 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 }
                 res.reset();
                 moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z, res);
-                numMovementsConsidered++;
-                double actionCost = res.cost;
-                if (actionCost >= ActionCosts.COST_INF) {
-                    continue;
-                }
-                if (actionCost <= 0 || Double.isNaN(actionCost)) {
-                    throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
-                }
-                // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
-                if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
-                    continue;
-                }
-                if (!moves.dynamicXZ && (res.x != newX || res.z != newZ)) {
-                    throw new IllegalStateException(moves + " " + res.x + " " + newX + " " + res.z + " " + newZ);
-                }
-                if (!moves.dynamicY && res.y != currentNode.y + moves.yOffset) {
-                    throw new IllegalStateException(moves + " " + res.y + " " + (currentNode.y + moves.yOffset));
-                }
-                long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
-                if (isFavoring) {
-                    // see issue #18
-                    actionCost *= favoring.calculate(hashCode);
-                }
-                PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
-                double tentativeCost = currentNode.cost + actionCost;
-                if (neighbor.cost - tentativeCost > minimumImprovement) {
-                    neighbor.previous = currentNode;
-                    neighbor.cost = tentativeCost;
-                    neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
-                    if (neighbor.isOpen()) {
-                        openSet.update(neighbor);
-                    } else {
-                        openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
+                while (res != null) {
+                    numMovementsConsidered++;
+                    double actionCost = res.cost;
+                    if (actionCost >= ActionCosts.COST_INF) {
+                        continue;
                     }
-                    for (int i = 0; i < COEFFICIENTS.length; i++) {
-                        double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
-                        if (bestHeuristicSoFar[i] - heuristic > minimumImprovement) {
-                            bestHeuristicSoFar[i] = heuristic;
-                            bestSoFar[i] = neighbor;
-                            if (failing && getDistFromStartSq(neighbor) > MIN_DIST_PATH * MIN_DIST_PATH) {
-                                failing = false;
+                    if (actionCost <= 0 || Double.isNaN(actionCost)) {
+                        throw new IllegalStateException(moves + " calculated implausible cost " + actionCost);
+                    }
+                    // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
+                    if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
+                        continue;
+                    }
+                    if (!moves.dynamicXZ && (res.x != newX || res.z != newZ)) {
+                        throw new IllegalStateException(moves + " " + res.x + " " + newX + " " + res.z + " " + newZ);
+                    }
+                    if (!moves.dynamicY && res.y != currentNode.y + moves.yOffset) {
+                        throw new IllegalStateException(moves + " " + res.y + " " + (currentNode.y + moves.yOffset));
+                    }
+                    long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
+                    if (isFavoring) {
+                        // see issue #18
+                        actionCost *= favoring.calculate(hashCode);
+                    }
+                    PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
+                    double tentativeCost = currentNode.cost + actionCost;
+                    if (neighbor.cost - tentativeCost > minimumImprovement) {
+                        neighbor.previous = currentNode;
+                        neighbor.cost = tentativeCost;
+                        neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
+                        if (neighbor.isOpen()) {
+                            openSet.update(neighbor);
+                        } else {
+                            openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
+                        }
+                        for (int i = 0; i < COEFFICIENTS.length; i++) {
+                            double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
+                            if (bestHeuristicSoFar[i] - heuristic > minimumImprovement) {
+                                bestHeuristicSoFar[i] = heuristic;
+                                bestSoFar[i] = neighbor;
+                                if (failing && getDistFromStartSq(neighbor) > MIN_DIST_PATH * MIN_DIST_PATH) {
+                                    failing = false;
+                                }
                             }
                         }
                     }
+                    res = res.getNext();
                 }
             }
         }
