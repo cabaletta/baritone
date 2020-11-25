@@ -342,7 +342,7 @@ public class MovementParkourAdv extends Movement {
         } else {
             endPoint = VecUtils.add(jump, -jumpDirection.getXOffset(), extraAscend, -jumpDirection.getZOffset());
         }
-        Set<Vec3i> jumpLine = getLineApprox(endPoint, 0.2, 1);
+        Set<Vec3i> jumpLine = getLineApprox(endPoint, 0.25, 1);
 
         int jumpBoost = getPotionEffectAmplifier(context.getBaritone().getPlayerContext(), MobEffects.JUMP_BOOST);
         double stepSize = sprint ? SPRINT_JUMP_DISTANCE : WALK_JUMP_DISTANCE; // estimates
@@ -366,7 +366,7 @@ public class MovementParkourAdv extends Movement {
                 prevHeight = calcFallPosition(tick, true, jumpBoost); // less common slower
                 prevTick = tick;
             }
-            for (int j = (int) prevHeight; j <= PLAYER_HEIGHT + prevHeight; j++) { // Checks feet, head, for each block. (can double check some blocks on ascends/descends)
+            for (int j = (int) prevHeight; j <= Math.ceil(PLAYER_HEIGHT + prevHeight); j++) { // Checks feet, head, for each block. (can double check some blocks on ascends/descends)
                 // jumpDirection is subtracted at the beginning (re-added here)
                 if (!MovementHelper.fullyPassable(context, jumpVec.getX() + srcX + jumpDirection.getXOffset(), jumpVec.getY() + srcY + j, jumpVec.getZ() + srcZ + jumpDirection.getZOffset())) {
                     if (TEST_LOG) {
@@ -572,7 +572,7 @@ public class MovementParkourAdv extends Movement {
                 int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getZOffset();
                 if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
                     double angle = Math.acos(((againstX - destX) * (posbJump.getX() + xDiff) + (againstZ - destZ) * (posbJump.getZ() + zDiff)) / Math.sqrt((posbJump.getX() + xDiff) * (posbJump.getX() + xDiff) + (posbJump.getZ() + zDiff) * (posbJump.getZ() + zDiff))) * RotationUtils.RAD_TO_DEG;
-                    System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(destX, destY, destZ) + ", Dir = " + simpleDirection + ", angle = " + angle + ", against = " + new Vec3i(againstX, againstY, againstZ));
+                    // System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(destX, destY, destZ) + ", Dir = " + simpleDirection + ", angle = " + angle + ", against = " + new Vec3i(againstX, againstY, againstZ));
                     if (angle <= 90 && !checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, 0, simpleDirection, type, moveDis > type.maxJumpNoSprint)) { // we can't turn around that fast
                         getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, simpleDirection, type, placeCost, lowestCost, res);
                     }
