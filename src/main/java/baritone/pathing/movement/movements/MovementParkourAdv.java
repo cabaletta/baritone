@@ -552,7 +552,7 @@ public class MovementParkourAdv extends Movement {
 
             // No block to land on, we now test for a parkour place
 
-            if (!context.allowParkourPlace) {
+            if (!context.allowParkourPlace || type == JumpType.NORMAL_STRAIGHT_DESCEND) {
                 continue; // Settings don't allow a parkour place
             }
 
@@ -570,11 +570,12 @@ public class MovementParkourAdv extends Movement {
                 int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getXOffset();
                 int againstY = destY - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getYOffset();
                 int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getZOffset();
-                if (againstX == srcX + xDiff * 3 && againstZ == srcZ + zDiff * 3) { // we can't turn around that fast
-                    continue;
-                }
                 if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
-                    getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, simpleDirection, type, placeCost, lowestCost, res);
+                    double angle = Math.acos(((againstX - destX) * (posbJump.getX() + xDiff) + (againstZ - destZ) * (posbJump.getZ() + zDiff)) / Math.sqrt((posbJump.getX() + xDiff) * (posbJump.getX() + xDiff) + (posbJump.getZ() + zDiff) * (posbJump.getZ() + zDiff))) * RotationUtils.RAD_TO_DEG;
+                    System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(destX, destY, destZ) + ", Dir = " + simpleDirection + ", angle = " + angle + ", against = " + new Vec3i(againstX, againstY, againstZ));
+                    if (angle <= 90 && !checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, 0, simpleDirection, type, moveDis > type.maxJumpNoSprint)) { // we can't turn around that fast
+                        getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, simpleDirection, type, placeCost, lowestCost, res);
+                    }
                 }
             }
         }
@@ -748,7 +749,7 @@ public class MovementParkourAdv extends Movement {
             }
             return false;
         } else {
-            logDebug("Achieved '" + df.format(distance) + "' blocks of accuracy to preploc. Jump Direction = " + simpleDirection + ", Remaining Motion = " + new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ).length() + ", Using technique '" + type + "'");
+            logDebug("Achieved '" + df.format(distance) + "' blocks of accuracy to preploc. Jump Direction = " + simpleDirection + ", Remaining Motion = " + df.format(new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ).length()) + ", Using technique '" + type + "'");
             inStartingPosition = true;
             ticksAtDest = 0;
             return true;
@@ -1206,30 +1207,6 @@ public class MovementParkourAdv extends Movement {
             curDest = VecUtils.getBlockPosCenter(dest);
         }
 
-        if (curDest != null &&
-                type != JumpType.EDGE_NEO && (type != JumpType.MOMENTUM_BLOCK && type != JumpType.MOMENTUM_NO_BLOCK)) { // EDGE_NEO and MOMENTUM jumps are completed with very low room for error, dodging an obstacle will lead to missing the jump due to the slight decrease in speed
-            // This is called after movement to also factor in key presses and look direction
-            int ticksRemaining = calcJumpTime(ascendAmount, true, ctx) - ticksFromJump;
-            MovementPrediction.PredictionResult future5 = MovementPrediction.getFutureLocation(ctx.player(), state, Math.min(5, ticksRemaining)); // The predicted location a few ticks in the future
-
-            // adjust movement to attempt to dodge obstacles
-            if (future5.collidedHorizontally && future.posY > dest.getY()) {
-                double angleDiff = VecUtils.getYaw(destVec.subtract(future5.getPosition())) - ctx.playerRotations().normalize().getYaw();
-                if(Math.abs(angleDiff) > 20) {
-                    logDebug("Adjusting movement to dodge an obstacle. Predicted collision location = " + future5.getPosition());
-                    state.setInput(sideMove(angleDiff), true);
-                }
-            }
-
-            Vec3d future5Pos = new Vec3d(future5.posX, startLoc.y, future5.posZ);
-            // logDebug("Overshoot? " + distanceXZ + " < " + future5Pos.distanceTo(startLoc) + " && " + distanceXZ + " > " + distFromStartXZ);
-            if (distanceXZ < future5Pos.distanceTo(startLoc) && // overshot (in the future)
-                    distanceXZ > distFromStartXZ) { // haven't overshot yet
-                logDebug("Adjusting movement to prevent overshoot. " + ticksFromJump);
-                state.getInputStates().remove(Input.MOVE_FORWARD);
-            }
-        }
-
         if (ctx.playerFeet().equals(dest)) {
             Block d = BlockStateInterface.getBlock(ctx, dest);
             if (d == Blocks.VINE || d == Blocks.LADDER) {
@@ -1252,6 +1229,30 @@ public class MovementParkourAdv extends Movement {
             }
             if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true, false) == PlaceResult.READY_TO_PLACE) {
                 state.setInput(Input.CLICK_RIGHT, true);
+            }
+        }
+
+        if (curDest != null &&
+                type != JumpType.EDGE_NEO && (type != JumpType.MOMENTUM_BLOCK && type != JumpType.MOMENTUM_NO_BLOCK)) { // EDGE_NEO and MOMENTUM jumps are completed with very low room for error, dodging an obstacle will lead to missing the jump due to the slight decrease in speed
+            // This is called after movement to also factor in key presses and look direction
+            int ticksRemaining = calcJumpTime(ascendAmount, true, ctx) - ticksFromJump;
+            MovementPrediction.PredictionResult future5 = MovementPrediction.getFutureLocation(ctx.player(), state, Math.min(5, ticksRemaining)); // The predicted location a few ticks in the future
+
+            // adjust movement to attempt to dodge obstacles
+            if (future5.collidedHorizontally && future.posY > dest.getY()) {
+                double angleDiff = VecUtils.getYaw(destVec.subtract(future5.getPosition())) - ctx.playerRotations().normalize().getYaw();
+                if(Math.abs(angleDiff) > 20) {
+                    logDebug("Adjusting movement to dodge an obstacle. Predicted collision location = " + future5.getPosition() + " tick, " + ticksFromJump + " -> " + (ticksFromJump + Math.min(5, ticksRemaining)));
+                    state.setInput(sideMove(angleDiff), true);
+                }
+            }
+
+            Vec3d future5Pos = new Vec3d(future5.posX, startLoc.y, future5.posZ);
+            // logDebug("Overshoot? " + distanceXZ + " < " + future5Pos.distanceTo(startLoc) + " && " + distanceXZ + " > " + distFromStartXZ);
+            if (distanceXZ < future5Pos.distanceTo(startLoc) && // overshot (in the future)
+                    distanceXZ > distFromStartXZ) { // haven't overshot yet
+                logDebug("Adjusting movement to prevent overshoot. " + ticksFromJump);
+                state.getInputStates().remove(Input.MOVE_FORWARD);
             }
         }
 
