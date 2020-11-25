@@ -59,7 +59,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             bestHeuristicSoFar[i] = startNode.estimatedCostToGoal;
             bestSoFar[i] = startNode;
         }
-        MutableMoveResult res = new MutableMoveResult();
+        MutableMoveResult mutableMoveResult = new MutableMoveResult();
         BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world.getWorldBorder());
         long startTime = System.currentTimeMillis();
         boolean slowPath = Baritone.settings().slowPath.value;
@@ -112,8 +112,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 if (currentNode.y + moves.yOffset > 256 || currentNode.y + moves.yOffset < 0) {
                     continue;
                 }
-                res.reset();
-                moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z, res);
+                mutableMoveResult.reset();
+                moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z, mutableMoveResult);
+                MutableMoveResult res = mutableMoveResult;
                 while (res != null) {
                     numMovementsConsidered++;
                     double actionCost = res.cost;
